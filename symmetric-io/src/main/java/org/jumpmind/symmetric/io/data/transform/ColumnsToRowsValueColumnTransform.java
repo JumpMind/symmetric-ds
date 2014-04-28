@@ -29,57 +29,57 @@ import org.slf4j.LoggerFactory;
 
 public class ColumnsToRowsValueColumnTransform  implements ISingleValueColumnTransform {
 
-        private static final Logger logger = LoggerFactory.getLogger(ColumnsToRowsValueColumnTransform.class);
+	private static final Logger logger = LoggerFactory.getLogger(ColumnsToRowsValueColumnTransform.class);
 
-        public final static String NAME = "columnsToRowsValueColumnTransform";
+	public final static String NAME = "columnsToRowsValueColumnTransform";
 
-        
-        public String getName() {
-                return NAME;
-        }
+	
+	public String getName() {
+		return NAME;
+	}
 
-        public boolean isExtractColumnTransform() {
-                return true;
-        }
+	public boolean isExtractColumnTransform() {
+		return true;
+	}
 
-        public boolean isLoadColumnTransform() {
-                return true;
-        }
+	public boolean isLoadColumnTransform() {
+		return true;
+	}
 
-        protected String processColumn(TransformedData data, String newValue, String oldValue) throws IgnoreRowException, IgnoreColumnException {
-                return newValue;
-        }
-        
-        public String transform(IDatabasePlatform platform, DataContext context, TransformColumn column,
-                        TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
-                        throws IgnoreRowException, IgnoreColumnException {
-                
-                String contextBase = ColumnsToRowsKeyColumnTransform.getContextBase(column.getTransformId());
-                                
-                
-                @SuppressWarnings("unchecked")
-                Map<String, String> reverseMap = (Map<String, String>) context.get(contextBase+ColumnsToRowsKeyColumnTransform.CONTEXT_MAP);
-                String pkColumnName = (String) context.get(contextBase+ColumnsToRowsKeyColumnTransform.CONTEXT_PK_COLUMN);
+	protected String processColumn(TransformedData data, String newValue, String oldValue) throws IgnoreRowException, IgnoreColumnException {
+		return newValue;
+	}
+	
+	public String transform(IDatabasePlatform platform, DataContext context, TransformColumn column,
+			TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
+			throws IgnoreRowException, IgnoreColumnException {
+		
+		String contextBase = ColumnsToRowsKeyColumnTransform.getContextBase(column.getTransformId());
+				
+		
+		@SuppressWarnings("unchecked")
+		Map<String, String> reverseMap = (Map<String, String>) context.get(contextBase+ColumnsToRowsKeyColumnTransform.CONTEXT_MAP);
+		String pkColumnName = (String) context.get(contextBase+ColumnsToRowsKeyColumnTransform.CONTEXT_PK_COLUMN);
 
-                if (reverseMap == null) {
-                        throw new RuntimeException("Reverse map not found in context as key " + contextBase+ColumnsToRowsKeyColumnTransform.CONTEXT_MAP+ "  Unable to transform.");
-                }
-                if (pkColumnName == null) {
-                        throw new RuntimeException("Primary key column name not found in context as key " + contextBase+ColumnsToRowsKeyColumnTransform.CONTEXT_PK_COLUMN+"  Unable to transform.");
-                }
+		if (reverseMap == null) {
+			throw new RuntimeException("Reverse map not found in context as key " + contextBase+ColumnsToRowsKeyColumnTransform.CONTEXT_MAP+ "  Unable to transform.");
+		}
+		if (pkColumnName == null) {
+			throw new RuntimeException("Primary key column name not found in context as key " + contextBase+ColumnsToRowsKeyColumnTransform.CONTEXT_PK_COLUMN+"  Unable to transform.");
+		}
 
-                String pkValue = data.getTargetKeyValues().get(pkColumnName);
-                String value = null;
-                
-                if (pkValue!=null) {
-                         value = reverseMap.get(pkValue);
-                         if (value!=null) {
-                                 return processColumn(data,data.getSourceValues().get(value),data.getOldSourceValues().get(value));
-                         } else {
-                                 throw new RuntimeException("Unable to locate column name for pk value "+pkValue);
-                         }
-                } else {
-                        throw new RuntimeException("Unable to locate column with pk name "+pkColumnName+" in target values.");
-                }
-        }
+		String pkValue = data.getTargetKeyValues().get(pkColumnName);
+		String value = null;
+		
+		if (pkValue!=null) {
+			 value = reverseMap.get(pkValue);
+			 if (value!=null) {
+				 return processColumn(data,data.getSourceValues().get(value),data.getOldSourceValues().get(value));
+			 } else {
+				 throw new RuntimeException("Unable to locate column name for pk value "+pkValue);
+			 }
+		} else {
+			throw new RuntimeException("Unable to locate column with pk name "+pkColumnName+" in target values.");
+		}
+	}
 }

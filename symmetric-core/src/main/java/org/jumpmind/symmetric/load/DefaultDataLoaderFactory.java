@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultTransformWriterConflictResolver;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
@@ -47,11 +47,8 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultDataLoaderFactory.class);
 
-    protected IParameterService parameterService;
+    private IParameterService parameterService;
 
-    public DefaultDataLoaderFactory() {
-    }
-    
     public DefaultDataLoaderFactory(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
@@ -64,13 +61,13 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
             final ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricDialect.getPlatform(),
+        DatabaseWriter writer = new DatabaseWriter(symmetricDialect.getPlatform(),
                 new DefaultTransformWriterConflictResolver(transformWriter) {
                     @Override
                     protected void beforeResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() != PingBack.OFF) {
-                            DefaultDatabaseWriter writer = transformWriter
-                                    .getNestedWriterOfType(DefaultDatabaseWriter.class);
+                            DatabaseWriter writer = transformWriter
+                                    .getNestedWriterOfType(DatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
                                 symmetricDialect.enableSyncTriggers(transaction);
@@ -81,16 +78,15 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
                     @Override
                     protected void afterResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() == PingBack.SINGLE_ROW) {
-                            DefaultDatabaseWriter writer = transformWriter
-                                    .getNestedWriterOfType(DefaultDatabaseWriter.class);
+                            DatabaseWriter writer = transformWriter
+                                    .getNestedWriterOfType(DatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
                                 symmetricDialect.disableSyncTriggers(transaction, sourceNodeId);
                             }
                         }
                     }
-                }, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings,
-                        resolvedData));
+                }, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
         return writer;
     }
 
@@ -99,21 +95,20 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
     }
 
     protected DatabaseWriterSettings buildDatabaseWriterSettings(
-            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
-            List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedDatas) {
+            List<IDatabaseWriterFilter> filters,
+            List<IDatabaseWriterErrorHandler> errorHandlers,
+            List<? extends Conflict> conflictSettings,
+            List<ResolvedData> resolvedDatas) {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
         settings.setDatabaseWriterFilters(filters);
         settings.setDatabaseWriterErrorHandlers(errorHandlers);
         settings.setMaxRowsBeforeCommit(parameterService
                 .getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT));
-        settings.setCommitSleepInterval(parameterService
-                .getLong(ParameterConstants.DATA_LOADER_SLEEP_TIME_AFTER_EARLY_COMMIT));
-        settings.setIgnoreMissingTables(parameterService
-                .is(ParameterConstants.DATA_LOADER_IGNORE_MISSING_TABLES));
+        settings.setCommitSleepInterval(parameterService.getLong(ParameterConstants.DATA_LOADER_SLEEP_TIME_AFTER_EARLY_COMMIT));
+        settings.setIgnoreMissingTables(parameterService.is(ParameterConstants.DATA_LOADER_IGNORE_MISSING_TABLES));
         settings.setTreatDateTimeFieldsAsVarchar(parameterService
                 .is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
-        settings.setSaveCurrentValueOnError(parameterService.is(
-                ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
+        settings.setSaveCurrentValueOnError(parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
 
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();

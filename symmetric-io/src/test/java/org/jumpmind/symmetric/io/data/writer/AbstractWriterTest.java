@@ -116,7 +116,7 @@ abstract public class AbstractWriterTest {
     }
 
     protected long writeData(TableCsvData... datas) {
-        return writeData(new DefaultDatabaseWriter(platform, writerSettings), datas);
+        return writeData(new DatabaseWriter(platform, writerSettings), datas);
     }
 
     protected long writeData(IDataWriter writer, TableCsvData... datas) {
@@ -206,10 +206,7 @@ abstract public class AbstractWriterTest {
 
     protected String translateExpectedCharString(String value, int size, boolean isRequired) {
         if (isRequired && value == null) {
-            if (!platform.getDatabaseInfo().isRequiredCharColumnEmptyStringSameAsNull() ||
-                    platform.getDatabaseInfo().isEmptyStringNulled()) {
-                value = AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
-            }
+            value = AbstractDatabasePlatform.REQUIRED_FIELD_NULL_SUBSTITUTE;
         }
         if (value != null
                 && ((StringUtils.isBlank(value) && platform.getDatabaseInfo()

@@ -387,12 +387,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         Database db = new Database();
         setDatabaseName(triggerRouter, db);
         db.addTable(table);
-        if (table.getCatalog() != null && !table.getCatalog().equals(platform.getDefaultCatalog())) {
-            db.setCatalog(table.getCatalog());
-        }
-        if (table.getSchema() != null && !table.getSchema().equals(platform.getDefaultSchema())) {
-            db.setSchema(table.getSchema());
-        }
         StringWriter buffer = new StringWriter();
         DatabaseXmlUtil.write(db, buffer);
         // TODO: remove when these bugs are fixed in DdlUtils

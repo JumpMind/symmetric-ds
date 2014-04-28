@@ -42,7 +42,6 @@ public class StagingManager implements IStagingManager {
     protected Map<String, IStagedResource> resourceList = new ConcurrentHashMap<String, IStagedResource>();
 
     public StagingManager(String directory) {
-        log.info("The staging directory was initialized at the following location: " + directory);
         this.directory = new File(directory);
         this.directory.mkdirs();
         refreshResourceList();

@@ -46,12 +46,6 @@ import org.slf4j.LoggerFactory;
  */
 public class AppUtils {
 
-    public final static String SYSPROP_HOST_NAME = "host.name";
-    
-    public final static String SYSPROP_PORT_NUMBER = "port.number";
-    
-    public final static String SYSPROP_IP_ADDRESS = "ip.address";
-    
     private static String UNKNOWN = "unknown";
 
     private static Logger log = LoggerFactory.getLogger(AppUtils.class);
@@ -59,7 +53,7 @@ public class AppUtils {
     private static FastDateFormat timezoneFormatter = FastDateFormat.getInstance("Z");
 
     public static String getHostName() {
-        String hostName = System.getProperty(SYSPROP_HOST_NAME, UNKNOWN);
+        String hostName = System.getProperty("host.name", UNKNOWN);
         if (UNKNOWN.equals(hostName)) {
             try {
                 hostName = InetAddress.getByName(
@@ -71,20 +65,8 @@ public class AppUtils {
         return hostName;
     }
 
-    public static String getPortNumber() {
-        String portNumber = System.getProperty(SYSPROP_PORT_NUMBER, UNKNOWN);
-        if (UNKNOWN.equals(portNumber)) {
-            try {
-                portNumber = "31415";
-            } catch (Exception ex) {
-                log.warn(ex.getMessage(), ex);
-            }
-        }
-        return portNumber;
-    }
-
     public static String getIpAddress() {
-        String ipAddress = System.getProperty(SYSPROP_IP_ADDRESS, UNKNOWN);
+        String ipAddress = System.getProperty("ip.address", UNKNOWN);
         if (UNKNOWN.equals(ipAddress)) {
             try {
                 Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();

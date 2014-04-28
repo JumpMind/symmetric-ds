@@ -86,6 +86,7 @@ final public class ParameterConstants {
 
     public final static String AUTO_REGISTER_ENABLED = "auto.registration";
     public final static String AUTO_RELOAD_ENABLED = "auto.reload";
+    public final static String AUTO_RELOAD_SYM_ON_UPGRADE = "auto.reload.sym.tables.on.upgrade";
     public final static String AUTO_RELOAD_REVERSE_ENABLED = "auto.reload.reverse";
     public final static String AUTO_INSERT_REG_SVR_IF_NOT_FOUND = "auto.insert.registration.svr.if.not.found";
     public final static String AUTO_SYNC_CONFIGURATION = "auto.sync.configuration";
@@ -130,7 +131,6 @@ final public class ParameterConstants {
     public final static String ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES = "routing.data.reader.type.gap.retention.period.minutes";
     public final static String ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED = "routing.data.reader.order.by.gap.id.enabled";
     public final static String ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY = "routing.data.reader.threshold.gaps.to.use.greater.than.query";
-    public final static String ROUTING_LOG_STATS_ON_BATCH_ERROR = "routing.log.stats.on.batch.error";
 
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
     @Deprecated
@@ -175,7 +175,6 @@ final public class ParameterConstants {
     public final static String CACHE_TIMEOUT_NODE_SECURITY_IN_MS = "cache.node.security.time.ms";
     public final static String CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS = "cache.trigger.router.time.ms";
     public final static String CACHE_TIMEOUT_CHANNEL_IN_MS = "cache.channel.time.ms";
-    public final static String CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS = "cache.node.group.link.time.ms";
     public final static String CACHE_TIMEOUT_TRANSFORM_IN_MS = "cache.transform.time.ms";
     public final static String CACHE_TIMEOUT_LOAD_FILTER_IN_MS = "cache.load.filter.time.ms";
     public final static String CACHE_TIMEOUT_CONFLICT_IN_MS = "cache.conflict.time.ms";
@@ -199,8 +198,6 @@ final public class ParameterConstants {
     public final static String CLUSTER_SERVER_ID = "cluster.server.id";
     public final static String CLUSTER_LOCKING_ENABLED = "cluster.lock.enabled";
     public final static String CLUSTER_LOCK_TIMEOUT_MS = "cluster.lock.timeout.ms";
-    public final static String LOCK_TIMEOUT_MS = "lock.timeout.ms";
-    public final static String LOCK_WAIT_RETRY_MILLIS = "lock.wait.retry.ms";
 
     public final static String PURGE_RETENTION_MINUTES = "purge.retention.minutes";
     public final static String PURGE_EXTRACT_REQUESTS_RETENTION_MINUTES = "purge.extract.request.retention.minutes";
@@ -243,8 +240,6 @@ final public class ParameterConstants {
     public final static String SYNCHRONIZE_ALL_JOBS = "jobs.synchronized.enable";
 
     public final static String FILE_SYNC_ENABLE = "file.sync.enable";
-
-    public final static String FILE_SYNC_LOCK_WAIT_MS = "file.sync.lock.wait.ms";
 
     public final static String BSH_LOAD_FILTER_HANDLES_MISSING_TABLES = "bsh.load.filter.handles.missing.tables";
 

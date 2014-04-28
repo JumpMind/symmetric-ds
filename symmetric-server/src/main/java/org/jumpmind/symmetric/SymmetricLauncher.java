@@ -26,8 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.mysql.jdbc.StringUtils;
-
 /**
  * Launch the SymmetricDS engine as a stand alone client or server.
  */
@@ -199,9 +197,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             SymmetricWebServer webServer = new SymmetricWebServer(chooseWebDir(line, webDir),
                     maxIdleTime, propertiesFile != null ? propertiesFile.getCanonicalPath() : null,
                     true, noNio, noDirectBuffer);
-            if (!StringUtils.isNullOrEmpty(host)) {
-            	webServer.setHost(host);
-            }
+            webServer.setHost(host);
             webServer.setBasicAuthUsername(httpBasicAuthUser);
             webServer.setBasicAuthPassword(httpBasicAuthPassword);
             

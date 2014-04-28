@@ -66,7 +66,6 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     set nocount on                                                                                                                                                       " +
 "     declare @TransactionId varchar(1000)                                                                                                                                 " +
 "     declare @DataRow varchar(max)                                                                                                                                        " +
-"     declare @ChannelId varchar(20)                                                                                                                                       " +
 "     $(declareNewKeyVariables)                                                                                                                                            " +
 "     if (@@TRANCOUNT > 0) begin                                                                                                                                           " +
 "       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                     " +
@@ -74,16 +73,16 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
 "       declare DataCursor cursor local for                                                                                                                                " +
 "       $(if:containsBlobClobColumns)                                                                                                                                      " +
-"          select $(columns) $(newKeyNames), $(channelExpression) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)" +
+"          select $(columns) $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)" +
 "       $(else:containsBlobClobColumns)                                                                                                                                    " +
-"          select $(columns) $(newKeyNames), $(channelExpression) from inserted where $(syncOnInsertCondition)                                                                                   " +
+"          select $(columns) $(newKeyNames) from inserted where $(syncOnInsertCondition)                                                                                   " +
 "       $(end:containsBlobClobColumns)                                                                                                                                     " +
 "          open DataCursor                                                                                                                                                 " +
-"          fetch next from DataCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                " +
+"          fetch next from DataCursor into @DataRow $(newKeyVariables)                                                                                                     " +
 "          while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
 "              insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp) " +
-"              fetch next from DataCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                 " +
+"                values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp) " +
+"              fetch next from DataCursor into @DataRow $(newKeyVariables)                                                                                                 " +
 "          end                                                                                                                                                             " +
 "          close DataCursor                                                                                                                                                " +
 "          deallocate DataCursor                                                                                                                                           " +
@@ -102,7 +101,6 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     declare @DataRow varchar(max)                                                                                                                                        " +
 "     declare @OldPk varchar(2000)                                                                                                                                         " +
 "     declare @OldDataRow varchar(max)                                                                                                                                     " +
-"     declare @ChannelId varchar(20)                                                                                                                                       " +
 "     $(declareOldKeyVariables)                                                                                                                                            " +
 "     $(declareNewKeyVariables)                                                                                                                                            " +
 "     if (@@TRANCOUNT > 0) begin                                                                                                                                           " +
@@ -111,18 +109,18 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
 "       declare DataCursor cursor local for                                                                                                                                " +
 "       $(if:containsBlobClobColumns)                                                                                                                                      " +
-"          select $(columns), $(oldKeys), $(oldColumns) $(oldKeyNames) $(newKeyNames), $(channelExpression) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)" +
+"          select $(columns), $(oldKeys), $(oldColumns) $(oldKeyNames) $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)" +
 "       $(else:containsBlobClobColumns)                                                                                                                                    " +
-"          select $(columns), $(oldKeys), $(oldColumns) $(oldKeyNames) $(newKeyNames), $(channelExpression) from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)                                    " +
+"          select $(columns), $(oldKeys), $(oldColumns) $(oldKeyNames) $(newKeyNames) from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)                                    " +
 "       $(end:containsBlobClobColumns)                                                                                                                                     " +
 "          open DataCursor                                                                                                                                                 " +
-"          fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables), @ChannelId                                                              " +
-"          while @@FETCH_STATUS = 0 begin  " +
+"          fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                             " +
+"          while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
 "            if ($(dataHasChangedCondition)) begin                                                                                                                                " +
-"              insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)" +
+"            insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
+"              values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)" +
 "            end " +
-"            fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables), @ChannelId                                                           " +
+"            fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                           " +
 "          end                                                                                                                                                             " +
 "          close DataCursor                                                                                                                                                " +
 "          deallocate DataCursor                                                                                                                                           " +
@@ -141,7 +139,6 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     declare @OldPk varchar(2000)                                                                                                                                         " +
 "     declare @OldDataRow varchar(max)                                                                                                                                     " +
 "     declare @DataRow varchar(max)                                                                                                                                        " +
-"     declare @ChannelId varchar(20)                                                                                                                                       " +
 "     $(declareOldKeyVariables)                                                                                                                                            " +
 "     $(declareNewKeyVariables)                                                                                                                                            " +
 "                                                                                                                                                                          " +
@@ -153,21 +150,21 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "          select $(oldKeys), $(oldColumns) $(oldKeyNames) from deleted where $(syncOnDeleteCondition)                                                                      " +
 "       declare InsertCursor cursor local for                                                                                                                                " +
 "          $(if:containsBlobClobColumns)                                                                                                                                      " +
-"             select $(columns) $(newKeyNames), $(channelExpression) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)" +
+"             select $(columns) $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)" +
 "          $(else:containsBlobClobColumns)                                                                                                                                    " +
-"             select $(columns) $(newKeyNames), $(channelExpression) from inserted where $(syncOnInsertCondition)                                                                                   " +
+"             select $(columns) $(newKeyNames) from inserted where $(syncOnInsertCondition)                                                                                   " +
 "          $(end:containsBlobClobColumns)                                                                                                                                     " +
 "          open DeleteCursor                                                                                                                                                 " +
 "          open InsertCursor                                                                                                                                                 " +
 "          fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          " +
-"          fetch next from InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                    " +
+"          fetch next from InsertCursor into @DataRow $(newKeyVariables)                                                                                                    " +
 "          while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
 "            if ($(dataHasChangedCondition)) begin                                                                                                                                " +
-"              insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"                values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)" +
-"            end                                                                                                                                                             " +
+"            insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
+"              values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)" +
+"            end " +
 "            fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                      " +
-"            fetch next from InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                              " +
+"            fetch next from InsertCursor into @DataRow $(newKeyVariables)                                                                                                 " +
 "          end                                                                                                                                                             " +
 "          close DeleteCursor                                                                                                                                                " +
 "          close InsertCursor                                                                                                                                                " +
@@ -187,20 +184,19 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "    declare @TransactionId varchar(1000)                                                                                                                                 " +
 "    declare @OldPk varchar(2000)                                                                                                                                         " +
 "    declare @OldDataRow varchar(max)                                                                                                                                     " +
-"    declare @ChannelId varchar(20)                                                                                                                                       " +
 "    $(declareOldKeyVariables)                                                                                                                                            " +
 "    if (@@TRANCOUNT > 0) begin                                                                                                                                           " +
 "       select @TransactionId = convert(VARCHAR(1000),transaction_id)    from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                           " +
 "    end                                                                                                                                                                  " +
 "    if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
 "      declare DataCursor cursor local for                                                                                                                                " +
-"        select $(oldKeys), $(oldColumns) $(oldKeyNames), $(channelExpression) from deleted where $(syncOnDeleteCondition)                                                                      " +
+"        select $(oldKeys), $(oldColumns) $(oldKeyNames) from deleted where $(syncOnDeleteCondition)                                                                      " +
 "        open DataCursor                                                                                                                                                  " +
-"         fetch next from DataCursor into @OldPk, @OldDataRow $(oldKeyVariables), @ChannelId                                                                                      " +
+"         fetch next from DataCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          " +
 "         while @@FETCH_STATUS = 0 begin                                                                                                                                  " +
 "           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
-"             values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)" +
-"           fetch next from DataCursor into @OldPk,@OldDataRow $(oldKeyVariables), @ChannelId                                                                                      " +
+"             values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)" +
+"           fetch next from DataCursor into @OldPk,@OldDataRow $(oldKeyVariables)                                                                                         " +
 "         end                                                                                                                                                             " +
 "         close DataCursor                                                                                                                                                " +
 "         deallocate DataCursor                                                                                                                                           " +

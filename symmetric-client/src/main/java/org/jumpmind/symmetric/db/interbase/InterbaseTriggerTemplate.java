@@ -61,7 +61,7 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                      'I',                                                                                                                                                             " +
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(columns),                                                                                                                                                      " +
-"                                      $(channelExpression),                                                                                                                                                " +
+"                                      '$(channelName)',                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      :sync_node_disabled,                                                                                                                                             " +
 "                                      $(externalSelect),                                                                                                                                               " +
@@ -92,7 +92,7 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(oldKeys),                                                                                                                                                      " +
 "                                      $(columns),                                                                                                                                                      " +
 "                                      $(oldColumns),                                                                                                                                                   " +
-"                                      $(channelExpression),                                                                                                                                                " +
+"                                      '$(channelName)',                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      :sync_node_disabled,                                                                                                                                             " +
 "                                      $(externalSelect),                                                                                                                                               " +
@@ -122,7 +122,7 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(oldKeys),                                                                                                                                                      " +
 "                                      $(oldColumns),                                                                                                                                                   " +
-"                                      $(channelExpression),                                                                                                                                                " +
+"                                      '$(channelName)',                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      :sync_node_disabled,                                                                                                                                             " +
 "                                      $(externalSelect),                                                                                                                                               " +

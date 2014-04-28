@@ -129,9 +129,8 @@ public class Batch {
         return targetNodeId;
     }
     
-    public String getNodeBatchId() {
-        String nodeId = batchType == BatchType.EXTRACT ? targetNodeId : sourceNodeId;
-        return String.format("%s-%d", nodeId, batchId);
+    public String getSourceNodeBatchId() {
+        return String.format("%s-%d", sourceNodeId, batchId);
     }
     
     public long getBatchId() {
@@ -164,10 +163,6 @@ public class Batch {
     
     public boolean isCommon() {
         return common;
-    }
-    
-    public BatchType getBatchType() {
-        return batchType;
     }
     
     public String getStagedLocation() {

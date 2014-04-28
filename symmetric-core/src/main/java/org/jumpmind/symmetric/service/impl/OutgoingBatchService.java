@@ -84,11 +84,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         setSqlMap(new OutgoingBatchServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
-    @Override
-    public int cancelLoadBatches(long loadId) {
-        return sqlTemplate.update(getSql("cancelLoadBatchesSql"), loadId);
-    }
 
     public void markAllAsSentForNode(String nodeId, boolean includeConfigChannel) {
         OutgoingBatches batches = null;

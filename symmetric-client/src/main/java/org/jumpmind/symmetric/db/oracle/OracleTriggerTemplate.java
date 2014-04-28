@@ -62,7 +62,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                  'I',                                                                   \n" +
 "                  $(triggerHistoryId),                                                   \n" +
 "                  $(oracleToClob)$(columns),                                             \n" +
-"                  $(channelExpression),                                                      \n" +
+"                  '$(channelName)',                                                      \n" +
 "                  $(txIdExpression),                                                     \n" +
 "                  sym_pkg.disable_node_id,                                               \n" +
 "                  $(externalSelect),                                                     \n" +
@@ -92,7 +92,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                          $(oldKeys),                                                                                                                                                    \n" +
 "                                          var_row_data,                                                                                                                                                  \n" +
 "                                          var_old_data,                                                                                                                                                  \n" +
-"                                          $(channelExpression),                                                                                                                                              \n" +
+"                                          '$(channelName)',                                                                                                                                              \n" +
 "                                          $(txIdExpression),                                                                                                                                             \n" +
 "                                          sym_pkg.disable_node_id,                                                                                                                                       \n" +
 "                                          $(externalSelect),                                                                                                                                             \n" +
@@ -116,7 +116,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(triggerHistoryId),                                                                                                                                             \n" +
 "                                      $(oldKeys),                                                                                                                                                      \n" +
 "                                      $(oracleToClob)$(oldColumns),                                                                                                                                    \n" +
-"                                      $(channelExpression),                                                                                                                                                \n" +
+"                                      '$(channelName)',                                                                                                                                                \n" +
 "                                      $(txIdExpression),                                                                                                                                               \n" +
 "                                      sym_pkg.disable_node_id,                                                                                                                                         \n" +
 "                                      $(externalSelect),                                                                                                                                               \n" +

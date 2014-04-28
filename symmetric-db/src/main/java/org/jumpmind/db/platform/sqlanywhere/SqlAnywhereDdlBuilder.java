@@ -91,14 +91,13 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
 
         databaseInfo.setDateOverridesToTimestamp(true);
-        databaseInfo.setNonBlankCharColumnSpacePadded(false);
-        databaseInfo.setBlankCharColumnSpacePadded(false);
+        databaseInfo.setNonBlankCharColumnSpacePadded(true);
+        databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setAutoIncrementUpdateAllowed(false);
         databaseInfo.setRequiresAutoCommitForDdl(true);
-        databaseInfo.setRequiredCharColumnEmptyStringSameAsNull(true);
-        
+
         addEscapedCharSequence("'", "''");
     }
 
@@ -399,10 +398,31 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
      */
     protected void processChange(Database currentModel, Database desiredModel,
             RemovePrimaryKeyChange change, StringBuilder ddl) {
-        ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
-        printIndent(ddl);
-        ddl.append("DROP PRIMARY KEY");
+        // TODO: this would be easier when named primary keys are supported
+        // because then we can use ALTER TABLE DROP
+        String tableName = getTableName(change.getChangedTable().getName());
+        String tableNameVar = "tn" + createUniqueIdentifier();
+        String constraintNameVar = "cn" + createUniqueIdentifier();
+
+        println("BEGIN", ddl);
+        println("  DECLARE @" + tableNameVar + " nvarchar(60), @" + constraintNameVar
+                + " nvarchar(60)", ddl);
+        println("  WHILE EXISTS(SELECT si.name", ddl);
+        println("                 FROM dbo.sysindexes si, dbo.sysobjects so", ddl);
+        ddl.append("                 WHERE so.name = ");
+        printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        println(" AND so.id = si.id AND (si.status & 2048) > 0)", ddl);
+        println("  BEGIN", ddl);
+        println("    SELECT @" + tableNameVar + " = so.name, @" + constraintNameVar
+                + " = si.name", ddl);
+        println("      FROM dbo.sysindexes si, dbo.sysobjects so", ddl);
+        ddl.append("      WHERE so.name = ");
+        printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        ddl.append(" AND so.id = si.id AND (si.status & 2048) > 0");
+        println("    EXEC ('ALTER TABLE '+@" + tableNameVar + "+' DROP CONSTRAINT '+@"
+                + constraintNameVar + ")", ddl);
+        println("  END", ddl);
+        ddl.append("END");
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }

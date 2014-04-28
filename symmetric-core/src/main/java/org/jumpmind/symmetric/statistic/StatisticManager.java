@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.statistic;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,12 +31,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
-import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
@@ -66,8 +62,6 @@ public class StatisticManager implements IStatisticManager {
 
     private HostStats hostStats;
 
-    private ConcurrentHashMap<Long, RouterStats> routerStatsByBatch = new ConcurrentHashMap<Long, RouterStats>(); 
-    
     protected INodeService nodeService;
 
     protected IStatisticService statisticService;
@@ -142,25 +136,6 @@ public class StatisticManager implements IStatisticManager {
         } finally {
             jobStatsLock.release();
         }
-    }
-
-    public RouterStats getRouterStatsByBatch(Long batchId) {
-        return routerStatsByBatch.get(batchId);
-    }
-
-    public void addRouterStats(long startDataId, long endDataId, long dataReadCount, long peekAheadFillCount, 
-        List<DataGap> dataGaps, Set<String> transactions, Collection<OutgoingBatch> batches) {
-        RouterStats routerStats = new RouterStats(startDataId, endDataId, dataReadCount, peekAheadFillCount, 
-                dataGaps, transactions);
-        for (OutgoingBatch batch : batches) {
-            if (! batch.getNodeId().equals(Constants.UNROUTED_NODE_ID)) {
-                routerStatsByBatch.put(batch.getBatchId(), routerStats);
-            }
-        }
-    }
-
-    public void removeRouterStatsByBatch(Long batchId) {
-        routerStatsByBatch.remove(batchId);
     }
 
     public void incrementDataRouted(String channelId, long count) {
