@@ -1012,7 +1012,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         long ts = System.currentTimeMillis();
         List<ExtractRequest> requests = getExtractRequestsForNode(nodeCommunication.getNodeId());
         /*
-         * Process extract requests for until it has taken longer than 30 seconds, and then
+         * Process extract requests until it has taken longer than 30 seconds, and then
          * allow the process to return so progress status can be seen.
          */
         for (int i = 0; i < requests.size()
@@ -1213,6 +1213,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 this.currentDataWriter.end(batch, false);
                 Statistics stats = this.currentDataWriter.getStatistics().get(batch);
                 this.outgoingBatch.setByteCount(stats.get(DataWriterStatisticConstants.BYTECOUNT));
+                this.outgoingBatch.setExtractMillis(System.currentTimeMillis() - batch.getStartTime().getTime());
                 this.currentDataWriter.close();                
                 startNewBatch();
             }
@@ -1223,7 +1224,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (this.currentDataWriter != null) {
                 this.currentDataWriter.end(table);
                 Statistics stats = this.currentDataWriter.getStatistics().get(batch);
-                this.outgoingBatch.setByteCount(stats.get(DataWriterStatisticConstants.BYTECOUNT));                
+                this.outgoingBatch.setByteCount(stats.get(DataWriterStatisticConstants.BYTECOUNT));
+                this.outgoingBatch.setExtractMillis(System.currentTimeMillis() - batch.getStartTime().getTime());
             }
         }
 

@@ -47,7 +47,13 @@ public class BatchResult {
 	 * In error status the status description should contain relevant information about the 
 	 * error on the client including SQL Error Number and description
 	 */
-	private String statusDescription;
+	private String statusDescription;	
+	
+	/**
+	 * The amount of time it took to load the batch into the target database.  This value will be recorded in the
+	 * outgoing batch table.
+	 */
+	private long loadTimeInMillis;
 	
 	public BatchResult(long batchId, boolean success) {
 	    this.status = success ? "OK" : "ER";
@@ -133,5 +139,13 @@ public class BatchResult {
 	public void setSqlState(String sqlState) {
 		this.sqlState = sqlState;
 	}
+
+    public long getLoadTimeInMillis() {
+        return loadTimeInMillis;
+    }
+
+    public void setLoadTimeInMillis(long loadTimeInMillis) {
+        this.loadTimeInMillis = loadTimeInMillis;
+    }
 
 }
