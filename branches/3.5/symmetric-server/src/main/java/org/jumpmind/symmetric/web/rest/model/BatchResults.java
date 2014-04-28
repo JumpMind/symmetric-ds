@@ -25,46 +25,66 @@ import java.util.List;
 
 public class BatchResults {
 
-	/**
-	 * The node ID for which batches are being acknowledged
-	 */
-	private String nodeId;
+    /**
+     * The node ID for which batches are being acknowledged
+     */
+    private String nodeId;
 
-	/**
-	 * A list of batchResults to be acknowledged on the Server
-	 */
-	List<BatchResult> batchResults = new ArrayList<BatchResult>();
+    /**
+     * A list of batchResults to be acknowledged on the Server
+     */
+    List<BatchResult> batchResults = new ArrayList<BatchResult>();
 
-	/**
-	 * Returns a list of batch results
-	 * @return {@link BatchResult}
-	 */
-	public List<BatchResult> getBatchResults() {
-		return batchResults;
-	}
+    /**
+     * Time provided by client that will be recorded in the network millis in
+     * the outgoing batch table. The client can calculate it based on the time
+     * it starts to process a batch minus the transfer start time ( assuming
+     * both client and server are in the same timezone)
+     */
+    private long transferTimeInMillis;
 
-	/**
-	 * Sets the list of batch results
-	 * @param batchResults
-	 */
-	public void setBatchResults(List<BatchResult> batchResults) {
-		this.batchResults = batchResults;
-	}
+    /**
+     * Returns a list of batch results
+     * 
+     * @return {@link BatchResult}
+     */
+    public List<BatchResult> getBatchResults() {
+        return batchResults;
+    }
 
-	/**
-	 * Gets the node id for the batch results
-	 * @return nodeId
-	 */
-	public String getNodeId() {
-		return nodeId;
-	}
+    /**
+     * Sets the list of batch results
+     * 
+     * @param batchResults
+     */
+    public void setBatchResults(List<BatchResult> batchResults) {
+        this.batchResults = batchResults;
+    }
 
-	/**
-	 * Sets the node id for the batch results
-	 * @param nodeId
-	 */
-	public void setNodeId(String nodeId) {
-		this.nodeId = nodeId;
-	}
-	
+    /**
+     * Gets the node id for the batch results
+     * 
+     * @return nodeId
+     */
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    /**
+     * Sets the node id for the batch results
+     * 
+     * @param nodeId
+     */
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+    
+    public void setTransferTimeInMillis(long transferTimeInMillis) {
+        this.transferTimeInMillis = transferTimeInMillis;
+    }
+    
+    public long getTransferTimeInMillis() {
+        return transferTimeInMillis;
+    }
+
 }
