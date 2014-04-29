@@ -165,24 +165,22 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         try {
             super.init();
 
-            if (springContext == null) {
-                PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
-                configurer.setProperties(parameterService.getAllParameters());
+            PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
+            configurer.setProperties(parameterService.getAllParameters());
 
-                ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext();
-                ctx.addBeanFactoryPostProcessor(configurer);
+            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(springContext);
+            ctx.addBeanFactoryPostProcessor(configurer);
 
-                if (registerEngine) {
-                    ctx.setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml",
-                            "classpath:/symmetric-jmx.xml" });
-                } else {
-                    ctx.setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml" });
-                }
-                ctx.refresh();
-
-                this.springContext = ctx;
+            if (registerEngine) {
+                ctx.setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml",
+                        "classpath:/symmetric-jmx.xml" });
+            } else {
+                ctx.setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml" });
             }
-            
+            ctx.refresh();
+
+            this.springContext = ctx;
+
             this.dataSource = platform.getDataSource();
 
             this.extensionPointManger = createExtensionPointManager(springContext);
