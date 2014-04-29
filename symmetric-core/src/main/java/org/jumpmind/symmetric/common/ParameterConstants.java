@@ -195,6 +195,8 @@ final public class ParameterConstants {
 
     public final static String NODE_ID_CREATOR_SCRIPT = "node.id.creator.script";
     public final static String NODE_ID_CREATOR_MAX_NODES = "node.id.creator.max.nodes";
+    
+    public final static String EXTERNAL_ID_IS_UNIQUE = "external.id.is.unique.enabled";
 
     public final static String CLUSTER_SERVER_ID = "cluster.server.id";
     public final static String CLUSTER_LOCKING_ENABLED = "cluster.lock.enabled";
