@@ -27,6 +27,7 @@ import java.util.List;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.springframework.context.ApplicationContext;
 
 public class ServerSymmetricEngine extends ClientSymmetricEngine {
 
@@ -34,6 +35,10 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
 
     public ServerSymmetricEngine(File propertiesFile) {
         super(propertiesFile);
+    }
+    
+    public ServerSymmetricEngine(File propertiesFile, ApplicationContext springContext) {
+        super(propertiesFile, springContext);
     }
     
     @Override

@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -124,6 +126,15 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public ClientSymmetricEngine(File propertiesFile) {
         this(propertiesFile, true);
     }
+    
+    public ClientSymmetricEngine(File propertiesFile, ApplicationContext springContext) {
+        super(true);
+        setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
+        this.propertiesFile = propertiesFile;
+        this.springContext = springContext;
+        this.init();
+                
+    }
 
     public ClientSymmetricEngine(Properties properties, boolean registerEngine) {
         super(registerEngine);
@@ -154,8 +165,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         try {
             super.init();
 
-            this.dataSource = platform.getDataSource();
-
             if (springContext == null) {
                 PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
                 configurer.setProperties(parameterService.getAllParameters());
@@ -173,6 +182,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
                 this.springContext = ctx;
             }
+            
+            this.dataSource = platform.getDataSource();
 
             this.extensionPointManger = createExtensionPointManager(springContext);
             this.extensionPointManger.register();
@@ -210,17 +221,16 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected IDatabasePlatform createDatabasePlatform(TypedProperties properties) {
-        IDatabasePlatform platform = createDatabasePlatform(properties, dataSource, Boolean.parseBoolean(System.getProperty(SystemConstants.SYSPROP_WAIT_FOR_DATABASE, "true")));
+        IDatabasePlatform platform = createDatabasePlatform(springContext, properties, dataSource, 
+                Boolean.parseBoolean(System.getProperty(SystemConstants.SYSPROP_WAIT_FOR_DATABASE, "true")));
         return platform;
     }
 
-    public static IDatabasePlatform createDatabasePlatform(TypedProperties properties,
+    public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
             DataSource dataSource, boolean waitOnAvailableDatabase) {
         if (dataSource == null) {
             String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);
-            if (StringUtils.isBlank(jndiName)) {
-                dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
-            } else {
+            if (StringUtils.isNotBlank(jndiName)) {
                 try {
                     log.info("Looking up datasource in jndi.  The jndi name is {}", jndiName);
                     JndiObjectFactoryBean jndiFactory = new JndiObjectFactoryBean();
@@ -236,6 +246,15 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 } catch (NamingException e) {
                     throw new SymmetricException("Could not locate the configured datasource in jndi.  The jndi name is %s", e, jndiName);
                 }
+            }
+            
+            String springBeanName = properties.getProperty(ParameterConstants.DB_SPRING_BEAN_NAME);
+            if (isNotBlank(springBeanName)) {
+                dataSource = (DataSource)springContext.getBean(springBeanName);
+            }
+            
+            if (dataSource == null) {
+                dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
             }
         }
         if (waitOnAvailableDatabase) {

@@ -24,6 +24,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
 public class SymmetricContextListener implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent sce) {
@@ -49,6 +51,12 @@ public class SymmetricContextListener implements ServletContextListener {
         
         engineHolder.setDeploymentType(ctx.getInitParameter(WebConstants.INIT_PARAM_DEPLOYMENT_TYPE));
         ctx.setAttribute(WebConstants.ATTR_ENGINE_HOLDER, engineHolder);
+        
+        String useWebApplicationContext = ctx.getInitParameter(WebConstants.INIT_SINGLE_USE_WEBAPP_CONTEXT);
+        if ("true".equals(useWebApplicationContext)) {
+            engineHolder.setSpringContext(WebApplicationContextUtils.getWebApplicationContext(sce.getServletContext()));
+        }
+        
         engineHolder.start();
     }
 

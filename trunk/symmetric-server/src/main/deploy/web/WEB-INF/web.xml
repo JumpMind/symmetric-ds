@@ -48,6 +48,13 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </context-param>
      -->
      
+     <!-- In order to use extension points defined in an existing spring context turn this setting on
+    <context-param>
+       <param-name>useWebApplicationContext</param-name>
+       <param-value>true</param-value>
+   </context-param>
+   -->     
+     
     <context-param>
         <param-name>deploymentType</param-name>
         <param-value>server</param-value>
