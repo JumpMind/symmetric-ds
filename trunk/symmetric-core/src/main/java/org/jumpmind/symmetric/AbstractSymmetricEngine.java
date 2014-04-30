@@ -247,14 +247,22 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected abstract SecurityServiceType getSecurityServiceType();
 
     protected void init() {
-        this.propertiesFactory = createTypedPropertiesFactory();
-        this.securityService = SecurityServiceFactory.create(getSecurityServiceType(), propertiesFactory.reload());
+        if (propertiesFactory == null) {
+            this.propertiesFactory = createTypedPropertiesFactory();
+        }
+
+        if (securityService == null) {
+            this.securityService = SecurityServiceFactory.create(getSecurityServiceType(),
+                    propertiesFactory.reload());
+        }
+        
         TypedProperties properties = this.propertiesFactory.reload();
+        
+        MDC.put("engineName", properties.get(ParameterConstants.ENGINE_NAME));
+        
         this.platform = createDatabasePlatform(properties);
         this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
-                ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
-
-        MDC.put("engineName", this.parameterService.getEngineName());
+                ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));        
 
         this.platform.setMetadataIgnoreCase(this.parameterService
                 .is(ParameterConstants.DB_METADATA_IGNORE_CASE));
