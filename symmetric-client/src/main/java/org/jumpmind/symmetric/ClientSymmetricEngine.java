@@ -163,14 +163,18 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     protected void init() {
         try {
-            super.init();
 
+            this.propertiesFactory = createTypedPropertiesFactory();
+            
+            this.securityService = SecurityServiceFactory.create(getSecurityServiceType(), propertiesFactory.reload());
+            TypedProperties properties = this.propertiesFactory.reload();
+            
             PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
-            configurer.setProperties(parameterService.getAllParameters());
-
+            configurer.setProperties(properties);
+            
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(springContext);
             ctx.addBeanFactoryPostProcessor(configurer);
-
+            
             if (registerEngine) {
                 ctx.setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml",
                         "classpath:/symmetric-jmx.xml" });
@@ -180,6 +184,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             ctx.refresh();
 
             this.springContext = ctx;
+            
+            super.init();
+
+
 
             this.dataSource = platform.getDataSource();
 
@@ -248,6 +256,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             
             String springBeanName = properties.getProperty(ParameterConstants.DB_SPRING_BEAN_NAME);
             if (isNotBlank(springBeanName)) {
+                log.info("Using datasource from spring.  The spring bean name is {}", springBeanName);
                 dataSource = (DataSource)springContext.getBean(springBeanName);
             }
             
