@@ -37,6 +37,7 @@
         <module>../symmetric-client</module>
         <module>../symmetric-server</module>
         <module>../symmetric-android</module>
+        <module>../symmetric-wrapper</module>
     </modules>
     <build>
         <plugins>

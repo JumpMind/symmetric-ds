@@ -84,6 +84,11 @@
             <artifactId>symmetric-ftp</artifactId>
         </dependency>        
         <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-wrapper</artifactId>
+            <scope>provided</scope>
+        </dependency>        
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
