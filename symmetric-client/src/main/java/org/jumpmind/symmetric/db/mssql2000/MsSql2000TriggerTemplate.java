@@ -28,6 +28,7 @@ import org.jumpmind.symmetric.db.mssql.MsSqlTriggerTemplate;
 public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
 
     public MsSql2000TriggerTemplate(ISymmetricDialect symmetricDialect) {
+        super(symmetricDialect);
         this.symmetricDialect = symmetricDialect;
 
         // @formatter:off

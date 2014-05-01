@@ -201,7 +201,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                     .findNodeSecurityWithLoadEnabled();
                             if (nodeSecurities != null) {
                                 boolean reverseLoadFirst = parameterService
-                                        .is(ParameterConstants.INTITAL_LOAD_REVERSE_FIRST);
+                                        .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
                                 for (NodeSecurity security : nodeSecurities) {                                    
                                     if (engine.getTriggerRouterService()
                                             .getActiveTriggerHistories().size() > 0) {

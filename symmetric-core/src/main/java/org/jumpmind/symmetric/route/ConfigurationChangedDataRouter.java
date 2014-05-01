@@ -143,7 +143,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                             if (eventType == DataEventType.UPDATE) {
                                 if ("1".equals(columnValues.get("REV_INITIAL_LOAD_ENABLED"))) {
                                     boolean reverseLoadQueued = engine.getParameterService().is(
-                                            ParameterConstants.INTITAL_LOAD_REVERSE_FIRST)
+                                            ParameterConstants.INITIAL_LOAD_REVERSE_FIRST)
                                             || "0".equals(columnValues.get("INITIAL_LOAD_ENABLED"));
                                     /*
                                      * Only send the update if the client is

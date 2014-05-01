@@ -486,7 +486,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
 
                     if (currentBatch.isExtractJobFlag() && currentBatch.getStatus() != Status.IG) {
-                        if (parameterService.is(ParameterConstants.INTITAL_LOAD_USE_EXTRACT_JOB)) {
+                        if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
                             if (currentBatch.getStatus() != Status.RQ && currentBatch.getStatus() != Status.IG
                                     && !isPreviouslyExtracted(currentBatch)) {
                                 /*
@@ -1569,7 +1569,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     overrideSelectSql);
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row rs) {
-                    String csvRow = rs.stringValue();
+                    
+                    String csvRow = null;
+                    if (symmetricDialect.getParameterService().is(
+                            ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
+                        csvRow = rs.stringValue();
+                    } else {
+                        String[] rowData = platform.getStringValues(
+                                symmetricDialect.getBinaryEncoding(), sourceTable.getColumns(), rs,
+                                false);
+                        csvRow = CsvUtils.escapeCsvData(rowData, '\0', '"');
+                    }
                     int commaCount = StringUtils.countMatches(csvRow, ",");
                     if (expectedCommaCount <= commaCount) {
                         Data data = new Data(0, null, csvRow, DataEventType.INSERT, triggerHistory
