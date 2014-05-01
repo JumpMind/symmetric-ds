@@ -1826,7 +1826,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
         
         int sizePos = nativeType.indexOf(SIZE_PLACEHOLDER);
-        StringBuffer sqlType = new StringBuffer();
+        StringBuilder sqlType = new StringBuilder();
 
         sqlType.append(sizePos >= 0 ? nativeType.substring(0, sizePos) : nativeType);
 
@@ -1868,7 +1868,12 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         sqlType.append(sizePos >= 0 ? nativeType.substring(sizePos + SIZE_PLACEHOLDER.length())
                 : "");
 
+        filterColumnSqlType(sqlType);
         return sqlType.toString();
+    }
+    
+    protected void filterColumnSqlType(StringBuilder sqlType) {
+        // Default is to not filter but allows subclasses to filter as needed.
     }
 
     /**
