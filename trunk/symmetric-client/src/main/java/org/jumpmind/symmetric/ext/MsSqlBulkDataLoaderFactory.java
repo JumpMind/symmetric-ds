@@ -57,7 +57,9 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory,
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
-        return DatabaseNamesConstants.MSSQL.equals(platform.getName());
+        return (DatabaseNamesConstants.MSSQL2000.equals(platform.getName())
+                || DatabaseNamesConstants.MSSQL2005.equals(platform.getName())
+                || DatabaseNamesConstants.MSSQL2008.equals(platform.getName()));
     }
 
 }

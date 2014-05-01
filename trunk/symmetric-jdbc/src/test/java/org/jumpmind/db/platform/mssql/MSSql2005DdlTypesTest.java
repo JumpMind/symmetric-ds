@@ -3,11 +3,11 @@ package org.jumpmind.db.platform.mssql;
 import org.jumpmind.db.AbstractDdlTypesTest;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
-public class MSSqlDdlTypesTest extends AbstractDdlTypesTest {
+public class MSSql2005DdlTypesTest extends AbstractDdlTypesTest {
 
     @Override
     protected String getName() {
-        return DatabaseNamesConstants.MSSQL;
+        return DatabaseNamesConstants.MSSQL2005;
     }
 
     @Override

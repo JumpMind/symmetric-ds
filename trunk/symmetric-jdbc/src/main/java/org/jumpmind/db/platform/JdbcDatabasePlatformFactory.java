@@ -43,8 +43,9 @@ import org.jumpmind.db.platform.hsqldb2.HsqlDb2DatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
 import org.jumpmind.db.platform.interbase.InterbaseDatabasePlatform;
 import org.jumpmind.db.platform.mariadb.MariaDBDatabasePlatform;
-import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
-import org.jumpmind.db.platform.mssql2000.MsSql2000DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
@@ -86,10 +87,11 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "HSQL Database Engine2", HsqlDb2DatabasePlatform.class);
         addPlatform(platforms, "Interbase", InterbaseDatabasePlatform.class);
         addPlatform(platforms, "MariaDB", MariaDBDatabasePlatform.class);
-        addPlatform(platforms, "MsSQL", MsSqlDatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server8", MsSql2000DatabasePlatform.class);
-        addPlatform(platforms, "microsoft sql server11", MsSqlDatabasePlatform.class);
-        addPlatform(platforms, "microsoft sql server", MsSqlDatabasePlatform.class);
+        addPlatform(platforms, "microsoft sql server9", MsSql2005DatabasePlatform.class);
+        addPlatform(platforms, "microsoft sql server10", MsSql2008DatabasePlatform.class);
+        addPlatform(platforms, "microsoft sql server11", MsSql2008DatabasePlatform.class);
+        addPlatform(platforms, "microsoft sql server", MsSql2008DatabasePlatform.class);
         addPlatform(platforms, "MySQL", MySqlDatabasePlatform.class);
         addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
         addPlatform(platforms, "PostgreSql", PostgreSqlDatabasePlatform.class);
@@ -107,8 +109,9 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(HsqlDbDatabasePlatform.JDBC_SUBPROTOCOL, HsqlDbDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(InterbaseDatabasePlatform.JDBC_SUBPROTOCOL,
                 InterbaseDatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(MsSqlDatabasePlatform.JDBC_SUBPROTOCOL, MsSqlDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MsSql2000DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2000DatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(MsSql2005DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2005DatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(MsSql2008DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2008DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MySqlDatabasePlatform.JDBC_SUBPROTOCOL, MySqlDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_THIN,
                 OracleDatabasePlatform.class);

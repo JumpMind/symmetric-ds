@@ -1380,7 +1380,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                             data.setNoBinaryOldData(requiresLobSelectedFromSource
                                     || symmetricDialect.getName().equals(
-                                            DatabaseNamesConstants.MSSQL));
+                                            DatabaseNamesConstants.MSSQL2000)
+                                    || symmetricDialect.getName().equals(
+                                            DatabaseNamesConstants.MSSQL2005)
+                                    || symmetricDialect.getName().equals(
+                                            DatabaseNamesConstants.MSSQL2008));
                             
                             outgoingBatch.incrementDataEventCount();
                         } else {

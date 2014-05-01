@@ -82,7 +82,7 @@ abstract public class AbstractDdlTypesTest {
             assertNotNull(column2);
             PlatformColumn pColumn2 = column2.findPlatformColumn(getName());
             assertNotNull(pColumn2);
-            assertEquals(pColumn1.getType(), pColumn2.getType());
+            assertEquals("Column types not equals for column " + column1.getName(), pColumn1.getType(), pColumn2.getType());
             assertEquals(pColumn1.getSize(), pColumn2.getSize());
             assertEquals(pColumn1.getDecimalDigits(), pColumn2.getDecimalDigits());
         }

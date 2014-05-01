@@ -5,7 +5,9 @@ import java.util.List;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -34,7 +36,10 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
     }
 
     protected boolean shouldTestRun(IDatabasePlatform platform) {
-        return platform != null && platform instanceof MsSqlDatabasePlatform;
+        return platform != null && (
+                platform instanceof MsSql2000DatabasePlatform || 
+                platform instanceof MsSql2005DatabasePlatform || 
+                platform instanceof MsSql2008DatabasePlatform);
     }
 
     protected long writeData(List<CsvData> data) {
