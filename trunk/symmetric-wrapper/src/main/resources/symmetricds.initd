@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# ${wrapper.displayname}
+#
+# chkconfig: 235 20 80
+# description: ${wrapper.description}
+
+### BEGIN INIT INFO
+# Provides:          ${wrapper.name}
+# Required-Start:    networking
+# Required-Stop:     networking
+# Default-Start:     2 3 5
+# Default-Stop:      0 1 6
+# Short-Description: ${wrapper.displayname}
+# Description:       ${wrapper.description}
+### END INIT INFO
+
+CLASSPATH="${wrapper.classpath}"
+MAINCLASS="${wrapper.mainclass}"
+PROP="${wrapper.propfile}"
+JAVA="${wrapper.java.command}"
+export CLASSPATH
+
+case "$1" in
+   start)
+      "$JAVA" "$MAINCLASS" start "$PROP"
+      ;;
+   stop)
+      "$JAVA" "$MAINCLASS" stop "$PROP"
+      ;;
+   status)
+      "$JAVA" "$MAINCLASS" status "$PROP"
+      ;;
+   restart|reload)
+      "$JAVA" "$MAINCLASS" reload "$PROP"
+      ;;
+   *)
+      echo "Usage: $0 {start|stop|restart|reload|status}"
+      exit 1
+esac
+
+exit $?
