@@ -691,4 +691,12 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     protected String createUniqueIdentifier() {
         return new UID().toString().replace(':', '_').replace('-', '_');
     }
+    
+    @Override
+    protected void filterColumnSqlType(StringBuilder sqlType) {
+        int identityIndex = sqlType.indexOf("identity");
+        if (identityIndex > 0) {
+            sqlType.replace(identityIndex, sqlType.length(), "");
+        }
+    }
 }
