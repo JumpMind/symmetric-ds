@@ -29,6 +29,8 @@ import java.util.jar.Manifest;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Follow the Apache versioning scheme documented <a
@@ -36,8 +38,7 @@ import org.apache.commons.lang.StringUtils;
  */
 abstract public class AbstractVersion {
 
-    final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory
-            .getLog(getClass());
+    final Logger log = LoggerFactory.getLogger(getClass());
 
     public static final int MAJOR_INDEX = 0;
 
