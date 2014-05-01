@@ -35,7 +35,9 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
-import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
@@ -620,7 +622,9 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         
         if (values[5] != null
                 && (!(platform instanceof OracleDatabasePlatform
-                        || platform instanceof MsSqlDatabasePlatform 
+                        || platform instanceof MsSql2000DatabasePlatform 
+                        || platform instanceof MsSql2005DatabasePlatform 
+                        || platform instanceof MsSql2008DatabasePlatform 
                         || platform instanceof AseDatabasePlatform
                         || platform instanceof SqlAnywhereDatabasePlatform))) {
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");

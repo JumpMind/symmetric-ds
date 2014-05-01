@@ -22,10 +22,20 @@ package org.jumpmind.db.platform.mssql;
 
 import java.sql.Types;
 
-public class MsSql10DdlBuilder extends MsSqlDdlBuilder {
+import org.jumpmind.db.platform.DatabaseNamesConstants;
+
+public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
     
-    public MsSql10DdlBuilder() {
+    public MsSql2008DdlBuilder(String databaseName) {
+        super(databaseName);
+    }
+    
+    public MsSql2008DdlBuilder() {
+        super(DatabaseNamesConstants.MSSQL2008);
+        
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.DATE);
+        databaseInfo.addNativeTypeMapping(Types.DATE, "TIME", Types.TIME);
+        // TODO add MSSQL 2008 types for time, datetimeoffset, and datetime2
     }
 
 }

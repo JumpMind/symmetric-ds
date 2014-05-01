@@ -203,7 +203,10 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                 (column.getJdbcTypeName().equals("smallmoney") 
                 || column.getJdbcTypeName().equals("money") 
                 || column.getJdbcTypeName().equals("timestamp")
-                || column.getJdbcTypeName().equals("uniqueidentifier"))) {
+                || column.getJdbcTypeName().equals("uniqueidentifier")
+                || column.getJdbcTypeName().equals("time")
+                || column.getJdbcTypeName().equals("datetime2")
+                || column.getJdbcTypeName().equals("date"))) {
             removePlatformSizeAndDecimal(column);
         }
         return column;

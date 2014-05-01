@@ -33,8 +33,9 @@ import org.jumpmind.db.platform.hsqldb2.HsqlDb2DatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
 import org.jumpmind.db.platform.interbase.InterbaseDatabasePlatform;
 import org.jumpmind.db.platform.mariadb.MariaDBDatabasePlatform;
-import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
-import org.jumpmind.db.platform.mssql2000.MsSql2000DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
@@ -93,7 +94,9 @@ public class JdbcSymmetricDialectFactory {
             dialect = new OracleSymmetricDialect(parameterService, platform);
         } else if (platform instanceof MsSql2000DatabasePlatform) {
             dialect = new MsSql2000SymmetricDialect(parameterService, platform);
-        } else if (platform instanceof MsSqlDatabasePlatform) {
+        } else if (platform instanceof MsSql2005DatabasePlatform) {
+            dialect = new MsSqlSymmetricDialect(parameterService, platform);
+        } else if (platform instanceof MsSql2008DatabasePlatform) {
             dialect = new MsSqlSymmetricDialect(parameterService, platform);
         } else if (platform instanceof GreenplumPlatform) {
             dialect = new GreenplumSymmetricDialect(parameterService, platform);
