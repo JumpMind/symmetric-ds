@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.junit.Test;
 
@@ -173,6 +174,8 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     @Test
     public void testInitialLoadSql() throws Exception {
         ITriggerRouterService triggerRouterService = getTriggerRouterService();
+        IParameterService parameterService = getParameterService();
+        parameterService.saveParameter(ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED, true, "unittest");
         TriggerRouter triggerRouter = triggerRouterService
                 .getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true)
                 .iterator().next();

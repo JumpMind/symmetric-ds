@@ -774,4 +774,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public int getSqlTypeForIds() {
         return Types.NUMERIC;
     }
+    
+    @Override
+    public IParameterService getParameterService() {
+        return parameterService;
+    }
 }

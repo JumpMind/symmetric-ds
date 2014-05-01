@@ -517,7 +517,7 @@ public class DataService extends AbstractService implements IDataService {
             for (TriggerRouter triggerRouter : triggerRouters) {
                 if (triggerRouter.getInitialLoadOrder() >= 0
                         && engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)) {
-                    if (parameterService.is(ParameterConstants.INTITAL_LOAD_USE_EXTRACT_JOB)) {
+                    if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
                         Trigger trigger = triggerRouter.getTrigger();
                         String reloadChannel = getReloadChannelIdForTrigger(trigger, channels);
                         Channel channel = channels.get(reloadChannel);
