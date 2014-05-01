@@ -4,6 +4,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -16,6 +17,11 @@ public class MsSql2005DatabasePlatform extends MsSql2000DatabasePlatform {
      */
     public MsSql2005DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
+    }
+    
+    @Override
+    public IDdlBuilder getDdlBuilder() {
+        return new MsSql2005DdlBuilder(getName());
     }
     
     @Override

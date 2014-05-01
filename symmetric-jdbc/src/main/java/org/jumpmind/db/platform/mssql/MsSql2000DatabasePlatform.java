@@ -44,18 +44,11 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public MsSql2000DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-        // override the ddl builder based on the version
-        if (this.sqlTemplate.getDatabaseMajorVersion() >= 10) {
-            this.ddlBuilder = new MsSql2008DdlBuilder();
-        } else {
-            this.ddlBuilder = new MsSql2000DdlBuilder();    
-        }
-
     }
 
     @Override
     protected MsSql2000DdlBuilder createDdlBuilder() {      
-       return new MsSql2000DdlBuilder();    
+       return new MsSql2000DdlBuilder(getName());    
     }
 
     @Override
