@@ -2,6 +2,7 @@ package org.jumpmind.symmetric.wrapper;
 
 import java.lang.reflect.Field;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.symmetric.wrapper.Constants.Status;
 import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex;
 import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex.HANDLER_FUNCTION;
@@ -23,6 +24,7 @@ import com.sun.jna.platform.win32.Winsvc;
 import com.sun.jna.platform.win32.Winsvc.SC_HANDLE;
 
 // TODO: return RC instead of exiting
+@IgnoreJRERequirement
 public class WindowsService extends WrapperService {
 
     protected SERVICE_STATUS_HANDLE serviceStatusHandle;

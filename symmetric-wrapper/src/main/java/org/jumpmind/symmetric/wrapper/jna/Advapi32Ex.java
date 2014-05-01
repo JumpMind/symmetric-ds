@@ -3,6 +3,8 @@ package org.jumpmind.symmetric.wrapper.jna;
 import java.util.Arrays;
 import java.util.List;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
@@ -12,6 +14,7 @@ import com.sun.jna.platform.win32.Winsvc.SC_HANDLE;
 import com.sun.jna.platform.win32.Winsvc.SERVICE_STATUS;
 import com.sun.jna.win32.W32APIOptions;
 
+@IgnoreJRERequirement
 public interface Advapi32Ex extends Advapi32 {
     Advapi32Ex INSTANCE = (Advapi32Ex) Native.loadLibrary("Advapi32", Advapi32Ex.class,
             W32APIOptions.UNICODE_OPTIONS);

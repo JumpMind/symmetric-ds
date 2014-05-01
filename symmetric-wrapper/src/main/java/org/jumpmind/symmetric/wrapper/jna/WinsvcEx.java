@@ -3,10 +3,13 @@ package org.jumpmind.symmetric.wrapper.jna;
 import java.util.Arrays;
 import java.util.List;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.platform.win32.Winsvc;
 
+@IgnoreJRERequirement
 public interface WinsvcEx extends Winsvc {
 
     int SERVICE_WIN32_OWN_PROCESS = 0x00000010;
