@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -47,7 +48,7 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
-    protected MsSql2000DdlBuilder createDdlBuilder() {      
+    protected IDdlBuilder createDdlBuilder() {      
        return new MsSql2000DdlBuilder(getName());    
     }
 
