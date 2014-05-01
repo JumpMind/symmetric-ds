@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.symmetric.wrapper.jna.CLibrary;
 
+@IgnoreJRERequirement
 public class UnixService extends WrapperService {
 
     private static final String PROC_DIR = "/proc/";
