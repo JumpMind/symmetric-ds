@@ -256,7 +256,7 @@ public class Channel implements Serializable {
     }
     
     public boolean isFileSyncFlag() {
-        return fileSyncFlag || Constants.CHANNEL_FILESYNC.equals(channelId);
+        return fileSyncFlag;
     }
     
     public void setReloadFlag(boolean reloadFlag) {
@@ -264,7 +264,7 @@ public class Channel implements Serializable {
     }
     
     public boolean isReloadFlag() {
-        return reloadFlag || Constants.CHANNEL_RELOAD.equals(channelId);
+        return reloadFlag;
     }
     
     @Override
