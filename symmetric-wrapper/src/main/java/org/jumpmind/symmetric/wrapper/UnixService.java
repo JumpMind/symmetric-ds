@@ -13,8 +13,6 @@ import org.jumpmind.symmetric.wrapper.jna.CLibrary;
 @IgnoreJRERequirement
 public class UnixService extends WrapperService {
 
-    private static final String PROC_DIR = "/proc/";
-
     private static final String[] RUN_LEVELS_START = new String[] { "2", "3", "5" };
 
     private static final String[] RUN_LEVELS_STOP = new String[] { "0", "1", "6" };
@@ -120,12 +118,7 @@ public class UnixService extends WrapperService {
 
     @Override
     protected boolean isPidRunning(int pid) {
-        boolean isRunning = false;
-        if (pid != 0) {
-            File procFile = new File(PROC_DIR + pid);
-            isRunning = procFile.exists();
-        }
-        return isRunning;
+        return pid != 0 && CLibrary.INSTANCE.kill(pid, 0) == 0;
     }
 
     @Override
@@ -147,7 +140,6 @@ public class UnixService extends WrapperService {
 
     @Override
     protected void killProcess(int pid, boolean isTerminate) {
-        int signal = isTerminate ? 9 : 1;
-        CLibrary.INSTANCE.kill(pid, signal);
+        CLibrary.INSTANCE.kill(pid, isTerminate ? 9 : 1);
     }
 }
