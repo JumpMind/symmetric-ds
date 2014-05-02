@@ -65,6 +65,22 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
     
     @Override
+    public boolean createOrAlterTablesIfNecessary(String... tableNames) {
+        boolean altered = super.createOrAlterTablesIfNecessary(tableNames);
+        ISqlTemplate sqlTemplate = platform.getSqlTemplate();        
+        String tablePrefix = getTablePrefix();
+        if (sqlTemplate
+                .queryForInt("select count(*) from sys.indexes i inner join sys.tables t on t.object_id=i.object_id where t.name in ('"+tablePrefix.toLowerCase()+"_data', '"+tablePrefix.toLowerCase()+"_data_event') and (i.allow_row_locks !='true' or t.lock_escalation != 1)") > 0) {
+            log.info("Updating indexes to prevent lock escalation");
+            sqlTemplate.update("ALTER INDEX ALL ON "+tablePrefix.toUpperCase()+"_DATA SET (ALLOW_ROW_LOCKS = ON)");
+            sqlTemplate.update("ALTER INDEX ALL ON "+tablePrefix.toUpperCase()+"_DATA_EVENT SET (ALLOW_ROW_LOCKS = ON)");
+            sqlTemplate.update("ALTER TABLE "+tablePrefix.toUpperCase()+"_DATA SET (LOCK_ESCALATION = DISABLE)");
+            sqlTemplate.update("ALTER TABLE "+tablePrefix.toUpperCase()+"_DATA_EVENT SET (LOCK_ESCALATION = DISABLE)");
+        }
+        return altered;
+    }
+    
+    @Override
     public void verifyDatabaseIsCompatible() {
         super.verifyDatabaseIsCompatible();
         ISqlTemplate template = getPlatform().getSqlTemplate();
