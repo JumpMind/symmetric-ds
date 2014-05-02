@@ -1238,7 +1238,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             		(sourceSchemaName == null || sourceSchemaName.equals(table.getSchema()))) {
                 return true;
             } else if (ignoreCase && trigger.getSourceTableName().equalsIgnoreCase(table.getName())
-            		&& sourceCatalogName.equalsIgnoreCase(table.getCatalog()) && sourceSchemaName.equalsIgnoreCase(table.getSchema())) {
+            		&& (sourceCatalogName == null || sourceCatalogName.equalsIgnoreCase(table.getCatalog())) 
+            		&& (sourceSchemaName == null || sourceSchemaName.equalsIgnoreCase(table.getSchema()))) {
                 return true;
             }
         }
