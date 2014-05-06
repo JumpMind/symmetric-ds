@@ -24,28 +24,39 @@ public class Wrapper {
             System.exit(Constants.RC_FAIL_READ_CONFIG_FILE);
         }
 
-        if (args[0].equalsIgnoreCase("start")) {
-            service.start();
-        } else if (args[0].equalsIgnoreCase("exec")) {
-            service.execJava(false);
-        } else if (args[0].equalsIgnoreCase("init")) {
-            service.init();
-        } else if (args[0].equalsIgnoreCase("stop")) {
-            service.stop();
-        } else if (args[0].equalsIgnoreCase("restart")) {    
-            service.restart();
-        } else if (args[0].equalsIgnoreCase("install")) {
-            service.install();
-        } else if (args[0].equalsIgnoreCase("uninstall")) {
-            service.uninstall();
-        } else if (args[0].equalsIgnoreCase("status")) {
-            service.status();
-        } else if (args[0].equalsIgnoreCase("console")) {
-            service.console();
-        } else {
-            System.out.println("ERROR: Invalid argument");
-            printUsage();
-            System.exit(Constants.RC_INVALID_ARGUMENT);
+        try {
+            if (args[0].equalsIgnoreCase("start")) {
+                service.start();
+            } else if (args[0].equalsIgnoreCase("exec")) {
+                service.execJava(false);
+            } else if (args[0].equalsIgnoreCase("init")) {
+                service.init();
+            } else if (args[0].equalsIgnoreCase("stop")) {
+                service.stop();
+            } else if (args[0].equalsIgnoreCase("restart")) {    
+                service.restart();
+            } else if (args[0].equalsIgnoreCase("install")) {
+                service.install();
+            } else if (args[0].equalsIgnoreCase("uninstall")) {
+                service.uninstall();
+            } else if (args[0].equalsIgnoreCase("status")) {
+                service.status();
+            } else if (args[0].equalsIgnoreCase("console")) {
+                service.console();
+            } else {
+                System.out.println("ERROR: Invalid argument");
+                printUsage();
+                System.exit(Constants.RC_INVALID_ARGUMENT);
+            }
+        } catch (WrapperException e) {
+            System.out.println("Error " + e.getErrorCode() + ": " + e.getMessage());
+            if (e.getCause() != null) {
+                System.out.println("Exception " + e.getCause().getClass().getSimpleName() + ": "
+                        + e.getCause().getMessage());
+            }
+            if (e.getNativeErrorCode() > 0) {
+                System.out.println("Native error " + e.getErrorCode());    
+            }            
         }
     }
 

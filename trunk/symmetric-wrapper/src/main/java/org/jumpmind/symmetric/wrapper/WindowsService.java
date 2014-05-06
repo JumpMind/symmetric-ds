@@ -16,14 +16,11 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Advapi32;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.Kernel32Util;
-import com.sun.jna.platform.win32.Tlhelp32;
-import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.Winsvc;
 import com.sun.jna.platform.win32.Winsvc.SC_HANDLE;
 
-// TODO: return RC instead of exiting
 @IgnoreJRERequirement
 public class WindowsService extends WrapperService {
 
@@ -52,8 +49,7 @@ public class WindowsService extends WrapperService {
         if (!isInstalled()) {
             super.start();
         } else if (isRunning()) {
-            System.out.println("Server is already running");
-            System.exit(Constants.RC_SERVER_ALREADY_RUNNING);
+            throw new WrapperException(Constants.RC_SERVER_ALREADY_RUNNING, 0, "Server is already running");
         } else {
             Advapi32Ex advapi = Advapi32Ex.INSTANCE;
             SC_HANDLE manager = openServiceManager();
@@ -62,12 +58,12 @@ public class WindowsService extends WrapperService {
             if (service != null) {
                 System.out.println("Waiting for server to start");
                 if (!advapi.StartService(service, 0, null)) {
-                    displayError("StartService");
+                    throwException("StartService");
                 }
                 advapi.CloseServiceHandle(service);
                 System.out.println("Started");
             } else {
-                displayError("OpenService");
+                throwException("OpenService");
             }
             advapi.CloseServiceHandle(manager);
         }
@@ -78,8 +74,7 @@ public class WindowsService extends WrapperService {
         if (!isInstalled()) {
             super.stop();
         } else if (!isRunning()) {
-            System.out.println("Server is not running");
-            System.exit(Constants.RC_SERVER_NOT_RUNNING);
+            throw new WrapperException(Constants.RC_SERVER_NOT_RUNNING, 0, "Server is not running");
         } else {
             Advapi32Ex advapi = Advapi32Ex.INSTANCE;
             SC_HANDLE manager = openServiceManager();
@@ -88,12 +83,12 @@ public class WindowsService extends WrapperService {
             if (service != null) {
                 System.out.println("Waiting for server to stop");
                 if (!advapi.ControlService(service, Winsvc.SERVICE_CONTROL_STOP, new Winsvc.SERVICE_STATUS())) {
-                    displayError("ControlService");
+                    throwException("ControlService");
                 }
                 advapi.CloseServiceHandle(service);
                 System.out.println("Stopped");
             } else {
-                displayError("OpenService");
+                throwException("OpenService");
             }
             advapi.CloseServiceHandle(manager);
         }
@@ -104,19 +99,13 @@ public class WindowsService extends WrapperService {
         boolean isRunning = false;
         if (pid != 0) {
             Kernel32 kernel = Kernel32.INSTANCE;
-            WinDef.DWORD processId = new WinDef.DWORD(pid);
-            Tlhelp32.PROCESSENTRY32.ByReference processEntry = new Tlhelp32.PROCESSENTRY32.ByReference();
-            HANDLE snapshot = kernel.CreateToolhelp32Snapshot(Tlhelp32.TH32CS_SNAPPROCESS, new WinDef.DWORD(0));
-            try {
-                while (kernel.Process32Next(snapshot, processEntry)) {
-                    if (processEntry.th32ProcessID.equals(processId)) {
-                        isRunning = true;
-                        break;
-                    }
-                }
-            } finally {
-                kernel.CloseHandle(snapshot);
+            HANDLE process = kernel.OpenProcess(Kernel32.SYNCHRONIZE, false, pid);
+            if (process == null) {
+                throwException("OpenProcess");
             }
+            int rc = kernel.WaitForSingleObject(process, 0);
+            kernel.CloseHandle(process);
+            isRunning = (rc == Kernel32.WAIT_TIMEOUT);
         }
         return isRunning;
     }
@@ -158,7 +147,7 @@ public class WindowsService extends WrapperService {
         Kernel32 kernel = Kernel32.INSTANCE;
         HANDLE processHandle = kernel.OpenProcess(WinNT.PROCESS_TERMINATE, true, pid);
         if (processHandle == null) {
-            displayError("OpenProcess");
+            throwException("OpenProcess");
         }
         kernel.TerminateProcess(processHandle, 99);
     }
@@ -175,8 +164,7 @@ public class WindowsService extends WrapperService {
         SC_HANDLE service = advapi.OpenService(manager, config.getName(), Winsvc.SERVICE_ALL_ACCESS);
 
         if (service != null) {
-            System.out.println("Service " + config.getName() + " is already installed");
-            System.exit(Constants.RC_ALREADY_INSTALLED);
+            throw new WrapperException(Constants.RC_ALREADY_INSTALLED, 0, "Service " + config.getName() + " is already installed");
         } else {
             System.out.println("Installing " + config.getName() + " ...");
 
@@ -190,7 +178,7 @@ public class WindowsService extends WrapperService {
                 advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_DESCRIPTION, desc);
                 advapi.CloseServiceHandle(service);
             } else {
-                displayError("CreateService");
+                throwException("CreateService");
             }
 
             advapi.CloseServiceHandle(manager);
@@ -201,8 +189,7 @@ public class WindowsService extends WrapperService {
     @Override
     public void uninstall() {
         if (isRunning()) {
-            System.out.println("Server must be stopped before uninstalling");
-            System.exit(Constants.RC_NO_INSTALL_WHEN_RUNNING);
+            throw new WrapperException(Constants.RC_NO_INSTALL_WHEN_RUNNING, 0, "Server must be stopped before uninstalling");
         }
 
         Advapi32Ex advapi = Advapi32Ex.INSTANCE;
@@ -211,13 +198,12 @@ public class WindowsService extends WrapperService {
         if (service != null) {
             System.out.println("Uninstalling " + config.getName() + " ...");
             if (!advapi.DeleteService(service)) {
-                displayError("DeleteService");
+                throwException("DeleteService");
             }
             advapi.CloseServiceHandle(service);
             System.out.println("Done");
         } else {
-            System.out.println("Service " + config.getName() + " is not installed");
-            System.exit(Constants.RC_NOT_INSTALLED);
+            throw new WrapperException(Constants.RC_NOT_INSTALLED, 0, "Service " + config.getName() + " is not installed");
         }
         advapi.CloseServiceHandle(manager);
     }
@@ -226,7 +212,7 @@ public class WindowsService extends WrapperService {
         Advapi32 advapi = Advapi32.INSTANCE;
         SC_HANDLE handle = advapi.OpenSCManager(null, null, Winsvc.SC_MANAGER_ALL_ACCESS);
         if (handle == null) {
-            displayError("OpenSCManager");
+            throwException("OpenSCManager");
         }
         return handle;
     }
@@ -255,16 +241,15 @@ public class WindowsService extends WrapperService {
             serviceStatus.dwCurrentState = status;
             serviceStatus.dwControlsAccepted = controlsAccepted;
             if (!advapi.SetServiceStatus(serviceStatusHandle.getPointer(), serviceStatus)) {
-                displayError("SetServiceStatus");
+                throwException("SetServiceStatus");
             }
         }
     }
 
-    protected void displayError(String name) {
+    protected void throwException(String name) {
         int rc = Native.getLastError();
-        System.out.println(name + " failed with error code: " + rc);
-        System.out.println(Kernel32Util.formatMessageFromLastErrorCode(rc));
-        System.exit(rc);
+        throw new WrapperException(Constants.RC_NATIVE_ERROR, rc, name + " returned error " + rc + ": "
+                + Kernel32Util.formatMessageFromLastErrorCode(rc));
     }
 
     protected String getWrapperCommandQuote() {

@@ -21,5 +21,9 @@ public class Constants {
     public static final int RC_FAIL_REGISTER_SERVICE = 13;
     public static final int RC_MUST_BE_ROOT = 14;
     public static final int RC_MISSING_INIT_FOLDER = 15;
-
+    public static final int RC_SERVER_EXITED = 16;
+    public static final int RC_FAIL_INSTALL = 17;
+    public static final int RC_FAIL_UNINSTALL = 18;
+    public static final int RC_NATIVE_ERROR = 19;
+    
 }

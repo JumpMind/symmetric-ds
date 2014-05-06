@@ -30,7 +30,7 @@ public abstract class WrapperService {
 
     private static WrapperService instance;
 
-    public static WrapperService getInstance() throws IOException {
+    public static WrapperService getInstance() {
         if (Platform.isWindows()) {
             instance = new WindowsService();
         } else {
@@ -46,8 +46,7 @@ public abstract class WrapperService {
 
     public void start() {
         if (isRunning()) {
-            System.out.println("Server is already running");
-            System.exit(Constants.RC_SERVER_ALREADY_RUNNING);
+            throw new WrapperException(Constants.RC_SERVER_ALREADY_RUNNING, 0, "Server is already running");
         }
 
         System.out.print("Waiting for server to start");
@@ -68,7 +67,7 @@ public abstract class WrapperService {
         if (success) {
             System.out.println("Started");
         } else {
-            System.out.println("Error occurred, rc=" + rc);
+            throw new WrapperException(Constants.RC_FAIL_EXECUTION, rc, "Failed second stage");
         }
     }
 
@@ -78,8 +77,7 @@ public abstract class WrapperService {
 
     public void console() {
         if (isRunning()) {
-            System.out.println("Server is already running");
-            System.exit(Constants.RC_SERVER_ALREADY_RUNNING);
+            throw new WrapperException(Constants.RC_SERVER_ALREADY_RUNNING, 0, "Server is already running");
         }
         execJava(true);
     }
@@ -88,9 +86,7 @@ public abstract class WrapperService {
         try {
             logWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(config.getLogFile())));
         } catch (IOException e) {
-            System.out.println("Cannot open log file " + config.getLogFile());
-            System.out.println(e.getMessage());
-            System.exit(Constants.RC_FAIL_WRITE_LOG_FILE);
+            throw new WrapperException(Constants.RC_FAIL_WRITE_LOG_FILE, 0, "Cannot open log file " + config.getLogFile(), e);
         }
 
         int pid = getCurrentPid();
@@ -121,7 +117,7 @@ public abstract class WrapperService {
                 } catch (IOException e) {
                     log("Failed to execute: " + e.getMessage());
                     updateStatus(Status.STOPPED);
-                    System.exit(Constants.RC_FAIL_EXECUTION);
+                    throw new WrapperException(Constants.RC_FAIL_EXECUTION, -1, "Failed executing server", e);
                 }
 
                 serverPid = getProcessPid(child);
@@ -163,7 +159,7 @@ public abstract class WrapperService {
                     if (System.currentTimeMillis() - startTime < 5000) {
                         log("Stopping because server exited too quickly after only " + runTime + " milliseconds");
                         updateStatus(Status.STOPPED);
-                        System.exit(child.exitValue());
+                        throw new WrapperException(Constants.RC_SERVER_EXITED, child.exitValue(), "Unexpected exit from server");
                     } else {
                         startProcess = true;
                     }
@@ -176,12 +172,12 @@ public abstract class WrapperService {
         int symPid = readPidFromFile(config.getSymPidFile());
         int wrapperPid = readPidFromFile(config.getWrapperPidFile());
         if (!isPidRunning(symPid) && !isPidRunning(wrapperPid)) {
-            System.out.println("Server is not running");
-            System.exit(Constants.RC_SERVER_NOT_RUNNING);
+            throw new WrapperException(Constants.RC_SERVER_NOT_RUNNING, 0, "Server is not running");
         }
         System.out.print("Waiting for server to stop");
-        stopProcess(wrapperPid, "wrapper");
-        stopProcess(symPid, "symmetricds");
+        if (!(stopProcess(wrapperPid, "wrapper") && stopProcess(symPid, "symmetricds"))) {
+            throw new WrapperException(Constants.RC_FAIL_STOP_SERVER, 0, "Server did not stop");
+        }
         System.out.println("Stopped");
     }
     
