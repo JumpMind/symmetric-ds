@@ -36,8 +36,7 @@ public class UnixService extends WrapperService {
         String runFile = INITD_DIR + "/" + config.getName();
 
         if (CLibrary.INSTANCE.geteuid() != 0) {
-            System.out.println("Must be root to install");
-            System.exit(Constants.RC_MUST_BE_ROOT);
+            throw new WrapperException(Constants.RC_MUST_BE_ROOT, 0, "Must be root to install");
         }
         System.out.println("Installing " + config.getName() + " ...");
 
@@ -60,7 +59,7 @@ public class UnixService extends WrapperService {
             reader.close();
             writer.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new WrapperException(Constants.RC_FAIL_INSTALL, 0, "Failed while writing run file", e);
         }
 
         new File(runFile).setExecutable(true, false);
@@ -82,8 +81,7 @@ public class UnixService extends WrapperService {
         String runFile = INITD_DIR + "/" + config.getName();
         
         if (CLibrary.INSTANCE.geteuid() != 0) {
-            System.out.println("Must be root to uninstall");
-            System.exit(Constants.RC_MUST_BE_ROOT);
+            throw new WrapperException(Constants.RC_MUST_BE_ROOT, 0, "Must be root to uninstall");
         }
 
         System.out.println("Uninstalling " + config.getName() + " ...");
@@ -105,8 +103,7 @@ public class UnixService extends WrapperService {
         } else if (new File(RC_DIR + "/rc0.d").exists()) {
             rcDir = RC_DIR;
         } else {
-            System.out.println("Unable to locate run level folders");
-            System.exit(Constants.RC_MISSING_INIT_FOLDER);
+            throw new WrapperException(Constants.RC_MISSING_INIT_FOLDER, 0, "Unable to locate run level folders");
         }
         return rcDir;
     }
