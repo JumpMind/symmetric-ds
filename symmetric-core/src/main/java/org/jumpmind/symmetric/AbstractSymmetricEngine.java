@@ -662,7 +662,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             if (table != null) {
                 // remove the links so the symmetric table trigger will be
                 // removed
-                List<NodeGroupLink> links = configurationService.getNodeGroupLinks();
+                List<NodeGroupLink> links = configurationService.getNodeGroupLinks(true);
                 for (NodeGroupLink nodeGroupLink : links) {
                     configurationService.deleteNodeGroupLink(nodeGroupLink);
                 }

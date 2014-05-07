@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -53,10 +52,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private Map<String, List<NodeChannel>> nodeChannelCache;
 
     private Map<String, Channel> channelsCache;
+    
+    private List<NodeGroupLink> nodeGroupLinksCache;
 
     private long channelCacheTime;
 
     private long nodeChannelCacheTime;
+    
+    private long nodeGroupLinkCacheTime;
 
     private List<Channel> defaultChannels;
     
@@ -150,8 +153,27 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return sqlTemplate.query(getSql("selectNodeGroupsSql"), new NodeGroupMapper());
     }
 
-    public List<NodeGroupLink> getNodeGroupLinks() {
-        return sqlTemplate.query(getSql("groupsLinksSql"), new NodeGroupLinkMapper());
+    public List<NodeGroupLink> getNodeGroupLinks(boolean refreshCache) {
+        if (refreshCache) {
+            nodeGroupLinkCacheTime = 0;
+        }
+        long cacheTimeoutInMs = parameterService
+                .getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
+        List<NodeGroupLink> links = nodeGroupLinksCache;
+        if (System.currentTimeMillis() - nodeGroupLinkCacheTime >= cacheTimeoutInMs
+                || links == null) {
+            synchronized (this) {
+                links = nodeGroupLinksCache;
+                if (System.currentTimeMillis() - nodeGroupLinkCacheTime >= cacheTimeoutInMs
+                        || links == null) {
+                    links = sqlTemplate.query(getSql("groupsLinksSql"), new NodeGroupLinkMapper());
+                    nodeGroupLinksCache = links;
+                    nodeGroupLinkCacheTime = System.currentTimeMillis();
+                }
+            }
+        }
+
+        return links;
     }
 
     public List<NodeGroupLink> getNodeGroupLinksFor(String sourceNodeGroupId) {
@@ -160,15 +182,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId) {
-        List<NodeGroupLink> links = getNodeGroupLinksFor(sourceNodeGroupId);
-        Iterator<NodeGroupLink> it = links.iterator();
-        while (it.hasNext()) {
-            NodeGroupLink nodeGroupLink = (NodeGroupLink) it.next();
-            if (!nodeGroupLink.getTargetNodeGroupId().equals(targetNodeGroupId)) {
-                it.remove();
+        List<NodeGroupLink> links = getNodeGroupLinks(false);
+        for (NodeGroupLink nodeGroupLink : links) {
+            if (nodeGroupLink.getTargetNodeGroupId().equals(targetNodeGroupId) &&
+                    nodeGroupLink.getSourceNodeGroupId().equals(sourceNodeGroupId)) {
+                return nodeGroupLink;
             }
         }
-        return links.size() > 0 ? links.get(0) : null;
+        return null;
     }
 
     public boolean isChannelInUse(String channelId) {
@@ -359,6 +380,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         synchronized (this) {
             nodeChannelCache = null;
             channelsCache = null;
+            nodeGroupLinksCache = null;
         }
     }
 

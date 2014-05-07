@@ -272,7 +272,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         List<NodeGroupLink> list = (List<NodeGroupLink>) routingContext.get(
                 NodeGroupLink.class.getName());
         if (list == null) {
-            list = engine.getConfigurationService().getNodeGroupLinks();
+            list = engine.getConfigurationService().getNodeGroupLinks(false);
             routingContext.put(NodeGroupLink.class.getName(), list);
         }
         return list;
