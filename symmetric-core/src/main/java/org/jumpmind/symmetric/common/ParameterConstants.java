@@ -99,6 +99,8 @@ final public class ParameterConstants {
     public final static String AUTO_CONFIGURE_EXTRA_TABLES = "auto.config.extra.tables.ddlutil.xml";
     public final static String AUTO_UPDATE_NODE_VALUES = "auto.update.node.values.from.properties";
 
+    public final static String INITIAL_LOAD_BEFORE_SQL = "initial.load.before.sql";
+    public final static String INITIAL_LOAD_AFTER_SQL = "initial.load.after.sql";
     public final static String INITIAL_LOAD_DELETE_BEFORE_RELOAD = "initial.load.delete.first";
     public final static String INITIAL_LOAD_DELETE_FIRST_SQL = "initial.load.delete.first.sql";
     public final static String INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
