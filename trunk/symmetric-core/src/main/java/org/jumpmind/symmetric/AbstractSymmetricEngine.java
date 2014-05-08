@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 import java.io.File;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -303,7 +305,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.dataLoaderService = new DataLoaderService(this);
         this.registrationService = new RegistrationService(parameterService, symmetricDialect,
                 nodeService, dataExtractorService, dataService, dataLoaderService,
-                transportManager, statisticManager, configurationService);
+                transportManager, statisticManager, configurationService, outgoingBatchService);
         this.acknowledgeService = new AcknowledgeService(parameterService, symmetricDialect,
                 outgoingBatchService, registrationService, stagingManager, this);
         this.pushService = new PushService(parameterService, symmetricDialect,
@@ -510,8 +512,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         triggerRouterService.syncTriggers();
 
                         if (parameterService
-                                .is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false) || StringUtils.isBlank(node.getDatabaseType()) ||
-                                ! node.getSyncUrl().equals(parameterService.getSyncUrl())) {
+                                .is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false) || isBlank(node.getDatabaseType()) ||
+                                !StringUtils.equals(node.getSyncUrl(),parameterService.getSyncUrl())) {
                             heartbeat(false);
                         }
 
