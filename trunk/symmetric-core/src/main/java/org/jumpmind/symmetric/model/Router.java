@@ -207,9 +207,9 @@ public class Router implements Serializable {
     public String createDefaultName() {
         if (nodeGroupLink != null) {
             return nodeGroupLink.getSourceNodeGroupId()
-            .toUpperCase()
+            .toLowerCase()
             + "_2_"
-            + nodeGroupLink.getTargetNodeGroupId().toUpperCase();
+            + nodeGroupLink.getTargetNodeGroupId().toLowerCase();
         } else {
             throw new IllegalStateException("Need the nodeGroupLink to be set");
         }
