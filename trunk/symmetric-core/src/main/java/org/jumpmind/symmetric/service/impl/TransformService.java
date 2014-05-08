@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.transform.ColumnPolicy;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.ParameterColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
@@ -63,6 +64,7 @@ public class TransformService extends AbstractService implements ITransformServi
         this.configurationService = configurationService;
         
         columnTransforms = TransformWriter.buildDefaultColumnTransforms();
+        addColumnTransform(new ParameterColumnTransform(parameterService));
 
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
