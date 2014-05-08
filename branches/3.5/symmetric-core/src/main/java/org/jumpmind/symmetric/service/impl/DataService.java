@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.sql.DataTruncation;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -330,6 +332,11 @@ public class DataService extends AbstractService implements IDataService {
             insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
                     triggerRoutersByHistoryId, transactional, transaction);
 
+            String afterSql = parameterService.getString(ParameterConstants.INITIAL_LOAD_AFTER_SQL);
+            if (isNotBlank(afterSql)) {
+                insertSqlEvent(transaction, targetNode, afterSql, true, loadId, createBy);
+            }
+
             insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional, transaction);
             
             callReloadListeners(false, targetNode, transactional, transaction);
@@ -410,6 +417,15 @@ public class DataService extends AbstractService implements IDataService {
                             "update %s_incoming_batch set status='OK', error_flag=0 where node_id='%s' and status != 'OK'",
                             tablePrefix, engine.getNodeService().findIdentityNodeId()), true,
                     loadId, createBy);
+        }
+        
+        String beforeSql = parameterService.getString(ParameterConstants.INITIAL_LOAD_BEFORE_SQL);
+        if (isNotBlank(beforeSql)) {
+            insertSqlEvent(
+                    transaction,
+                    targetNode,
+                    beforeSql, true,
+                    loadId, createBy);            
         }
     }
     
