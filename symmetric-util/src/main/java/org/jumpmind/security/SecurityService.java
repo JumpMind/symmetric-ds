@@ -198,7 +198,9 @@ public class SecurityService implements ISecurityService {
     }
 
     protected KeyStore getKeyStore(String password) throws Exception {
-        KeyStore ks = KeyStore.getInstance(SecurityConstants.KEYSTORE_TYPE);
+        String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
+                SecurityConstants.KEYSTORE_TYPE);
+        KeyStore ks = KeyStore.getInstance(keyStoreType);
         FileInputStream is = new FileInputStream(
                 System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
         ks.load(is, password.toCharArray());
