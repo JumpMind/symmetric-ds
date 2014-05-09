@@ -65,6 +65,41 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
     
     @Override
+    public boolean createOrAlterTablesIfNecessary(String... tableNames) {
+        boolean altered = super.createOrAlterTablesIfNecessary(tableNames);
+        ISqlTemplate sqlTemplate = platform.getSqlTemplate();        
+        String tablePrefix = getTablePrefix();
+        try {
+            if (parameterService.is(ParameterConstants.MSSQL_ROW_LEVEL_LOCKS_ONLY, true) && sqlTemplate
+                    .queryForInt("select count(*) from sys.indexes i inner join sys.tables t on t.object_id=i.object_id where t.name in ('"
+                            + tablePrefix.toLowerCase()
+                            + "_outgoing_batch','"
+                            + tablePrefix.toLowerCase()
+                            + "_data', '"
+                            + tablePrefix.toLowerCase()
+                            + "_data_event') and (i.allow_row_locks !='true' or t.lock_escalation != 1)") > 0) {
+                log.info("Updating indexes to prevent lock escalation");
+                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
+                        + "_DATA SET (ALLOW_ROW_LOCKS = ON)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
+                        + "_DATA_EVENT SET (ALLOW_ROW_LOCKS = ON)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
+                        + "_OUTGOING_BATCH SET (ALLOW_ROW_LOCKS = ON)");
+                sqlTemplate.update("ALTER TABLE " + tablePrefix.toUpperCase()
+                        + "_DATA SET (LOCK_ESCALATION = DISABLE)");
+                sqlTemplate.update("ALTER TABLE " + tablePrefix.toUpperCase()
+                        + "_DATA_EVENT SET (LOCK_ESCALATION = DISABLE)");
+                sqlTemplate.update("ALTER TABLE " + tablePrefix.toUpperCase()
+                        + "_OUTGOING_BATCH SET (LOCK_ESCALATION = DISABLE)");
+            }
+        } catch (Exception e) {            
+            log.warn("Failed to disable lock escalation");
+            log.debug(e.getMessage(), e);
+        }
+        return altered;
+    }
+    
+    @Override
     public void verifyDatabaseIsCompatible() {
         super.verifyDatabaseIsCompatible();
         ISqlTemplate template = getPlatform().getSqlTemplate();
