@@ -53,6 +53,7 @@ import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
@@ -1536,7 +1537,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     overrideSelectSql);
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row rs) {
-                    String csvRow = rs.stringValue();
+                    String csvRow = null;
+                    if (parameterService.is(
+                            ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
+                        csvRow = rs.stringValue();
+                    } else {
+                        String[] rowData = platform.getStringValues(
+                                symmetricDialect.getBinaryEncoding(), sourceTable.getColumns(), rs,
+                                false);
+                        csvRow = CsvUtils.escapeCsvData(rowData, '\0', '"');
+                    }
                     int commaCount = StringUtils.countMatches(csvRow, ",");
                     if (expectedCommaCount <= commaCount) {
                         Data data = new Data(0, null, csvRow, DataEventType.INSERT, triggerHistory

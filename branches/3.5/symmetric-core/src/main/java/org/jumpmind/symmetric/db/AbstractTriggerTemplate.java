@@ -31,6 +31,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
@@ -119,11 +120,28 @@ abstract public class AbstractTriggerTemplate {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         Column[] columns = symmetricDialect.orderColumns(triggerHistory.getParsedColumnNames(),
                 table);
-        String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
-                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
-                false, channel, triggerRouter.getTrigger()).columnString;
 
-        sql = FormatUtils.replace("columns", columnsText, sql);
+        if (symmetricDialect.getParameterService().is(
+                ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
+            String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
+                    symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
+                    false, channel, triggerRouter.getTrigger()).columnString;
+            sql = FormatUtils.replace("columns", columnsText, sql);
+        } else {
+            StringBuilder columnList = new StringBuilder();
+            for (int i = 0; i < columns.length; i++) {
+                Column column = columns[i];
+                boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
+                if (!(isLob && triggerRouter.getTrigger().isUseStreamLobs())) {
+                    if (i > 0) {
+                        columnList.append(",");
+                    }
+                    columnList.append(SymmetricUtils.quote(symmetricDialect, column.getName()));
+                }
+            }
+            sql = FormatUtils.replace("columns", columnList.toString(), sql);
+        }
+        
         String initialLoadSelect = StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
                 : triggerRouter.getInitialLoadSelect();
         if (StringUtils.isNotBlank(overrideSelectSql)) {
