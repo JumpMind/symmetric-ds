@@ -50,6 +50,7 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.RegistrationFailedException;
@@ -75,6 +76,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private IDataLoaderService dataLoaderService;
 
     private ITransportManager transportManager;
+    
+    private IOutgoingBatchService outgoingBatchService;
 
     private RandomTimeSlot randomTimeSlot;
 
@@ -88,7 +91,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             ISymmetricDialect symmetricDialect, INodeService nodeService,
             IDataExtractorService dataExtractorService, IDataService dataService,
             IDataLoaderService dataLoaderService, ITransportManager transportManager,
-            IStatisticManager statisticManager, IConfigurationService configurationService) {
+            IStatisticManager statisticManager, IConfigurationService configurationService, IOutgoingBatchService outgoingBatchService) {
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.dataExtractorService = dataExtractorService;
@@ -97,6 +100,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         this.transportManager = transportManager;
         this.statisticManager = statisticManager;
         this.configurationService = configurationService;
+        this.outgoingBatchService = outgoingBatchService;
         this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(), 30);
         setSqlMap(new RegistrationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -127,11 +131,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
         return registerNode(preRegisteredNode, null, null, out, isRequestedRegistration);
     }
 
-    public void extractConfiguration(OutputStream out, Node registeredNode) {
+    protected void extractConfiguration(OutputStream out, Node registeredNode) {
         dataExtractorService.extractConfigurationStandalone(registeredNode, out);
     }
     
-    public Node processRegistration(Node nodePriorToRegistration, String remoteHost,
+    protected Node processRegistration(Node nodePriorToRegistration, String remoteHost,
             String remoteAddress, boolean isRequestedRegistration, String deploymentType)
             throws IOException {
 
@@ -266,6 +270,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 remoteAddress, isRequestedRegistration, null);
 
         if (processedNode.isSyncEnabled()) {
+            /*
+             * Mark all configuration batches as processed because we are about to reload
+             * the configuration for the node
+             */
+            outgoingBatchService.markAllConfigAsSentForNode(processedNode.getNodeId());
         	extractConfiguration(out, processedNode);
         }
         
