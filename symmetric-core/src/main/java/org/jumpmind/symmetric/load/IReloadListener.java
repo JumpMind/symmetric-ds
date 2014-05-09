@@ -30,8 +30,8 @@ import org.jumpmind.symmetric.model.Node;
  */
 public interface IReloadListener extends IExtensionPoint {
 
-    public void beforeReload(ISqlTransaction transaction, Node node);
+    public void beforeReload(ISqlTransaction transaction, Node node, long loadId);
 
-    public void afterReload(ISqlTransaction transaction , Node node);
+    public void afterReload(ISqlTransaction transaction , Node node, long loadId);
 
 }
