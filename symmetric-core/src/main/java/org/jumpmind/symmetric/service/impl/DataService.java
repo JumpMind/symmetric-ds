@@ -356,7 +356,7 @@ public class DataService extends AbstractService implements IDataService {
                     .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
                             targetNode.getNodeGroupId(), triggerHistories);
 
-            callReloadListeners(true, targetNode, transactional, transaction);
+            callReloadListeners(true, targetNode, transactional, transaction, loadId);
 
             insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy, transactional,
                     transaction);
@@ -377,7 +377,7 @@ public class DataService extends AbstractService implements IDataService {
 
             insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional, transaction);
             
-            callReloadListeners(false, targetNode, transactional, transaction);
+            callReloadListeners(false, targetNode, transactional, transaction, loadId);
 
             if (!reverse) {
                 nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false, false, loadId,
@@ -420,13 +420,13 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     private void callReloadListeners(boolean before, Node targetNode, boolean transactional,
-            ISqlTransaction transaction) {
+            ISqlTransaction transaction, long loadId) {
         if (reloadListeners != null) {
             for (IReloadListener listener : reloadListeners) {
                 if (before) {
-                    listener.beforeReload(transaction, targetNode);
+                    listener.beforeReload(transaction, targetNode, loadId);
                 } else {
-                    listener.afterReload(transaction, targetNode);
+                    listener.afterReload(transaction, targetNode, loadId);
                 }
 
                 if (!transactional) {
