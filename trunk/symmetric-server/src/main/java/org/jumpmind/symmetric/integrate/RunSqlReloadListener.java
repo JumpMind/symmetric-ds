@@ -35,15 +35,15 @@ public class RunSqlReloadListener implements IReloadListener, ISymmetricEngineAw
 
     private String sqlToRunAtTargetAfterReload;
 
-    public void afterReload(ISqlTransaction transaction, Node node) {
+    public void afterReload(ISqlTransaction transaction, Node node, long loadId) {
         if (StringUtils.isNotBlank(sqlToRunAtTargetAfterReload)) {
-            engine.getDataService().insertSqlEvent(transaction, node, sqlToRunAtTargetAfterReload, true, -1, null);
+            engine.getDataService().insertSqlEvent(transaction, node, sqlToRunAtTargetAfterReload, true, loadId, null);
         }
     }
 
-    public void beforeReload(ISqlTransaction transaction, Node node) {
+    public void beforeReload(ISqlTransaction transaction, Node node, long loadId) {
         if (StringUtils.isNotBlank(sqlToRunAtTargetBeforeReload)) {
-            engine.getDataService().insertSqlEvent(transaction, node, sqlToRunAtTargetBeforeReload, true, -1, null);
+            engine.getDataService().insertSqlEvent(transaction, node, sqlToRunAtTargetBeforeReload, true, loadId, null);
         }
     }
 
