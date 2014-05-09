@@ -119,6 +119,23 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         } while (batches.getBatches().size() > configCount);
     }
+    
+    public void markAllConfigAsSentForNode(String nodeId) {
+        int updateCount;
+        do {
+            updateCount = 0;
+            OutgoingBatches batches = getOutgoingBatches(nodeId, false);
+            List<OutgoingBatch> list = batches.getBatches();                       
+            for (OutgoingBatch outgoingBatch : list) {
+                if (outgoingBatch.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
+                    outgoingBatch.setStatus(Status.OK);
+                    outgoingBatch.setErrorFlag(false);
+                    updateOutgoingBatch(outgoingBatch);
+                    updateCount++;
+                }
+            }
+        } while (updateCount > 0);
+    }
 
     public void updateAbandonedRoutingBatches() {
         sqlTemplate.update(getSql("updateOutgoingBatchesStatusSql"), Status.NE.name(),

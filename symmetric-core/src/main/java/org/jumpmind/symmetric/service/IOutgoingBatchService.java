@@ -36,6 +36,8 @@ import org.jumpmind.symmetric.model.OutgoingBatches;
 public interface IOutgoingBatchService {
 
     public void markAllAsSentForNode(String nodeId, boolean includeConfigChannel);
+    
+    public void markAllConfigAsSentForNode(String nodeId);
 
     public void updateAbandonedRoutingBatches();
 
