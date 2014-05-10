@@ -203,15 +203,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId,
             boolean refreshCache) {
-        List<NodeGroupLink> links = getNodeGroupLinksFor(sourceNodeGroupId, refreshCache);
-        Iterator<NodeGroupLink> it = links.iterator();
-        while (it.hasNext()) {
-            NodeGroupLink nodeGroupLink = (NodeGroupLink) it.next();
-            if (!nodeGroupLink.getTargetNodeGroupId().equals(targetNodeGroupId)) {
-                it.remove();
+        List<NodeGroupLink> links = getNodeGroupLinks(refreshCache);
+        for (NodeGroupLink nodeGroupLink : links) {
+            if (nodeGroupLink.getTargetNodeGroupId().equals(targetNodeGroupId)
+                    && nodeGroupLink.getSourceNodeGroupId().equals(sourceNodeGroupId)) {
+                return nodeGroupLink;
             }
         }
-        return links.size() > 0 ? links.get(0) : null;
+        return null;
     }
 
     public boolean isChannelInUse(String channelId) {
