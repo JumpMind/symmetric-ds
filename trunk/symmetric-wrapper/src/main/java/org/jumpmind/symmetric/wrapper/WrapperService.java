@@ -49,7 +49,7 @@ public abstract class WrapperService {
             throw new WrapperException(Constants.RC_SERVER_ALREADY_RUNNING, 0, "Server is already running");
         }
 
-        System.out.print("Waiting for server to start");
+        System.out.println("Waiting for server to start");
         boolean success = false;
         int rc = 0;
         try {
@@ -60,7 +60,6 @@ public abstract class WrapperService {
             }
         } catch (IOException e) {
             rc = -1;
-            System.out.println("");
             System.out.println(e.getMessage());
         }
 
@@ -174,7 +173,7 @@ public abstract class WrapperService {
         if (!isPidRunning(symPid) && !isPidRunning(wrapperPid)) {
             throw new WrapperException(Constants.RC_SERVER_NOT_RUNNING, 0, "Server is not running");
         }
-        System.out.print("Waiting for server to stop");
+        System.out.println("Waiting for server to stop");
         if (!(stopProcess(wrapperPid, "wrapper") && stopProcess(symPid, "symmetricds"))) {
             throw new WrapperException(Constants.RC_FAIL_STOP_SERVER, 0, "Server did not stop");
         }
@@ -223,6 +222,14 @@ public abstract class WrapperService {
 
     public boolean isRunning() {
         return isPidRunning(readPidFromFile(config.getSymPidFile()));
+    }
+
+    public int getWrapperPid() {
+        return readPidFromFile(config.getWrapperPidFile());
+    }
+
+    public int getSymmetricPid() {
+        return readPidFromFile(config.getSymPidFile());
     }
 
     protected String commandToString(ArrayList<String> cmd) {

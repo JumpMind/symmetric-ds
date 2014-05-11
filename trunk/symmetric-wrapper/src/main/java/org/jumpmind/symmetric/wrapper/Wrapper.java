@@ -1,21 +1,35 @@
 package org.jumpmind.symmetric.wrapper;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class Wrapper {
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 2) {
+        if (args.length < 1) {
             printUsage();
             System.exit(Constants.RC_BAD_USAGE);
         }
 
+        String configFile = null;
+        if (args.length > 1) {
+            configFile = args[1];
+        } else {
+            String dir = System.getenv("SYM_HOME");
+            if (dir == null || dir.equals("")) {
+                System.out.println("Missing config file.  Either specify config file or define SYM_HOME environment variable.");
+                System.exit(Constants.RC_MISSING_CONFIG_FILE);    
+            } else {
+                configFile = dir + File.separator + "conf" + File.separator + "sym_service.conf";
+            }
+        }
+
         WrapperService service = WrapperService.getInstance();
         try {
-            service.loadConfig(args[1]);
+            service.loadConfig(configFile);
         } catch (FileNotFoundException e) {
-            System.out.println("Cannot find config file " + args[1]);
+            System.out.println("Missing config file " + args[1]);
             System.out.println(e.getMessage());
             System.exit(Constants.RC_MISSING_CONFIG_FILE);
         } catch (IOException e) {
@@ -61,7 +75,7 @@ public class Wrapper {
     }
 
     private static void printUsage() {
-        System.out.println("Usage: [start|stop|restart|install|remove|console] <config-file>");
+        System.out.println("Usage: <start|stop|restart|install|remove|console> [CONFIG-FILE]");
         System.out.println("   start      - Start service");
         System.out.println("   stop       - Stop service");
         System.out.println("   restart    - Restart service");

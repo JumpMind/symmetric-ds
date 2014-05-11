@@ -20,6 +20,8 @@ import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.Winsvc;
 import com.sun.jna.platform.win32.Winsvc.SC_HANDLE;
+import com.sun.jna.platform.win32.Winsvc.SC_STATUS_TYPE;
+import com.sun.jna.ptr.IntByReference;
 
 @IgnoreJRERequirement
 public class WindowsService extends WrapperService {
@@ -54,18 +56,24 @@ public class WindowsService extends WrapperService {
             Advapi32Ex advapi = Advapi32Ex.INSTANCE;
             SC_HANDLE manager = openServiceManager();
             SC_HANDLE service = advapi.OpenService(manager, config.getName(), Winsvc.SERVICE_ALL_ACCESS);
-
-            if (service != null) {
-                System.out.println("Waiting for server to start");
-                if (!advapi.StartService(service, 0, null)) {
-                    throwException("StartService");
+            try {
+                if (service != null) {
+                    System.out.println("Waiting for server to start");
+                    if (!advapi.StartService(service, 0, null)) {
+                        throwException("StartService");
+                    }
+                    Winsvc.SERVICE_STATUS_PROCESS status = waitForService(manager, service);
+                    if (status.dwCurrentState == Winsvc.SERVICE_STOPPED) {
+                        throw new WrapperException(Constants.RC_SERVER_EXITED, status.dwWin32ExitCode, "Unexpected exit from service");
+                    }
+                    System.out.println("Started");                
+                } else {
+                    throwException("OpenService");
                 }
-                advapi.CloseServiceHandle(service);
-                System.out.println("Started");
-            } else {
-                throwException("OpenService");
+            } finally {
+                closeServiceHandle(service);
+                closeServiceHandle(manager);
             }
-            advapi.CloseServiceHandle(manager);
         }
     }
 
@@ -79,18 +87,24 @@ public class WindowsService extends WrapperService {
             Advapi32Ex advapi = Advapi32Ex.INSTANCE;
             SC_HANDLE manager = openServiceManager();
             SC_HANDLE service = advapi.OpenService(manager, config.getName(), Winsvc.SERVICE_ALL_ACCESS);
-
-            if (service != null) {
-                System.out.println("Waiting for server to stop");
-                if (!advapi.ControlService(service, Winsvc.SERVICE_CONTROL_STOP, new Winsvc.SERVICE_STATUS())) {
-                    throwException("ControlService");
+            try {
+                if (service != null) {
+                    System.out.println("Waiting for server to stop");
+                    if (!advapi.ControlService(service, Winsvc.SERVICE_CONTROL_STOP, new Winsvc.SERVICE_STATUS())) {
+                        throwException("ControlService");
+                    }
+                    Winsvc.SERVICE_STATUS_PROCESS status = waitForService(manager, service);
+                    if (status.dwCurrentState != Winsvc.SERVICE_STOPPED) {
+                        throw new WrapperException(Constants.RC_FAIL_STOP_SERVER, status.dwWin32ExitCode, "Service did not stop");
+                    }
+                    System.out.println("Stopped");
+                } else {
+                    throwException("OpenService");
                 }
-                advapi.CloseServiceHandle(service);
-                System.out.println("Stopped");
-            } else {
-                throwException("OpenService");
+            } finally {
+                closeServiceHandle(service);
+                closeServiceHandle(manager);                
             }
-            advapi.CloseServiceHandle(manager);
         }
     }
 
@@ -100,12 +114,11 @@ public class WindowsService extends WrapperService {
         if (pid != 0) {
             Kernel32 kernel = Kernel32.INSTANCE;
             HANDLE process = kernel.OpenProcess(Kernel32.SYNCHRONIZE, false, pid);
-            if (process == null) {
-                throwException("OpenProcess");
+            if (process != null) {
+                int rc = kernel.WaitForSingleObject(process, 0);
+                kernel.CloseHandle(process);
+                isRunning = (rc == Kernel32.WAIT_TIMEOUT);
             }
-            int rc = kernel.WaitForSingleObject(process, 0);
-            kernel.CloseHandle(process);
-            isRunning = (rc == Kernel32.WAIT_TIMEOUT);
         }
         return isRunning;
     }
@@ -162,27 +175,29 @@ public class WindowsService extends WrapperService {
         Advapi32Ex advapi = Advapi32Ex.INSTANCE;
         SC_HANDLE manager = openServiceManager();
         SC_HANDLE service = advapi.OpenService(manager, config.getName(), Winsvc.SERVICE_ALL_ACCESS);
-
-        if (service != null) {
-            throw new WrapperException(Constants.RC_ALREADY_INSTALLED, 0, "Service " + config.getName() + " is already installed");
-        } else {
-            System.out.println("Installing " + config.getName() + " ...");
-
-            service = advapi.CreateService(manager, config.getName(), config.getDisplayName(), Winsvc.SERVICE_ALL_ACCESS,
-                    WinsvcEx.SERVICE_WIN32_OWN_PROCESS, config.isAutoStart() ? WinsvcEx.SERVICE_AUTO_START
-                            : WinsvcEx.SERVICE_DEMAND_START, WinsvcEx.SERVICE_ERROR_NORMAL,
-                    commandToString(getWrapperCommand("init")), null, null, null, null, null);
-
+        try {
             if (service != null) {
-                Advapi32Ex.SERVICE_DESCRIPTION desc = new Advapi32Ex.SERVICE_DESCRIPTION(config.getDescription());
-                advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_DESCRIPTION, desc);
-                advapi.CloseServiceHandle(service);
+                throw new WrapperException(Constants.RC_ALREADY_INSTALLED, 0, "Service " + config.getName() + " is already installed");
             } else {
-                throwException("CreateService");
+                System.out.println("Installing " + config.getName() + " ...");
+    
+                service = advapi.CreateService(manager, config.getName(), config.getDisplayName(), Winsvc.SERVICE_ALL_ACCESS,
+                        WinsvcEx.SERVICE_WIN32_OWN_PROCESS, config.isAutoStart() ? WinsvcEx.SERVICE_AUTO_START
+                                : WinsvcEx.SERVICE_DEMAND_START, WinsvcEx.SERVICE_ERROR_NORMAL,
+                        commandToString(getWrapperCommand("init")), null, null, null, null, null);
+    
+                if (service != null) {
+                    Advapi32Ex.SERVICE_DESCRIPTION desc = new Advapi32Ex.SERVICE_DESCRIPTION(config.getDescription());
+                    advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_DESCRIPTION, desc);
+                } else {
+                    throwException("CreateService");
+                }
+    
+                System.out.println("Done");
             }
-
-            advapi.CloseServiceHandle(manager);
-            System.out.println("Done");
+        } finally {
+            closeServiceHandle(service);
+            closeServiceHandle(manager);                
         }
     }
 
@@ -195,17 +210,20 @@ public class WindowsService extends WrapperService {
         Advapi32Ex advapi = Advapi32Ex.INSTANCE;
         SC_HANDLE manager = openServiceManager();
         SC_HANDLE service = advapi.OpenService(manager, config.getName(), Winsvc.SERVICE_ALL_ACCESS);
-        if (service != null) {
-            System.out.println("Uninstalling " + config.getName() + " ...");
-            if (!advapi.DeleteService(service)) {
-                throwException("DeleteService");
+        try {
+            if (service != null) {
+                System.out.println("Uninstalling " + config.getName() + " ...");
+                if (!advapi.DeleteService(service)) {
+                    throwException("DeleteService");
+                }
+                System.out.println("Done");
+            } else {
+                throw new WrapperException(Constants.RC_NOT_INSTALLED, 0, "Service " + config.getName() + " is not installed");
             }
-            advapi.CloseServiceHandle(service);
-            System.out.println("Done");
-        } else {
-            throw new WrapperException(Constants.RC_NOT_INSTALLED, 0, "Service " + config.getName() + " is not installed");
+        } finally {
+            closeServiceHandle(service);
+            closeServiceHandle(manager);                
         }
-        advapi.CloseServiceHandle(manager);
     }
 
     protected SC_HANDLE openServiceManager() {
@@ -246,6 +264,39 @@ public class WindowsService extends WrapperService {
         }
     }
 
+    protected Winsvc.SERVICE_STATUS_PROCESS waitForService(SC_HANDLE manager, SC_HANDLE service) {
+        int seconds = 0;
+        Advapi32Ex advapi = Advapi32Ex.INSTANCE;
+        IntByReference bytesNeeded = new IntByReference();        
+        advapi.QueryServiceStatusEx(service, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, null, 0, bytesNeeded);
+        Winsvc.SERVICE_STATUS_PROCESS status = new Winsvc.SERVICE_STATUS_PROCESS(bytesNeeded.getValue());
+
+        while (seconds <= 5) {
+            System.out.print(".");
+            if (!advapi.QueryServiceStatusEx(service, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO,
+                    status, status.size(), bytesNeeded)) {
+                throwException("QueryServiceStatusEx");
+            }
+            if (status.dwCurrentState == Winsvc.SERVICE_STOPPED) {
+                break;
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+            seconds++;
+        }
+        System.out.println("");
+        return status;
+    }
+
+    protected void closeServiceHandle(SC_HANDLE handle) {
+        if (handle != null) {
+            Advapi32Ex advapi = Advapi32Ex.INSTANCE;
+            advapi.CloseServiceHandle(handle);
+        }
+    }
+    
     protected void throwException(String name) {
         int rc = Native.getLastError();
         throw new WrapperException(Constants.RC_NATIVE_ERROR, rc, name + " returned error " + rc + ": "
