@@ -133,11 +133,12 @@ public class WindowsService extends WrapperService {
         Advapi32 advapi = Advapi32.INSTANCE;
         boolean isInstalled = false;
 
-        SC_HANDLE serviceManager = openServiceManager();
-        if (serviceManager != null) {
-            SC_HANDLE service = advapi.OpenService(serviceManager, config.getName(), Winsvc.SERVICE_ALL_ACCESS);
+        SC_HANDLE manager = openServiceManager();
+        if (manager != null) {
+            SC_HANDLE service = advapi.OpenService(manager, config.getName(), Winsvc.SERVICE_ALL_ACCESS);
             isInstalled = (service != null);
-            advapi.CloseServiceHandle(serviceManager);
+            closeServiceHandle(service);
+            closeServiceHandle(manager);
         }
         return isInstalled;
     }
