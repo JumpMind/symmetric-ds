@@ -114,18 +114,20 @@ abstract public class AbstractTriggerTemplate {
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                 triggerHistory.getParsedPkColumnNames(), true);
 
-        String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
+        String sql = null;
 
         Column[] columns = symmetricDialect.orderColumns(triggerHistory.getParsedColumnNames(),
                 table);
 
         if (symmetricDialect.getParameterService().is(
                 ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
+            sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
             String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
                     symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
                     false, channel, triggerRouter.getTrigger()).columnString;
             sql = FormatUtils.replace("columns", columnsText, sql);
         } else {
+            sql = "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)";
             StringBuilder columnList = new StringBuilder();
             for (int i = 0; i < columns.length; i++) {
                 Column column = columns[i];
