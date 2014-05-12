@@ -331,7 +331,9 @@ public class WindowsService extends WrapperService {
 
     class ServiceControlHandler implements HANDLER_FUNCTION {
         public void serviceControlHandler(int controlCode) {
-            log("Service manager requesting control code " + controlCode);
+            if (controlCode != Winsvc.SERVICE_CONTROL_INTERROGATE) {
+                log("Service manager requesting control code " + controlCode);
+            }
             if (controlCode == Winsvc.SERVICE_CONTROL_STOP) {
                 shutdown();
             }

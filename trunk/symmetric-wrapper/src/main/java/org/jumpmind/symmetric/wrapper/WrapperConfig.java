@@ -28,6 +28,20 @@ public class WrapperConfig {
         }
     }
 
+    public String getWrapperJarPath()  {
+        try {
+            File libDir = new File(workingDirectory.getCanonicalPath() + File.separator + ".." + File.separator + "lib");
+            for (String filename : libDir.list()) {
+                if (filename.startsWith("symmetric-wrapper-")) {
+                    return new File(libDir.getCanonicalPath() + File.separator + filename).getCanonicalPath();
+                }
+            }
+        } catch (IOException e) {
+            throw new WrapperException(Constants.RC_MISSING_LIB_FOLDER, 0, "Error while locating wrapper JAR");
+        }
+        throw new WrapperException(Constants.RC_MISSING_LIB_FOLDER, 0, "Cannot find wrapper JAR");
+    }
+
     public String getConfigFile() {
     	return configFile;
     }
