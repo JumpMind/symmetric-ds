@@ -244,9 +244,8 @@ public abstract class WrapperService {
         ArrayList<String> cmd = new ArrayList<String>();
         String quote = getWrapperCommandQuote();
         cmd.add(quote + config.getJavaCommand() + quote);
-        cmd.add("-cp");
-        cmd.add(quote + System.getProperty("java.class.path") + quote);
-        cmd.add(Wrapper.class.getCanonicalName());
+        cmd.add("-jar");
+        cmd.add(quote + config.getWrapperJarPath() + quote);
         cmd.add(arg);
         cmd.add(quote + config.getConfigFile() + quote);
         return cmd;
