@@ -46,13 +46,12 @@ public class UnixService extends WrapperService {
                 "/symmetricds.initd")));
             String line = null;
             while ((line = reader.readLine()) != null) {
-                line = line.replaceAll("\\$\\{wrapper.home}", config.getWorkingDirectory().getAbsolutePath());
                 line = line.replaceAll("\\$\\{wrapper.name}", config.getName());
                 line = line.replaceAll("\\$\\{wrapper.displayname}", config.getDisplayName());
                 line = line.replaceAll("\\$\\{wrapper.description}", config.getDescription());
+                line = line.replaceAll("\\$\\{wrapper.home}", config.getWorkingDirectory().getAbsolutePath());
                 line = line.replaceAll("\\$\\{wrapper.java.command}", config.getJavaCommand());                
-                line = line.replaceAll("\\$\\{wrapper.classpath}", System.getProperty("java.class.path"));
-                line = line.replaceAll("\\$\\{wrapper.mainclass}", Wrapper.class.getCanonicalName());
+                line = line.replaceAll("\\$\\{wrapper.jarfile}", config.getWrapperJarPath());
                 line = line.replaceAll("\\$\\{wrapper.propfile}", config.getConfigFile());
                 writer.write(line + "\n");
             }
