@@ -223,7 +223,28 @@ public class LoadFilter implements Serializable {
     public String getHandleErrorScript() {
         return handleErrorScript;
     }
+    
+    public String getEvents() {
+        StringBuilder events = new StringBuilder();
+        buildStringBasedList(getBeforeWriteScript(), events, "Before Write");
+        buildStringBasedList(getAfterWriteScript(), events, "After Write");
+        buildStringBasedList(getBatchCompleteScript(), events, "Batch Complete");
+        buildStringBasedList(getBatchCommitScript(), events, "Batch Commit");
+        buildStringBasedList(getBatchRollbackScript(), events, "Batch Rollback");
+        buildStringBasedList(getHandleErrorScript(), events, "Handle Error");
+        
+        return events.toString();
+    }
 
+    private void buildStringBasedList(String source, StringBuilder target, String value) {
+        if (source != null && !source.equals("")) {
+            if (target.length() > 0) {
+                target.append(", ");
+            }
+            target.append(value);
+        }
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof LoadFilter && loadFilterId != null) {
