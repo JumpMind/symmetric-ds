@@ -15,27 +15,28 @@
 # Description:       ${wrapper.description}
 ### END INIT INFO
 
-CLASSPATH="${wrapper.classpath}"
-MAINCLASS="${wrapper.mainclass}"
-PROP="${wrapper.propfile}"
 JAVA="${wrapper.java.command}"
-export CLASSPATH
+JARFILE="${wrapper.jarfile}"
+PROP="${wrapper.propfile}"
+SYM_HOME="${wrapper.home}"
+
+cd "$SYM_HOME"
 
 case "$1" in
    start)
-      "$JAVA" "$MAINCLASS" start "$PROP"
+      "$JAVA" -jar "$JARFILE" start "$PROP"
       ;;
    stop)
-      "$JAVA" "$MAINCLASS" stop "$PROP"
+      "$JAVA" -jar "$JARFILE" stop "$PROP"
+      ;;
+   restart)
+      "$JAVA" -jar "$JARFILE" restart "$PROP"
       ;;
    status)
-      "$JAVA" "$MAINCLASS" status "$PROP"
-      ;;
-   restart|reload)
-      "$JAVA" "$MAINCLASS" reload "$PROP"
+      "$JAVA" -jar "$JARFILE" status "$PROP"
       ;;
    *)
-      echo "Usage: $0 {start|stop|restart|reload|status}"
+      echo "Usage: $0 {start|stop|restart|status}"
       exit 1
 esac
 
