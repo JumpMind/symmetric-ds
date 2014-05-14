@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
@@ -117,7 +118,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
         try {
             sqlTransaction.rollback();
         } catch (SqlException e) {
-            log.warn(e.getMessage(), e);
+            log.warn("Rollback attempt failed", e);
         } finally {
             clearState();
         }
@@ -126,8 +127,10 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public void cleanup() {
         try {
             this.sqlTransaction.commit();
+        } catch (RuntimeException ex) {
+            throw ex;
         } catch (Exception ex) {
-            log.warn(ex.getMessage(), ex);
+            throw new SymmetricException(ex);
         } finally {
             this.sqlTransaction.close();
         }

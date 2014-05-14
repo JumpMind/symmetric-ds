@@ -1155,13 +1155,13 @@ public class DataService extends AbstractService implements IDataService {
                         if (data != null) {
                             insertData(transaction, data);
                         } else {
-                            log.warn(
-                                    "Not generating data/data events for table {} because a trigger or trigger hist is not created yet.",
+                            log.warn("Not generating data/data events for table {} "
+                                    + "because a trigger or trigger hist is not created yet.",
                                     tableName);
                         }
                     } else {
-                        log.warn(
-                                "Not generating data/data events for table {} because a trigger or trigger hist is not created yet.",
+                        log.warn("Not generating data/data events for table {} "
+                                + "because a trigger or trigger hist is not created yet.",
                                 tableName);
                     }
                 }
@@ -1508,8 +1508,8 @@ public class DataService extends AbstractService implements IDataService {
                 triggerHistory = new TriggerHistory(triggerHistId);
             } else {
                 if (!triggerHistory.getSourceTableName().equals(data.getTableName())) {
-                    log.warn(
-                            "There was a mismatch between the data table name {} and the trigger_hist table name {} for data_id {}.  Attempting to look up a valid trigger_hist row by table name",
+                    log.warn("There was a mismatch between the data table name {} and the trigger_hist "
+                            + "table name {} for data_id {}.  Attempting to look up a valid trigger_hist row by table name",
                             new Object[] { data.getTableName(),
                                     triggerHistory.getSourceTableName(), data.getDataId() });
                     List<TriggerHistory> list = engine.getTriggerRouterService()
