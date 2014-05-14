@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.util.LogSummary;
 
 public class MockStatisticManager implements IStatisticManager {
 
@@ -164,5 +165,19 @@ public class MockStatisticManager implements IStatisticManager {
     }
 
     public void removeRouterStatsByBatch(Long batchId) {
+    }
+    
+    @Override
+    public List<LogSummary> getLogSummaryErrors() {
+        return null;
+    }
+    
+    @Override
+    public List<LogSummary> getLogSummaryWarnings() {
+        return null;
+    }
+    
+    @Override
+    public void clearAllLogSummaries() {
     }
 }

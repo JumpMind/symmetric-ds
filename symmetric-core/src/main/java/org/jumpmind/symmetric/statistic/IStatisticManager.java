@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.util.LogSummary;
 
 
 /**
@@ -114,6 +115,12 @@ public interface IStatisticManager {
     public Map<String, ChannelStats> getWorkingChannelStats();
     
     public HostStats getWorkingHostStats();
+    
+    public List<LogSummary> getLogSummaryWarnings();
+    
+    public List<LogSummary> getLogSummaryErrors();
+    
+    public void clearAllLogSummaries();
     
     
 }
