@@ -427,7 +427,8 @@ public class RouterService extends AbstractService implements IRouterService {
                                 lastDataProcessed.getDataId());
                         queryTs = System.currentTimeMillis() - queryTs;
                         if (queryTs > Constants.LONG_OPERATION_THRESHOLD) {
-                            log.warn("Unrouted query for channel {} took {} ms", channelId, queryTs);
+                            log.warn("Unrouted query for channel {} took longer than expected", channelId, queryTs);
+                            log.info("The query took {} ms", queryTs);
                         }
                         engine.getStatisticManager().setDataUnRouted(channelId, dataLeftToRoute);
                     }

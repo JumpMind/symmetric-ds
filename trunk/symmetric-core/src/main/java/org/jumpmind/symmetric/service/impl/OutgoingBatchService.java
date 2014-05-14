@@ -372,7 +372,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         long executeTimeInMs = System.currentTimeMillis() - ts;
         if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-            log.warn("{} took {} ms", "Selecting batches to extract", executeTimeInMs);
+            log.info("{} took {} ms", "Selecting batches to extract", executeTimeInMs);
         }
 
         return batches;

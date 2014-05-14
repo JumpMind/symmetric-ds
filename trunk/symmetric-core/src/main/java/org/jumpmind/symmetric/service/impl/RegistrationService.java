@@ -379,7 +379,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private void sleepBeforeRegistrationRetry() {
         long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
                 * randomTimeSlot.getRandomValueSeededByExternalId();
-        log.warn("Could not register.  Sleeping for {} ms before attempting again.", sleepTimeInMs);
+        log.warn("Could not register.  Sleeping before attempting again.", sleepTimeInMs);
+        log.info("Sleeping for {}ms", sleepTimeInMs);
         AppUtils.sleep(sleepTimeInMs);
     }
 

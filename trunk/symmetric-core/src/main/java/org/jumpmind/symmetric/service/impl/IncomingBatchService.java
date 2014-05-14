@@ -193,14 +193,14 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                                 .is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED)) {
                     okayToProcess = true;
                     existingBatch.setStatus(Status.LD);
-                    log.warn("Retrying batch {}", batch.getNodeBatchId());
+                    log.info("Retrying batch {}", batch.getNodeBatchId());
                 } else if (existingBatch.getStatus() == Status.IG) {
                     okayToProcess = false;
                     batch.setStatus(Status.OK);
                     batch.incrementIgnoreCount();
                     existingBatch.setStatus(Status.OK);
                     existingBatch.incrementIgnoreCount();
-                    log.warn("Ignoring batch {}", batch.getNodeBatchId());
+                    log.info("Ignoring batch {}", batch.getNodeBatchId());
                 } else {
                     okayToProcess = false;
                     batch.setStatus(existingBatch.getStatus());
@@ -212,7 +212,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     batch.setStatementCount(existingBatch.getStatementCount());
 
                     existingBatch.setSkipCount(existingBatch.getSkipCount() + 1);
-                    log.warn("Skipping batch {}", batch.getNodeBatchId());
+                    log.info("Skipping batch {}", batch.getNodeBatchId());
                 }
                 updateIncomingBatch(existingBatch);
             }

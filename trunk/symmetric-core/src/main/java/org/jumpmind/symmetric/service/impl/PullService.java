@@ -140,7 +140,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                         status.getBatchesProcessed() });
 
                     } else if (status.failed()) {
-                        log.warn(
+                        log.info(
                                 "There was a failure while pulling data from {}.  {} rows and {} batches were processed",
                                 new Object[] { node.toString(), status.getDataProcessed(),
                                         status.getBatchesProcessed() });
