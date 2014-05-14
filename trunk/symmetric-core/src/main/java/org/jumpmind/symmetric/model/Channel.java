@@ -24,8 +24,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 
-import org.jumpmind.symmetric.common.Constants;
-
 /**
  * Definition of a channel and it's priority. A channel is a group of tables
  * that get synchronized together.
