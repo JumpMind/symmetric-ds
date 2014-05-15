@@ -465,7 +465,7 @@ public class StatisticManager implements IStatisticManager {
         
         LogSummaryAppender appender = getLogSummaryAppender();
         if (appender != null) {
-            appender.purgeOlderThan(parameterService.getLong(ParameterConstants.PURGE_LOG_SUMMARY_MINUTES, 60) * 60000);
+            appender.purgeOlderThan(System.currentTimeMillis() - parameterService.getLong(ParameterConstants.PURGE_LOG_SUMMARY_MINUTES, 60) * 60000);
         }
 
         boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE,
