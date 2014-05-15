@@ -21,6 +21,7 @@
 #banner {
   background: transparent url( ../images/banner-bg.gif ) no-repeat scroll left top;
   border-bottom: 1px solid #fff;
+  padding:10px;
 }
 
 body {
@@ -434,6 +435,19 @@ span.application {
   margin-left: 20px;
 }
 
+.msg {
+	background: #e6ffdb url(../images/success.png ) no-repeat 32px 32px;
+	border: 1px solid #339900;
+	padding: 10px 10px 10px 90px;
+	margin: 25px 0px;
+}
+
+.msg .title {
+  font-size: 100%;
+  padding-top: 0;
+  margin-left: 20px;
+}
+
 .toc, .list-of-examples {
   padding-bottom: 20px;
 }
@@ -486,8 +500,12 @@ span.application {
 }
 
 .inlinemediaobject img, .mediaobject img {
-  border: 1px solid #959595;
-  padding: 10px;
+  
+  vertical-align: middle;
+ /* 
+ border: 1px solid #959595;
+ padding: 10px;
+ */
 }
 
 /* Modifications by lkemen + tsoulcie june the 13th 2007 */
@@ -558,4 +576,16 @@ div.qandaset table tr.answer p, div.qandaset table tr.answer div.itemizedlist,
 
 div.qandaset table tr.answer td {
   padding-bottom: 30px;
+}
+
+.sect1 .mediaobject {
+	padding: 0px;
+	text-align: left;
+}
+
+.sect1 .mediaobject table {
+	border: none;
+	width: auto;
+	margin: 10px 0px 0px 50px;
+	float: left;
 }
