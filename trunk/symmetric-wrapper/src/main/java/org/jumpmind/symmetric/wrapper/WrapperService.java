@@ -1,16 +1,16 @@
 package org.jumpmind.symmetric.wrapper;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import org.jumpmind.symmetric.wrapper.Constants.Status;
 
@@ -18,9 +18,9 @@ import com.sun.jna.Platform;
 
 public abstract class WrapperService {
 
+    private static final Logger logger = Logger.getLogger(WrapperService.class.getName());
+    
     protected WrapperConfig config;
-
-    protected BufferedWriter logWriter;
 
     protected boolean keepRunning = true;
 
@@ -41,7 +41,7 @@ public abstract class WrapperService {
 
     public void loadConfig(String configFile) throws IOException {
         config = new WrapperConfig(configFile);
-        setWorkingDirectory(config.getWorkingDirectory().getAbsolutePath());
+        setWorkingDirectory(config.getWorkingDirectory().getAbsolutePath());        
     }
 
     public void start() {
@@ -83,18 +83,24 @@ public abstract class WrapperService {
 
     protected void execJava(boolean isConsole) {
         try {
-            logWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(config.getLogFile())));
+            LogManager.getLogManager().reset();
+            WrapperLogHandler handler = new WrapperLogHandler(config.getLogFile(),
+                    config.getLogFileMaxSize(), config.getLogFileMaxFiles());
+            handler.setFormatter(new WrapperLogFormatter());
+            Logger rootLogger = Logger.getLogger("");
+            rootLogger.setLevel(Level.parse(config.getLogFileLogLevel()));
+            rootLogger.addHandler(handler);
         } catch (IOException e) {
             throw new WrapperException(Constants.RC_FAIL_WRITE_LOG_FILE, 0, "Cannot open log file " + config.getLogFile(), e);
         }
 
         int pid = getCurrentPid();
         writePidToFile(pid, config.getWrapperPidFile());
-        log("Started wrapper [" + pid + "]");
+        logger.log(Level.INFO, "Started wrapper [" + pid + "]");
 
         ArrayList<String> cmd = config.getCommand(isConsole);
         String cmdString = commandToString(cmd);
-        log("Working directory is " + System.getProperty("user.dir"));
+        logger.log(Level.INFO, "Working directory is " + System.getProperty("user.dir"));
 
         long startTime = 0;
         int startCount = 0;
@@ -103,7 +109,7 @@ public abstract class WrapperService {
 
         while (keepRunning) {
             if (startProcess) {
-                log("Executing " + cmdString);
+                logger.log(Level.INFO, "Executing " + cmdString);
                 if (startCount == 0) {
                     updateStatus(Status.START_PENDING);
                 }
@@ -114,13 +120,13 @@ public abstract class WrapperService {
                 try {
                     child = pb.start();
                 } catch (IOException e) {
-                    log("Failed to execute: " + e.getMessage());
+                    logger.log(Level.SEVERE, "Failed to execute: " + e.getMessage());
                     updateStatus(Status.STOPPED);
                     throw new WrapperException(Constants.RC_FAIL_EXECUTION, -1, "Failed executing server", e);
                 }
 
                 serverPid = getProcessPid(child);
-                log("Started server [" + serverPid + "]");
+                logger.log(Level.INFO, "Started server [" + serverPid + "]");
                 writePidToFile(serverPid, config.getSymPidFile());
 
                 if (startCount == 0) {
@@ -138,10 +144,10 @@ public abstract class WrapperService {
                         if (isConsole) {
                             System.out.println(line);
                         } else {
-                            log(line);
+                            logger.log(Level.INFO, line);
                         }
                         if (line.matches(".*java.lang.OutOfMemoryError.*") || line.matches(".*java.net.BindException.*")) {
-                            log("Stopping server because its output matches a failure condition");
+                            logger.log(Level.SEVERE, "Stopping server because its output matches a failure condition");
                             child.destroy();
                             childReader.close();
                             stopProcess(serverPid, "symmetricds");
@@ -149,14 +155,14 @@ public abstract class WrapperService {
                         }
                     }
                 } catch (IOException e) {
-                    log("Error while reading from process");
+                    logger.log(Level.SEVERE, "Error while reading from process");
                 }
                 
                 if (keepRunning) {
-                    log("Unexpected exit from server: " + child.exitValue());
+                    logger.log(Level.SEVERE, "Unexpected exit from server: " + child.exitValue());
                     long runTime = System.currentTimeMillis() - startTime;
                     if (System.currentTimeMillis() - startTime < 5000) {
-                        log("Stopping because server exited too quickly after only " + runTime + " milliseconds");
+                        logger.log(Level.SEVERE, "Stopping because server exited too quickly after only " + runTime + " milliseconds");
                         updateStatus(Status.STOPPED);
                         throw new WrapperException(Constants.RC_SERVER_EXITED, child.exitValue(), "Unexpected exit from server");
                     } else {
@@ -195,13 +201,13 @@ public abstract class WrapperService {
     protected void shutdown() {
         if (keepRunning) {
             keepRunning = false;
-            log("Stopping server");
+            logger.log(Level.INFO, "Stopping server");
             child.destroy();
             try {
                 childReader.close();
             } catch (IOException e) {
             }
-            log("Stopping wrapper");
+            logger.log(Level.INFO, "Stopping wrapper");
             deletePidFile(config.getWrapperPidFile());
             deletePidFile(config.getSymPidFile());
             updateStatus(Status.STOPPED);
@@ -297,16 +303,6 @@ public abstract class WrapperService {
         }
         System.out.println("");
         return isPidRunning(pid);
-    }
-
-    protected void log(String message) {
-        // TODO: rotate the log file based on size or time
-        // TODO: use java util logging with log level and add debug logging
-        try {
-            logWriter.write(message + System.getProperty("line.separator"));
-            logWriter.flush();
-        } catch (Exception e) {
-        }
     }
 
     protected void updateStatus(Status status) {

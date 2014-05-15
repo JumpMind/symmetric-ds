@@ -1,6 +1,8 @@
 package org.jumpmind.symmetric.wrapper;
 
 import java.lang.reflect.Field;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.symmetric.wrapper.Constants.Status;
@@ -26,6 +28,8 @@ import com.sun.jna.ptr.IntByReference;
 @IgnoreJRERequirement
 public class WindowsService extends WrapperService {
 
+    private final static Logger logger = Logger.getLogger(WindowsService.class.getName());
+            
     protected SERVICE_STATUS_HANDLE serviceStatusHandle;
 
     protected Winsvc.SERVICE_STATUS serviceStatus;
@@ -37,11 +41,11 @@ public class WindowsService extends WrapperService {
 
     @Override
     public void init() {
-        log("Requesting service dispatch");
+        logger.log(Level.INFO, "Requesting service dispatch");
         WinsvcEx.SERVICE_TABLE_ENTRY entry = new WinsvcEx.SERVICE_TABLE_ENTRY(config.getName(), new ServiceMain());
         WinsvcEx.SERVICE_TABLE_ENTRY[] serviceTable = (WinsvcEx.SERVICE_TABLE_ENTRY[]) entry.toArray(2);
         if (!Advapi32Ex.INSTANCE.StartServiceCtrlDispatcher(serviceTable)) {
-            log("Error " + Native.getLastError());
+            logger.log(Level.SEVERE, "Error " + Native.getLastError());
             System.exit(Native.getLastError());
         }
     }
@@ -311,7 +315,7 @@ public class WindowsService extends WrapperService {
     class ServiceMain implements SERVICE_MAIN_FUNCTION {
         @Override
         public void serviceMain(int argc, Pointer argv) {
-            log("Getting service status");
+            logger.log(Level.INFO, "Getting service status");
             serviceStatusHandle = Advapi32Ex.INSTANCE.RegisterServiceCtrlHandlerEx(config.getName(), new ServiceControlHandler(),
                     null);
             if (serviceStatusHandle == null) {
@@ -332,7 +336,7 @@ public class WindowsService extends WrapperService {
     class ServiceControlHandler implements HANDLER_FUNCTION {
         public void serviceControlHandler(int controlCode) {
             if (controlCode != Winsvc.SERVICE_CONTROL_INTERROGATE) {
-                log("Service manager requesting control code " + controlCode);
+                logger.log(Level.INFO, "Service manager requesting control code " + controlCode);
             }
             if (controlCode == Winsvc.SERVICE_CONTROL_STOP) {
                 shutdown();

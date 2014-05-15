@@ -62,6 +62,25 @@ public class WrapperConfig {
         return getProperty(prop, "wrapper.sym.pidfile", "../tmp/symmetric.pid");
     }
 
+    public long getLogFileMaxSize() {
+        String str = getProperty(prop, "wrapper.logfile.maxsize", "10M").toUpperCase();
+        int multiplier = 1;
+        if (str.indexOf("K") != -1) {
+            multiplier = 1024;
+        } else if (str.indexOf("M") != -1) {
+            multiplier = 1048576;
+        }
+        return Long.parseLong(str.replaceAll("[^0-9]", "")) * multiplier;
+    }
+
+    public int getLogFileMaxFiles() {
+        return Integer.parseInt(getProperty(prop, "wrapper.logfile.maxfiles", "3"));
+    }
+
+    public String getLogFileLogLevel() {
+        return getProperty(prop, "wrapper.logfile.loglevel", "INFO");
+    }
+
     public String getName() {
         return getProperty(prop, "wrapper.name", "symmetricds");
     }
