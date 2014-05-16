@@ -287,8 +287,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             } catch (RuntimeException e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
                 throw e;
+            } catch (IOException e) {
+                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                throw e;                
             }
-
 
         } catch (RegistrationRequiredException e) {
             if (StringUtils.isBlank(remote.getSyncUrl()) || remote.getSyncUrl().equals(parameterService.getRegistrationUrl())) {

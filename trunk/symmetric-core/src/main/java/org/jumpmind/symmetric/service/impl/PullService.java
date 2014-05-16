@@ -173,7 +173,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                 log.warn("{}", ex.getMessage());
                 fireOffline(ex, node, status);
             } catch (IOException ex) {
-                log.error(ex.getMessage(), ex);
+                log.error("An IO exception happened while attempting to pull data", ex);
                 fireOffline(ex, node, status);
             }
         } else {
