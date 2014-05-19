@@ -181,7 +181,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                                             }
                                         } else {
                                             if (!hasNotRegisteredMessageBeenLogged) {
-                                                log.warn(
+                                                log.info(
                                                         "Did not run the {} job because the engine is not registered.",
                                                         getName());
                                                 hasNotRegisteredMessageBeenLogged = true;
