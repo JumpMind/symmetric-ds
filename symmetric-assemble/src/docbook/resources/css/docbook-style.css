@@ -436,7 +436,7 @@ span.application {
 }
 
 .msg {
-	background: #e6ffdb url(../images/success.png ) no-repeat 32px 32px;
+	background: #e6ffdb url(../images/success.png ) no-repeat 20px center;
 	border: 1px solid #339900;
 	padding: 10px 10px 10px 90px;
 	margin: 25px 0px;
