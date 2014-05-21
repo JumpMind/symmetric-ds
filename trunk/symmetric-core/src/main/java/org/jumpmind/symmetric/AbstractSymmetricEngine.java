@@ -530,7 +530,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     started = true;
 
                 } else {
-                    log.warn("Did not start SymmetricDS.  It has not been configured properly");
+                    log.error("Did not start SymmetricDS.  It has not been configured properly");
                 }
             } catch (Throwable ex) {
                 log.error("An error occurred while starting SymmetricDS", ex);
