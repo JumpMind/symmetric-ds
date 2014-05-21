@@ -101,10 +101,10 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
             
         } catch (SQLException ex) {
             close();
-            throw sqlTemplate.translate(sql, ex);
+            throw sqlTemplate.translate("Failed to execute sql: " + sql, ex);
         } catch (Throwable ex) {
             close();
-            throw sqlTemplate.translate(sql, ex);
+            throw sqlTemplate.translate("Failed to execute sql: " + sql, ex);
         }
     }
 
