@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -21,6 +22,7 @@ import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
 
+    protected static final byte[] DELIMITER = "||".getBytes();
     protected NativeJdbcExtractor jdbcExtractor;
     protected int maxRowsBeforeFlush;
     protected IStagingManager stagingManager;
@@ -29,8 +31,10 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
     protected boolean fireTriggers;
     protected String uncPath;
     protected boolean needsBinaryConversion;
+    protected boolean needsColumnsReordered;
     protected Table table = null;
-
+    protected Table databaseTable = null;
+    
 	public MsSqlBulkDatabaseWriter(IDatabasePlatform platform,
 			IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
 			int maxRowsBeforeFlush, boolean fireTriggers, String uncPath) {
@@ -53,6 +57,17 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
 	                    break;
 	                }
 	            }
+            }
+            databaseTable = platform.getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
+                    sourceTable.getName(), false);
+            String[] csvNames = targetTable.getColumnNames();
+            String[] columnNames = databaseTable.getColumnNames();
+            needsColumnsReordered = false;
+            for (int i = 0; i < csvNames.length; i++) {
+                if (! csvNames[i].equals(columnNames[i])) {
+                    needsColumnsReordered = true;
+                    break;
+                }
             }
         	//TODO: Did this because start is getting called multiple times
         	//      for the same table in a single batch before end is being called
@@ -97,12 +112,26 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
                         }
                     }
                     OutputStream out =  this.stagedInputFile.getOutputStream();
-                    for (int i = 0; i < parsedData.length; i++) {
-                        if (parsedData[i] != null) {
-                            out.write(parsedData[i].getBytes());
+                    if (needsColumnsReordered) {
+                        Map<String, String> mapData = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+                        String[] columnNames = databaseTable.getColumnNames();
+                        for (int i = 0; i < columnNames.length; i++) {
+                            String columnData = mapData.get(columnNames[i]);
+                            if (columnData != null) {
+                                out.write(columnData.getBytes());
+                            }
+                            if (i + 1 < columnNames.length) {
+                                out.write(DELIMITER);
+                            }
                         }
-                        if (i + 1 < parsedData.length) {
-                            out.write("||".getBytes());
+                    } else {
+                        for (int i = 0; i < parsedData.length; i++) {
+                            if (parsedData[i] != null) {
+                                out.write(parsedData[i].getBytes());
+                            }
+                            if (i + 1 < parsedData.length) {
+                                out.write(DELIMITER);
+                            }
                         }
                     }
                     out.write('\r');
