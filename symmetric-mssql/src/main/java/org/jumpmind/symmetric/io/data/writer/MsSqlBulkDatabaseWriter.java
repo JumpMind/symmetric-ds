@@ -7,6 +7,7 @@ import java.sql.Statement;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -26,17 +27,19 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
     protected IStagedResource stagedInputFile;
     protected int loadedRows = 0;
     protected boolean fireTriggers;
+    protected String uncPath;
     protected boolean needsBinaryConversion;
     protected Table table = null;
 
 	public MsSqlBulkDatabaseWriter(IDatabasePlatform platform,
 			IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
-			int maxRowsBeforeFlush, boolean fireTriggers) {
+			int maxRowsBeforeFlush, boolean fireTriggers, String uncPath) {
 		super(platform);
 		this.jdbcExtractor = jdbcExtractor;
 		this.maxRowsBeforeFlush = maxRowsBeforeFlush;
 		this.stagingManager = stagingManager;
 		this.fireTriggers = fireTriggers;
+		this.uncPath = uncPath;
 	}
 
     public boolean start(Table table) {
@@ -128,12 +131,18 @@ public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
         if (loadedRows > 0) {
         	this.stagedInputFile.close();
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            String filename;
+            if (StringUtils.isEmpty(uncPath)) {
+                filename = stagedInputFile.getFile().getAbsolutePath();
+            } else {
+                filename = uncPath + "\\" + stagedInputFile.getFile().getName();
+            }
 	        try {
 	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
 	            Connection c = jdbcTransaction.getConnection();
 	            String sql = String.format("BULK INSERT " + 
 	            		this.getTargetTable().getFullyQualifiedTableName() + 
-	            		" FROM '" + stagedInputFile.getFile().getAbsolutePath()) + "'" +
+	            		" FROM '" + filename) + "'" +
                         " WITH ( FIELDTERMINATOR='||', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
 	            Statement stmt = c.createStatement();
 	
