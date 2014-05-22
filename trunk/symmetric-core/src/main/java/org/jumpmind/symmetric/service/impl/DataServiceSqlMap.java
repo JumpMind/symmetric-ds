@@ -80,13 +80,13 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                         + "insert into $(data_event) (data_id, batch_id, router_id, create_time) values(?, ?, ?, current_timestamp)   ");
 
         putSql("findDataEventCreateTimeSql", ""
-                + "select max(create_time) from $(data_event) where data_id=?   ");
+                + "select max(create_time) from $(data_event) where data_id=?   ");        
 
         putSql("findDataCreateTimeSql", ""
                 + "select create_time from $(data) where data_id=?   ");
         
-        putSql("findNextDataCreateTimeSql", ""
-                + "select create_time from $(data) where data_id in (select min(data_id) from $(data) where data_id >= ?)");
+        putSql("findMinDataSql", ""
+                + "select min(data_id) from $(data) where data_id >= ?");
 
         putSql("findDataGapsByStatusSql",
                 ""
@@ -103,8 +103,8 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("deleteDataGapSql",
                         "delete from $(data_gap) where start_id=? and end_id=?   ");
         
-
         putSql("selectMaxDataIdSql", "" + "select max(data_id) from $(data)   ");
+        
 
     }
 

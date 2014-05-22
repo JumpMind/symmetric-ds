@@ -1335,9 +1335,9 @@ public class DataService extends AbstractService implements IDataService {
     public Date findCreateTimeOfData(long dataId) {
         return sqlTemplate.queryForObject(getSql("findDataCreateTimeSql"), Date.class, dataId);
     }
-
+    
     public Date findNextCreateTimeOfDataStartingAt(long dataId) {
-        return sqlTemplate.queryForObject(getSql("findNextDataCreateTimeSql"), Date.class, dataId);
+        return findCreateTimeOfData(sqlTemplate.queryForObject(getSql("findMinDataSql"), Long.class, dataId));
     }
 
     /**
