@@ -60,7 +60,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
     protected final static Logger log = LoggerFactory.getLogger(DefaultDatabaseWriter.class);
     
-    public static final String CUR_DATA="DatabaseWriter.CurData";
+    public static final String CUR_DATA = "DatabaseWriter.CurData";
 
     protected IDatabasePlatform platform;
 
@@ -178,10 +178,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             } catch (SqlException ex) {
                 if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
                     if (!platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                        context.put(CONFLICT_ERROR, ex);
                         context.put(CUR_DATA,getCurData(transaction));
                         return LoadStatus.CONFLICT;
                     } else {
-                        log.warn("Detected a conflict via an exception, but cannot perform conflict resolution because the database in use requires savepoints");
+                        log.info("Detected a conflict via an exception, but cannot perform conflict resolution because the database in use requires savepoints");
                         throw ex;
                     }
                 } else {

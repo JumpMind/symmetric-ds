@@ -45,6 +45,8 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
 
     protected final static Logger log = LoggerFactory.getLogger(AbstractDatabaseWriter.class);
 
+    public static final String CONFLICT_ERROR = "DatabaseWriter.ConflictError";
+    
     public static enum LoadStatus {
         SUCCESS, CONFLICT
     };
@@ -73,7 +75,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
 
     protected IDatabaseWriterConflictResolver conflictResolver;
 
-    protected Set<String> missingTables = new HashSet<String>();
+    protected Set<String> missingTables = new HashSet<String>();    
 
     public AbstractDatabaseWriter() {
         this(null, null);
@@ -130,6 +132,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
     }
 
     protected void write(CsvData data, boolean fallback) {
+        context.put(CONFLICT_ERROR, null);
         if (data.requiresTable() &&
                 (targetTable == null && data.getDataEventType() != DataEventType.SQL)) {
             // if we cross batches and the table isn't specified, then

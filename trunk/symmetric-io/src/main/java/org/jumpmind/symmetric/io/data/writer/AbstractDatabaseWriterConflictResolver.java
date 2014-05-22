@@ -220,7 +220,8 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                 }
             }
         } else {
-            throw new ConflictException(data, writer.getTargetTable(), false, conflict);
+            throw new ConflictException(data, writer.getTargetTable(), false, conflict,
+                    (Exception) writer.getContext().get(AbstractDatabaseWriter.CONFLICT_ERROR));
         }
     }
 
