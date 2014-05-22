@@ -133,7 +133,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
         	this.stagedInputFile.close();
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             String filename;
-            if (! StringUtils.isEmpty(uncPath)) {
+            if (StringUtils.isEmpty(uncPath)) {
                 filename = stagedInputFile.getFile().getAbsolutePath();
             } else {
                 filename = uncPath + "\\" + stagedInputFile.getFile().getName();
