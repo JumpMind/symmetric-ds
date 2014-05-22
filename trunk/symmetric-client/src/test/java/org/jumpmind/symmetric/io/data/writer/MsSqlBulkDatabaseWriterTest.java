@@ -44,7 +44,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
 
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
-        return writeData(new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false), new TableCsvData(table, data));
+        return writeData(new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, null), new TableCsvData(table, data));
     }
 
 }
