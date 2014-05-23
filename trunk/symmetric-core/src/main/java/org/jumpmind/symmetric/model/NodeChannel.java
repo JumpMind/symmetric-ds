@@ -218,5 +218,17 @@ public class NodeChannel implements Serializable {
     public boolean isFileSyncFlag() {
         return this.channel.isFileSyncFlag();
     }
-
+    
+    public Date getCreateTime() {
+        return this.channel.getCreateTime();
+    }
+    
+    public String getLastUpdateBy() {
+        return this.channel.getLastUpdateBy();
+    }
+    
+    public Date getLastUpdateTime() {
+        return this.channel.getLastUpdateTime();
+    }
+    
 }
