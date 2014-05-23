@@ -96,7 +96,7 @@ public abstract class WrapperService {
 
         int pid = getCurrentPid();
         writePidToFile(pid, config.getWrapperPidFile());
-        logger.log(Level.INFO, "Started wrapper [" + pid + "]");
+        logger.log(Level.INFO, "Started wrapper as PID " + pid);
 
         ArrayList<String> cmd = config.getCommand(isConsole);
         String cmdString = commandToString(cmd);
@@ -126,8 +126,8 @@ public abstract class WrapperService {
                 }
 
                 serverPid = getProcessPid(child);
-                logger.log(Level.INFO, "Started server [" + serverPid + "]");
-                writePidToFile(serverPid, config.getSymPidFile());
+                logger.log(Level.INFO, "Started server as PID " + serverPid);
+                writePidToFile(serverPid, config.getServerPidFile());
 
                 if (startCount == 0) {
                     Runtime.getRuntime().addShutdownHook(new ShutdownHook());
@@ -144,7 +144,7 @@ public abstract class WrapperService {
                         if (isConsole) {
                             System.out.println(line);
                         } else {
-                            logger.log(Level.INFO, line);
+                            logger.log(Level.INFO, line, "java");
                         }
                         if (line.matches(".*java.lang.OutOfMemoryError.*") || line.matches(".*java.net.BindException.*")) {
                             logger.log(Level.SEVERE, "Stopping server because its output matches a failure condition");
@@ -174,7 +174,7 @@ public abstract class WrapperService {
     }
 
     public void stop() {
-        int symPid = readPidFromFile(config.getSymPidFile());
+        int symPid = readPidFromFile(config.getServerPidFile());
         int wrapperPid = readPidFromFile(config.getWrapperPidFile());
         if (!isPidRunning(symPid) && !isPidRunning(wrapperPid)) {
             throw new WrapperException(Constants.RC_SERVER_NOT_RUNNING, 0, "Server is not running");
@@ -209,7 +209,7 @@ public abstract class WrapperService {
             }
             logger.log(Level.INFO, "Stopping wrapper");
             deletePidFile(config.getWrapperPidFile());
-            deletePidFile(config.getSymPidFile());
+            deletePidFile(config.getServerPidFile());
             updateStatus(Status.STOPPED);
         }
     }
@@ -227,15 +227,16 @@ public abstract class WrapperService {
     }
 
     public boolean isRunning() {
-        return isPidRunning(readPidFromFile(config.getSymPidFile()));
+        return isPidRunning(readPidFromFile(config.getWrapperPidFile())) ||
+                isPidRunning(readPidFromFile(config.getServerPidFile()));
     }
 
     public int getWrapperPid() {
         return readPidFromFile(config.getWrapperPidFile());
     }
 
-    public int getSymmetricPid() {
-        return readPidFromFile(config.getSymPidFile());
+    public int getServerPid() {
+        return readPidFromFile(config.getServerPidFile());
     }
 
     protected String commandToString(ArrayList<String> cmd) {
