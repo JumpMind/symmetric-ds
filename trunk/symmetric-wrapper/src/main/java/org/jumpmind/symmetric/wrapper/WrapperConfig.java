@@ -58,8 +58,8 @@ public class WrapperConfig {
         return getProperty(prop, "wrapper.pidfile", "../tmp/wrapper.pid");
     }
 
-    public String getSymPidFile() {
-        return getProperty(prop, "wrapper.sym.pidfile", "../tmp/symmetric.pid");
+    public String getServerPidFile() {
+        return getProperty(prop, "wrapper.server.pidfile", "../tmp/server.pid");
     }
 
     public long getLogFileMaxSize() {
