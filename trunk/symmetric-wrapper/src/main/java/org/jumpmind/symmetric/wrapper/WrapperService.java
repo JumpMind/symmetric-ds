@@ -222,8 +222,13 @@ public abstract class WrapperService {
     }
     
     public void status() {
+        boolean isRunning = isRunning();
         System.out.println("Installed: " + isInstalled());
-        System.out.println("Running: " + isRunning());
+        System.out.println("Running: " + isRunning);
+        if (isRunning) {
+            System.out.println("Wrapper PID: " + readPidFromFile(config.getWrapperPidFile()));
+            System.out.println("Server PID: " + readPidFromFile(config.getServerPidFile()));
+        }
     }
 
     public boolean isRunning() {
