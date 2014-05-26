@@ -199,7 +199,9 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 status.updateOutgoingStatus(extractedBatches, batchAcks);
             }
             
-            processInfo.setStatus(Status.DONE);
+            if (processInfo.getStatus() != Status.ERROR) {
+                processInfo.setStatus(Status.DONE);
+            }
         } catch (Exception ex) {
             processInfo.setStatus(Status.ERROR);
             fireOffline(ex, remote, status);

@@ -116,7 +116,9 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                     try {
                         dataExtractorService.extract(processInfo, nodeService.findNode(nodeId),
                                 outgoingTransport);
-                        processInfo.setStatus(Status.DONE);
+                        if (processInfo.getStatus() != Status.ERROR) {
+                            processInfo.setStatus(Status.DONE);
+                        }
                     } catch (RuntimeException ex) {
                         processInfo.setStatus(Status.ERROR);
                         throw ex;

@@ -573,6 +573,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                         log.error("Failed to extract batch {}", currentBatch, e);
                     }
+                    processInfo.setStatus(ProcessInfo.Status.ERROR);
                 } else {
                     log.error("Could not log the outgoing batch status because the batch was null",
                             e);
