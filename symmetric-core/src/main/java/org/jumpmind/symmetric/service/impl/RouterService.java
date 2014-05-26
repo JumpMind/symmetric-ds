@@ -289,6 +289,7 @@ public class RouterService extends AbstractService implements IRouterService {
         Node sourceNode = engine.getNodeService().findIdentity();
         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                 new ProcessInfoKey(sourceNode.getNodeId(), null, ProcessType.ROUTER_JOB));
+        processInfo.setStatus(ProcessInfo.Status.PROCESSING);
         try {
             final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(
                     false);
@@ -565,7 +566,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     nextData = reader.take();
                     if (data != null) {
                         processInfo.setCurrentTableName(data.getTableName());
-                        processInfo.incrementDataCount();
+                        processInfo.incrementCurrentDataCount();
                         boolean atTransactionBoundary = false;
                         if (nextData != null) {
                             String nextTxId = nextData.getTransactionId();

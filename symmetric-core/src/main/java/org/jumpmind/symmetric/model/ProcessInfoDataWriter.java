@@ -38,7 +38,7 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
 
     public void open(DataContext context) {
         super.open(context);
-        processInfo.setDataCount(0);
+        processInfo.setCurrentDataCount(0);
         processInfo.setBatchCount(0);
     }
 
@@ -60,7 +60,7 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
 
     public void write(CsvData data) {
         if (data != null) {
-            processInfo.incrementDataCount();
+            processInfo.incrementCurrentDataCount();
         }
         super.write(data);        
     }

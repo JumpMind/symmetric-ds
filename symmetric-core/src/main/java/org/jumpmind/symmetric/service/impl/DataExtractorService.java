@@ -478,8 +478,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                 for (int i = 0; i < activeBatches.size(); i++) {
                     currentBatch = activeBatches.get(i);
-
+                    
                     channelsProcessed.add(currentBatch.getChannelId());
+                    processInfo.setDataCount(currentBatch.getDataEventCount());
                     processInfo.incrementBatchCount();
                     processInfo.setCurrentBatchId(currentBatch.getBatchId());
 
