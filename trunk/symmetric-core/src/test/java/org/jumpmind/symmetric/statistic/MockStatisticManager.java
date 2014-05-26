@@ -37,6 +37,11 @@ public class MockStatisticManager implements IStatisticManager {
         return null;
     }
     
+    @Override
+    public List<ProcessInfo> getProcessInfosThatHaveDoneWork() {
+        return null;
+    }
+    
     public void removeProcessInfo(ProcessInfoKey key) {
     }
     

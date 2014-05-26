@@ -28,7 +28,7 @@ import java.util.Date;
 
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 
-public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
+public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
@@ -66,7 +66,9 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
 
     private Status status = Status.NEW;
 
-    private long dataCount;
+    private long currentDataCount;
+    
+    private long dataCount = -1;
 
     private long batchCount;
 
@@ -125,12 +127,12 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
         }
     }
 
-    public long getDataCount() {
-        return dataCount;
+    public long getCurrentDataCount() {
+        return currentDataCount;
     }
 
-    public void setDataCount(long dataCount) {
-        this.dataCount = dataCount;
+    public void setCurrentDataCount(long dataCount) {
+        this.currentDataCount = dataCount;
     }
 
     public long getBatchCount() {
@@ -141,8 +143,8 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
         this.batchCount = batchCount;
     }
 
-    public void incrementDataCount() {
-        this.dataCount++;
+    public void incrementCurrentDataCount() {
+        this.currentDataCount++;
     }
 
     public void incrementBatchCount() {
@@ -195,6 +197,14 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
 
     public Date getLastStatusChangeTime() {
         return lastStatusChangeTime;
+    }
+    
+    public void setDataCount(long dataCount) {
+        this.dataCount = dataCount;
+    }
+    
+    public long getDataCount() {
+        return dataCount;
     }
 
     @Override
@@ -296,6 +306,14 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
 
         public String getThreadName() {
             return threadName;
+        }
+    }
+    
+    public ProcessInfo copy() {
+        try {
+            return (ProcessInfo)this.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
         }
     }
 }

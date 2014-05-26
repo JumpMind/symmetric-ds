@@ -60,6 +60,9 @@ public class LogSummaryAppender extends AppenderSkeleton {
                 }
 
                 String message = (String) event.getMessage();
+                if (message == null) {
+                    message = "No Message";
+                }
                 LogSummary summary = byMessage.get(message);
                 if (summary == null) {
                     summary = new LogSummary();

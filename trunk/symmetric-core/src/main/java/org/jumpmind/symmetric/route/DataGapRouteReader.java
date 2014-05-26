@@ -136,7 +136,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     Data data = peekAheadQueue.remove(0);
                     copyToQueue(data);
                     dataCount++;
-                    processInfo.incrementDataCount();
+                    processInfo.incrementCurrentDataCount();
                     processInfo.setCurrentTableName(data.getTableName());
                     lastTransactionId = data.getTransactionId();
                     context.addTransaction(lastTransactionId);
@@ -150,7 +150,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                             datas.remove();
                             copyToQueue(data);
                             dataCount++;                            
-                            processInfo.incrementDataCount();
+                            processInfo.incrementCurrentDataCount();
                             processInfo.setCurrentTableName(data.getTableName());
                         } else {
                             context.addTransaction(data.getTransactionId());

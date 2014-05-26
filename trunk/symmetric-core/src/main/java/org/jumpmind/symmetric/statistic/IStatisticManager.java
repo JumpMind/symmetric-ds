@@ -41,7 +41,7 @@ public interface IStatisticManager {
     
     public List<ProcessInfo> getProcessInfos();
     
-    public void removeProcessInfo(ProcessInfoKey key);
+    public List<ProcessInfo> getProcessInfosThatHaveDoneWork();
     
     public Set<String> getNodesWithProcessesInError();
     

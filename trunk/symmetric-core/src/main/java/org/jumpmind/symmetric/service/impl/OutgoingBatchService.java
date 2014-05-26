@@ -451,6 +451,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 new OutgoingBatchMapper(true), null, null));
         return batches;
     }
+    
+    public List<OutgoingBatch> getLastOutgoingBatchForEachNode() {
+        return sqlTemplate.query(
+                getSql("selectOutgoingBatchPrefixSql", "getLastOutgoingBatchForEachNodeSql"),
+                new OutgoingBatchMapper(true));
+    }
 
     public boolean isInitialLoadComplete(String nodeId) {
         return areAllLoadBatchesComplete(nodeId)
