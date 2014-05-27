@@ -52,6 +52,8 @@ public interface IOutgoingBatchService {
     public OutgoingBatches getOutgoingBatchRange(String nodeId, Date startDate, Date endDate, String... channels);
 
     public OutgoingBatches getOutgoingBatchErrors(int maxRows);
+    
+    public List<OutgoingBatch> getNextOutgoingBatchForEachNode();
 
     public boolean isInitialLoadComplete(String nodeId);
     

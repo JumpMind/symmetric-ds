@@ -110,7 +110,7 @@ public class StagingManager implements IStagingManager {
                             log.warn("Failed to delete the '{}' staging resource", resource.getPath());
                         }
                     } else {
-                        log.warn("The '{}' staging resource qualified for being cleaned, but was in use.  It will not be cleaned right now", resource.getPath());
+                        log.info("The '{}' staging resource qualified for being cleaned, but was in use.  It will not be cleaned right now", resource.getPath());
                     }
                 }
             }
