@@ -483,6 +483,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     processInfo.setDataCount(currentBatch.getDataEventCount());
                     processInfo.incrementBatchCount();
                     processInfo.setCurrentBatchId(currentBatch.getBatchId());
+                    processInfo.setCurrentLoadId(currentBatch.getLoadId());
 
                     currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
 
