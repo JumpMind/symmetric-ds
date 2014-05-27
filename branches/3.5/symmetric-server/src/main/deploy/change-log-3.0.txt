@@ -1,3 +1,16 @@
+SymmetricDS - 3.5.22 (Released 2014-05-27) 
+==========================================
+- 0001712: [Bug] null pointer at startup when sync.url is null in the database (chenson) - resolved.
+- 0001722: [Bug] Trigger errors for large numerics on SQL Server: Arithmetic Overflow Error (josh-a-hicks) - resolved.
+- 0001713: [Improvement] Add initial.load.before.sql and initial.load.after.sql which can contain sql that runs on the client before and after a load (chenson) - resolved.
+- 0001671: [Improvement] Cache node group links (chenson) - closed.
+- 0001708: [Improvement] Disable page level locking and enable row level locking on sym_data and sym_data_event (chenson) - closed.
+- 0001714: [Bug] The keystore type should be settable via a system property. It is currently hardcoded. (chenson) - closed.
+- 0001715: [Improvement] Add a new column transform that can be used to set a column to the value from a SymmetricDS parameter (chenson) - closed.
+- 0001725: [Improvement] MSSQL Bulk Loader support for UNC paths (elong) - closed.
+- 0001726: [Bug] When trigger.update.capture.changed.data.only.enabled is enabled on SQL Server and old data capture is off, updates don't work (chenson) - closed.
+- 0001728: [Improvement] MSSQL Bulk Loader support for columns in different order (elong) - closed.
+
 SymmetricDS - 3.5.21 (Released 2014-04-28) 
 ==========================================
 - 0001299: [Improvement] Transforms should be case insensitive when matching catalog, schema, tablename and columns to make configuration much easier (chenson) - closed.
