@@ -66,7 +66,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     private Status status = Status.NEW;
 
-    private long currentDataCount;
+    private long currentBatchDataCount;
     
     private long dataCount = -1;
 
@@ -79,6 +79,10 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     private String currentTableName;
 
     private transient Thread thread;
+    
+    private Date currentBatchStartTime;
+    
+    private long currentLoadId;
 
     private Date startTime = new Date();
 
@@ -127,12 +131,12 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         }
     }
 
-    public long getCurrentDataCount() {
-        return currentDataCount;
+    public long getCurrentBatchDataCount() {
+        return currentBatchDataCount;
     }
 
-    public void setCurrentDataCount(long dataCount) {
-        this.currentDataCount = dataCount;
+    public void setCurrentBatchDataCount(long dataCount) {
+        this.currentBatchDataCount = dataCount;
     }
 
     public long getBatchCount() {
@@ -144,7 +148,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     }
 
     public void incrementCurrentDataCount() {
-        this.currentDataCount++;
+        this.currentBatchDataCount++;
     }
 
     public void incrementBatchCount() {
@@ -157,6 +161,17 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     public void setCurrentBatchId(long currentBatchId) {
         this.currentBatchId = currentBatchId;
+        this.currentBatchStartTime = new Date();
+        this.currentBatchDataCount = 0;
+        this.currentLoadId = 0;
+    }
+    
+    public void setCurrentLoadId(long loadId) {
+        this.currentLoadId = loadId;
+    }
+    
+    public long getCurrentLoadId() {
+        return currentLoadId;
     }
 
     public String getCurrentChannelId() {
@@ -205,6 +220,18 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     
     public long getDataCount() {
         return dataCount;
+    }
+    
+    public Date getCurrentBatchStartTime() {
+        if (currentBatchStartTime == null) {
+            return startTime;
+        } else {
+            return currentBatchStartTime;
+        }
+    }
+    
+    public void setCurrentBatchStartTime(Date currentBatchStartTime) {
+        this.currentBatchStartTime = currentBatchStartTime;
     }
 
     @Override

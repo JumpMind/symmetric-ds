@@ -160,7 +160,7 @@ public class StatisticManager implements IStatisticManager {
                         old.toString());
             }
 
-            if (old.getCurrentDataCount() > 0) {
+            if (old.getCurrentBatchDataCount() > 0) {
                 processInfosThatHaveDoneWork.put(key, old);
             }
         }
@@ -196,7 +196,7 @@ public class StatisticManager implements IStatisticManager {
         while (i.hasNext()) {
             boolean addedOneThatDidWork = false;
             ProcessInfo info = i.next().copy();
-            if (info.getStatus() == ProcessInfo.Status.DONE && info.getCurrentDataCount() == 0) {
+            if (info.getStatus() == ProcessInfo.Status.DONE && info.getCurrentBatchDataCount() == 0) {
                 ProcessInfo lastThatDidWork = processInfosThatHaveDoneWork.get(info.getKey());
                 if (lastThatDidWork != null) {
                     toReturn.add(lastThatDidWork);
