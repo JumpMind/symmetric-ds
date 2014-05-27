@@ -28,7 +28,7 @@ import java.util.Date;
 
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 
-public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Cloneable {
+public class ProcessInfo implements Serializable, Comparable<ProcessInfo> {
 
     private static final long serialVersionUID = 1L;
 
@@ -66,9 +66,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     private Status status = Status.NEW;
 
-    private long currentBatchDataCount;
-    
-    private long dataCount = -1;
+    private long dataCount;
 
     private long batchCount;
 
@@ -79,10 +77,6 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     private String currentTableName;
 
     private transient Thread thread;
-    
-    private Date currentBatchStartTime;
-    
-    private long currentLoadId;
 
     private Date startTime = new Date();
 
@@ -131,12 +125,12 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         }
     }
 
-    public long getCurrentBatchDataCount() {
-        return currentBatchDataCount;
+    public long getDataCount() {
+        return dataCount;
     }
 
-    public void setCurrentBatchDataCount(long dataCount) {
-        this.currentBatchDataCount = dataCount;
+    public void setDataCount(long dataCount) {
+        this.dataCount = dataCount;
     }
 
     public long getBatchCount() {
@@ -147,8 +141,8 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         this.batchCount = batchCount;
     }
 
-    public void incrementCurrentDataCount() {
-        this.currentBatchDataCount++;
+    public void incrementDataCount() {
+        this.dataCount++;
     }
 
     public void incrementBatchCount() {
@@ -161,17 +155,6 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     public void setCurrentBatchId(long currentBatchId) {
         this.currentBatchId = currentBatchId;
-        this.currentBatchStartTime = new Date();
-        this.currentBatchDataCount = 0;
-        this.currentLoadId = 0;
-    }
-    
-    public void setCurrentLoadId(long loadId) {
-        this.currentLoadId = loadId;
-    }
-    
-    public long getCurrentLoadId() {
-        return currentLoadId;
     }
 
     public String getCurrentChannelId() {
@@ -212,26 +195,6 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     public Date getLastStatusChangeTime() {
         return lastStatusChangeTime;
-    }
-    
-    public void setDataCount(long dataCount) {
-        this.dataCount = dataCount;
-    }
-    
-    public long getDataCount() {
-        return dataCount;
-    }
-    
-    public Date getCurrentBatchStartTime() {
-        if (currentBatchStartTime == null) {
-            return startTime;
-        } else {
-            return currentBatchStartTime;
-        }
-    }
-    
-    public void setCurrentBatchStartTime(Date currentBatchStartTime) {
-        this.currentBatchStartTime = currentBatchStartTime;
     }
 
     @Override
@@ -333,14 +296,6 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
         public String getThreadName() {
             return threadName;
-        }
-    }
-    
-    public ProcessInfo copy() {
-        try {
-            return (ProcessInfo)this.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
         }
     }
 }

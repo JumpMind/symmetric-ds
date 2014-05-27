@@ -63,7 +63,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
             supportsTransactionViews = true;
         } catch (Exception ex) {
             if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW)) {
-                log.warn("Was not able to enable the use of transaction views.  You might not have access to select from gv$transaction", ex);
+                log.warn(ex.getMessage(),ex);
             }
         }
     }

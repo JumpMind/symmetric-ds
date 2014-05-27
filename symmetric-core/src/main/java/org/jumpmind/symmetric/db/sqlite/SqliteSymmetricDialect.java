@@ -131,7 +131,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
                              tableName));
                  }
              } catch (SqlException ex) {
-                 log.warn("Failed to truncate the " + tableName + " table", ex);
+                 log.warn(ex.getMessage(), ex);
                  AppUtils.sleep(5000);
                  tryCount--;
              }

@@ -288,6 +288,11 @@
             <para>
                 <command>../bin/symadmin -p my-symmetric-ds.properties create-war /some/path/to/symmetric-ds.war</command>
             </para>
+            <para>
+                The <literal>web.base.servlet.path</literal> property in <filename>symmetric.properties</filename> can be set if the SymmetricServlet needs to
+                coexist with other Servlets.  By default, the value is blank.  If you set it to, say, <literal>web.base.servlet.path=sync</literal> for example,
+                <literal>registration.url</literal> would be <literal>http://server:port/sync</literal>.
+            </para>
         </section>
         <section id="deployment-options-embedded">
             <title>Embedded</title>
@@ -350,45 +355,129 @@ public class StartSymmetricEngine {
 
     <section id="running-service">
     <title>Running SymmetricDS as a Service</title>
-    <para>
-        SymmetricDS can be configured to start automatically when the system boots, running as a Windows service or Linux/Unix daemon.
-        A wrapper process starts SymmetricDS and monitors it, so it can be restarted if it runs out of memory or exits unexpectedly.
-        The wrapper writes standard output and standard error to the <filename class="filename">logs/wrapper.log</filename> file.
+        <para>
+    SymmetricDS can be configured to start and run as a service in both Windows and *nix platforms.
     </para>
     <section id="running-service-windows">
         <title>Running as a Windows Service</title>
         <para>
-            To install the service, run the following command as Administrator:
-            <programlisting>bin\sym_service.bat install</programlisting>
+            SymmetricDS uses the
+            <ulink url="http://wrapper.tanukisoftware.org/">Java Service Wrapper</ulink>
+            product from Tanuki Software to run in the background as a Windows system service.
+            The Java Service Wrapper executable is named <filename class="file">sym_service.exe</filename>
+            so it can be easily identified from a list of running processes.
+            To install the service, use the provided script:
+            <programlisting>bin\install_service.bat</programlisting>
+        </para>
+        <para>
+            The service configuration is found in <filename class="filename">conf/sym_service.conf</filename>.
+            Edit this file if you want to change the default port number (8080), initial memory size
+            (256 MB), log file size (10 MB), or other settings.
+            When started, the server will look in the <filename class="directory">conf</filename> directory
+            for the <filename class="filename">symmetric.properties</filename> file
+            and the  <filename class="filename">log4j.xml</filename> file.
+            Logging for standard out, error, and application are written to the
+            <filename class="directory">logs</filename> directory.
         </para>
         <para>
             Most configuration changes do not require the service to be re-installed.
-            To un-install the service, run the following command as Administrator:
-            <programlisting>bin\sym_service.bat uninstall</programlisting>
+            To un-install the service, use the provided script:
+            <programlisting>bin\uninstall_service.bat</programlisting>
         </para>
         <para>
-            To start and stop the service manually, run the following commands as Administrator:
-            <programlisting>bin\sym_service.bat start
-bin\sym_service.bat stop</programlisting>
+            Use the <command>net</command> command to start and stop the service:
+            <programlisting>net start symmetricds
+net stop symmetricds</programlisting>
         </para>
     </section>
     <section id="running-service-unix">
-        <title>Running as a Linux/Unix daemon</title>
+        <title>Running as a *nix Service</title>
         <para>
-            An init script is written to the system <filename class="directory">/etc/init.d</filename> directory.
-            Symbolic links are created for starting on run levels 2, 3, and 5 and stopping on run levels 0, 1, and 6.
-            To install the script, running the following command as root:
-            <programlisting>bin/sym_service install</programlisting>
+            SymmetricDS uses the 32 bit
+            <ulink url="http://wrapper.tanukisoftware.org/">Java Service Wrapper</ulink>
+            product from Tanuki Software to run in the background as a Unix system service.
+            The Java Service Wrapper executable is named <filename class="file">sym_service</filename>
+            so it can be easily identified from a list of running processes.
+            The service configuration is found in <filename class="filename">conf/sym_service.conf</filename>.
+            Edit this file if you want to change the initial memory size
+            (256 MB), log file size (10 MB), or other settings.
+        </para>
+        <para>If you happen to need a 64 bit wrapper, you'll need to download the Java Service Wrapper 64 bit version, 
+            then do the following:
+           <orderedlist>
+                <listitem>Unzip the download to some directory, say /tmp</listitem>
+                <listitem>Change directory to the unzip location</listitem>
+                <listitem>Run the following three commands:
+                <programlisting>
+cp ./bin/wrapper /opt/symmetric-ds/bin/sym_service
+cp ./lib/wrapper.jar /opt/symmetric-ds/lib/wrapper.jar
+cp ./lib/libwrapper.so /opt/symmetric-ds/lib/libwrapper.so
+                </programlisting>
+                where <literal>/opt/symmetric-ds</literal> should be replaced with wherever you have installed SymmetricDS.
+                </listitem>
+            </orderedlist>
         </para>
         <para>
-            Most configuration changes do not require the service to be re-installed.
-            To un-install the service, run the following command as root:
-            <programlisting>bin/sym_service uninstall</programlisting>
+            An init script is provided to work with standard Unix run configuration levels.
+            The <filename class="file">sym_service.initd</filename> file follows the
+            Linux Standard Base specification, which should work on many systems, including
+            Fedora and Debian-based distributions.
+            To install the script, copy it into the system init directory:
         </para>
         <para>
-            To start and stop the service manually, run the following commands:
-            <programlisting>bin/sym_service start
-bin/sym_service stop</programlisting>
+            <programlisting>cp bin/sym_service.initd /etc/init.d/sym_service</programlisting>
+        </para>
+        <para>
+            Edit the init script to set the SYM_HOME variable to the directory
+            where SymmetricDS is located.  The init script calls the
+            <filename class="file">sym_service</filename> executable.
+        </para>
+        <para>Enabling the service varies based on the version of Linux in use.  Three possible approaches are listed below:</para>
+        <orderedlist>
+                <listitem>Using <literal>chkconfig</literal> command:
+        <para>
+            To enable the service to run automatically when the system is started:
+            <programlisting>/sbin/chkconfig --add sym_service</programlisting>
+        </para>
+        <para>
+            To disable the service from running automatically:
+            <programlisting>/sbin/chkconfig --del sym_service</programlisting>
+        </para>
+        </listitem>
+        <listitem>Using <literal>install_initd</literal> command (CentOS Linux, Oracle Linux, SUSE Linux):
+        <para>
+            On CentOS Linux, Oracle Linux, and SUSE Linux install the service by calling:
+            <programlisting>/usr/lib/lsb/install_initd sym_service</programlisting>
+            Remove the service by calling:
+            <programlisting>/usr/lib/lsb/remove_initd sym_service</programlisting>
+        </para></listitem>
+          <listitem>
+            Using <literal>sysv-rc-conf</literal> command (Ubuntu Linux):
+        <para>
+            On Ubuntu Linux, you might need to use sysv-rc-conf instead of chkconfig.
+            Try running sys-rc-conf as a super user (consider utilizing apt-get to install sysv-rc-conf
+            if it is not present:  <literal>sudo apt-get install sysv-rc-conf</literal>).
+            Run sysv-rc-conf with the following command:
+            <programlisting>sudo sysv-rc-conf </programlisting>
+            You should see a list of the scripts residing in your /etc/init.d folder.
+            Use control-N to navigate through the list to locate sym_service, then activate the service
+            for the desired run-levels (most likely 2-5).
+        </para>
+        </listitem>
+        </orderedlist>
+        <para>
+            Finally, you can use the <command>service</command> command to start, stop, and query
+            the status of the service:
+            <programlisting>/sbin/service sym_service start
+/sbin/service sym_service stop
+/sbin/service sym_service status</programlisting>
+        </para>
+        <para>
+            Alternatively, call the init.d script directly:
+            <programlisting>/etc/init.d/sym_service start
+/etc/init.d/sym_service stop
+/etc/init.d/sym_service status
+            </programlisting>
         </para>
     </section>
     </section>

@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-assemble</artifactId>
     <packaging>pom</packaging>
-    <version>3.6.0-SNAPSHOT</version>
+    <version>3.5.22</version>
     <name>assemble</name>
     <licenses>
         <license>
@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.6.0-SNAPSHOT</version>
+        <version>3.5.22</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
     <properties>
@@ -37,7 +37,6 @@
         <module>../symmetric-client</module>
         <module>../symmetric-server</module>
         <module>../symmetric-android</module>
-        <module>../symmetric-wrapper</module>
     </modules>
     <build>
         <plugins>
@@ -215,12 +214,12 @@
                             <dependency>
                                 <groupId>org.jumpmind.symmetric</groupId>
                                 <artifactId>symmetric-util</artifactId>
-                                <version>3.6.0-SNAPSHOT</version>
+                                <version>3.5.22</version>
                             </dependency>
                             <dependency>
                                 <groupId>org.jumpmind.symmetric</groupId>
                                 <artifactId>symmetric-core</artifactId>
-                                <version>3.6.0-SNAPSHOT</version>
+                                <version>3.5.22</version>
                             </dependency>
                         </dependencies>
                     </plugin>

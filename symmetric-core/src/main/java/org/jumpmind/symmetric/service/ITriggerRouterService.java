@@ -41,8 +41,6 @@ public interface ITriggerRouterService {
     
     public List<TriggerHistory> getActiveTriggerHistories();
     
-    public List<TriggerHistory> getActiveTriggerHistories(Trigger trigger);
-    
     public List<TriggerHistory> getActiveTriggerHistories(String tableName);
 
     public List<TriggerRouter> getTriggerRouters();
@@ -95,8 +93,6 @@ public interface ITriggerRouterService {
      */
     public List<Router> getRoutersByGroupLink(NodeGroupLink link);
     
-    public boolean isRouterBeingUsed(String routerId);    
-    
     public void deleteRouter(Router router);
     
     public void saveRouter(Router router);
@@ -119,13 +115,7 @@ public interface ITriggerRouterService {
     public void createTriggersOnChannelForTables(String channelId, Set<Table> tables, String lastUpdateBy);
     
     public void createTriggersOnChannelForTables(String channelId, String catalogName, String schemaName, List<String> tables, String lastUpdateBy);
-    
-    public boolean isTriggerBeingUsed(String triggerId);
-    
-    public boolean doesTriggerExist(String triggerId);
-    
-    public boolean doesTriggerExistForTable(String tableName);
-    
+       
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(String sourceNodeGroupId, String targetNodeGroupId);
 
     public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(NodeGroupLink link, String catalogName, String schemaName, String tableName, boolean refreshCache);

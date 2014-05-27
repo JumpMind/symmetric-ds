@@ -87,11 +87,10 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("findNodeSecurityWithLoadEnabledSql",
                 "select node_id, node_password, registration_enabled, registration_time,                   "
                         + " initial_load_enabled, initial_load_time, created_at_node_id,                   "
-                        + " rev_initial_load_enabled, rev_initial_load_time, initial_load_id,              "
-                        + " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by        "
-                        + " from $(node_security)                                                          "
-                        + " where initial_load_enabled=1 or rev_initial_load_enabled=1                     "
-                        + "and created_at_node_id in (select node_id from sym_node_identity)               ");
+                        + " rev_initial_load_enabled, rev_initial_load_time, initial_load_id, " +
+                          " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by " +
+                          " from $(node_security)          "
+                        + " where initial_load_enabled=1 or rev_initial_load_enabled=1                     ");
 
         putSql("findAllNodeSecuritySql",
                 "select node_id, node_password, registration_enabled, registration_time,                   "
@@ -173,6 +172,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("findNodeHeartbeatsSql",
                 "select h.node_id, h.heartbeat_time, h.timezone_offset from $(node_host) h inner join $(node) n on h.node_id=n.node_id"
               + " where n.sync_enabled = 1 and h.heartbeat_time = (select max(hh.heartbeat_time) from $(node_host) hh where hh.node_id = h.node_id)");
+
 
     }
 

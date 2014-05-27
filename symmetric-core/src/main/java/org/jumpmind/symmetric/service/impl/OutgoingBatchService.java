@@ -84,11 +84,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         setSqlMap(new OutgoingBatchServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
-    @Override
-    public int cancelLoadBatches(long loadId) {
-        return sqlTemplate.update(getSql("cancelLoadBatchesSql"), loadId);
-    }
 
     public void markAllAsSentForNode(String nodeId, boolean includeConfigChannel) {
         OutgoingBatches batches = null;
@@ -118,23 +113,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 }
             }
         } while (batches.getBatches().size() > configCount);
-    }
-    
-    public void markAllConfigAsSentForNode(String nodeId) {
-        int updateCount;
-        do {
-            updateCount = 0;
-            OutgoingBatches batches = getOutgoingBatches(nodeId, false);
-            List<OutgoingBatch> list = batches.getBatches();                       
-            for (OutgoingBatch outgoingBatch : list) {
-                if (outgoingBatch.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
-                    outgoingBatch.setStatus(Status.OK);
-                    outgoingBatch.setErrorFlag(false);
-                    updateOutgoingBatch(outgoingBatch);
-                    updateCount++;
-                }
-            }
-        } while (updateCount > 0);
     }
 
     public void updateAbandonedRoutingBatches() {
@@ -372,7 +350,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         long executeTimeInMs = System.currentTimeMillis() - ts;
         if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-            log.info("{} took {} ms", "Selecting batches to extract", executeTimeInMs);
+            log.warn("{} took {} ms", "Selecting batches to extract", executeTimeInMs);
         }
 
         return batches;
@@ -450,12 +428,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchErrorsSql"), maxRows,
                 new OutgoingBatchMapper(true), null, null));
         return batches;
-    }
-    
-    public List<OutgoingBatch> getLastOutgoingBatchForEachNode() {
-        return sqlTemplate.query(
-                getSql("selectOutgoingBatchPrefixSql", "getLastOutgoingBatchForEachNodeSql"),
-                new OutgoingBatchMapper(true));
     }
 
     public boolean isInitialLoadComplete(String nodeId) {

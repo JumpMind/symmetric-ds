@@ -21,25 +21,19 @@
 package org.jumpmind.symmetric.statistic;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
-import org.apache.log4j.Level;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
-import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
@@ -48,8 +42,6 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IStatisticService;
-import org.jumpmind.util.LogSummary;
-import org.jumpmind.util.LogSummaryAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,10 +50,8 @@ import org.slf4j.LoggerFactory;
  */
 public class StatisticManager implements IStatisticManager {
 
-    private static final String LOG_SUMMARY_APPENDER_NAME = "SUMMARY";
-
     protected Logger log = LoggerFactory.getLogger(getClass());
-
+    
     private static final String UNKNOWN = "Unknown";
 
     private static final int NUMBER_OF_PERMITS = 1000;
@@ -72,8 +62,6 @@ public class StatisticManager implements IStatisticManager {
 
     private HostStats hostStats;
 
-    private ConcurrentHashMap<Long, RouterStats> routerStatsByBatch = new ConcurrentHashMap<Long, RouterStats>();
-
     protected INodeService nodeService;
 
     protected IStatisticService statisticService;
@@ -81,7 +69,7 @@ public class StatisticManager implements IStatisticManager {
     protected IParameterService parameterService;
 
     protected IConfigurationService configurationService;
-
+    
     protected IClusterService clusterService;
 
     protected Semaphore channelStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
@@ -89,85 +77,36 @@ public class StatisticManager implements IStatisticManager {
     protected Semaphore hostStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
     protected Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
-
+    
     protected Map<ProcessInfoKey, ProcessInfo> processInfos = new ConcurrentHashMap<ProcessInfoKey, ProcessInfo>();
 
-    protected Map<ProcessInfoKey, ProcessInfo> processInfosThatHaveDoneWork = new ConcurrentHashMap<ProcessInfoKey, ProcessInfo>();
-
     public StatisticManager(IParameterService parameterService, INodeService nodeService,
-            IConfigurationService configurationService, IStatisticService statisticsService,
-            IClusterService clusterService) {
+            IConfigurationService configurationService, IStatisticService statisticsService, IClusterService clusterService) {
         this.parameterService = parameterService;
         this.nodeService = nodeService;
         this.configurationService = configurationService;
         this.statisticService = statisticsService;
         this.clusterService = clusterService;
-        init();
     }
 
     protected void init() {
         incrementRestart();
-        registerLogSummaryAppender();
     }
-
-    protected void registerLogSummaryAppender() {
-        LogSummaryAppender appender = getLogSummaryAppender();
-        if (appender == null) {
-            appender = new LogSummaryAppender();
-            appender.setName(LOG_SUMMARY_APPENDER_NAME);
-            appender.setThreshold(Level.WARN);
-            org.apache.log4j.Logger.getRootLogger().addAppender(appender);
-        }
-    }
-
-    protected LogSummaryAppender getLogSummaryAppender() {
-        return (LogSummaryAppender) org.apache.log4j.Logger.getRootLogger().getAppender(
-                LOG_SUMMARY_APPENDER_NAME);
-    }
-
-    public void clearAllLogSummaries() {
-        LogSummaryAppender appender = getLogSummaryAppender();
-        if (appender != null) {
-            appender.clearAll(parameterService.getEngineName());
-        }
-    }
-
-    public List<LogSummary> getLogSummaryWarnings() {
-        return getLogSummaries(Level.WARN);
-    }
-
-    public List<LogSummary> getLogSummaryErrors() {
-        return getLogSummaries(Level.ERROR);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected List<LogSummary> getLogSummaries(Level level) {
-        LogSummaryAppender appender = getLogSummaryAppender();
-        if (appender != null) {
-            return appender.getLogSummaries(parameterService.getEngineName(), level);
-        } else {
-            return Collections.EMPTY_LIST;
-        }
-    }
-
+    
     public ProcessInfo newProcessInfo(ProcessInfoKey key) {
         ProcessInfo process = new ProcessInfo(key);
         ProcessInfo old = processInfos.get(key);
-        if (old != null) {
-            if (old.getStatus() != Status.DONE && old.getStatus() != Status.ERROR) {
-                log.warn(
-                        "Starting a new process even though the previous one ({}) had not finished",
-                        old.toString());
-            }
-
-            if (old.getCurrentBatchDataCount() > 0) {
-                processInfosThatHaveDoneWork.put(key, old);
-            }
+        if (old != null && (old.getStatus() != Status.DONE && old.getStatus() != Status.ERROR)) {
+            log.warn("Starting a new process even though the previous one ({}) had not finished", old.toString());
         }
         processInfos.put(key, process);
         return process;
     }
-
+    
+    public void removeProcessInfo(ProcessInfoKey key) {
+        processInfos.remove(key);
+    }
+    
     public Set<String> getNodesWithProcessesInError() {
         String identityNodeId = nodeService.findIdentityNodeId();
         Set<String> status = new HashSet<String>();
@@ -182,34 +121,11 @@ public class StatisticManager implements IStatisticManager {
         }
         return status;
     }
-
+    
     public List<ProcessInfo> getProcessInfos() {
         List<ProcessInfo> list = new ArrayList<ProcessInfo>(processInfos.values());
         Collections.sort(list);
         return list;
-    }
-
-    public List<ProcessInfo> getProcessInfosThatHaveDoneWork() {
-        List<ProcessInfo> toReturn = new ArrayList<ProcessInfo>();
-        List<ProcessInfo> infosList = new ArrayList<ProcessInfo>(processInfos.values());
-        Iterator<ProcessInfo> i = infosList.iterator();
-        while (i.hasNext()) {
-            boolean addedOneThatDidWork = false;
-            ProcessInfo info = i.next().copy();
-            if (info.getStatus() == ProcessInfo.Status.DONE && info.getCurrentBatchDataCount() == 0) {
-                ProcessInfo lastThatDidWork = processInfosThatHaveDoneWork.get(info.getKey());
-                if (lastThatDidWork != null) {
-                    toReturn.add(lastThatDidWork);
-                    addedOneThatDidWork = true;
-                }
-            }
-
-            if (!addedOneThatDidWork) {
-                toReturn.add(info);
-            }
-        }
-        Collections.sort(toReturn);
-        return toReturn;
     }
 
     public void addJobStats(String jobName, long startTime, long endTime, long processedCount) {
@@ -220,26 +136,6 @@ public class StatisticManager implements IStatisticManager {
         } finally {
             jobStatsLock.release();
         }
-    }
-
-    public RouterStats getRouterStatsByBatch(Long batchId) {
-        return routerStatsByBatch.get(batchId);
-    }
-
-    public void addRouterStats(long startDataId, long endDataId, long dataReadCount,
-            long peekAheadFillCount, List<DataGap> dataGaps, Set<String> transactions,
-            Collection<OutgoingBatch> batches) {
-        RouterStats routerStats = new RouterStats(startDataId, endDataId, dataReadCount,
-                peekAheadFillCount, dataGaps, transactions);
-        for (OutgoingBatch batch : batches) {
-            if (!batch.getNodeId().equals(Constants.UNROUTED_NODE_ID)) {
-                routerStatsByBatch.put(batch.getBatchId(), routerStats);
-            }
-        }
-    }
-
-    public void removeRouterStatsByBatch(Long batchId) {
-        routerStatsByBatch.remove(batchId);
     }
 
     public void incrementDataRouted(String channelId, long count) {
@@ -495,14 +391,6 @@ public class StatisticManager implements IStatisticManager {
     }
 
     public void flush() {
-
-        LogSummaryAppender appender = getLogSummaryAppender();
-        if (appender != null) {
-            appender.purgeOlderThan(System.currentTimeMillis()
-                    - parameterService.getLong(ParameterConstants.PURGE_LOG_SUMMARY_MINUTES, 60)
-                    * 60000);
-        }
-
         boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE,
                 false);
         if (channelStats != null) {
@@ -607,8 +495,8 @@ public class StatisticManager implements IStatisticManager {
         if (stats == null) {
             Node node = nodeService.getCachedIdentity();
             if (node != null) {
-                stats = new ChannelStats(node.getNodeId(), clusterService.getServerId(),
-                        new Date(), null, channelId);
+                stats = new ChannelStats(node.getNodeId(), clusterService.getServerId(), new Date(),
+                        null, channelId);
                 channelStats.put(channelId, stats);
             } else {
                 stats = new ChannelStats(UNKNOWN, clusterService.getServerId(), new Date(), null,
@@ -623,8 +511,8 @@ public class StatisticManager implements IStatisticManager {
         if (hostStats == null) {
             Node node = nodeService.getCachedIdentity();
             if (node != null) {
-                hostStats = new HostStats(node.getNodeId(), clusterService.getServerId(),
-                        new Date(), null);
+                hostStats = new HostStats(node.getNodeId(), clusterService.getServerId(), new Date(),
+                        null);
             } else {
                 hostStats = new HostStats(UNKNOWN, clusterService.getServerId(), new Date(), null);
             }

@@ -3,13 +3,13 @@
 	<groupId>org.jumpmind.symmetric</groupId>
 	<artifactId>symmetric-core</artifactId>
 	<packaging>jar</packaging>
-	<version>3.6.0-SNAPSHOT</version>
+	<version>3.5.22</version>
 	<name>core</name>
 
 	<parent>
 		<groupId>org.jumpmind.symmetric</groupId>
 		<artifactId>symmetric-parent</artifactId>
-		<version>3.6.0-SNAPSHOT</version>
+		<version>3.5.22</version>
 		<relativePath>../symmetric-parent/pom.xml</relativePath>
 	</parent>
     
@@ -80,31 +80,6 @@
 			<artifactId>log4j</artifactId>
 			<scope>provided</scope>
 		</dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-core</artifactId>
-            <scope>test</scope>
-        </dependency>
 	</dependencies>
 
 </project>

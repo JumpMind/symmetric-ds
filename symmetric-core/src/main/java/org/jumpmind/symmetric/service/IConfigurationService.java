@@ -50,9 +50,9 @@ public interface IConfigurationService {
     
     public List<NodeGroupLink> getNodeGroupLinks(boolean refreshCache);
 
-    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId, boolean refreshCache);
+    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId);
     
-    public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId, boolean refreshCache);
+    public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId);
     
     /**
      * Check to see if the channel is currently being used in the system.
@@ -80,8 +80,6 @@ public interface IConfigurationService {
     public NodeChannel getNodeChannel(String channelId, boolean refreshExtractMillis);
     
     public Channel getChannel (String channelId);
-    
-    public List<Channel> getFileSyncChannels();
     
     public Map<String, Channel> getChannels(boolean refreshCache);
 

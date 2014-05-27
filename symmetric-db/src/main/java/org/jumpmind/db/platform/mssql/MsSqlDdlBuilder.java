@@ -57,7 +57,7 @@ import org.jumpmind.db.platform.PlatformUtils;
 /*
  * The SQL Builder for the Microsoft SQL Server.
  */
-public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
+public class MsSqlDdlBuilder extends AbstractDdlBuilder {
 
     /* We use a generic date format. */
     private DateFormat _genericDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -65,22 +65,14 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     /* We use a generic date format. */
     private DateFormat _genericTimeFormat = new SimpleDateFormat("HH:mm:ss");
 
-    public MsSql2000DdlBuilder(String databaseName) {
-        super(databaseName);
-        setup();
-    }
-    
-    public MsSql2000DdlBuilder() {
-        super(DatabaseNamesConstants.MSSQL2000);
-        setup();
-    }
-    
-    protected void setup() {
+    public MsSqlDdlBuilder() {
+
+        super(DatabaseNamesConstants.MSSQL);
+        
         databaseInfo.setMaxIdentifierLength(128);
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "IMAGE", Types.LONGVARBINARY);
         // BIGINT will be mapped back to BIGINT by the model reader
-        //databaseInfo.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
-        databaseInfo.addNativeTypeMapping(Types.BIGINT, "BIGINT", Types.BIGINT);
+        databaseInfo.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
         databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATETIME", Types.TIMESTAMP);
@@ -690,13 +682,5 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
      */
     protected String createUniqueIdentifier() {
         return new UID().toString().replace(':', '_').replace('-', '_');
-    }
-    
-    @Override
-    protected void filterColumnSqlType(StringBuilder sqlType) {
-        int identityIndex = sqlType.indexOf("identity");
-        if (identityIndex > 0) {
-            sqlType.replace(identityIndex, sqlType.length(), "");
-        }
     }
 }

@@ -59,7 +59,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "         'I',                                                                                                                                                             \n" +
 "         $(triggerHistoryId),                                                                                                                                             \n" +
 "         $(columns),                                                                                                                                                      \n" +
-"         $(channelExpression),                                                                                                                                                \n" +
+"         '$(channelName)',                                                                                                                                                \n" +
 "         $(txIdExpression),                                                                                                                                               \n" +
 "         rdb$get_context('USER_SESSION', 'sync_node_disabled'),                                                                                                           \n" +
 "         $(externalSelect),                                                                                                                                               \n" +
@@ -85,7 +85,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "         $(oldKeys),                                                                                                                                                      \n" +
 "         $(columns),                                                                                                                                                      \n" +
 "         $(oldColumns),                                                                                                                                                   \n" +
-"         $(channelExpression),                                                                                                                                                \n" +
+"         '$(channelName)',                                                                                                                                                \n" +
 "         $(txIdExpression),                                                                                                                                               \n" +
 "         rdb$get_context('USER_SESSION', 'sync_node_disabled'),                                                                                                           \n" +
 "         $(externalSelect),                                                                                                                                               \n" +
@@ -110,7 +110,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "         $(triggerHistoryId),                                                                                                                                             \n" +
 "         $(oldKeys),                                                                                                                                                      \n" +
 "         $(oldColumns),                                                                                                                                                   \n" +
-"         $(channelExpression),                                                                                                                                                \n" +
+"         '$(channelName)',                                                                                                                                                \n" +
 "         $(txIdExpression),                                                                                                                                               \n" +
 "         rdb$get_context('USER_SESSION', 'sync_node_disabled'),                                                                                                           \n" +
 "         $(externalSelect),                                                                                                                                               \n" +

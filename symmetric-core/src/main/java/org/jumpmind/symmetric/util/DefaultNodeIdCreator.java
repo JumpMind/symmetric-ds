@@ -80,21 +80,16 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
             nodeId = evaluateScript(node, remoteHost, remoteAddress);
             if (StringUtils.isBlank(nodeId)) {
                 nodeId = buildNodeId(nodeService, node);
-                
-                if (parameterService.is(ParameterConstants.EXTERNAL_ID_IS_UNIQUE)) {
-                    for (int sequence = 0; sequence < maxTries; sequence++) {
-                        if (nodeService.findNode(nodeId) == null || autoRegisterEnabled) {                        
-                            break;
-                        }
-                        nodeId = buildNodeId(nodeService, node) + "-" + sequence;
-                        
-                        if (nodeService.findNode(nodeId) != null && !autoRegisterEnabled) {
-                            nodeId = null;
-                        }
+                for (int sequence = 0; sequence < maxTries; sequence++) {
+                    if (nodeService.findNode(nodeId) == null || autoRegisterEnabled) {                        
+                        break;
                     }
+                    nodeId = buildNodeId(nodeService, node) + "-" + sequence;
                 }
                 
-                
+                if (nodeService.findNode(nodeId) != null && !autoRegisterEnabled) {
+                    nodeId = null;
+                }
             }
         }
 

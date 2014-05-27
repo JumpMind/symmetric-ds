@@ -34,13 +34,10 @@ final public class DatabaseNamesConstants {
     public final static String FIREBIRD = "firebird";
     public final static String SQLITE = "sqlite";
     public final static String INTERBASE = "interbase";
-    public final static String MSSQL2000 = "mssql2000";
-    public final static String MSSQL2005 = "mssql2005";
-    public final static String MSSQL2008 = "mssql2008";
+    public final static String MSSQL = "mssql";
     public final static String ORACLE = "oracle";
     public final static String MYSQL = "mysql";
     public final static String DB2 = "db2";
-    public final static String DB2ZOS = "db2zos";
     public final static String POSTGRESQL = "postgres";
     public final static String ASE = "ase";
     public final static String SQLANYWHERE = "sqlanywhere";

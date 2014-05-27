@@ -193,7 +193,7 @@ abstract public class AbstractParameterService {
     }
 
     public String getRegistrationUrl() {
-        String url = substituteVariables(ParameterConstants.REGISTRATION_URL);
+        String url = getString(ParameterConstants.REGISTRATION_URL);
         if (url != null) {
             url = url.trim();
         }
@@ -240,9 +240,6 @@ abstract public class AbstractParameterService {
         if (!StringUtils.isBlank(value)) {
             if (value.contains("hostName")) {
                 value = FormatUtils.replace("hostName", AppUtils.getHostName(), value);
-            }
-            if (value.contains("portNumber")) {
-                value = FormatUtils.replace("portNumber", AppUtils.getPortNumber(), value);
             }
             if (value.contains("ipAddress")) {
                 value = FormatUtils.replace("ipAddress", AppUtils.getIpAddress(), value);

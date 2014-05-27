@@ -20,7 +20,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
 
     protected static final byte[] DELIMITER = "||".getBytes();
     protected NativeJdbcExtractor jdbcExtractor;
@@ -34,7 +34,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected boolean needsColumnsReordered;
     protected Table table = null;
     protected Table databaseTable = null;
-
+    
 	public MsSqlBulkDatabaseWriter(IDatabasePlatform platform,
 			IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
 			int maxRowsBeforeFlush, boolean fireTriggers, String uncPath) {
@@ -51,12 +51,12 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
         if (super.start(table)) {
             needsBinaryConversion = false;
             if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
-                for (Column column : targetTable.getColumns()) {
-                    if (column.isOfBinaryType()) {
-                        needsBinaryConversion = true;
-                        break;
-                    }
-                }
+	            for (Column column : targetTable.getColumns()) {
+	                if (column.isOfBinaryType()) {
+	                    needsBinaryConversion = true;
+	                    break;
+	                }
+	            }
             }
             databaseTable = platform.getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
                     sourceTable.getName(), false);
@@ -105,9 +105,9 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                         Column[] columns = targetTable.getColumns();
                         for (int i = 0; i < columns.length; i++) {
                             if (columns[i].isOfBinaryType()) {
-                                if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64) && parsedData[i] != null) {
-                                    parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
-                                }
+                            	if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64) && parsedData[i] != null) {
+                            		parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
+                            	}
                             }
                         }
                     }
@@ -172,7 +172,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            String sql = String.format("BULK INSERT " + 
 	            		this.getTargetTable().getFullyQualifiedTableName() + 
 	            		" FROM '" + filename) + "'" +
-	            		" WITH ( FIELDTERMINATOR='||', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
+                        " WITH ( FIELDTERMINATOR='||', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
@@ -186,7 +186,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        }
 	        this.stagedInputFile.delete();
 	        createStagingFile();
-	        loadedRows = 0;
+            loadedRows = 0;
         }
     }
     

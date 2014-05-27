@@ -37,8 +37,6 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectCountBatchesPrefixSql" ,"" + 
 "select count(*) from $(outgoing_batch)   " );
-        
-        putSql("cancelLoadBatchesSql", "update $(outgoing_batch) set ignore_count=1, status='OK' where load_id=?");
 
         putSql("insertOutgoingBatchSql" ,"" + 
 "insert into $(outgoing_batch)                                                                                                                " + 
@@ -107,10 +105,6 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         		"where b.channel_id='reload' " +
         		"group by b.load_id, b.node_id, b.status, d.event_type, b.create_by " +
         		"order by b.load_id desc");
-        
-        putSql("getLastOutgoingBatchForEachNodeSql"," b inner join \n" + 
-                "(select min(batch_id) as id, node_id, status from sym_outgoing_batch where node_id != '-1' group by node_id, status) bo \n" + 
-                "on b.batch_id=bo.id and b.node_id=bo.node_id");
 
     }
 

@@ -30,9 +30,7 @@ import org.jumpmind.db.platform.hsqldb.HsqlDbDdlBuilder;
 import org.jumpmind.db.platform.hsqldb2.HsqlDb2DdlBuilder;
 import org.jumpmind.db.platform.informix.InformixDdlBuilder;
 import org.jumpmind.db.platform.interbase.InterbaseDdlBuilder;
-import org.jumpmind.db.platform.mssql.MsSql2000DdlBuilder;
-import org.jumpmind.db.platform.mssql.MsSql2005DdlBuilder;
-import org.jumpmind.db.platform.mssql.MsSql2008DdlBuilder;
+import org.jumpmind.db.platform.mssql.MsSqlDdlBuilder;
 import org.jumpmind.db.platform.mysql.MySqlDdlBuilder;
 import org.jumpmind.db.platform.oracle.OracleDdlBuilder;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDdlBuilder;
@@ -70,12 +68,8 @@ final public class DdlBuilderFactory {
             return new InformixDdlBuilder();
         } else if (DatabaseNamesConstants.INTERBASE.equalsIgnoreCase(databaseName)) {
             return new InterbaseDdlBuilder();
-        } else if (DatabaseNamesConstants.MSSQL2000.equalsIgnoreCase(databaseName)) {
-            return new MsSql2000DdlBuilder();
-        } else if (DatabaseNamesConstants.MSSQL2005.equalsIgnoreCase(databaseName)) {
-            return new MsSql2005DdlBuilder();
-        } else if (DatabaseNamesConstants.MSSQL2008.equalsIgnoreCase(databaseName)) {
-            return new MsSql2008DdlBuilder();
+        } else if (DatabaseNamesConstants.MSSQL.equalsIgnoreCase(databaseName)) {
+            return new MsSqlDdlBuilder();
         } else if (DatabaseNamesConstants.MYSQL.equalsIgnoreCase(databaseName)) {
             return new MySqlDdlBuilder();
         } else if (DatabaseNamesConstants.ORACLE.equalsIgnoreCase(databaseName)) {

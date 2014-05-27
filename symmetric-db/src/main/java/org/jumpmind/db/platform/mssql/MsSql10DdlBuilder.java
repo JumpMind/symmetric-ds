@@ -18,8 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.service.impl;
+package org.jumpmind.db.platform.mssql;
 
-public class JdbcClusterServiceTest extends AbstractClusterServiceTest {
+import java.sql.Types;
+
+public class MsSql10DdlBuilder extends MsSqlDdlBuilder {
+    
+    public MsSql10DdlBuilder() {
+        databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.DATE);
+    }
 
 }

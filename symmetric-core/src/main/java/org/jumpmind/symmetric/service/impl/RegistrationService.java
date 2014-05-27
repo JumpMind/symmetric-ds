@@ -50,7 +50,6 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.RegistrationFailedException;
@@ -76,8 +75,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private IDataLoaderService dataLoaderService;
 
     private ITransportManager transportManager;
-    
-    private IOutgoingBatchService outgoingBatchService;
 
     private RandomTimeSlot randomTimeSlot;
 
@@ -91,7 +88,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             ISymmetricDialect symmetricDialect, INodeService nodeService,
             IDataExtractorService dataExtractorService, IDataService dataService,
             IDataLoaderService dataLoaderService, ITransportManager transportManager,
-            IStatisticManager statisticManager, IConfigurationService configurationService, IOutgoingBatchService outgoingBatchService) {
+            IStatisticManager statisticManager, IConfigurationService configurationService) {
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.dataExtractorService = dataExtractorService;
@@ -100,7 +97,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
         this.transportManager = transportManager;
         this.statisticManager = statisticManager;
         this.configurationService = configurationService;
-        this.outgoingBatchService = outgoingBatchService;
         this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(), 30);
         setSqlMap(new RegistrationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -131,11 +127,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
         return registerNode(preRegisteredNode, null, null, out, isRequestedRegistration);
     }
 
-    protected void extractConfiguration(OutputStream out, Node registeredNode) {
+    public void extractConfiguration(OutputStream out, Node registeredNode) {
         dataExtractorService.extractConfigurationStandalone(registeredNode, out);
     }
     
-    protected Node processRegistration(Node nodePriorToRegistration, String remoteHost,
+    public Node processRegistration(Node nodePriorToRegistration, String remoteHost,
             String remoteAddress, boolean isRequestedRegistration, String deploymentType)
             throws IOException {
 
@@ -182,7 +178,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
              * that is requesting registration
              */
             NodeGroupLink link = configurationService.getNodeGroupLinkFor(
-                    identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId(), false);
+                    identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId());
             if (link == null
                     && parameterService.is(ParameterConstants.REGISTRATION_REQUIRE_NODE_GROUP_LINK,
                             true)) {
@@ -270,11 +266,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 remoteAddress, isRequestedRegistration, null);
 
         if (processedNode.isSyncEnabled()) {
-            /*
-             * Mark all configuration batches as processed because we are about to reload
-             * the configuration for the node
-             */
-            outgoingBatchService.markAllConfigAsSentForNode(processedNode.getNodeId());
         	extractConfiguration(out, processedNode);
         }
         
@@ -379,8 +370,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private void sleepBeforeRegistrationRetry() {
         long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
                 * randomTimeSlot.getRandomValueSeededByExternalId();
-        log.warn("Could not register.  Sleeping before attempting again.", sleepTimeInMs);
-        log.info("Sleeping for {}ms", sleepTimeInMs);
+        log.warn("Could not register.  Sleeping for {} ms before attempting again.", sleepTimeInMs);
         AppUtils.sleep(sleepTimeInMs);
     }
 
@@ -431,7 +421,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 Node node = nodeService.findIdentity();
                 if (node != null) {
                     log.info("Successfully registered node [id={}]", node.getNodeId());
-                    dataService.heartbeat(true);
                 } else {
                     log.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error");
                     registered = false;

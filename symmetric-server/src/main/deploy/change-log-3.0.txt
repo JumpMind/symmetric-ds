@@ -30,8 +30,7 @@ SymmetricDS - 3.5.20 (Released 2014-04-14)
 - 0001666: [Bug] SQL Server bulk loader does not handle comma (elong) - closed.
 - 0001667: [Improvement] Support capturing only changed data (trigger.update.capture.changed.data.only.enabled) on SQL Server (chenson) - closed.
 
-
-SymmetricDS - 3.5.19 (Released 2014-03-16)
+SymmetricDS - 3.5.19 (Released 2014-03-16) 
 ==========================================
 - 0001629: [Improvement] SQL Server bulk loader option to fire triggers (elong) - closed.
 - 0001630: [Bug] SQL Server bulk loader extra spaces causes truncation error (elong) - closed.

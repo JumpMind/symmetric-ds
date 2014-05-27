@@ -612,8 +612,8 @@ public class DbFill {
     }
 
     private Object randomTinyInt() {
-        // TINYINT (-128 to 127) or (0 to 255) depending on database platform
-        return new Integer(getRand().nextInt(127));
+        // TINYINT (-128 to 127)
+        return new Integer(getRand().nextInt(256) - 128);
     }
 
     private String randomString(int maxLength) {

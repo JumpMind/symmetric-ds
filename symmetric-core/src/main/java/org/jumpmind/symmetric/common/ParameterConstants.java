@@ -86,6 +86,7 @@ final public class ParameterConstants {
 
     public final static String AUTO_REGISTER_ENABLED = "auto.registration";
     public final static String AUTO_RELOAD_ENABLED = "auto.reload";
+    public final static String AUTO_RELOAD_SYM_ON_UPGRADE = "auto.reload.sym.tables.on.upgrade";
     public final static String AUTO_RELOAD_REVERSE_ENABLED = "auto.reload.reverse";
     public final static String AUTO_INSERT_REG_SVR_IF_NOT_FOUND = "auto.insert.registration.svr.if.not.found";
     public final static String AUTO_SYNC_CONFIGURATION = "auto.sync.configuration";
@@ -105,9 +106,10 @@ final public class ParameterConstants {
     public final static String INITIAL_LOAD_DELETE_FIRST_SQL = "initial.load.delete.first.sql";
     public final static String INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
     public final static String INITIAL_LOAD_USE_RELOAD_CHANNEL = "initial.load.use.reload.channel";
-    public final static String INITIAL_LOAD_REVERSE_FIRST = "initial.load.reverse.first";
-    public final static String INITIAL_LOAD_USE_EXTRACT_JOB = "initial.load.use.extract.job.enabled";
     public final static String INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED = "initial.load.concat.csv.in.sql.enabled";
+    public final static String INTITAL_LOAD_REVERSE_FIRST = "initial.load.reverse.first";
+    public final static String INTITAL_LOAD_USE_EXTRACT_JOB = "initial.load.use.extract.job.enabled";
+
     public final static String INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER = "initial.load.extract.thread.per.server.count";
     public final static String INITIAL_LOAD_EXTRACT_TIMEOUT_MS = "initial.load.extract.timeout.ms";
     public final static String INITIAL_LOAD_EXTRACT_JOB_START = "start.initial.load.extract.job";
@@ -132,7 +134,6 @@ final public class ParameterConstants {
     public final static String ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES = "routing.data.reader.type.gap.retention.period.minutes";
     public final static String ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED = "routing.data.reader.order.by.gap.id.enabled";
     public final static String ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY = "routing.data.reader.threshold.gaps.to.use.greater.than.query";
-    public final static String ROUTING_LOG_STATS_ON_BATCH_ERROR = "routing.log.stats.on.batch.error";
 
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
     @Deprecated
@@ -192,22 +193,16 @@ final public class ParameterConstants {
     public final static String DB_FETCH_SIZE = "db.jdbc.streaming.results.fetch.size";
     public final static String DB_DELIMITED_IDENTIFIER_MODE = "db.delimited.identifier.mode";
     public final static String DB_JNDI_NAME = "db.jndi.name";
-    public final static String DB_SPRING_BEAN_NAME = "db.spring.bean.name";
 
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
 
     public final static String NODE_ID_CREATOR_SCRIPT = "node.id.creator.script";
     public final static String NODE_ID_CREATOR_MAX_NODES = "node.id.creator.max.nodes";
-    
-    public final static String EXTERNAL_ID_IS_UNIQUE = "external.id.is.unique.enabled";
 
     public final static String CLUSTER_SERVER_ID = "cluster.server.id";
     public final static String CLUSTER_LOCKING_ENABLED = "cluster.lock.enabled";
     public final static String CLUSTER_LOCK_TIMEOUT_MS = "cluster.lock.timeout.ms";
-    public final static String LOCK_TIMEOUT_MS = "lock.timeout.ms";
-    public final static String LOCK_WAIT_RETRY_MILLIS = "lock.wait.retry.ms";
 
-    public final static String PURGE_LOG_SUMMARY_MINUTES = "purge.log.summary.retention.minutes";
     public final static String PURGE_RETENTION_MINUTES = "purge.retention.minutes";
     public final static String PURGE_EXTRACT_REQUESTS_RETENTION_MINUTES = "purge.extract.request.retention.minutes";
     public final static String PURGE_REGISTRATION_REQUEST_RETENTION_MINUTES = "purge.registration.request.retention.minutes";
@@ -250,12 +245,10 @@ final public class ParameterConstants {
 
     public final static String FILE_SYNC_ENABLE = "file.sync.enable";
 
-    public final static String FILE_SYNC_LOCK_WAIT_MS = "file.sync.lock.wait.ms";
-
     public final static String BSH_LOAD_FILTER_HANDLES_MISSING_TABLES = "bsh.load.filter.handles.missing.tables";
-    
-    public final static String MSSQL_ROW_LEVEL_LOCKS_ONLY = "mssql.allow.only.row.level.locks.on.runtime.tables";
 
+    public final static String MSSQL_ROW_LEVEL_LOCKS_ONLY = "mssql.allow.only.row.level.locks.on.runtime.tables";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

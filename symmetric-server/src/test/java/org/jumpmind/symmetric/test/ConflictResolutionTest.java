@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.Types;
@@ -36,7 +37,7 @@ public class ConflictResolutionTest extends AbstractTest {
 
         loadConfigAndRegisterNode("client", "server");
 
-        push("client");
+        assertFalse(push("client"));
 
         testBasicSync(rootServer, clientServer);
         testExistingRowInServerInsertOnClient(rootServer, clientServer);

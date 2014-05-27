@@ -104,6 +104,9 @@ abstract public class AbstractTriggerTemplate {
 
     protected ISymmetricDialect symmetricDialect;
 
+    protected AbstractTriggerTemplate() {
+    }
+
     protected AbstractTriggerTemplate(ISymmetricDialect symmetricDialect) {
         this.symmetricDialect = symmetricDialect;
     }
@@ -141,7 +144,7 @@ abstract public class AbstractTriggerTemplate {
             }
             sql = FormatUtils.replace("columns", columnList.toString(), sql);
         }
-
+        
         String initialLoadSelect = StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
                 : triggerRouter.getInitialLoadSelect();
         if (StringUtils.isNotBlank(overrideSelectSql)) {
@@ -322,9 +325,6 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("txIdExpression",
                 symmetricDialect.preProcessTriggerSqlClause(triggerExpression), ddl);
 
-        ddl = FormatUtils.replace("channelExpression", symmetricDialect.preProcessTriggerSqlClause(getChannelExpression(trigger)),
-                ddl);
-        
         ddl = FormatUtils.replace("externalSelect", (trigger.getExternalSelect() == null ? "null"
                 : "(" + symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect())
                         + ")"), ddl);
@@ -452,18 +452,6 @@ abstract public class AbstractTriggerTemplate {
                 break;
         }
         return ddl;
-    }
-    
-    protected String getChannelExpression(Trigger trigger) {
-        if (trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC)) {
-            if (StringUtils.isNotBlank(trigger.getChannelExpression())) {
-                return trigger.getChannelExpression();
-            } else {
-                throw new IllegalStateException("When the channel is set to '" + Constants.CHANNEL_DYNAMIC + "', a channel expression must be provided.");
-            }
-        } else {
-            return "'" + trigger.getChannelId() + "'";
-        }
     }
 
     protected String buildVirtualTableSql(String oldTriggerValue, String newTriggerValue,
@@ -801,8 +789,6 @@ abstract public class AbstractTriggerTemplate {
                     break;
                 case Types.CHAR:
                 case Types.VARCHAR:
-                case ColumnTypes.NVARCHAR:
-                case ColumnTypes.LONGNVARCHAR:
                 case Types.LONGVARCHAR:
                     text += "varchar(1000)\n";
                     break;

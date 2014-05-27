@@ -1668,13 +1668,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void writeTableCreationStmt(Table table, StringBuilder ddl) {
         ddl.append("CREATE TABLE ");
-        // TODO: use getDelimitedIdentifier() around catalog/schema, but we'll need to get the case right
-        if (StringUtils.isNotBlank(table.getCatalog())) {
-            ddl.append(table.getCatalog()).append(".");
-        }
-        if (StringUtils.isNotBlank(table.getSchema())) {
-            ddl.append(table.getSchema()).append(".");
-        }
         printlnIdentifier(getTableName(table.getName()), ddl);
         println("(", ddl);
 
@@ -1826,7 +1819,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
         
         int sizePos = nativeType.indexOf(SIZE_PLACEHOLDER);
-        StringBuilder sqlType = new StringBuilder();
+        StringBuffer sqlType = new StringBuffer();
 
         sqlType.append(sizePos >= 0 ? nativeType.substring(0, sizePos) : nativeType);
 
@@ -1868,12 +1861,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         sqlType.append(sizePos >= 0 ? nativeType.substring(sizePos + SIZE_PLACEHOLDER.length())
                 : "");
 
-        filterColumnSqlType(sqlType);
         return sqlType.toString();
-    }
-    
-    protected void filterColumnSqlType(StringBuilder sqlType) {
-        // Default is to not filter but allows subclasses to filter as needed.
     }
 
     /**

@@ -483,6 +483,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (useVariableDates) {
             long diff = date.getTime() - System.currentTimeMillis();
             return "${curdate" + diff + "}";
+        } else if (type == Types.TIME) {
+            return FormatUtils.TIME_FORMATTER.format(date);
         } else {
             return FormatUtils.TIMESTAMP_FORMATTER.format(date);
         }

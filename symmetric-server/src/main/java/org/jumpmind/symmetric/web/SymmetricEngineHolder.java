@@ -53,7 +53,6 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 
 public class SymmetricEngineHolder {
 
@@ -74,8 +73,6 @@ public class SymmetricEngineHolder {
     private boolean autoStart = true;
     
     private boolean autoCreate = true;
-    
-    private ApplicationContext springContext;
 
     private String singleServerPropertiesFile;
 
@@ -204,10 +201,6 @@ public class SymmetricEngineHolder {
 		}
 
     }
-    
-    public void setSpringContext(ApplicationContext applicationContext) {
-        this.springContext = applicationContext;
-    }
 
     public int getEngineCount() {
         return engineCount;
@@ -217,7 +210,7 @@ public class SymmetricEngineHolder {
         ServerSymmetricEngine engine = null;
         try {
             engine = new ServerSymmetricEngine(propertiesFile != null ? new File(propertiesFile)
-                    : null, springContext);
+                    : null);
             engine.setDeploymentType(deploymentType);
             if (!engines.containsKey(engine.getEngineName())) {
                 engines.put(engine.getEngineName(), engine);
@@ -275,19 +268,19 @@ public class SymmetricEngineHolder {
 
             String registrationUrl = properties.getProperty(ParameterConstants.REGISTRATION_URL);
             if (StringUtils.isNotBlank(registrationUrl)) {
-                Collection<ServerSymmetricEngine> all = getEngines().values();
-                for (ISymmetricEngine currentEngine : all) {
-                    if (currentEngine.getParameterService().getSyncUrl()
+                Collection<ServerSymmetricEngine> servers = getEngines().values();
+                for (ISymmetricEngine symmetricWebServer : servers) {
+                    if (symmetricWebServer.getParameterService().getSyncUrl()
                             .equals(registrationUrl)) {
-                        String serverNodeGroupId = currentEngine.getParameterService()
+                        String serverNodeGroupId = symmetricWebServer.getParameterService()
                                 .getNodeGroupId();
                         String clientNodeGroupId = properties
                                 .getProperty(ParameterConstants.NODE_GROUP_ID);
                         String externalId = properties.getProperty(ParameterConstants.EXTERNAL_ID);
 
-                        IConfigurationService configurationService = currentEngine
+                        IConfigurationService configurationService = symmetricWebServer
                                 .getConfigurationService();
-                        ITriggerRouterService triggerRouterService = currentEngine.
+                        ITriggerRouterService triggerRouterService = symmetricWebServer.
                                 getTriggerRouterService();
                         List<NodeGroup> groups = configurationService.getNodeGroups();
                         boolean foundGroup = false;
@@ -303,7 +296,7 @@ public class SymmetricEngineHolder {
 
                         boolean foundLink = false;
                         List<NodeGroupLink> links = configurationService
-                                .getNodeGroupLinksFor(serverNodeGroupId, false);
+                                .getNodeGroupLinksFor(serverNodeGroupId);
                         for (NodeGroupLink nodeGroupLink : links) {
                             if (nodeGroupLink.getTargetNodeGroupId().equals(clientNodeGroupId)) {
                                 foundLink = true;
@@ -316,7 +309,7 @@ public class SymmetricEngineHolder {
                             triggerRouterService.syncTriggers();
                         }
 
-                        IRegistrationService registrationService = currentEngine
+                        IRegistrationService registrationService = symmetricWebServer
                                 .getRegistrationService();
                         if (!registrationService.isAutoRegistration()
                                 && !registrationService.isRegistrationOpen(clientNodeGroupId,
