@@ -163,7 +163,6 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         this.currentBatchId = currentBatchId;
         this.currentBatchStartTime = new Date();
         this.currentBatchDataCount = 0;
-        this.currentLoadId = 0;
     }
     
     public void setCurrentLoadId(long loadId) {
