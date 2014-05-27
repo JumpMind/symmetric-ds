@@ -36,13 +36,13 @@ public class Channel implements Serializable {
 
     private int processingOrder;
 
-    private int maxBatchSize;
+    private int maxBatchSize = 10000;
 
-    private int maxBatchToSend;
+    private int maxBatchToSend = 100;
     
     private int maxDataToRoute = 10000;
 
-    private boolean enabled;
+    private boolean enabled = true;
     
     private boolean useOldDataToRoute = true;
     
