@@ -154,7 +154,7 @@ public class StatisticManager implements IStatisticManager {
         ProcessInfo process = new ProcessInfo(key);
         ProcessInfo old = processInfos.get(key);
         if (old != null) {
-            if (old.getStatus() != Status.DONE && old.getStatus() != Status.ERROR) {
+            if (old.getStatus() != Status.OK && old.getStatus() != Status.ERROR) {
                 log.warn(
                         "Starting a new process even though the previous one ({}) had not finished",
                         old.toString());
@@ -194,21 +194,16 @@ public class StatisticManager implements IStatisticManager {
         List<ProcessInfo> infosList = new ArrayList<ProcessInfo>(processInfos.values());
         Iterator<ProcessInfo> i = infosList.iterator();
         while (i.hasNext()) {
-            boolean addedOneThatDidWork = false;
-            ProcessInfo info = i.next().copy();
-            if (info.getStatus() == ProcessInfo.Status.DONE && info.getCurrentBatchDataCount() == 0) {
+            ProcessInfo info = i.next();
+            if (info.getStatus() == ProcessInfo.Status.OK && info.getCurrentBatchDataCount() == 0) {
                 ProcessInfo lastThatDidWork = processInfosThatHaveDoneWork.get(info.getKey());
                 if (lastThatDidWork != null) {
-                    toReturn.add(lastThatDidWork);
-                    addedOneThatDidWork = true;
+                    toReturn.add(lastThatDidWork.copy());
                 }
-            }
-
-            if (!addedOneThatDidWork) {
-                toReturn.add(info);
+            } else {
+                toReturn.add(info.copy());
             }
         }
-        Collections.sort(toReturn);
         return toReturn;
     }
 

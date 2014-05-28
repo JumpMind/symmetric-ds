@@ -1115,7 +1115,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 } finally {
                     close(transaction);
                 }
-                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.DONE);
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.OK);
 
             } catch (RuntimeException ex) {
                 log.debug(

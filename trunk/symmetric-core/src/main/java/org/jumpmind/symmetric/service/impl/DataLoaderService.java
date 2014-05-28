@@ -211,7 +211,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         new BufferedReader(new StringReader(batchData)));
                 List<IncomingBatch> list = loadDataFromTransport(processInfo,
                         nodeService.findIdentity(), transport);
-                processInfo.setStatus(ProcessInfo.Status.DONE);
+                processInfo.setStatus(ProcessInfo.Status.OK);
                 return list;
             } catch (IOException ex) {
                 throw new IoException();
@@ -283,7 +283,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         sendAck(remote, local, localSecurity, list, transportManager);
                     }
                 }
-                processInfo.setStatus(ProcessInfo.Status.DONE);
+                processInfo.setStatus(ProcessInfo.Status.OK);
             } catch (RuntimeException e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
                 throw e;
@@ -331,7 +331,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 processInfo.setStatus(ProcessInfo.Status.ACKING);
                 transportManager.writeAcknowledgement(out, sourceNode, list, local,
                         security != null ? security.getNodePassword() : null);
-                processInfo.setStatus(ProcessInfo.Status.DONE);
+                processInfo.setStatus(ProcessInfo.Status.OK);
             } catch (RuntimeException e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
                 throw e;

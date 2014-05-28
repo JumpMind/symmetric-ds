@@ -200,7 +200,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             }
             
             if (processInfo.getStatus() != Status.ERROR) {
-                processInfo.setStatus(Status.DONE);
+                processInfo.setStatus(Status.OK);
             }
         } catch (Exception ex) {
             processInfo.setStatus(Status.ERROR);

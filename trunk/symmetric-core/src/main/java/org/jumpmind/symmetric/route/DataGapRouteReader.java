@@ -166,7 +166,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     break;
                 }
             }
-            processInfo.setStatus(Status.DONE);
+            processInfo.setStatus(Status.OK);
         } catch (Throwable ex) {
             processInfo.setStatus(Status.ERROR);
             log.error(ex.getMessage(), ex);

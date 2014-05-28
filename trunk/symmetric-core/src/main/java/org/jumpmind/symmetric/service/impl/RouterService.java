@@ -313,7 +313,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
             }
-            processInfo.setStatus(ProcessInfo.Status.DONE);
+            processInfo.setStatus(ProcessInfo.Status.OK);
         } catch (RuntimeException ex) {
             processInfo.setStatus(ProcessInfo.Status.ERROR);
             throw ex;

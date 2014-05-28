@@ -194,7 +194,7 @@ public class DataGapDetector {
             if (updateTimeInMs > 10000) {
                 log.info("Detecting gaps took {} ms", updateTimeInMs);
             }
-            processInfo.setStatus(Status.DONE);
+            processInfo.setStatus(Status.OK);
         } catch (RuntimeException ex) {
             processInfo.setStatus(Status.ERROR);
             throw ex;

@@ -79,7 +79,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                                 .getNodeId(), ProcessType.FILE_SYNC_PULL_HANDLER));
                 try {
                     engine.getFileSyncService().sendFiles(processInfo, local, transport);
-                    processInfo.setStatus(Status.DONE);
+                    processInfo.setStatus(Status.OK);
                 } catch (RuntimeException ex) {
                     processInfo.setStatus(Status.ERROR);
                     throw ex;
@@ -108,7 +108,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                                 .getNodeId(), ProcessType.PULL_HANDLER));
                 try {
                     engine.getDataExtractorService().extract(processInfo, local, transport);
-                    processInfo.setStatus(Status.DONE);
+                    processInfo.setStatus(Status.OK);
                 } catch (RuntimeException ex) {
                     processInfo.setStatus(Status.ERROR);
                     throw ex;
