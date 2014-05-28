@@ -33,7 +33,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     private static final long serialVersionUID = 1L;
 
     public static enum Status {
-        NEW, QUERYING, EXTRACTING, LOADING, TRANSFERRING, ACKING, PROCESSING, DONE, ERROR;
+        NEW, QUERYING, EXTRACTING, LOADING, TRANSFERRING, ACKING, PROCESSING, OK, ERROR;
 
         public String toString() {
             switch (this) {
@@ -51,8 +51,8 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
                     return "Acking";
                 case PROCESSING:
                     return "Processing";
-                case DONE:
-                    return "Done";
+                case OK:
+                    return "Ok";
                 case ERROR:
                     return "Error";
 
@@ -126,7 +126,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     public void setStatus(Status status) {
         this.status = status;
         this.lastStatusChangeTime = new Date();
-        if (status == Status.DONE || status == Status.ERROR) {
+        if (status == Status.OK || status == Status.ERROR) {
             this.endTime = new Date();
         }
     }
@@ -267,18 +267,16 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     }
 
     public int compareTo(ProcessInfo o) {
-        if (status == Status.ERROR && o.status == Status.DONE) {
+        if (status == Status.ERROR && o.status != Status.ERROR) {
             return -1;
-        } else if (status == Status.DONE && o.status == Status.ERROR) {
+        } else if (o.status == Status.ERROR && status != Status.ERROR) {
             return 1;
-        } else if ((status != Status.DONE && status != Status.ERROR)
-                && (o.status == Status.DONE || o.status == Status.ERROR)) {
+        } else if (status != Status.OK && o.status == Status.OK) {
             return -1;
-        } else if ((o.status != Status.DONE && o.status != Status.ERROR)
-                && (status == Status.DONE || status == Status.ERROR)) {
+        } else if (o.status != Status.OK && status == Status.OK) {
             return 1;
         } else {
-            return startTime.compareTo(o.startTime);
+            return o.startTime.compareTo(startTime);
         }
     }
 

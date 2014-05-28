@@ -566,7 +566,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                 processInfo.setStatus(ProcessInfo.Status.ACKING);
                 engine.getTransportManager().writeAcknowledgement(out, sourceNode, list, local,
                         security != null ? security.getNodePassword() : null);
-                processInfo.setStatus(ProcessInfo.Status.DONE);
+                processInfo.setStatus(ProcessInfo.Status.OK);
             } catch (Throwable e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
                 if (e instanceof IOException) {
@@ -620,7 +620,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                 transport.close();
             }
             if (processInfo.getStatus() != ProcessInfo.Status.ERROR) {
-                processInfo.setStatus(ProcessInfo.Status.DONE);
+                processInfo.setStatus(ProcessInfo.Status.OK);
             }
         }
     }
@@ -807,7 +807,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             }
 
             if (processInfo.getStatus() != ProcessInfo.Status.ERROR) {
-                processInfo.setStatus(ProcessInfo.Status.DONE);
+                processInfo.setStatus(ProcessInfo.Status.OK);
             }
         }
 
