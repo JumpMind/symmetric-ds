@@ -593,6 +593,7 @@
         <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route updates." />
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route inserts." />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route deletes." />
+        <column name="use_source_catalog_schema" type="BOOLEANINT" size="1" required="true" default="1" description="Whether or not to assume that the target catalog/schema name should be the same as the source catalog/schema name.  The target catalog or schema name will still override if not blank." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />

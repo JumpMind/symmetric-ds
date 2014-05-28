@@ -898,11 +898,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         router.getNodeGroupLink().getTargetNodeGroupId(), router.getRouterType(),
                         router.getRouterExpression(), router.isSyncOnUpdate() ? 1 : 0,
                         router.isSyncOnInsert() ? 1 : 0, router.isSyncOnDelete() ? 1 : 0,
+                        router.isUseSourceCatalogSchema() ? 1 : 0,
                         router.getLastUpdateBy(), router.getLastUpdateTime(),
                         router.getRouterId() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT,
-                        Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP,
+                        Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP,
                         Types.VARCHAR })) {
             router.setCreateTime(router.getLastUpdateTime());
             sqlTemplate.update(
@@ -913,12 +914,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             router.getNodeGroupLink().getTargetNodeGroupId(),
                             router.getRouterType(), router.getRouterExpression(),
                             router.isSyncOnUpdate() ? 1 : 0, router.isSyncOnInsert() ? 1 : 0,
-                            router.isSyncOnDelete() ? 1 : 0, router.getCreateTime(),
+                            router.isSyncOnDelete() ? 1 : 0, router.isUseSourceCatalogSchema() ? 1 : 0, 
+                            router.getCreateTime(),
                             router.getLastUpdateBy(), router.getLastUpdateTime(), router.getRouterId() },
                             new int[] {
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
-                            Types.SMALLINT, Types.SMALLINT, Types.TIMESTAMP, Types.VARCHAR,
+                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.TIMESTAMP, Types.VARCHAR,
                             Types.TIMESTAMP, Types.VARCHAR });
         }
         resetTriggerRouterCacheByNodeGroupId();
@@ -1708,6 +1710,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
             router.setRouterType(rs.getString("router_type"));
             router.setRouterId(rs.getString("router_id"));
+            router.setUseSourceCatalogSchema(rs.getBoolean("use_source_catalog_schema"));
             router.setCreateTime(rs.getDateTime("r_create_time"));
             router.setLastUpdateTime(rs.getDateTime("r_last_update_time"));
             router.setLastUpdateBy(rs.getString("r_last_update_by"));
