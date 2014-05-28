@@ -912,17 +912,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                     triggerHistory.getParsedPkColumnNames(), true);
             } else {
-                throw new SymmetricException("Could not find the followig table.  It might have been dropped: %s", Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
+                throw new SymmetricException("Could not find the following table.  It might have been dropped: %s", Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             }
         } else {
             table = new Table(tableName);
             table.addColumns(triggerHistory.getParsedColumnNames());
             table.setPrimaryKeys(triggerHistory.getParsedPkColumnNames());
         }
-        
-        table.setCatalog(catalogName);
-        table.setSchema(schemaName);
+
         Router router = triggerRouterService.getRouterById(routerId, false);
+        if (router != null && router.isUseSourceCatalogSchema()) {
+            table.setCatalog(catalogName);
+            table.setSchema(schemaName);
+        }
         if (router != null && setTargetTableName) {
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetCatalogName())) {
                 table.setCatalog(null);
