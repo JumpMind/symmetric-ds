@@ -68,7 +68,7 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
             
             engine.getFileSyncService().sendFiles(processInfo,
                     engine.getNodeService().findNode(nodeId), outgoingTransport);
-            processInfo.setStatus(Status.DONE);
+            processInfo.setStatus(Status.OK);
         } catch (RuntimeException ex) {
             processInfo.setStatus(Status.ERROR);
             throw ex;
