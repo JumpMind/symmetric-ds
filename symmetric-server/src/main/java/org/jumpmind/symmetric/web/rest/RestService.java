@@ -875,7 +875,7 @@ public class RestService {
                 }
                 results.setBatches(batches);
                 results.setNbrBatches(batches.size());
-                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.DONE);
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.OK);
 
                 if (engine.getParameterService().is(ParameterConstants.REST_HEARTBEAT_ON_PULL)
                         && hostName != null) {
