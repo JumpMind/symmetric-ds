@@ -20,7 +20,9 @@
  */
 package org.jumpmind.util;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.AppenderSkeleton;
@@ -28,7 +30,7 @@ import org.apache.log4j.spi.LoggingEvent;
 
 public class BufferedLogAppender extends AppenderSkeleton {
 
-    protected LinkedList<LoggingEvent> events = new LinkedList<LoggingEvent>();
+    protected List<LoggingEvent> events = Collections.synchronizedList(new ArrayList<LoggingEvent>());
 
     protected int size = 100;
 
@@ -47,9 +49,9 @@ public class BufferedLogAppender extends AppenderSkeleton {
             }
         }
         if (addEvent) {
-            events.addLast(event);
+            events.add(event);
             if (events.size() > size) {
-                events.removeFirst();
+                events.remove(0);
             }
         }
     }
@@ -84,7 +86,7 @@ public class BufferedLogAppender extends AppenderSkeleton {
         return filterText;
     }
 
-    public LinkedList<LoggingEvent> getEvents() {
+    public List<LoggingEvent> getEvents() {
         return events;
     }
 }
