@@ -76,6 +76,7 @@ public class TransformWriter extends NestedDataWriter {
     protected List<TransformTable> activeTransforms;
     protected Batch batch;
     protected Map<String, IColumnTransform<?>> columnTransforms;
+    protected Table lastTransformedTable;
     
     public TransformWriter(IDatabasePlatform platform, TransformPoint transformPoint,
             IDataWriter targetWriter, Map<String, IColumnTransform<?>> columnTransforms, 
@@ -202,12 +203,23 @@ public class TransformWriter extends NestedDataWriter {
             }
 
             for (TransformedData transformedData : dataThatHasBeenTransformed) {
-                Table table = transformedData.buildTargetTable();
+                Table transformedTable = transformedData.buildTargetTable();
                 CsvData csvData = transformedData.buildTargetCsvData();
                 long transformTimeInMs = System.currentTimeMillis() - ts;
-                if (this.nestedWriter.start(table) || !csvData.requiresTable()) {
+                boolean processData = true;
+                if (lastTransformedTable == null || !lastTransformedTable.equals(transformedTable)) {
+                    if (lastTransformedTable != null) {
+                        this.nestedWriter.end(lastTransformedTable);
+                    }
+                    processData = this.nestedWriter.start(transformedTable);
+                    if (!processData) {
+                        lastTransformedTable = null;
+                    } else {
+                        lastTransformedTable = transformedTable;
+                    }
+                }
+                if (processData || !csvData.requiresTable()) {
                     this.nestedWriter.write(csvData);
-                    this.nestedWriter.end(table);
                 }
                 Statistics stats = this.nestedWriter.getStatistics().get(batch);
                 if (stats != null) {
@@ -438,6 +450,10 @@ public class TransformWriter extends NestedDataWriter {
     }
 
     public void end(Table table) {
+        if (this.lastTransformedTable != null) {
+            this.nestedWriter.end(lastTransformedTable);
+            this.lastTransformedTable = null;
+        }
         if (activeTransforms != null && activeTransforms.size() > 0) {
             activeTransforms = null;
         } else {
