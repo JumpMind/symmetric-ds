@@ -17,16 +17,15 @@ import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory,
 		ISymmetricEngineAware, IBuiltInExtensionPoint {
 
-    private int maxRowsBeforeFlush;
-    private boolean fireTriggers;
-    private String uncPath;
     private NativeJdbcExtractor jdbcExtractor;
     private IStagingManager stagingManager;
+    private IParameterService parameterService;
 
     public MsSqlBulkDataLoaderFactory() {
         this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
@@ -43,19 +42,19 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory,
 			List<IDatabaseWriterErrorHandler> errorHandlers,
 			List<? extends Conflict> conflictSettings,
 			List<ResolvedData> resolvedData) {
+        int maxRowsBeforeFlush = parameterService.getInt("mssql.bulk.load.max.rows.before.flush",
+                100000);
+        boolean fireTriggers = parameterService.is("mssql.bulk.load.fire.triggers", false);
+        String uncPath = parameterService.getString("mssql.bulk.load.unc.path");
 		return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(),
 				stagingManager, jdbcExtractor, maxRowsBeforeFlush, fireTriggers, uncPath);
 	}
 
     public void setSymmetricEngine(ISymmetricEngine engine) {
-        this.maxRowsBeforeFlush = engine.getParameterService().getInt(
-                "mssql.bulk.load.max.rows.before.flush", 100000);
-        this.fireTriggers = engine.getParameterService().is(
-                "mssql.bulk.load.fire.triggers", false);
-        this.uncPath = engine.getParameterService().getString("mssql.bulk.load.unc.path");
         //TODO: pass information about the destination database such that we can do the 
         //TODO: bulk load to the remote server vs using the T-SQL  BULK INSERT statement
         this.stagingManager = engine.getStagingManager();
+        this.parameterService = engine.getParameterService();
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
