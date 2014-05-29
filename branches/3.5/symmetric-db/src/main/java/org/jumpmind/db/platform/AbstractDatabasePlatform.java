@@ -418,29 +418,28 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return objectValue;
 
     }
-
     
     protected Object parseBigDecimal(String value) {
         /*
          * The number will have either one period or one comma for the decimal
          * point, but we need a period
          */
-        return new BigDecimal(value.replace(',', '.'));
+        return new BigDecimal(value.replace(',', '.').trim());
     }
     
     protected Object parseBigInteger(String value) {
         try {
-            return new Long(value);
+            return new Long(value.trim());
         } catch (NumberFormatException ex) {
-            return new BigInteger(value);        
+            return new BigInteger(value.trim());        
         }
     }    
         
     protected Object parseInteger(String value) {
         try {
-            return Integer.parseInt(value);
+            return Integer.parseInt(value.trim());
         } catch (NumberFormatException ex) {
-            return new BigInteger(value);        
+            return new BigInteger(value.trim());        
         }
     }
     
