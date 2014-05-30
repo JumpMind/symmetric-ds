@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
-public class NodeGroupLink implements Serializable {
+public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
 
     private static final long serialVersionUID = 1L;
 
@@ -106,6 +106,10 @@ public class NodeGroupLink implements Serializable {
         return sourceNodeGroupId + " " + dataEventAction + " " + targetNodeGroupId;
     }
 
+    public int compareTo(NodeGroupLink o) {
+        return toString().compareTo(o.toString());
+    }
+    
     @Override
     public int hashCode() {
         final int prime = 31;
