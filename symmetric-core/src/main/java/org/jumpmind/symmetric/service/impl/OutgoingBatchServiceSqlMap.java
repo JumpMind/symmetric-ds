@@ -108,9 +108,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         		"group by b.load_id, b.node_id, b.status, d.event_type, b.create_by " +
         		"order by b.load_id desc");
         
-        putSql("getNextOutgoingBatchForEachNodeSql"," inner join \n" + 
-                "(select min(batch_id) as id, node_id from sym_outgoing_batch where status != 'OK' and node_id != '-1' group by node_id) bo \n" + 
-                "on b.batch_id=bo.id and b.node_id=bo.node_id");
+        putSql("getNextOutgoingBatchForEachNodeSql","select min(b.batch_id) as batch_id, b.node_id, b.channel_id, b.status, b.byte_count, b.extract_count, b.sent_count, b.load_count, b.data_event_count, b.reload_event_count, b.insert_event_count, b.update_event_count, b.delete_event_count, b.other_event_count, b.ignore_count, b.router_millis, b.network_millis, b.filter_millis, b.load_millis, b.extract_millis, b.sql_state, b.sql_code, b.sql_message, b.failed_data_id, b.last_update_hostname, b.last_update_time, b.create_time, b.extract_job_flag, b.load_flag, b.error_flag, b.common_flag, b.load_id, b.create_by \n" + 
+                "  from sym_outgoing_batch b where status != 'OK' and node_id != '-1' group by b.node_id, b.channel_id, b.status, b.byte_count, b.extract_count, b.sent_count, b.load_count, b.data_event_count, b.reload_event_count, b.insert_event_count, b.update_event_count, b.delete_event_count, b.other_event_count, b.ignore_count, b.router_millis, b.network_millis, b.filter_millis, b.load_millis, b.extract_millis, b.sql_state, b.sql_code, b.sql_message, b.failed_data_id, b.last_update_hostname, b.last_update_time, b.create_time, b.extract_job_flag, b.load_flag, b.error_flag, b.common_flag, b.load_id, b.create_by");
 
     }
 
