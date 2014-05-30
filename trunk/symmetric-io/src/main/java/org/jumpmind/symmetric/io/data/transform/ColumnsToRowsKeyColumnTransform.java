@@ -29,8 +29,6 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ColumnsToRowsKeyColumnTransform implements IMultipleValueColumnTransform {
 
@@ -38,8 +36,6 @@ public class ColumnsToRowsKeyColumnTransform implements IMultipleValueColumnTran
 
         public final static String CONTEXT_MAP="Map";
         public final static String CONTEXT_PK_COLUMN="PKColumn";
-        
-        private static final Logger logger = LoggerFactory.getLogger(ColumnsToRowsKeyColumnTransform.class);
         
         public String getName() {
                 return NAME;

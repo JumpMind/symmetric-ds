@@ -20,32 +20,32 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
-import java.util.Map;
+public class NewAndOldValue {
 
-import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.extension.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.io.data.DataContext;
-
-public class CopyColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
-
-    public final static String NAME = "copy";
-
-    public String getName() {
-        return NAME;
+    protected String newValue;
+    protected String oldValue;
+    
+    public NewAndOldValue() {
     }
         
-    public boolean isExtractColumnTransform() {
-        return true;
+    public NewAndOldValue(String newValue, String oldValue) {
+        this.newValue = newValue;
+        this.oldValue = oldValue;
+    }
+
+    public void setNewValue(String newValue) {
+        this.newValue = newValue;
     }
     
-    public boolean isLoadColumnTransform() {
-        return true;
+    public String getNewValue() {
+        return newValue;
     }
-
-    public NewAndOldValue transform(IDatabasePlatform platform, DataContext context,
-            TransformColumn column, TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
-                    throws IgnoreColumnException, IgnoreRowException {
-        return new NewAndOldValue(newValue, oldValue);
+    
+    public void setOldValue(String oldValue) {
+        this.oldValue = oldValue;
     }
-
+    
+    public String getOldValue() {
+        return oldValue;
+    }
 }

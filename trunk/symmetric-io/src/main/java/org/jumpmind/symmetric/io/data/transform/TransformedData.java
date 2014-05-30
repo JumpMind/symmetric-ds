@@ -40,9 +40,11 @@ public class TransformedData implements Cloneable {
 
     protected DataEventType sourceDmlType;
 
-    protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> columnsBy;
+    protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> targetNewValueByIncludeOnType;
 
-    protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> keysBy;
+    protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> targetNewKeysByIncludeOnType;
+    
+    protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> targetOldValuesByIncludeOnType;
 
     protected TransformTable transformation;
 
@@ -94,29 +96,44 @@ public class TransformedData implements Cloneable {
         return transformation.getTargetSchemaName();
     }
 
-    public void put(TransformColumn column, String columnValue, boolean recordAsKey) {
+    public void put(TransformColumn column, String columnValue, String oldValue, boolean recordAsKey) {
 
         if (recordAsKey) {
-            if (keysBy == null) {
-                keysBy = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(
+            if (targetNewKeysByIncludeOnType == null) {
+                targetNewKeysByIncludeOnType = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(
                         2);
             }
-            LinkedHashMap<String, String> keyValues = keysBy.get(column.getIncludeOn());
+            LinkedHashMap<String, String> keyValues = targetNewKeysByIncludeOnType.get(column.getIncludeOn());
             if (keyValues == null) {
                 keyValues = new LinkedHashMap<String, String>();
-                keysBy.put(column.getIncludeOn(), keyValues);
+                targetNewKeysByIncludeOnType.put(column.getIncludeOn(), keyValues);
             }
             keyValues.put(column.getTargetColumnName(), columnValue);
         }
-        if (columnsBy == null) {
-            columnsBy = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(2);
+        
+        if (targetNewValueByIncludeOnType == null) {
+            targetNewValueByIncludeOnType = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(2);
         }
-        LinkedHashMap<String, String> columnValues = columnsBy.get(column.getIncludeOn());
+        
+        LinkedHashMap<String, String> columnValues = targetNewValueByIncludeOnType.get(column.getIncludeOn());
         if (columnValues == null) {
             columnValues = new LinkedHashMap<String, String>();
-            columnsBy.put(column.getIncludeOn(), columnValues);
+            targetNewValueByIncludeOnType.put(column.getIncludeOn(), columnValues);
         }
+        
         columnValues.put(column.getTargetColumnName(), columnValue);
+        
+        if (targetOldValuesByIncludeOnType == null) {
+            targetOldValuesByIncludeOnType = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(2);
+        }
+        
+        LinkedHashMap<String, String> oldColumnValues = targetOldValuesByIncludeOnType.get(column.getIncludeOn());
+        if (oldColumnValues == null) {
+            oldColumnValues = new LinkedHashMap<String, String>();
+            targetOldValuesByIncludeOnType.put(column.getIncludeOn(), oldColumnValues);
+        }
+        
+        oldColumnValues.put(column.getTargetColumnName(), oldValue);
     }
 
     
@@ -159,35 +176,35 @@ public class TransformedData implements Cloneable {
    
 
     public Map<String, String> getTargetKeyValues() {
-        return retrieve(keysBy);
+        return retrieve(targetNewKeysByIncludeOnType);
     }
 
     public Map<String, String> getTargetValues() {
-        return retrieve(columnsBy);
+        return retrieve(targetNewValueByIncludeOnType);
     }
 
     
     public String[] getKeyNames() {
 
-        List<String> list = retrieve(keysBy, true);
+        List<String> list = retrieve(targetNewKeysByIncludeOnType, true);
         return list.toArray(new String[list.size()]);
     }
 
     public String[] getKeyValues() {
 
-        List<String> list = retrieve(keysBy, false);
+        List<String> list = retrieve(targetNewKeysByIncludeOnType, false);
         return list.toArray(new String[list.size()]);
     }
 
     public String[] getColumnNames() {
 
-        List<String> list = retrieve(columnsBy, true);
+        List<String> list = retrieve(targetNewValueByIncludeOnType, true);
         return list.toArray(new String[list.size()]);
     }
 
     public String[] getColumnValues() {
 
-        List<String> list = retrieve(columnsBy, false);
+        List<String> list = retrieve(targetNewValueByIncludeOnType, false);
         return list.toArray(new String[list.size()]);
     }
 
@@ -200,8 +217,9 @@ public class TransformedData implements Cloneable {
 
         try {
             TransformedData clone = (TransformedData) this.clone();
-            clone.columnsBy = copy(columnsBy);
-            clone.keysBy = copy(keysBy);
+            clone.targetNewValueByIncludeOnType = copy(targetNewValueByIncludeOnType);
+            clone.targetNewKeysByIncludeOnType = copy(targetNewKeysByIncludeOnType);
+            clone.targetOldValuesByIncludeOnType = copy(targetOldValuesByIncludeOnType);
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
@@ -306,57 +324,8 @@ public class TransformedData implements Cloneable {
     }
 
     public String[] getOldColumnValues() {
-
-        List<String> names = retrieve(columnsBy, true);
-        List<String> keyNames = retrieve(keysBy, true);
-        List<String> keyValues = retrieve(keysBy, false);
-        List<String> values = new ArrayList<String>();
-
-        for (String name : names) {
-            addOldValue(keyNames, keyValues, values, name);
-        }
-
-        return values.toArray(new String[values.size()]);
-    }
-
-    private void addOldValue(List<String> keyNames, List<String> keyValues, List<String> values, String name) {
-
-       
-        TransformColumn transformColumn = findTransformColumn(name);
-
-        if (null == transformColumn) {
-            if (oldSourceValues.containsKey(name)) {
-                values.add(oldSourceValues.get(name));
-                return;
-            }
-        } else {
-            String transformType = transformColumn.getTransformType();
-            String sourceColumnName = transformColumn.getSourceColumnName();
-            if (transformType!=null && transformType.startsWith(CopyColumnTransform.NAME) && 
-                    oldSourceValues.containsKey(sourceColumnName)) {                
-                values.add(oldSourceValues.get(sourceColumnName));
-                return;
-            }
-        }
-        
-        if (keyNames.contains(name)) {
-            /*
-             * If we haven't already set a value, we must always use the transformed value 
-             * for the key else deletes and updates won't work.
-             */
-            values.add(keyValues.get(keyNames.indexOf(name)));
-            return;
-        }
-
-        values.add(null);
-    }
-
-    private TransformColumn findTransformColumn(String name) {
-
-        for (TransformColumn tc : transformation.getTransformColumns())
-            if (tc.getTargetColumnName().equals(name))
-                return tc;
-        return null;
+        List<String> list = retrieve(targetOldValuesByIncludeOnType, false);
+        return list.toArray(new String[list.size()]);
     }
 
 }
