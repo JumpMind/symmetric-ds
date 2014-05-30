@@ -55,7 +55,7 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
     }
 
     public void offline(Node remoteNode) {
-        log.warn("Could not connect to the transport: {}",
+        log.warn("Failed to connect to the transport: {}",
                 (remoteNode.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remoteNode
                         .getSyncUrl()));
     }

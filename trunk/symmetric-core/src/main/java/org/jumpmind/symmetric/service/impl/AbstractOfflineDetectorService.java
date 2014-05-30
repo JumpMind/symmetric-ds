@@ -74,8 +74,12 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     protected void fireOffline(Exception error, Node remoteNode, RemoteNodeStatus status) {
         String syncUrl = remoteNode.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remoteNode
                         .getSyncUrl();
+        Throwable cause = ExceptionUtils.getRootCause(error);
+        if (cause == null) {
+            cause = error;
+        }
         if (isOffline(error)) {
-            log.warn("Could not communicate with {} at {} because: {}", new Object[] {remoteNode, syncUrl, error.getMessage()});
+            log.warn("Could not communicate with {} at {} because: {}", new Object[] {remoteNode, syncUrl, cause.getMessage()});
             status.setStatus(Status.OFFLINE);
         } else if (isBusy(error)) {
             log.info("{} at {} was busy", new Object[] {remoteNode, syncUrl});            
