@@ -43,13 +43,13 @@ import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ISingleValueColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IgnoreColumnException;
 import org.jumpmind.symmetric.io.data.transform.IgnoreRowException;
 import org.jumpmind.symmetric.io.data.transform.LookupColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.MathColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.NewAndOldValue;
 import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
@@ -294,24 +294,24 @@ public class TransformWriter extends NestedDataWriter {
                             || (includeOn == IncludeOnType.DELETE && eventType == DataEventType.DELETE)) {
                         if (StringUtils.isBlank(transformColumn.getSourceColumnName())
                                 || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
-                            IColumnTransform<?> transform = columnTransforms != null ? columnTransforms
-                                    .get(transformColumn.getTransformType()) : null;
-                            if (transform == null
-                                    || transform instanceof ISingleValueColumnTransform) {
-                                try {
-                                    String value = (String) transformColumn(context, data,
-                                            transformColumn, sourceValues, oldSourceValues);
-                                    data.put(transformColumn, value, false);
-                                } catch (IgnoreColumnException e) {
-                                    // Do nothing. We are ignoring the column
-                                    if (log.isDebugEnabled()) {
-                                        log.debug(
-                                                "A transform indicated we should ignore the target column {}",
-                                                transformColumn.getTargetColumnName());
-                                    }
+                            try {
+                                Object value = transformColumn(context, data, transformColumn,
+                                        sourceValues, oldSourceValues);
+                                if (value instanceof String) {
+                                    data.put(transformColumn, (String) value, null, false);
+                                } else if (value instanceof NewAndOldValue) {
+                                    data.put(transformColumn,
+                                            ((NewAndOldValue) value).getNewValue(),
+                                            ((NewAndOldValue) value).getOldValue(), false);
                                 }
-                            }
-                        } else {
+                            } catch (IgnoreColumnException e) {
+                                // Do nothing. We are ignoring the column
+                                if (log.isDebugEnabled()) {
+                                    log.debug(
+                                            "A transform indicated we should ignore the target column {}",
+                                            transformColumn.getTargetColumnName());
+                                }
+                            }                        } else {
                             log.warn(
                                     "Could not find a source column of {} for the transformation: {}",
                                     transformColumn.getSourceColumnName(),
@@ -392,22 +392,25 @@ public class TransformWriter extends NestedDataWriter {
                             @SuppressWarnings("unchecked")
                             List<String> values = (List<String>) columnValue;
                             if (values.size() > 0) {
-                                data.put(transformColumn, values.get(0), true);
+                                data.put(transformColumn, values.get(0), values.get(0), true);
                                 if (values.size() > 1) {
                                     if (newDatas == null) {
                                         newDatas = new ArrayList<TransformedData>(values.size() - 1);
                                     }
                                     for (int i = 1; i < values.size(); i++) {
                                         TransformedData newData = data.copy();
-                                        newData.put(transformColumn, values.get(i), true);
+                                        newData.put(transformColumn, values.get(i), null, true);
                                         newDatas.add(newData);
                                     }
                                 }
                             } else {
                                 throw new IgnoreRowException();
                             }
-                        } else {
-                            data.put(transformColumn, (String) columnValue, true);
+                        } else if (columnValue instanceof String){
+                            data.put(transformColumn, (String) columnValue, (String) columnValue, true);
+                        } else if (columnValue instanceof NewAndOldValue) {
+                            data.put(transformColumn, ((NewAndOldValue) columnValue).getNewValue(),
+                                    ((NewAndOldValue) columnValue).getOldValue(), true);
                         }
                     } catch (IgnoreColumnException e) {
                         // Do nothing. We are suppose to ignore the column.
