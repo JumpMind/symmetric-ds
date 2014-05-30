@@ -669,7 +669,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             failureMessage.append("\n");
         }
 
-        log.error(failureMessage.toString());
+        log.info(failureMessage.toString());
 
     }
     
