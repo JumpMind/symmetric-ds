@@ -24,34 +24,33 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
-public class CopyIfChangedColumnTransform extends CopyColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class CopyIfChangedColumnTransform extends CopyColumnTransform {
 
-        public final static String NAME = "copyIfChanged";
+    public final static String NAME = "copyIfChanged";
 
-        public final static String EXPRESSION_IGNORE_COLUMN = "IgnoreColumn";
+    public final static String EXPRESSION_IGNORE_COLUMN = "IgnoreColumn";
 
-        public String getName() {
-                return NAME;
+    public String getName() {
+        return NAME;
+    }
+
+    public NewAndOldValue transform(IDatabasePlatform platform, DataContext context,
+            TransformColumn column, TransformedData data, Map<String, String> sourceValues,
+            String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
+
+        if (!DataEventType.DELETE.equals(context.getData().getDataEventType())
+                && (StringUtils.trimToEmpty(newValue).equals(StringUtils.trimToEmpty(oldValue)))) {
+            if (EXPRESSION_IGNORE_COLUMN.equalsIgnoreCase(column.getTransformExpression())) {
+                throw new IgnoreColumnException();
+            } else {
+                throw new IgnoreRowException();
+            }
+        } else {
+            return new NewAndOldValue(newValue, oldValue);
         }
-
-        public String transform(IDatabasePlatform platform, DataContext context, TransformColumn column,
-                        TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
-                        throws IgnoreColumnException, IgnoreRowException {
-
-            if (!DataEventType.DELETE.equals(context.getData().getDataEventType()) 
-                    && (StringUtils.trimToEmpty(newValue).equals(StringUtils.trimToEmpty(oldValue)))) {
-                if (EXPRESSION_IGNORE_COLUMN.equalsIgnoreCase(column.getTransformExpression())) {
-                                throw new IgnoreColumnException();
-                        } else {
-                                throw new IgnoreRowException();
-                        }
-                } else {
-                        return newValue;
-                }
-        }
+    }
 
 }

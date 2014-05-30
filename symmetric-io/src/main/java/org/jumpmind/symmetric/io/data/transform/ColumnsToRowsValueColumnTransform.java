@@ -24,15 +24,10 @@ import java.util.Map;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ColumnsToRowsValueColumnTransform  implements ISingleValueColumnTransform {
 
-        private static final Logger logger = LoggerFactory.getLogger(ColumnsToRowsValueColumnTransform.class);
-
         public final static String NAME = "columnsToRowsValueColumnTransform";
-
         
         public String getName() {
                 return NAME;
