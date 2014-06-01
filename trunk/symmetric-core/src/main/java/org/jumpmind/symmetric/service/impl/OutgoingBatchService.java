@@ -455,7 +455,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public List<OutgoingBatch> getNextOutgoingBatchForEachNode() {
         return sqlTemplate.query(
                 getSql("getNextOutgoingBatchForEachNodeSql"),
-                new OutgoingBatchMapper(true));
+                new OutgoingBatchMapper(true, true));
     }
 
     public boolean isInitialLoadComplete(String nodeId) {
@@ -589,12 +589,18 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     class OutgoingBatchMapper implements ISqlRowMapper<OutgoingBatch> {
 
+        private boolean statusOnly = false;
         private boolean includeDisabledChannels = false;
         private Map<String, Channel> channels;
 
-        public OutgoingBatchMapper(boolean includeDisabledChannels) {
+        public OutgoingBatchMapper(boolean includeDisabledChannels, boolean statusOnly) {
             this.includeDisabledChannels = includeDisabledChannels;
+            this.statusOnly = statusOnly;
             this.channels = configurationService.getChannels(false);
+        }
+
+        public OutgoingBatchMapper(boolean includeDisabledChannels) {
+            this(includeDisabledChannels, false);
         }
 
         public OutgoingBatch mapRow(Row rs) {
@@ -602,39 +608,41 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             Channel channel = channels.get(channelId);
             if (channel != null && (includeDisabledChannels || channel.isEnabled())) {
                 OutgoingBatch batch = new OutgoingBatch();
-                batch.setChannelId(channelId);
                 batch.setNodeId(rs.getString("node_id"));
                 batch.setStatus(rs.getString("status"));
-                batch.setByteCount(rs.getLong("byte_count"));
-                batch.setExtractCount(rs.getLong("extract_count"));
-                batch.setSentCount(rs.getLong("sent_count"));
-                batch.setLoadCount(rs.getLong("load_count"));
-                batch.setDataEventCount(rs.getLong("data_event_count"));
-                batch.setReloadEventCount(rs.getLong("reload_event_count"));
-                batch.setInsertEventCount(rs.getLong("insert_event_count"));
-                batch.setUpdateEventCount(rs.getLong("update_event_count"));
-                batch.setDeleteEventCount(rs.getLong("delete_event_count"));
-                batch.setOtherEventCount(rs.getLong("other_event_count"));
-                batch.setIgnoreCount(rs.getLong("ignore_count"));
-                batch.setRouterMillis(rs.getLong("router_millis"));
-                batch.setNetworkMillis(rs.getLong("network_millis"));
-                batch.setFilterMillis(rs.getLong("filter_millis"));
-                batch.setLoadMillis(rs.getLong("load_millis"));
-                batch.setExtractMillis(rs.getLong("extract_millis"));
-                batch.setSqlState(rs.getString("sql_state"));
-                batch.setSqlCode(rs.getInt("sql_code"));
-                batch.setSqlMessage(rs.getString("sql_message"));
-                batch.setFailedDataId(rs.getLong("failed_data_id"));
-                batch.setLastUpdatedHostName(rs.getString("last_update_hostname"));
-                batch.setLastUpdatedTime(rs.getDateTime("last_update_time"));
-                batch.setCreateTime(rs.getDateTime("create_time"));
                 batch.setBatchId(rs.getLong("batch_id"));
-                batch.setLoadFlag(rs.getBoolean("load_flag"));
-                batch.setErrorFlag(rs.getBoolean("error_flag"));
-                batch.setCommonFlag(rs.getBoolean("common_flag"));
-                batch.setExtractJobFlag(rs.getBoolean("extract_job_flag"));
-                batch.setLoadId(rs.getLong("load_id"));
-                batch.setCreateBy(rs.getString("create_by"));
+                if (!statusOnly) {
+                    batch.setChannelId(channelId);
+                    batch.setByteCount(rs.getLong("byte_count"));
+                    batch.setExtractCount(rs.getLong("extract_count"));
+                    batch.setSentCount(rs.getLong("sent_count"));
+                    batch.setLoadCount(rs.getLong("load_count"));
+                    batch.setDataEventCount(rs.getLong("data_event_count"));
+                    batch.setReloadEventCount(rs.getLong("reload_event_count"));
+                    batch.setInsertEventCount(rs.getLong("insert_event_count"));
+                    batch.setUpdateEventCount(rs.getLong("update_event_count"));
+                    batch.setDeleteEventCount(rs.getLong("delete_event_count"));
+                    batch.setOtherEventCount(rs.getLong("other_event_count"));
+                    batch.setIgnoreCount(rs.getLong("ignore_count"));
+                    batch.setRouterMillis(rs.getLong("router_millis"));
+                    batch.setNetworkMillis(rs.getLong("network_millis"));
+                    batch.setFilterMillis(rs.getLong("filter_millis"));
+                    batch.setLoadMillis(rs.getLong("load_millis"));
+                    batch.setExtractMillis(rs.getLong("extract_millis"));
+                    batch.setSqlState(rs.getString("sql_state"));
+                    batch.setSqlCode(rs.getInt("sql_code"));
+                    batch.setSqlMessage(rs.getString("sql_message"));
+                    batch.setFailedDataId(rs.getLong("failed_data_id"));
+                    batch.setLastUpdatedHostName(rs.getString("last_update_hostname"));
+                    batch.setLastUpdatedTime(rs.getDateTime("last_update_time"));
+                    batch.setCreateTime(rs.getDateTime("create_time"));
+                    batch.setLoadFlag(rs.getBoolean("load_flag"));
+                    batch.setErrorFlag(rs.getBoolean("error_flag"));
+                    batch.setCommonFlag(rs.getBoolean("common_flag"));
+                    batch.setExtractJobFlag(rs.getBoolean("extract_job_flag"));
+                    batch.setLoadId(rs.getLong("load_id"));
+                    batch.setCreateBy(rs.getString("create_by"));
+                }
                 return batch;
             } else {
                 return null;
