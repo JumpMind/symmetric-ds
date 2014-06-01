@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 
 /**
- * Status of a batch acknowledgement
+ * Status of a batch acknowledgment
  */
 public class BatchAck  implements Serializable {
     
