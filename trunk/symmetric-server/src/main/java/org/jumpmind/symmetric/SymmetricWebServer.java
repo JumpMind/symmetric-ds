@@ -479,6 +479,7 @@ public class SymmetricWebServer {
     }
 
     public void setHttpPort(int httpPort) {
+        System.setProperty(ServerConstants.HTTP_PORT, Integer.toString(httpPort));
         this.httpPort = httpPort;
     }
 
@@ -487,6 +488,7 @@ public class SymmetricWebServer {
     }
 
     public void setHttpsPort(int httpsPort) {
+        System.setProperty(ServerConstants.HTTPS_PORT, Integer.toString(httpsPort));
         this.httpsPort = httpsPort;
     }
 
