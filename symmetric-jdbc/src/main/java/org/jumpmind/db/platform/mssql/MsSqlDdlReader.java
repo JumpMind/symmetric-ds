@@ -178,7 +178,8 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                 if (timestamp != null) {
                     defaultValue = timestamp.toString();
                 }
-            } else if (column.getMappedTypeCode() == Types.DECIMAL) {
+            } else if (column.getMappedTypeCode() == Types.DECIMAL || 
+            		column.getMappedTypeCode() == Types.BIGINT) {
                 // For some reason, Sql Server 2005 always returns DECIMAL
                 // default values with a dot
                 // even if the scale is 0, so we remove the dot
