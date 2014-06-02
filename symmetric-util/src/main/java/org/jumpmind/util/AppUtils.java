@@ -72,7 +72,8 @@ public class AppUtils {
     }
 
     public static String getPortNumber() {
-        String portNumber = System.getProperty(SYSPROP_PORT_NUMBER, UNKNOWN);
+        String portNumber = System.getProperty(SYSPROP_PORT_NUMBER,
+                System.getProperty("http.port", System.getProperty("https.port", UNKNOWN)));
         if (UNKNOWN.equals(portNumber)) {
             try {
                 portNumber = "31415";
