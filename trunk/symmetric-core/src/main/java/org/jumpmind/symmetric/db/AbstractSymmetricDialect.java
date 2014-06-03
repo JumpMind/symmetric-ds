@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -366,43 +364,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         prefixConfigDatabase(database);
         IDdlBuilder builder = platform.getDdlBuilder();
         return builder.createTables(database, true);
-    }
-
-    private void setDatabaseName(TriggerRouter triggerRouter, Database db) {
-        db.setName(triggerRouter.getTargetSchema(platform.getDefaultSchema()));
-        if (db.getName() == null) {
-            db.setName(platform.getDefaultCatalog());
-        }
-        if (db.getName() == null) {
-            db.setName("DDL");
-        }
-    }
-
-    public String getCreateTableXML(TriggerHistory triggerHistory, TriggerRouter triggerRouter) {
-        Table table = getTable(triggerHistory, true);
-        String targetTableName = triggerRouter.getRouter().getTargetTableName();
-        if (StringUtils.isNotBlank(targetTableName)) {
-            table.setName(targetTableName);
-        }
-        Database db = new Database();
-        setDatabaseName(triggerRouter, db);
-        db.addTable(table);
-        if (table.getCatalog() != null && !table.getCatalog().equals(platform.getDefaultCatalog())) {
-            db.setCatalog(table.getCatalog());
-        }
-        if (table.getSchema() != null && !table.getSchema().equals(platform.getDefaultSchema())) {
-            db.setSchema(table.getSchema());
-        }
-        StringWriter buffer = new StringWriter();
-        DatabaseXmlUtil.write(db, buffer);
-        // TODO: remove when these bugs are fixed in DdlUtils
-        String xml = buffer.toString().replaceAll("&apos;", "");
-        xml = xml.replaceAll("default=\"empty_blob\\(\\) *\"", "");
-        xml = xml.replaceAll("unique name=\"PRIMARY\"", "unique name=\"PRIMARYINDEX\"");
-        // on postgres, this is a "text" column
-        xml = xml.replaceAll("type=\"VARCHAR\" size=\"2147483647\"", "type=\"LONGVARCHAR\"");
-        xml = xml.replaceAll("type=\"BINARY\" size=\"2147483647\"", "type=\"LONGVARBINARY\"");
-        return xml;
     }
 
     protected void prefixConfigDatabase(Database targetTables) {
