@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
-import org.apache.log4j.Level;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.DataGap;
@@ -48,8 +47,6 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IStatisticService;
-import org.jumpmind.util.LogSummary;
-import org.jumpmind.util.LogSummaryAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,8 +54,6 @@ import org.slf4j.LoggerFactory;
  * @see IStatisticManager
  */
 public class StatisticManager implements IStatisticManager {
-
-    private static final String LOG_SUMMARY_APPENDER_NAME = "SUMMARY";
 
     protected Logger log = LoggerFactory.getLogger(getClass());
 
@@ -107,48 +102,9 @@ public class StatisticManager implements IStatisticManager {
 
     protected void init() {
         incrementRestart();
-        registerLogSummaryAppender();
     }
 
-    protected void registerLogSummaryAppender() {
-        LogSummaryAppender appender = getLogSummaryAppender();
-        if (appender == null) {
-            appender = new LogSummaryAppender();
-            appender.setName(LOG_SUMMARY_APPENDER_NAME);
-            appender.setThreshold(Level.WARN);
-            org.apache.log4j.Logger.getRootLogger().addAppender(appender);
-        }
-    }
 
-    protected LogSummaryAppender getLogSummaryAppender() {
-        return (LogSummaryAppender) org.apache.log4j.Logger.getRootLogger().getAppender(
-                LOG_SUMMARY_APPENDER_NAME);
-    }
-
-    public void clearAllLogSummaries() {
-        LogSummaryAppender appender = getLogSummaryAppender();
-        if (appender != null) {
-            appender.clearAll(parameterService.getEngineName());
-        }
-    }
-
-    public List<LogSummary> getLogSummaryWarnings() {
-        return getLogSummaries(Level.WARN);
-    }
-
-    public List<LogSummary> getLogSummaryErrors() {
-        return getLogSummaries(Level.ERROR);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected List<LogSummary> getLogSummaries(Level level) {
-        LogSummaryAppender appender = getLogSummaryAppender();
-        if (appender != null) {
-            return appender.getLogSummaries(parameterService.getEngineName(), level);
-        } else {
-            return Collections.EMPTY_LIST;
-        }
-    }
 
     public ProcessInfo newProcessInfo(ProcessInfoKey key) {
         ProcessInfo process = new ProcessInfo(key);
@@ -490,13 +446,6 @@ public class StatisticManager implements IStatisticManager {
     }
 
     public void flush() {
-
-        LogSummaryAppender appender = getLogSummaryAppender();
-        if (appender != null) {
-            appender.purgeOlderThan(System.currentTimeMillis()
-                    - parameterService.getLong(ParameterConstants.PURGE_LOG_SUMMARY_MINUTES, 60)
-                    * 60000);
-        }
 
         boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE,
                 false);
