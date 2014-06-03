@@ -57,6 +57,7 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
+import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.symmetric.util.SnapshotUtil;
 import org.jumpmind.util.AppUtils;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -104,7 +105,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         this.dataSource = dataSource;
         this.springContext = springContext;
         this.properties = properties;
-        this.init();
+        this.init();        
     }
 
     public ClientSymmetricEngine(DataSource dataSource, Properties properties,
@@ -163,7 +164,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     protected void init() {
         try {
-
+            LogSummaryAppenderUtils.registerLogSummaryAppender();
+            
             this.propertiesFactory = createTypedPropertiesFactory();
             
             this.securityService = SecurityServiceFactory.create(getSecurityServiceType(), propertiesFactory.reload());
