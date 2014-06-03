@@ -924,6 +924,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (router != null && router.isUseSourceCatalogSchema()) {
             table.setCatalog(catalogName);
             table.setSchema(schemaName);
+        } else {
+            table.setCatalog(null);
+            table.setSchema(null);
         }
         if (router != null && setTargetTableName) {
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetCatalogName())) {
