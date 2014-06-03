@@ -130,8 +130,6 @@ public interface ISymmetricDialect {
 
     public String getCreateSymmetricDDL();
 
-    public String getCreateTableXML(TriggerHistory triggerHistory, TriggerRouter triggerRouter);
-
     public boolean isBlobSyncSupported();
 
     public boolean isClobSyncSupported();
