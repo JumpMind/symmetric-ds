@@ -71,7 +71,9 @@ public class DbFill {
     private boolean cascading = false;
 
     private String ignore[] = null;
-
+    
+    private String prefixed[] = null;
+    
     private int inputLength = 1;
 
     private Random rand = null;
@@ -125,6 +127,14 @@ public class DbFill {
                         if (table.getName().startsWith(ignoreName)) {
                             if (verbose) {
                                 System.out.println("Ignore table " + table.getName());
+                            }
+                            continue table_loop;
+                        }
+                    }
+                    for (String prefixedName : prefixed) {
+                        if (!table.getName().startsWith(prefixedName)) {
+                            if (verbose) {
+                                System.out.println("Non prefixed table (" + prefixedName + ")" + table.getName());
                             }
                             continue table_loop;
                         }
@@ -760,6 +770,14 @@ public class DbFill {
 
     public void setIgnore(String[] ignore) {
         this.ignore = ignore;
+    }
+    
+    public String[] getPrefixed() {
+        return prefixed;
+    }
+
+    public void setPrefixed(String[] prefixed) {
+        this.prefixed = prefixed;
     }
 
     public int getInterval() {
