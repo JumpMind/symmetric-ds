@@ -75,13 +75,13 @@ public class JavaDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                         && data.getDataEventType().equals(DataEventType.UPDATE)) {
                     if (writeMethod.equals(WriteMethod.BEFORE_WRITE)
                             && filter.getBeforeWriteScript() != null) {
-                        writeRow = getCompiledClass(context, filter.getBeforeWriteScript()).execute(context, table, data, error);
+                        writeRow = getCompiledClass(filter.getBeforeWriteScript()).execute(context, table, data, error);
                     } else if (writeMethod.equals(WriteMethod.AFTER_WRITE)
                             && filter.getAfterWriteScript() != null) {
-                        writeRow = getCompiledClass(context, filter.getAfterWriteScript()).execute(context, table, data, error);
+                        writeRow = getCompiledClass(filter.getAfterWriteScript()).execute(context, table, data, error);
                     } else if (writeMethod.equals(WriteMethod.HANDLE_ERROR)
                             && filter.getHandleErrorScript() != null) {
-                        writeRow = getCompiledClass(context, filter.getHandleErrorScript()).execute(context, table, data, error);
+                        writeRow = getCompiledClass(filter.getHandleErrorScript()).execute(context, table, data, error);
                     }
                 }
             }
@@ -104,7 +104,7 @@ public class JavaDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
         try {
             if (scripts != null) {
                 for (String script : scripts) {
-                    getCompiledClass(context, script).execute(context, null, null, null);
+                    getCompiledClass(script).execute(context, null, null, null);
                 }
             }
         } catch (Exception e) {
@@ -116,8 +116,12 @@ public class JavaDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
             }
         }
     }
+    
+    public static int countHeaderLines() {
+        return CODE_START.split("\n").length;
+    }
 
-    protected JavaLoadFilter getCompiledClass(DataContext context, String javaExpression) throws Exception {
+    public static JavaLoadFilter getCompiledClass(String javaExpression) throws Exception {
         String javaCode = CODE_START + javaExpression + CODE_END;    
         return (JavaLoadFilter) SimpleClassCompiler.getInstance().getCompiledClass(javaCode);
     }
