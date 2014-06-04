@@ -59,7 +59,7 @@
 	<para>
 		The NotePad sample application is a very simple task list
 		application
-		that persists “notes” to a SQLite database table called
+		that persists ���notes��� to a SQLite database table called
 		Notes. The
 		Notes table will be configured to synchronize to a
 		centralized version
@@ -77,24 +77,24 @@
 				</thead>
 				<tbody>
 					<row>
-						<entry>_ID(PK)</entry>
-						<entry>INTEGER</entry>
+						<entry>_ID</entry>
+						<entry>VARCHAR</entry>
 					</row>
 					<row>
 						<entry>TITLE</entry>
 						<entry>TEXT</entry>
 					</row>
 					<row>
-						<entry>NOTES</entry>
+						<entry>NOTE</entry>
 						<entry>TEXT</entry>
 					</row>
 					<row>
 						<entry>CREATED</entry>
-						<entry>INTEGER</entry>
+						<entry>VARCHAR</entry>
 					</row>
 					<row>
 						<entry>MODIFIED</entry>
-						<entry>INTEGER</entry>
+						<entry>VARCHAR</entry>
 					</row>
 				</tbody>
 			</tgroup>
@@ -167,28 +167,28 @@
 		directly you need to provide a few required startup parameters to the
 		engine:
 		<itemizedlist>
-			<listitem><command>SQLiteOpenHelper</command> – It is best (but not required) if the
+			<listitem><command>SQLiteOpenHelper</command> ��� It is best (but not required) if the
 				SQLiteOpenHelper is shared with the application that will be sharing
 				the SQLite database. This core Android Java class provides software
 				synchronization around the access to the database and minimizes
 				locking errors.
 			</listitem>
-			<listitem><command>registrationUrl</command> – This is the URL of where the centralized
+			<listitem><command>registrationUrl</command> ��� This is the URL of where the centralized
 				SymmetricDS instance is hosted.
 			</listitem>
-			<listitem><command>externalId</command> – This is the identifier that can be used by the
+			<listitem><command>externalId</command> ��� This is the identifier that can be used by the
 				centralized SymmetricDS server to identify whether this instance
 				should get data changes that happen on the server. It could be the
 				serial number of the device, an account username, or some other
 				business concept like store number.
 			</listitem>
-			<listitem><command>nodeGroupId</command> – This is the group id for the mobile device in
+			<listitem><command>nodeGroupId</command> ��� This is the group id for the mobile device in
 				the synchronization configuration. For example, if the nodeGroupId
 				is 'handheld', then the SymmetricDS configuration might have a group
 				called 'handheld' and a group called 'corp' where 'handheld' is
 				configured to push and pull data from 'corp.'
 			</listitem>
-			<listitem><command>properties</command> – Optionally tweak the settings for SymmetricDS.
+			<listitem><command>properties</command> ��� Optionally tweak the settings for SymmetricDS.
 			</listitem>
 		</itemizedlist>
 	</para>
@@ -253,8 +253,7 @@
 		<![CDATA[
 final String HELPER_KEY = "NotePadHelperKey";
 
-// Register the database helper, so it can be shared with the
-SymmetricService
+// Register the database helper, so it can be shared with the SymmetricService
 SQLiteOpenHelperRegistry.register(HELPER_KEY, mOpenHelper);
 
 Intent intent = new Intent(getContext(), SymmetricService.class);
@@ -301,6 +300,67 @@ getContext().startService(intent);
 		the application to enter Notes for the first time offline or while the
 		SymmetricDS engine is unregistered and still have them arrive at the
 		centralized server once the SymmetricDS engine does get registered.
+	</para>
+
+	<para>
+	    Next, open up SymmetricDS.  Create a Master Node with your choice of database.
+	    Create a table for your master node using the following code:
+	</para>
+	
+	<para>
+		<programlisting>
+		<![CDATA[
+CREATE TABLE NOTES 
+	(
+	_ID VARCHAR(500) PRIMARY KEY, 
+	TITLE TEXT, 
+	NOTE TEXT, 
+	CREATED VARCHAR(500), 
+	MODIFIED VARCHAR(500),
+	);
+			]]>
+		</programlisting>
+	</para>
+	
+	<para>
+	    Set up your Android Emulator in Eclipse.  You can do this by opening 
+	    the Android Virtual Device Manager.  Click New and follow the steps.
+	    Remember, the higher the Emulator's API, the better.
+	</para>
+	
+	<para>
+	    Run your NotePad project by pressing Run on NotePadProvider.java in Eclipse.
+	    When prompted, select the Emulator you just created.  Moniter the Console in Eclipse.
+	    Let the NotePad.apk install on the emulator.  Now watch the LogCat and wait as it
+	    attempts to register with your master node.
+	</para>
+	
+	<para>
+	    Accept the registration request in SymmetricDS.  You can do this by navigating to
+	    Manage->Nodes.  Right click the android-simulator and press allow.
+	</para>
+	
+	<para>
+	    Now it's time to set up your trigger.  In SymmetricDS, click on Configure->
+	    Table Triggers->Auto Create...  Select the table you created earlier, NOTES,
+	    as the Trigger Id.  Hit apply, highlight the new trigger, and click Link.  Choose
+	    the direction(s) you wish to link SymmetricDS and your emulator.  Save your choice(s).
+	</para>
+	
+	<para>
+	    In the Android Emulator, open the notes app and create a new note.  Enter your note and create
+	    a title for the note.  Save the note.
+	</para>
+	
+	<para>
+	    In SymmetricDS, open Explore and verify that the Selected Node is your Master Node.  Enter
+	    the following code and select Run SQL Under Cursor.
+	    		<programlisting>
+		<![CDATA[
+SELECT * FROM NOTES
+			]]>
+		</programlisting>
+		The note you created on your Android Emulator should now show up as the result.
 	</para>
 
 	<para>
