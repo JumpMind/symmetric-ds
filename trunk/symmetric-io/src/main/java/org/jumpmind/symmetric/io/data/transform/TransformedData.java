@@ -325,7 +325,15 @@ public class TransformedData implements Cloneable {
 
     public String[] getOldColumnValues() {
         List<String> list = retrieve(targetOldValuesByIncludeOnType, false);
-        return list.toArray(new String[list.size()]);
+        boolean use = false;
+        for (String string : list) {
+            use |= string != null;
+        }
+        if (use) {
+            return list.toArray(new String[list.size()]);
+        } else {
+            return null;
+        }
     }
 
 }
