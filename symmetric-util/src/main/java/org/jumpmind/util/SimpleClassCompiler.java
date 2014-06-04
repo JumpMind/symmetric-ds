@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
@@ -53,7 +52,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @IgnoreJRERequirement
-@SuppressWarnings({ "rawtypes", "restriction" })
+@SuppressWarnings({ "rawtypes" })
 public class SimpleClassCompiler {
 
     public static final String CLASSNAME_TOKEN = "$(CLASSNAME)";
@@ -99,10 +98,8 @@ public class SimpleClassCompiler {
                 javaObject = fileManager.getClassLoader(null).loadClass(className).newInstance();
                 objectMap.put(id, javaObject);
             } else {
-                log.error("Compilation failed:\n" + javaCode);
-                for (Diagnostic d : diag.getDiagnostics()) {
-                    log.error("Error at line " + d.getLineNumber() + ": " + d.getMessage(null));
-                }
+                log.debug("Compilation failed:\n" + javaCode);
+                throw new SimpleClassCompilerException(diag.getDiagnostics());
             }
         }
 
