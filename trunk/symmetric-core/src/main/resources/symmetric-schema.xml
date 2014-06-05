@@ -113,7 +113,7 @@
      </table>
 
     <table name="extract_request" description="This table is used internally to request the extract of initial loads asynchronously when the initial load extract job is enabled.">
-        <column name="request_id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a request." />
+        <column name="request_id" type="BIGINT" required="true" primaryKey="true" description="Unique identifier for a request." />
         <column name="node_id" type="VARCHAR" size="50" required="true" description="The node_id of the batch being loaded." />
         <column name="status" type="CHAR" size="2"  description="NE, OK" />
         <column name="start_batch_id" type="BIGINT" required="true" description="A load can be split across multiple batches.  This is the first of N batches the load will be split across." />
@@ -708,7 +708,7 @@
     </table>
 
     <table name="trigger_hist" description="A history of a table's definition and the trigger used to capture data from the table. When a database trigger captures a data change, it references a trigger_hist entry so it is possible to know which columns the data represents. trigger_hist entries are made during the sync trigger process, which runs at each startup, each night in the syncTriggersJob, or any time the syncTriggers() JMX method is manually invoked. A new entry is made when a table definition or a trigger definition is changed, which causes a database trigger to be created or rebuilt.">
-        <column name="trigger_hist_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a trigger_hist entry" />
+        <column name="trigger_hist_id" type="INTEGER" required="true" primaryKey="true" description="Unique identifier for a trigger_hist entry" />
         <column name="trigger_id" type="VARCHAR" size="128" required="true"  description="Unique identifier for a trigger" />
         <column name="source_table_name" type="VARCHAR" size="255" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes." />
         <column name="source_catalog_name" type="VARCHAR" size="255"  description="The catalog name where the source table resides." />

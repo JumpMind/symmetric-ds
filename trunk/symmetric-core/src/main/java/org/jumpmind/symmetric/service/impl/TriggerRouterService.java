@@ -63,6 +63,7 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.util.FormatUtils;
@@ -75,6 +76,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private IClusterService clusterService;
 
     private IConfigurationService configurationService;
+    
+    private ISequenceService sequenceService;
 
     private Map<String, Router> routersCache;
 
@@ -121,6 +124,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         this.statisticManager = engine.getStatisticManager();
         this.groupletService = engine.getGroupletService();
         this.nodeService = engine.getNodeService();
+        this.sequenceService = engine.getSequenceService();
         this.addTriggerCreationListeners(this.failureListener);
         setSqlMap(new TriggerRouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -818,9 +822,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void insert(TriggerHistory newHistRecord) {
+        newHistRecord.setTriggerHistoryId((int)sequenceService.nextVal(Constants.SEQUENCE_TRIGGER_HIST));
         sqlTemplate.update(
                 getSql("insertTriggerHistorySql"),
-                new Object[] { newHistRecord.getTriggerId(), newHistRecord.getSourceTableName(),
+                new Object[] { newHistRecord.getTriggerHistoryId(), newHistRecord.getTriggerId(), newHistRecord.getSourceTableName(),
                         newHistRecord.getTableHash(), newHistRecord.getCreateTime(),
                         newHistRecord.getColumnNames(), newHistRecord.getPkColumnNames(),
                         newHistRecord.getLastTriggerBuildReason().getCode(),
@@ -830,7 +835,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         newHistRecord.getSourceSchemaName(), newHistRecord.getSourceCatalogName(),
                         newHistRecord.getTriggerRowHash(), newHistRecord.getTriggerTemplateHash(),
                         newHistRecord.getErrorMessage() },
-                new int[] { Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP,
+                new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP,
                         Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT,
                         Types.VARCHAR });
