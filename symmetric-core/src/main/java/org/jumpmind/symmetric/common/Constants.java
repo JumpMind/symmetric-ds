@@ -141,6 +141,10 @@ final public class Constants {
     
     public static final String TRANSFORM_SERVICE = "transformService";
     
+    public static final String SEQUENCE_TRIGGER_HIST = TableConstants.SYM_TRIGGER_HIST;
+    
+    public static final String SEQUENCE_EXTRACT_REQ = TableConstants.SYM_EXTRACT_REQUEST;
+    
     public static final String SEQUENCE_OUTGOING_BATCH = TableConstants.SYM_OUTGOING_BATCH;
     
     public static final String SEQUENCE_OUTGOING_BATCH_LOAD_ID = "outgoing_batch_load_id";

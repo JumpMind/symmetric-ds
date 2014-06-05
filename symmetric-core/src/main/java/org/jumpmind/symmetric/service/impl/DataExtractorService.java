@@ -47,13 +47,12 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlConstants;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -112,8 +111,8 @@ import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
@@ -141,6 +140,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private ITriggerRouterService triggerRouterService;
 
     private ITransformService transformService;
+    
+    private ISequenceService sequenceService;
 
     private IDataService dataService;
 
@@ -156,26 +157,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private Map<String, Semaphore> locks = new HashMap<String, Semaphore>();
 
-    public DataExtractorService(IParameterService parameterService,
-            ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
-            IRouterService routingService, IConfigurationService configurationService,
-            ITriggerRouterService triggerRouterService, INodeService nodeService,
-            IDataService dataService, ITransformService transformService,
-            IStatisticManager statisticManager, IStagingManager stagingManager,
-            IClusterService clusterService, INodeCommunicationService nodeCommunicationService) {
-        super(parameterService, symmetricDialect);
-        this.outgoingBatchService = outgoingBatchService;
-        this.routerService = routingService;
-        this.dataService = dataService;
-        this.configurationService = configurationService;
-        this.triggerRouterService = triggerRouterService;
-        this.nodeService = nodeService;
-        this.transformService = transformService;
-        this.statisticManager = statisticManager;
-        this.stagingManager = stagingManager;
-        this.nodeCommunicationService = nodeCommunicationService;
-        this.clusterService = clusterService;
-        setSqlMap(new DataExtractorSqlMap(symmetricDialect.getPlatform(),
+    public DataExtractorService(ISymmetricEngine engine) {
+        super(engine.getParameterService(), engine.getSymmetricDialect());
+        this.outgoingBatchService = engine.getOutgoingBatchService();
+        this.routerService = engine.getRouterService();
+        this.dataService = engine.getDataService();
+        this.configurationService = engine.getConfigurationService();
+        this.triggerRouterService = engine.getTriggerRouterService();
+        this.nodeService = engine.getNodeService();
+        this.transformService = engine.getTransformService();
+        this.statisticManager = engine.getStatisticManager();
+        this.stagingManager = engine.getStagingManager();
+        this.nodeCommunicationService = engine.getNodeCommunicationService();
+        this.clusterService = engine.getClusterService();
+        this.sequenceService = engine.getSequenceService();
+        setSqlMap(new DataExtractorServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
 
@@ -996,13 +992,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void requestExtractRequest(ISqlTransaction transaction, String nodeId,
             TriggerRouter triggerRouter, long startBatchId, long endBatchId) {
-        transaction.insertWithGeneratedKey(
-        getSql("insertExtractRequestSql"),
-                symmetricDialect.getSequenceKeyName(SequenceIdentifier.REQUEST),
-                symmetricDialect.getSequenceName(SequenceIdentifier.REQUEST), new Object[] {
-                        nodeId, ExtractStatus.NE.name(), startBatchId, endBatchId,
-                        triggerRouter.getTrigger().getTriggerId(),
-                        triggerRouter.getRouter().getRouterId() }, new int[] { Types.VARCHAR,
+        long requestId = sequenceService.nextVal(transaction, Constants.SEQUENCE_EXTRACT_REQ);
+        transaction.prepareAndExecute(getSql("insertExtractRequestSql"),
+                new Object[] { requestId, nodeId, ExtractStatus.NE.name(), startBatchId,
+                        endBatchId, triggerRouter.getTrigger().getTriggerId(),
+                        triggerRouter.getRouter().getRouterId() }, new int[] { Types.BIGINT, Types.VARCHAR,
                         Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR });
     }
 

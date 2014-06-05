@@ -121,8 +121,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         putSql("insertTriggerHistorySql",
                 ""
                         + "insert into $(trigger_hist)                                                                                                                                                                                                                              "
-                        + "  (trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message)   "
-                        + "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                                                                                                                                                                                                          ");
+                        + "  (trigger_hist_id, trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message)   "
+                        + "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                                                                                                                                                                                                                          ");
 
         putSql("deleteTriggerSql", "" + "delete from $(trigger) where trigger_id=?   ");
 
