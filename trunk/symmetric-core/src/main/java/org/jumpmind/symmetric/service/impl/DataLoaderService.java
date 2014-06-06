@@ -216,6 +216,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 processInfo.setStatus(ProcessInfo.Status.OK);
                 return list;
             } catch (IOException ex) {
+                processInfo.setStatus(ProcessInfo.Status.ERROR);
                 throw new IoException();
             } catch (RuntimeException ex) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
@@ -285,7 +286,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         sendAck(remote, local, localSecurity, list, transportManager);
                     }
                 }
-                processInfo.setStatus(ProcessInfo.Status.OK);
+                
+                if (containsError(list)) {
+                    processInfo.setStatus(ProcessInfo.Status.ERROR);                    
+                } else {
+                    processInfo.setStatus(ProcessInfo.Status.OK);    
+                }
             } catch (RuntimeException e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
                 throw e;
@@ -315,6 +321,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
+    private boolean containsError(List<IncomingBatch> list) {
+        for (IncomingBatch incomingBatch : list) {
+            if (incomingBatch.getStatus() == Status.ER) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Load database from input stream and write acknowledgment to output
      * stream. This is used for a "push" request with a response of an
@@ -333,7 +348,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 processInfo.setStatus(ProcessInfo.Status.ACKING);
                 transportManager.writeAcknowledgement(out, sourceNode, list, local,
                         security != null ? security.getNodePassword() : null);
-                processInfo.setStatus(ProcessInfo.Status.OK);
+                if (containsError(list)) {
+                    processInfo.setStatus(ProcessInfo.Status.ERROR);                    
+                } else {
+                    processInfo.setStatus(ProcessInfo.Status.OK);
+                }
             } catch (RuntimeException e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
                 throw e;
