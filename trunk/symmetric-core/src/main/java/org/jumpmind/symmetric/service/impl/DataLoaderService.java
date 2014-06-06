@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -889,14 +891,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         log.debug(ex.getMessage(), ex);
                     }
                     SQLException se = unwrapSqlException(ex);
-                    if (se != null) {
+                    if (ex instanceof ConflictException) {
+                        String message = ex.getMessage();
+                        if (se != null && isNotBlank(se.getMessage())) {
+                            message = message + " " + se.getMessage();
+                        }
+                        this.currentBatch.setSqlMessage(message);
+                        this.currentBatch.setSqlState(ErrorConstants.CONFLICT_STATE);
+                        this.currentBatch.setSqlCode(ErrorConstants.CONFLICT_CODE);
+                    } else if (se != null) {
                         this.currentBatch.setSqlState(se.getSQLState());
                         this.currentBatch.setSqlCode(se.getErrorCode());
                         this.currentBatch.setSqlMessage(se.getMessage());
-                    } else if (ex instanceof ConflictException) {
-                        this.currentBatch.setSqlMessage(ex.getMessage());
-                        this.currentBatch.setSqlState(ErrorConstants.CONFLICT_STATE);
-                        this.currentBatch.setSqlCode(ErrorConstants.CONFLICT_CODE);
                     } else {
                         this.currentBatch.setSqlMessage(ex.getMessage());
                     }
