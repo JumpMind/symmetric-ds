@@ -42,7 +42,7 @@ public class TransformTable implements Cloneable {
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
     protected DeleteAction deleteAction = DeleteAction.NONE;
-    protected ColumnPolicy columnPolicy = ColumnPolicy.SPECIFIED;
+    protected ColumnPolicy columnPolicy = ColumnPolicy.IMPLIED;
     protected boolean updateFirst = false;
     protected int transformOrder = 0;
     protected Date createTime;
