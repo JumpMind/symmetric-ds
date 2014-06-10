@@ -78,6 +78,10 @@
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-mssql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-mongo</artifactId>              
         </dependency>        
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
@@ -235,6 +239,11 @@
             <artifactId>mysql-connector-java</artifactId>
             <scope>provided</scope>
         </dependency>           
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <scope>provided</scope>
+        </dependency>        
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
