@@ -387,6 +387,7 @@
         <column name="max_memory_bytes" type="BIGINT" default="0" description="The max amount of memory available to the JVM." />
         <column name="java_version" type="VARCHAR" size="50" description="The version of java that SymmetricDS is running as." />
         <column name="java_vendor" type="VARCHAR" size="255" description="The vendor of java that SymmetricDS is running as." />
+        <column name="jdbc_version" type="VARCHAR" size="255" description="The verision of the JDBC driver that is being used." />
         <column name="symmetric_version" type="VARCHAR" size="50"  description="The version of SymmetricDS running at this node." />
         <column name="timezone_offset" type="VARCHAR" size="6"  description="The time zone offset in RFC822 format at the time of the last heartbeat. " />
         <column name="heartbeat_time" type="TIMESTAMP"  description="The last timestamp when the node sent a heartbeat, which is attempted every ten minutes by default." />

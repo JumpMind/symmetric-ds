@@ -48,6 +48,9 @@ public class MockNodeService implements INodeService {
     public List<Node> findAllNodes() {
         return null;
     }
+    
+    public void deleteNodeHost(String nodeId) {
+    }
 
     public void deleteNode(String nodeId, boolean syncChange) {
     }

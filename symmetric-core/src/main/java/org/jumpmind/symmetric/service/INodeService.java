@@ -74,6 +74,8 @@ public interface INodeService {
     public NodeSecurity findNodeSecurity(String nodeId);
 
     public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound);
+    
+    public void deleteNodeHost(String nodeId);
 
     public void deleteNodeSecurity(String nodeId);
 
