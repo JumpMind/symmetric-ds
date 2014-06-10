@@ -241,6 +241,12 @@ public class NodeService extends AbstractService implements INodeService {
                 transaction.prepareAndExecute(getSql("deleteNodeSecuritySql"), new Object[] { nodeId });
                 transaction.prepareAndExecute(getSql("deleteNodeHostSql"), new Object[] { nodeId });
                 transaction.prepareAndExecute(getSql("deleteNodeSql"), new Object[] { nodeId });
+                transaction.prepareAndExecute(getSql("deleteNodeChannelCtlSql"), new Object[] { nodeId });
+                transaction.prepareAndExecute(getSql("deleteIncomingErrorSql"), new Object[] { nodeId });
+                transaction.prepareAndExecute(getSql("deleteExtractRequestSql"), new Object[] { nodeId });
+                transaction.prepareAndExecute(getSql("deleteNodeCommunicationSql"), new Object[] { nodeId });
+                transaction.prepareAndExecute(getSql("setOutgoingBatchOkSql"), new Object[] { nodeId });
+                transaction.prepareAndExecute(getSql("setIncomingBatchOkSql"), new Object[] { nodeId });
             }
         } catch (Error ex) {
             if (transaction != null) {
