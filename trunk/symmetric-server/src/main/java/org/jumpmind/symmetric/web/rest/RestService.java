@@ -942,7 +942,7 @@ public class RestService {
     private void heartbeatImpl(ISymmetricEngine engine, Heartbeat heartbeat) {
         INodeService nodeService = engine.getNodeService();
 
-        NodeHost nodeHost = new NodeHost(false);
+        NodeHost nodeHost = new NodeHost();
         if (heartbeat.getAvailableProcessors() != null) {
             nodeHost.setAvailableProcessors(heartbeat.getAvailableProcessors());
         }
@@ -963,6 +963,9 @@ public class RestService {
         }
         if (heartbeat.getJavaVendor() != null) {
             nodeHost.setJavaVendor(heartbeat.getJavaVendor());
+        }
+        if (heartbeat.getJdbcVersion() != null) {
+            nodeHost.setJdbcVersion(heartbeat.getJdbcVersion());
         }
         if (heartbeat.getJavaVersion() != null) {
             nodeHost.setJavaVersion(heartbeat.getJavaVersion());

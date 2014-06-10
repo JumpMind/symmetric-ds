@@ -167,6 +167,10 @@ public class NodeService extends AbstractService implements INodeService {
         return sqlTemplate.query(getSql("selectNodeHostPrefixSql", "selectNodeHostByNodeIdSql"),
                 new NodeHostRowMapper(), nodeId);
     }
+    
+    public void deleteNodeHost(String nodeId) {
+        platform.getSqlTemplate().update(getSql("deleteNodeHostSql"), new Object[] { nodeId });
+    }
 
     public void updateNodeHost(NodeHost nodeHost) {
 
@@ -179,6 +183,7 @@ public class NodeService extends AbstractService implements INodeService {
             nodeHost.getTotalMemoryBytes(),
             nodeHost.getMaxMemoryBytes(),
             nodeHost.getJavaVersion(), nodeHost.getJavaVendor(),
+            nodeHost.getJdbcVersion(),
             nodeHost.getSymmetricVersion(),
             nodeHost.getTimezoneOffset(),
             nodeHost.getHeartbeatTime(),
@@ -195,7 +200,7 @@ public class NodeService extends AbstractService implements INodeService {
         if (nodeHostForCurrentNode == null) {
             nodeHostForCurrentNode = new NodeHost(findIdentityNodeId());
         }
-        nodeHostForCurrentNode.refresh();
+        nodeHostForCurrentNode.refresh(platform);
         updateNodeHost(nodeHostForCurrentNode);
     }
 
@@ -881,6 +886,7 @@ public class NodeService extends AbstractService implements INodeService {
             nodeHost.setMaxMemoryBytes(rs.getLong("max_memory_bytes"));
             nodeHost.setJavaVersion(rs.getString("java_version"));
             nodeHost.setJavaVendor(rs.getString("java_vendor"));
+            nodeHost.setJdbcVersion(rs.getString("jdbc_version"));
             nodeHost.setSymmetricVersion(rs.getString("symmetric_version"));
             nodeHost.setTimezoneOffset(rs.getString("timezone_offset"));
             nodeHost.setHeartbeatTime(rs.getDateTime("heartbeat_time"));

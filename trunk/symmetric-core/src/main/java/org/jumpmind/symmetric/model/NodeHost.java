@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.util.AppUtils;
 
@@ -52,29 +53,23 @@ public class NodeHost implements Serializable {
     private long maxMemoryBytes;
     private String javaVersion;
     private String javaVendor;
+    private String jdbcVersion;
     private String symmetricVersion;
     private String timezoneOffset;
     private Date heartbeatTime;
     private Date lastRestartTime = LAST_RESTART_TIME;
     private Date createTime;
 
-    public NodeHost(boolean refresh) {
-    	if (refresh) {
-    		refresh();
-    	}
-    }
-    
     public NodeHost() {
-        this.refresh();
+        this.createTime = new Date();
     }
 
     public NodeHost(String nodeId) {
-        this.nodeId = nodeId;
-        this.refresh();
-        this.createTime = new Date();
+        this();
+        this.nodeId = nodeId;        
     }        
 
-    public void refresh() {
+    public void refresh(IDatabasePlatform platform) {
         this.hostName = AppUtils.getHostName();
         setIpAddress(AppUtils.getIpAddress());
         this.osUser = System.getProperty("user.name");
@@ -87,6 +82,7 @@ public class NodeHost implements Serializable {
         this.maxMemoryBytes = Runtime.getRuntime().maxMemory();
         this.javaVersion = System.getProperty("java.version");
         this.javaVendor = System.getProperty("java.vendor");
+        this.jdbcVersion = platform.getSqlTemplate().getDriverVersion();
         this.symmetricVersion = Version.version();
         this.timezoneOffset = AppUtils.getTimezoneOffset();
         Calendar cal = Calendar.getInstance();
@@ -196,6 +192,14 @@ public class NodeHost implements Serializable {
 
     public void setJavaVendor(String javaVendor) {
         this.javaVendor = javaVendor;
+    }
+    
+    public void setJdbcVersion(String jdbcVersion) {
+        this.jdbcVersion = jdbcVersion;
+    }
+    
+    public String getJdbcVersion() {
+        return jdbcVersion;
     }
 
     public String getSymmetricVersion() {
