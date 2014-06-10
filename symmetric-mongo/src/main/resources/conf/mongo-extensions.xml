@@ -1,0 +1,14 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="mongoLoaderFactory"
+        class="org.jumpmind.symmetric.io.data.writer.MongoDataLoaderFactory">
+        <property name="typeName" value="mongodb" />
+        <property name="objectMapper">
+            <bean
+                class="org.jumpmind.symmetric.io.data.writer.SimpleDBObjectMapper" />
+        </property>
+    </bean>
+
+</beans>
