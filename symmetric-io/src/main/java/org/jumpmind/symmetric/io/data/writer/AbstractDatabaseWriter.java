@@ -376,8 +376,11 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                     }
                 }
             }
+            return targetValues;
+        } else {
+            return null;
         }
-        return targetValues;
+
     }
     
     protected void bindVariables(Map<String, Object> variables) {
