@@ -330,7 +330,7 @@ CREATE TABLE NOTES
 	
 	<para>
 	    Run your NotePad project by pressing Run on NotePadProvider.java in Eclipse.
-	    When prompted, select the Emulator you just created.  Moniter the Console in Eclipse.
+	    When prompted, select the Emulator you just created.  Monitor the Console in Eclipse.
 	    Let the NotePad.apk install on the emulator.  Now watch the LogCat and wait as it
 	    attempts to register with your master node.
 	</para>
