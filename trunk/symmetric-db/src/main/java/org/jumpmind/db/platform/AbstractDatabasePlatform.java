@@ -387,8 +387,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 }
             } else if (type == Types.BIGINT) {
                 objectValue = parseBigInteger(value);
-            } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
+            } else if (type == Types.INTEGER || type == Types.SMALLINT) {
                 objectValue = parseInteger(value);
+            } else if (type == Types.BIT) {
+                if (StringUtils.isNumeric(value)) {
+                    objectValue = parseInteger(value);
+                } else {
+                    objectValue = Boolean.parseBoolean(value);
+                }
             } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
                     || type == Types.DOUBLE || type == Types.REAL) {
                 objectValue = parseBigDecimal(value);
