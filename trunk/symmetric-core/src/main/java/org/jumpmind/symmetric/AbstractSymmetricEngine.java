@@ -507,7 +507,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                 new Object[] { node.getNodeGroupId(), node.getNodeId(),
                                         node.getExternalId() });
 
-                        triggerRouterService.syncTriggers();
+                        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP, true)) {
+                            triggerRouterService.syncTriggers();
+                        } else {
+                            log.info(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP + " is turned off");
+                        }
 
                         if (parameterService
                                 .is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false) || isBlank(node.getDatabaseType()) ||
