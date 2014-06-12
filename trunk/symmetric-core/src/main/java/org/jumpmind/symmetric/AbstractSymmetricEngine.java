@@ -558,6 +558,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         stop();
         
+        log.info("Just cleaned {} files in the staging area during the uninstall.", getStagingManager().clean(0));
+        
         try {
             
             Table table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_TRIGGER_ROUTER));            
