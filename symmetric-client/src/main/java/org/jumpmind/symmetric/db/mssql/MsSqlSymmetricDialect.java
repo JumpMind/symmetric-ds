@@ -26,6 +26,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -36,6 +40,7 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
@@ -62,6 +67,23 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     public MsSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new MsSqlTriggerTemplate(this);
+    }
+    
+    @Override
+    public Database readSymmetricSchemaFromXml() {
+        Database db = super.readSymmetricSchemaFromXml();
+        if (parameterService.is(ParameterConstants.MSSQL_USE_NTYPES_FOR_SYNC)) {
+            Table table = db.findTable(TableConstants.getTableName(getTablePrefix(),
+                    TableConstants.SYM_DATA));
+            setColumnToNtext(table.getColumnWithName("row_data"));
+            setColumnToNtext(table.getColumnWithName("old_data"));
+            setColumnToNtext(table.getColumnWithName("pk_data"));
+        }
+        return db;
+    } 
+    
+    protected void setColumnToNtext(Column column) {
+        column.setMappedType(TypeMap.LONGNVARCHAR);
     }
     
     @Override
