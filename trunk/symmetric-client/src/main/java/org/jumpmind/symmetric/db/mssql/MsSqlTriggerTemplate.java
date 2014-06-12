@@ -24,6 +24,7 @@ import java.util.HashMap;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -37,13 +38,17 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
     public MsSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
 
+        boolean castToNVARCHAR = symmetricDialect.getParameterService().is(ParameterConstants.MSSQL_USE_NTYPES_FOR_SYNC);
+        
         // @formatter:off
         emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(convert(varchar(max),$(tableAlias).\"$(columnName)\") $(masterCollation),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
-        geometryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(convert(varchar(max),$(tableAlias).\"$(columnName)\".STAsText()) $(masterCollation),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
+        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(convert("+
+        (castToNVARCHAR ? "n" : "")
+        +"varchar(max),$(tableAlias).\"$(columnName)\") $(masterCollation),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
+        geometryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(convert("+(castToNVARCHAR ? "n" : "")+"varchar(max),$(tableAlias).\"$(columnName)\".STAsText()) $(masterCollation),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar(40), $(tableAlias).\"$(columnName)\",2) + '\"') end" ;
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar,$(tableAlias).\"$(columnName)\",121) + '\"') end" ;
-        clobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(cast($(origTableAlias).\"$(columnName)\" as varchar(max)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
+        clobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(cast($(origTableAlias).\"$(columnName)\" as "+(castToNVARCHAR ? "n" : "")+"varchar(max)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         blobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace($(defaultCatalog)dbo.sym_base64_encode(CONVERT(VARBINARY(max), $(origTableAlias).\"$(columnName)\")),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" = 1 then '\"1\"' else '\"0\"' end" ;
         triggerConcatCharacter = "+" ;
@@ -55,13 +60,13 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates = new HashMap<String,String>();
 
         sqlTemplates.put("insertTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) after insert as                                                                                                \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as owner after insert as                                                                                                \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
 "     set nocount on                                                                                                                                                       \n" +
 "     declare @TransactionId varchar(1000)                                                                                                                                 \n" +
-"     declare @DataRow varchar(max)                                                                                                                                        \n" +
+"     declare @DataRow "+(castToNVARCHAR ? "n" : "")+"varchar(max)                                                                                                                                        \n" +
 "     declare @ChannelId varchar(20)                                                                                                                                       \n" +
 "     $(declareNewKeyVariables)                                                                                                                                            \n" +
 "     if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
@@ -89,15 +94,15 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "   end                                                                                                                                                                    " );
 
         sqlTemplates.put("updateTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) after update as                                                                                                \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as owner after update as                                                                                                \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
 "     set nocount on                                                                                                                                                       \n" +
 "     declare @TransactionId varchar(1000)                                                                                                                                 \n" +
-"     declare @DataRow varchar(max)                                                                                                                                        \n" +
-"     declare @OldPk varchar(2000)                                                                                                                                         \n" +
-"     declare @OldDataRow varchar(max)                                                                                                                                     \n" +
+"     declare @DataRow "+(castToNVARCHAR ? "n" : "")+"varchar(max)                                                                                                                                        \n" +
+"     declare @OldPk "+(castToNVARCHAR ? "n" : "")+"varchar(2000)                                                                                                                                         \n" +
+"     declare @OldDataRow "+(castToNVARCHAR ? "n" : "")+"varchar(max)                                                                                                                                     \n" +
 "     declare @ChannelId varchar(20)                                                                                                                                       \n" +
 "     $(declareOldKeyVariables)                                                                                                                                            \n" +
 "     $(declareNewKeyVariables)                                                                                                                                            \n" +
@@ -128,15 +133,15 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     end                                                                                                                                                                  " );
 
         sqlTemplates.put("updateHandleKeyUpdatesTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) after update as                                                                                                                             \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as owner after update as                                                                                                                             \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
 "     set nocount on                                                                                                                                                       \n" +
 "     declare @TransactionId varchar(1000)                                                                                                                                 \n" +
-"     declare @OldPk varchar(2000)                                                                                                                                         \n" +
-"     declare @OldDataRow varchar(max)                                                                                                                                     \n" +
-"     declare @DataRow varchar(max)                                                                                                                                        \n" +
+"     declare @OldPk "+(castToNVARCHAR ? "n" : "")+"varchar(2000)                                                                                                                                         \n" +
+"     declare @OldDataRow "+(castToNVARCHAR ? "n" : "")+"varchar(max)                                                                                                                                     \n" +
+"     declare @DataRow "+(castToNVARCHAR ? "n" : "")+"varchar(max)                                                                                                                                        \n" +
 "     declare @ChannelId varchar(20)                                                                                                                                       \n" +
 "     $(declareOldKeyVariables)                                                                                                                                            \n" +
 "     $(declareNewKeyVariables)                                                                                                                                            \n" +
@@ -175,14 +180,14 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     end                                                                                                                                                                  " );
 
         sqlTemplates.put("deleteTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) after delete as                                                                                                                             \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as owner after delete as                                                                                                                             \n" +
 "  begin                                                                                                                                                                  \n" +
 "    declare @NCT int \n" +
 "    set @NCT = @@OPTIONS & 512 \n" +
 "    set nocount on                                                                                                                                                       \n" +
 "    declare @TransactionId varchar(1000)                                                                                                                                 \n" +
-"    declare @OldPk varchar(2000)                                                                                                                                         \n" +
-"    declare @OldDataRow varchar(max)                                                                                                                                     \n" +
+"    declare @OldPk "+(castToNVARCHAR ? "n" : "")+"varchar(2000)                                                                                                                                         \n" +
+"    declare @OldDataRow "+(castToNVARCHAR ? "n" : "")+"varchar(max)                                                                                                                                     \n" +
 "    declare @ChannelId varchar(20)                                                                                                                                       \n" +
 "    $(declareOldKeyVariables)                                                                                                                                            \n" +
 "    if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +

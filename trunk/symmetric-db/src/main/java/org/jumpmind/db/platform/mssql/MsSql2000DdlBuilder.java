@@ -46,10 +46,12 @@ import org.jumpmind.db.alter.RemoveIndexChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
@@ -90,6 +92,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "IMAGE");
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "NTEXT", ColumnTypes.LONGNVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.NULL, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.OTHER, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.REF, "IMAGE", Types.LONGVARBINARY);
@@ -652,6 +655,20 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             println("  DEALLOCATE refcursor", ddl);
             ddl.append("END");
             printEndOfStatement(ddl);
+        }
+        
+        /*
+         * Cannot alter text to ntext or ntext to text directly.  Have to alter to varchar(max) first.
+         */
+        if ((targetColumn.getMappedType().equalsIgnoreCase(TypeMap.LONGNVARCHAR) && sourceColumn.getJdbcTypeName().equalsIgnoreCase("text")) ||
+                (targetColumn.getMappedType().equalsIgnoreCase(TypeMap.LONGVARCHAR) && sourceColumn.getJdbcTypeName().equalsIgnoreCase("ntext"))) {
+            ddl.append("ALTER TABLE ");
+            printlnIdentifier(getTableName(sourceTable.getName()), ddl);
+            printIndent(ddl);
+            ddl.append("ALTER COLUMN ");
+            printIdentifier(getColumnName(targetColumn), ddl);
+            ddl.append(" varchar(max)");
+            printEndOfStatement(ddl);            
         }
 
         ddl.append("ALTER TABLE ");
