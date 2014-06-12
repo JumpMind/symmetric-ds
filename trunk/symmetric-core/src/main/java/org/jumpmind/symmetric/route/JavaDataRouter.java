@@ -40,6 +40,7 @@ public class JavaDataRouter extends AbstractDataRouter {
 
     public final static String CODE_START = "import org.jumpmind.symmetric.route.*;\n"
             + "import org.jumpmind.symmetric.model.*;\n"
+            + "import org.jumpmind.symmetric.service.*;\n"
             + "import java.util.*;\npublic class " + SimpleClassCompiler.CLASSNAME_TOKEN + " extends AbstractDataRouter { \n"
             + "   public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,\n"
             + "      boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {\n\n";
