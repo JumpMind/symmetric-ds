@@ -106,7 +106,7 @@
 		example.
 	</para>
 	<para>
-		To start,create the NotePad project. You do
+		To start, create the NotePad project. You do
 		this by adding a new Android Sample Project. Select the NotePad
 		project.
 	</para>
@@ -203,9 +203,11 @@
 	</para>
 	<para>
 		<programlisting>
-<![CDATA[<service android:name="org.jumpmind.symmetric.android.SymmetricService" android:enabled="true" >           
+<![CDATA[<service android:name="org.jumpmind.symmetric.android.SymmetricService" 
+android:enabled="true" >           
     <intent-filter>
-  		<action android:name="org.jumpmind.symmetric.android.SymmetricService" />
+  		<action android:name="org.jumpmind.symmetric.android.
+  		SymmetricService" />
   	</intent-filter>
 </service>]]>
 		</programlisting>
@@ -303,68 +305,154 @@ getContext().startService(intent);
 	</para>
 
 	<para>
-	    Next, open up SymmetricDS.  Create a Master Node with your choice of database.
-	    Create a table for your master node using the following code:
+	    Lets set up the Master Node in SymmetricDS through the Node Setup screen. 
+	    Choose your database and enter the username and password. For this example, 
+	    I will use an H2 database. Choose the Standard 2 Tier Configuration 
+	    and click Next. For this example, the default Sync Url should be sufficient.
 	</para>
 	
 	<para>
-		<programlisting>
+	    Now we need to create the NOTES table in SymmetricDS. 
+	    Navigate to the Explore tab.  Paste and run the following SQL as a script:
+	    <programlisting>
 		<![CDATA[
-CREATE TABLE NOTES 
-	(
-	_ID VARCHAR(500) PRIMARY KEY, 
-	TITLE TEXT, 
-	NOTE TEXT, 
-	CREATED VARCHAR(500), 
-	MODIFIED VARCHAR(500),
-	);
+CREATE TABLE NOTES (
+_ID VARCHAR(50) PRIMARY KEY, 
+TITLE TEXT, 
+NOTE TEXT, 
+CREATED VARCHAR(50), 
+MODIFIED VARCHAR(50),
+);
 			]]>
 		</programlisting>
 	</para>
 	
 	<para>
-	    Set up your Android Emulator in Eclipse.  You can do this by opening 
-	    the Android Virtual Device Manager.  Click New and follow the steps.
-	    Remember, the higher the Emulator's API, the better.
+	    Now it is time to set up your trigger. 
+	    Navigate to Configure->Table Triggers. Click Auto Create... 
+	    Choose the default Channel and select the NOTES table we created earlier. 
+	    Highlight the new trigger and click Link. Choose the direction(s) you 
+	    wish to link SymmetricDS and your Android Device. For this example, 
+	    I will link it both ways. Save your choice(s).
 	</para>
 	
 	<para>
-	    Run your NotePad project by pressing Run on NotePadProvider.java in Eclipse.
-	    When prompted, select the Emulator you just created.  Monitor the Console in Eclipse.
-	    Let the NotePad.apk install on the emulator.  Now watch the LogCat and wait as it
-	    attempts to register with your master node.
+	    We need to create Transforms for our CREATED and MODIFIED Columns.  
+	    This is because these fields need to be converted into SQL timestamps.  
+	    First, lets set up our NOTES_INBOUND transform. Set the Transform Id to NOTES_INBOUND.  Set
+	    the Group Link as client pushes to server.  Set the Transform Point to LOAD.  The Source and Target
+	    Table are both NOTES.  Set the Column Policy to SPECIFIED.
 	</para>
 	
 	<para>
-	    Accept the registration request in SymmetricDS.  You can do this by navigating to
-	    Manage->Nodes.  Right click the android-simulator and press allow.
+	    Double click the NOTES_INBOUND transform. Create Columns for _ID, TITLE, and NOTE.  All three of these
+	    should have their respective Column as both the Source and Target, 
+	    Transform On All with a Type of copy.  _ID Should have the PK box checked.
 	</para>
 	
 	<para>
-	    Now it's time to set up your trigger.  In SymmetricDS, click on Configure->
-	    Table Triggers->Auto Create...  Select the table you created earlier, NOTES,
-	    as the Trigger Id.  Hit apply, highlight the new trigger, and click Link.  Choose
-	    the direction(s) you wish to link SymmetricDS and your emulator.  Save your choice(s).
+	    Create Columns for CREATED and MODIFIED. Both CREATED and MODIFIED
+	    should have their respective Column as both the Source and Target, 
+	    Transform On All with a Type of bsh.
 	</para>
 	
 	<para>
-	    In the Android Emulator, open the notes app and create a new note.  Enter your note and create
-	    a title for the note.  Save the note.
-	</para>
-	
-	<para>
-	    In SymmetricDS, open Explore and verify that the Selected Node is your Master Node.  Enter
-	    the following code and select Run SQL Under Cursor.
-	    		<programlisting>
+	    For CREATED, enter the following script as your Expression:
+	    <programlisting>
 		<![CDATA[
-SELECT * FROM NOTES
+return new java.sql.Timestamp(java.lang.Long.parseLong(CREATED)).toString();
 			]]>
 		</programlisting>
-		The note you created on your Android Emulator should now show up as the result.
+	</para>
+	
+	<para>
+	    For MODIFIED, enter the following script as your Expression:
+	    <programlisting>
+		<![CDATA[
+return new java.sql.Timestamp(java.lang.Long.parseLong(MODIFIED)).toString();
+			]]>
+		</programlisting>
+	</para>
+	
+	<para>
+	    Next, lets set up our NOTES_OUTBOUND transform. Set the Transform Id to NOTES_OUTBOUND.  Set
+	    the Group Link as server waits for pull from client.  Set the Transform Point to EXTRACT.  
+	    The Source and Target Table are both NOTES.  Set the Column Policy to SPECIFIED.    
+	</para>
+	
+	<para>
+	    Double click the NOTES_OUTBOUND transform. Create Columns for _ID, TITLE, and NOTE.  All three of these
+	    should have their respective Column as both the Source and Target, 
+	    Transform On All with a Type of copy.  _ID Should have the PK box checked.
+	</para>
+	
+	<para>
+	    For CREATED, enter the following script as your Expression:
+	    <programlisting>
+		<![CDATA[
+return java.lang.Long.toString(new java.text.
+SimpleDateFormat("yyyy-MM-dd:hh:mm:ss.S").parse(CREATED).getTime());			]]>
+		</programlisting>
+	</para>
+	
+	<para>
+	    For MODIFIED, enter the following script as your Expression:
+	    <programlisting>
+		<![CDATA[
+return java.lang.Long.toString(new java.text.
+SimpleDateFormat("yyyy-MM-dd:hh:mm:ss.S").parse(MODIFIED).getTime());			]]>
+		</programlisting>
 	</para>
 
 	<para>
-		That's all you have to do to integrate SymmetricDS with your Android
-		application. 
+	    Go back to Eclipse. We need to set up an Android Emulator. 
+	    This can be done by opening the Android Virtual Device Manager. 
+	    Click New and follow the steps. The higher the Emulator's API, the better.
+	</para>
+	
+	<para>
+		Run your NotePad project by pressing Run on NotePadProvider.java in Eclipse. 
+		When prompted, select the emulator you just created. Monitor the Console in Eclipse. 
+		Let the NotePad.apk install on the emulator. 
+		Now watch the LogCat and wait as it attempts to register with your SymmetricDS Master Node.
+	</para>
+	
+	<para>
+	    Go back to SymmetricDS and navigate to Manage->Nodes. 
+	    Right-click the android-simulator registration request and click Allow. 
+	    Check the Send Initial Load box and Apply.
+	</para>
+	
+	<para>
+	    Go back to your Android Emulator and create a new note. When you are done, save the note.
+	</para>
+	
+	<para>
+	    Go back to SymmetricDS and navigate to the Explore tab. Enter the following SQL:
+	    <programlisting>
+		<![CDATA[
+SELECT * FROM NOTES;
+			]]>
+		</programlisting>
+		Run this as sql under cursor. 
+		The note you created in your Android Emulator should now show up in SymmetricDS as the result.	
+	</para>
+
+	<para>
+		Additional Tips: To support multiple NotePad clients, add column to the NOTES table 
+		by entering the following SQL:
+		<programlisting>
+		<![CDATA[
+ALTER TABLE NOTES ADD SOURCE_ID INTEGER;
+			]]>
+		</programlisting>
+		Now, go back to your transforms and double-click on NOTES_INBOUND.  Create a column
+		with a blank Source, SOURCE_ID as the Target, Transform On All, Type of variable
+		and Expression as source_node_id.  Save your changes.
 	</para>	
+	
+	<para>
+	    Congratulations!  You have now synchronized your Android Device with SymmetricDS.
+	</para>	
+
 </section>
