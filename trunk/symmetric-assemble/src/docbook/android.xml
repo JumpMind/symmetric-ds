@@ -339,9 +339,20 @@ MODIFIED VARCHAR(50),
 	<para>
 	    We need to create Transforms for our CREATED and MODIFIED Columns.  
 	    This is because these fields need to be converted into SQL timestamps.  
-	    First, lets set up our NOTES_INBOUND transform. Set the Transform Id to NOTES_INBOUND.  Set
-	    the Group Link as client pushes to server.  Set the Transform Point to LOAD.  The Source and Target
-	    Table are both NOTES.  Set the Column Policy to SPECIFIED.
+	    First, lets set up our NOTES_INBOUND transform. Copy the information from
+	    the picture below.
+	</para>
+	
+	<para>
+		<figure id="Configuring the NOTES_INBOUND Transform">
+			<title>Configuring the NOTES_INBOUND Transform</title>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="images/sync-android-5.png" width="9.5in" scalefit="1" align="center" 
+						format="PNG" />
+				</imageobject>
+			</mediaobject>
+		</figure>
 	</para>
 	
 	<para>
@@ -375,9 +386,20 @@ return new java.sql.Timestamp(java.lang.Long.parseLong(MODIFIED)).toString();
 	</para>
 	
 	<para>
-	    Next, lets set up our NOTES_OUTBOUND transform. Set the Transform Id to NOTES_OUTBOUND.  Set
-	    the Group Link as server waits for pull from client.  Set the Transform Point to EXTRACT.  
-	    The Source and Target Table are both NOTES.  Set the Column Policy to SPECIFIED.    
+	    Next, lets set up our NOTES_OUTBOUND transform. Set the Transform Id to NOTES_OUTBOUND.  
+	    Again, copy the information from the picture below.  
+	</para>
+	
+		<para>
+		<figure id="Configuring the NOTES_OUTBOUND Transform">
+			<title>Configuring the NOTES_OUTBOUND Transform</title>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="images/sync-android-6.png" width="9.5in" scalefit="1" align="center" 
+						format="PNG" />
+				</imageobject>
+			</mediaobject>
+		</figure>
 	</para>
 	
 	<para>
@@ -428,6 +450,18 @@ SimpleDateFormat("yyyy-MM-dd:hh:mm:ss.S").parse(MODIFIED).getTime());			]]>
 	</para>
 	
 	<para>
+		<figure id="Creating a note in the Android Emulator">
+			<title>Creating a note in the Android Emulator</title>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="images/sync-android-7.png" width="3in" scalefit="1" align="center" 
+						format="PNG" />
+				</imageobject>
+			</mediaobject>
+		</figure>
+	</para>
+	
+	<para>
 	    Go back to SymmetricDS and navigate to the Explore tab. Enter the following SQL:
 	    <programlisting>
 		<![CDATA[
@@ -436,6 +470,18 @@ SELECT * FROM NOTES;
 		</programlisting>
 		Run this as sql under cursor. 
 		The note you created in your Android Emulator should now show up in SymmetricDS as the result.	
+	</para>
+	
+	<para>
+		<figure id="SELECT * FROM NOTES Result">
+			<title>SELECT * FROM NOTES Result</title>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="images/sync-android-8.png" width="9.5in" scalefit="1" align="center" 
+						format="PNG" />
+				</imageobject>
+			</mediaobject>
+		</figure>
 	</para>
 
 	<para>
@@ -448,7 +494,18 @@ ALTER TABLE NOTES ADD SOURCE_ID INTEGER;
 		</programlisting>
 		Now, go back to your transforms and double-click on NOTES_INBOUND.  Create a column
 		with a blank Source, SOURCE_ID as the Target, Transform On All, Type of variable
-		and Expression as source_node_id.  Save your changes.
+		and Expression as source_node_id.  
+		
+		<figure id="Creating SOURCE_ID Column in NOTES_OUTBOUND">
+			<title>Creating SOURCE_ID Column in NOTES_OUTBOUND</title>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="images/sync-android-9.png" width="9.5in" scalefit="1" align="center" 
+						format="PNG" />
+				</imageobject>
+			</mediaobject>
+		</figure>		
+		Save your changes.
 	</para>	
 	
 	<para>
