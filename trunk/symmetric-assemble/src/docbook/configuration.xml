@@ -301,9 +301,9 @@ identity.
 <para>
 The following SQL statements set up a top-level registration server as a
 node identified as "00000" in the "corp" node group.
-<programlisting> insert into SYM_NODE (node_id,
-node_group_id, external_id, sync_enabled) values ('00000', 'corp',
-'00000', 1); insert into SYM_NODE_IDENTITY values ('00000');</programlisting>
+<programlisting>
+insert into SYM_NODE (node_id, node_group_id, external_id, sync_enabled) 
+  values ('00000', 'corp', '00000', 1); insert into SYM_NODE_IDENTITY values ('00000');</programlisting>
 </para>
 
 <para>
@@ -333,11 +333,10 @@ Node Groups are straightforward to configure and are defined in the
 <xref linkend="table_node_group" xrefstyle="table" />
 table. The following SQL statements would create node groups for "corp"
 and "store" based on our retail store example.
-<programlisting> insert into SYM_NODE_GROUP
-(node_group_id, description) values ('store', 'A retail store node');
-
-insert into SYM_NODE_GROUP (node_group_id, description) values ('corp',
-'A corporate node');</programlisting>
+<programlisting> 
+insert into SYM_NODE_GROUP (node_group_id, description) values ('store', 'A retail store node');
+insert into SYM_NODE_GROUP (node_group_id, description) values ('corp', 'A corporate node');
+</programlisting>
 </para>
 </section>
 
@@ -351,11 +350,11 @@ links the "corp" and "store" node groups for synchronization. It
 configures the "store" nodes to push their data changes to the "corp"
 nodes, and the "corp" nodes to send changes to "store" nodes by waiting
 for a pull.
-<programlisting> insert into SYM_NODE_GROUP_LINK
-(source_node_group, target_node_group, data_event_action) values
-('store', 'corp', 'P'); insert into SYM_NODE_GROUP_LINK
-(source_node_group, target_node_group, data_event_action) values
-('corp', 'store', 'W');</programlisting>
+<programlisting> 
+insert into SYM_NODE_GROUP_LINK (source_node_group, target_node_group, data_event_action) 
+  values ('store', 'corp', 'P'); 
+insert into SYM_NODE_GROUP_LINK (source_node_group, target_node_group, data_event_action) 
+  values ('corp', 'store', 'W');</programlisting>
 </para>
 
 <para>A node group link can be configured to use the same node
@@ -385,14 +384,14 @@ The following SQL statements setup channels for a retail store. An
 "item" channel includes data for items and their prices, while a
 "sale_transaction" channel includes data for ringing sales at a
 register.
-<programlisting> insert into SYM_CHANNEL (channel_id,
-processing_order, max_batch_size, max_batch_to_send,
-extract_period_millis, batch_algorithm, enabled, description) values
-('item', 10, 1000, 10, 0, 'default', 1, 'Item and pricing data'); insert
-into SYM_CHANNEL (channel_id, processing_order, max_batch_size,
-max_batch_to_send, extract_period_millis, batch_algorithm, enabled,
-description) values ('sale_transaction', 1, 1000, 10, 60000,
-'transactional', 1, 'retail sale transactions from register');</programlisting>
+<programlisting> 
+insert into SYM_CHANNEL (channel_id, processing_order, max_batch_size, max_batch_to_send, 
+  extract_period_millis, batch_algorithm, enabled, description) 
+  values ('item', 10, 1000, 10, 0, 'default', 1, 'Item and pricing data'); 
+insert into SYM_CHANNEL (channel_id, processing_order, max_batch_size, max_batch_to_send, 
+  extract_period_millis, batch_algorithm, enabled, description) 
+  values ('sale_transaction', 1, 1000, 10, 60000,
+  'transactional', 1, 'retail sale transactions from register');</programlisting>
 </para>
 
 <para>
@@ -578,9 +577,9 @@ is currently only supported in the MySQL, DB2 and Oracle dialects.
 The following SQL statement defines a trigger that will capture data for
 a table named "item" whenever data is inserted, updated, or deleted. The
 trigger is assigned to a channel also called 'item'.
-<programlisting> insert into SYM_TRIGGER
-(trigger_id,source_table_name,channel_id,last_update_time,create_time)
-values ('item', 'item', 'item', current_timestamp, current_timestamp); </programlisting>
+<programlisting> 
+insert into SYM_TRIGGER (trigger_id,source_table_name,channel_id,last_update_time,create_time)
+  values ('item', 'item', 'item', current_timestamp, current_timestamp); </programlisting>
 </para>
 
 <important>
@@ -710,19 +709,17 @@ table.
 <para>
 The following SQL statement defines a router that will send data from
 the 'corp' group to the 'store' group.
-<programlisting> insert into SYM_ROUTER (router_id,
-source_node_group_id, target_node_group_id, create_time,
-last_update_time) values ('corp-2-store','corp', 'store',
-current_timestamp, current_timestamp); </programlisting>
+<programlisting> 
+insert into SYM_ROUTER (router_id, source_node_group_id, target_node_group_id, create_time, last_update_time) 
+  values ('corp-2-store','corp', 'store', current_timestamp, current_timestamp); </programlisting>
 </para>
 
 <para>
 The following SQL statement maps the 'corp-2-store' router to the item
 trigger.
-<programlisting> insert into SYM_TRIGGER_ROUTER
-(trigger_id, router_id, initial_load_order, create_time,
-last_update_time) values ('item', 'corp-2-store', 1, current_timestamp,
-current_timestamp); </programlisting>
+<programlisting> 
+insert into SYM_TRIGGER_ROUTER (trigger_id, router_id, initial_load_order, create_time, last_update_time) 
+  values ('item', 'corp-2-store', 1, current_timestamp, current_timestamp); </programlisting>
 </para>
 </section>
 
@@ -806,11 +803,11 @@ its external id in the
 <xref linkend="table_registration_redirect" xrefstyle="table" />
 table. The following SQL statement will insert a column router to
 accomplish that.
-<programlisting> insert into SYM_ROUTER (router_id,
-source_node_group_id, target_node_group_id, router_type,
-router_expression, create_time, last_update_time) values
-('corp-2-store-redirect','corp', 'store', 'column',
-'STORE_ID=:REDIRECT_NODE', current_timestamp, current_timestamp); </programlisting>
+<programlisting> 
+insert into SYM_ROUTER (router_id, source_node_group_id, target_node_group_id, 
+  router_type, router_expression, create_time, last_update_time) 
+  values ('corp-2-store-redirect','corp', 'store', 'column', 
+  'STORE_ID=:REDIRECT_NODE', current_timestamp, current_timestamp); </programlisting>
 </para>
 
 <para>
@@ -819,12 +816,11 @@ than one column is configured, all matches are added to the list of
 nodes to route to. The following is an example where the STORE_ID column
 may contain the STORE_ID to route to or the constant of ALL which
 indicates that all nodes should receive the update.
-<programlisting> insert into SYM_ROUTER (router_id,
-source_node_group_id, target_node_group_id, router_type,
-router_expression, create_time, last_update_time) values
-('corp-2-store-multiple-matches','corp', 'store', 'column',
-'STORE_ID=ALL or STORE_ID=:EXTERNAL_ID', current_timestamp,
-current_timestamp); </programlisting>
+<programlisting> 
+insert into SYM_ROUTER (router_id, source_node_group_id, target_node_group_id, router_type,
+router_expression, create_time, last_update_time) 
+  values ('corp-2-store-multiple-matches','corp', 'store', 'column', 
+  'STORE_ID=ALL or STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp); </programlisting>
 </para>
 
 <para>
@@ -833,12 +829,11 @@ is null, then data will be routed to all nodes who qualify for the
 update. This following is an example where the STORE_ID column is used
 to route to a set of nodes who have a STORE_ID equal to their
 EXTERNAL_ID, or to all nodes if the STORE_ID is null.
-<programlisting> insert into SYM_ROUTER (router_id,
-source_node_group_id, target_node_group_id, router_type,
-router_expression, create_time, last_update_time) values
-('corp-2-store-multiple-matches','corp', 'store', 'column',
-'STORE_ID=NULL or STORE_ID=:EXTERNAL_ID', current_timestamp,
-current_timestamp); </programlisting>
+<programlisting> 
+insert into SYM_ROUTER (router_id, source_node_group_id, target_node_group_id, router_type,
+  router_expression, create_time, last_update_time) 
+  values ('corp-2-store-multiple-matches','corp', 'store', 'column', 
+  'STORE_ID=NULL or STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp); </programlisting>
 </para>
 </section>
 
@@ -992,12 +987,12 @@ demonstrated in
 Our solution utilizing subselect compares the external id of the current
 node with the store id from the Order table where the order id matches
 the order id of the current row being routed:
-<programlisting> insert into SYM_ROUTER (router_id,
-source_node_group_id, target_node_group_id, router_type,
-router_expression, create_time, last_update_time) values
-('corp-2-store','corp', 'store', 'subselect', 'c.external_id in (select
-STORE_ID from order where order_id=:ORDER_ID)', current_timestamp,
-current_timestamp); </programlisting>
+<programlisting> 
+insert into SYM_ROUTER (router_id, source_node_group_id, target_node_group_id, 
+  router_type, router_expression, create_time, last_update_time) 
+  values ('corp-2-store','corp', 'store', 'subselect', 
+  'c.external_id in (select STORE_ID from order where order_id=:ORDER_ID)', 
+  current_timestamp, current_timestamp); </programlisting>
 </para>
 
 <para>As a final note, please note in this example that the
@@ -1063,47 +1058,47 @@ variable.
 In the following example, the node_id is a combination of STORE_ID and
 WORKSTATION_NUMBER, both of which are columns on the table that is being
 routed.
-<programlisting> insert into SYM_ROUTER (router_id,
-source_node_group_id, target_node_group_id, router_type,
-router_expression, create_time, last_update_time) values
-('corp-2-store-bsh','corp', 'store', 'bsh', 'targetNodes.add(STORE_ID +
-"-" + WORKSTATION_NUMBER);', current_timestamp, current_timestamp); </programlisting>
+<programlisting> 
+insert into SYM_ROUTER (router_id, source_node_group_id, target_node_group_id, 
+  router_type, router_expression, create_time, last_update_time) 
+  values ('corp-2-store-bsh','corp', 'store', 'bsh', 
+  'targetNodes.add(STORE_ID +"-" + WORKSTATION_NUMBER);', current_timestamp, current_timestamp); </programlisting>
 </para>
 
 <para>
 The same could also be accomplished by simply returning the node id. The
 last line of a bsh script is always the return value.
-<programlisting> insert into SYM_ROUTER (router_id,
-source_node_group_id, target_node_group_id, router_type,
-router_expression, create_time, last_update_time) values
-('corp-2-store-bsh','corp', 'store', 'bsh', 'STORE_ID + "-" +
-WORKSTATION_NUMBER', current_timestamp, current_timestamp); </programlisting>
+<programlisting> 
+insert into SYM_ROUTER (router_id, source_node_group_id, target_node_group_id, router_type,
+  router_expression, create_time, last_update_time) 
+  values ('corp-2-store-bsh','corp', 'store', 'bsh', 
+  'STORE_ID + "-" + WORKSTATION_NUMBER', current_timestamp, current_timestamp); </programlisting>
 </para>
 
 <para>
 The following example will synchronize to all nodes if the FLAG column
 has changed, otherwise no nodes will be synchronized. Note that here we
 make use of OLD_, which provides access to the old column value.
-<programlisting> insert into SYM_ROUTER (router_id,
-source_node_group_id, target_node_group_id, router_type,
-router_expression, create_time, last_update_time) values
-('corp-2-store-flag-changed','corp', 'store', 'bsh', 'FLAG != null
-&amp;&amp; !FLAG.equals(OLD_FLAG)', current_timestamp,
-current_timestamp); </programlisting>
+<programlisting> 
+insert into SYM_ROUTER (router_id, source_node_group_id, target_node_group_id, 
+  router_type, router_expression, create_time, last_update_time) 
+  values ('corp-2-store-flag-changed','corp', 'store', 'bsh', 
+  'FLAG != null&amp;&amp; !FLAG.equals(OLD_FLAG)', 
+  current_timestamp, current_timestamp); </programlisting>
 </para>
 
 <para>
 The next example shows a script that iterates over each eligible node
 and checks to see if the trimmed value of the column named STATION
 equals the external_id.
-<programlisting> insert into SYM_ROUTER (router_id,
-source_node_group_id, target_node_group_id, router_type,
-router_expression, create_time, last_update_time) values
-('corp-2-store-trimmed-station','corp', 'store', 'bsh', 'for
-(org.jumpmind.symmetric.model.Node node : nodes) { if (STATION != null
-&amp;&amp; node.getExternalId().equals(STATION.trim())) {
-targetNodes.add(node.getNodeId()); } }', current_timestamp,
-current_timestamp); </programlisting>
+<programlisting> 
+insert into SYM_ROUTER (router_id, source_node_group_id, target_node_group_id, 
+  router_type, router_expression, create_time, last_update_time) 
+  values ('corp-2-store-trimmed-station','corp', 'store', 'bsh', 
+  'for (org.jumpmind.symmetric.model.Node node : nodes) { if (STATION != null
+  &amp;&amp; node.getExternalId().equals(STATION.trim())) {
+  targetNodes.add(node.getNodeId()); } }', 
+  current_timestamp, current_timestamp); </programlisting>
 </para>
 </section>
 
@@ -1179,16 +1174,16 @@ In this version of the solution, the STORE_ID is captured from the Order
 table in the EXTERNAL_DATA column when the trigger fires. The router is
 configured to route based on the captured EXTERNAL_DATA to all nodes
 whose external id matches the captured external data.
-<programlisting>insert into SYM_TRIGGER
-(trigger_id,source_table_name,channel_id,external_select,
-last_update_time,create_time) values ('orderlineitem', 'orderlineitem',
-'orderlineitem','select STORE_ID from order where
-order_id=$(curTriggerValue).$(curColumnPrefix)order_id',
-current_timestamp, current_timestamp); insert into SYM_ROUTER
-(router_id, source_node_group_id, target_node_group_id, router_type,
-router_expression, create_time, last_update_time) values
-('corp-2-store-ext','corp', 'store', 'column',
-'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp); </programlisting>
+<programlisting>
+insert into SYM_TRIGGER (trigger_id, source_table_name, channel_id, 
+  external_select, last_update_time,create_time) 
+  values ('orderlineitem', 'orderlineitem', 'orderlineitem',
+  'select STORE_ID from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',
+  current_timestamp, current_timestamp); 
+insert into SYM_ROUTER (router_id, source_node_group_id, target_node_group_id, router_type,
+  router_expression, create_time, last_update_time) 
+  values ('corp-2-store-ext','corp', 'store', 'column', 'EXTERNAL_DATA=:EXTERNAL_ID', 
+  current_timestamp, current_timestamp); </programlisting>
 </para>
 
 <para>The following variables can be used with the external select:</para>
