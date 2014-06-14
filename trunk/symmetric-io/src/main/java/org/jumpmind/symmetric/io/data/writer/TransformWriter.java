@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.BshColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.ClarionDateTimeColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsKeyColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
@@ -106,6 +107,7 @@ public class TransformWriter extends NestedDataWriter {
         addColumnTransform(columnTransforms, new CopyIfChangedColumnTransform());
         addColumnTransform(columnTransforms, new ColumnsToRowsKeyColumnTransform());
         addColumnTransform(columnTransforms, new ColumnsToRowsValueColumnTransform());
+        addColumnTransform(columnTransforms, new ClarionDateTimeColumnTransform());
         return columnTransforms;
     }
     
