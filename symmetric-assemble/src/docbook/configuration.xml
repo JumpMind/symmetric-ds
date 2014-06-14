@@ -1952,6 +1952,25 @@ represent a default target value in the event that the sourceValue is not found.
 the result will be null.  For example, consider the following transform expression:  s1=t1 s2=t2 s3=t3 *=t4.  A source value of
 s1 will be transformed to t1, s2 to t2, s3 to t3, s4 to t4, s5 to t4, null to t4, etc.
 </listitem>
+
+<listitem>
+Clarion Date Time ('clarionDateTime'):  Convert a Clarion date with optional time into a timestamp.  Clarion dates are stored as the number of days
+since December 28, 1800, while Clarion times are stored as hundredths of a second since midnight, plus one.  Use a source column of the Clarion date
+and a target column of the timestamp.  Optionally, in the transform expression, enter the name of the Clarion time column.
+</listitem>
+
+<listitem>
+Columns To Rows ('columnsToRowsKey' and 'columnsToRowsValue'):  Convert column values from a single source row into a row per column value
+at the target.  Two column mappings are needed to complete the work: use "columnsToRowsKey" to map which source column is used,
+and use "columnsToRowsValue" to map the value.  The "columnsToRowsKey" mapping requires an expression in the format of
+"column1=key1,column2=key2" to list the source column names and which key value is stored in the target column.
+The "columnsToRowsValue" mapping sets the column's value at the target and allows an optional expression: 
+"changesOnly=true" to convert only rows when the old and new values have changed; "ignoreNulls=true" to convert only rows that are not null. 
+For example, column "fieldid" mapped as "columnsToRowsKey" with expression of "user1=1,user2=2" and column "color" mapped as
+"columnsToRowsValue" would convert a row with columns named "user1" and "user2" containing values "red" and "blue" into two rows with columns
+"fieldid" and "color" containing a row of "1" and "red" and a row of "2" and "blue". 
+</listitem>
+
 </itemizedlist>
 </para>
 </section>
