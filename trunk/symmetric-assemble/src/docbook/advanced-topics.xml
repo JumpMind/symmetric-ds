@@ -21,7 +21,7 @@
     under the License.
 
 -->
-<chapter version="5.0" xml:id="advanced-topics" xmlns="http://docbook.org/ns/docbook"
+<chapter version="5.0" xml:id="advanced" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:svg="http://www.w3.org/2000/svg"
@@ -33,7 +33,6 @@
        This chapter focuses on a variety of topics, including deployment options, jobs, clustering, encryptions, synchronization control,
        and configuration of SymmetricDS.
     </para>
-
  <section id="advanced-sync">
     <title>Advanced Synchronization</title>
  <section id="bi-direction-sync">
@@ -703,6 +702,44 @@ Enter key password for <sym>
             basic authentication is setup with the standard configuration in the WEB.xml file.
         </para>
     </section>
-    <xi:include href="extensions.xml" />
-    <xi:include href="android.xml"/>
+    <section id="admin-jmx">
+        <title>Java Management Extensions</title>
+        <para>
+          Monitoring and administrative operations can be performed using Java Management Extensions (JMX).
+          SymmetricDS uses MX4J to expose JMX attributes and operations that can be accessed
+          from the built-in web console, Java's jconsole, or an application server.
+          By default, the web management console can be opened from the following address:
+
+          <programlisting><![CDATA[http://localhost:31416/]]></programlisting>
+
+          In order to use jconsole, you must enable JMX remote management in the JVM. You can edit the startup scripts to set the following system
+          parameters.
+
+          <programlisting><![CDATA[
+          -Dcom.sun.management.jmxremote.port=31417
+          -Dcom.sun.management.jmxremote.authenticate=false
+          -Dcom.sun.management.jmxremote.ssl=false
+          ]]></programlisting>
+
+          More details about enabling JMX for JConsole can be found <ulink url="http://docs.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html">here</ulink>.
+          </para>
+          <para>
+          Using the Java jconsole command, SymmetricDS is listed as a local process named SymmetricLauncher.
+          In jconsole, SymmetricDS appears under the MBeans tab under the name defined by the <literal>engine.name</literal>
+          property.  The default value is SymmetricDS.
+        </para>
+        <para>
+          The management interfaces under SymmetricDS are organized as follows:
+
+            <itemizedlist>
+                <listitem>
+                    <para>Node - administrative operations </para>
+                </listitem>
+                <listitem>
+                    <para>Parameters - access to properties set through the parameter service </para>
+                </listitem>
+            </itemizedlist>
+
+        </para>
+    </section>
 </chapter>

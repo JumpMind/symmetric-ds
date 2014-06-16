@@ -329,6 +329,41 @@
                                     </postProcess>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>build-quickstart-singlehtml-doc</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate-html</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${docbook.build}</sourceDirectory>
+                                    <targetDirectory>${docbook.target}/quick-start/html-single 
+                                    </targetDirectory>
+                                    <xincludeSupported>true</xincludeSupported>
+                                    <includes>quick-start.xml</includes>
+                                    <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
+                                    <htmlCustomization> ${docbook.build}/resources/xsl/docbook-html.xsl 
+                                    </htmlCustomization>
+                                    <chunkedOutput>false</chunkedOutput>
+                                    <postProcess>
+                                        <copy todir="${docbook.target}/quick-start/html-single">
+                                            <fileset dir="${docbook.build}/resources">
+                                                <include name="images/*.png" />
+                                                <include name="images/*.gif" />
+                                                <include name="images/*.jpg" />
+                                            </fileset>
+                                            <fileset dir="${docbook.build}/resources">
+                                                <include name="css/*.css" />
+                                            </fileset>
+                                        </copy>
+                                        <copy todir="${docbook.target}/quick-start/html-single/images" flatten="true">
+                                            <fileset dir="${docbook.build}">
+                                                <include name="**/images/*" />
+                                            </fileset>
+                                        </copy>
+                                    </postProcess>
+                                </configuration>
+                            </execution>
                         </executions>
                         <dependencies>
                             <dependency>

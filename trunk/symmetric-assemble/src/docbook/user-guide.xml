@@ -80,12 +80,13 @@
         
     </preface>
 
+
     <xi:include href="introduction.xml" />
-    <xi:include href="tutorial.xml" />
-    <xi:include href="planning.xml" />
-    <xi:include href="configuration.xml" />
-    <xi:include href="advanced-topics.xml" />    
-    <xi:include href="administration.xml" />
+	<xi:include href="setup.xml" />
+	<xi:include href="configuration.xml" />
+	<xi:include href="manage.xml" />
+	<xi:include href="advanced-topics.xml" />
+	<xi:include href="developer.xml" />
     <xi:include href="symmetric-schema.xml" />
     <xi:include href="parameters.xml" />
     <xi:include href="databases.xml" />
