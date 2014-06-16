@@ -123,14 +123,14 @@
     <title>Architecture</title>
 
     <section>
-      <title>A Node is Born</title>
+      <title>Concepts</title>
 
       <para>SymmetricDS is a Java-based application that hosts a
       synchronization engine which acts as an agent for data synchronization
       between a single database instance and other synchronization engines in
       a network.</para>
 
-      <para>The SymmetricDS engine is also referred to as a
+      <para>The SymmetricDS engine is referred to as a
       <emphasis>node</emphasis>. SymmetricDS is designed to be able to scale
       out to many thousands of nodes. The database connection is configured by
       providing a database connection string, database user, and database
@@ -189,7 +189,7 @@
       triggers that are installed automatically by SymmetricDS based on
       configuration settings that you specify. The database triggers record
       data changes in the <xref linkend="table_data" xrefstyle="table"/>
-      table. The database triggers are designed to be as noninvasive and as
+      table. The triggers are designed to be as noninvasive and as
       lightweight as possible. After SymmetricDS triggers are installed,
       changes are captured for any Data Manipulation Language (DML) statements
       performed by external applications. Note that no additional libraries or
@@ -209,16 +209,16 @@
       before synchronization starts.</para>
 
       <para>SymmetricDS will install or update its database triggers at
-      start-up time and on a regular basis when a scheduled "sync triggers"
-      job runs (by default, each night at midnight). The "sync triggers" job
+      start-up time and on a regular basis when a scheduled sync triggers
+      job runs (by default, each night at midnight). The sync triggers job
       detects changes to your database structure or trigger configuration when
-      deciding whether a trigger needs to be rebuilt. Optionally, the "sync
-      triggers" job can be turned off and the database triggers DDL script can
+      deciding whether a trigger needs to be rebuilt. Optionally, the sync
+      triggers job can be turned off and the database triggers DDL script can
       be generated and run by a DBA.</para>
 
       <para>After changed data is inserted by the database trigger into the
       <xref linkend="table_data" xrefstyle="table"/> table, it is batched and
-      assigned to a node by the "router" job. Routing data refers to choosing
+      assigned to a node by the router job. Routing data refers to choosing
       the nodes in the SymmetricDS network to which the data should be sent.
       By default, data is routed to other nodes based on the node group.
       Optionally, characteristics of the data or of the target nodes can also
@@ -241,7 +241,7 @@
       delivered in one of two ways depending on the type of transport link
       that is configured between node groups. A node group can be configured
       to push changes to other nodes in a group or pull changes from other
-      nodes in a group. Pushing is initiated from the "push" job at the source
+      nodes in a group. Pushing is initiated from the push job at the source
       node. If there are batches that are waiting to be transported, the
       pushing node will reserve a connection to each target node using an HTTP
       HEAD request. If the reservation request is accepted, then the source
@@ -255,7 +255,7 @@
       no more batches available to send. After all the batches have been sent
       for one push, the target returns a list of the batch statuses.</para>
 
-      <para>Pull requests are initiated by the "pull" job from at the target
+      <para>Pull requests are initiated by the pull job from at the target
       node. A pull request uses an HTTP GET. The same extraction process that
       happens for a "push" also happens during a "pull."</para>
 
