@@ -249,7 +249,7 @@
 		use_pk_data_to_route, respectively. By default, they are all 1 (true).</para>
 		
 		<para>
-		Finally, if data on a particular channel contains big lobs, you can set
+		If data on a particular channel contains big lobs, you can set
 		the column contains_big_lob to 1 (true) to provide SymmetricDS the hint
 		that the channel contains big lobs. Some databases have shortcuts that
 		SymmetricDS can take advantage of if it knows that the lob columns in
