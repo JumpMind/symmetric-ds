@@ -1186,7 +1186,7 @@ define columns for the transformation that are sufficient to fill in any
 primary key or other required data in the target table if the source
 operation was an Insert, for example.</para>
 
-<para>Finally, please note that the transformation engine relies
+<para>Please note that the transformation engine relies
 on a source trigger / router existing to supply the source data for the
 transformation. The transform configuration will never be used if the
 source table and target node group does not have a defined trigger /
