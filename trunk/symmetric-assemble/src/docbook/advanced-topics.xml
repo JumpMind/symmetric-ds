@@ -106,121 +106,7 @@
     </section>
 </section>
 
-<section id='jms-publishing'>
-        <title>JMS Publishing</title>
-        <para>
-            With the proper configuration SymmetricDS can publish XML messages of captured data changes to
-            JMS during routing or transactionally while data loading synchronized data into a target database.
-            The following explains how to publish to JMS during synchronization to the target database.
-       </para>
-       <para>
-            The XmlPublisherDatabaseWriterFilter is a
-            <xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to
-            publish specific tables as an XML message to a JMS provider.
-            See <xref linkend="extensions"/> for information on how
-            to configure an extension point.  If the publish to JMS fails, the batch will be marked in error,
-            the loaded data for the batch will be rolled back
-            and the batch will be retried during the next synchronization run.
-        </para>
-        <para>
-        The following is an example extension point configuration that will publish four tables in XML with a root
-        tag of <emphasis>'sale'</emphasis>.  Each XML message will be grouped by the batch and the column names identified by
-        the groupByColumnNames property which have the same values.
-                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-           http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <bean id="configuration-publishingFilter"
-      class="org.jumpmind.symmetric.integrate.XmlPublisherDatabaseWriterFilter">
-        <property name="xmlTagNameToUseForGroup" value="sale"/>
-        <property name="tableNamesToPublishAsGroup">
-            <list>
-               <value>SALE_TX</value>
-               <value>SALE_LINE_ITEM</value>
-               <value>SALE_TAX</value>
-               <value>SALE_TOTAL</value>
-            </list>
-        </property>
-        <property name="groupByColumnNames">
-            <list>
-               <value>STORE_ID</value>
-               <value>BUSINESS_DAY</value>
-               <value>WORKSTATION_ID</value>
-               <value>TRANSACTION_ID</value>
-            </list>
-        </property>
-        <property name="publisher">
-           <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
-               <property name="jmsTemplate" ref="definedSpringJmsTemplate"/>
-           </bean>
-        </property>
-    </bean>
-</beans>]]></programlisting>
-        </para>
-        <para>
-          The publisher property on the XmlPublisherDatabaseWriterFilter takes an interface of type IPublisher.  The implementation
-          demonstrated here is an implementation that publishes to JMS using Spring's
-          <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate">JMS template</ulink>.
-          Other implementations of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
-        </para>
-        <para>
-          The above configuration will publish XML similar to the following:
-            <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<sale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  id="0012010-01-220031234" nodeid="00001" time="1264187704155">
-  <row entity="SALE_TX" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="CASHIER_ID">010110</data>
-  </row>
-  <row entity="SALE_LINE_ITEM" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="SKU">9999999</data>
-    <data key="PRICE">10.00</data>
-    <data key="DESC" xsi:nil="true"/>
-  </row>
-  <row entity="SALE_LINE_ITEM" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="SKU">9999999</data>
-    <data key="PRICE">10.00</data>
-    <data key="DESC" xsi:nil="true"/>
-  </row>
-  <row entity="SALE_TAX" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="AMOUNT">1.33</data>
-  </row>
-  <row entity="SALE_TOTAL" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="AMOUNT">21.33</data>
-  </row>
-</sale>
-            ]]></programlisting>
-            To publish JMS messages during routing
-            the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router
-            would be configured by setting the <literal>router_type</literal> of a <xref linkend="table_router" xrefstyle="table"/> to the Spring bean
-            name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="table"/>s
-            to each <xref linkend="table_trigger" xrefstyle="table"/>  table that needs published.
-        </para>
-    </section>
 <section id="deployment-options">
         <title>Deployment Options</title>
         <para>An instance of SymmetricDS can be deployed in several ways:</para>
@@ -320,7 +206,6 @@ public class StartSymmetricEngine {
                 at <code>conf/web_dir</code>.  The web.xml is expected to be found at <code>conf/web_dir/WEB-INF/web.xml</code>.
             </para>
         </section>
-    </section>
         <section id="deployment-options-standalone">
             <title>Standalone</title>
             <para>
@@ -345,6 +230,7 @@ public class StartSymmetricEngine {
                 It is also suggested that SymmetricDS be configured to run as a service according to the instructions for your platform as documented in the following section.
             </para>
         </section>
+    </section>
 
     <section id="running-service">
     <title>Running SymmetricDS as a Service</title>
@@ -701,6 +587,69 @@ Enter key password for <sym>
             basic authentication is setup with the standard configuration in the WEB.xml file.
         </para>
     </section>
+    <section id="dataloaders">
+        <title>Data Loaders</title>
+        <para>
+        SymmetricDS supports the concept of pluggable data loaders.  A data loader defines how data is loaded into a target
+        datasource.  The default data loader for SymmetricDS loads data to the relational database that is represented by the SymmetricDS node.  
+        Data loaders do not always have to load into the target relational database.  They can write to
+        a file, a web service, or any other type of non-relational data source.  Data loaders can also use other techniques to increase performance
+        of data loads into the target relation database.  Data loaders are pluggable at the 
+        <xref linkend="table_channel" xrefstyle="table" /> level.  They are configured by setting the <ns:literal>data_loader_type</ns:literal> on
+        the channel table.
+        </para>
+        <section id="mysqlbulk">
+            <title>Bulk Data Loaders</title>
+            <para>
+            To use the preconfigured bulk data loaders,
+             you set the <ns:literal>data_loader_type</ns:literal> on a channel to one of the following:  
+           <itemizedlist>
+           <listitem>mysql_bulk</listitem>
+           <listitem>mssql_bulk</listitem>
+           <listitem>postgres_bulk</listitem>
+           <listitem>oracle_bulk</listitem>
+           </itemizedlist>
+             Tables that should be data loaded should be configured to use this channel.  Many times, a reload channel will
+             be set to bulk load to increase the performance of an initial load.  
+            </para>
+        </section>
+        <section id="mongodb">
+            <title>MongoDB</title>
+            <para>
+            The MongoDB data loader maps relational database rows to MongoDB documents in collections.  To use the preconfigured MongoDB data loader,
+             you set the <ns:literal>data_loader_type</ns:literal> to <ns:emphasis>MongoDB</ns:emphasis> on a channel.  
+             Tables that should be synchronized to MongoDB should be configured to use this channel.  
+             In order to point it to a MongoDB instance
+             set the following properties in the engines properties file.
+          <programlisting><![CDATA[
+mongodb.username=xxxx
+mongodb.password=xxxx
+mongodb.host=xxxx
+mongodb.port=xxxx
+mongodb.default.databasename=default
+          ]]></programlisting>
+            </para>
+            <para>
+            By default, the catalog or schema passed by SymmetricDS will be used for the MongoDB database name. The table passed by SymmetricDS 
+            will be used as the MongoDB collection name.  If the catalog or schema are not set, the default database name property is used as the 
+            database name. 
+            </para>
+            <para>
+            The _id of the MongoDB document will be the primary key of the database record. If the table has a composite primary key, then the 
+            _id will be an embedded document that has name value pairs of the composite key. The body of the document will be name value pairs 
+            of the table column name and table row value.
+            </para>
+            <para>
+            SymmetricDS uses the MongoDB Java Driver to upsert documents.
+            </para>
+            <para>
+            SymmetricDS transforms can be used to transform the data.  If a complex mapping is required that is not supported by transforms, then
+            the <ns:literal>IDBObjectMapper</ns:literal> can be implemented and a new <ns:literal>MongoDataLoaderFactory</ns:literal> can be wired up
+            as an extension point.
+            </para>
+        </section>
+    </section>
+    
     <section id="admin-jmx">
         <title>Java Management Extensions</title>
         <para>
@@ -741,4 +690,119 @@ Enter key password for <sym>
 
         </para>
     </section>
+<section id='jms-publishing'>
+        <title>JMS Publishing</title>
+        <para>
+            With the proper configuration SymmetricDS can publish XML messages of captured data changes to
+            JMS during routing or transactionally while data loading synchronized data into a target database.
+            The following explains how to publish to JMS during synchronization to the target database.
+       </para>
+       <para>
+            The XmlPublisherDatabaseWriterFilter is a
+            <xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to
+            publish specific tables as an XML message to a JMS provider.
+            See <xref linkend="extensions"/> for information on how
+            to configure an extension point.  If the publish to JMS fails, the batch will be marked in error,
+            the loaded data for the batch will be rolled back
+            and the batch will be retried during the next synchronization run.
+        </para>
+        <para>
+        The following is an example extension point configuration that will publish four tables in XML with a root
+        tag of <emphasis>'sale'</emphasis>.  Each XML message will be grouped by the batch and the column names identified by
+        the groupByColumnNames property which have the same values.
+                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <bean id="configuration-publishingFilter"
+      class="org.jumpmind.symmetric.integrate.XmlPublisherDatabaseWriterFilter">
+        <property name="xmlTagNameToUseForGroup" value="sale"/>
+        <property name="tableNamesToPublishAsGroup">
+            <list>
+               <value>SALE_TX</value>
+               <value>SALE_LINE_ITEM</value>
+               <value>SALE_TAX</value>
+               <value>SALE_TOTAL</value>
+            </list>
+        </property>
+        <property name="groupByColumnNames">
+            <list>
+               <value>STORE_ID</value>
+               <value>BUSINESS_DAY</value>
+               <value>WORKSTATION_ID</value>
+               <value>TRANSACTION_ID</value>
+            </list>
+        </property>
+        <property name="publisher">
+           <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
+               <property name="jmsTemplate" ref="definedSpringJmsTemplate"/>
+           </bean>
+        </property>
+    </bean>
+</beans>]]></programlisting>
+        </para>
+        <para>
+          The publisher property on the XmlPublisherDatabaseWriterFilter takes an interface of type IPublisher.  The implementation
+          demonstrated here is an implementation that publishes to JMS using Spring's
+          <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate">JMS template</ulink>.
+          Other implementations of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
+        </para>
+        <para>
+          The above configuration will publish XML similar to the following:
+            <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<sale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  id="0012010-01-220031234" nodeid="00001" time="1264187704155">
+  <row entity="SALE_TX" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="CASHIER_ID">010110</data>
+  </row>
+  <row entity="SALE_LINE_ITEM" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="SKU">9999999</data>
+    <data key="PRICE">10.00</data>
+    <data key="DESC" xsi:nil="true"/>
+  </row>
+  <row entity="SALE_LINE_ITEM" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="SKU">9999999</data>
+    <data key="PRICE">10.00</data>
+    <data key="DESC" xsi:nil="true"/>
+  </row>
+  <row entity="SALE_TAX" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="AMOUNT">1.33</data>
+  </row>
+  <row entity="SALE_TOTAL" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="AMOUNT">21.33</data>
+  </row>
+</sale>
+            ]]></programlisting>
+            To publish JMS messages during routing
+            the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router
+            would be configured by setting the <literal>router_type</literal> of a <xref linkend="table_router" xrefstyle="table"/> to the Spring bean
+            name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="table"/>s
+            to each <xref linkend="table_trigger" xrefstyle="table"/>  table that needs published.
+        </para>
+    </section>    
 </chapter>
