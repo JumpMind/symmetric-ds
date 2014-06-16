@@ -57,8 +57,7 @@
     <section id="multi-tier">
         <title>Multi-Tiered Synchronization</title>
         <para>
-            As shown in <xref linkend="organizing-nodes"/>, there may be
-            scenarios where data needs to flow through multiple tiers of nodes that
+            There may be scenarios where data needs to flow through multiple tiers of nodes that
             are organized in a tree-like network with each tier requiring a different subset of data.  For example,
             you may have a system where the lowest tier may be a computer or device located in a store.  Those devices
             may connect to a server located physically at that store.  Then the store server may communicate with
@@ -98,7 +97,7 @@
             that matches the <literal>registration_node_id</literal>.
         </para>
         <important>
-            <para>Please see <xref linkend="configuration-initial-load" /> for important details around initial loads
+            <para>Please see <xref linkend="manage-node-initial-load" /> for important details around initial loads
             and registration when using registration redirect.
             </para>
             </important>
@@ -399,7 +398,7 @@ bin/sym_service stop</programlisting>
         <para>
         When clustered, a hardware load balancer is typically used
         to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.
-        Also, the <literal>sync.url</literal> (discussed in <xref linkend="configuration-node-properties"/>)
+        Also, the <literal>sync.url</literal> (discussed in <xref linkend="setup-engine-files"/>)
         SymmetricDS property should be set to the URL of the load balancer.
         </para>
         <para>

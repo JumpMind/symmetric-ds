@@ -36,13 +36,31 @@
 	<title>Processes</title>
 	</section>
 	 -->
-	
-	<section id="manage-nodes">
-	<title>Nodes</title>
-		<para>
-		A
-		<emphasis>node</emphasis>
-		, a single instance of SymmetricDS, is defined in the
+	<section id="identifying-nodes">
+        <title>Identifying Nodes</title>
+        <para>
+            A
+            <emphasis>node</emphasis>
+            is a single instance of SymmetricDS. It can be thought of as a proxy for a database which manages the
+            synchronization of data to and/or from its database. For our example retail application, the following would be
+            SymmetricDS nodes:
+            <itemizedlist>
+                <listitem>Each point-of-sale workstation.</listitem>
+                <listitem>The central office database server.</listitem>
+            </itemizedlist>
+            Each node of SymmetricDS can be either embedded in another application, run stand-alone, or even run in the
+            background as a service. If desired, nodes can be clustered to help disperse load if they send and/or receive
+            large volumes of data to or from a large number of nodes.
+        </para>
+        <para> Individual nodes are easy to identify when planning your implementation. If a database exists in your domain
+            that needs to send or receive data, there needs to be a corresponding SymmetricDS instance (a node) responsible
+            for managing the synchronization for that database.
+        </para>
+        <!-- MDH : need to discuss node_id and external_id here - decide what they should be -->
+    </section>
+	<section id="create-nodes">
+	<title>Creating Nodes</title>
+		<para>Nodes are defined in the
 		<xref linkend="table_node" xrefstyle="table" />
 		table. Two other tables play a direct role in defining a node, as well
 		The first is
@@ -76,10 +94,7 @@
 		<xref linkend="table_node_security" xrefstyle="table" />
 		for the node to be able to register. You can also, with this table,
 		manually cause a node to re-register or do a re-initial load by setting
-		the corresponding columns in the table itself. Registration is discussed
-		in more detail in
-		<xref linkend="configuration-registration" />
-		.
+		the corresponding columns in the table itself. 
 		</para>
 		<section id="manage-node-registration">
 			<title>Registration</title>
@@ -387,8 +402,7 @@
 	        </para>
 	
 	        <para>
-	        By way of example, take our retail hands-on tutorial covered in <xref linkend="tutorial" />.  Let's say
-	        we need to re-send a particular sales transaction from the store to corp over again because we lost the data in corp due to
+	        Let's say we need to re-send a particular sales transaction from the store to corp over again because we lost the data in corp due to
 	        an overzealous delete.  For the tutorial, all transaction-related tables start with <ns:literal>sale_</ns:literal>,
 	        use the <ns:literal>sale_transaction</ns:literal> channel, and are routed using the <ns:literal>store_corp_identity</ns:literal>
 	        router.  In addition, the trigger-routers have been set up with an initial load order based on the necessary
@@ -496,9 +510,7 @@
 		<xref linkend="table_channel" xrefstyle="table" />
 		). The data is then batched based on the
 		<literal>batch_algorithm</literal>
-		defined for the channel and as documented in
-		<xref linkend="configuration-channel" />
-		. Note that, for the
+		defined for the channel. Note that, for the
 		<ns:literal>default</ns:literal>
 		and
 		<ns:literal>transactional</ns:literal>
@@ -716,7 +728,7 @@
 		to be sent and applied on other nodes.
 		The parameters <literal>job.file.sync.push.period.time.ms</literal> and <literal>job.file.sync.pull.period.time.ms</literal>
 		control how often the jobs runs, which default to every 60 seconds.
-		See also <xref linkend="jobs" /> and <xref linkend="filesync-operation" />.
+		See also <xref linkend="manage-jobs" /> and <xref linkend="filesync-operation" />.
 		</para>
 		</section>
 		
@@ -728,7 +740,7 @@
 		It records the current state of files to the <xref linkend="table_file_snapshot" xrefstyle="table" /> table.
 		The parameter <literal>job.file.sync.tracker.cron</literal> controls how often the job runs,
 		which defaults to every 5 minutes.
-		See also <xref linkend="jobs" /> and <xref linkend="file-sync" />.
+		See also <xref linkend="manage-jobs" /> and <xref linkend="file-sync" />.
 		</para>
 		</section>
 		
@@ -907,7 +919,7 @@
 	       the batch is retried.
 	       </note>
 	       <note>The query above will also show you any recent batches that
-	       were originally in error and were changed to be manually skipped.  See the end of  <xref linkend="solving-synchronization-issues-resolution-outgoing" /> for more details.
+	       were originally in error and were changed to be manually skipped.  See the end of  <xref linkend="manage-outgoing-batches-solving-issues" /> for more details.
 	       </note>
 	       <para>
 	       To get a full picture of the batch, you can query for information representing the complete

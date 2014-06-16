@@ -111,7 +111,7 @@
           values ('corp', 'store', 'W');</programlisting>
 		</para>		
 	</section>
-	<section id="configuration-group-channels">
+	<section id="configuration-channels">
 		<title>Channels</title>
 		<para>
 		By categorizing data into channels and assigning them to
@@ -366,8 +366,6 @@
 				<title>Enabling "Ping Back"</title>
 				
 				<para>
-				As discussed in
-				<xref linkend="defining-data-changes-trigger-routers-ping-back" />
 				SymmetricDS, by default, avoids circular data changes. When a trigger
 				fires as a result of SymmetricDS itself (such as the case when sync on
 				incoming batch is set), it records the originating source node of the

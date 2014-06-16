@@ -358,7 +358,7 @@
 
        Channels are discussed in more detail in
 
-      <xref linkend="choosing-channels"/>
+      <xref linkend="configuration-channels"/>
 
        .
     </section>
@@ -406,7 +406,7 @@
           <listitem>
             <para>In addition to synchronization, SymmetricDS is also capable
             of performing fairly complex transformations (see <xref
-            linkend="transform-data" xrefstyle="select: label"/> ) of data as
+            linkend="configuration-transforms" xrefstyle="select: label"/> ) of data as
             the synchronization data is loaded into a target database. The
             transformations can be used to merge source data, make multiple
             copies of source data across multiple target tables, set defaults
@@ -417,7 +417,7 @@
           <listitem>
             <para>As data changes are loaded in the target database, data can
             be filtered, either by a simple bean shell load filter (see
-            <xref linkend="data-load-filter" xrefstyle="select: label"/>
+            <xref linkend="configuration-load-filters" xrefstyle="select: label"/>
             data-load-filter) or by a class implementing <xref
             linkend="extensions-data-loader-filter" xrefstyle="table"/>. You
             can change the data in a column, route it somewhere else, trigger
