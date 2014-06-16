@@ -357,7 +357,7 @@
 			</section>
 		</section>
 		<section id="resync-data">
-	        <title>Re-synchronizing Data</title>
+	        <title>Data Reloads</title>
 	        <para>
 	        There may be times where you find you need to re-send or re-synchronize data when the change itself was not captured.  This could be needed, for example,
 	        if the data changes occurred prior to SymmetricDS placing triggers on the data tables themselves, or if the data at the destination was accidentally deleted, or for
