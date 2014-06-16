@@ -201,5 +201,7 @@
 		</listitem>
 		</varlistentry>
 		</variablelist>
+        
+        <para>See <xref linkend="ap01-startup"/>, for additional parameters that can be specified in the engine properties file.</para>
 	</section>
 </chapter>
