@@ -425,7 +425,7 @@
 	    </programlisting>
 	
 	    This insert statement generates three rows, one for each configured sale table.  It uses the most recent
-	    trigger history id for the corresponding table.  Finally, it takes advantage of the initial load order for each trigger-router to
+	    trigger history id for the corresponding table.  It takes advantage of the initial load order for each trigger-router to
 	    create the three rows in the correct order (the order corresponding to the order in which the tables would have been initial loaded).
 	
 	    </para>
