@@ -360,7 +360,7 @@
     <table name="node_group_link" description="A source node_group sends its data updates to a target NodeGroup using a pull, push, or custom technique.">
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes should be captured." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes will be sent." />
-        <column name="data_event_action" type="CHAR" size="1" default="W" required="true" description="The notification scheme used to send data changes to the target node group. (P = Push, W = Wait for Pull, ) " />
+        <column name="data_event_action" type="CHAR" size="1" default="W" required="true" description="The notification scheme used to send data changes to the target node group. (P = Push, W = Wait for Pull, R = Route-Only) " />
         <column name="sync_config_enabled" type="BOOLEANINT" size="1" default="1"  description="Indicates whether configuration that has changed should be synchronized to target nodes on this link." />
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
