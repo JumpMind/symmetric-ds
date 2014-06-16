@@ -120,10 +120,10 @@
   </section>
 
   <section id="definition">
-    <title>Architecture</title>
+    <title>Concepts</title>
 
     <section>
-      <title>Concepts</title>
+      <title>Nodes</title>
 
       <para>SymmetricDS is a Java-based application that hosts a
       synchronization engine which acts as an agent for data synchronization
@@ -183,7 +183,7 @@
     </section>
 
     <section>
-      <title>Capturing Changes</title>
+      <title>Change Data Capture</title>
 
       <para>Changes are captured at a SymmetricDS enabled database by database
       triggers that are installed automatically by SymmetricDS based on
@@ -235,7 +235,7 @@
     </section>
 
     <section>
-      <title>Change Delivery</title>
+      <title>Change Data Delivery</title>
 
       <para>Data is delivered to remote nodes over HTTP or HTTPS. It can be
       delivered in one of two ways depending on the type of transport link
@@ -270,7 +270,7 @@
     </section>
 
     <section>
-      <title>Channeling Data</title>
+      <title>Data Channels</title>
 
       <para>Data is always delivered to a remote node in the order it was
       recorded for a specific channel. A channel is a user defined grouping of
