@@ -39,7 +39,7 @@ public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         if (objectMapper instanceof SimpleDBObjectMapper) {
-            ((SimpleDBObjectMapper)objectMapper).setDefaultDatabaseName(parameterService.getString("mongo.default.databasename", "default"));
+            ((SimpleDBObjectMapper)objectMapper).setDefaultDatabaseName(parameterService.getString("mongodb.default.databasename", "default"));
         }
         return new MongoDatabaseWriter(objectMapper, new SimpleMongoClientManager(parameterService, typeName),
                 new DefaultTransformWriterConflictResolver(transformWriter),
