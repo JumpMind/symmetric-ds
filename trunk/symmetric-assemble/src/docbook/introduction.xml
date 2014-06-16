@@ -493,12 +493,12 @@
 
     <para>All three of these techniques have advantages and disadvantages, and
     all three are on the road map for SymmetricDS. At present time,
-    SymmetricDS supports trigger-based data capture and basic lazy data
+    SymmetricDS supports trigger-based data capture and partial lazy data
     capture. These two techniques were implemented first for a variety of
     reasons, not the least of which is that the majority of use cases that
     SymmetricDS targets can be solved using trigger-based and conditional
     replication in a way that allows for more database platforms to be
-    supported using industry standard technologies. This fact allowed our
+    supported using industry standard technologies. This fact allowed SymmetricDS
     developers' valuable time and energy to be invested in designing a product
     that is easy to install, configure and manage versus spending time reverse
     engineering proprietary and not well documented database log files.</para>
