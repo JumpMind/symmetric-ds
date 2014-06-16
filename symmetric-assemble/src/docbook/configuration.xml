@@ -35,40 +35,81 @@
 	<section id="configuration-groups">
 		<title>Groups</title>
 		<para>
-		Node Groups are straightforward to configure and are defined in the
+		Groups are defined in the
 		<xref linkend="table_node_group" xrefstyle="table" />
 		table. The following SQL statements would create node groups for "corp"
 		and "store" based on our retail store example.
-		<programlisting> insert into SYM_NODE_GROUP
-		(node_group_id, description) values ('store', 'A retail store node');
+		<programlisting> 
+        insert into SYM_NODE_GROUP
+		  (node_group_id, description) 
+          values ('store', 'A retail store node');
 		
-		insert into SYM_NODE_GROUP (node_group_id, description) values ('corp',
-		'A corporate node');</programlisting>
+		insert into SYM_NODE_GROUP 
+          (node_group_id, description) 
+          values ('corp', 'A corporate node');</programlisting>
 		</para>
 	</section>
 	<section id="configuration-group-links">
 		<title>Group Links</title>
 		<para>
-		Similarly, Node Group links are established using a data event action of
-		'P' for Push and 'W' for Pull ("wait"). The following SQL statements
+		Group links are defined in the
+		<xref linkend="table_node_group_link" xrefstyle="table" />
+		table.  Links define how a node that belongs to a group will communicate with nodes in other groups.
+        The following are the communication mechanisms that can be configured.
+        
+        <variablelist>
+        <varlistentry>
+        <term>
+        <command>Push (P)</command>
+        </term>        
+        <listitem>
+        <para>Indicates that the source node will initiate communication over an HTTP PUT.</para>
+        </listitem>
+        </varlistentry>
+        
+        <varlistentry>
+        <term>
+        <command>Wait for Pull (W)</command>
+        </term>        
+        <listitem>
+        <para>Indicates that the source node will <ns:emphasis>wait</ns:emphasis> for a target node to connect via an HTTP GET to pull data.</para>
+        </listitem>
+        </varlistentry>
+        
+        <varlistentry>
+        <term>
+        <command>Route-only (R)</command>
+        </term>        
+        <listitem>
+        <para>Route-only indicates that the data isn't going to be transported via SymmetricDS.  This action type might be useful when using an XML publishing
+        router or an audit table changes router.</para>
+        </listitem>
+        </varlistentry>
+        </variablelist> 
+        </para>
+        
+        <para>The link also defines if configuration data will be synchronized on the link.  For example, you might not want remote nodes to be able to change
+        configuration and effect other nodes in the network.  In this case you would set <ns:literal>sync_config_enabled</ns:literal> to 0 on the appropriate link.</para>
+        
+        <para>A link can be configured to use the same node
+        group as the source and the target. This configuration allows a node
+        group to sync with every other node in its group.</para>
+        
+        <para>
+        The following SQL statements
 		links the "corp" and "store" node groups for synchronization. It
 		configures the "store" nodes to push their data changes to the "corp"
 		nodes, and the "corp" nodes to send changes to "store" nodes by waiting
 		for a pull.
-		<programlisting> insert into SYM_NODE_GROUP_LINK
-		(source_node_group, target_node_group, data_event_action) values
-		('store', 'corp', 'P'); insert into SYM_NODE_GROUP_LINK
-		(source_node_group, target_node_group, data_event_action) values
-		('corp', 'store', 'W');</programlisting>
-		</para>
-		
-		<para>A node group link can be configured to use the same node
-		group as the source and the target. This configuration allows a node
-		group to sync with every other node in its group.</para>
-		<para>A third type of link action of 'R' for 'Route Only' exists
-		if you want to associate a router with a link that will not move the
-		data. This action type might be useful when using an XML publishing
-		router or an audit table changes router.</para>
+		<programlisting> 
+        insert into SYM_NODE_GROUP_LINK
+		  (source_node_group, target_node_group, data_event_action) 
+          values ('store', 'corp', 'P');
+           
+        insert into SYM_NODE_GROUP_LINK
+		  (source_node_group, target_node_group, data_event_action) 
+          values ('corp', 'store', 'W');</programlisting>
+		</para>		
 	</section>
 	<section id="configuration-group-channels">
 		<title>Channels</title>
@@ -87,14 +128,15 @@
 		"item" channel includes data for items and their prices, while a
 		"sale_transaction" channel includes data for ringing sales at a
 		register.
-		<programlisting> insert into SYM_CHANNEL (channel_id,
-		processing_order, max_batch_size, max_batch_to_send,
-		extract_period_millis, batch_algorithm, enabled, description) values
-		('item', 10, 1000, 10, 0, 'default', 1, 'Item and pricing data'); insert
-		into SYM_CHANNEL (channel_id, processing_order, max_batch_size,
-		max_batch_to_send, extract_period_millis, batch_algorithm, enabled,
-		description) values ('sale_transaction', 1, 1000, 10, 60000,
-		'transactional', 1, 'retail sale transactions from register');</programlisting>
+		<programlisting> 
+        insert into SYM_CHANNEL (channel_id, rocessing_order, max_batch_size, max_batch_to_send,
+		  extract_period_millis, batch_algorithm, enabled, description) 
+          values ('item', 10, 1000, 10, 0, 'default', 1, 'Item and pricing data'); 
+        
+        insert into SYM_CHANNEL (channel_id, processing_order, max_batch_size,
+		  max_batch_to_send, extract_period_millis, batch_algorithm, enabled, description) 
+          values ('sale_transaction', 1, 1000, 10, 60000,
+		  'transactional', 1, 'retail sale transactions from register');</programlisting>
 		</para>
 		
 		<para>
@@ -265,7 +307,7 @@
 		<important>
 		The property
 		<literal>trigger.update.capture.changed.data.only.enabled</literal>
-		is currently only supported in the MySQL, DB2 and Oracle dialects.
+		is currently only supported in the MySQL, DB2, SQL Server and Oracle dialects.
 		</important>
 		
 		<para>
