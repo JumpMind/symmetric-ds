@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io.data.writer;
 import java.util.List;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
@@ -30,7 +31,7 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 
 public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements
-        ISymmetricEngineAware {
+        ISymmetricEngineAware, IBuiltInExtensionPoint {
 
     protected ISymmetricEngine engine;
 
