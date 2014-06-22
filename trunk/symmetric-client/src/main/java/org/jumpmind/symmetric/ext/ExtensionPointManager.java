@@ -59,6 +59,7 @@ import org.springframework.context.ApplicationContext;
  * application that matches the following pattern:
  * /META-INF/services/symmetric-*-ext.xml
  */
+@SuppressWarnings("deprecation")
 public class ExtensionPointManager implements IExtensionPointManager {
 
     private final static Logger log = LoggerFactory.getLogger(ExtensionPointManager.class);
@@ -267,14 +268,23 @@ public class ExtensionPointManager implements IExtensionPointManager {
         }
 
         if (ext instanceof IDatabaseUpgradeListener) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName,
+                    IDatabaseUpgradeListener.class, true));
             engine.getSymmetricDialect().addDatabaseUpgradeListener((IDatabaseUpgradeListener) ext);
         }
         
         if (ext instanceof IAlterDatabaseInterceptor) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName,
+                    IAlterDatabaseInterceptor.class, true));
             engine.getSymmetricDialect().addAlterDatabaseInterceptor((IAlterDatabaseInterceptor)ext);
         }
 
         if (ext instanceof IColumnTransform) {
+            installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName,
+                    IColumnTransform.class, true));
             IColumnTransform<?> t = (IColumnTransform<?>) ext;
             engine.getTransformService().addColumnTransform(t);
         }
