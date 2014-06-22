@@ -87,7 +87,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
             //TODO: Did this because start is getting called multiple times
             //      for the same table in a single batch before end is being called
             if (this.stagedInputFile == null) {
-            createStagingFile();
+               createStagingFile();
             }
         return true;
         } else {
