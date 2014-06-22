@@ -2001,7 +2001,17 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 || defaultValueStr.toUpperCase().startsWith("SYSDATE")
                 || defaultValueStr.toUpperCase().startsWith("SYSTIMESTAMP")
                 || defaultValueStr.toUpperCase().startsWith("CURRENT_TIMESTAMP")
-                || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")));
+                || defaultValueStr.toUpperCase().startsWith("CURRENT_TIME")
+                || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")
+                || defaultValueStr.toUpperCase().startsWith("CURRENT_USER")
+                || defaultValueStr.toUpperCase().startsWith("USER")
+                || defaultValueStr.toUpperCase().startsWith("SYSTEM_USER")
+                || defaultValueStr.toUpperCase().startsWith("SESSION_USER")
+                || defaultValueStr.toUpperCase().startsWith("DATE '")
+                || defaultValueStr.toUpperCase().startsWith("TIME '")
+                || defaultValueStr.toUpperCase().startsWith("TIMESTAMP '")
+                || defaultValueStr.toUpperCase().startsWith("INTERVAL '")
+                ));
 
         if (shouldUseQuotes) {
             // characters are only escaped when within a string literal
