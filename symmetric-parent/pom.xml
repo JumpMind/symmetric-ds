@@ -907,7 +907,6 @@
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongo-java-driver</artifactId>
                 <version>2.11.4</version>
-                <scope>provided</scope>
             </dependency>                   
             <dependency>
                 <groupId>org.mariadb.jdbc</groupId>
