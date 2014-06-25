@@ -395,7 +395,7 @@ public class SymmetricWebServer {
             connector.setHost(host);
             connector.setMaxIdleTime(maxIdleTime);
             connectors.add(connector);
-            log.info(String.format("About to start %s web server on host:port %s:%s", name, host, port));
+            log.info(String.format("About to start %s web server on host:port %s:%s", name, host == null ? "default" : host, port));
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             ISecurityService securityService = SecurityServiceFactory.create(SecurityServiceType.SERVER, new TypedProperties(System.getProperties()));
@@ -415,7 +415,7 @@ public class SymmetricWebServer {
             connector.setPort(securePort);
             connector.setHost(host);
             connectors.add(connector);
-            log.info(String.format("About to start SymmetricDS web server on secure host:port %s:%s", host,securePort));
+            log.info(String.format("About to start %s web server on secure host:port %s:%s", name, host == null ? "default" : host, securePort));
         }
         return connectors.toArray(new Connector[connectors.size()]);
     }
