@@ -148,12 +148,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo
                             .getDeploymentType())
                             && !nodeThatMayBeRoutedTo.requires13Compatiblity()
-                            && (!isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
-                                    rootNetworkedNode, me) || (nodeThatMayBeRoutedTo.getNodeId()
-                                    .equals(me.getNodeId()) && initialLoad))) {
+                            && (initialLoad || !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
+                                    rootNetworkedNode, me))) {
                         NodeGroupLink link = configurationService.getNodeGroupLinkFor(
                                 me.getNodeGroupId(), nodeThatMayBeRoutedTo.getNodeGroupId(), false);
-                        if (link != null && link.isSyncConfigEnabled()) {
+                        if (initialLoad || (link != null && link.isSyncConfigEnabled())) {
                             nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
                         }
                     }
