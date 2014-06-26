@@ -1,3 +1,9 @@
+SymmetricDS - 3.6.1 (Released 2014-06-26) 
+=========================================
+- 0001771: [Bug] Add support for ansi literal default date values. Also support well known sql 92 function types for the default values (chenson) - closed.
+- 0001772: [Bug] Custom IColumnTransform weren't being marked as installed. (chenson) - closed.
+- 0001776: [Bug] Postgres should auto commit ddl changes. Otherwise, if a ddl fails to run it cannot continue to move forward. (chenson) - closed.
+
 SymmetricDS - 3.6.0 (Released 2014-06-16) 
 =========================================
 - 0001441: [New Feature] Add ability to sync on control file (chenson) - closed.
