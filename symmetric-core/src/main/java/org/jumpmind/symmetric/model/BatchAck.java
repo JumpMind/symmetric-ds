@@ -31,6 +31,9 @@ public class BatchAck  implements Serializable {
 
     private long batchId;
 
+    /**
+     * The node id of the node that successfully loaded the batch.
+     */
     private String nodeId;
 
     private boolean isOk;
