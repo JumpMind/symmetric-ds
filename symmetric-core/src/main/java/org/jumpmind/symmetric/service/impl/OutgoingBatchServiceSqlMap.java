@@ -115,7 +115,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("getNextOutgoingBatchForEachNodeSql",
                 "select min(b.batch_id) as batch_id, b.node_id, b.status, b.channel_id        "
               + "  from sym_outgoing_batch b where status != 'OK' and status != 'RT'          "
-              + "  group by b.node_id, b.status, b.channel_id order by batch_id asc    ");
+              + "  group by b.node_id, b.status, b.channel_id");
 
     }
 
