@@ -37,25 +37,25 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || cast(cast($(tableAlias).\"$(columnName)\" as numeric) as varchar) || '\"' end" ;
         dateColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS') || '\"' end" ;
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US') || '\"' end" ;
-        dateTimeWithTimeZoneColumnTemplate =
-        		"case when $(tableAlias).\"$(columnName)\" is null then '' else                                                      " +
-        		"   case                                                                                                             " +
-        		"   when extract(timezone_hour from $(tableAlias).\"$(columnName)\") <= 0 and                                        " +
-        		"        extract(timezone_minute from $(tableAlias).\"$(columnName)\") <= 0 then                                      " +
-        		"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||'-'||                           " +
-        		"     lpad(cast(abs(extract(timezone_hour from $(tableAlias).\"$(columnName)\")) as varchar),2,'0')||':'||           " +
-        		"     lpad(cast(abs(extract(timezone_minute from $(tableAlias).\"$(columnName)\")) as varchar), 2, '0') || '\"'      " +
-        		"   when extract(timezone_hour from $(tableAlias).\"$(columnName)\") = 0 and                                        " +
-        		"        extract(timezone_minute from $(tableAlias).\"$(columnName)\") >= 0 then                                      " +
-        		"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                           " +
-        		"     lpad(cast(round(extract(timezone_hour from $(tableAlias).\"$(columnName)\")) as varchar),2,'0')||':'||           " +
-        		"     lpad(cast(round(extract(timezone_minute from $(tableAlias).\"$(columnName)\")) as varchar), 2, '0') || '\"'      " +
-                "   else                                                                                                             " +
-        		"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                           " +
-        		"     lpad(cast(extract(timezone_hour from $(tableAlias).\"$(columnName)\") as varchar),2,'0')||':'||                " +
-        		"     lpad(cast(extract(timezone_minute from $(tableAlias).\"$(columnName)\") as varchar), 2, '0') || '\"'           " +
-        		"   end                                                                                                              " +
-        		"end                                                                                                                 ";
+        dateTimeWithTimeZoneColumnTemplate =                                                                                                        
+			"case when $(tableAlias).\"$(columnName)\" is null then '' else                                                      " +
+			"   case                                                                                                             " +
+			"   when extract(timezone_hour from $(tableAlias).\"$(columnName)\") <= 0 and                                        " +
+			"        extract(timezone_minute from $(tableAlias).\"$(columnName)\") <= 0 then                                      " +
+			"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||'-'||                           " +
+			"     lpad(cast(abs(round(extract(timezone_hour from $(tableAlias).\"$(columnName)\"))) as varchar),2,'0')||':'||           " +
+			"     lpad(cast(abs(round(extract(timezone_minute from $(tableAlias).\"$(columnName)\"))) as varchar), 2, '0') || '\"'      " +
+			"   when extract(timezone_hour from $(tableAlias).\"$(columnName)\") = 0 and                                        " +
+			"        extract(timezone_minute from $(tableAlias).\"$(columnName)\") >= 0 then                                      " +
+			"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                           " +
+			"     lpad(cast(round(extract(timezone_hour from $(tableAlias).\"$(columnName)\")) as varchar),2,'0')||':'||           " +
+			"     lpad(cast(round(extract(timezone_minute from $(tableAlias).\"$(columnName)\")) as varchar), 2, '0') || '\"'      " +
+	        "   else                                                                                                             " +
+			"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                           " +
+			"     lpad(cast(round(extract(timezone_hour from $(tableAlias).\"$(columnName)\")) as varchar),2,'0')||':'||                " +
+			"     lpad(cast(round(extract(timezone_minute from $(tableAlias).\"$(columnName)\")) as varchar), 2, '0') || '\"'           " +
+			"   end                                                                                                              " +
+			"end                                                                                                                 ";        
         clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || pg_catalog.encode($(tableAlias).\"$(columnName)\", 'base64') || '\"' end" ;
         wrappedBlobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || $(defaultSchema)$(prefixName)_largeobject($(tableAlias).\"$(columnName)\") || '\"' end" ;
