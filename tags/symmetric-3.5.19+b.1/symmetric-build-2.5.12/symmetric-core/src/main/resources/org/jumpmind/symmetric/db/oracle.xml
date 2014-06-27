@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" default-lazy-init="true">
+
+    <bean id="oracleDialect" class="org.jumpmind.symmetric.db.oracle.OracleDbDialect" scope="prototype">
+        <property name="primaryKeyViolationCodes" value="1"/>
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="defaultSchema" value="$[sym.db.default.schema]" />
+        <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />
+        <property name="selectTransactionsSql" value="select min(start_time) from gv$transaction"/>
+        <property name="selectTriggerSql" value="from ALL_TRIGGERS where owner in (SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual) and trigger_name like upper(?) and table_name like upper(?)"/>
+        <property name="sqlTemplate">
+            <bean class="org.jumpmind.symmetric.db.SqlTemplate">
+                
+                <property name="functionInstalledSql">
+                    <value>
+                        <![CDATA[select count(*) from user_source where line = 1 and ((type = 'FUNCTION' and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))]]>
+                    </value>
+                </property>               
+                <property name="functionTemplatesToInstall">
+                    <map>
+                        <entry key="blob2clob">
+                            <value>
+                                <![CDATA[ 
+                                CREATE OR REPLACE FUNCTION $(functionName) (blob_in IN BLOB)
+                                  RETURN CLOB
+                                AS
+                                    v_clob    CLOB := null;
+                                    v_varchar VARCHAR2(32767);
+                                    v_start   PLS_INTEGER := 1;
+                                    v_buffer  PLS_INTEGER := 999;
+                                BEGIN
+                                    IF blob_in IS NOT NULL THEN
+                                        IF DBMS_LOB.GETLENGTH(blob_in) > 0 THEN
+                                            DBMS_LOB.CREATETEMPORARY(v_clob, TRUE);
+                                            FOR i IN 1..CEIL(DBMS_LOB.GETLENGTH(blob_in) / v_buffer)
+                                            LOOP    
+                                                v_varchar := UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.base64_encode(DBMS_LOB.SUBSTR(blob_in, v_buffer, v_start)));
+                                                v_varchar := REPLACE(v_varchar,CHR(13)||CHR(10)); 
+                                                DBMS_LOB.WRITEAPPEND(v_clob, LENGTH(v_varchar), v_varchar);
+                                                v_start := v_start + v_buffer;
+                                            END LOOP;
+                                        END IF;
+                                    END IF;
+                                    RETURN v_clob; 
+                                END $(functionName);
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="transaction_id">
+                            <value>
+                                <![CDATA[ 
+                                CREATE OR REPLACE function $(functionName)
+                                    return varchar is
+                                    begin
+                                       return DBMS_TRANSACTION.local_transaction_id(false);
+                                    end;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="trigger_disabled">
+                            <value>
+                                <![CDATA[ 
+                                CREATE OR REPLACE function $(functionName) return varchar is 
+                                  begin 
+                                     return $[sym.sync.table.prefix]_pkg.disable_trigger;
+                                  end;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="pkg_package">
+                            <value>
+                                <![CDATA[ 
+                                CREATE OR REPLACE package $[sym.sync.table.prefix]_pkg as
+                                    disable_trigger pls_integer;
+                                    disable_node_id varchar(50);
+                                    procedure setValue (a IN number);
+                                    procedure setNodeValue (node_id IN varchar);                                    
+                                end $[sym.sync.table.prefix]_pkg;
+                                ]]>
+                            </value>
+                        </entry>                        
+                        <entry key="pkg_package body">
+                            <value>
+                                <![CDATA[ 
+                                CREATE OR REPLACE package body $[sym.sync.table.prefix]_pkg as
+                                    procedure setValue(a IN number) is
+                                    begin
+                                         $[sym.sync.table.prefix]_pkg.disable_trigger:=a;
+                                    end;
+                                    procedure setNodeValue(node_id IN varchar) is
+                                    begin
+                                         $[sym.sync.table.prefix]_pkg.disable_node_id := node_id;
+                                    end;
+                                end $[sym.sync.table.prefix]_pkg;
+                                ]]>
+                            </value>
+                        </entry> 
+                        <entry key="wkt2geom">
+                            <value>
+                                <![CDATA[ 
+                                CREATE OR REPLACE
+                                  FUNCTION $(functionName)(
+                                      clob_in IN CLOB)
+                                    RETURN SDO_GEOMETRY
+                                  AS
+                                    v_out SDO_GEOMETRY := NULL;
+                                  BEGIN
+                                    IF clob_in IS NOT NULL THEN
+                                      IF DBMS_LOB.GETLENGTH(clob_in) > 0 THEN
+                                        v_out := SDO_GEOMETRY(clob_in);
+                                      END IF;
+                                    END IF;
+                                    RETURN v_out;
+                                  END $(functionName); 
+                                ]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+                <property name="stringColumnTemplate">
+                    <value>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, $(oracleToClob)'', '"'||replace(replace($(oracleToClob)$(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"')]]>
+                    </value>
+                </property>
+                <property name="geometryColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then to_clob('') else '"'||replace(replace(SDO_UTIL.TO_WKTGEOMETRY($(tableAlias)."$(columnName)"),'\','\\'),'"','\"')||'"' end]]>
+                    </value>
+                </property>                
+                <property name="clobColumnTemplate">
+                    <value>
+                        <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, to_clob(''), '"'||replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"')]]>
+                    </value>
+                </property>
+                <property name="blobColumnTemplate">
+                    <value>
+                        <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, to_clob(''), '"'||$[sym.sync.table.prefix]_blob2clob($(tableAlias)."$(columnName)")||'"')]]>
+                    </value>
+                </property>
+                <property name="numberColumnTemplate">
+                    <value>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||cast($(tableAlias)."$(columnName)" as number($[sym.oracle.template.precision]))||'"')]]>
+                    </value>
+                </property>
+                <property name="booleanColumnTemplate">
+                    <value>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||cast($(tableAlias)."$(columnName)" as number($[sym.oracle.template.precision]))||'"')]]>
+                    </value>
+                </property>
+                <property name="datetimeWithTimezoneTemplate" >
+                    <value>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')),'"'))]]>
+                    </value>
+                </property>                                               
+                <property name="datetimeColumnTemplate" >
+                    <value>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS.FF3')),'"'))]]>
+                    </value>
+                </property>               
+                <property name="dateColumnTemplate" >
+                    <value>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"'))]]>
+                    </value>
+                </property>
+                <property name="timeColumnTemplate" >
+                    <value>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"'))]]>
+                    </value>
+                </property>                
+                <property name="triggerConcatCharacter" value="||"/>
+                <property name="newTriggerValue" value=":new"/>
+                <property name="oldTriggerValue" value=":old"/>
+                <property name="sqlTemplates">
+                    <map>
+                        <entry key="insertTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create or replace trigger $(triggerName) after insert on $(schemaName)$(tableName)
+                                for each row begin
+                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                    values(
+                                      '$(targetTableName)',
+                                      'I',
+                                      $(triggerHistoryId),
+                                      $(oracleToClob)$(columns),          
+                                      '$(channelName)',          
+                                      $(txIdExpression),
+                                      $[sym.sync.table.prefix]_pkg.disable_node_id,  
+                                      $(externalSelect),     
+                                      CURRENT_TIMESTAMP
+                                    );
+                                  end if;
+                                end;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="updateTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create or replace trigger $(triggerName) after update on $(schemaName)$(tableName)
+                                for each row begin
+                                  declare 
+                                    var_row_data $(oracleLobType);
+                                    var_old_data $(oracleLobType);
+                                  begin
+                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
+                                    select $(oracleToClob)$(columns) into var_row_data from dual;
+                                    select $(oracleToClob)$(oldColumns) into var_old_data from dual;
+                                    if $(dataHasChangedCondition) then 
+                                      insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                      values(
+                                        '$(targetTableName)',
+                                        'U',
+                                        $(triggerHistoryId),
+                                        $(oldKeys),
+                                        var_row_data,
+                                        var_old_data,
+                                        '$(channelName)',  
+                                        $(txIdExpression),
+                                        $[sym.sync.table.prefix]_pkg.disable_node_id,   
+                                        $(externalSelect),                                          
+                                        CURRENT_TIMESTAMP
+                                      );
+                                    end if;
+                                  end if;
+                                end;
+                                end;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="deleteTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create or replace trigger  $(triggerName) after delete on $(schemaName)$(tableName)
+                                for each row begin
+                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                    values(
+                                      '$(targetTableName)',
+                                      'D',
+                                      $(triggerHistoryId),
+                                      $(oldKeys),
+                                      $(oracleToClob)$(oldColumns),
+                                      '$(channelName)',  
+                                      $(txIdExpression),
+                                      $[sym.sync.table.prefix]_pkg.disable_node_id, 
+                                      $(externalSelect),      
+                                      CURRENT_TIMESTAMP
+                                    );
+                                  end if;
+                                end;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="initialLoadSqlTemplate">
+                            <value>
+                                <![CDATA[select $(oracleToClob)$(columns) from $(schemaName)$(tableName) t  where $(whereClause)]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+</beans>

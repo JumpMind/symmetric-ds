@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="ch01-introduction" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:ns="http://docbook.org/ns/docbook"
+         xmlns:mml="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Introduction</title>
+    <section>
+        <title>The Problem of Synchronization</title>
+        <para>
+            SymmetricDS includes features that solve a particular set of synchronization
+            problems.
+        </para>
+        <section>
+            <title>Notification Schemes</title>
+            <para>
+                After a change to the database is recorded, the nodes interested in the change
+                are notified. Change notification is configured to perform a push (trickle-back)
+                or a pull (trickle-poll) of data. When several nodes target their changes to a
+                central node, it is efficient to push the changes instead of waiting for the
+                central node to pull from each source node. When network configuration protects
+                a node with a firewall, a pull configuration allows the node to receive data
+                changes that might otherwise be blocked using push. The frequency of the change
+                notification is configured by default to one minute.
+            </para>
+        </section>
+        <section>
+            <title>Two-Way Table Synchronization</title>
+            <para>
+                Some data may synchronize in one direction. For example, a retail store sends
+                its sales transactions to a central office, and the central office sends its
+                stock items to the store. Some data may synchronize in both directions. For
+                example, the retail store sends the central office an inventory document, and
+                the central office updates the document status, which is sent back to the store.
+                SymmetricDS supports bi-directional synchronization and avoids getting into
+                update loops by only recording data changes outside of synchronization.
+            </para>
+        </section>
+        <section>
+            <title>Data Channels</title>
+            <para>
+                Data synchronization is defined at the table (or table subset) level. Each
+                managed table can be assigned to a channel that helps control the flow of data.
+                A channel is a category of data that can be enabled, prioritized and synchronized
+                independently of other channels. For example, in a retail environment, users may
+                be waiting for inventory documents to update while a promotional sale event
+                updates a large number of items. If processed in order, the item updates would
+                delay the inventory updates even though the data is unrelated. By assigning item
+                table changes to the "item" channel and inventory table changes to the
+                "inventory" channel, the changes are processed independently so inventory can
+                get through.
+            </para>
+        </section>
+        <section>
+            <title>Transaction Awareness</title>
+            <para>
+                Many databases provide a unique transaction identifier associated with the rows
+                that are committed together. SymmetricDS stores the transaction ID along with
+                the data that changed so it can play back the transaction exactly the way it
+                happened. This means the target database maintains the same integrity as its
+                source. Support for transaction ID is included in the Database Dialects for both
+                MySQL and Oracle in this release.
+            </para>
+        </section>
+        <section>
+            <title>Data Filtering and Rerouting</title>
+            <para>
+                Data can be filtered as it is recorded, extracted, and loaded.
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            As data changes are loaded in the target database, a class implementing
+                            <literal>IDataLoaderFilter</literal>
+                            can change the data in a column or route it somewhere else. One possible
+                            use might be to route credit card data to a secure database and blank it
+                            out as it loads into a centralized sales database.  The filter can also prevent
+                            data from reaching the database altogether, effectively replacing the default
+                            data loading.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            Columns can be excluded from synchronization so they are never recorded
+                            when the table is changed.  As data changes are loaded into the target database, a class
+                            implementing
+                            <literal>IColumnFilter</literal>
+                            can altogether remove a column from the synchronization. For example, an
+                            employee table may be synchronized to a retail store database, but the
+                            employee's password is only synchronized on the initial insert.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            As data changes are extracted from the source
+                            database, a class implementing the
+                            <literal>IExtractorListener</literal>
+                            interface is called to filter data or route it somewhere else.  By default, SymmetricDS provides
+                            a handler that transforms and streams data as CSV.  Optionally, an alternate implementation
+                            may be provided to take some other action on the extracted data.
+                        </para>
+                    </listitem>                    
+                </itemizedlist>
+            </para>
+        </section>
+        <section>
+            <title>HTTP Transport</title>
+            <para>
+                By default, SymmetricDS uses web-based HTTP in a style called Representation
+                State Transfer (REST) that is lightweight and easy to manage. A series of
+                filters are also provided to enforce authentication and to restrict the number
+                of simultaneous synchronization streams. The
+                <literal>ITransportManager</literal>
+                interface allows other transports to be implemented. (The unit tests for
+                SymmetricDS take advantage of this by using an
+                <literal>InternalTransportManager</literal>
+                that makes it easy to run automated tests locally.)
+            </para>
+        </section>
+        <section>
+            <title>Remote Management</title>
+            <para>
+                Administration functions are exposed through Java Management Extensions (JMX)
+                that can be accessed from the Java JConsole or through an application server.
+                Functions include opening registration, reloading data, purging old data, and
+                viewing batches. A number of configuration and runtime properties are available
+                to be viewed as well.
+            </para>
+            <para>
+                SymmetricDS also provides functionality to send a SQL events through the same synchronization
+                mechanism that is used to send data.  The data payload can be any SQL statement.  The event is 
+                processed and acknowledged just like any other event type.
+            </para>
+        </section>
+    </section>
+    <section>
+        <title>Requirements</title>
+        <para>
+            SymmetricDS is written in Java 5 and requires a Java SE Runtime Environment (JRE) or
+            Java SE Development Kit (JDK) version 5.0 or above.
+        </para>
+        <para>
+            Any database with trigger technology and a JDBC driver has the potential to run
+            SymmetricDS. The database is abstracted through a Database Dialect in order to
+            support specific features of each database. The following Database Dialects have
+            been included with release 1.0:
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>MySQL version 5.0.2 and above</para>
+            </listitem>
+            <listitem>
+                <para>Oracle version 8.1.7 and above</para>
+            </listitem>
+            <listitem>
+                <para>PostgreSQL version 8.2.5 and above</para>
+            </listitem>            
+            <listitem>
+                <para>Sql Server 2005</para>
+            </listitem>
+            <listitem>
+                <para>HSQLDB 1.8</para>
+            </listitem>            
+            <listitem>
+                <para>Apache Derby 10.3.2.1 and above</para>
+            </listitem>            
+        </itemizedlist>
+    </section>
+    <section>
+        <title>Background</title>
+        <para>
+            While implementing a commercial Point of Sale (POS) system for a large retailer, the
+            development team concluded that the software available for trickling back
+            transactions to the general office did not meet the project needs. The list of
+            problems in the requirements made finding the ideal solution difficult:
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>
+                    Sending and receiving data with 2000 stores during peak holiday loads.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    Supporting one database platform at the store and another at general office.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    Synchronizing some data in one direction, and other data in both directions.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    Filtering out sensitive data and re-routing it to a protected database.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    Preparing the store database with an initial load of data from general
+                    office.
+                </para>
+            </listitem>
+        </itemizedlist>
+        <para>
+            The team created a custom solution that met the requirements and made the project
+            successful. From this initial challenge came the knowledge and experience that
+            SymmetricDS benefits from today.
+        </para>
+    </section>
+    <section>
+        <title>Version Numbering</title>
+        <para>
+            The software is released with a version number based on the
+            <ulink url="http://apr.apache.org/versioning.html">
+                Apache Portable Runtime Project
+            </ulink>
+            version guidelines. In summary, the version is denoted as three integers in the
+            format of MAJOR.MINOR.PATCH. Major versions are incompatible at the API level, and
+            they can include any kind of change. Minor versions are compatible with older
+            versions at the API and binary level, and they can intoduce new functions or remove
+            old ones. Patch versions are perfectly compatible, and they are released to fix
+            defects.
+        </para>
+    </section>
+</chapter>

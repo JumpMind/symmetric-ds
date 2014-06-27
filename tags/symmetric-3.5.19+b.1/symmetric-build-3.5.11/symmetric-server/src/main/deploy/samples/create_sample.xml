@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<!--
+
+    Licensed to JumpMind Inc under one or more contributor
+    license agreements.  See the NOTICE file distributed
+    with this work for additional information regarding
+    copyright ownership.  JumpMind Inc licenses this file
+    to you under the GNU General Public License, version 3.0 (GPLv3)
+    (the "License"); you may not use this file except in compliance
+    with the License.
+
+    You should have received a copy of the GNU General Public License,
+    version 3.0 (GPLv3) along with this library; if not, see
+    <http://www.gnu.org/licenses/>.
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<!DOCTYPE database SYSTEM "http://db.apache.org/torque/dtd/database.dtd">
+
+<database name="sample">
+
+    <table name="item">
+        <column name="item_id" type="INTEGER" required="true" primaryKey="true" />
+        <column name="name" type="VARCHAR" size="100" />
+    </table>
+    
+    <table name="item_selling_price">
+        <column name="item_id" type="INTEGER" required="true" primaryKey="true" />
+        <column name="store_id" type="VARCHAR" size="5" required="true" primaryKey="true"  />
+        <column name="price" type="DECIMAL" size="10,2" required="true" />
+        <column name="cost" type="DECIMAL" size="10,2" required="false" />
+        <foreign-key name="fk_price_item_id" foreignTable="item">
+            <reference local="item_id" foreign="item_id" />
+        </foreign-key>
+    </table>
+
+    <table name="sale_transaction">
+        <column name="tran_id" type="INTEGER" required="true" primaryKey="true" />
+        <column name="store_id" type="VARCHAR" size="5" required="true" />
+        <column name="workstation" type="VARCHAR" size="3" required="true" />
+        <column name="day" type="VARCHAR" size="10" required="true" />
+        <column name="seq" type="INTEGER" required="true" />
+    </table>
+
+    <table name="sale_return_line_item">
+        <column name="tran_id" type="INTEGER" required="true" primaryKey="true" />
+        <column name="item_id" type="INTEGER" required="true" />
+        <column name="price" type="DECIMAL" size="10,2" required="true" />
+        <column name="quantity" type="INTEGER" required="true" />
+        <column name="returned_quantity" type="INTEGER"/>
+        <foreign-key name="fk_srli_tran_id" foreignTable="sale_transaction">
+            <reference local="tran_id" foreign="tran_id" />
+        </foreign-key>
+        <foreign-key name="fk_srli_item_id" foreignTable="item">
+            <reference local="item_id" foreign="item_id" />
+        </foreign-key>
+    </table>
+    
+</database>

@@ -1,0 +1,893 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to JumpMind Inc under one or more contributor
+    license agreements.  See the NOTICE file distributed
+    with this work for additional information regarding
+    copyright ownership.  JumpMind Inc licenses this file
+    to you under the GNU General Public License, version 3.0 (GPLv3)
+    (the "License"); you may not use this file except in compliance
+    with the License.
+
+    You should have received a copy of the GNU General Public License,
+    version 3.0 (GPLv3) along with this library; if not, see
+    <http://www.gnu.org/licenses/>.
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<appendix version="5.0" xml:id="parameters" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
+    xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Parameters</title>
+    <para>
+        There are two kinds of parameters that can be used to configure the behavior of SymmetricDS:
+        <emphasis>Startup Parameters</emphasis>
+        and
+        <emphasis>Runtime Parameters</emphasis>
+        . Startup Parameters are required to be in a system property or a property file, while Runtime Parameters can also be
+        found in the Parameter table from the database. Parameters are re-queried from their source at a configured interval
+        and can also be refreshed on demand by using the JMX API. The following table shows the source of parameters and the
+        hierarchy of precedence.
+        <table>
+            <title>Parameter Locations</title>
+            <tgroup cols="3">
+                <colspec colwidth="115px" />
+                <colspec colwidth="50px" />
+                <colspec colwidth="220px" />
+                <thead>
+                    <row>
+                        <entry>Location</entry>
+                        <entry>Required</entry>
+                        <entry>Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>
+                            <emphasis>symmetric-default.properties</emphasis>
+                        </entry>
+                        <entry>Y</entry>
+                        <entry> Packaged inside symmetric-core jar file. This file has all the default settings along with
+                            descriptions.
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <emphasis>conf/symmetric.properties</emphasis>
+                        </entry>
+                        <entry>N</entry>
+                        <entry> Changes to this file in the conf directory of a standalone install apply to all engines in
+                            the JVM.
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <emphasis>symmetric-override.properties</emphasis>
+                        </entry>
+                        <entry>N</entry>
+                        <entry>Changes to this file, provided by the end user in the JVM's classpath, apply to all engines
+                            in the JVM.
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <emphasis>engines/*.properties</emphasis>
+                        </entry>
+                        <entry>N</entry>
+                        <entry> Properties for a specific engine or node that is hosted in a standalone install.
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <emphasis>Java System Properties</emphasis>
+                        </entry>
+                        <entry>N</entry>
+                        <entry> Any SymmetricDS property can be passed in as a -D property to the runtime. It will take
+                            precedence over any properties file property.
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <emphasis>Parameter table</emphasis>
+                        </entry>
+                        <entry>N</entry>
+                        <entry> A table which contains SymmetricDS parameters. Parameters can be targeted at a specific node
+                            group and even at a specific external id. These settings will take precedence over all of the
+                            above.
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <emphasis>IParameterFilter</emphasis>
+                        </entry>
+                        <entry>N</entry>
+                        <entry> An extension point which allows parameters to be sourced from another location or customized.
+                            These settings will take precedence over all of the above.
+                        </entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </para>
+    <section id="ap01-startup">
+        <title>Startup Parameters</title>
+        <para>
+            Startup parameters are read once from properties files and apply only during start up. The following properties
+            are used:
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <command>engine.name</command>
+                    </term>
+                    <listitem>
+                        <para> This is the engine name. This should be set if you have more than one engine running in the
+                            same JVM. It is used to name the JMX management bean. [&#xA0;Default:&#xA0;Default&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>registration.url</command>
+                    </term>
+                    <listitem>
+                        <para> The URL where this node can connect for registration to receive its configuration. This
+                            property is only valid if you use the default IRuntimeConfiguration implementation.
+                            [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>sync.url</command>
+                    </term>
+                    <listitem>
+                        <para> The URL where this node can be contacting for synchronization.
+                            [&#xA0;Default:&#xA0;http://localhost:8080/sync&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>group.id</command>
+                    </term>
+                    <listitem>
+                        <para> The node group id for this node. [&#xA0;Default:&#xA0;default&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>external.id</command>
+                    </term>
+                    <listitem>
+                        <para> The secondary identifier for this node that has meaning to the system where it is deployed.
+                            While the node id is a generated sequence number, the external ID could have meaning in the
+                            user's domain, such as a retail store number. [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>db.driver</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            The class name of the JDBC driver. If
+                            <literal>db.jndi.name</literal>
+                            is set, this property is ignored. [&#xA0;Default:&#xA0;com.mysql.jdbc.Driver&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>db.url</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            The JDBC URL used to connect to the database. If
+                            <literal>db.jndi.name</literal>
+                            is set, this property is ignored. [&#xA0;Default:&#xA0;jdbc:mysql://localhost/symmetric&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>db.user</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            The database username, which is used to login, create, and update SymmetricDS tables. To use an
+                            encrypted username, see
+                            <xref linkend="encrypted-passwords" />
+                            . If
+                            <literal>db.jndi.name</literal>
+                            is set, this property is ignored. [&#xA0;Default:&#xA0;symmetric&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>db.password</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            The password for the database user. To use an encrypted password, see
+                            <xref linkend="encrypted-passwords" />
+                            . If
+                            <literal>db.jndi.name</literal>
+                            is set, this property is ignored. [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>db.pool.initial.size</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            The initial size of the connection pool. If
+                            <literal>db.jndi.name</literal>
+                            is set, this property is ignored. [&#xA0;Default:&#xA0;5&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>db.pool.max.active</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            The maximum number of connections that will be allocated in the pool. If
+                            <literal>db.jndi.name</literal>
+                            is set, this property is ignored. [&#xA0;Default:&#xA0;10&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>db.pool.max.wait.millis</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            This is how long a request for a connection from the datasource will wait before giving up. If
+                            <literal>db.jndi.name</literal>
+                            is set, this property is ignored. [&#xA0;Default:&#xA0;30000&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>db.pool.min.evictable.idle.millis</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            This is how long a connection can be idle before it will be evicted. If
+                            <literal>db.jndi.name</literal>
+                            is set, this property is ignored. [&#xA0;Default:&#xA0;120000&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>db.sql.query.timeout.seconds</command>
+                    </term>
+                    <listitem>
+                        <para> The timeout in seconds for queries running on the database. [&#xA0;Default:&#xA0;300&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>db.jdbc.streaming.results.fetch.size</command>
+                    </term>
+                    <listitem>
+                        <para> This is the default fetch size for streaming result sets into memory from the database.
+                            [&#xA0;Default:&#xA0;1000&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>db.jndi.name</command>
+                    </term>
+                    <listitem>
+                        <para>Name of a JNDI data source to use instead of using SymmetricDS's connection pool.  When
+                              this is set the db.url is ignored.  Using a JNDI data source is relevant when deploying 
+                              to an application server.
+                            [&#xA0;Default:&#xA0;&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>                
+                <varlistentry>
+                    <term>
+                        <command>auto.config.database</command>
+                    </term>
+                    <listitem>
+                        <para> If this is true, the configuration and runtime tables used by SymmetricDS are automatically
+                            created during startup. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>auto.sync.configuration</command>
+                    </term>
+                    <listitem>
+                        <para> If this is true, create triggers for the SymmetricDS configuration table that will synchronize
+                            changes to node groups that pull from the node where this property is set.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>https.allow.self.signed.certs</command>
+                    </term>
+                    <listitem>
+                        <para> If this is true, a Symmetric client node to accept self signed certificates.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>http.basic.auth.username</command>
+                    </term>
+                    <listitem>
+                        <para> If specified, a Symmetric client node will use basic authentication when communicating with
+                            its server node using the given user name. [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>http.basic.auth.password</command>
+                    </term>
+                    <listitem>
+                        <para> If specified, the password used for basic authentication. [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>https.verified.server.names</command>
+                    </term>
+                    <listitem>
+                        <para> A list of comma separated server names that will always verify when using https. This is
+                            useful if the URL's hostname and the server's identification hostname don't match exactly using
+                            the default rules for the JRE. A special value of "all" may be specified to allow all hostnames
+                            to verify. [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>sync.table.prefix</command>
+                    </term>
+                    <listitem>
+                        <para> When symmetric tables are created and accessed, this is the prefix to use for the table name.
+                            [&#xA0;Default:&#xA0;sym&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>start.route.job</command>
+                    </term>
+                    <listitem>
+                        <para> Whether the route job is enabled for this node. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.route.period.time.ms</command>
+                    </term>
+                    <listitem>
+                        <para>This is how often the route job will be run if enabled. [&#xA0;Default:&#xA0;10000&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>start.push.job</command>
+                    </term>
+                    <listitem>
+                        <para>Whether the push job is enabled for this node. [&#xA0;Default:&#xA0;true]</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.push.period.time.ms</command>
+                    </term>
+                    <listitem>
+                        <para>This is how often the push job will be run if enabled. [&#xA0;Default:&#xA0;60000&#xA0;]</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>start.pull.job</command>
+                    </term>
+                    <listitem>
+                        <para> Whether the pull job is enabled for this node. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.pull.period.time.ms</command>
+                    </term>
+                    <listitem>
+                        <para>This is how often the pull job will be run if enabled. [&#xA0;Default:&#xA0;60000&#xA0;]</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>start.purge.job</command>
+                    </term>
+                    <listitem>
+                        <para> Whether the purge jobs are enabled for this node. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.purge.incoming.cron</command>
+                    </term>
+                    <listitem>
+                        <para> This is how often the incoming batch purge job will be run if enabled. [&#xA0;Default:&#xA0;0
+                            0 0 * * *&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.purge.outgoing.cron</command>
+                    </term>
+                    <listitem>
+                        <para> This is how often the outgoing batch and data purge job will be run if enabled.
+                            [&#xA0;Default:&#xA0;0 0 0 * * *&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.purge.datagaps.cron</command>
+                    </term>
+                    <listitem>
+                        <para> This is how often the data gaps purge job will be run if enabled. [&#xA0;Default:&#xA0;0 0 0 *
+                            * *&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>start.synctriggers.job</command>
+                    </term>
+                    <listitem>
+                        <para> Whether the sync triggers job is enabled for this node. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.synctriggers.cron</command>
+                    </term>
+                    <listitem>
+                        <para> This is how often the sync triggers job will be run if enabled. [&#xA0;Default:&#xA0;0 0 0 * *
+                            *&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>start.stage.management.job</command>
+                    </term>
+                    <listitem>
+                        <para> Whether the stage directory management/purge job is enabled for this node.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.stage.management.period.time.ms</command>
+                    </term>
+                    <listitem>
+                        <para>This is how often the stage management job will be run if enabled.
+                            [&#xA0;Default:&#xA0;15000&#xA0;]</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>start.stat.flush.job</command>
+                    </term>
+                    <listitem>
+                        <para> Whether the statistics flush (to database) job is enabled for this node.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.stat.flush.cron</command>
+                    </term>
+                    <listitem>
+                        <para> This is how often accumulated statistics will be flushed out to the database from memory.
+                            [&#xA0;Default:&#xA0;0 0/5 * * * *&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>start.heartbeat.job</command>
+                    </term>
+                    <listitem>
+                        <para> Whether the heartbeat job is enabled for this node. The heartbeat job simply inserts an event
+                            to update the heartbeat_time column on the node table for the current node.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.heartbeat.period.time.ms</command>
+                    </term>
+                    <listitem>
+                        <para> This is how often the heartbeat job runs. Note that this doesn't mean that a heartbeat is
+                            performed this often. See heartbeat.sync.on.push.period.sec to change how often the heartbeat is
+                            sync'd. [&#xA0;Default:&#xA0;1000&#xA0;]</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>heartbeat.sync.on.push.period.sec</command>
+                    </term>
+                    <listitem>
+                        <para> This is the number of seconds between when the sym_node table's heartbeat_time column is
+                            updated by the heartbeat job. [&#xA0;Default:&#xA0;900&#xA0;]</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>start.watchdog.job</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Whether the watchdog job is enabled for this node. The watchdog job monitors child nodes to
+                            detect if they are offline. Refer to
+                            <xref linkend="extensions-offline-server-listener" />
+                            for more information. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.watchdog.period.time.ms</command>
+                    </term>
+                    <listitem>
+                        <para>This is how often the watchdog job will be run if enabled. [&#xA0;Default:&#xA0;3600000&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>schema.version</command>
+                    </term>
+                    <listitem>
+                        <para> This is hook to give the user a mechanism to indicate the schema version that is being
+                            synchronized. This property is only valid if you use the default IRuntimeConfiguration
+                            implementation. [&#xA0;Default:&#xA0;?&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </para>
+    </section>
+    <section id="ap01-runtime">
+        <title>Runtime Parameters</title>
+        <para>
+            Runtime parameters are read periodically from properties files or the database. The following properties are
+            used:
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <command>auto.registration</command>
+                    </term>
+                    <listitem>
+                        <para> If this is true, registration is opened automatically for nodes requesting it.
+                            [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>auto.reload</command>
+                    </term>
+                    <listitem>
+                        <para> If this is true, a reload is automatically sent to nodes when they register.
+                            [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>auto.reload.reverse</command>
+                    </term>
+                    <listitem>
+                        <para> If this is true, a reload is automatically sent from a node after they register.
+                            [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>auto.update.node.values.from.properties</command>
+                    </term>
+                    <listitem>
+                        <para> Update the node row in the database from the local properties during a heartbeat operation.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>http.concurrent.workers.max</command>
+                    </term>
+                    <listitem>
+                        <para> This is the number of HTTP concurrent push/pull requests symmetric will accept. This is
+                            controlled by the NodeConcurrencyFilter. The maximum number of database connections in the
+                            database pool should be set to twice this number.[&#xA0;Default:&#xA0;20&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>offline.node.detection.period.minutes</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            This is the minimum number of minutes that a child node has been offline before taking action.
+                            Refer to
+                            <xref linkend="extensions-offline-server-listener" />
+                            for more information. [&#xA0;Default:&#xA0;120&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>outgoing.batches.peek.ahead.window.after.max.size</command>
+                    </term>
+                    <listitem>
+                        <para> This is the maximum number of events that will be peeked at to look for additional transaction
+                            rows after the max batch size is reached. The more concurrency in your db and the longer the
+                            transaction takes the bigger this value might have to be. [&#xA0;Default:&#xA0;100&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>incoming.batches.skip.duplicates</command>
+                    </term>
+                    <listitem>
+                        <para> Whether or not to skip duplicate batches that are received. A duplicate batch is identified by
+                            the batch ID already existing in the incoming batch table. If this happens, it means an
+                            acknowledgement was lost due to failure or there is a bug. Accepting a duplicate batch in this
+                            case can mean overwriting data with old data. Another cause of duplicates is when the batch
+                            sequence number is reset, which might happen in a lab environment. Skipping a duplicate batch in
+                            this case would prevent data changes from loading. Generally, in a production environment, this
+                            setting should be true. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>num.of.ack.retries</command>
+                    </term>
+                    <listitem>
+                        <para> This is the number of times we will attempt to send an ACK back to the remote node when
+                            pulling and loading data. [&#xA0;Default:&#xA0;5&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>time.between.ack.retries.ms</command>
+                    </term>
+                    <listitem>
+                        <para> This is the amount of time to wait between trying to send an ACK back to the remote node when
+                            pulling and loading data. [&#xA0;Default:&#xA0;5000&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>dataextractor.enabled</command>
+                    </term>
+                    <listitem>
+                        <para> Enable or disable all data extraction at a node for all channels other than the config
+                            channel. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>dataloader.enabled</command>
+                    </term>
+                    <listitem>
+                        <para> Enable or disable all data loading at a node for all channels other than the config channel.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>cluster.server.id</command>
+                    </term>
+                    <listitem>
+                        <para> Set this if you want to give your server a unique name to be used to identify which server did
+                            what action. Typically useful when running in a clustered environment. This is currently used by
+                            the ClusterService when locking for a node. [&#xA0;Default:&#xA0;&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>cluster.lock.timeout.ms</command>
+                    </term>
+                    <listitem>
+                        <para> Time limit of lock before it is considered abandoned and can be broken.
+                            [&#xA0;Default:&#xA0;1800000&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>cluster.lock.enabled</command>
+                    </term>
+                    <listitem>
+                        <para> [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>initial.load.delete.first</command>
+                    </term>
+                    <listitem>
+                        <para> Set this if tables should be purged prior to an initial load.
+                            [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                 <varlistentry>
+                    <term>
+                        <command>initial.load.delete.first.sql</command>
+                    </term>
+                    <listitem>
+                        <para>This is the SQL statement that will be used for purging a table during an initial load,
+                        provided initial.load.delete.first is set to true.
+                            [&#xA0;Default:&#xA0;delete from %s&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>initial.load.create.first</command>
+                    </term>
+                    <listitem>
+                        <para> Set this if tables (and their indexes) should be created prior to an initial load.
+                            [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>http.timeout.ms</command>
+                    </term>
+                    <listitem>
+                        <para> Sets both the connection and read timeout on the internal HttpUrlConnection.
+                            [&#xA0;Default:&#xA0;600000s&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>http.compression</command>
+                    </term>
+                    <listitem>
+                        <para> Whether or not to use compression over HTTP connections. Currently, this setting only affects
+                            the push connection of the source node. Compression on a pull is enabled using a filter in the
+                            web.xml for the PullServlet. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>web.compression.disabled</command>
+                    </term>
+                    <listitem>
+                        <para> Disable compression from occurring on Servlet communication. This property only affects the
+                            outbound HTTP traffic streamed by the PullServlet and PushServlet.
+                            [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>compression.level</command>
+                    </term>
+                    <listitem>
+                        <para> Set the compression level this node will use when compressing synchronization payloads. Valid
+                            values include: NO_COMPRESSION = 0, BEST_SPEED = 1, BEST_COMPRESSION = 9, DEFAULT_COMPRESSION =
+                            -1 [&#xA0;Default:&#xA0;-1&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>compression.strategy</command>
+                    </term>
+                    <listitem>
+                        <para> Set the compression strategy this node will use when compressing synchronization payloads.
+                            Valid values include: FILTERED = 1, HUFFMAN_ONLY = 2, DEFAULT_STRATEGY = 0
+                            [&#xA0;Default:&#xA0;0&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>stream.to.file.enabled</command>
+                    </term>
+                    <listitem>
+                        <para> Save data to the file system before transporting it to the client or loading it to the
+                            database if the number of bytes is past a certain threshold. This allows for better compression
+                            and better use of database and network resources. Statistics in the batch tables will be more
+                            accurate if this is set to true because each timed operation is independent of the others.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>stream.to.file.threshold.bytes</command>
+                    </term>
+                    <listitem>
+                        <para> If stream.to.file.enabled is true, then the threshold number of bytes at which a file will be
+                            written is controlled by this property. Note that for a synchronization the entire payload of the
+                            synchronization will be buffered in memory up to this number (at which point it will be written
+                            and continue to stream to disk) [&#xA0;Default:&#xA0;32767&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.random.max.start.time.ms</command>
+                    </term>
+                    <listitem>
+                        <para> When starting jobs, symmetric attempts to randomize the start time to spread out load. This is
+                            the maximum wait period before starting a job. [&#xA0;Default:&#xA0;10000&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>purge.retention.minutes</command>
+                    </term>
+                    <listitem>
+                        <para> This is the retention for how long synchronization data will be kept in the SymmetricDS
+                            synchronization tables. Note that data will be purged only if the purge job is enabled.
+                            [&#xA0;Default:&#xA0;7200&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </para>
+    </section>
+</appendix>

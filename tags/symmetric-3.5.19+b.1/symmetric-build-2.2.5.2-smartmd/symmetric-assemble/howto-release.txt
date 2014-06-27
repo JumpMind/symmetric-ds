@@ -1,0 +1,3 @@
+Update the release notes in symmetric-server/src/main/deploy
+Check out https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/symmetric
+mvn -DincludeDocs=true -Darguments="-DincludeDocs=true" clean release:prepare release:perform

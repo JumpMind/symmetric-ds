@@ -1,0 +1,24 @@
+ ------
+ Getting Started
+ ------
+ ------
+ Date
+ ------ 
+
+Getting Started
+ 
+ To get a demo of SymmetricDS running, try the
+ {{{guide/html/ch02-getting-started.html}Getting Started}} tutorial.
+
+ The User Guide describes the SymmetricDS library for data synchronization. It is
+ intended for users who want to be quickly familiarized with the software, configure it,
+ and use its features.
+
+ {{{guide/html-single/user-guide.html}User Guide (Single Page HTML)}}
+
+ {{{guide/html/user-guide.html}User Guide (Multi Page HTML)}}
+ 
+ {{{guide/pdf/user-guide.pdf}User Guide (PDF)}}
+ 
+ Please be aware that the User Guide is not yet complete, but is useful already.
+  

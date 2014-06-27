@@ -1,0 +1,1 @@
+drop function sym_transaction_id;

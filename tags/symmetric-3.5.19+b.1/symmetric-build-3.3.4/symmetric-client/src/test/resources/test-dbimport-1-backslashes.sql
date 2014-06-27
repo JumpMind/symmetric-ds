@@ -1,0 +1,1 @@
+insert into test_db_import_1 (id,string_value,string_required_value,char_value,char_required_value,date_value,time_value,boolean_value,integer_value,decimal_value,double_value) values (5,'a\b\\c\\\d','junk','j','j',{d '1989-09-21'},{ts '1997-11-06 08:02:33.324'},0,1,1,1);

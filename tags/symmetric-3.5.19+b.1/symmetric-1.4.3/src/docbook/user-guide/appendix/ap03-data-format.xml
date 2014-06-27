@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<appendix version="5.0" xml:id="xx-03-data-format" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:ns="http://docbook.org/ns/docbook"
+         xmlns:mml="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Data Format</title>
+    <para>
+        The SymmetricDS Data Format is used to stream data from one node to another. The data format
+        reader and writer are pluggable with an initial implementation using a format based on
+        Comma Separated Values (CSV). Each line in the stream is a record with fields separated
+        by commas. String fields are surrounded with double quotes. Double quotes and
+        backslashes used in a string field are escaped with a backslash. Binary values are
+        represented as a string with hex values in "\0xab" format. The absence of any value in
+        the field indicates a null value. Extra spacing is ignored and lines starting with a
+        hash are ignored.
+    </para>
+    <para>
+        The first field of each line gives the directive for the line. The following directives
+        are used:
+
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>version {major},{minor},{patch}</command>
+                </term>
+                <listitem>
+                    <para>Indicates the version of the file format</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>table {table name}</command>
+                </term>
+                <listitem>
+                    <para>Sets the context of which table on which to operate.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>keys {column name...}</command>
+                </term>
+                <listitem>
+                    <para>
+                        Lists the column names that are used as the primary key for the table.
+                        Only needs to occur after the first occurrence of the table.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>columns {column name...}</command>
+                </term>
+                <listitem>
+                    <para>
+                        Lists all the column names (including key columns) of the table. Only needs to occur after the
+                        first occurrence of the table.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>insert {column value...}</command>
+                </term>
+                <listitem>
+                    <para>
+                        Insert into the table with the values that correspond with the columns.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>update {new column value...},{old key value...}</command>
+                </term>
+                <listitem>
+                    <para>
+                        Update the table using the old key values to set the new column values.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>delete {old key value...}</command>
+                </term>
+                <listitem>
+                    <para>Delete from the table using the old key values.</para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+    </para>
+    <example>
+        <title>Data Format Stream</title>
+        <programlisting>
+<![CDATA[version, 1,0,0
+table, item_selling_price
+keys, price_id
+columns, price_id, price, cost
+insert, 55, 0.65, 0.55
+table, item
+keys, item_id 
+columns, item_id, price_id, name
+insert, 110000055, 55, "Soft Drink"
+delete, 110000001
+table, item_selling_price
+update, 55, 0.75, 0.65, 55]]>
+        </programlisting>
+    </example>
+</appendix>

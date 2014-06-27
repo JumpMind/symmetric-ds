@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="pullResourceHandler"
+        class="org.jumpmind.symmetric.transport.handler.PullResourceHandler">
+        <property name="nodeService" ref="nodeService" />
+        <property name="configurationService" ref="configurationService" />
+        <property name="registrationService" ref="registrationService" />
+        <property name="dataExtractorService" ref="dataExtractorService" />
+        <property name="statisticManager" ref="statisticManager"/>
+    </bean>
+
+    <bean id="pushResourceHandler"
+        class="org.jumpmind.symmetric.transport.handler.PushResourceHandler">
+        <property name="dataLoaderService" ref="dataLoaderService" />
+        <property name="statisticManager" ref="statisticManager"/>
+    </bean>
+
+    <bean id="registrationResourceHandler"
+        class="org.jumpmind.symmetric.transport.handler.RegistrationResourceHandler">
+        <property name="registrationService" ref="registrationService" />
+    </bean>
+
+    <bean id="ackResourceHandler"
+        class="org.jumpmind.symmetric.transport.handler.AckResourceHandler">
+        <property name="acknowledgeService" ref="acknowledgeService" />
+    </bean>
+
+    <bean id="alertResourceHandler"
+        class="org.jumpmind.symmetric.transport.handler.AlertResourceHandler">
+        <property name="incomingBatchService"
+            ref="incomingBatchService" />
+        <property name="outgoingBatchService"
+            ref="outgoingBatchService" />
+        <property name="parameterService"
+            ref="parameterService" />
+        <property name="nodeService"
+            ref="nodeService" />                         
+    </bean>
+    
+    <bean id="batchResourceHandler"
+        class="org.jumpmind.symmetric.transport.handler.BatchResourceHandler">
+        <property name="dataExtractorService"
+            ref="dataExtractorService" />
+    </bean>    
+
+    <bean id="authenticationResourceHandler"
+        class="org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler">
+        <property name="nodeService" ref="nodeService" />
+    </bean>
+    
+    <bean id="authenticationFilter"
+        class="org.jumpmind.symmetric.web.AuthenticationFilter">
+        <property name="uriPatterns">
+            <list>
+                <value>$[sym.web.base.servlet.path]/pull/*</value>
+                <value>$[sym.web.base.servlet.path]/push/*</value>
+                <value>$[sym.web.base.servlet.path]/ack/*</value>
+            </list>
+        </property>
+        <property name="transportResourceHandler"
+            ref="authenticationResourceHandler" />
+    </bean>
+    
+    <bean id="inetAddressAuthorizationCompiler"
+          class="org.jumpmind.symmetric.security.inet.InetAddressAuthorizerCompiler"/>
+          
+    <bean id="inetAddressResourceHandler"
+        class="org.jumpmind.symmetric.transport.handler.InetAddressResourceHandler">
+        <property name="addressCompiler" ref="inetAddressAuthorizationCompiler" />
+        <property name="parameterService" ref="parameterService" />
+    </bean>
+    
+    <bean id="inetAddressFilter"
+        class="org.jumpmind.symmetric.web.InetAddressFilter">
+        <property name="uriPatterns">
+            <list>
+                <value>$[sym.web.base.servlet.path]/pull/*</value>
+                <value>$[sym.web.base.servlet.path]/push/*</value>
+                <value>$[sym.web.base.servlet.path]/	/*</value>
+            </list>
+        </property>
+        <property name="transportResourceHandler"
+            ref="inetAddressResourceHandler" />
+    </bean>    
+
+    <bean id="nodeConcurrencyFilter"
+        class="org.jumpmind.symmetric.web.NodeConcurrencyFilter">
+        <property name="concurrentConnectionManager" ref="concurrentConnectionManager"/>
+        <property name="configurationService" ref="configurationService" />
+        <property name="uriPatterns">
+            <list>
+                <value>$[sym.web.base.servlet.path]/pull/*</value>
+                <value>$[sym.web.base.servlet.path]/push/*</value>
+            </list>
+        </property>
+        <property name="reservationUriPattern" value="/push/*"/>
+        <property name="statisticManager" ref="statisticManager"/>
+    </bean>
+
+    <bean id="compressionFilter"
+        class="org.jumpmind.symmetric.web.CompressionFilter">
+        <property name="uriPatterns">
+            <list>
+                <value>$[sym.web.base.servlet.path]/pull/*</value>
+                <value>$[sym.web.base.servlet.path]/push/*</value>
+                <value>$[sym.web.base.servlet.path]/registration/*</value>
+                <value>$[sym.web.base.servlet.path]/batch/*</value>
+            </list>
+        </property>
+        <property name="parameterService" ref="parameterService" />        
+    </bean>
+
+    <bean id="throttleFilter"
+        class="org.jumpmind.symmetric.web.ThrottleFilter">
+        <property name="uriPatterns">
+            <list>
+                <value>$[sym.web.base.servlet.path]/pull/*</value>
+                <value>$[sym.web.base.servlet.path]/push/*</value>
+            </list>
+        </property>
+        <property name="disabled" value="true" />
+    </bean>
+
+    <bean id="pingServlet"
+        class="org.jumpmind.symmetric.web.PingServlet">
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/ping/*" />
+    </bean>
+
+    <bean id="infoServlet"
+        class="org.jumpmind.symmetric.web.InfoServlet">
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/info/*" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="configurationService" ref="configurationService" />
+    </bean>
+    
+    <bean id="pullServlet"
+        class="org.jumpmind.symmetric.web.PullServlet">
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/pull/*" />
+        <property name="transportResourceHandler"
+            ref="pullResourceHandler" />
+    </bean>
+
+    <bean id="pushServlet"
+        class="org.jumpmind.symmetric.web.PushServlet">
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/push/*" />
+        <property name="transportResourceHandler"
+            ref="pushResourceHandler" />
+    </bean>        
+
+    <bean id="registrationServlet"
+        class="org.jumpmind.symmetric.web.RegistrationServlet">
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/registration/*" />
+        <property name="transportResourceHandler"
+            ref="registrationResourceHandler" />
+    </bean>
+
+    <bean id="ackServlet"
+        class="org.jumpmind.symmetric.web.AckServlet">
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/ack/*" />
+        <property name="transportResourceHandler"
+            ref="ackResourceHandler" />
+    </bean>
+
+    <bean id="alertServlet"
+        class="org.jumpmind.symmetric.web.AlertServlet">
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/alert/*" />
+        <property name="transportResourceHandler"
+            ref="alertResourceHandler" />
+    </bean>
+    
+    <bean id="batchServlet"
+        class="org.jumpmind.symmetric.web.BatchServlet">
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/batch/*" />
+        <property name="transportResourceHandler"
+            ref="batchResourceHandler" />
+        <property name="enabled" value="$[sym.web.batch.servlet.enable]"/>            
+    </bean>    
+    
+    <bean id="bandWidthTestServlet"
+        class="org.jumpmind.symmetric.web.BandwidthSamplerServlet">
+        <property name="parameterService" ref="parameterService"/>
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/bandwidth/*" />
+    </bean>
+
+</beans>

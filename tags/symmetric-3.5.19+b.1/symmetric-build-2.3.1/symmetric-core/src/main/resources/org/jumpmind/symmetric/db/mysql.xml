@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" default-lazy-init="true">
+
+    <bean id="mysqlStringTemplate" class="java.lang.String">
+        <constructor-arg>
+            <value>
+                <![CDATA[if($(tableAlias).`$(columnName)` is null,'',concat('"',replace(replace($(tableAlias).`$(columnName)`,'\\','\\\\'),'"','\\"'),'"'))]]>
+            </value>
+        </constructor-arg>
+    </bean>
+
+    <bean id="mysqlDialect" class="org.jumpmind.symmetric.db.mysql.MySqlDbDialect"
+        scope="prototype">
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="defaultSchema" value="$[sym.db.default.schema]" />
+        <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />        
+        <property name="sqlTemplate">
+            <bean class="org.jumpmind.symmetric.db.SqlTemplate">            
+                
+                <property name="functionInstalledSql">
+                    <value>
+                        <![CDATA[select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())]]>
+                    </value>
+                </property>
+                <property name="functionTemplatesToInstall">
+                    <map>
+                        <entry key="transaction_id_post_5_1_23">
+                            <value>
+                                <![CDATA[ 
+                                create function $(functionName)()
+                                  returns varchar(50) NOT DETERMINISTIC READS SQL DATA
+                                  begin
+                                     declare comm_value varchar(50);
+                                     declare comm_cur cursor for select VARIABLE_VALUE from INFORMATION_SCHEMA.SESSION_STATUS where VARIABLE_NAME='COM_COMMIT';
+                                     if @@autocommit = 0 then
+                                          open comm_cur;
+                                          fetch comm_cur into comm_value;
+                                          close comm_cur;
+                                          return concat(concat(connection_id(), '.'), comm_value);
+                                     else
+                                          return null;
+                                     end if;
+                                  end
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="transaction_id_pre_5_1_23">
+                            <value>
+                                <![CDATA[ 
+                                create function $(functionName)()
+                                  returns varchar(50) NOT DETERMINISTIC READS SQL DATA
+                                  begin
+                                     declare comm_name varchar(50);
+                                     declare comm_value varchar(50);
+                                     declare comm_cur cursor for show status like 'Com_commit';
+                                     if @@autocommit = 0 then
+                                          open comm_cur;
+                                          fetch comm_cur into comm_name, comm_value;
+                                          close comm_cur;
+                                          return concat(concat(connection_id(), '.'), comm_value);
+                                     else
+                                          return null;
+                                     end if;
+                                  end
+                                ]]>
+                            </value>
+                        </entry>                        
+                    </map>
+                </property>                
+                <property name="stringColumnTemplate" ref="mysqlStringTemplate" />
+                <property name="clobColumnTemplate" ref="mysqlStringTemplate" />
+                <property name="blobColumnTemplate">
+                    <value>
+                        <![CDATA[if($(tableAlias).`$(columnName)` is null,'',concat('"',hex($(tableAlias).`$(columnName)`),'"'))]]>
+                    </value>
+                </property>
+                <property name="numberColumnTemplate">
+                    <value>
+                        <![CDATA[if($(tableAlias).`$(columnName)` is null,'',concat('"',cast($(tableAlias).`$(columnName)` as char),'"'))]]>
+                    </value>
+                </property>
+                <property name="datetimeColumnTemplate">
+                    <value>
+                        <![CDATA[if($(tableAlias).`$(columnName)` is null,'',concat('"',cast($(tableAlias).`$(columnName)` as char),'"'))]]>
+                    </value>
+                </property>
+                <property name="booleanColumnTemplate">
+                    <value>
+                        <![CDATA[if($(tableAlias).`$(columnName)` is null,'',concat('"',cast($(tableAlias).`$(columnName)` as unsigned),'"'))]]>
+                    </value>
+                </property>
+                <property name="triggerConcatCharacter" value=","/>
+                <property name="newTriggerValue" value="new"/>
+                <property name="oldTriggerValue" value="old"/>
+                <property name="sqlTemplates">
+                    <map>           
+                        <entry key="insertTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create trigger $(triggerName) after insert on $(schemaName)$(tableName)
+                                for each row begin
+                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
+                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                    values(
+                                      '$(targetTableName)',
+                                      'I',
+                                      $(triggerHistoryId),                                      
+                                      concat($(columns)
+                                       ),
+                                      '$(channelName)', $(txIdExpression), @sync_node_disabled,
+                                      $(externalSelect),
+                                      CURRENT_TIMESTAMP
+                                    );
+                                  end if;
+                                end
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="updateTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create trigger $(triggerName) after update on $(schemaName)$(tableName)
+                                for each row begin
+                              	  DECLARE var_row_data mediumtext;
+                                  DECLARE var_old_data mediumtext;
+                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
+                                  	set var_row_data = concat($(columns));
+                                  	set var_old_data = concat($(oldColumns));
+                                  	if $(dataHasChangedCondition) then 
+	                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+	                                    values(
+	                                      '$(targetTableName)',
+	                                      'U',
+	                                      $(triggerHistoryId),
+	                                      concat($(oldKeys)
+	                                       ),
+	                                      var_row_data,
+	                                      var_old_data,
+	                                      '$(channelName)', $(txIdExpression), @sync_node_disabled,
+	                                      $(externalSelect),
+	                                      CURRENT_TIMESTAMP
+	                                    );
+	                                end if;
+                                  end if;
+                                end
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="deleteTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create trigger $(triggerName) after delete on $(schemaName)$(tableName)
+                                for each row begin
+                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
+                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
+                                    values(
+                                      '$(targetTableName)',
+                                      'D',
+                                      $(triggerHistoryId),
+                                      concat($(oldKeys)
+                                       ),
+                                       concat($(oldColumns)
+                                       ),
+                                      '$(channelName)', $(txIdExpression), @sync_node_disabled,
+                                      $(externalSelect),
+                                      CURRENT_TIMESTAMP
+                                    );
+                                  end if;
+                                end
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="initialLoadSqlTemplate">
+                            <value>
+                                <![CDATA[select concat($(columns)) from $(schemaName)$(tableName) t where $(whereClause)]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+</beans>

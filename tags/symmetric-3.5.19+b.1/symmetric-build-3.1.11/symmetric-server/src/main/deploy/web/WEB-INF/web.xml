@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5">
+
+    <display-name>SymmetricDS</display-name>
+
+    <!-- To turn on multi server mode in a war deployment uncomment this.  The engines directory
+         is controlled by -Dsymmetric.engines.dir=/path/to/dir.  The default value is ../engines
+    <context-param>
+        <param-name>multiServerMode</param-name>
+        <param-value>true</param-value>
+    </context-param>
+     -->
+
+    <context-param>
+        <param-name>deploymentType</param-name>
+        <param-value>server</param-value>
+    </context-param>
+    
+    <context-param>
+      <param-name>contextClass</param-name>
+      <param-value>
+         org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+      </param-value>
+   </context-param>
+   
+   <context-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>org.jumpmind.symmetric.web.rest</param-value>
+   </context-param>
+   
+    <listener>
+        <listener-class>org.jumpmind.symmetric.web.SymmetricContextListener</listener-class>        
+    </listener>
+
+   <listener>
+      <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+   </listener>    
+      
+    <servlet>
+        <servlet-name>SymmetricServlet</servlet-name>
+        <servlet-class>org.jumpmind.symmetric.web.SymmetricServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>        
+    </servlet>
+    
+   <servlet>
+      <servlet-name>rest</servlet-name>
+      <servlet-class>
+         org.springframework.web.servlet.DispatcherServlet
+      </servlet-class>
+      <init-param>
+         <param-name>contextClass</param-name>
+         <param-value>
+            org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+         </param-value>
+      </init-param>
+      <init-param>
+         <param-name>contextConfigLocation</param-name>
+         <param-value>org.jumpmind.symmetric.web.rest</param-value>
+      </init-param>
+      <load-on-startup>1</load-on-startup>
+   </servlet>
+
+    <servlet-mapping>
+        <servlet-name>SymmetricServlet</servlet-name>
+        <url-pattern>/sync/*</url-pattern>        
+    </servlet-mapping>
+    
+   <servlet-mapping>
+      <servlet-name>rest</servlet-name>
+      <url-pattern>/api/*</url-pattern>
+   </servlet-mapping>    
+    
+
+</web-app>

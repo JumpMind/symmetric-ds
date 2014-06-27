@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="ch07-administration" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:ns="http://docbook.org/ns/docbook"
+         xmlns:mml="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Administration</title>
+    <section>
+        <title>Rebuilding Triggers</title>
+        <para>
+            SymmetricDS examines the current configuration, corresponding database triggers,
+            and the underlying tables to determine if database triggers need created or updated.
+            The change activity is recorded on the Trigger Hist table with a reason for the
+            change.  The following reasons for a change are possible:
+
+            <itemizedlist>
+                <listitem>
+                    <para>N - New trigger that has not been created before</para>
+                </listitem>
+                <listitem>
+                    <para>S - Schema changes in the table were detected</para>
+                </listitem>
+                <listitem>
+                    <para>C - Configuration changes in Trigger</para>
+                </listitem>
+                <listitem>
+                    <para>T - Trigger was missing</para>
+                </listitem>
+            </itemizedlist>
+
+            A configuration entry in Trigger without any history in Trigger Hist results in a new
+            trigger being created (N).  The Trigger Hist stores a hash of the underlying table, so
+            any alteration to the table causes the trigger to be rebuilt (S).  When the 
+            last_updated_time is changed on the Trigger entry, the configuration change causes
+            the trigger to be rebuilt (C).  If an entry in Trigger Hist is missing the
+            corresponding database trigger, the trigger is created (T).
+        </para>
+        <para>
+            The process of examining triggers and rebuilding them is automatically run during startup and
+            each night by the SyncTriggersJob.  The user can also manually run the process at any time 
+            by invoking the syncTriggers() method over JMX.  The SyncTriggersJob is enabled by default 
+            to run at 15 minutes past midnight.  If SymmetricDS is being run from a collection of servers
+            (multiple instances of the same Node running against the same database), then locking
+            should be enable to prevent database contention.  The following runtime properties
+            control the behavior of the process.
+
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <command>start.synctriggers.job</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Whether the sync triggers job is enabled for this node.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.synctriggers.aftermidnight.minutes</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If scheduled, the sync triggers job will run nightly. This is how long after midnight
+                            that job will run. [&#xA0;Default:&#xA0;15&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>           
+                <varlistentry>
+                    <term>
+                        <command>cluster.lock.during.sync.triggers</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Indicate if the sync triggers job is clustered and requires a lock before running.
+                            [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+        </para>
+    </section>
+    <section>
+        <title>Opening Registration</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Enabling and Disabling Synchronization</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Viewing Batches</title>
+        <para></para>
+    </section>
+    <section>
+        <title>JMX</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Statistics</title>
+        <para></para>
+    </section>
+    
+</chapter>

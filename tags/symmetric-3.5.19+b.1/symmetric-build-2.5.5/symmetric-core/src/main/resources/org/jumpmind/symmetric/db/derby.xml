@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" default-lazy-init="true">
+
+    <bean id="derbyDialect" class="org.jumpmind.symmetric.db.derby.DerbyDbDialect"
+        scope="prototype">
+        <property name="primaryKeyViolationSqlStates" value="23505"/>
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="defaultSchema" value="$[sym.db.default.schema]" />
+        <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />
+        <property name="sqlTemplate">
+            <bean class="org.jumpmind.symmetric.db.SqlTemplate">
+                
+                <property name="functionInstalledSql">
+                    <value>
+                        <![CDATA[select count(*) from sys.sysaliases where alias = upper('$(functionName)')]]>
+                    </value>
+                </property>
+                <property name="functionTemplatesToInstall">
+                    <map>
+                        <entry key="escape">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION $(functionName)(STR VARCHAR(10000)) RETURNS
+                                VARCHAR(10000) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.escape'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="transaction_id">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION $(functionName)() RETURNS
+                                varchar(100) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.getTransactionId'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="sync_triggers_disabled">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION $(functionName)() RETURNS
+                                integer PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.isSyncDisabled'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="sync_triggers_set_disabled">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION $(functionName)(state integer) RETURNS
+                                integer PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.setSyncDisabled'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="sync_node_set_disabled">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION $(functionName)(nodeId varchar(50)) RETURNS
+                                varchar(50) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.setSyncNodeDisabled'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="clob_to_string">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION $(functionName)(columnName varchar(50),
+                                tableName varchar(50), whereClause varchar(8000)) RETURNS
+                                varchar(32672) PARAMETER STYLE JAVA READS SQL DATA LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.clobToString'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="blob_to_string">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION $(functionName)(columnName varchar(50),
+                                tableName varchar(50), whereClause varchar(8000)) RETURNS
+                                varchar(32672) PARAMETER STYLE JAVA READS SQL DATA LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.blobToString'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="insert_data">
+                            <value>
+                                <![CDATA[ 
+                                CREATE PROCEDURE $(functionName)(schemaName varchar(50), prefixName varchar(50),
+                                tableName varchar(50), channelName varchar(50), dmlType varchar(1), triggerHistId int,
+                                transactionId varchar(1000), externalData varchar(50), pkData varchar(32672), rowData varchar(32672), oldRowData varchar(32672))
+                                PARAMETER STYLE JAVA LANGUAGE JAVA MODIFIES SQL DATA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.insertData'
+                                ]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+                <property name="emptyColumnTemplate" value="''"/>
+                <property name="stringColumnTemplate" >
+                    <value>
+                        <![CDATA[$[sym.sync.table.prefix]_escape($(tableAlias)."$(columnName)") ]]>
+                    </value>
+                </property>
+                <property name="clobColumnTemplate">
+                    <value>
+                        <![CDATA[$[sym.sync.table.prefix]_clob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )]]>
+                    </value>
+                </property>
+                <property name="blobColumnTemplate">
+                    <value>
+                        <![CDATA[$[sym.sync.table.prefix]_blob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )]]>
+                    </value>
+                </property>
+                <property name="numberColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"' || rtrim(char($(tableAlias)."$(columnName)")) || '"' end ]]>
+                    </value>
+                </property>
+                <property name="datetimeColumnTemplate" >
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || rtrim(char($(tableAlias)."$(columnName)")) || '"' end ]]>
+                    </value>
+                </property>
+                <property name="triggerConcatCharacter" value="||"/>
+                <property name="newTriggerValue" value="new"/>
+                <property name="oldTriggerValue" value="old"/>
+                <property name="sqlTemplates">
+                    <map>
+                        <entry key="insertTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                CREATE TRIGGER $(triggerName) 
+                                AFTER INSERT ON $(schemaName)$(tableName) 
+                                REFERENCING NEW AS NEW
+                                FOR EACH ROW MODE DB2SQL
+                                call $[sym.sync.table.prefix]_insert_data(
+                                  '$(defaultSchema)', '$[sym.sync.table.prefix]', '$(targetTableName)',
+                                  '$(channelName)', 'I', $(triggerHistoryId), 
+                                  $(txIdExpression),
+                                  $(externalSelect),                                   
+                                  null,
+                                  case when $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)
+                                  then $(columns)
+                                  else null end,
+                                  null)
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="updateTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                CREATE TRIGGER $(triggerName)
+                                AFTER UPDATE ON $(schemaName)$(tableName) 
+                                REFERENCING OLD AS OLD NEW AS NEW
+                                FOR EACH ROW MODE DB2SQL 
+                                call $[sym.sync.table.prefix]_insert_data(
+                                  '$(defaultSchema)', '$[sym.sync.table.prefix]', '$(targetTableName)',
+                                  '$(channelName)', 'U', $(triggerHistoryId), 
+                                  $(txIdExpression),
+                                  $(externalSelect),
+                                  $(oldKeys),
+                                  case when $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)
+                                  then $(columns)
+                                  else null end,
+                                  $(oldColumns))
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="deleteTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                CREATE TRIGGER $(triggerName) 
+                                AFTER DELETE ON $(schemaName)$(tableName) 
+                                REFERENCING OLD AS OLD
+                                FOR EACH ROW MODE DB2SQL 
+                                call $[sym.sync.table.prefix]_insert_data(
+                                  '$(defaultSchema)', '$[sym.sync.table.prefix]', '$(targetTableName)',
+                                  '$(channelName)', 'D', $(triggerHistoryId), 
+                                  $(txIdExpression),
+                                  $(externalSelect),                                  
+                                  case when $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)
+                                  then $(oldKeys)
+                                  else null end, null, $(oldColumns))
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="initialLoadSqlTemplate">
+                            <value>
+                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t  where $(whereClause)]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+</beans>

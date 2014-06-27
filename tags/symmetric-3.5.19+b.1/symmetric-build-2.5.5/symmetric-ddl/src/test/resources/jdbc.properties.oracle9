@@ -1,0 +1,49 @@
+# JDBC properties for Oracle9
+
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+# 
+#   http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Note: Properties starting with "datasource." will be fed into the datasource instance of the
+# class configured via the datasource.class property
+
+# Use this property to choose the Oracle9 platform (instead of the Oracle8 default one)
+ddlutils.platform=Oracle9
+
+#
+# Using the plain DBCP datasource
+#
+
+#datasource.class=org.apache.commons.dbcp.BasicDataSource
+#datasource.driverClassName=oracle.jdbc.driver.OracleDriver
+#datasource.url=jdbc:oracle:thin:@localhost:1521:test
+#datasource.username=ddlutils
+#datasource.password=ddlutils
+
+#
+# Or the Oracle datasource
+#
+
+datasource.class=oracle.jdbc.pool.OracleDataSource
+datasource.URL=jdbc:oracle:thin:@localhost:1521:test
+datasource.user=ddlutils
+datasource.password=ddlutils
+datasource.connectionCachingEnabled=true
+
+
+# For oracle, we should limit the schema to the one of the user
+# Note that Oracle requires this to be uppercase, even when using delimited identifiers
+ddlutils.schema=DDLUTILS

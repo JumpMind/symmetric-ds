@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
+  default-lazy-init="true">
+
+  <util:map id="rootConfigChannelInitialLoadSelect">
+    <entry key="${sync.table.prefix}_node_group">
+      <value>
+        node_group_id = '$(groupId)' or node_group_id in (select source_node_group_id from
+        ${sync.table.prefix}_node_group_link where target_node_group_id = '$(groupId)') or
+        node_group_id in (select target_node_group_id from ${sync.table.prefix}_node_group_link
+        where source_node_group_id = '$(groupId)')
+      </value>
+    </entry>
+    <entry key="${sync.table.prefix}_node_group_link">
+      <value>source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)'</value>
+    </entry>
+    <entry key="${sync.table.prefix}_node">
+      <value>
+        node_id = '$(nodeId)' or node_group_id in (select source_node_group_id from
+        ${sync.table.prefix}_node_group_link where target_node_group_id = '$(groupId)') or
+        node_group_id in (select target_node_group_id from ${sync.table.prefix}_node_group_link
+        where source_node_group_id = '$(groupId)')
+      </value>
+    </entry>
+    <entry key="${sync.table.prefix}_node_security">
+      <value>
+        node_id = '$(nodeId)' or node_id in (select s.node_id from ${sync.table.prefix}_node s inner
+        join ${sync.table.prefix}_node_group_link l on s.node_group_id = l.source_node_group_id
+        where l.target_node_group_id = '$(groupId)') or node_id in (select s.node_id from
+        ${sync.table.prefix}_node s inner join ${sync.table.prefix}_node_group_link l on
+        s.node_group_id = l.target_node_group_id where l.source_node_group_id = '$(groupId)')
+      </value>
+    </entry>
+    <entry key="${sync.table.prefix}_parameter">
+      <value>(external_id='ALL' and node_group_id = 'ALL') or (external_id='ALL' and node_group_id = '$(groupId)') or (node_group_id='ALL' and external_id='$(externalId)')</value>
+    </entry>
+    <entry key="${sync.table.prefix}_channel">
+      <value>
+        channel_id in (select channel_id from ${sync.table.prefix}_trigger where
+        source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)')
+        or channel_id = 'reload'
+      </value>
+    </entry>
+    <entry key="${sync.table.prefix}_node_channel_ctl">
+      <value>node_id = '$(nodeId)'</value>
+    </entry>
+    <entry key="${sync.table.prefix}_trigger">
+      <value>source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)'</value>
+    </entry>
+  </util:map>
+
+  <util:map id="configurationServiceSql">
+    <entry key="inactivateTriggerHistorySql">
+      <value>
+        update ${sync.table.prefix}_trigger_hist set inactive_time = current_timestamp where
+        trigger_hist_id=?
+      </value>
+    </entry>
+    <entry key="selectDataEventActionsByIdSql">
+      <value>
+        select data_event_action from ${sync.table.prefix}_node_group_link where
+        source_node_group_id = ? and target_node_group_id = ?
+      </value>
+    </entry>
+    <entry key="selectGroupTriggersSql">
+      <value>
+        select * from ${sync.table.prefix}_trigger where source_node_group_id = ? order by
+        channel_id
+      </value>
+    </entry>
+    <entry key="activeTriggersForSourceNodeGroupSql">
+      <value>
+        select * from ${sync.table.prefix}_trigger where source_node_group_id = ? and inactive_time
+        is null
+      </value>
+    </entry>
+    <entry key="activeTriggersForReloadSql">
+      <value>
+        select * from ${sync.table.prefix}_trigger where source_node_group_id = ? and
+        target_node_group_id = ? and channel_id != ? and inactive_time is null order by
+        initial_load_order
+      </value>
+    </entry>
+    <entry key="inactiveTriggersForSourceNodeGroupSql">
+      <value>
+        select * from ${sync.table.prefix}_trigger t where t.source_node_group_id =
+        ? and t.inactive_time is not null
+      </value>
+    </entry>
+    <entry key="groupsLinksSql">
+      <value>
+        select source_node_group_id, target_node_group_id, data_event_action from
+        ${sync.table.prefix}_node_group_link
+      </value>
+    </entry>
+    <entry key="groupsLinksForSql">
+      <value>
+        select source_node_group_id, target_node_group_id, data_event_action from
+        ${sync.table.prefix}_node_group_link where source_node_group_id = ?
+      </value>
+    </entry>
+    <entry key="selectChannelsSql">
+      <value>
+        select c.channel_id, n.node_id, nc.ignore_enabled, nc.suspend_enabled, c.processing_order,
+        c.max_batch_size, c.enabled, c.max_batch_to_send from ${sync.table.prefix}_channel c inner
+        join ${sync.table.prefix}_node_identity n on 1 = 1 left outer join
+        ${sync.table.prefix}_node_channel_ctl nc on c.channel_id = nc.channel_id and n.node_id =
+        nc.node_id order by c.processing_order asc, c.channel_id
+      </value>
+    </entry>
+    <entry key="insertChannelSql">
+      <value>
+        insert into ${sync.table.prefix}_channel (channel_id, processing_order, max_batch_size,
+        max_batch_to_send, enabled, description) values (?, ?, ?, ?, ?, null)
+      </value>
+    </entry>
+    <entry key="updateChannelSql">
+      <value>
+        update ${sync.table.prefix}_channel set processing_order=?, max_batch_size=?,
+        max_batch_to_send=?, enabled=? where channel_id=?
+      </value>
+    </entry>
+    <entry key="deleteChannelSql">
+      <value>delete from ${sync.table.prefix}_channel where channel_id=?</value>
+    </entry>
+    <entry key="allTriggerHistSql">
+      <value>
+        select
+        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name
+        from ${sync.table.prefix}_trigger_hist
+      </value>
+    </entry>
+    <entry key="latestTriggerHistSql">
+      <value>
+        select
+        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name
+        from ${sync.table.prefix}_trigger_hist where trigger_hist_id = (select max(trigger_hist_id)
+        from ${sync.table.prefix}_trigger_hist where trigger_id=?)
+      </value>
+    </entry>
+    <entry key="triggerHistSql">
+      <value>
+        select
+        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name
+        from ${sync.table.prefix}_trigger_hist where trigger_hist_id = ?
+      </value>
+    </entry>
+    <entry key="insertTriggerHistorySql">
+      <value>
+        insert into ${sync.table.prefix}_trigger_hist
+        (trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name)
+        values(?,?,?,?,?,?,?,?,?,?,?,?)
+      </value>
+    </entry>
+    <entry key="insertTriggerSql">
+      <value>
+        insert into ${sync.table.prefix}_trigger
+        (source_catalog_name,source_schema_name,source_table_name,target_schema_name,target_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_incoming_batch,name_for_update_trigger,name_for_insert_trigger,name_for_delete_trigger,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,excluded_column_names,initial_load_order,create_time,inactive_time,last_updated_by,last_updated_time)
+        values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      </value>
+    </entry>    
+    <entry key="selectTriggerSql">
+      <value>
+        select * from ${sync.table.prefix}_trigger where source_table_name = ? and
+        source_node_group_id = ?
+      </value>
+    </entry>
+    <entry key="selectTriggerTargetSql">
+      <value>
+        select * from ${sync.table.prefix}_trigger where source_table_name = ? and
+        target_node_group_id = ? and channel_id = ? and source_node_group_id = ?
+      </value>
+    </entry>
+    <entry key="selectTriggerByIdSql">
+      <value>select * from ${sync.table.prefix}_trigger where trigger_id = ?</value>
+    </entry>
+  </util:map>
+
+</beans>

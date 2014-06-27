@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+    default-lazy-init="true">
+
+
+    <!-- The list of properties file names need to be singletons because we rely on System properties 
+        which can be swapped out at runtime. -->
+    <bean id="symmetricPropertiesFiles" class="org.jumpmind.symmetric.config.SymmetricPropertiesFiles">
+        <constructor-arg>
+            <list>
+                <value>classpath:/symmetric-default.properties</value>
+                <value>classpath:/symmetric-console-default.properties</value>                
+                <value>file:../conf/symmetric.properties</value>
+                <value>classpath:/symmetric.properties</value>
+                <value>classpath:/symmetric-override.properties</value>
+                <value>file:${user.home}/.symmetric/symmetric-override.properties</value>
+                <!-- dynamic properties files -->
+                <!-- database configuration -->
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="symmetricProperties" class="org.jumpmind.symmetric.config.PropertiesFactoryBean">
+        <property name="singleton" value="false"/>
+        <property name="ignoreResourceNotFound" value="true" />        
+        <property name="locations" ref="symmetricPropertiesFiles"/>
+    </bean>
+       
+    <bean id="propertyPlaceholderConfigurer"
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="placeholderPrefix" value="$[sym."/>
+        <property name="placeholderSuffix" value="]"/>
+        <property name="properties" ref="symmetricProperties" />
+        <!-- This means that any system properties set on the command line will take precedence over those set locally or in a properties file. -->
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+    </bean>  
+
+</beans>

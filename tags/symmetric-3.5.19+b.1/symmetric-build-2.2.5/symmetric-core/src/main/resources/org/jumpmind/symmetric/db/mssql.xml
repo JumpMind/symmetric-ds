@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" default-lazy-init="true">
+
+    <bean id="msSqlStringTemplate" class="java.lang.String">
+        <constructor-arg>
+            <value>
+                <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' + replace(replace(convert(varchar(max),$(tableAlias)."$(columnName)") $(masterCollation),'\','\\'),'"','\"') + '"' end ]]>
+            </value>
+        </constructor-arg>
+    </bean>
+
+    <bean id="msSqlDialect" class="org.jumpmind.symmetric.db.mssql.MsSqlDbDialect"
+        scope="prototype">
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="defaultSchema" value="$[sym.db.default.schema]" />
+        <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />
+        <property name="sqlTemplate">
+            <bean class="org.jumpmind.symmetric.db.SqlTemplate">
+                
+                <property name="functionInstalledSql">
+                    <value>
+                        <![CDATA[select count(object_name(object_id('$(functionName)')))]]>
+                    </value>
+                </property>
+                <property name="functionTemplatesToInstall">
+                    <map>
+                        <entry key="base64_encode">
+                            <value>
+                                <![CDATA[ 
+                                create function dbo.$(functionName)(@data varbinary(max)) returns varchar(max)
+                                  with schemabinding, returns null on null input
+                                  begin
+                                    return ( select [text()] = @data for xml path('') )
+                                  end                                
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="triggers_disabled">
+                            <value>
+                                <![CDATA[
+                                create function dbo.$(functionName)() returns smallint
+                                begin
+                                  declare @disabled varchar(1);
+                                  set @disabled = coalesce(replace(substring(cast(context_info() as varchar), 1, 1), 0x0, ''), '');
+                                  if @disabled is null or @disabled != '1'
+                                    return 0;
+                                  return 1;
+                                end
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="node_disabled">
+                            <value>
+                                <![CDATA[
+                                create function dbo.$(functionName)() returns varchar(50)
+                                begin
+                                  declare @node varchar(50);
+                                  set @node = coalesce(replace(substring(cast(context_info() as varchar), 2, 50), 0x0, ''), '');
+                                  return @node;
+                                end
+                                ]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+                <property name="stringColumnTemplate" ref="msSqlStringTemplate" />
+                <!-- TODO, We may have to make callbacks to the $(origTableAlias)inal table because SQL Server does not allow access to binary or clob data from a trigger -->
+                <property name="clobColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + replace(replace(cast($(origTableAlias)."$(columnName)" as varchar(max)),'\','\\'),'"','\"') + '"' end ]]>
+                    </value>
+                </property>
+                <property name="emptyColumnTemplate">
+                    <value>
+                        <![CDATA[ '']]>
+                    </value>
+                </property>                
+                <property name="blobColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + replace(replace($(defaultCatalog)dbo.$[sym.sync.table.prefix]_base64_encode(CONVERT(VARBINARY(max), $(origTableAlias)."$(columnName)")),'\','\\'),'"','\"') + '"' end ]]>
+                    </value>
+                </property>
+                <property name="numberColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else ('"' + cast($(tableAlias)."$(columnName)" as varchar) + '"') end]]>
+                    </value>
+                </property>
+                <!-- TODO -->
+                <property name="datetimeColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else ('"' + convert(varchar,$(tableAlias)."$(columnName)",121) + '"') end ]]>
+                    </value>
+                </property>
+                <property name="booleanColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' when $(tableAlias)."$(columnName)" = 1 then '"1"' else '"0"' end ]]>
+                    </value>
+                </property>
+                <property name="triggerConcatCharacter" value="+" />
+                <property name="newTriggerValue" value="inserted" />
+                <property name="oldTriggerValue" value="deleted" />
+                <property name="sqlTemplates">
+                    <map>
+                        <entry key="insertTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create trigger $(triggerName) on $(schemaName)"$(tableName)" after insert as
+                                begin
+                                  set nocount on
+                                  declare @TransactionId varchar(1000)
+                                  declare @DataRow varchar(max)
+                                  $(declareNewKeyVariables)
+                                  if (@@TRANCOUNT > 0) begin
+                                    execute sp_getbindtoken @TransactionId output;
+                                  end
+                                  if ($(syncOnIncomingBatchCondition)) begin
+                                    declare DataCursor cursor local for
+                                    $(if:containsBlobClobColumns)
+                                       select $(columns), $(newKeyNames) from inserted inner join $(schemaName)"$(tableName)" $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)
+                                    $(else:containsBlobClobColumns)
+                                       select $(columns), $(newKeyNames) from inserted where $(syncOnInsertCondition)                                    
+                                    $(end:containsBlobClobColumns)                                    
+                                       open DataCursor
+                                       fetch next from DataCursor into @DataRow, $(newKeyVariables)
+                                       while @@FETCH_STATUS = 0 begin
+                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) 
+                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), $(externalSelect), current_timestamp)                                   
+                                           fetch next from DataCursor into @DataRow, $(newKeyVariables)
+                                       end
+                                       close DataCursor
+                                       deallocate DataCursor
+                                  end
+                                  set nocount off
+                                end                                
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="updateTriggerTemplate">
+                            <value>
+                                <![CDATA[                                
+                                create trigger $(triggerName) on $(schemaName)"$(tableName)" after update as
+                                begin
+                                  set nocount on
+                                  declare @TransactionId varchar(1000)
+                                  declare @DataRow varchar(max)
+                                  declare @OldPk varchar(2000)
+                                  declare @OldDataRow varchar(max)
+                                  $(declareOldKeyVariables)
+                                  $(declareNewKeyVariables)
+                                  if (@@TRANCOUNT > 0) begin
+                                    execute sp_getbindtoken @TransactionId output;
+                                  end
+                                  if ($(syncOnIncomingBatchCondition)) begin
+                                    declare DataCursor cursor local for
+                                    $(if:containsBlobClobColumns)
+                                       select $(columns), $(oldKeys), $(oldColumns), $(oldKeyNames), $(newKeyNames) from inserted inner join $(schemaName)"$(tableName)" $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)
+                                    $(else:containsBlobClobColumns)
+                                       select $(columns), $(oldKeys), $(oldColumns), $(oldKeyNames), $(newKeyNames) from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)                                    
+                                    $(end:containsBlobClobColumns)
+                                       open DataCursor
+                                       fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow, $(oldKeyVariables), $(newKeyVariables)
+                                       while @@FETCH_STATUS = 0 begin                                   
+                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) 
+                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), $(externalSelect), current_timestamp)
+                                         fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow, $(oldKeyVariables), $(newKeyVariables)
+                                       end
+                                       close DataCursor
+                                       deallocate DataCursor
+                                    end
+                                    set nocount off
+                                  end                                  
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="deleteTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                create trigger $(triggerName) on $(schemaName)"$(tableName)" after delete as
+                                begin
+                                  set nocount on
+                                  declare @TransactionId varchar(1000)
+                                  declare @OldPk varchar(2000)
+                                  declare @OldDataRow varchar(max)
+                                  $(declareOldKeyVariables)
+                                  if (@@TRANCOUNT > 0) begin
+                                    execute sp_getbindtoken @TransactionId output;
+                                  end
+                                  if ($(syncOnIncomingBatchCondition)) begin
+                                    declare DataCursor cursor local for
+                                      select $(oldKeys), $(oldColumns), $(oldKeyNames) from deleted where $(syncOnDeleteCondition)
+                                      open DataCursor
+                                       fetch next from DataCursor into @OldPk, @OldDataRow, $(oldKeyVariables)
+                                       while @@FETCH_STATUS = 0 begin 
+                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) 
+                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), $(externalSelect), current_timestamp)
+                                         fetch next from DataCursor into @OldPk,@OldDataRow, $(oldKeyVariables)
+                                       end
+                                       close DataCursor
+                                       deallocate DataCursor
+                                  end
+                                  set nocount off
+                                end                                   
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="initialLoadSqlTemplate">
+                            <value>
+                                <![CDATA[select $(columns) from $(schemaName)"$(tableName)" t where $(whereClause)]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+</beans>

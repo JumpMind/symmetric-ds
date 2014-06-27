@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+    <bean id="mbeanserver" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+        <property name="locateExistingServerIfPossible" value="true" />
+        <property name="defaultDomain" value="org.jumpmind.symmetric.${engine.name}" />
+    </bean>
+
+    <bean id="domainServerExporter" class="org.springframework.jmx.export.MBeanExporter">
+        <property name="server" ref="mbeanserver" />
+        <property name="assembler" ref="assembler" />
+        <property name="beans">
+            <map>
+                <entry key=":name=Node" value-ref="nodeManagementService" />
+                <entry key=":name=Incoming" value-ref="incomingManagementService" />
+                <entry key=":name=Outgoing" value-ref="outgoingManagementService" />
+                <entry key=":name=Parameters" value-ref="parameterManagementService" />
+                <entry key=":name=Notifications" value-ref="notificationService" />
+            </map>
+        </property>
+        <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />
+    </bean>
+
+    <bean id="defaultServerExporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="true">
+        <property name="assembler" ref="assembler" />
+        <property name="beans">
+            <map>
+                <entry key="Symmetric:name=${engine.name}" value-ref="managementService" />
+                <entry key="org.jumpmind.symmetric.${engine.name}:name=Node" value-ref="nodeManagementService" />
+                <entry key="org.jumpmind.symmetric.${engine.name}:name=Incoming" value-ref="incomingManagementService" />
+                <entry key="org.jumpmind.symmetric.${engine.name}:name=Outgoing" value-ref="outgoingManagementService" />
+                <entry key="org.jumpmind.symmetric.${engine.name}:name=Parameters"
+                    value-ref="parameterManagementService" />
+
+            </map>
+        </property>
+        <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />
+    </bean>
+
+    <bean id="jmxAttributeSource" class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource" />
+
+    <!-- will create management interface using annotation metadata -->
+    <bean id="assembler" class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
+        <property name="attributeSource" ref="jmxAttributeSource" />
+    </bean>
+
+    <bean id="managementService" class="org.jumpmind.symmetric.service.jmx.SymmetricManagementService"
+        lazy-init="true">
+        <property name="parameterService" ref="parameterService" />
+        <property name="bootstrapService" ref="bootstrapService" />
+        <property name="purgeService" ref="purgeService" />
+        <property name="dataService" ref="dataService" />
+        <property name="clusterService" ref="clusterService" />
+        <property name="registrationService" ref="registrationService" />
+        <property name="dataSource" ref="dataSource" />
+        <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="dataExtractorService" ref="dataExtractorService" />
+    </bean>
+
+    <bean id="nodeManagementService" class="org.jumpmind.symmetric.service.jmx.NodeManagementService">
+        <property name="bootstrapService" ref="bootstrapService" />
+        <property name="purgeService" ref="purgeService" />
+        <property name="dataService" ref="dataService" />
+        <property name="clusterService" ref="clusterService" />
+        <property name="registrationService" ref="registrationService" />
+        <property name="dataSource" ref="dataSource" />
+        <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="dataExtractorService" ref="dataExtractorService" />
+        <property name="statisticManager" ref="statisticManager" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="concurrentConnectionManager" ref="concurrentConnectionManager" />
+    </bean>
+
+    <bean id="incomingManagementService" class="org.jumpmind.symmetric.service.jmx.IncomingManagementService">
+        <property name="statisticManager" ref="statisticManager" />
+    </bean>
+
+    <bean id="notificationService" class="org.jumpmind.symmetric.service.jmx.NotificationService"></bean>
+
+
+    <bean id="outgoingManagementService" class="org.jumpmind.symmetric.service.jmx.OutgoingManagementService">
+        <property name="statisticManager" ref="statisticManager" />
+        <property name="dataExtractorService" ref="dataExtractorService" />        
+    </bean>
+
+    <bean id="parameterManagementService" class="org.jumpmind.symmetric.service.jmx.ParameterManagementService">
+        <property name="parameterService" ref="parameterService" />
+    </bean>
+
+</beans>

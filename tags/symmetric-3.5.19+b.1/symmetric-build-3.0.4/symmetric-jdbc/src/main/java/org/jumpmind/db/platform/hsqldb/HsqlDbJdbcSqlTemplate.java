@@ -1,0 +1,28 @@
+package org.jumpmind.db.platform.hsqldb;
+
+import javax.sql.DataSource;
+
+import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.springframework.jdbc.support.lob.LobHandler;
+
+public class HsqlDbJdbcSqlTemplate extends JdbcSqlTemplate {
+
+    public HsqlDbJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
+            LobHandler lobHandler) {
+        super(dataSource, settings, lobHandler);
+        primaryKeyViolationSqlStates = new String[] {"23505"};        
+    }
+    
+    @Override
+    public String getSelectLastInsertIdSql(String sequenceName) {
+        return "call IDENTITY()";
+    }
+    
+
+    @Override
+    protected boolean allowsNullForIdentityColumn() {
+        return false;
+    }
+    
+}

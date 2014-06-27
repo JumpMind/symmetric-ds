@@ -1,0 +1,28 @@
+<html>
+<body>
+<h1>Release Notes - SymmetricDS - Version 2.0.10</h1>
+        
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-334'>SYMMETRICDS-334</a>] -         There is a window of time on Oracle RAC when using oracle.use.transaction.view=true when data may be skipped
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-337'>SYMMETRICDS-337</a>] -         setQueryTimeout is not supported on newer versions of Postgres JDBC drivers.  Add support for the newer drivers.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-340'>SYMMETRICDS-340</a>] -         Postgres JDBC driver packaged with SymmetricDS has concurrency issues with PreparedStatements
+</li>
+</ul>
+    
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-332'>SYMMETRICDS-332</a>] -         Log a better error message when the data loader fails to insert and updates 0 rows on the fallback update.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-335'>SYMMETRICDS-335</a>] -         Add a property to allow the transactionality for inserting reload events to be turned on/off.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-336'>SYMMETRICDS-336</a>] -         Make gap detection support auto_increment_increment/auto_increment_offset for MySQL
+</li>
+</ul>
+                    
+</body>
+</html>

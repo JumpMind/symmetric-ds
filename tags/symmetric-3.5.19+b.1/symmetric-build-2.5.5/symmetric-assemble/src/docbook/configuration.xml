@@ -1,0 +1,1147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="configuration" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:ns="http://docbook.org/ns/docbook"
+         xmlns:mml="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Configuration</title>
+    <para>
+    <xref linkend="planning" xrefstyle="select: label"/> introduced numerous concepts and the analysis and design needed to create an implementation of SymmetricDS.
+    This chapter re-visits each analysis step and documents how to turn a SymmetricDS design into reality through configuration of
+    the various SymmetricDS tables.  In addition, several advanced configuration options, not presented previously, will also be covered.
+     </para>
+    
+    <section id="configuration-node-properties">
+    <title>Node Properties</title>
+    <para>
+        To get a SymmetricDS node running, it needs to be given an identity and it needs to know how
+        to connect to the database it will be synchronizing.  A typical way to specify this is to place properties
+        in the <filename>symmetric.properties</filename> file.  When started up, SymmetricDS reads the configuration
+        and state from the database.  If the configuration tables are missing, they are created
+        automatically (auto creation can be disabled).  Basic configuration is described by inserting into the following tables (the complete 
+        data model is defined in <xref linkend="data-model"/>).
+            <itemizedlist>
+                <listitem>
+                    <para><xref linkend="table_node_group" xrefstyle="table"/> - specifies the tiers that exist in a SymmetricDS network</para>
+                </listitem>
+                <listitem>
+                    <para><xref linkend="table_node_group_link" xrefstyle="table"/> - links two node groups together for synchronization</para>
+                </listitem>
+                <listitem>
+                    <para><xref linkend="table_channel" xrefstyle="table"/> - grouping and priority of synchronizations</para>
+                </listitem>
+                <listitem>
+                    <para><xref linkend="table_trigger" xrefstyle="table"/> - specifies tables, channels, and conditions for which changes in the database should be captured</para>
+                </listitem>
+                <listitem>
+                    <para><xref linkend="table_router" xrefstyle="table"/> - specifies the routers defined for synchronization, along with other routing details</para>
+                </listitem>
+                <listitem>
+                    <para><xref linkend="table_trigger_router" xrefstyle="table"/> - provides mappings of routers and triggers</para>
+                </listitem>
+            </itemizedlist>
+        </para>
+        <para>
+        During start up, triggers are verified against the database, and database triggers
+        are installed on tables that require data changes to be captured.  The Route, Pull and Push Jobs
+        begin running to synchronize changes with other nodes.
+      </para>
+        <para>
+            Each node requires properties that allow it to connect to a database and register
+            with a parent node.  To give a node its identity, the following properties are used:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>group.id</command>
+                </term>
+                <listitem>
+                    <para>
+                        The node group that this node is a member of. Synchronization is specified
+                        between node groups, which means you only need to specify it once for
+                        multiple nodes in the same group. 
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>external.id</command>
+                </term>
+                <listitem>
+                    <para>
+                        The external id for this node has meaning to the user and provides
+                        integration into the system where it is deployed. For example, it might be a
+                        retail store number or a region number. The external id can be used in
+                        expressions for conditional and subset data synchronization. Behind the
+                        scenes, each node has a unique sequence number for tracking synchronization
+                        events. That makes it possible to assign the same external id to multiple
+                        nodes, if desired.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>sync.url</command>
+                </term>
+                <listitem>
+                    <para>
+                        The URL where this node can be contacted for synchronization.
+                        At startup and during each heartbeat, the node updates its entry in
+                        the database with this URL.  
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            When a new node is first started, it is has no information about synchronizing. It
+            contacts the registration server in order to join the network and receive its
+            configuration. The configuration for all nodes is stored on the registration server, and
+            the URL must be specified in the following property:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>registration.url</command>
+                </term>
+                <listitem>
+                    <para>
+                        The URL where this node can connect for registration to receive its
+                        configuration. The registration server is part of SymmetricDS and is enabled
+                        as part of the deployment.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <important><para>
+        Note that a <emphasis>registration server node</emphasis> is defined as one whose <literal>registration.url</literal> is either (a) blank, or (b)
+        identical to its <literal>sync.url</literal>.</para></important>
+        <para>
+            When deploying to an application server, it is common for database connection pools
+            to be found in the Java naming directory (JNDI).  In this case, set the following property:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>db.jndi.name</command>
+                </term>
+                <listitem>
+                    <para>
+                        The name of the database connection pool to use, which is registered in the JNDI
+                        directory tree of the application server. It is recommended that this DataSource is
+                        NOT transactional, because SymmetricDS will handle its own transactions.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            For a deployment where the database connection pool should be created using a JDBC driver,
+            set the following properties:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>db.driver</command>
+                </term>
+                <listitem>
+                    <para>
+                        The class name of the JDBC driver.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.url</command>
+                </term>
+                <listitem>
+                    <para>
+                        The JDBC URL used to connect to the database.
+                    </para> 
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.user</command>
+                </term>
+                <listitem>
+                    <para>
+                        The database username, which is used to login, create, and update SymmetricDS tables.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.password</command>
+                </term>
+                <listitem>
+                    <para>
+                        The password for the database user.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+       
+      
+    </section>
+    
+     <section id="configuration-node">
+            <title>Node</title>
+            <para>
+                A <emphasis>node</emphasis>, a single instance of SymmetricDS, is defined in the  <xref linkend="table_node" xrefstyle="table"/> table.
+                Two other tables play a direct role
+            in defining a node, as well  The first is <xref linkend="table_node_identity" xrefstyle="table"/>. The <emphasis>only</emphasis> row in this table
+            is inserted in the database when the node first <emphasis>registers</emphasis> with a parent node.  In the case 
+            of a root node, the row is entered by the user.  The row is used by a node instance to determine its node identity.
+            </para>
+            <para>
+            The following SQL statements set up a top-level registration server as a node identified
+            as "00000" in the "corp" node group.
+            
+            <programlisting>
+<![CDATA[insert into SYM_NODE 
+  (node_id, node_group_id, external_id, sync_enabled)
+values
+  ('00000', 'corp', '00000', 1);
+
+insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
+        </para>
+        <para>
+        The second table, <xref linkend="table_node_security" xrefstyle="table"/> has rows
+        created for each <emphasis>child</emphasis> node that registers with the node, assuming auto-registration is enabled.
+        If auto registration is not enabled, you must create a row in <xref linkend="table_node" xrefstyle="table"/> 
+        and <xref linkend="table_node_security" xrefstyle="table"/> for the node to be able to register.  You can also, with this table,
+        manually cause a node to re-register or do a re-initial load by setting the corresponding
+        columns in the table itself.  Registration is discussed in more detail in
+        <xref linkend="configuration-registration"/>.
+        </para>
+    </section>
+   
+    <section id="configuration-node-group">
+        <title>Node Group</title>
+        <para>
+        Node Groups are straightforward to configure and are defined in the <xref linkend="table_node_group" xrefstyle="table"/> table.    
+            The following SQL statements would create node groups for "corp" and "store" based on our retail store example. 
+
+            <programlisting>
+<![CDATA[insert into SYM_NODE_GROUP 
+  (node_group_id, description)
+values
+  ('store', 'A retail store node');
+
+insert into SYM_NODE_GROUP 
+  (node_group_id, description)
+values
+  ('corp', 'A corporate node');]]></programlisting>
+        </para>
+    </section>
+    <section id="configuration-node-group-link">
+        <title>Node Group Link</title>
+         <para>
+           Similarly, Node Group links are established using a data event action of 'P' for Push and 'W' for Pull ("wait").
+            The following SQL statements links the "corp" and "store" node groups for synchronization.
+            It configures the "store" nodes to push their data changes to the "corp" nodes,
+            and the "corp" nodes to send changes to "store" nodes by waiting for a pull.
+            
+            <programlisting>
+<![CDATA[insert into SYM_NODE_GROUP_LINK
+  (source_node_group, target_node_group, data_event_action)
+values
+  ('store', 'corp', 'P');
+
+insert into SYM_NODE_GROUP_LINK
+  (source_node_group, target_node_group, data_event_action)
+values
+  ('corp', 'store', 'W');]]></programlisting>
+        </para>
+    </section>
+   
+    <section id="configuration-channel">
+        <title>Channel</title>
+        <para>
+            By categorizing data into channels and assigning them to <xref linkend="table_trigger" xrefstyle="table"/>s, the user gains more control and visibility into
+            the flow of data.  In addition, SymmetricDS allows for synchronization to be enabled, suspended, or scheduled by channels as well. 
+            The frequency of synchronization and order that data gets synchronized is also controlled at the channel level.
+        </para>
+        <para>
+            The following SQL statements setup channels for a retail store.  An "item" channel includes
+            data for items and their prices, while a "sale_transaction" channel includes data for ringing
+            sales at a register. 
+            
+            <programlisting>
+<![CDATA[insert into SYM_CHANNEL 
+  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
+   extract_period_millis, batch_algorithm, enabled, description)
+values
+  ('item', 10, 1000, 10,  0, 'default', 1, 'Item and pricing data');
+
+insert into SYM_CHANNEL 
+  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
+   extract_period_millis, batch_algorithm, enabled, description)
+values
+  ('sale_transaction', 1, 1000, 10,  60000, 'transactional', 1, 
+   'retail sale transactions from register');]]></programlisting>
+        </para>
+        <para>
+            Batching is the grouping of data, by channel, to be transferred and committed at 
+            the client together.  There are three different out-of-the-box batching algorithms which 
+            may be configured in the batch_algorithm column on channel.  
+         <variablelist>
+            <varlistentry>
+                <term>
+                    <command>default</command>
+                </term>
+                <listitem>
+                    <para>
+                        All changes that happen in a transaction are guaranteed to be batched 
+                        together.  Multiple transactions will be batched and committed together
+                        until there is no more data to be sent or the max_batch_size is reached.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>transactional</command>
+                </term>
+                <listitem>
+                    <para>
+                        Batches will map directly to database transactions.  If there are many
+                        small database transactions, then there will be many batches.  The max_batch_size
+                        column has no effect.
+                    </para> 
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>nontransactional</command>
+                </term>
+                <listitem>
+                    <para>
+                        Multiple transactions will be batched and committed together
+                        until there is no more data to be sent or the max_batch_size is reached.  
+                        The batch will be cut off at the max_batch_size regardless of whether
+                        it is in the middle of a transaction. 
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        </para>
+        <para>
+        There are also several size-related parameters that can be set by channel.  They include:
+         <variablelist>
+            <varlistentry>
+                <term>
+                    <command>max_batch_size</command>
+                </term>
+                <listitem>
+                    <para>
+                       Specifies the maximum number of data events to process within a batch for this channel.
+                    </para>
+                </listitem>
+            </varlistentry>
+         <varlistentry>
+                <term>
+                    <command>max_batch_to_send</command>
+                </term>
+                <listitem>
+                    <para>
+                        Specifies the maximum number of batches to send for a given channel during a 'synchronization' between two nodes.
+                        A 'synchronization' is equivalent to a push or a pull.
+                        For example, if there are 12 batches ready to be sent for a channel and max_batch_to_send is equal to 10,
+                        then only the first 10 batches will be sent even though 12 batches are ready.
+                        </para>
+                </listitem>
+            </varlistentry>
+             <varlistentry>
+                <term>
+                    <command>max_data_to_route</command>
+                </term>
+                <listitem>
+                    <para>
+                        Specifices the maximum number of data rows to route for a channel at a time.
+                     </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        </para>
+        <para>
+        Based on your particular synchronization requirements, you can also specify whether old, new, and primary key data should be read and included during routing for a given channel.  These are controlled by
+        the columns use_old_data_to_route, use_row_data_to_route, and use_pk_data_to_route, respectively.  By default, they are all 1 (true).
+        </para>
+        <para>
+        Finally, if data on a particular channel contains big lobs, you can set the column  contains_big_lob to 1 (true) to provide SymmetricDS the hint that the channel contains big lobs.  
+        Some databases have shortcuts that SymmetricDS can take advantage of if it knows that the lob columns in <xref linkend="table_data" xrefstyle="table"/>
+         aren't going to contain large lobs.  The definition of how large a 'big' lob is varies from database to database.
+        </para>
+    </section>
+       
+    <section id="configuration-triggers-and-routers">
+        <title>Triggers and Routers</title>         
+            
+    <section id="configuration-trigger">
+        <title>Trigger</title>
+        <para>
+            SymmetricDS captures synchronization data using database triggers. SymmetricDS' Triggers are defined in the 
+              <xref linkend="table_trigger" xrefstyle="table"/> table.  
+            Each record is used by SymmetricDS when generating database triggers.  Database triggers are only generated when a trigger 
+            is associated with a <xref linkend="table_router" xrefstyle="table"/> whose <literal>source_node_group_id</literal> matches the node group id of the current node.
+        </para>
+        <para>
+        When determining whether a data change has occurred or not, by defalt the triggers will
+        record a change even if the data was updated to the same value(s) they were originally.
+        For example, a data change will be captured if an update of one column in a row
+        updated the value to the same value it already was.
+        There is a global property, <literal>trigger.update.capture.changed.data.only.enabled</literal> (false by default),
+        that allows you to override this behavior. When set to true, SymmetricDS will only capture a change if
+        the data has truly changed (i.e., when the new column data is not equal to the old column data).
+        </para>
+        <important>
+        The property <literal>trigger.update.capture.changed.data.only.enabled</literal> 
+        is currently only supported in the MySQL and Oracle dialects.
+        </important>
+        
+        <para>
+            The following SQL statement defines a trigger that will capture data for a table named "item"
+            whenever data is inserted, updated, or deleted. The trigger is assigned to a channel also called 'item'.            
+            <programlisting>
+<![CDATA[insert into SYM_TRIGGER 
+    (trigger_id,source_table_name,channel_id,last_update_time,create_time)
+  values
+    ('item', 'item', 'item', current_timestamp, current_timestamp);
+]]></programlisting>
+        </para>
+        
+        <para>
+        Two lobs-related settings are also available on  <xref linkend="table_trigger" xrefstyle="table"/>:
+        
+       <variablelist>
+        <varlistentry>
+            <term>
+                <command>use_stream_lobs</command>
+            </term>
+            <listitem>
+                <para>
+                    Specifies whether to capture lob data as the trigger is firing or to stream lob columns from the source tables using callbacks during extraction.
+                    A value of 1 indicates to stream from the source via callback; a value of 0, lob data is captured by the trigger.
+               </para>
+            </listitem>
+        </varlistentry>
+        <varlistentry>
+            <term>
+                <command>use_capture_lobs</command>
+            </term>
+            <listitem>
+                <para>
+                 Provides a hint as to whether this trigger will capture big lobs data.  If set to 1 every effort will be made during data capture in trigger and during data selection for initial load 
+                 to use lob facilities to extract and store data in the database.
+                </para>
+            </listitem>
+       </varlistentry>
+       </variablelist>
+        </para>
+            
+        <important>
+        <para>
+            Note that many databases allow for multiple triggers of the same type to be defined.  
+            Each database defines the order in which the triggers fire differently.  If you have
+            additional triggers beyond those SymmetricDS installs on your table, please consult
+            your database documentation to determine if there will be issues with
+            the ordering of the triggers.
+        </para>
+    </important>
+    </section>
+    <section id="configuration-router">
+    <title>Router</title>    
+      <para>
+                Routers provided in the base implementation currently include:
+                <itemizedlist>
+                <listitem>Default Router - a router that sends all data to all nodes that belong to the target node group defined in the router.</listitem>
+                    <listitem>Column Match Router - a router that compares old or new column values to a constant value or the
+                        value of a node's external_id or node_id.</listitem>
+                    <listitem>Lookup Router - a router which can be configured to determine routing based on an existing or ancillary table specifically for the
+                    purpose of routing data.        
+                    </listitem>
+                    <listitem>Subselect Router - a router that executes a SQL expression against the database to select nodes to
+                        route to. This SQL expression can be passed values of old and new column values.</listitem>
+                    <listitem>Scripted Router - a router that executes a Bean Shell script expression in order to select nodes to route to.
+                        The script can use the the old and new column values.</listitem>
+                    <listitem>Xml Publishing Router - a router the publishes data changes directly to a messaging solution instead
+                        of transmitting changes to registered nodes.  This router must be configured manually in XML as an extension point.</listitem>
+                </itemizedlist>
+                The mapping between the set of triggers and set of routers is many-to-many.  This means that one trigger can capture changes and route
+                to multiple locations.  It also means that one router can be defined an associated with many different triggers.
+            </para>
+    
+    
+    <section id="configuration-default-router">
+        <title>Default Router</title>
+        <para>
+            The simplest router is a router that sends all the data that is captured by its 
+            associated triggers to all the nodes that belong to the target node group defined
+            in the router.  A router is defined as a row in the <xref linkend="table_router" xrefstyle="table"/> table.
+            It is then linked to triggers in the <xref linkend="table_trigger_router" xrefstyle="table"/> table.  
+        </para>
+        <para>
+            The following SQL statement defines a router that will send data from the 'corp' group to the 'store' group.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, 
+    create_time, last_update_time)
+values
+  ('corp-2-store','corp', 'store', current_timestamp, current_timestamp);
+
+]]></programlisting>
+        </para>
+        <para>
+            The following SQL statement maps the 'corp-2-store' router to the item trigger.            
+            <programlisting>
+<![CDATA[insert into SYM_TRIGGER_ROUTER 
+  (trigger_id, router_id, initial_load_order,  create_time, last_update_time)
+values
+  ('item', 'corp-2-store', 1, current_timestamp, current_timestamp);
+
+]]></programlisting>
+        </para>        
+    </section>
+   
+    <section id="configuration-column-match-router">
+        <title>Column Match Router</title>
+        <para>
+            Sometimes requirements may exist that require data to be routed based on the current value or the old value of a 
+            column in the table that is being routed.  Column routers are configured by setting the <literal>router_type</literal> column on the 
+              <xref linkend="table_router" xrefstyle="table"/> table
+            to <literal>column</literal> and setting the <literal>router_expression</literal> column to an equality expression that represents
+            the expected value of the column.
+        </para>
+        <para>             
+            The first part of the expression is always the column name.  The column name should always be defined in upper case.
+            The upper case column name prefixed by OLD_ can be used for a comparison being done with the old column data value.
+        </para>
+        <para>
+            The second part of the expression can be a constant value, a token that represents another column, or a token
+            that represents some other SymmetricDS concept.  Token values always begin with a colon (:).
+        </para>                  
+        <para>
+            Consider a table that needs to be routed to all nodes in the target group only when a status column is set to 'OK.'  The following 
+            SQL statement will insert a column router to accomplish that.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store-ok','corp', 'store', 'column', 
+ 'STATUS=OK', current_timestamp, current_timestamp);
+
+]]></programlisting>
+         </para>            
+        <para>
+            Consider a table that needs to be routed to all nodes in the target group only when a status column changes values.  The following 
+            SQL statement will insert a column router to accomplish that.  Note the use of OLD_STATUS, where the OLD_ prefix gives access to the old column value.          
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-status','corp', 'store', 'column', 
+    'STATUS!=:OLD_STATUS', current_timestamp, current_timestamp);
+
+]]></programlisting>
+         </para>            
+        <para>
+            Consider a table that needs to be routed to only nodes in the target group whose STORE_ID column matches the external id of a node.  The following 
+            SQL statement will insert a column router to accomplish that.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-id','corp', 'store', 'column', 
+    'STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
+
+]]></programlisting>
+            Attributes on a <xref linkend="table_node" xrefstyle="table"/> that can be referenced with tokens include:
+            <itemizedlist>
+                <listitem>NODE_ID</listitem>
+                <listitem>EXTERNAL_ID</listitem>
+                <listitem>NODE_GROUP_ID</listitem>
+            </itemizedlist>
+        </para>   
+        <para>
+            Consider a table that needs to be routed to a redirect node defined by its external id in the <xref linkend="table_registration_redirect" xrefstyle="table"/> table.  The following 
+            SQL statement will insert a column router to accomplish that.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-redirect','corp', 'store', 'column', 
+    'STORE_ID=:REDIRECT_NODE', current_timestamp, current_timestamp);
+]]></programlisting>                        
+         </para>
+         <para>
+            More than one column may be configured in a router_expression.  When more than one column is configured, all matches are added to the list of nodes to route to.  The following is
+            an example where the STORE_ID column may contain the STORE_ID to route to or the constant of ALL which indicates that all nodes should receive the update.       
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-multiple-matches','corp', 'store', 'column', 
+   'STORE_ID=ALL or STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
+]]></programlisting>                        
+         </para>    
+         <para>
+         The NULL keyword may be used to check if a column is null.  If the column is null, then data will be routed to all nodes who qualify for the update.  This following is an example 
+         where the STORE_ID column is used to route to a set of nodes who have a STORE_ID equal to their EXTERNAL_ID, or to all nodes if the STORE_ID is null.
+          <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-multiple-matches','corp', 'store', 'column', 
+   'STORE_ID=NULL or STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
+]]></programlisting>    
+         </para>                    
+    </section>    
+    
+    <section id="configuration-lookup-table-router">
+        <title>Lookup Table Router</title>
+        <para>
+            A lookup table may contain the id of the node where data needs to be routed.  This could be an existing table or an ancillary table that is added
+            specifically for the purpose of routing data.  Lookup table routers are configured by setting the <literal>router_type</literal> column on the 
+              <xref linkend="table_router" xrefstyle="table"/> table
+            to <literal>lookuptable</literal> and setting a list of configuration parameters in the <literal>router_expression</literal> column.
+        </para>
+        <para>     
+            Each of the following configuration parameters are required.          
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <command>LOOKUP_TABLE</command>
+                    </term>
+                    <listitem>
+                        <para>
+                        This is the name of the lookup table.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>KEY_COLUMN</command>
+                    </term>
+                    <listitem>
+                        <para>
+                        This is the name of the column on the table that is being routed.  It will be used as a key into the lookup table.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>LOOKUP_KEY_COLUMN</command>
+                    </term>
+                    <listitem>
+                        <para>
+                        This is the name of the column that is the key on the lookup table.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>EXTERNAL_ID_COLUMN</command>
+                    </term>
+                    <listitem>
+                        <para>
+                        This is the name of the column that contains the external_id of the node to route to on the lookup table.
+                        </para>
+                    </listitem>
+                </varlistentry>                
+            </variablelist>
+        </para>
+        <para>
+            Note that the lookup table will be read into memory and cached for the duration of a routing pass for a single channel.
+        </para>                  
+        <para>
+            Consider a table that needs to be routed to a specific store, but the data in the changing table only contains brand information.  In this case,
+            the STORE table may be used as a lookup table.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store-ok','corp', 'store', 'lookuptable', 
+ 'LOOKUP_TABLE=STORE
+KEY_COLUMN=BRAND_ID
+LOOKUP_KEY_COLUMN=BRAND_ID
+EXTERNAL_ID_COLUMN=STORE_ID', current_timestamp, current_timestamp);
+
+]]></programlisting>
+         </para>            
+     </section>
+
+    <section id="configuration-subselect-router">
+        <title>Subselect Router</title>
+        <para>
+            Sometimes routing decisions need to be made based on data that is not in the current row being synchronized.  Consider an 
+            example where an Order table and a OrderLineItem table need to be routed to a specific store.  The Order table has a column 
+            named order_id and STORE_ID.  A store node has an external_id that is equal to the STORE_ID on the Order table.  OrderLineItem, 
+            however, only has a foreign key to its Order of order_id.  To route OrderLineItems to the same nodes that the Order will be routed
+            to, we need to reference the master Order record.
+        </para>
+        <para>             
+            There are two possible ways to route the OrderLineItem in SymmetricDS.  One is to configure a 'subselect' router_type on the <xref linkend="table_router" xrefstyle="table"/> table
+            and the other is to configure an external_select on the <xref linkend="table_trigger" xrefstyle="table"/> table. 
+        </para>
+        <para>
+            A 'subselect' is configured with a router_expression that is a SQL select statement which returns a result set of the node_ids that need routed to.  Column tokens can
+            be used in the SQL expression and will be replaced with row column data.  The overhead of using this router type is high because the 'subselect' statement runs for each row 
+            that is routed.  It should not be used for tables that have a lot of rows that are updated.  It also has the disadvantage that if the Order master record is deleted, 
+            then no results would be returned and routing would not happen.  The router_expression is appended to the following
+            SQL statement in order to select the node ids.
+            <programlisting>
+<![CDATA[
+select c.node_id from sym_node c where 
+  c.node_group_id=:NODE_GROUP_ID and c.sync_enabled=1 and 
+]]></programlisting>  
+        </para>                  
+        <para>
+            Consider a table that needs to be routed to all nodes in the target group only when a status column is set to 'OK.'  The following 
+            SQL statement will insert a column router to accomplish that.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store','corp', 'store', 'subselect', 
+    'c.external_id in (select STORE_ID from order where order_id=:ORDER_ID)', 
+    current_timestamp, current_timestamp);
+]]></programlisting>
+         </para>            
+        <para>
+            Alternatively, when using an external_select on the <xref linkend="table_trigger" xrefstyle="table"/> table, data is captured in the EXTERNAL_DATA column of the <xref linkend="table_data" xrefstyle="table"/> table at the time a trigger 
+            fires.  The EXTERNAL_DATA can then be used for routing by using a router_type of 'column'.  The advantage of this approach is that it is very unlikely that the master Order table
+            will have been deleted at the time any DML accures on the OrderLineItem table.  It also is a bit more effcient than the 'subselect' approach, although the triggers produced do run 
+            the extra external_select inline with application database updates.  
+        </para>            
+        <para>
+            In the following example, the STORE_ID is captured from the Order table in the EXTERNAL_DATA column.  EXTERNAL_DATA is always available for routing as a virtual column in a 'column'
+            router.  The router is configured to route based on the captured EXTERNAL_DATA to all nodes whose external_id matches.  Note that other supported node attribute tokens can also be 
+            used for routing.      
+            <programlisting>
+<![CDATA[
+insert into SYM_TRIGGER 
+  (trigger_id,source_table_name,channel_id,external_select,
+    last_update_time,create_time)
+values
+  ('orderlineitem', 'orderlineitem', 'orderlineitem','select STORE_ID 
+    from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',
+    current_timestamp, current_timestamp);
+
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-ext','corp', 'store', 'column', 
+    'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp);
+]]></programlisting>
+         </para>   
+         <para>
+         Note the syntax $(curTriggerValue).$(curColumnPrefix).  This translates into "OLD_" or "NEW_" based on the DML type being run.  In the case of Insert or Update, it's NEW_.  For Delete, it's OLD_ (since there is no
+         new data).  In this way, you can access the DML-appropriate value for your select statement.
+         </para>         
+    </section>  
+    
+    <section id="configuration-scripted-router">
+        <title>Scripted Router</title>
+        <para>
+            When more flexibility is needed in the logic to choose the nodes to route to, then the a scripted router may be used.  The currently available scripting language is Bean Shell. Bean Shell is a Java-like scripting language.  Documentation 
+            for the Bean Shell scripting language can be found at <ulink url="http://www.beanshell.org/">http://www.beanshell.org</ulink>. 
+        </para>
+        <para>
+            The router_type for a Bean Shell scripted router is 'bsh'.  The router_expression is a valid Bean Shell script that:
+            <itemizedlist>
+                <listitem>adds node ids to the 'targetNodes' collection which is bound to the script</listitem>
+                <listitem>returns a new collection of node ids</listitem>
+                <listitem>returns a single node id</listitem>
+                <listitem>returns true to indicate that all nodes should be routed or returns false to indicate that no nodes should be routed</listitem>
+            </itemizedlist>                          
+            Also bound to the script evaluation is a list of 'nodes'.  The list of 'nodes' is 
+            a list of eligible Node objects.  The current data column values and the old data column values are bound to the script evaluation as Java object representations of the column data. 
+            The columns are bound using the uppercase names of the columns.  Old values are bound to uppercase representations that are prefixed with 'OLD_'. 
+        </para>        
+        <para>
+            In the following example, the node_id is a combination of STORE_ID and WORKSTATION_NUMBER, both of which are columns on the table that is being routed.
+            <programlisting>
+<![CDATA[
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-bsh','corp', 'store', 'bsh', 
+    'targetNodes.add(STORE_ID + "-" + WORKSTATION_NUMBER);', 
+    current_timestamp, current_timestamp);
+]]></programlisting>
+        </para>
+        <para>
+            The same could also be accomplished by simply returning the node id.  The last line of a bsh script is always the return value.
+            <programlisting>
+<![CDATA[
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-bsh','corp', 'store', 'bsh', 
+    'STORE_ID + "-" + WORKSTATION_NUMBER', 
+    current_timestamp, current_timestamp);
+]]></programlisting>
+         </para>     
+         <para>
+            The following example will synchronize to all nodes if the FLAG column has changed, otherwise
+            no nodes will be synchronized.  Note that here we make use of OLD_, which provides access to the old column value.
+            <programlisting>
+<![CDATA[
+insert into SYM_ROUTER 
+  (router_id, source_node_group_id, target_node_group_id, router_type, 
+    router_expression, create_time, last_update_time)
+values
+  ('corp-2-store-flag-changed','corp', 'store', 'bsh', 
+    'FLAG != null && !FLAG.equals(OLD_FLAG)', 
+    current_timestamp, current_timestamp);
+]]></programlisting>
+        </para>   
+    </section>  
+    </section>
+     <section id="configuration-trigger-router">
+        <title>Trigger / Router Mappings</title>
+        <para>
+        Two important controls can be configured for a specific Trigger / Router combination: Initial Load and Ping Back.
+         The parameters for these can be found in the Trigger / Router mapping table,
+        <xref linkend="table_trigger_router" xrefstyle="table"/>.
+        </para>
+       
+        <section id="configuration-initial-load">
+        <title>Initial Load</title>
+        <para>
+            An initial load is the process of seeding tables at a target node with data from its parent node.
+            When a node connects and data is extracted, after it is registered and if an initial load was requested, each table that is configured to synchronize to the target node
+              group will be given a reload event in the order defined by the end user.  A SQL statement is run against each table to get the data load that will be streamed to the target node.  
+              The selected data is filtered through the configured router for the table being loaded.  If the data set is going to be large, then SQL criteria can optionally be provided to pair 
+              down the data that is selected out of the database.
+            </para>
+            <para>
+            An initial load can not occur until after a node is registered.  An initial load is 
+            requested by setting the <literal>initial_load_enabled</literal> column on <xref linkend="table_node_security" xrefstyle="table"/> to
+            <emphasis>1</emphasis> on the row for the target node in the parent node's database.  The next time the 
+            target node synchronizes, reload batches will be inserted.  At the same time reload batches 
+            are inserted, all previously pending batches for the node are marked as successfully sent.    
+        </para>
+         <important>
+            <para>
+            Note that if the parent node that a node is registering with is <emphasis>not</emphasis> a registration server node 
+            (as can happen with a registration redirect or certain non-tree structure node configurations)
+            the parent node's <xref linkend="table_node_security" xrefstyle="table"/> entry must exist at the parent node and have a non-null value for
+            column <literal>initial_load_time</literal>.  Nodes can't be registered to non-registration-server nodes without this value being set one way or another (i.e.,
+            manually, or as a result of an initial load occuring at the parent node).
+            </para>
+        </important>   
+        <para>
+            SymmetricDS recognizes that an initial load has completed when the <literal>initial_load_time</literal> column on the
+            target node is set to a non-null value.
+        </para>
+        <para>
+            An initial load is accomplished by inserting reload batches in a defined order according to the <literal>initial_load_order</literal> column on
+            <xref linkend="table_trigger_router" xrefstyle="table"/>.  Initial load data is always queried from the 
+            source database table.  All data is passed through the configured router to filter out data that 
+            might not be targeted at a node.  
+        </para>
+        <para>    
+            An efficient way to select a subset of data from a table for an initial load is to provide an
+            <literal>initial_load_select</literal> clause on <xref linkend="table_trigger_router" xrefstyle="table"/>.            
+            This clause, if present, is applied as a <literal>where</literal> clause to the SQL used to select the data to be loaded.
+            The clause may use "t" as an alias for the table being loaded, if needed.
+            If an <literal>initial_load_select</literal> clause is provided, data will <emphasis>not</emphasis> be passed through the 
+            configured router during initial load.  In cases where routing is done using a feature like <xref linkend="configuration-subselect-router">Subselect Router</xref>,
+            an <literal>initial_load_select</literal> clause matching the subselect's criteria would be a more efficient approach.   
+        </para>
+        <para>
+        One example of the use of an initial load select would be if you wished to only load data created more recently than the start of year 2011.  Say, for example,
+        the column <literal>created_time</literal> contains the creation date.  Your <literal>initial_load_select</literal> would read
+        <literal>created_time > ts {'2011-01-01 00:00:00.0000'}</literal> (using whatever timestamp format works for your database).  This
+        then gets applied as a <literal>where</literal> clause when selecting data from the table.
+        </para>
+        <important>
+            <para>
+            When providing an <literal>initial_load_select</literal> be sure to test out the criteria against production data in a query browser.  Do an explain plan to make sure you are properly using indexes.
+            </para>
+        </important>  
+            
+        </section>      
+     <section id="configuration-dead-triggers">
+        <title>Dead Triggers</title>
+           <para>
+            Occasionally the decision of what data to load initially results in additional triggers.  These triggers, known as <emphasis>Dead Triggers</emphasis>,
+            are configured such that they do not capture any data changes.  
+            A "dead" Trigger is one that does not capture data changes.
+            In other words, the <literal>sync_on_insert</literal>, <literal>sync_on_update</literal>, and <literal>sync_on_delete</literal> properties
+            for the Trigger are all set to false.  However, since the Trigger is specified, it <emphasis>will</emphasis> 
+            be included in the initial load of data for target Nodes.
+        </para>
+        <para>
+           Why might you need a Dead Trigger?
+            A dead Trigger might be used to load a read-only lookup table, for example.  It could also 
+            be used
+            to load a table that needs populated with example or default data.
+            Another use is a recovery load of data for tables that have a single direction
+            of synchronization.  For example, a retail store records sales transaction that
+            synchronize in one direction by trickling back to the central office.
+            If the retail store needs to recover all the sales transactions from the central office,
+            they can be sent
+            are part of an initial load from the central office by setting up dead Triggers
+            that "sync" in that direction.
+        </para>
+     
+        <para>
+            The following SQL statement sets up a non-syncing dead Trigger that sends
+            the <literal>sale_transaction</literal> table to the "store" Node Group from the "corp" Node Group during
+            an initial load.
+            <programlisting>
+<![CDATA[
+insert into sym_trigger (TRIGGER_ID,SOURCE_CATALOG_NAME,
+  SOURCE_SCHEMA_NAME,SOURCE_TABLE_NAME,CHANNEL_ID,
+  SYNC_ON_UPDATE,SYNC_ON_INSERT,SYNC_ON_DELETE,
+  SYNC_ON_INCOMING_BATCH,NAME_FOR_UPDATE_TRIGGER,
+  NAME_FOR_INSERT_TRIGGER,NAME_FOR_DELETE_TRIGGER,
+  SYNC_ON_UPDATE_CONDITION,SYNC_ON_INSERT_CONDITION,
+  SYNC_ON_DELETE_CONDITION,EXTERNAL_SELECT,
+  TX_ID_EXPRESSION,EXCLUDED_COLUMN_NAMES,
+  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('SALE_TRANSACTION_DEAD',null,null,
+  'SALE_TRANSACTION','transaction',
+  0,0,0,0,null,null,null,null,null,null,null,null,null,
+  current_timestamp,'demo',current_timestamp);
+
+insert into sym_router (ROUTER_ID,TARGET_CATALOG_NAME,TARGET_SCHEMA_NAME,
+  TARGET_TABLE_NAME,SOURCE_NODE_GROUP_ID,TARGET_NODE_GROUP_ID,ROUTER_TYPE,
+  ROUTER_EXPRESSION,SYNC_ON_UPDATE,SYNC_ON_INSERT,SYNC_ON_DELETE,
+  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('CORP_2_STORE',null,null,null,
+  'corp','store',null,null,1,1,1,
+  current_timestamp,'demo',current_timestamp);
+   
+insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
+  INITIAL_LOAD_SELECT,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('SALE_TRANSACTION_DEAD','CORP_2_REGION',100,null,
+   current_timestamp,'demo',current_timestamp);
+   ]]></programlisting>
+        </para>
+    </section>
+    
+      <section id="configuration-trigger-router-ping-back">
+           <title>Enabling "Ping Back"</title>
+           
+           <para>
+           As discussed in <xref linkend="defining-data-changes-trigger-routers-ping-back"/> SymmetricDS, by default, avoids circular
+           data changes.   When a trigger fires as a result of SymmetricDS itself (such as the case when sync on incoming batch is set),
+           it records the originating source node of the data change in <literal>source_node_id</literal>.
+           During routing, if routing results in sending the data back to the originating source node, the data is not routed by default.
+           If instead you wish to route the data back to the originating node, you can set the <literal>ping_back_enabled</literal>
+           column for the needed particular trigger / router combination.  This will cause the router to "ping" the data back to the originating
+           node when it usually would not. 
+           </para>
+        </section>
+    </section>
+     </section>  
+       <section id="configuration-registration">
+        <title>Opening Registration</title>
+        <para>
+        Node registration is the act of setting up a new <xref linkend="table_node" xrefstyle="table"/> and
+         <xref linkend="table_node_security" xrefstyle="table"/> so that when the new node is brought online
+         it is allowed to join the system.  Nodes are only allowed to register if rows exist for the
+         node and the <literal>registration_enabled</literal> flag is set to 1.  If the <literal>auto.registration</literal>
+         SymmetricDS property is set to true, then when a node attempts to register, if registration
+         has not already occurred, the node will automatically be registered.
+       </para>
+       <para> 
+        SymmetricDS allows you to have multiple nodes with the same <literal>external_id</literal>.  Out of the box, openRegistration 
+        will open a new registration if a registration already exists for a node with the same external_id.  A new 
+        registration means a new node with a new <literal>node_id</literal> and the same <literal>external_id</literal> will be created.  
+        If you want to re-register the same node you can use the <literal>reOpenRegistration()</literal> JMX
+        method which takes a <literal>node_id</literal> as an argument.
+        </para>
+    </section>
+  
+    <section id="transform-data">
+        <title>Transforming Data</title>
+        <para>
+        New to SymmetricDS 2.4, SymmetricDS is now able to transform synchronized data by way of
+        configuration (previously, for most cases a custom data loader would need to have been written).  This transformation can take
+        place on a source node or on a target node, as the data is being loaded or extracted.
+        With this new feature you can, for example:
+        </para>
+        <itemizedlist>
+                <listitem>
+                    <para>Copy a column from a source table to two (or more) target table columns,</para>
+                </listitem>
+                <listitem>
+                    <para>Merge columns from two or more source tables into a single row in a target table,</para>
+                </listitem>
+                <listitem>
+                    <para>Insert constants in columns in target tables based on source data synchronizations,</para>
+                </listitem>
+                <listitem>
+                    <para>Insert multiple rows of data into a single target table based on one change in a source table,</para>
+                </listitem>
+                <listitem>
+                    <para>Apply a Bean Shell script to achieve a custom transform when loading into the target database.</para>
+                </listitem>
+         </itemizedlist>
+         <para>
+         These transformations can take place either on the target or on the source, and as data is either being extracted or loaded.  In either case, the transformation is
+         initiated due to existence of a source
+         synchronization trigger.  The source trigger creates the synchronization data, while the transformation configuration decides
+         what to do with the sychronization data as it is either being extracted from the source or loaded into the target.
+         You have the flexibility of defining different transformation behavior depending on whether the source
+         change that triggered the synchronization was an Insert, Update, or Delete.  In the case of Delete, you even have options on what exactly to do on the target side, 
+         be it a delete of a row, setting columns to specific values, or absolutely nothing at all.
+         </para>
+         <para>
+         A few key concepts are important to keep in mind to understand how SymmetricDS performs transformations.  The first concept is that of the
+         "source operation" or "source DML type", which is the type of operation that occurred to generate the synchronization data in the first place (i.e., an insert, a delete, or an update).
+         Your transformations can be configured to act differently based on the source DML type, if desired.  When transforming, by
+         default the DML action taken on the target matches that of the action taken on the row in the source (although this behavior can be altered through configuration if needed).  If the
+         source DML type is an Insert, for example, the resulting transformation DML(s) will be Insert(s).
+         </para>
+         <para>
+         Another important concept is the way in which transforms are applied.  Each source operation may map to one or more transforms and result in one
+         or more operations on the target tables.  Each of these target operations are performed as independent operations in sequence and must be "complete" from a SQL perspective.  In other words, you
+         must define columns for the transformation that are sufficient to fill in any primary key or other required data in the target table if the source operation
+         was an Insert, for example.
+         </para>  
+         <para>
+         Finally, please note that the tranformation engine relies on a source trigger / router existing to supply the source data for the transformation.  The transform configuration will never be
+         used if the source table and target node group does not have a defined trigger / router combination for that source table and target node group.
+         </para>
+        <section id="transform-data-tables">
+        <title>Transform Configuration Tables</title>
+        <para>
+        SymmetricDS stores its transformation configuration in two configuration tables,  <xref linkend="table_transform_table" xrefstyle="table"/> and  
+        <xref linkend="table_transform_column" xrefstyle="table"/>.  Defining a transformation involves configuration in both tables, with the first table
+        defining which source and destination tables are involved, and the second defining the columns involved in the transformation and the behavior of
+        the data for those columns.  We will explain the various options available in both tables and the various pre-defined transformation types.<!--  and then end with a series of examples.-->
+        </para>
+        <para>
+        To define a transformation, you will first define the source table and target table that applies to a particular transformation.  The source and target tables, along with
+        a unique identifier (the transform_id column) are defined in <xref linkend="table_transform_table" xrefstyle="table"/>.  In addition, you will specify the 
+        source_node_group_id and target_node_group_id to which the transform will apply, along with whether the transform should occur on the Extract step or the Load step (transform_point).
+        All of these values are required.
+        </para>
+        
+        <para>
+        Three additional configuration settings are also defined at the source-target table level:  the order of the transformations, the behavior when deleting, and whether an update should
+        always be attempted first.  More specifically, 
+        <itemizedlist>
+            <listitem>transform_order:  For a single source operation that is mapped to a transformation,
+         there could be more than one target operation that takes place.  You may control the order in which the target operations are applied
+         through a configuration parameter defined for each source-target table combination.  This might be important, for example, if
+         the foreign key relationships on the target tables require you to execute the transformations in a particular order.         
+            </listitem>
+            <listitem>delete_action: When a source operation of Delete takes place, there are three possible ways to handle the transformation at the target.  The options include:
+             <itemizedlist>
+                <listitem>
+                NONE - The delete results in no target changes.
+                </listitem>
+                <listitem>
+                DEL_ROW - The delete results in a delete of the row as specified by the pk columns defined in the transformation configuration.
+                </listitem>
+                <listitem>
+                UPDATE_COL - The delete results in an Update operation on the target which updates the specific rows and columns based on the defined transformation.
+                </listitem>
+            </itemizedlist>
+            </listitem>
+            <listitem>update_first: This option overrides the default behavior for an Insert operation.  Instead of attempting the Insert first,
+            SymmetricDS will always perform an Update first and then fall back to an Insert if that fails.  Note that, by default, fall back
+            logic <emphasis>always</emphasis> applies for Insert and Updates.  Here, all you a specifying is whether to always do an Update first, which
+            can have performance benefits under certain situations you may run into.            
+            </listitem>
+        </itemizedlist>
+        </para>
+        
+         <para>
+        For each transformation defined in <xref linkend="table_transform_table" xrefstyle="table"/>, the columns to be transformed (and how they are transformed) are defined
+        in <xref linkend="table_transform_column" xrefstyle="table"/>.  This column-level table typically has several rows for each transformation id, each of which defines
+        the source column name, the target column name, as well as the following details:
+          <itemizedlist>
+                <listitem>
+                include_on:  Defines whether this entry applies to source operations of Insert (I), Update (U), or Delete (D), or any source operation.
+                </listitem>
+                <listitem>
+                pk:  Indicates that this mapping is used to define the "primary key" for identifying the target row(s) (which may or may not be the true primary key of the target table).
+                This is used to define the "where" clause when an Update or Delete on the target is occurring.  At least one row marked as a pk should be present for each transform_id.
+                </listitem>
+                <listitem>
+                transform_type, transform_expression:  Specifies how the data is modified, if at all.  The available transform types are discussed below, and the default is 'copy', which just copies the data
+                from source to target.
+                </listitem>
+                <listitem>
+                transform_order: In the event there are more than one columns to transform, this defines the relative order in which the transformations are applied.
+                </listitem>
+                </itemizedlist>
+        </para>
+        </section>
+        
+        <section id="transform-data-types">
+        <title>Transformation Types</title>
+            <para> There are several pre-defined transform types available in SymmetricDS.  Additional ones can be defined by creating and configuring an
+             extension point which implements the <code>IColumnTransform</code> interface.  The pre-defined transform types include the following (the transform_type
+             entry is shown in parentheses):
+             <itemizedlist>
+                <listitem>
+                    Copy Column Transform ('copy'):  This transformation type copies the source column value to the target column.  This is the default behavior.
+                </listitem>
+                <listitem>
+                    Constant Transform ('const'):  This transformation type allows you to map a constant value to the given target column.  The constant itself is placed in transform_expression.   
+                </listitem>
+                <listitem>
+                    Variable Transform ('variable'):  This transformation type allows you to map a built-in variable to the given target column.  The variable name is placed in transform_expression.
+                    The following variables are available: <code>system_date</code> is the current system date, and <code>system_timestamp</code> is the current system date and time.
+                </listitem>
+                <listitem>
+                    Additive Transform ('additive'): This transformation type is used for numeric data.  It computes the change between the old and new values on the source
+                    and then adds (or subtracts) the value from the existing value in the target column.  For example, if the source column changed from a 2 to a 4, and the target
+                    column is currently 10, the effect of the transform will be to change the target column to a value of 12 ( 10+(4-2) => 12 ).
+                </listitem>
+                <listitem>
+                    Substring Transform ('substr'):  This transformation computes a substring of the source column data and uses the substring as the target column value.  The transform_expression can
+                    be a single integer (<code>n</code>, the beginning index), or a pair of comma-separated integers (<code>n,m</code> - the beginning and ending index).  
+                    The transform behaves as the Java substring function would using the specified values in transform_expression.
+                </listitem>
+                <listitem>
+                    Multiplier Transform ('multiply'):  This transformation allows for the creation of multiple rows in the target table based on the transform_expression.  This transform type
+                    can only be used on a primary key column.  The transform_expression is a SQL statement that returns the list to be used to create the multiple targets.
+                </listitem>
+              
+                <listitem>
+                    Shell Script Transform ('bsh'):  This transformation allows you to provide a Bean Shell script in transform_expression and executes the script at the time of transformation.
+                    Some variables are provided to the script: <code>COLUMN_NAME</code> is a variable for a source column in the row, where the variable name is the column name in uppercase; 
+                    <code>currentValue</code> is the value of the current source column;
+                    <code>oldValue</code> is the old value of the source column for an updated row;
+                    <code>jdbcTemplate</code> is a Spring JdbcTemplate object for querying or updating the database.
+                </listitem> 
+                 <listitem>
+                    Variable Transform ('variable'):  This transformation allows you to place a dynamic variable (such as the current database time) into the target column.  The transform_expression's'
+                    currently supported are:  system_timestamp.
+                 </listitem>                        
+                 <listitem>
+                    Identity Transform ('identity'):  This transformation allows you to insert into a identity column by computing a new identity, not copying the actual identity value from the source.
+                 </listitem>
+               </itemizedlist>
+            </para>
+        </section>
+        
+        <!--  <section id="transform-data-examples">
+        <title>Transformation Examples</title>
+            <para>
+            To be done.
+            </para>        
+        </section> -->
+    </section>
+</chapter>

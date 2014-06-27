@@ -1,0 +1,350 @@
+<html>
+<body>                
+
+<h1>Version 2.5.13</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-617'>SYMMETRICDS-617</a>] -         Transforms run in separate connection from data loader
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-629'>SYMMETRICDS-629</a>] -         We don&#39;t quote the catalog and schema when allowing sql server identity inserts
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-630'>SYMMETRICDS-630</a>] -         Make sure cached table definitions are cleared out before running sync triggers.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-635'>SYMMETRICDS-635</a>] -         Column of type money loses precision on MSSQL
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-336'>SYMMETRICDS-336</a>] -         Make gap detection support auto_increment_increment/auto_increment_offset for MySQL
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-619'>SYMMETRICDS-619</a>] -         Add support for Postgres UUID and VARBIT types
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-620'>SYMMETRICDS-620</a>] -         Make sure sequences are ordered (on Oracle) when creating them for SymmetricDS
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-627'>SYMMETRICDS-627</a>] -         auto.reload.reverse feature does not support datareload.batch.insert.transactional
+</li>
+</ul>
+
+<h1>Version 2.5.12</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-610'>SYMMETRICDS-610</a>] -         A delete transform on the load side does not have access to columns if transform has occurred on the extract side because old data is not filled in
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-611'>SYMMETRICDS-611</a>] -         auto.reload.reverse causes other nodes to auto reload.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-612'>SYMMETRICDS-612</a>] -         Postgres DATE field leaves an extra &#39;.&#39; at the end of captured data in version 8.5 which causes a parse exception during the data load
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-615'>SYMMETRICDS-615</a>] -         When a timestamp with time zone column is part of a primary key or part of a table w.out a primary key, then the trigger fails to create.
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-606'>SYMMETRICDS-606</a>] -         Add -D system property org.jumpmind.symmetric.ddl.use.table.seq that forces postgres to NOT use sequences for SymmetricDS tables that have auto increment columns
+</li>
+</ul>
+                
+<h1>
+Version 2.5.11
+</h1>
+            
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-600'>SYMMETRICDS-600</a>] -         Some versions of Postgres 8.3 (EnterpriseDB 8.3.x) don&#39;t support txid_current() function
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-602'>SYMMETRICDS-602</a>] -         Export of configuration does not work because all data is filtered out.  The config router thinks it doesn&#39;t need to route the extracted configuration because the passed in node is itself
+</li>
+</ul>
+            
+<h2>        New Feature
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-603'>SYMMETRICDS-603</a>] -         Add setting to allow a client to push an initial load back to the server after registration.
+</li>
+</ul>
+
+<h1>
+Version 2.5.10
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-581'>SYMMETRICDS-581</a>] -         Registration problems when you have a multi-tier system with many nodes at the same group level that allows registration of childs
+</li>
+</ul>
+
+<h1>
+Version 2.5.9
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='https://jira.codehaus.org/browse/SYMMETRICDS-590'>SYMMETRICDS-590</a>] -         Time Zone is not captured correctly for columns that are of type &quot;Timestamp With Time Zone&quot;
+</li>
+<li>[<a href='https://jira.codehaus.org/browse/SYMMETRICDS-591'>SYMMETRICDS-591</a>] -         Oracle NUMBER(3) isn&#39;t java.sql.TINYINT
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='https://jira.codehaus.org/browse/SYMMETRICDS-589'>SYMMETRICDS-589</a>] -         Register JMX HTTP adapter with the host (network interface) that is specified on the command line
+</li>
+</ul>
+
+<h1>
+Version 2.5.8
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-585'>SYMMETRICDS-585</a>] -         Schemas and catalogs should be quoted during trigger generation.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-587'>SYMMETRICDS-587</a>] -         Allows tables with FK to be used with initial.load.create.first=true
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-588'>SYMMETRICDS-588</a>] -         Oracle model reader translates a number(1) to a bit type which breaks synchronization (only values of 1 or 0 are inserted)
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-541'>SYMMETRICDS-541</a>] -         Support GeoSpatial data type (SDO_GEOMETRY) in oracle spatial
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-586'>SYMMETRICDS-586</a>] -         Provide the capability to start up SymmetricDS on different network interfaces
+</li>
+</ul>
+
+<h1>
+Version 2.5.7
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-583'>SYMMETRICDS-583</a>] -         Race condition can leave sym_node_security in an incorrect state at a client after reload
+</li>
+</ul>
+
+<h1>
+Version 2.5.6
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-558'>SYMMETRICDS-558</a>] -         Transaction boundaries can be broken when max_batch_size is set to a small number and batch algorithm is set to &#39;transactional&#39; or &#39;default&#39;
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-577'>SYMMETRICDS-577</a>] -         When more than one channel is in error, channels that are not in error have the possibility of being held up
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-579'>SYMMETRICDS-579</a>] -         The feature to pass a properties file to the sym command when creating a war file does not work
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-582'>SYMMETRICDS-582</a>] -         Identity column transform not working
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-578'>SYMMETRICDS-578</a>] -         The outgoing.batches.max.to.select property should not have to take into account that a channel might be disabled
+</li>
+</ul>
+
+<h1>
+Version 2.5.5
+</h1>
+            
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-570'>SYMMETRICDS-570</a>] -         Make sure the insert of a GP record never fails.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-571'>SYMMETRICDS-571</a>] -         Time Zone is not captured/sent to the replicated node for columns that are of type &quot;Timestamp With Time Zone&quot;
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-572'>SYMMETRICDS-572</a>] -         Misleading error printed out during transformation where no columns were found to transform
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-573'>SYMMETRICDS-573</a>] -         ColumnMatchDataRouter incorrectly parses router expressions with column names that contain &#39;OR&#39;.  e.g. CONCENTRATOR_ID
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-560'>SYMMETRICDS-560</a>] -         Support of AES Encryption Is Needed
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-569'>SYMMETRICDS-569</a>] -         Allow StandaloneSymmetricEngine to be embedded with Symmetric-Core only
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-574'>SYMMETRICDS-574</a>] -         Remove the check to run purge only if an initial load has happened
+</li>
+</ul>
+                                    
+<h1>
+Version 2.5.4
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-561'>SYMMETRICDS-561</a>] -         Issue deleting tuples from a table that has a column of type timestamp as part of the Primary Key
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-563'>SYMMETRICDS-563</a>] -         When a transformation happens on a primary key, it does not have access to new column values other than the keys of the original row.  It should have access to all column values.
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-565'>SYMMETRICDS-565</a>] -         Add the ability to use the source node&#39;s external id as a column value in a variable transform
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-568'>SYMMETRICDS-568</a>] -         Increase the default idle time for the standalone instance&#39;s embedded jetty instance
+</li>
+</ul>
+    
+<h2>        New Feature
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-567'>SYMMETRICDS-567</a>] -         Provide a load filter that will enable bulk load for Postgres and Greenplum dialects
+</li>
+</ul>
+                                
+<h1>
+Version 2.5.3
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-555'>SYMMETRICDS-555</a>] -         Connection pool can exhaust at high activity because of out of order interceptors in 2.5
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-556'>SYMMETRICDS-556</a>] -         Slow extracts - During the extract process routers are being queried from the database for each data event read.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-557'>SYMMETRICDS-557</a>] -         sym_data_gap can be left stranded without a required last gap entry record
+</li>
+</ul>
+            
+<h2>        New Feature
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-559'>SYMMETRICDS-559</a>] -         Add support for geometry types in postgres.  The fix should work for other unknown types that can be cast and dealt with as varchar fields
+</li>
+</ul>
+
+<h1>
+Version 2.5.2
+</h1>
+
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-551'>SYMMETRICDS-551</a>] -         Don&#39;t sync changes to sym_node_security if the registration_enabled or initial_load_enabled flag have changed
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-552'>SYMMETRICDS-552</a>] -         Don&#39;t resync triggers if the configuration has changed via the symmetricds dataloader (they will have already been sync&#39;d during the load)
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-554'>SYMMETRICDS-554</a>] -         Pass a datasource to the beanshell script that gets called during dataload when a beanshell script is encountered.
+</li>
+</ul>
+                    
+                    
+ <h1>
+Version 2.5.1
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-540'>SYMMETRICDS-540</a>] -         Postgres insert of same row with no primary keys does not insert a row past the first insert.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-542'>SYMMETRICDS-542</a>] -         two errors in JRE5.0
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-547'>SYMMETRICDS-547</a>] -         Limit the number of nodes that can register in parallel the same way nodes that can pull and push are limited.
+</li>
+</ul>
+              
+ <h1>
+Version 2.5.0
+</h1>
+
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-514'>SYMMETRICDS-514</a>] -         If gap detection is interrupted you could end up with overlapping gaps which in turn could cause integrity violations.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-515'>SYMMETRICDS-515</a>] -         Fix issue with use_stream_lobs
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-518'>SYMMETRICDS-518</a>] -         Fix NullPointerException in transform dataloader&#39;s fallback logging
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-519'>SYMMETRICDS-519</a>] -         When a transformed row is being loaded (from the dataloader) and it encounters a conflict it should re-transform the original data
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-520'>SYMMETRICDS-520</a>] -         PostgreSQL - Quotes around tables in trigger creation.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-522'>SYMMETRICDS-522</a>] -         When there are multiple transformations with different columns sets, and the same target tables are defined, the metadata that gets written out during extract can be wrong
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-523'>SYMMETRICDS-523</a>] -         Make postgres dataloader more efficient by removing the use of savepoints.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-524'>SYMMETRICDS-524</a>] -         Client DataLoad nullpointers when registering if server fails to send down a values for sym_node
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-525'>SYMMETRICDS-525</a>] -         Pass old data to transformations when a DELETE event comes through
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-527'>SYMMETRICDS-527</a>] -         Postgres doesn&#39;t accept null characters (0x00) in textfields while other databases do.  Strip them out during synchronization.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-529'>SYMMETRICDS-529</a>] -         Support reading in TIMESTAMP WITH TIME ZONE data types in Oracle
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-530'>SYMMETRICDS-530</a>] -         sym_pkg is recreated each time the symmetricds server restarts
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-533'>SYMMETRICDS-533</a>] -         ORA-01489: result of string concatenation is too long: Because of large varchar fields that exceed the limit when , and &quot; are escaped
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-534'>SYMMETRICDS-534</a>] -         Postgresql to mssql 2K8
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-537'>SYMMETRICDS-537</a>] -         Ping pongs happens when collation is set to Latin1_General_CI_AS on SQL Server because 0x0 aren&#39;t stripped from source_node_id when it is pulled from context_info()
+</li>
+</ul>
+        
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-491'>SYMMETRICDS-491</a>] -         When a SymmetricDS configuration change is detected during routing, queue up a syncTriggers() operation
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-517'>SYMMETRICDS-517</a>] -         Add support for hosting multiple engines in a single SymmetricDS server
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-526'>SYMMETRICDS-526</a>] -         When creating autoincrement columns in postgres don&#39;t specify that they have to be unique.  The fact that a primary key is defined will be enough to indicate the uniqueness.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-532'>SYMMETRICDS-532</a>] -         Only attempt fallback to update when there is a true primary key collision.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-536'>SYMMETRICDS-536</a>] -         Consolidate code that reads tables in the ddlutils package.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-538'>SYMMETRICDS-538</a>] -         Don&#39;t read every table in the database at SymmetricDS startup.  Only read in the relevant SymmetricDS tables to check for needed alterations.
+</li>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-539'>SYMMETRICDS-539</a>] -         Capture and route node and node_security changes out to all interested nodes.
+</li>
+</ul>
+    
+<h2>        New Feature
+</h2>
+<ul>
+<li>[<a href='http://jira.codehaus.org/browse/SYMMETRICDS-528'>SYMMETRICDS-528</a>] -         Add support for Greenplum as a SymmetricDS client
+</li>
+</ul>
+                
+</html>

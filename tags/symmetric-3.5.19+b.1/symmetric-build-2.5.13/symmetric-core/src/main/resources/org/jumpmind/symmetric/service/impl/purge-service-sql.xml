@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+  default-lazy-init="true">
+
+  <util:map id="purgeServiceSql">
+    <entry key="selectOutgoingBatchRangeSql">
+      <value>
+        select min(batch_id), max(batch_id) from $[sym.sync.table.prefix]_outgoing_batch where
+        create_time &lt; ? and status in ('OK','IG') and batch_id &lt; (select max(batch_id) from $[sym.sync.table.prefix]_outgoing_batch)
+      </value>
+    </entry>
+    <entry key="deleteOutgoingBatchSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_outgoing_batch where status in ('OK','IG') and batch_id between :MIN
+        and :MAX and batch_id not in (select batch_id from $[sym.sync.table.prefix]_data_event where batch_id between :MIN
+        and :MAX)
+      </value>
+    </entry>
+    <entry key="deleteDataEventSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_data_event where batch_id not in (select batch_id from
+        $[sym.sync.table.prefix]_outgoing_batch where batch_id between :MIN and :MAX and status not in ('OK','IG')) 
+        and batch_id between :MIN and :MAX 
+      </value>
+    </entry>
+    <entry key="deleteUnroutedDataEventSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_data_event where 
+          batch_id=-1 and create_time  &lt; :CUTOFF_TIME
+      </value>
+    </entry>    
+    <entry key="selectDataRangeSql">
+      <value>
+         select min(data_id), max(data_id) from $[sym.sync.table.prefix]_data where data_id &lt; (select max(data_id) from $[sym.sync.table.prefix]_data)
+      </value>
+    </entry>
+    <entry key="updateStrandedBatches">
+      <value>
+         update $[sym.sync.table.prefix]_outgoing_batch set status='OK' where node_id not
+           in (select node_id from $[sym.sync.table.prefix]_node where sync_enabled=1) and status != 'OK'
+      </value>
+    </entry>
+    <entry key="deleteStrandedData">
+      <value>
+         delete from $[sym.sync.table.prefix]_data where 
+          data_id between :MIN and :MAX and
+          data_id &lt; (select max(ref_data_id) from $[sym.sync.table.prefix]_data_ref) and
+          create_time &lt; :CUTOFF_TIME and 
+          data_id not in (select e.data_id from $[sym.sync.table.prefix]_data_event e where 
+              e.data_id between :MIN and :MAX)
+      </value>
+    </entry>    
+    <entry key="deleteDataSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_data where 
+          data_id between :MIN and :MAX and 
+          create_time &lt; :CUTOFF_TIME and 
+          data_id in (select e.data_id from $[sym.sync.table.prefix]_data_event e where 
+              e.data_id between :MIN and :MAX)
+          and
+          data_id not in 
+            (select e.data_id from $[sym.sync.table.prefix]_data_event e where 
+              e.data_id between :MIN and :MAX and
+              (e.data_id is null or 
+              e.batch_id in 
+                (select batch_id from $[sym.sync.table.prefix]_outgoing_batch where 
+                  status not in ('OK','IG'))))               
+      </value>
+    </entry>
+    <entry key="selectIncomingBatchRangeSql">
+      <value>
+        select node_id, min(batch_id), max(batch_id) from $[sym.sync.table.prefix]_incoming_batch where
+        create_time &lt; ? and status = 'OK' group by node_id
+      </value>
+    </entry>
+    <entry key="deleteIncomingBatchSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_incoming_batch where batch_id between ? and ? and node_id =
+        ? and status = 'OK'
+      </value>
+    </entry>
+    <entry key="deleteFromDataGapsSql">
+      <value>delete from $[sym.sync.table.prefix]_data_gap where last_update_time &lt; ? and status != 'GP'</value>
+    </entry>    
+    <entry key="deleteIncomingBatchByNodeSql">
+      <value>delete from $[sym.sync.table.prefix]_incoming_batch where node_id = ?</value>
+    </entry>
+  </util:map>
+
+</beans>

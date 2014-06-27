@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="SymmetricDS">
+    <bannerLeft>
+        <name>SymmetricDS</name>
+        <src>images/symmetric-chrome.png</src>
+        <href>/</href>
+    </bannerLeft>
+    <poweredBy>
+        <logo img="http://sflogo.sourceforge.net/sflogo.php?group_id=108357&amp;type=1"
+            name="Powered by Sourceforge" href="http://sourceforge.net" />
+        <logo img="images/logos/maven-feather.png" name="Powered by Apache Maven"
+            href="http://maven.apache.org/" />
+    </poweredBy>
+    <body>
+        <links>
+            <item name="Download"
+                href="http://sourceforge.net/project/showfiles.php?group_id=206470" />
+        </links>
+
+        <menu name="About">
+            <item name="Overview" href="/index.html" />
+            <item name="Features" href="/features.html" />
+            <item name="News" href="/news.html" />
+            <item name="Roadmap" href="/roadmap.html" />
+            <item name="License" href="/license.html" />
+            <item name="Team" href="/team-list.html" />
+        </menu>
+
+        <menu name="Documentation">
+            <item name="Getting Started" href="getting_started.html" />
+            <item name="JavaDoc" href="apidocs/index.html" />
+            <item name="Changes" href="/changes-report.html" />
+            <item name="Code Samples" href="/samples.html" />
+        </menu>
+
+        <menu name="Community">
+            <item name="SourceForge Home" href="http://sourceforge.net/projects/symmetricds/" />
+            <item name="Forums" href="http://sourceforge.net/forum/?group_id=206470" />
+            <item name="Bugs"
+                href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997724" />
+            <item name="Feature Requests"
+                href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997727" />
+            <item name="Support Requests"
+                href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997725" />
+            <item name="Patches"
+                href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997726" />
+        </menu>
+
+        <menu name="Code">
+            <item name="Download"
+                href="http://sourceforge.net/project/showfiles.php?group_id=206470" />
+            <item name="Source Repository" href="http://sourceforge.net/svn/?group_id=206470" />
+            <item name="Developing with Eclipse" href="eclipse.html" />
+            <item name="Maven Repository" href="maven.html" />
+            <item name="Browsable Source Code" href="/jxr.html" />
+            <item name="Todo List" href="/taglist.html" />
+        </menu>
+
+        <menu name="Reports">
+            <item name="Test Report" href="surefire-report.html" />
+            <item name="JDepends Report" href="jdepend-report.html" />
+        </menu>
+
+    </body>
+</project>

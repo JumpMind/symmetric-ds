@@ -1,0 +1,28 @@
+ ------
+ News
+ ------
+ ------
+ Date
+ ------
+
+News
+
+* October, 2008: Release 1.4.0
+
+ We have released version 1.4.0.  1.4.0 includes many new features and bug fixes. 
+ 
+* March 12, 2008: Release 1.3.0
+
+ We have released version 1.3.0.  This is a bug fix release. 
+
+* Dec 9, 2007: Release 1.1.0
+
+ We have released version 1.1.0.  This version adds SQL Server and PostgreSQL support as well as bug fixes.
+
+* Nov 2, 2007: Release 1.0.0
+
+ We have released version 1.0.0.  This version supports MySQL and Oracle out of the box.  Please post all questions to the user forums.  They will be answered in short order!
+
+* Oct 14, 2007: Coming Soon ...
+
+ Look for the SymmetricDS beta release to be posted within the next week.  It will be fully functional and ready for use.  All you adventurous developers can download the maven project and build it locally to start playing.

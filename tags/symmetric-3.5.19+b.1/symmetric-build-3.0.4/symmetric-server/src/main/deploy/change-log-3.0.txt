@@ -1,0 +1,74 @@
+SymmetricDS - 3.0.4 (Released 2012-06-22) 
+=========================================
+- 0000664: [Improvement] Pass a reference to ISymmetricEngine to the Scripted Router so it has access to SymmetricDS services - resolved.
+- 0000663: [Improvement] Add a variable transform that makes a column <null> (chenson) - resolved.
+- 0000659: [Improvement] Instead of failing to load a failed file, log warnings and delete staged resource if it was abandoned during xfer (chenson) - resolved.
+- 0000656: [Bug] Change the default secret key algorithm used for encrypting/decrypting password from PBEWithMD5AndTripleDES to PBEWithMD5AndDES (chenson) - resolved.
+- 0000657: [Improvement] SymmetricEngineHolder.install should encrypt database password by default (chenson) - resolved.
+- 0000658: [Bug] Fix null pointer exception that hides true exception during install of triggers (chenson) - resolved.
+
+SymmetricDS - 3.0.3 (Released 2012-06-18) 
+=========================================
+- 0000652: [Bug] Update documentation about how to configure purge (chenson) - resolved.
+- 0000647: [Bug] Fallback from insert to update causes an array index out of bounds exception (admin) - resolved.
+
+SymmetricDS - 3.0.2 (Released 2012-06-18)  
+======================================
+- 0000648: [Bug] Nested database transactions prevents H2 installation from deleting transforms sometimes. (chenson) - resolved.
+- 0000649: [Bug] Column matching routers can't match values with spaces. (abrougher) - resolved.
+- 0000651: [Bug] Initial Load Order not being honored. (chenson) - resolved.
+- 0000645: [Bug] Empty staged resource can be left around during the extract if there is an error during data extraction which causes SymmetricDS (chenson) - resolved.
+
+SymmetricDS - 3.0.1 (Released 2012-06-06)  
+=========================================
+- 0000638: [Improvement] Support Microsoft's JDBC 4 Driver for SQL Server - closed.
+- 0000639: [Improvement] Support Windows Azure - closed.
+- 0000640: [Improvement] For fallback, if update fails and then the insert fails (pk changed and row already exists), then attempt to update using the ne - closed.
+- 0000641: [Improvement] Don't initial load a table if the initial load order is < 0 - closed.
+- 0000642: [Bug] transforms with a transform_policy of implied don't copy primary keys to transform on insert - closed.
+- 0000643: [Bug] Firebird requires commits after each ddl statement during upgrades - closed.
+- 0000644: [Bug] Carriage return and line feeds are not being handled properly in the creation and parsing of CSV for 3.0.0 - closed.
+
+SymmetricDS - 3.0.0 (Released 2012-06-04)  
+=========================================
+
+This major release restructures the code for performance improvements and adds conflict management.
+
+- 0000629: [Bug] We don't quote the catalog and schema when allowing sql server identity inserts - closed.
+- 0000630: [Bug] Make sure cached table definitions are cleared out before running sync triggers. - closed.
+- 0000560: [Improvement] Support of AES Encryption Is Needed (elong) - closed.
+- 0000628: [Bug] Duplicate columns in table. Fix jdbc ddl reader so that reading table columns is qualified by schema and catalog - closed.
+- 0000608: [Improvement] Optimization - Only capture one row in sym_data_event per sym_data when all the routers on a channel always send to all nodes in - closed.
+- 0000618: [New Feature] Add setting on trigger that indicates whether old data should be captured by the triggers - closed.
+- 0000621: [Improvement] Reload parameters from sym_parameter when they come through the data loader or data router (so you don't have to wait for the ca - closed.
+- 0000622: [Improvement] Restart jobs if job parameters come through the data loader or data router - closed.
+- 0000623: [New Feature] Add the ability to set a status of IG (ignore) on either an incoming or outgoing batch so that the status will be transmitted re - closed.
+- 0000624: [Bug] The subselect router should not kick in during an initial load if the initial_load_select is used - closed.
+- 0000625: [Improvement] Upgrade Jetty from 7.1 to 7.6 (latest stable 7.x version) to fix sporadic EOF exceptions - closed.
+- 0000626: [Improvement] Use prepared args for the OK status in the purge service. Not sure if it makes a difference, but the wrong query plans are somet - closed.
+- 0000006: [New Feature] Add more robust conflict resolution strategies - closed.
+- 0000423: [Improvement] Add configurable file cache folder - closed.
+- 0000543: [Bug] Column's JdbcTypeName is Null - closed.
+- 0000548: [Bug] Remove invalid documentation for embedded.webserver.basic.auth.username and embedded.webserver.basic.auth.password - closed.
+- 0000549: [Bug] Section 4.8.2 Transformation Types fails to mention pre-defined Lookup Transform type - closed.
+- 0000562: [Bug] Fix DataService bug. Max data id that is currently handled in 2.x is Integer.MAX_VALUE. It should go all the way up to Long.MAX_ - closed.
+- 0000564: [Improvement] Add external_data to subselect router - closed.
+- 0000566: [Improvement] Add documentation re purge requirements and sym_node_security - closed.
+- 0000592: [New Feature] Make the data loader pluggable so that bulk loaders can be configured at the channel level. - closed.
+- 0000593: [Improvement] Re-factor the data loader and data extractor so the components can be re-used outside of the core symmetricds engine - closed.
+- 0000594: [Improvement] Remove dependency on commons-logging in favor of using slf4j everywhere for logging - closed.
+- 0000595: [Improvement] Turn on multiServerMode as the default. Update tutorial and documentation - closed.
+- 0000601: [Bug] Data type for data_id and batch_id should be a type that scales bigger than an integer - closed.
+- 0000605: [New Feature] Support wildcards for the source_table_name in sym_trigger so you only have to configure one trigger entry to sync and entire da - closed.
+- 0000607: [New Feature] Order triggers by FK constraints for initial load when initial_load_order is the same. - closed.
+- 0000609: [New Feature] Add dbexport and dbimport features to SymmetricDS - closed.
+- 0000613: [New Feature] Add a column_policy column to sym_transform_table that indicates whether undefined columns are specified or implied - closed.
+- 0000616: [Improvement] Refresh parameter cache whenever new parameters come through the data loader or data router. - closed.
+- 0000597: [Improvement] Consolidate database platform (former ddlutils) code and symmetricdialect code that contains information that should be in the p (chenson) - closed.
+- 0000596: [Improvement] Load each batch as it arrives at the target (instead of transporting all batches for 1 sync and then loading them all) (chenson) - closed.
+- 0000631: [Improvement] Add FKs to the SymmetricDS configuration tables - closed.
+- 0000632: [New Feature] Create new feature to allow concurrent pulling and pushing of nodes - closed.
+- 0000633: [Bug] Don't route inserts of sym_node or sym_node_security to the associated node_id - closed.
+- 0000634: [Improvement] Speed up node reloads on push. Continuously push to a node if the previous push contained a reload event. - closed.
+- 0000636: [Improvement] Support bigger than 32k clobs and varchar columns by swapping out sym_escape for REPLACE in the Firebird dialect - closed.
+- 0000637: [Improvement] By default delete sym_data_gap rows instead of marking them as OK or SK - closed.

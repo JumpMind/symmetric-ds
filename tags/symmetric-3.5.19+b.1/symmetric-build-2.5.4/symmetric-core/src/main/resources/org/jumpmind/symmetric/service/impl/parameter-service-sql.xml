@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+  default-lazy-init="true">
+
+  <util:map id="parameterServiceSql">
+    <entry key="updateParameterSql">
+      <value>
+        update $[sym.sync.table.prefix]_parameter set param_value=? where external_id=? and node_group_id=?
+        and param_key=?
+      </value>
+    </entry>
+    <entry key="insertParameterSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_parameter (external_id, node_group_id, param_key, param_value)
+        values(?, ?, ?, ?)
+      </value>
+    </entry>
+    <entry key="selectParametersSql">
+      <value>
+        select param_key, param_value from $[sym.sync.table.prefix]_parameter where external_id=? and
+        node_group_id=?
+      </value>
+    </entry>    
+    <entry key="selectParametersByKeySql">
+      <value>
+        select param_key, param_value, external_id, node_group_id from $[sym.sync.table.prefix]_parameter where param_key=?
+        order by node_group_id, external_id
+      </value>
+    </entry>
+    <entry key="deleteParameterSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_parameter where external_id=? and
+        node_group_id=? and param_key=?
+      </value>
+    </entry>        
+
+  </util:map>
+
+</beans>

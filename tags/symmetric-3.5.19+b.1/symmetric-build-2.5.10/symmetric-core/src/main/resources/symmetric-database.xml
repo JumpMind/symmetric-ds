@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" default-lazy-init="true">
+
+    <bean id="securityService" class="$[sym.security.service.class.name]" init-method="init" scope="singleton" />
+
+    <tx:annotation-driven transaction-manager="txManager" />
+
+    <!-- Support two different types of data sources:  application server hosted and internal -->
+    <bean id="dataSource" class="org.jumpmind.symmetric.db.DataSourceFactoryBean">
+        <property name="jndiName" value="$[sym.db.jndi.name]" />
+        <property name="beanName" value="$[sym.db.spring.bean.name]" />
+        <property name="connectionProperties" value="$[sym.db.connection.properties]" />
+    </bean>
+
+    <bean id="symmetricBasicDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+        destroy-method="close" >
+        <property name="driverClassName" value="$[sym.db.driver]" />
+        <property name="url" value="$[sym.db.url]" />
+        <property name="username">
+            <bean class="org.jumpmind.symmetric.security.PasswordFactory">
+                <property name="securityService" ref="securityService" />
+                <property name="password" value="$[sym.db.user]" />
+            </bean>
+        </property>
+        <property name="password">
+            <bean class="org.jumpmind.symmetric.security.PasswordFactory">
+                <property name="securityService" ref="securityService" />
+                <property name="password" value="$[sym.db.password]" />
+            </bean>
+        </property>
+        <property name="initialSize" value="$[sym.db.pool.initial.size]"/>
+        <property name="maxActive" value="$[sym.db.pool.max.active]"/>
+        <property name="maxWait" value="$[sym.db.pool.max.wait.millis]"/>
+        <property name="minEvictableIdleTimeMillis" value="$[sym.db.pool.min.evictable.idle.millis]"/>
+        <property name="timeBetweenEvictionRunsMillis" value="120000"/>
+        <property name="numTestsPerEvictionRun" value="10"/>
+        <property name="validationQuery" value="$[sym.db.validation.query]"/>
+    </bean>
+
+    <bean id="jndiDataSource" class="org.springframework.jndi.JndiObjectFactoryBean"
+        scope="prototype">
+        <property name="jndiName" value="$[sym.db.jndi.name]" />
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- Data Loader without query timeout to fix memory problems with MySQL 5 driver -->
+    <bean id="dataLoaderTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <bean id="transactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="txManager" />
+        <property name="propagationBehaviorName" value="PROPAGATION_REQUIRES_NEW" />
+    </bean>
+
+    <bean id="currentTransactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="txManager" />
+        <property name="propagationBehaviorName" value="PROPAGATION_REQUIRED" />
+    </bean>
+    
+    <bean id="dbDialect" class="org.jumpmind.symmetric.db.DbDialectFactory" scope="singleton">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="db2zSeriesProductVersion" value="$[sym.db2.zseries.version]" />
+        <property name="queryTimeout" value="$[sym.db.sql.query.timeout.seconds]"/>   
+        <property name="forceDelimitedIdentifierModeOn" value="$[sym.db.force.delimited.identifier.mode.on]"/>
+        <property name="forceDelimitedIdentifierModeOff" value="$[sym.db.force.delimited.identifier.mode.off]"/>             
+    </bean>
+
+</beans>

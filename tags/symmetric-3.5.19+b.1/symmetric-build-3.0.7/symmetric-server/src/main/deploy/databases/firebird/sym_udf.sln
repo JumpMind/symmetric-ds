@@ -1,0 +1,19 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sym_udf", "sym_udf.vcproj", "{418BA575-EDCE-4E3F-BAAA-A6B62118C900}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{418BA575-EDCE-4E3F-BAAA-A6B62118C900}.Debug|Win32.ActiveCfg = Release|Win32
+		{418BA575-EDCE-4E3F-BAAA-A6B62118C900}.Debug|Win32.Build.0 = Release|Win32
+		{418BA575-EDCE-4E3F-BAAA-A6B62118C900}.Release|Win32.ActiveCfg = Release|Win32
+		{418BA575-EDCE-4E3F-BAAA-A6B62118C900}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
