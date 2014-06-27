@@ -57,6 +57,7 @@ import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.DefaultOfflineServerListener;
 import org.jumpmind.symmetric.job.IJobManager;
+import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.Grouplet;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -575,10 +576,16 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     triggerRouterService.deleteTriggerRouter(triggerRouter);
                 }
 
-                for (TriggerRouter triggerRouter : triggerRouters) {
-                    triggerRouterService.deleteTrigger(triggerRouter.getTrigger());
-                    triggerRouterService.deleteRouter(triggerRouter.getRouter());
+                List<FileTriggerRouter> fileTriggerRouters = fileSyncService.getFileTriggerRouters();
+                for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
+                    fileSyncService.deleteFileTriggerRouter(fileTriggerRouter);
                 }
+                
+                List<Router> routers = triggerRouterService.getRouters();
+                for (Router router : routers) {
+                    triggerRouterService.deleteRouter(router);    
+                }
+
             }
             
             table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
