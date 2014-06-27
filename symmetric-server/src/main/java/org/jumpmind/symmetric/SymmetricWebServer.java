@@ -174,14 +174,13 @@ public class SymmetricWebServer {
 
     protected void initFromProperties() {
         File serverPropertiesFile = new File(DEFAULT_SERVER_PROPERTIES);
-        TypedProperties serverProperties = new TypedProperties();
-
         if (serverPropertiesFile.exists() && serverPropertiesFile.isFile()) {
             FileInputStream fis = null;
             try {
+                TypedProperties serverProperties = new TypedProperties();
                 fis = new FileInputStream(serverPropertiesFile);
                 serverProperties.load(fis);
-                
+
                 /* System properties always override */
                 serverProperties.merge(System.getProperties());
 
@@ -190,6 +189,16 @@ public class SymmetricWebServer {
                  * available to the parameter service
                  */
                 System.getProperties().putAll(serverProperties);
+
+                httpEnabled = serverProperties.is(ServerConstants.HTTP_ENABLE, true);
+                httpsEnabled = serverProperties.is(ServerConstants.HTTPS_ENABLE, true);
+                jmxEnabled = serverProperties.is(ServerConstants.JMX_HTTP_ENABLE, true);
+                httpPort = serverProperties.getInt(ServerConstants.HTTP_PORT, httpPort);
+                httpsPort = serverProperties.getInt(ServerConstants.HTTPS_PORT, httpsPort);
+                jmxPort = serverProperties.getInt(ServerConstants.JMX_HTTP_PORT, jmxPort);
+                host = serverProperties.get(ServerConstants.HOST_BIND_NAME, host);
+                httpSslVerifiedServerNames = serverProperties.get(ServerConstants.HTTPS_VERIFIED_SERVERS, httpSslVerifiedServerNames);
+                allowSelfSignedCerts = serverProperties.is(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, allowSelfSignedCerts);
 
             } catch (IOException ex) {
                 log.error("Failed to load " + DEFAULT_SERVER_PROPERTIES, ex);
@@ -201,28 +210,6 @@ public class SymmetricWebServer {
         } else if (!serverPropertiesFile.isFile()) {
             log.warn("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". Object is not a file.");
         }
-
-        httpEnabled = serverProperties.is(ServerConstants.HTTP_ENABLE,
-                Boolean.parseBoolean(System.getProperty(ServerConstants.HTTP_ENABLE, "true")));
-        httpsEnabled = serverProperties.is(ServerConstants.HTTPS_ENABLE,
-                Boolean.parseBoolean(System.getProperty(ServerConstants.HTTPS_ENABLE, "true")));
-        jmxEnabled = serverProperties.is(ServerConstants.JMX_HTTP_ENABLE,
-                Boolean.parseBoolean(System.getProperty(ServerConstants.JMX_HTTP_ENABLE, "true")));
-        httpPort = serverProperties.getInt(ServerConstants.HTTP_PORT,
-                Integer.parseInt(System.getProperty(ServerConstants.HTTP_PORT, "" + httpPort)));
-        httpsPort = serverProperties.getInt(ServerConstants.HTTPS_PORT,
-                Integer.parseInt(System.getProperty(ServerConstants.HTTPS_PORT, "" + httpsPort)));
-        jmxPort = serverProperties.getInt(ServerConstants.JMX_HTTP_PORT,
-                Integer.parseInt(System.getProperty(ServerConstants.JMX_HTTP_PORT, "" + jmxPort)));
-        host = serverProperties.get(ServerConstants.HOST_BIND_NAME,
-                System.getProperty(ServerConstants.HOST_BIND_NAME, host));
-        httpSslVerifiedServerNames = serverProperties.get(ServerConstants.HTTPS_VERIFIED_SERVERS,
-                System.getProperty(ServerConstants.HTTPS_VERIFIED_SERVERS,
-                        httpSslVerifiedServerNames));
-        allowSelfSignedCerts = serverProperties.is(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS,
-                Boolean.parseBoolean(System.getProperty(
-                        ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, "" + allowSelfSignedCerts)));
-
     }
 
     public SymmetricWebServer start(int httpPort, int jmxPort, String propertiesUrl) throws Exception {
@@ -395,7 +382,7 @@ public class SymmetricWebServer {
             connector.setHost(host);
             connector.setMaxIdleTime(maxIdleTime);
             connectors.add(connector);
-            log.info(String.format("About to start %s web server on host:port %s:%s", name, host == null ? "default" : host, port));
+            log.info("About to start {} web server on port {}", name, port);
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             ISecurityService securityService = SecurityServiceFactory.create(SecurityServiceType.SERVER, new TypedProperties(System.getProperties()));
@@ -415,7 +402,7 @@ public class SymmetricWebServer {
             connector.setPort(securePort);
             connector.setHost(host);
             connectors.add(connector);
-            log.info(String.format("About to start %s web server on secure host:port %s:%s", name, host == null ? "default" : host, securePort));
+            log.info("About to start SymmetricDS web server on secure port {}", securePort);
         }
         return connectors.toArray(new Connector[connectors.size()]);
     }
@@ -492,7 +479,6 @@ public class SymmetricWebServer {
     }
 
     public void setHttpPort(int httpPort) {
-        System.setProperty(ServerConstants.HTTP_PORT, Integer.toString(httpPort));
         this.httpPort = httpPort;
     }
 
@@ -501,7 +487,6 @@ public class SymmetricWebServer {
     }
 
     public void setHttpsPort(int httpsPort) {
-        System.setProperty(ServerConstants.HTTPS_PORT, Integer.toString(httpsPort));
         this.httpsPort = httpsPort;
     }
 

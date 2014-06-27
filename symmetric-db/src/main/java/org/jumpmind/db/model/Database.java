@@ -49,10 +49,6 @@ public class Database implements Serializable, Cloneable {
     /** The name of the database model. */
     private String name;
 
-    private String catalog;
-    
-    private String schema;
-    
     /** The method for generating primary keys (currently ignored). */
     private String idMethod;
 
@@ -170,22 +166,6 @@ public class Database implements Serializable, Cloneable {
      */
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getCatalog() {
-        return catalog;
-    }
-    
-    public void setCatalog(String catalog) {
-        this.catalog = catalog;
-    }
-    
-    public String getSchema() {
-        return schema;
-    }
-    
-    public void setSchema(String schema) {
-        this.schema = schema;
     }
 
     /**
@@ -598,8 +578,6 @@ public class Database implements Serializable, Cloneable {
     public Object clone() throws CloneNotSupportedException {
         Database result = (Database) super.clone();
         result.name = name;
-        result.catalog = catalog;
-        result.schema = schema;
         result.idMethod = idMethod;
         result.version = version;
         result.tables = new ArrayList<Table>(tables.size());
@@ -618,8 +596,8 @@ public class Database implements Serializable, Cloneable {
             Database other = (Database) obj;
 
             // Note that this compares case sensitive
-            return new EqualsBuilder().append(name, other.name).append(catalog, other.catalog)
-                    .append(schema, other.schema).append(tables, other.tables).isEquals();
+            return new EqualsBuilder().append(name, other.name).append(tables, other.tables)
+                    .isEquals();
         } else {
             return false;
         }
@@ -638,11 +616,11 @@ public class Database implements Serializable, Cloneable {
     public String toString() {
         StringBuffer result = new StringBuffer();
 
-        result.append("Database [name=").append(name);
-        result.append("; catalog=").append(catalog);
-        result.append("; schema=").append(catalog);
-        result.append("; tableCount=").append(getTableCount());
-        result.append("]");
+        result.append("Database [name=");
+        result.append(getName());
+        result.append("; ");
+        result.append(getTableCount());
+        result.append(" tables]");
 
         return result.toString();
     }

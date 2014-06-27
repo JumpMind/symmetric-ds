@@ -33,7 +33,6 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
-import org.jumpmind.db.platform.db2.Db2zOsDatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
@@ -43,9 +42,8 @@ import org.jumpmind.db.platform.hsqldb2.HsqlDb2DatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
 import org.jumpmind.db.platform.interbase.InterbaseDatabasePlatform;
 import org.jumpmind.db.platform.mariadb.MariaDBDatabasePlatform;
-import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
-import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
-import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSqlDatabasePlatform;
+import org.jumpmind.db.platform.mssql2000.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
@@ -53,8 +51,6 @@ import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /*
  * A factory of {@link IDatabasePlatform} instances based on a case
@@ -72,8 +68,6 @@ public class JdbcDatabasePlatformFactory {
      */
     private static Map<String, Class<? extends IDatabasePlatform>> jdbcSubProtocolToPlatform = new HashMap<String, Class<? extends IDatabasePlatform>>();
 
-    private static final Logger log = LoggerFactory.getLogger(JdbcDatabasePlatformFactory.class);
-
     static {
 
         addPlatform(platforms, "H2", H2DatabasePlatform.class);
@@ -87,11 +81,10 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "HSQL Database Engine2", HsqlDb2DatabasePlatform.class);
         addPlatform(platforms, "Interbase", InterbaseDatabasePlatform.class);
         addPlatform(platforms, "MariaDB", MariaDBDatabasePlatform.class);
+        addPlatform(platforms, "MsSQL", MsSqlDatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server8", MsSql2000DatabasePlatform.class);
-        addPlatform(platforms, "microsoft sql server9", MsSql2005DatabasePlatform.class);
-        addPlatform(platforms, "microsoft sql server10", MsSql2008DatabasePlatform.class);
-        addPlatform(platforms, "microsoft sql server11", MsSql2008DatabasePlatform.class);
-        addPlatform(platforms, "microsoft sql server", MsSql2008DatabasePlatform.class);
+        addPlatform(platforms, "microsoft sql server11", MsSqlDatabasePlatform.class);
+        addPlatform(platforms, "microsoft sql server", MsSqlDatabasePlatform.class);
         addPlatform(platforms, "MySQL", MySqlDatabasePlatform.class);
         addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
         addPlatform(platforms, "PostgreSql", PostgreSqlDatabasePlatform.class);
@@ -99,7 +92,6 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "Adaptive Server Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "SQL Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.DB2ZOS, Db2zOsDatabasePlatform.class);
         addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
 
         jdbcSubProtocolToPlatform.put(Db2DatabasePlatform.JDBC_SUBPROTOCOL, Db2DatabasePlatform.class);
@@ -109,9 +101,8 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(HsqlDbDatabasePlatform.JDBC_SUBPROTOCOL, HsqlDbDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(InterbaseDatabasePlatform.JDBC_SUBPROTOCOL,
                 InterbaseDatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(MsSqlDatabasePlatform.JDBC_SUBPROTOCOL, MsSqlDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MsSql2000DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2000DatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(MsSql2005DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2005DatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(MsSql2008DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2008DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MySqlDatabasePlatform.JDBC_SUBPROTOCOL, MySqlDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_THIN,
                 OracleDatabasePlatform.class);
@@ -195,8 +186,7 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
             nameVersion[2] = url;
-            log.info("Detected database '" + nameVersion[0] + "', version '" + nameVersion[1] + "', protocol '" + nameVersion[2] + "'");
-            
+
             /*
              * if the productName is PostgreSQL, it could be either PostgreSQL
              * or Greenplum
@@ -216,12 +206,6 @@ public class JdbcDatabasePlatformFactory {
             if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.MYSQL)) {
                 if (isMariaDBDatabase(connection)) {
                     nameVersion[0] = DatabaseNamesConstants.MARIADB;
-                }
-            }
-
-            if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.DB2)) {
-                if (nameVersion[0].toUpperCase().indexOf("Z") != -1) {
-                    nameVersion[0] = DatabaseNamesConstants.DB2ZOS;
                 }
             }
 

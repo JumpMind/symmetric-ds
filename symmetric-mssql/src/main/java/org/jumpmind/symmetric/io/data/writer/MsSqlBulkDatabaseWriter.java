@@ -1,91 +1,50 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.io.data.writer;
 
-import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
-import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
 
-    protected static final byte[] DELIMITER = "||".getBytes();
     protected NativeJdbcExtractor jdbcExtractor;
     protected int maxRowsBeforeFlush;
     protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
     protected int loadedRows = 0;
     protected boolean fireTriggers;
-    protected String uncPath;
     protected boolean needsBinaryConversion;
-    protected boolean needsColumnsReordered;
     protected Table table = null;
-    protected Table databaseTable = null;
 
 	public MsSqlBulkDatabaseWriter(IDatabasePlatform platform,
 			IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
-			int maxRowsBeforeFlush, boolean fireTriggers, String uncPath) {
+			int maxRowsBeforeFlush, boolean fireTriggers) {
 		super(platform);
 		this.jdbcExtractor = jdbcExtractor;
 		this.maxRowsBeforeFlush = maxRowsBeforeFlush;
 		this.stagingManager = stagingManager;
 		this.fireTriggers = fireTriggers;
-		this.uncPath = uncPath;
 	}
 
     public boolean start(Table table) {
-        this.table = table;
         if (super.start(table)) {
             needsBinaryConversion = false;
-            if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
-                for (Column column : targetTable.getColumns()) {
-                    if (column.isOfBinaryType()) {
-                        needsBinaryConversion = true;
-                        break;
-                    }
-                }
-            }
-            databaseTable = platform.getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
-                    sourceTable.getName(), false);
-            String[] csvNames = targetTable.getColumnNames();
-            String[] columnNames = databaseTable.getColumnNames();
-            needsColumnsReordered = false;
-            for (int i = 0; i < csvNames.length; i++) {
-                if (! csvNames[i].equals(columnNames[i])) {
-                    needsColumnsReordered = true;
+            for (Column column : targetTable.getColumns()) {
+                if (column.isOfBinaryType()) {
+                    needsBinaryConversion = true;
                     break;
                 }
             }
@@ -125,37 +84,14 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                         Column[] columns = targetTable.getColumns();
                         for (int i = 0; i < columns.length; i++) {
                             if (columns[i].isOfBinaryType()) {
-                                if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64) && parsedData[i] != null) {
-                                    parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
-                                }
+                                parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
                             }
                         }
                     }
-                    OutputStream out =  this.stagedInputFile.getOutputStream();
-                    if (needsColumnsReordered) {
-                        Map<String, String> mapData = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
-                        String[] columnNames = databaseTable.getColumnNames();
-                        for (int i = 0; i < columnNames.length; i++) {
-                            String columnData = mapData.get(columnNames[i]);
-                            if (columnData != null) {
-                                out.write(columnData.getBytes());
-                            }
-                            if (i + 1 < columnNames.length) {
-                                out.write(DELIMITER);
-                            }
-                        }
-                    } else {
-                        for (int i = 0; i < parsedData.length; i++) {
-                            if (parsedData[i] != null) {
-                                out.write(parsedData[i].getBytes());
-                            }
-                            if (i + 1 < parsedData.length) {
-                                out.write(DELIMITER);
-                            }
-                        }
-                    }
-                    out.write('\r');
-                    out.write('\n');
+                    String formattedData = CsvUtils.escapeCsvData(parsedData, '\0', '\0', CsvWriter.ESCAPE_MODE_DOUBLED);
+                    this.stagedInputFile.getOutputStream().write(formattedData.getBytes());
+                    this.stagedInputFile.getOutputStream().write('\r');
+                    this.stagedInputFile.getOutputStream().write('\n');                    
                     loadedRows++;
                 } catch (Exception ex) {
                     throw getPlatform().getSqlTemplate().translate(ex);
@@ -180,19 +116,13 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
         if (loadedRows > 0) {
         	this.stagedInputFile.close();
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-            String filename;
-            if (StringUtils.isEmpty(uncPath)) {
-                filename = stagedInputFile.getFile().getAbsolutePath();
-            } else {
-                filename = uncPath + "\\" + stagedInputFile.getFile().getName();
-            }
 	        try {
 	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
 	            Connection c = jdbcTransaction.getConnection();
 	            String sql = String.format("BULK INSERT " + 
 	            		this.getTargetTable().getFullyQualifiedTableName() + 
-	            		" FROM '" + filename) + "'" +
-	            		" WITH ( FIELDTERMINATOR='||', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
+	            		" FROM '" + stagedInputFile.getFile().getAbsolutePath()) + "'" +
+	            		" WITH ( FIELDTERMINATOR=',', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
@@ -206,7 +136,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        }
 	        this.stagedInputFile.delete();
 	        createStagingFile();
-	        loadedRows = 0;
+            loadedRows = 0;
         }
     }
     

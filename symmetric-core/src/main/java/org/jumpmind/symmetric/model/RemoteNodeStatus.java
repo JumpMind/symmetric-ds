@@ -22,7 +22,8 @@ package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
+
+import org.jumpmind.symmetric.common.Constants;
 
 /**
  * Indicates the status of an attempt to transport data from or to a remove
@@ -42,12 +43,10 @@ public class RemoteNodeStatus implements Serializable {
     private long batchesProcessed;
     private long reloadBatchesProcessed;
     private boolean complete = false;
-    private Map<String, Channel> channels;
 
-    public RemoteNodeStatus(String nodeId, Map<String, Channel> channels) {
+    public RemoteNodeStatus(String nodeId) {
         this.status = Status.NO_DATA;
         this.nodeId = nodeId;
-        this.channels = channels;
     }
     
     public boolean failed() {
@@ -111,8 +110,7 @@ public class RemoteNodeStatus implements Serializable {
             for (OutgoingBatch batch : outgoingBatches) {
                 batchesProcessed++;
                 dataProcessed += batch.totalEventCount();
-                Channel channel = channels.get(batch.getChannelId());
-                if (channel != null && channel.isReloadFlag()) {
+                if (Constants.CHANNEL_RELOAD.equals(batch.getChannelId())) {
                     reloadBatchesProcessed++;
                 }
                 

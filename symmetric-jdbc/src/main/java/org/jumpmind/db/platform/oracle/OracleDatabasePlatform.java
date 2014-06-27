@@ -74,6 +74,9 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
         SymmetricLobHandler symmetricLobHandler = new SymmetricLobHandler(lobHandler);
         return new OracleJdbcSqlTemplate(dataSource, settings, symmetricLobHandler, getDatabaseInfo());
     }
+    public static void main(String[] args) {
+        System.out.println(Integer.MAX_VALUE);
+    }
     
     public String getName() {
         return DatabaseNamesConstants.ORACLE;

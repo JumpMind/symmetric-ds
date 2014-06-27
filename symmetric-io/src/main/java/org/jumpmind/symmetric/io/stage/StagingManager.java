@@ -42,7 +42,6 @@ public class StagingManager implements IStagingManager {
     protected Map<String, IStagedResource> resourceList = new ConcurrentHashMap<String, IStagedResource>();
 
     public StagingManager(String directory) {
-        log.info("The staging directory was initialized at the following location: " + directory);
         this.directory = new File(directory);
         this.directory.mkdirs();
         refreshResourceList();
@@ -110,7 +109,7 @@ public class StagingManager implements IStagingManager {
                             log.warn("Failed to delete the '{}' staging resource", resource.getPath());
                         }
                     } else {
-                        log.info("The '{}' staging resource qualified for being cleaned, but was in use.  It will not be cleaned right now", resource.getPath());
+                        log.warn("The '{}' staging resource qualified for being cleaned, but was in use.  It will not be cleaned right now", resource.getPath());
                     }
                 }
             }

@@ -32,7 +32,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Handler;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -123,8 +122,7 @@ public abstract class AbstractCommandLauncher {
 
             if (line.getOptions() != null) {
                 for (Option option : line.getOptions()) {
-                    log.info("Option: name={}, value={}", new Object[] { 
-                            option.getLongOpt() != null ? option.getLongOpt() : option.getOpt(),
+                    log.info("Option: name={}, value={}", new Object[] { option.getLongOpt(),
                             ArrayUtils.toString(option.getValues()) });
                 }
             }
@@ -161,13 +159,6 @@ public abstract class AbstractCommandLauncher {
     }
 
     protected void configureLogging(CommandLine line) throws MalformedURLException {
-        
-        java.util.logging.Logger globalLogger = java.util.logging.Logger.getLogger("");
-        Handler[] handlers = globalLogger.getHandlers();
-        for(Handler handler : handlers) {
-            globalLogger.removeHandler(handler);
-        }
-        
         URL log4jUrl = new URL(System.getProperty("log4j.configuration",
                 "file:../conf/log4j-blank.xml"));
         File log4jFile = new File(new File(log4jUrl.getFile()).getParent(), "log4j.xml");
@@ -344,7 +335,7 @@ public abstract class AbstractCommandLauncher {
             if (testConnection) {
                 testConnection();
             }
-            platform = ClientSymmetricEngine.createDatabasePlatform(null, new TypedProperties(
+            platform = ClientSymmetricEngine.createDatabasePlatform(new TypedProperties(
                     propertiesFile), null, false);
         }
         return platform;

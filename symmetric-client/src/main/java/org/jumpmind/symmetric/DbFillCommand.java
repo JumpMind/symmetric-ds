@@ -44,8 +44,6 @@ public class DbFillCommand extends AbstractCommandLauncher {
 
     private static final String OPTION_IGNORE_TABLES = "ignore";
     
-    private static final String OPTION_PREFIXED_TABLES = "prefixed";
-    
     private static final String OPTION_INTERVAL = "interval";
     
     private static final String OPTION_WEIGHTS = "weights";
@@ -85,7 +83,6 @@ public class DbFillCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_COUNT, true);
         addOption(options, null, OPTION_CASCADE, false);
         addOption(options, null, OPTION_IGNORE_TABLES, true);
-        addOption(options, null, OPTION_PREFIXED_TABLES, true);
         addOption(options, null, OPTION_INTERVAL, true);
         addOption(options, null, OPTION_WEIGHTS, true);
         addOption(options, null, OPTION_CONTINUE, false);
@@ -131,10 +128,6 @@ public class DbFillCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_IGNORE_TABLES)) {
             ignore = line.getOptionValue(OPTION_IGNORE_TABLES).split(",");
         }
-        String prefixed[] = null;
-        if (line.hasOption(OPTION_PREFIXED_TABLES)) {
-            prefixed = line.getOptionValue(OPTION_PREFIXED_TABLES).split(",");
-        }
         if (line.hasOption(OPTION_CONTINUE)) {
             dbFill.setContinueOnError(true);
         }
@@ -143,7 +136,6 @@ public class DbFillCommand extends AbstractCommandLauncher {
         IParameterService parameterService = engine.getParameterService();
         String cfgPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX);
         dbFill.setIgnore((String[])ArrayUtils.add(ignore, cfgPrefix));
-        dbFill.setPrefixed(prefixed);
         
         Map<String,int[]> tableProperties = parseTableProperties();
         

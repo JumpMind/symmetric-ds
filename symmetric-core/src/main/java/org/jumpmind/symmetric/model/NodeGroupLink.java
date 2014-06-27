@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
-public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
+public class NodeGroupLink implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -33,14 +33,12 @@ public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
     private String targetNodeGroupId;
 
     private NodeGroupLinkAction dataEventAction = NodeGroupLinkAction.W;
-    
-    private boolean syncConfigEnabled = true;
         
     private Date createTime;
     
     private Date lastUpdateTime;
     
-    private String lastUpdateBy;    
+    private String lastUpdateBy;
 
     public NodeGroupLink() {   
     }
@@ -61,14 +59,6 @@ public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
 
     public void setDataEventAction(NodeGroupLinkAction dataEventAction) {
         this.dataEventAction = dataEventAction;
-    }
-    
-    public void setSyncConfigEnabled(boolean syncConfigEnabled) {
-        this.syncConfigEnabled = syncConfigEnabled;
-    }
-     
-    public boolean isSyncConfigEnabled() {
-        return syncConfigEnabled;
     }
 
     public String getSourceNodeGroupId() {
@@ -114,11 +104,6 @@ public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
     @Override
     public String toString() {     
         return sourceNodeGroupId + " " + dataEventAction + " " + targetNodeGroupId;
-    }
-    
-    @Override
-    public int compareTo(NodeGroupLink o) {
-        return toString().compareTo(o.toString());
     }
 
     @Override

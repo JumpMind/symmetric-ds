@@ -35,7 +35,6 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.transform.ColumnPolicy;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ParameterColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
@@ -64,7 +63,6 @@ public class TransformService extends AbstractService implements ITransformServi
         this.configurationService = configurationService;
         
         columnTransforms = TransformWriter.buildDefaultColumnTransforms();
-        addColumnTransform(new ParameterColumnTransform(parameterService));
 
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -323,7 +321,7 @@ public class TransformService extends AbstractService implements ITransformServi
             TransformTableNodeGroupLink table = new TransformTableNodeGroupLink();
             table.setTransformId(rs.getString("transform_id"));
             table.setNodeGroupLink(configurationService.getNodeGroupLinkFor(
-                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id"), false));
+                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id")));
             table.setSourceCatalogName(rs.getString("source_catalog_name"));
             table.setSourceSchemaName(rs.getString("source_schema_name"));
             table.setSourceTableName(rs.getString("source_table_name"));

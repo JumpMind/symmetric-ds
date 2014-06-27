@@ -26,7 +26,7 @@
 <database name="symmetric">
 
     <table name="channel" description="This table represents a category of data that can be synchronized independently of other channels. Channels allow control over the type of data flowing and prevents one type of synchronization from contending with another.">
-        <column name="channel_id" type="VARCHAR" size="128" required="true" primaryKey="true" description="A unique identifer, usually named something meaningful, like 'sales' or 'inventory'."/>
+        <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true" description="A unique identifer, usually named something meaningful, like 'sales' or 'inventory'."/>
         <column name="processing_order" type="INTEGER" required="true" default="1" description="Order of sequence to process channel data."/>
         <column name="max_batch_size" type="INTEGER" required="true" default="1000" description="The maximum number of Data Events to process within a batch for this channel."/>
         <column name="max_batch_to_send" type="INTEGER" required="true" default="60" description="The maximum number of batches to send during a 'synchronization' between two nodes. A 'synchronization' is equivalent to a push or a pull. If there are 12 batches ready to be sent for a channel and max_batch_to_send is equal to 10, then only the first 10 batches will be sent." />
@@ -36,8 +36,6 @@
         <column name="use_old_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the old data during routing."/>
         <column name="use_row_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the row data during routing."/>
         <column name="use_pk_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the pk data during routing."/>
-        <column name="reload_flag" type="BOOLEANINT" size="1" required="true" default="0" description="Indicates that this channel is used for reloads."/>
-        <column name="file_sync_flag" type="BOOLEANINT" size="1" required="true" default="0" description="Indicates that this channel is used for file sync."/>
         <column name="contains_big_lob" type="BOOLEANINT" size="1" required="true" default="0" description="Provides SymmetricDS a hint on how to treat captured data.  Currently only supported by Oracle.  If set to '0', then selects for routing and data extraction will be more efficient and lobs will be truncated at 4k in the trigger text.  When it is set to '0' there is a 4k limit on the total size of a row and on the size of a LOB column.  Note, when switching this value back and forth triggers need to be forced to regenerate."/>
         <column name="batch_algorithm" type="VARCHAR" size="50" required="true" default="default" description="The algorithm to use when batching data on this channel.  Possible values are: 'default', 'transactional', and 'nontransactional'"/>
         <column name="data_loader_type" type="VARCHAR" size="50" required="true" default="default" description="Identify the type of data loader this channel should use.  Allows for the default dataloader to be swapped out via configuration for more efficient platform specific data loaders."/>
@@ -51,7 +49,7 @@
         <column name="conflict_id"          type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a specific conflict detection setting." />
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" description="The source node group for which this setting will be applied to. References a node group link." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The target node group for which this setting will be applied to.  References a node group link." />
-        <column name="target_channel_id"    type="VARCHAR" size="128"  description="Optional channel that this setting will be applied to." />
+        <column name="target_channel_id"    type="VARCHAR" size="20"  description="Optional channel that this setting will be applied to." />
         <column name="target_catalog_name"  type="VARCHAR" size="255" description="Optional database catalog that the target table belongs to. Only use this if the target table is not in the default catalog." />
         <column name="target_schema_name"   type="VARCHAR" size="255" description="Optional database schema that the target table belongs to. Only use this if the target table is not in the default schema." />
         <column name="target_table_name"    type="VARCHAR" size="255" description="Optional database table that this setting will apply to.  If left blank, the setting will be for any table in the channel (if set) and in the specified node group link." />
@@ -78,7 +76,7 @@
         <column name="pk_data" type="LONGVARCHAR"  description="The primary key values of the captured data change from the synchronized table. This data is captured for updates and deletes. The primary key values are stored in comma-separated values (CSV) format." />
         <column name="old_data" type="LONGVARCHAR"  description="The captured data values prior to the update.  The column values are stored in CSV format." />
         <column name="trigger_hist_id" type="INTEGER" required="true"  description="The foreign key to the trigger_hist entry that contains the primary key and column names for the table being synchronized." />
-        <column name="channel_id" type="VARCHAR" size="128"  description="The channel that this data belongs to, such as 'prices'" />
+        <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this data belongs to, such as 'prices'" />
         <column name="transaction_id" type="VARCHAR" size="255"  description="An optional transaction identifier that links multiple data changes together as the same transaction." />
         <column name="source_node_id" type="VARCHAR" size="50"  description="If the data was inserted by a SymmetricDS data loader, then the id of the source node is record so that data is not re-routed back to it." />
         <column name="external_data" type="VARCHAR" size="50"  description="A field that can be populated by a trigger that uses the EXTERNAL_SELECT" />
@@ -113,12 +111,12 @@
      </table>
 
     <table name="extract_request" description="This table is used internally to request the extract of initial loads asynchronously when the initial load extract job is enabled.">
-        <column name="request_id" type="BIGINT" required="true" primaryKey="true" description="Unique identifier for a request." />
+        <column name="request_id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a request." />
         <column name="node_id" type="VARCHAR" size="50" required="true" description="The node_id of the batch being loaded." />
         <column name="status" type="CHAR" size="2"  description="NE, OK" />
         <column name="start_batch_id" type="BIGINT" required="true" description="A load can be split across multiple batches.  This is the first of N batches the load will be split across." />
         <column name="end_batch_id" type="BIGINT" required="true" description="This is the last of N batches the load will be split across." />
-        <column name="trigger_id" type="VARCHAR" size="128" required="true" description="Unique identifier for a trigger associated with the extract request." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" description="Unique identifier for a trigger associated with the extract request." />
         <column name="router_id" type="VARCHAR" size="50" required="true" description="Unique description of the router associated with the extract request." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
@@ -133,12 +131,10 @@
     </table>
 
     <table name="file_snapshot" description="Table used to capture file changes.  Updates to the table are captured and routed according to the configured file trigger routers.">
-        <column name="trigger_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The id of the trigger that caused this snapshot to be taken." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of the trigger that caused this snapshot to be taken." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of the router that caused this snapshot to be taken." />
         <column name="relative_dir" type="VARCHAR" size="255" required="true" primaryKey="true" description="The path to the file starting at the base_dir" />
         <column name="file_name" type="VARCHAR" size="128" required="true" primaryKey="true" description="The name of the file that changed." />
-        <column name="channel_id" type="VARCHAR" size="128" required="true" default="filesync"  description="The channel_id of the channel that data changes will flow through." />
-        <column name="reload_channel_id" type="VARCHAR" size="128" required="true" default="filesync_reload"  description="The channel_id of the channel that data changes will flow through." />
         <column name="last_event_type" type="CHAR" size="1" required="true"  description="The type of event captured by this entry. 'C' is for create, 'M' is for modified, and 'D' is for deleted." />
         <column name="crc32_checksum" type="BIGINT" description="File checksum.  Can be used to determine if file content has changed." />
         <column name="file_size" type="BIGINT" description="The size in bytes of the file at the time this change was detected." />
@@ -146,15 +142,10 @@
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <index name="idx_f_snpsht_chid">
-            <index-column name="reload_channel_id" />
-        </index>
     </table>
 
     <table name="file_trigger" description="This table defines files or sets of files for which changes will be captured for file synchronization">
-        <column name="trigger_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
-        <column name="channel_id" type="VARCHAR" size="128" required="true" default="filesync"  description="The channel_id of the channel that data changes will flow through." />
-        <column name="reload_channel_id" type="VARCHAR" size="128" required="true" default="filesync_reload" description="The channel_id of the channel that will be used for reloads." />        
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
         <column name="base_dir" type="VARCHAR" size="255" required="true" description="The base directory on the client that will be synchronized." />
         <column name="recurse" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to synchronize child directories." />
         <column name="includes_files" type="VARCHAR" size="255"  description="Wildcard-enabled, comma-separated list of file to include in synchronization." />
@@ -162,8 +153,6 @@
         <column name="sync_on_create" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when they are created." />
         <column name="sync_on_modified" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and send files when they are modified." />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether to capture and remove files when they are deleted." />
-        <column name="sync_on_ctl_file" type="BOOLEANINT" size="1" required="true" default="0"  description="Combined with sync_on_create, determines whether to capture and send files when a matching control file exists.  The control file is a file of the same name with a '.ctl' extension appended to the end." />
-        <column name="delete_after_sync" type="BOOLEANINT" size="1" required="true" default="0"  description="Determines whether to delete the file after it has synced successfully." />
         <column name="before_copy_script" type="LONGVARCHAR" description="A bsh script that is run right before the file copy." />
         <column name="after_copy_script" type="LONGVARCHAR" description="A bsh script that is run right after the file copy." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp of when this entry was created." />
@@ -172,7 +161,7 @@
     </table>
 
     <table name="file_trigger_router" description="Maps a file trigger to a router.">
-        <column name="trigger_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The id of a file trigger." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a file trigger." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether this file trigger router is enabled or not."/>
         <column name="initial_load_enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether this file trigger should be initial loaded."/>
@@ -212,7 +201,7 @@
     <table name="incoming_batch" description="The incoming_batch is used for tracking the status of loading an outgoing_batch from another node. Data is loaded and commited at the batch level. The status of the incoming_batch is either successful (OK) or error (ER). ">
         <column name="batch_id" type="BIGINT" size="50" required="true" primaryKey="true"  description="The id of the outgoing_batch that is being loaded." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The node_id of the source of the batch being loaded." />
-        <column name="channel_id" type="VARCHAR" size="128"  description="The channel_id of the batch being loaded." />
+        <column name="channel_id" type="VARCHAR" size="20"  description="The channel_id of the batch being loaded." />
         <column name="status" type="CHAR" size="2"  description="The current status of the batch can be loading (LD), successfully loaded (OK), in error (ER) or skipped (SK)" />
         <column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />
         <column name="network_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
@@ -291,11 +280,8 @@
 
     <table name="lock" description="Contains semaphores that are set when processes run, so that only one server can run a process at a time.  Enable this feature by using the cluster.lock.during.xxxx parameters.">
         <column name="lock_action" type="VARCHAR" size="50" required="true" primaryKey="true" description="The process that needs a lock."/>
-        <column name="lock_type" type="VARCHAR" size="50" required="true" description="Type of lock that indicates differently locking behavior.  Types include cluster, exclusive, and shared.  Cluster lock is used to allow one server to run at a time, but any process from the same server can overtake the lock, which avoids stalled processing.  Exclusive lock is owned by one process, regardless of which server it is on, but another process can acquire the lock after lock_time is older than exclusive.lock.timeout.ms.  Shared lock allows multiple processes to use the same lock, incrementing the shared_count, but requires no exclusive lock exists and prevents an exclusive lock. " />
         <column name="locking_server_id" type="VARCHAR" size="255" description="The name of the server that currently has a lock.  This is typically a host name, but it can be overridden using the -Druntime.symmetric.cluster.server.id=name System property."/>
         <column name="lock_time" type="TIMESTAMP" description="The time a lock is aquired.  Use the cluster.lock.timeout.ms to specify a lock timeout period." />
-        <column name="shared_count" type="INTEGER" required="true" default="0" description="For a lock_type of SHARED, this is the number of processes sharing the same lock.  After the shared_count drops to zero, a shared lock is removed." />
-        <column name="shared_enable" type="INTEGER" required="true" default="0" description="For a lock_type of SHARED, this flag set to 1 indicates that more processes can share the lock.  If an exclusive lock is needed, the flag is set to 0 to prevent further shared locks from accumulating." />
         <column name="last_lock_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="last_locking_server_id" type="VARCHAR" size="255"  description="The server id of the process that last did work on this batch." />
     </table>
@@ -335,7 +321,7 @@
 
     <table name="node_channel_ctl" description="Used to ignore or suspend a channel. A channel that is ignored will have its data_events batched and they will immediately be marked as 'OK' without sending them. A channel that is suspended is skipped when batching data_events.">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />
-        <column name="channel_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The name of the channel_id that is being controlled." />
+        <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="The name of the channel_id that is being controlled." />
         <column name="suspend_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates if this channel is suspended, which prevents its Data Events from being batched." />
         <column name="ignore_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates if this channel is ignored, which marks its Data Events as if they were actually processed." />
         <column name="last_extract_time" type="TIMESTAMP"  description="Record the last time data was extract for a node and a channel." />
@@ -351,7 +337,7 @@
 
     <table name="node_group_channel_wnd" description="An optional window of time for which a node group and channel will extract and send data.">
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node_group_id that this window applies to."/>
-        <column name="channel_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The channel_id that this window applies to."/>
+        <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="The channel_id that this window applies to."/>
         <column name="start_time" type="TIME" required="true" primaryKey="true"  description="The start time for the active window."/>
         <column name="end_time" type="TIME" required="true" primaryKey="true" description="The end time for the active window.  Note that if the end_time is less than the start_time then the window crosses a day boundary."/>
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="0" description="Enable this window.  If this is set to '0' then this window is ignored."/>
@@ -360,8 +346,7 @@
     <table name="node_group_link" description="A source node_group sends its data updates to a target NodeGroup using a pull, push, or custom technique.">
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes should be captured." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes will be sent." />
-        <column name="data_event_action" type="CHAR" size="1" default="W" required="true" description="The notification scheme used to send data changes to the target node group. (P = Push, W = Wait for Pull, R = Route-Only) " />
-        <column name="sync_config_enabled" type="BOOLEANINT" size="1" default="1" required="true"  description="Indicates whether configuration that has changed should be synchronized to target nodes on this link." />
+        <column name="data_event_action" type="CHAR" size="1" default="W" required="true" description="The notification scheme used to send data changes to the target node group. (P = Push, W = Wait for Pull, ) " />
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
@@ -387,7 +372,6 @@
         <column name="max_memory_bytes" type="BIGINT" default="0" description="The max amount of memory available to the JVM." />
         <column name="java_version" type="VARCHAR" size="50" description="The version of java that SymmetricDS is running as." />
         <column name="java_vendor" type="VARCHAR" size="255" description="The vendor of java that SymmetricDS is running as." />
-        <column name="jdbc_version" type="VARCHAR" size="255" description="The verision of the JDBC driver that is being used." />
         <column name="symmetric_version" type="VARCHAR" size="50"  description="The version of SymmetricDS running at this node." />
         <column name="timezone_offset" type="VARCHAR" size="6"  description="The time zone offset in RFC822 format at the time of the last heartbeat. " />
         <column name="heartbeat_time" type="TIMESTAMP"  description="The last timestamp when the node sent a heartbeat, which is attempted every ten minutes by default." />
@@ -401,7 +385,7 @@
     <table name="node_host_channel_stats" description="">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
         <column name="host_name" type="VARCHAR" size="60" required="true" primaryKey="true"  description="The host name of a workstation or server. If more than one instance of SymmetricDS runs on the same server, then this value can be a 'server id' specified by -Druntime.symmetric.cluster.server.id" />
-        <column name="channel_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The channel_id of the channel that data changes will flow through." />
+        <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="The channel_id of the channel that data changes will flow through." />
         <column name="start_time" type="TIMESTAMP" required="true" primaryKey="true" description="The start time for the period which this row represents." />
         <column name="end_time" type="TIMESTAMP" required="true" primaryKey="true" description="The end time for the period which this row represents." />
         <column name="data_routed" type="BIGINT" default="0" description="Indicate the number of data rows that have been routed during this period." />
@@ -499,7 +483,7 @@
     <table name="outgoing_batch" description="Used for tracking the sending a collection of data to a node in the system. A new outgoing_batch is created and given a status of 'NE'. After sending the outgoing_batch to its target node, the status becomes 'SE'. The node responds with either a success status of 'OK' or an error status of 'ER'. An error while sending to the node also results in an error status of 'ER' regardless of whether the node sends that acknowledgement. ">
         <column name="batch_id" type="BIGINT" required="true" primaryKey="true" description="A unique id for the batch." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node that this batch is targeted at." />
-        <column name="channel_id" type="VARCHAR" size="128"  description="The channel that this batch is part of." />
+        <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this batch is part of." />
         <column name="status" type="CHAR" size="2"  description="The current status of a batch can be routing (RT), newly created and ready for replication (NE), being queried from the database (QY), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK), ignored (IG) or in error (ER)." />
         <column name="load_id" type="BIGINT" description="An id that ties multiple batches together to identify them as being part of an initial load." />
         <column name="extract_job_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is going to be extracted by another job." />
@@ -594,7 +578,6 @@
         <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route updates." />
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route inserts." />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route deletes." />
-        <column name="use_source_catalog_schema" type="BOOLEANINT" size="1" required="true" default="1" description="Whether or not to assume that the target catalog/schema name should be the same as the source catalog/schema name.  The target catalog or schema name will still override if not blank." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
@@ -619,7 +602,7 @@
     <table name="table_reload_request" description="This table acts as a means to queue up a reload of a specific table.  Either the target or the source node may insert into this table to queue up a load.  If the target node inserts into the table, then the row will be synchronized to the source node and the reload events will be queued up during routing.">
         <column name="target_node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the node to receive the table reload." />
         <column name="source_node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the node that will be the source of the table reload." />
-        <column name="trigger_id" type="VARCHAR" size="128" required="true" primaryKey="true" description="Unique identifier for a trigger associated with the table reload. Note the trigger must be linked to the router." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a trigger associated with the table reload. Note the trigger must be linked to the router." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique description of the router associated with the table reload. Note the router must be linked to the trigger." />
         <column name="reload_select" type="LONGVARCHAR"  description="Overrides the initial load select." />
         <column name="reload_delete_stmt" type="LONGVARCHAR"  description="Overrides the initial load delete statement." />
@@ -669,12 +652,11 @@
     </table>
 
     <table name="trigger" description="Configures database triggers that capture changes in the database. Configuration of which triggers are generated for which tables is stored here.  Triggers are created in a node's database if the source_node_group_id of a router is mapped to a row in this table.">
-        <column name="trigger_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
         <column name="source_catalog_name" type="VARCHAR" size="255"  description="Optional name for the catalog the configured table is in." />
         <column name="source_schema_name" type="VARCHAR" size="255"  description="Optional name for the schema a configured table is in." />
         <column name="source_table_name" type="VARCHAR" size="255" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes." />
-        <column name="channel_id" type="VARCHAR" size="128" required="true"  description="The channel_id of the channel that data changes will flow through." />
-        <column name="reload_channel_id" type="VARCHAR" size="128" required="true" default="reload" description="The channel_id of the channel that will be used for reloads." />
+        <column name="channel_id" type="VARCHAR" size="20" required="true"  description="The channel_id of the channel that data changes will flow through." />
         <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an update trigger." />
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an insert trigger." />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an delete trigger." />
@@ -690,7 +672,6 @@
         <column name="custom_on_delete_text" type="LONGVARCHAR"  description="Specify delete trigger text to execute after the SymmetricDS trigger text runs.  This field is not applicable for H2, HSQLDB 1.x or Apachy Derby." />
         <column name="external_select" type="LONGVARCHAR"  description="Specify a SQL select statement that returns a single result.  It will be used in the generated database trigger to populate the EXTERNAL_DATA field on the data table." />
         <column name="tx_id_expression" type="LONGVARCHAR"  description="Override the default expression for the transaction identifier that groups the data changes that were committed together." />
-        <column name="channel_expression" type="LONGVARCHAR"  description="An expression that will be used to capture the channel id in the trigger.  This expression will only be used if the channel_id is set to 'dynamic.'" />        
         <column name="excluded_column_names" type="LONGVARCHAR"  description="Specify a comma-delimited list of columns that should not be synchronized from this table.  Note that if a primary key is found in this list, it will be ignored." />
         <column name="sync_key_names" type="LONGVARCHAR"  description="Specify a comma-delimited list of columns that should be used as the key for synchronization operations.  By default, if not specified, then the primary key of the table will be used." />
         <column name="use_stream_lobs" type="BOOLEANINT" size="1" required="true" default="0"  description="Specifies whether to capture lob data as the trigger is firing or to stream lob columns from the source tables using callbacks during extraction. A value of 1 indicates to stream from the source via callback; a value of 0, lob data is captured by the trigger." />
@@ -703,14 +684,11 @@
         <foreign-key foreignTable="channel" name="fk_trg_2_chnl">
             <reference local="channel_id" foreign="channel_id" />
         </foreign-key>
-        <foreign-key foreignTable="channel" name="fk_trg_2_rld_chnl">
-            <reference local="reload_channel_id" foreign="channel_id" />
-        </foreign-key>        
     </table>
 
     <table name="trigger_hist" description="A history of a table's definition and the trigger used to capture data from the table. When a database trigger captures a data change, it references a trigger_hist entry so it is possible to know which columns the data represents. trigger_hist entries are made during the sync trigger process, which runs at each startup, each night in the syncTriggersJob, or any time the syncTriggers() JMX method is manually invoked. A new entry is made when a table definition or a trigger definition is changed, which causes a database trigger to be created or rebuilt.">
-        <column name="trigger_hist_id" type="INTEGER" required="true" primaryKey="true" description="Unique identifier for a trigger_hist entry" />
-        <column name="trigger_id" type="VARCHAR" size="128" required="true"  description="Unique identifier for a trigger" />
+        <column name="trigger_hist_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a trigger_hist entry" />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true"  description="Unique identifier for a trigger" />
         <column name="source_table_name" type="VARCHAR" size="255" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes." />
         <column name="source_catalog_name" type="VARCHAR" size="255"  description="The catalog name where the source table resides." />
         <column name="source_schema_name" type="VARCHAR" size="255"  description="The schema name where the source table resides." />
@@ -729,7 +707,7 @@
     </table>
 
     <table name="trigger_router" description="Map a trigger to a router.">
-        <column name="trigger_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The id of a trigger." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether this trigger router is enabled or not."/>
         <column name="initial_load_order" type="INTEGER" required="true" default="1"  description="Order sequence of this table when an initial load is sent to a node. If this value is the same for multiple tables, then SymmetricDS will attempt to order the tables according to FK constraints.  If this value is set to a negative number, then the table will be excluded from an initial load." />
@@ -750,7 +728,7 @@
 
     <table name="trigger_router_grouplet" description="This tables defines what grouplets are associated with what trigger routers.  The existence of the grouplet for a trigger_router enables nodes associated with the grouplet and at the same time it disables the trigger router for all other nodes.">
         <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
-        <column name="trigger_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The id of a trigger." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
         <column name="applies_when" type="CHAR" size="1" required="true" primaryKey="true" description="Indicates the side that a grouplet should be applied to.  Use 'T' for target and 'S' for source and 'B' for both source and target." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />

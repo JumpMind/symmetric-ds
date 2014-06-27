@@ -387,14 +387,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 }
             } else if (type == Types.BIGINT) {
                 objectValue = parseBigInteger(value);
-            } else if (type == Types.INTEGER || type == Types.SMALLINT) {
+            } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
                 objectValue = parseInteger(value);
-            } else if (type == Types.BIT) {
-                if (StringUtils.isNumeric(value)) {
-                    objectValue = parseInteger(value);
-                } else {
-                    objectValue = Boolean.parseBoolean(value);
-                }
             } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
                     || type == Types.DOUBLE || type == Types.REAL) {
                 objectValue = parseBigDecimal(value);
@@ -424,28 +418,29 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return objectValue;
 
     }
+
     
     protected Object parseBigDecimal(String value) {
         /*
          * The number will have either one period or one comma for the decimal
          * point, but we need a period
          */
-        return new BigDecimal(value.replace(',', '.').trim());
+        return new BigDecimal(value.replace(',', '.'));
     }
     
     protected Object parseBigInteger(String value) {
         try {
-            return new Long(value.trim());
+            return new Long(value);
         } catch (NumberFormatException ex) {
-            return new BigInteger(value.trim());        
+            return new BigInteger(value);        
         }
     }    
         
     protected Object parseInteger(String value) {
         try {
-            return Integer.parseInt(value.trim());
+            return Integer.parseInt(value);
         } catch (NumberFormatException ex) {
-            return new BigInteger(value.trim());        
+            return new BigInteger(value);        
         }
     }
     
@@ -488,6 +483,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (useVariableDates) {
             long diff = date.getTime() - System.currentTimeMillis();
             return "${curdate" + diff + "}";
+        } else if (type == Types.TIME) {
+            return FormatUtils.TIME_FORMATTER.format(date);
         } else {
             return FormatUtils.TIMESTAMP_FORMATTER.format(date);
         }

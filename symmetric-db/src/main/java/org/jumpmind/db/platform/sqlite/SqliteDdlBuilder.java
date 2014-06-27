@@ -147,17 +147,6 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         }
         return super.mapDefaultValue(defaultValue, typeCode);
     }
-
-    @Override
-    protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
-        // SQL Lite does not allow auto increment columns on a composite primary key.  Solution is to turn off
-        // Auto increment and still support composite key
-        if (table.getPrimaryKeyColumnCount() > 1 && table.hasAutoIncrementColumn()) {
-            for (Column column : table.getColumns()) {
-                column.setAutoIncrement(false);
-            }
-        }
-        super.createTable(table, ddl, temporary, recreate);
-    }
+    
     
 }

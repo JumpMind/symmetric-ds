@@ -43,8 +43,8 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         		"   when extract(timezone_hour from $(tableAlias).\"$(columnName)\") <= 0 and                                        " +
         		"        extract(timezone_minute from $(tableAlias).\"$(columnName)\") <= 0 then                                      " +
         		"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||'-'||                           " +
-        		"     lpad(cast(abs(round(extract(timezone_hour from $(tableAlias).\"$(columnName)\"))) as varchar),2,'0')||':'||           " +
-        		"     lpad(cast(abs(round(extract(timezone_minute from $(tableAlias).\"$(columnName)\"))) as varchar), 2, '0') || '\"'      " +
+        		"     lpad(cast(abs(extract(timezone_hour from $(tableAlias).\"$(columnName)\")) as varchar),2,'0')||':'||           " +
+        		"     lpad(cast(abs(extract(timezone_minute from $(tableAlias).\"$(columnName)\")) as varchar), 2, '0') || '\"'      " +
         		"   when extract(timezone_hour from $(tableAlias).\"$(columnName)\") = 0 and                                        " +
         		"        extract(timezone_minute from $(tableAlias).\"$(columnName)\") >= 0 then                                      " +
         		"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                           " +
@@ -52,8 +52,8 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         		"     lpad(cast(round(extract(timezone_minute from $(tableAlias).\"$(columnName)\")) as varchar), 2, '0') || '\"'      " +
                 "   else                                                                                                             " +
         		"     '\"' || to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                           " +
-        		"     lpad(cast(round(extract(timezone_hour from $(tableAlias).\"$(columnName)\")) as varchar),2,'0')||':'||                " +
-        		"     lpad(cast(round(extract(timezone_minute from $(tableAlias).\"$(columnName)\")) as varchar), 2, '0') || '\"'           " +
+        		"     lpad(cast(extract(timezone_hour from $(tableAlias).\"$(columnName)\") as varchar),2,'0')||':'||                " +
+        		"     lpad(cast(extract(timezone_minute from $(tableAlias).\"$(columnName)\") as varchar), 2, '0') || '\"'           " +
         		"   end                                                                                                              " +
         		"end                                                                                                                 ";
         clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
@@ -79,7 +79,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      'I',                                                                                                                                                             " +
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(columns),                                                                                                                                                      " +
-"                                      $(channelExpression),                                                                                                                                                " +
+"                                      '$(channelName)',                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +
@@ -99,7 +99,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                " +
 "                                declare var_row_data text; " +        
 "                                declare var_old_data text; " +
-"                                begin" +
+"                                begin                                                                                                                                                                  " +
 "                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
 "                                    var_row_data := $(columns); " +
 "                                    var_old_data := $(oldColumns); " +
@@ -113,7 +113,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(oldKeys),                                                                                                                                                      " +
 "                                      var_row_data,                                                                                                                                                      " +
 "                                      var_old_data,                                                                                                                                                   " +
-"                                      $(channelExpression),                                                                                                                                                " +
+"                                      '$(channelName)',                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +
@@ -142,7 +142,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      $(oldKeys),                                                                                                                                                      " +
 "                                      $(oldColumns),                                                                                                                                                   " +
-"                                      $(channelExpression),                                                                                                                                                " +
+"                                      '$(channelName)',                                                                                                                                                " +
 "                                      $(txIdExpression),                                                                                                                                               " +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
 "                                      $(externalSelect),                                                                                                                                               " +

@@ -29,15 +29,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Protect handlers by checking that the request is allowed.
  */
 public class AuthenticationInterceptor implements IInterceptor {
-    
-    Logger log = LoggerFactory.getLogger(getClass());
 
     public enum AuthenticationStatus {
         SYNC_DISABLED, REGISTRATION_REQUIRED, FORBIDDEN, ACCEPTED;
@@ -62,18 +58,14 @@ public class AuthenticationInterceptor implements IInterceptor {
         AuthenticationStatus status = getAuthenticationStatus(nodeId, securityToken);
 
         if (AuthenticationStatus.ACCEPTED.equals(status)) {
-            log.debug("Node '{}' successfully authenticated", nodeId);
             return true;
         } else if (AuthenticationStatus.REGISTRATION_REQUIRED.equals(status)) {
-            log.debug("Node '{}' failed to authenticate.  It was not regsitered", nodeId);
             ServletUtils.sendError(resp, WebConstants.REGISTRATION_REQUIRED);
             return false;
         } else if (AuthenticationStatus.SYNC_DISABLED.equals(status)) {
-            log.debug("Node '{}' failed to authenticate.  It was not enabled", nodeId);
             ServletUtils.sendError(resp, WebConstants.SYNC_DISABLED);
             return false;
         } else {
-            log.debug("Node '{}' failed to authenticate.  It had the wrong password", nodeId);
             ServletUtils.sendError(resp, HttpServletResponse.SC_FORBIDDEN);
             return false;
         }

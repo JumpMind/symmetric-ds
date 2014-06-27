@@ -20,13 +20,10 @@
  */
 package org.jumpmind.symmetric.statistic;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.symmetric.model.DataGap;
-import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 
@@ -40,20 +37,13 @@ public interface IStatisticManager {
     
     public List<ProcessInfo> getProcessInfos();
     
-    public List<ProcessInfo> getProcessInfosThatHaveDoneWork();
+    public void removeProcessInfo(ProcessInfoKey key);
     
     public Set<String> getNodesWithProcessesInError();
     
     public void flush();
     
     public void addJobStats(String jobName, long startTime, long endTime, long processedCount);
-    
-    public void addRouterStats(long startDataId, long endDataId, long dataReadCount, long peekAheadFillCount, 
-            List<DataGap> dataGaps, Set<String> transactions, Collection<OutgoingBatch> batches);
-    
-    public RouterStats getRouterStatsByBatch(Long batchId);
-    
-    public void removeRouterStatsByBatch(Long batchId);
 
     public void incrementDataLoadedErrors(String channelId, long count);
 
@@ -114,5 +104,6 @@ public interface IStatisticManager {
     public Map<String, ChannelStats> getWorkingChannelStats();
     
     public HostStats getWorkingHostStats();
-        
+    
+    
 }

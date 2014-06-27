@@ -36,7 +36,6 @@ import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
@@ -63,24 +62,21 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     private INodeCommunicationService nodeCommunicationService;
     
     private IDataLoaderService dataLoaderService;
-    
-    private IConfigurationService configurationService;
 
     public PullService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             INodeService nodeService, IDataLoaderService dataLoaderService,
             IRegistrationService registrationService, IClusterService clusterService,
-            INodeCommunicationService nodeCommunicationService, IConfigurationService configurationService) {
+            INodeCommunicationService nodeCommunicationService) {
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.registrationService = registrationService;
         this.clusterService = clusterService;
         this.nodeCommunicationService = nodeCommunicationService;
         this.dataLoaderService = dataLoaderService;
-        this.configurationService = configurationService;
     }
 
     synchronized public RemoteNodeStatuses pullData(boolean force) {
-        final RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
+        final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
         Node identity = nodeService.findIdentity(false);
         if (identity == null || identity.isSyncEnabled()) {
             long minimumPeriodMs = parameterService.getLong(ParameterConstants.PULL_MINIMUM_PERIOD_MS, -1);
@@ -140,7 +136,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                         status.getBatchesProcessed() });
 
                     } else if (status.failed()) {
-                        log.info(
+                        log.warn(
                                 "There was a failure while pulling data from {}.  {} rows and {} batches were processed",
                                 new Object[] { node.toString(), status.getDataProcessed(),
                                         status.getBatchesProcessed() });
@@ -173,7 +169,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                 log.warn("{}", ex.getMessage());
                 fireOffline(ex, node, status);
             } catch (IOException ex) {
-                log.error("An IO exception happened while attempting to pull data", ex);
+                log.error(ex.getMessage(), ex);
                 fireOffline(ex, node, status);
             }
         } else {

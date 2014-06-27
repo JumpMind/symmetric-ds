@@ -60,8 +60,6 @@ public interface IIncomingBatchService {
 
     public void markIncomingBatchesOk(String nodeId);
     
-    public void removingIncomingBatches(String nodeId);
-    
     public List<IncomingBatch> listIncomingBatchesInErrorFor(String nodeId);
     
     public boolean isRecordOkBatchesEnabled();

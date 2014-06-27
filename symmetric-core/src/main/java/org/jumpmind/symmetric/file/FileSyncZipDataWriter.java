@@ -326,12 +326,6 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 zos.putNextEntry(entry);
                 IOUtils.write(script.toString(), zos);
                 zos.closeEntry();
-                
-                entry = new ZipEntry(batch.getBatchId() + "/batch-info.txt");
-                zos.putNextEntry(entry);
-                IOUtils.write(batch.getChannelId(), zos);
-                zos.closeEntry();
-
 
             }
         } catch (IOException e) {

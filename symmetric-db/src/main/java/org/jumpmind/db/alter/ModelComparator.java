@@ -45,12 +45,10 @@ public class ModelComparator {
     private final Logger log = LoggerFactory.getLogger(ModelComparator.class);
 
     /** The platform information. */
-    protected DatabaseInfo platformInfo;
+    private DatabaseInfo platformInfo;
 
     /** Whether comparison is case sensitive. */
-    protected boolean caseSensitive;
-    
-    protected String databaseName;
+    private boolean caseSensitive;
 
     /**
      * Creates a new model comparator object.
@@ -60,8 +58,7 @@ public class ModelComparator {
      * @param caseSensitive
      *            Whether comparison is case sensitive
      */
-    public ModelComparator(String databaseName, DatabaseInfo platformInfo, boolean caseSensitive) {
-        this.databaseName = databaseName;
+    public ModelComparator(DatabaseInfo platformInfo, boolean caseSensitive) {
         this.platformInfo = platformInfo;
         this.caseSensitive = caseSensitive;
     }
@@ -312,6 +309,7 @@ public class ModelComparator {
     public List<TableChange> compareColumns(Table sourceTable, Column sourceColumn,
             Table targetTable, Column targetColumn) {
         ArrayList<TableChange> changes = new ArrayList<TableChange>();
+
         if (targetColumn.getMappedTypeCode() != sourceColumn.getMappedTypeCode()
                 && platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()) != sourceColumn
                         .getMappedTypeCode()) {

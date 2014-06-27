@@ -42,7 +42,7 @@ public class TransformTable implements Cloneable {
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
     protected DeleteAction deleteAction = DeleteAction.NONE;
-    protected ColumnPolicy columnPolicy = ColumnPolicy.IMPLIED;
+    protected ColumnPolicy columnPolicy = ColumnPolicy.SPECIFIED;
     protected boolean updateFirst = false;
     protected int transformOrder = 0;
     protected Date createTime;
@@ -167,7 +167,7 @@ public class TransformTable implements Cloneable {
     public List<TransformColumn> getTransformColumnFor(String columnName) {
         List<TransformColumn> columns = new ArrayList<TransformColumn>(2);
         for (TransformColumn column : transformColumns) {
-            if (StringUtils.equalsIgnoreCase(column.getSourceColumnName(), columnName)) {
+            if (column.getSourceColumnName().equals(columnName)) {
                 columns.add(column);
             }
         }
@@ -177,7 +177,7 @@ public class TransformTable implements Cloneable {
     public TransformColumn getTransformColumn(String targetColumn, IncludeOnType includeOn) {
         if (transformColumns != null) {
             for (TransformColumn column : transformColumns) {
-                if (StringUtils.equalsIgnoreCase(targetColumn, column.getTargetColumnName()) &&
+                if (StringUtils.equals(targetColumn, column.getTargetColumnName()) &&
                         includeOn == column.getIncludeOn()) {
                     return column;
                 }
@@ -287,8 +287,8 @@ public class TransformTable implements Cloneable {
 
                     if (primaryKeyColumns != null) {
                         for (TransformColumn xCol : primaryKeyColumns) {
-                            if ((StringUtils.isNotBlank(xCol.getSourceColumnName()) && StringUtils.equalsIgnoreCase(xCol.getSourceColumnName(),column)) ||
-                                    StringUtils.isNotBlank(xCol.getTargetColumnName()) && StringUtils.equalsIgnoreCase(xCol.getTargetColumnName(),column)) {
+                            if ((StringUtils.isNotBlank(xCol.getSourceColumnName()) && xCol.getSourceColumnName().equals(column)) ||
+                                    StringUtils.isNotBlank(xCol.getTargetColumnName()) && xCol.getTargetColumnName().equals(column)) {
                                 if (xCol.includeOn == IncludeOnType.ALL) {
                                     hasInsert = hasUpdate = hasDelete = true;
                                     break;
@@ -333,8 +333,8 @@ public class TransformTable implements Cloneable {
                     boolean hasDelete = false;
 
                     for (TransformColumn xCol : copiedVersion.transformColumns) {
-                        if ((StringUtils.isNotBlank(xCol.getSourceColumnName()) && StringUtils.equalsIgnoreCase(xCol.getSourceColumnName(),column)) ||
-                                (StringUtils.isNotBlank(xCol.getTargetColumnName()) && StringUtils.equalsIgnoreCase(xCol.getTargetColumnName(),column))) {
+                        if ((StringUtils.isNotBlank(xCol.getSourceColumnName()) && xCol.getSourceColumnName().equals(column)) ||
+                                (StringUtils.isNotBlank(xCol.getTargetColumnName()) && xCol.getTargetColumnName().equals(column))) {
                             if (xCol.includeOn == IncludeOnType.ALL) {
                                 hasInsert = hasUpdate = hasDelete = true;
                                 break;

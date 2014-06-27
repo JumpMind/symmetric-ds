@@ -92,10 +92,6 @@ final public class Constants {
     public static final String CHANNEL_DEFAULT = "default";
     
     public static final String CHANNEL_FILESYNC = "filesync";
-    
-    public static final String CHANNEL_FILESYNC_RELOAD = "filesync_reload";
-    
-    public static final String CHANNEL_DYNAMIC = "dynamic";
 
     public static final String PUSH_JOB_TIMER = "job.push";
 
@@ -140,10 +136,6 @@ final public class Constants {
     public static final String TRANSPORT_HTTPS_VERIFIED_SERVERS_ALL="all";
     
     public static final String TRANSFORM_SERVICE = "transformService";
-    
-    public static final String SEQUENCE_TRIGGER_HIST = TableConstants.SYM_TRIGGER_HIST;
-    
-    public static final String SEQUENCE_EXTRACT_REQ = TableConstants.SYM_EXTRACT_REQUEST;
     
     public static final String SEQUENCE_OUTGOING_BATCH = TableConstants.SYM_OUTGOING_BATCH;
     

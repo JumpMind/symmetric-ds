@@ -48,29 +48,26 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public void init() {
-        initSequence(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID, 1);
-        
         long maxBatchId = sqlTemplate.queryForLong(getSql("maxOutgoingBatchSql"));
-        initSequence(Constants.SEQUENCE_OUTGOING_BATCH, maxBatchId);
-        
-        long maxTriggerHistId = sqlTemplate.queryForLong(getSql("maxTriggerHistSql"));
-        initSequence(Constants.SEQUENCE_TRIGGER_HIST, maxTriggerHistId);
-        
-        long maxRequestId = sqlTemplate.queryForLong(getSql("maxExtractRequestSql"));
-        initSequence(Constants.SEQUENCE_EXTRACT_REQ, maxRequestId);
-    }
-    
-    private void initSequence(String name, long initialValue) {
+        if (maxBatchId < 1) {
+            maxBatchId = 1;
+        }
         try {
-            if (initialValue < 1) {
-                initialValue = 1;
-            }
-            create(new Sequence(name, initialValue, 1, 1, 9999999999l,
+            create(new Sequence(Constants.SEQUENCE_OUTGOING_BATCH, maxBatchId, 1, 1, 9999999999l,
                     "system", false));
         } catch (UniqueKeyException ex) {
             log.debug("Failed to create sequence {}.  Must be initialized already.",
-                    name);
+                    Constants.SEQUENCE_OUTGOING_BATCH);
         }
+        
+        try {
+            create(new Sequence(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID, 1, 1, 1, 9999999999l,
+                    "system", false));
+        } catch (UniqueKeyException ex) {
+            log.debug("Failed to create sequence {}.  Must be initialized already.",
+                    Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+        }
+
     }
 
     public long nextVal(String name) {

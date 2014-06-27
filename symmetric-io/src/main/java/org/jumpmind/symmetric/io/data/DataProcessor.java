@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.io.data;
 
 import org.jumpmind.db.model.Table;
-import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.writer.IgnoreBatchException;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
@@ -115,11 +114,7 @@ public class DataProcessor {
                         forEachTableInBatch(context, processBatch, currentBatch);
                         
                         if (currentBatch != null && !currentBatch.isComplete()) {
-                            String msg = "The batch %s was not complete";
-                            if (currentBatch.getBatchType() == BatchType.EXTRACT) {
-                                msg += ".  Note that this is the error you receive on Oracle when the total size of row_data in sym_data is greater than 4k.  You can work around this by changing the contains_big_lobs in sym_channel to 1";
-                            }
-                            throw new ProtocolException(msg, currentBatch.getNodeBatchId());
+                            throw new ProtocolException("The batch %s was not complete", currentBatch.getSourceNodeBatchId());
                         }
 
                         if (processBatch) {

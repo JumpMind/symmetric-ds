@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-assemble</artifactId>
     <packaging>pom</packaging>
-    <version>3.6.2-SNAPSHOT</version>
+    <version>3.5.19</version>
     <name>assemble</name>
     <licenses>
         <license>
@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.6.2-SNAPSHOT</version>
+        <version>3.5.19</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
     <properties>
@@ -33,12 +33,10 @@
         <module>../symmetric-ftp</module>
         <module>../symmetric-oracle</module>
         <module>../symmetric-postgres</module>
-        <module>../symmetric-mssql</module>  
-        <module>../symmetric-mongo</module>        
+        <module>../symmetric-mssql</module>        
         <module>../symmetric-client</module>
         <module>../symmetric-server</module>
         <module>../symmetric-android</module>
-        <module>../symmetric-wrapper</module>
     </modules>
     <build>
         <plugins>
@@ -216,12 +214,12 @@
                             <dependency>
                                 <groupId>org.jumpmind.symmetric</groupId>
                                 <artifactId>symmetric-util</artifactId>
-                                <version>3.6.2-SNAPSHOT</version>
+                                <version>3.5.19</version>
                             </dependency>
                             <dependency>
                                 <groupId>org.jumpmind.symmetric</groupId>
                                 <artifactId>symmetric-core</artifactId>
-                                <version>3.6.2-SNAPSHOT</version>
+                                <version>3.5.19</version>
                             </dependency>
                         </dependencies>
                     </plugin>
@@ -247,7 +245,7 @@
                                         </copy>
                                     </preProcess>
                                     <sourceDirectory>${docbook.build}</sourceDirectory>
-                                    <targetDirectory>${docbook.target}/user-guide/pdf</targetDirectory>
+                                    <targetDirectory>${docbook.target}/pdf</targetDirectory>
                                     <xincludeSupported>true</xincludeSupported>
                                     <includes>user-guide.xml</includes>
                                     <imgSrcPath>${docbook.build}/images</imgSrcPath>
@@ -256,7 +254,7 @@
                                     <foCustomization>${docbook.build}/resources/xsl/docbook-fopdf.xsl 
                                     </foCustomization>
                                     <postProcess>
-                                        <delete file="${docbook.target}/user-guide/pdf/user-guide.fo" />
+                                        <delete file="${docbook.target}/pdf/user-guide.fo" />
                                     </postProcess>
                                 </configuration>
                             </execution>
@@ -268,7 +266,7 @@
                                 </goals>
                                 <configuration>
                                     <sourceDirectory>${docbook.build}</sourceDirectory>
-                                    <targetDirectory>${docbook.target}/user-guide/html-single 
+                                    <targetDirectory>${docbook.target}/html-single 
                                     </targetDirectory>
                                     <xincludeSupported>true</xincludeSupported>
                                     <includes>user-guide.xml</includes>
@@ -277,7 +275,7 @@
                                     </htmlCustomization>
                                     <chunkedOutput>false</chunkedOutput>
                                     <postProcess>
-                                        <copy todir="${docbook.target}/user-guide/html-single">
+                                        <copy todir="${docbook.target}/html-single">
                                             <fileset dir="${docbook.build}/resources">
                                                 <include name="images/*.png" />
                                                 <include name="images/*.gif" />
@@ -287,7 +285,7 @@
                                                 <include name="css/*.css" />
                                             </fileset>
                                         </copy>
-                                        <copy todir="${docbook.target}/user-guide/html-single/images" flatten="true">
+                                        <copy todir="${docbook.target}/html-single/images" flatten="true">
                                             <fileset dir="${docbook.build}">
                                                 <include name="**/images/*" />
                                             </fileset>
@@ -303,7 +301,7 @@
                                 </goals>
                                 <configuration>
                                     <sourceDirectory>${docbook.build}</sourceDirectory>
-                                    <targetDirectory>${docbook.target}/user-guide/html</targetDirectory>
+                                    <targetDirectory>${docbook.target}/html</targetDirectory>
                                     <xincludeSupported>true</xincludeSupported>
                                     <includes>user-guide.xml</includes>
                                     <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
@@ -311,7 +309,7 @@
                                     </htmlCustomization>
                                     <chunkedOutput>true</chunkedOutput>
                                     <postProcess>
-                                        <copy todir="${docbook.target}/user-guide/html">
+                                        <copy todir="${docbook.target}/html">
                                             <fileset dir="${docbook.build}/resources">
                                                 <include name="images/*.png" />
                                                 <include name="images/*.gif" />
@@ -321,76 +319,11 @@
                                                 <include name="css/*.css" />
                                             </fileset>
                                         </copy>
-                                        <copy todir="${docbook.target}/user-guide/html/images" flatten="true">
+                                        <copy todir="${docbook.target}/html/images" flatten="true">
                                             <fileset dir="${docbook.build}">
                                                 <include name="**/images/*" />
                                             </fileset>
                                         </copy>
-                                    </postProcess>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>build-quickstart-singlehtml-doc</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>generate-html</goal>
-                                </goals>
-                                <configuration>
-                                    <sourceDirectory>${docbook.build}</sourceDirectory>
-                                    <targetDirectory>${docbook.target}/quick-start/html-single 
-                                    </targetDirectory>
-                                    <xincludeSupported>true</xincludeSupported>
-                                    <includes>quick-start.xml</includes>
-                                    <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
-                                    <htmlCustomization> ${docbook.build}/resources/xsl/docbook-html.xsl 
-                                    </htmlCustomization>
-                                    <chunkedOutput>false</chunkedOutput>
-                                    <postProcess>
-                                        <copy todir="${docbook.target}/quick-start/html-single">
-                                            <fileset dir="${docbook.build}/resources">
-                                                <include name="images/*.png" />
-                                                <include name="images/*.gif" />
-                                                <include name="images/*.jpg" />
-                                            </fileset>
-                                            <fileset dir="${docbook.build}/resources">
-                                                <include name="css/*.css" />
-                                            </fileset>
-                                        </copy>
-                                        <copy todir="${docbook.target}/quick-start/html-single/images" flatten="true">
-                                            <fileset dir="${docbook.build}">
-                                                <include name="**/images/*" />
-                                            </fileset>
-                                        </copy>
-                                    </postProcess>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>build-quickstart-pdf-doc</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>generate-pdf</goal>
-                                </goals>
-                                <configuration>
-                                    <preProcess>
-                                        <delete file="${basedir}/torque/report.symmetric-assemble.doc.generation" />
-                                        <delete file="${basedir}/target/torque/sqldbmap.properties" />
-                                        <delete file="${basedir}/target/torque/context.doc.properties" />
-                                        <copy todir="${docbook.build}">
-                                            <fileset dir="${docbook.source}">
-                                            </fileset>
-                                        </copy>
-                                    </preProcess>
-                                    <sourceDirectory>${docbook.build}</sourceDirectory>
-                                    <targetDirectory>${docbook.target}/quick-start/pdf</targetDirectory>
-                                    <xincludeSupported>true</xincludeSupported>
-                                    <includes>quick-start.xml</includes>
-                                    <imgSrcPath>${docbook.build}/images</imgSrcPath>
-                                    <admonGraphicsPath>${docbook.build}/resources/images/admons/ 
-                                    </admonGraphicsPath>
-                                    <foCustomization>${docbook.build}/resources/xsl/docbook-fopdf.xsl 
-                                    </foCustomization>
-                                    <postProcess>
-                                        <delete file="${docbook.target}/quick-start/pdf/quick-start.fo" />
                                     </postProcess>
                                 </configuration>
                             </execution>

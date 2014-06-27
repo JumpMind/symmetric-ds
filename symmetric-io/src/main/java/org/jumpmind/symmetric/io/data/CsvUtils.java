@@ -103,7 +103,7 @@ public class CsvUtils {
     }
     
     public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier, int escapeMode) {
-        return escapeCsvData(data, recordDelimiter, textQualifier, escapeMode, null);
+    	return escapeCsvData(data, recordDelimiter, textQualifier, escapeMode, null);
     }
     
     public static String escapeCsvData(String[] data, char recordDelimiter, char textQualifier, int escapeMode, String nullString) {
@@ -112,15 +112,15 @@ public class CsvUtils {
         writer.setEscapeMode(escapeMode);
         if (recordDelimiter != '\0') {
             writer.setRecordDelimiter(recordDelimiter);
-        }
-        if (textQualifier != '\0') {
+	    }
+	    if (textQualifier != '\0') {
             writer.setTextQualifier(textQualifier);
             writer.setUseTextQualifier(true);
             writer.setForceQualifier(true);
-        }
-        if (nullString != null) {
-            writer.setNullString(nullString);
-        }
+	    }
+	    if (nullString != null) {
+	    	writer.setNullString(nullString);
+	    }
         try {
             writer.writeRecord(data);
         } catch (IOException e) {

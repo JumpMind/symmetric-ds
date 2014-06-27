@@ -77,14 +77,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected int[] primaryKeyViolationCodes;
 
     protected String[] primaryKeyViolationSqlStates;
-    
-    protected String[] primaryKeyViolationMessageParts;
 
     protected int[] foreignKeyViolationCodes;
 
     protected String[] foreignKeyViolationSqlStates;
-    
-    protected String[] foreignKeyViolationMessageParts;
 
     protected int isolationLevel;
 
@@ -788,7 +784,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (sqlEx != null) {
                 if (primaryKeyViolationCodes != null) {
                     int errorCode = sqlEx.getErrorCode();
-                    for (int primaryKeyViolationCode : primaryKeyViolationCodes) {                    	
+                    for (int primaryKeyViolationCode : primaryKeyViolationCodes) {
                         if (primaryKeyViolationCode == errorCode) {
                             primaryKeyViolation = true;
                             break;
@@ -807,19 +803,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             }
                         }
                     }
-                }
-                
-                if (primaryKeyViolationMessageParts != null) {
-                	String sqlMessage = sqlEx.getMessage();
-                	if (sqlMessage != null) {
-                		sqlMessage = sqlMessage.toLowerCase();
-                		for (String primaryKeyViolationMessagePart : primaryKeyViolationMessageParts) {
-                			if (primaryKeyViolationMessagePart != null && sqlMessage.contains(primaryKeyViolationMessagePart.toLowerCase())) {
-                				primaryKeyViolation = true;
-                				break;
-                			}
-                		}
-                	}
                 }
             }
         }
@@ -854,19 +837,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         }
                     }
                 }
-                
-                if (foreignKeyViolationMessageParts != null) {
-                	String sqlMessage = sqlEx.getMessage();
-                	if (sqlMessage != null) {
-                		sqlMessage = sqlMessage.toLowerCase();
-                		for (String foreignKeyViolationMessagePart : foreignKeyViolationMessageParts) {
-                			if (foreignKeyViolationMessagePart != null && sqlMessage.contains(foreignKeyViolationMessagePart.toLowerCase())) {
-                				foreignKeyViolation = true;
-                				break;
-                			}
-                		}
-                	}
-                }                
             }
         }
 

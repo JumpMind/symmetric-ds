@@ -247,11 +247,11 @@ public class CsvWriter {
     }
 
     public String getNullString() {
-        return userSettings.NullString;
+    	return userSettings.NullString;
     }
     
     public void setNullString(String nullString) {
-        userSettings.NullString = nullString;
+    	userSettings.NullString = nullString;
     }
 
     /**
@@ -288,9 +288,6 @@ public class CsvWriter {
         if (content == null) {
             content = userSettings.NullString;
             textQualify = false;
-            outputStream.write(content);
-            firstColumn = false;
-            return;
         }
         // We want an empty string to be a quoted element
         else if (content.equals("")) {

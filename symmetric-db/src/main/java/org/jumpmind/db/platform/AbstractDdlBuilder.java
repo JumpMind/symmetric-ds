@@ -382,7 +382,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         currentModel = currentModel.copy();
         mergeOrRemovePlatformTypes(currentModel, desiredModel);
 
-        ModelComparator comparator = new ModelComparator(databaseName, databaseInfo, delimitedIdentifierModeOn);
+        ModelComparator comparator = new ModelComparator(databaseInfo, delimitedIdentifierModeOn);
         List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
         if (alterDatabaseInterceptors != null) {
             for (IAlterDatabaseInterceptor interceptor : alterDatabaseInterceptors) {
@@ -393,7 +393,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     public boolean isAlterDatabase(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
-        ModelComparator comparator = new ModelComparator(databaseName, databaseInfo, delimitedIdentifierModeOn);
+        ModelComparator comparator = new ModelComparator(databaseInfo, delimitedIdentifierModeOn);
         List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
         if (alterDatabaseInterceptors != null) {
             for (IAlterDatabaseInterceptor interceptor : alterDatabaseInterceptors) {
@@ -1199,12 +1199,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         writeTableCreationStmt(table, ddl);
         writeTableCreationStmtEnding(table, ddl);
 
-        if (!databaseInfo.isIndicesEmbedded()) {
-            writeExternalIndicesCreateStmt(table, ddl);
-        }
-
         if (!databaseInfo.isPrimaryKeyEmbedded()) {
             writeExternalPrimaryKeysCreateStmt(table, table.getPrimaryKeyColumns(), ddl);
+        }
+        if (!databaseInfo.isIndicesEmbedded()) {
+            writeExternalIndicesCreateStmt(table, ddl);
         }
     }
 
@@ -1669,13 +1668,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void writeTableCreationStmt(Table table, StringBuilder ddl) {
         ddl.append("CREATE TABLE ");
-        // TODO: use getDelimitedIdentifier() around catalog/schema, but we'll need to get the case right
-        if (StringUtils.isNotBlank(table.getCatalog())) {
-            ddl.append(table.getCatalog()).append(".");
-        }
-        if (StringUtils.isNotBlank(table.getSchema())) {
-            ddl.append(table.getSchema()).append(".");
-        }
         printlnIdentifier(getTableName(table.getName()), ddl);
         println("(", ddl);
 
@@ -1827,7 +1819,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
         
         int sizePos = nativeType.indexOf(SIZE_PLACEHOLDER);
-        StringBuilder sqlType = new StringBuilder();
+        StringBuffer sqlType = new StringBuffer();
 
         sqlType.append(sizePos >= 0 ? nativeType.substring(0, sizePos) : nativeType);
 
@@ -1869,12 +1861,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         sqlType.append(sizePos >= 0 ? nativeType.substring(sizePos + SIZE_PLACEHOLDER.length())
                 : "");
 
-        filterColumnSqlType(sqlType);
         return sqlType.toString();
-    }
-    
-    protected void filterColumnSqlType(StringBuilder sqlType) {
-        // Default is to not filter but allows subclasses to filter as needed.
     }
 
     /**
@@ -2002,17 +1989,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 || defaultValueStr.toUpperCase().startsWith("SYSDATE")
                 || defaultValueStr.toUpperCase().startsWith("SYSTIMESTAMP")
                 || defaultValueStr.toUpperCase().startsWith("CURRENT_TIMESTAMP")
-                || defaultValueStr.toUpperCase().startsWith("CURRENT_TIME")
-                || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")
-                || defaultValueStr.toUpperCase().startsWith("CURRENT_USER")
-                || defaultValueStr.toUpperCase().startsWith("USER")
-                || defaultValueStr.toUpperCase().startsWith("SYSTEM_USER")
-                || defaultValueStr.toUpperCase().startsWith("SESSION_USER")
-                || defaultValueStr.toUpperCase().startsWith("DATE '")
-                || defaultValueStr.toUpperCase().startsWith("TIME '")
-                || defaultValueStr.toUpperCase().startsWith("TIMESTAMP '")
-                || defaultValueStr.toUpperCase().startsWith("INTERVAL '")
-                ));
+                || defaultValueStr.toUpperCase().startsWith("CURRENT_DATE")));
 
         if (shouldUseQuotes) {
             // characters are only escaped when within a string literal

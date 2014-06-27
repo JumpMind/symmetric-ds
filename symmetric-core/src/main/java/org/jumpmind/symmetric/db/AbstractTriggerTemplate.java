@@ -31,7 +31,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
@@ -104,6 +103,9 @@ abstract public class AbstractTriggerTemplate {
 
     protected ISymmetricDialect symmetricDialect;
 
+    protected AbstractTriggerTemplate() {
+    }
+
     protected AbstractTriggerTemplate(ISymmetricDialect symmetricDialect) {
         this.symmetricDialect = symmetricDialect;
     }
@@ -114,34 +116,14 @@ abstract public class AbstractTriggerTemplate {
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                 triggerHistory.getParsedPkColumnNames(), true);
 
-        String sql = null;
-
+        String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         Column[] columns = symmetricDialect.orderColumns(triggerHistory.getParsedColumnNames(),
                 table);
+        String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
+                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
+                false, channel, triggerRouter.getTrigger()).columnString;
 
-        if (symmetricDialect.getParameterService().is(
-                ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
-            sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
-            String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
-                    symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
-                    false, channel, triggerRouter.getTrigger()).columnString;
-            sql = FormatUtils.replace("columns", columnsText, sql);
-        } else {
-            sql = "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)";
-            StringBuilder columnList = new StringBuilder();
-            for (int i = 0; i < columns.length; i++) {
-                Column column = columns[i];
-                boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
-                if (!(isLob && triggerRouter.getTrigger().isUseStreamLobs())) {
-                    if (i > 0) {
-                        columnList.append(",");
-                    }
-                    columnList.append(SymmetricUtils.quote(symmetricDialect, column.getName()));
-                }
-            }
-            sql = FormatUtils.replace("columns", columnList.toString(), sql);
-        }
-
+        sql = FormatUtils.replace("columns", columnsText, sql);
         String initialLoadSelect = StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
                 : triggerRouter.getInitialLoadSelect();
         if (StringUtils.isNotBlank(overrideSelectSql)) {
@@ -322,9 +304,6 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("txIdExpression",
                 symmetricDialect.preProcessTriggerSqlClause(triggerExpression), ddl);
 
-        ddl = FormatUtils.replace("channelExpression", symmetricDialect.preProcessTriggerSqlClause(getChannelExpression(trigger)),
-                ddl);
-        
         ddl = FormatUtils.replace("externalSelect", (trigger.getExternalSelect() == null ? "null"
                 : "(" + symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect())
                         + ")"), ddl);
@@ -452,18 +431,6 @@ abstract public class AbstractTriggerTemplate {
                 break;
         }
         return ddl;
-    }
-    
-    protected String getChannelExpression(Trigger trigger) {
-        if (trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC)) {
-            if (StringUtils.isNotBlank(trigger.getChannelExpression())) {
-                return trigger.getChannelExpression();
-            } else {
-                throw new IllegalStateException("When the channel is set to '" + Constants.CHANNEL_DYNAMIC + "', a channel expression must be provided.");
-            }
-        } else {
-            return "'" + trigger.getChannelId() + "'";
-        }
     }
 
     protected String buildVirtualTableSql(String oldTriggerValue, String newTriggerValue,
@@ -801,8 +768,6 @@ abstract public class AbstractTriggerTemplate {
                     break;
                 case Types.CHAR:
                 case Types.VARCHAR:
-                case ColumnTypes.NVARCHAR:
-                case ColumnTypes.LONGNVARCHAR:
                 case Types.LONGVARCHAR:
                     text += "varchar(1000)\n";
                     break;

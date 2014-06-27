@@ -51,11 +51,8 @@ import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.util.AppUtils;
 import org.junit.After;
-
 import static org.junit.Assert.*;
-
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +63,9 @@ abstract public class AbstractTest {
 
     private Map<String, SymmetricWebServer> webServers = new HashMap<String, SymmetricWebServer>();
 
-    private static final String DEFAULT_PORT = "9995";
-    
-    private int registrationPort;
+    private static final int REGISTRATION_PORT = 9995;
 
-    private int port;
+    private int port = REGISTRATION_PORT;
 
     /**
      * The registration server should always be the first group in the list
@@ -97,15 +92,12 @@ abstract public class AbstractTest {
         properties.setProperty(ParameterConstants.SYNC_URL, "http://localhost:" + port + "/sync/"
                 + name);
         properties.setProperty(ParameterConstants.REGISTRATION_URL, "http://localhost:"
-                + registrationPort + "/sync/" + getGroupNames()[0]);
+                + REGISTRATION_PORT + "/sync/" + getGroupNames()[0]);
         return properties;
     }
-    
+
     @Before
     public void setup() {
-        port = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, DEFAULT_PORT));
-        registrationPort = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, DEFAULT_PORT));
-        log.info("Running " + getClass().getSimpleName() + " test on port " + port);
         TestSetupUtil.removeEmbededdedDatabases();
         String[] groups = getGroupNames();
         for (String group : groups) {
@@ -180,15 +172,14 @@ abstract public class AbstractTest {
 
                 SymmetricWebServer server = new SymmetricWebServer();
                 server.setJmxEnabled(false);
-                server.setHttpPort(port);
-                log.info("Starting " + name + " on port " + port);
+                server.setHttpPort(port++);
                 server.setJoin(false);
                 server.start();
 
                 server.waitForEnginesToComeOnline(240000);
 
                 webServers.put(name, server);
-                port += 200;
+
             }
             return webServers.get(name);
 

@@ -173,22 +173,16 @@ public class NonDmlEventsTest extends AbstractTest {
         rootServer.getRegistrationService().openRegistration(clientServer.getParameterService().getNodeGroupId(), "2");
         rootServer.getRegistrationService().openRegistration(clientServer.getParameterService().getNodeGroupId(), "3");
         RestService restService = getRegServer().getRestService();
-        
-        /* register a few more nodes to make sure that when we insert reload events they are only routed to the node we want */
+        // register a few more nodes to make sure that when we insert reload events they are only routed to the node we want
         restService.postRegisterNode("2", clientServer.getParameterService().getNodeGroupId(), DatabaseNamesConstants.H2, "1.2", "host2");
         restService.postRegisterNode("3", clientServer.getParameterService().getNodeGroupId(), DatabaseNamesConstants.H2, "1.2", "host2");
         
-        rootServer.route();
         assertEquals(0, rootServer.getOutgoingBatchService().countOutgoingBatchesUnsent(Constants.CHANNEL_RELOAD));
-        
         Table serverTable = rootServer.getDatabasePlatform().readTableFromDatabase(null, null, "NODE_SPECIFIC");
         assertNotNull(serverTable);
-        
         assertTrue(rootServer.getDataService().reloadTable(clientServer.getNodeService().findIdentityNodeId(), null, null, serverTable.getName()).startsWith("Successfully created"));
         rootServer.route();
-                
-        assertEquals(0, rootServer.getOutgoingBatchService().getOutgoingBatches("2", true).getBatchesForChannel(Constants.CHANNEL_RELOAD).size());
-        assertEquals(0, rootServer.getOutgoingBatchService().getOutgoingBatches("3", true).getBatchesForChannel(Constants.CHANNEL_RELOAD).size());
+        assertEquals(1, rootServer.getOutgoingBatchService().countOutgoingBatchesUnsent(Constants.CHANNEL_RELOAD));
         
         OutgoingBatches batches = rootServer.getOutgoingBatchService().getOutgoingBatches(clientServer.getNodeService().findIdentityNodeId(), true);
 

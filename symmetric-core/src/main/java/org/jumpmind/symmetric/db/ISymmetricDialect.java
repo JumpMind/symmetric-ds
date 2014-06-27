@@ -37,7 +37,6 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.service.IParameterService;
 
 /*
  * A dialect is the interface that insulates SymmetricDS from database implementation specifics.
@@ -129,6 +128,8 @@ public interface ISymmetricDialect {
     public String getSourceNodeExpression();
 
     public String getCreateSymmetricDDL();
+
+    public String getCreateTableXML(TriggerHistory triggerHistory, TriggerRouter triggerRouter);
 
     public boolean isBlobSyncSupported();
 
@@ -222,6 +223,4 @@ public interface ISymmetricDialect {
     public int getSqlTypeForIds();
 
     public AbstractTriggerTemplate getTriggerTemplate();
-    
-    public IParameterService getParameterService();
 }
