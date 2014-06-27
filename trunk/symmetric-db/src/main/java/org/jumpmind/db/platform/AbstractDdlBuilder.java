@@ -1199,11 +1199,12 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         writeTableCreationStmt(table, ddl);
         writeTableCreationStmtEnding(table, ddl);
 
-        if (!databaseInfo.isPrimaryKeyEmbedded()) {
-            writeExternalPrimaryKeysCreateStmt(table, table.getPrimaryKeyColumns(), ddl);
-        }
         if (!databaseInfo.isIndicesEmbedded()) {
             writeExternalIndicesCreateStmt(table, ddl);
+        }
+
+        if (!databaseInfo.isPrimaryKeyEmbedded()) {
+            writeExternalPrimaryKeysCreateStmt(table, table.getPrimaryKeyColumns(), ddl);
         }
     }
 

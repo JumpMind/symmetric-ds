@@ -95,6 +95,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
 
+        databaseInfo.setPrimaryKeyEmbedded(false);
         databaseInfo.setDateOverridesToTimestamp(true);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
