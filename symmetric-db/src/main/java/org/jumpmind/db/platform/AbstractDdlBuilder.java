@@ -2028,13 +2028,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (defaultValue == null) {
             defaultValue = "NULL";
         }
-        
-        String newValue = defaultValue.toString().trim();
-        if (newValue.startsWith("(") && newValue.endsWith(")")) {
-            newValue = newValue.substring(1, newValue.length()-1);
-        }
-                
-        return newValue;
+        return defaultValue.toString();
     }
 
     /**

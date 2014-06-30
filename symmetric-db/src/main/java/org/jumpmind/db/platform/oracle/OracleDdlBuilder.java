@@ -104,6 +104,15 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
 
         addEscapedCharSequence("'", "''");
     }
+    
+    @Override
+    protected String mapDefaultValue(Object defaultValue, int typeCode) {
+        String newValue = super.mapDefaultValue(defaultValue, typeCode).trim();
+        if (newValue.startsWith("(") && newValue.endsWith(")")) {
+            newValue = newValue.substring(1, newValue.length()-1);
+        }
+        return newValue;
+    }
 
     @Override
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
