@@ -81,7 +81,7 @@ public class DefaultNodeIdCreator implements INodeIdCreator {
             if (StringUtils.isBlank(nodeId)) {
                 nodeId = buildNodeId(nodeService, node);
                 
-                if (parameterService.is(ParameterConstants.EXTERNAL_ID_IS_UNIQUE)) {
+                if (!parameterService.is(ParameterConstants.EXTERNAL_ID_IS_UNIQUE)) {
                     for (int sequence = 0; sequence < maxTries; sequence++) {
                         if (nodeService.findNode(nodeId) == null || autoRegisterEnabled) {                        
                             break;
