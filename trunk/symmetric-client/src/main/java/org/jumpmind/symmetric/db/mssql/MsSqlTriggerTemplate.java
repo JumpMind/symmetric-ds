@@ -40,6 +40,8 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 
         boolean castToNVARCHAR = symmetricDialect.getParameterService().is(ParameterConstants.MSSQL_USE_NTYPES_FOR_SYNC);
         
+        String triggerExecuteAs = symmetricDialect.getParameterService().getString(ParameterConstants.MSSQL_TRIGGER_EXECUTE_AS, "self");
+                
         // @formatter:off
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(convert("+
@@ -60,7 +62,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates = new HashMap<String,String>();
 
         sqlTemplates.put("insertTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as owner after insert as                                                                                                \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
@@ -94,7 +96,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "   end                                                                                                                                                                    " );
 
         sqlTemplates.put("updateTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as owner after update as                                                                                                \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
@@ -133,7 +135,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     end                                                                                                                                                                  " );
 
         sqlTemplates.put("updateHandleKeyUpdatesTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as owner after update as                                                                                                                             \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                                             \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
@@ -180,7 +182,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     end                                                                                                                                                                  " );
 
         sqlTemplates.put("deleteTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as owner after delete as                                                                                                                             \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after delete as                                                                                                                             \n" +
 "  begin                                                                                                                                                                  \n" +
 "    declare @NCT int \n" +
 "    set @NCT = @@OPTIONS & 512 \n" +

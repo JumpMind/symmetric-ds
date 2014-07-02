@@ -258,6 +258,8 @@ final public class ParameterConstants {
     public final static String MSSQL_ROW_LEVEL_LOCKS_ONLY = "mssql.allow.only.row.level.locks.on.runtime.tables";
     
     public final static String MSSQL_USE_NTYPES_FOR_SYNC = "mssql.use.ntypes.for.sync";
+    
+    public final static String MSSQL_TRIGGER_EXECUTE_AS = "mssql.trigger.execute.as";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
