@@ -39,7 +39,6 @@ import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
@@ -526,7 +525,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 }
 
                 Status status = Status.valueOf(rs.getString("status"));
-                DataEventType eventType = DataEventType.getEventType(rs.getString("event_type"));
                 int count = rs.getInt("cnt");
 
                 Date lastUpdateTime = rs.getDateTime("last_update_time");
@@ -540,9 +538,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     summary.setCreateTime(createTime);
                 }
 
-                if (eventType == DataEventType.RELOAD) {
-                    summary.setReloadBatchCount(summary.getReloadBatchCount() + count);
-                }
+                summary.setReloadBatchCount(summary.getReloadBatchCount() + count);
 
                 if (status == Status.OK || status == Status.IG) {
                     summary.setFinishedBatchCount(summary.getFinishedBatchCount() + count);
@@ -554,7 +550,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
                     if (status != Status.NE && count == 1) {
                         summary.setCurrentBatchId(rs.getLong("current_batch_id"));
-                        summary.setCurrentTable(rs.getString("current_table_name"));
                         summary.setCurrentDataEventCount(rs.getLong("current_data_event_count"));
                     }
 
