@@ -90,8 +90,8 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                         + " rev_initial_load_enabled, rev_initial_load_time, initial_load_id,              "
                         + " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by        "
                         + " from $(node_security)                                                          "
-                        + " where initial_load_enabled=1 or rev_initial_load_enabled=1                     "
-                        + "and created_at_node_id in (select node_id from sym_node_identity)               ");
+                        + " where (initial_load_enabled=1 and created_at_node_id in (select node_id from sym_node_identity))  "
+                        + " or (rev_initial_load_enabled=1 and created_at_node_id not in (select node_id from sym_node_identity))               ");
 
         putSql("findAllNodeSecuritySql",
                 "select node_id, node_password, registration_enabled, registration_time,                   "
