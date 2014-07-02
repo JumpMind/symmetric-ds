@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.web.rest;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,6 +56,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -62,9 +65,13 @@ import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRegistrationService;
@@ -88,6 +95,9 @@ import org.jumpmind.symmetric.web.rest.model.PullDataResults;
 import org.jumpmind.symmetric.web.rest.model.QueryResults;
 import org.jumpmind.symmetric.web.rest.model.RegistrationInfo;
 import org.jumpmind.symmetric.web.rest.model.RestError;
+import org.jumpmind.symmetric.web.rest.model.SendSchemaRequest;
+import org.jumpmind.symmetric.web.rest.model.SendSchemaResponse;
+import org.jumpmind.symmetric.web.rest.model.TableName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -436,17 +446,6 @@ public class RestService {
         syncTriggersImpl(getSymmetricEngine(), force);
     }
 
-    @ApiOperation(value = "Sync triggers on the single engine for a table")
-    @RequestMapping(value = "engine/synctriggers/{table}", method = RequestMethod.POST)
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ResponseBody
-    public final void postSyncTriggersByTable(@PathVariable("table") String tableName,
-            @RequestParam(required = false, value = "catalog") String catalogName,
-            @RequestParam(required = false, value = "schema") String schemaName,
-            @RequestParam(required = false, value = "force") boolean force) {
-        syncTriggersByTableImpl(getSymmetricEngine(), catalogName, schemaName, tableName, force);
-    }
-
     /**
      * Creates instances of triggers for each entry configured table/trigger for
      * the specified engine on the node
@@ -460,6 +459,17 @@ public class RestService {
         syncTriggersImpl(getSymmetricEngine(engineName), force);
     }
 
+    @ApiOperation(value = "Sync triggers on the single engine for a table")
+    @RequestMapping(value = "engine/synctriggers/{table}", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public final void postSyncTriggersByTable(@PathVariable("table") String tableName,
+            @RequestParam(required = false, value = "catalog") String catalogName,
+            @RequestParam(required = false, value = "schema") String schemaName,
+            @RequestParam(required = false, value = "force") boolean force) {
+        syncTriggersByTableImpl(getSymmetricEngine(), catalogName, schemaName, tableName, force);
+    }
+
     @ApiOperation(value = "Sync triggers on the specific engine for a table")
     @RequestMapping(value = "engine/{engine}/synctriggers/{table}", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -471,6 +481,52 @@ public class RestService {
             @RequestParam(required = false, value = "force") boolean force) {
         syncTriggersByTableImpl(getSymmetricEngine(engineName), catalogName, schemaName, tableName,
                 force);
+    }
+
+    /**
+     * Send schema updates for all tables or a list of tables to a list of nodes
+     * or to all nodes in a group.
+     * <p>
+     * Example json request to send all tables to all nodes in group:<br>
+     * { "nodeGroupIdToSendTo": "target_group_name" }
+     * <p>
+     * Example json request to send all tables to a list of nodes:<br>
+     * { "nodeIdsToSendTo": [ "1", "2" ] }
+     * <p>
+     * Example json request to send a table to a list of nodes:<br>
+     * { "nodeIdsToSendTo": ["1", "2"], "tablesToSend": [ {  "catalogName": "", "schemaName": "", "tableName": "A" } ] }
+     * <p>
+     * Example json response:
+     * { "nodeIdsSentTo": { "1": [ {  "catalogName": null, "schemaName": null, "tableName": "A" } ] } }
+     * 
+     * @param engineName
+     * @param request
+     * @return {@link SendSchemaResponse}
+     */
+    @ApiOperation(value = "Send schema updates for all tables or a list of tables to a list of nodes or to all nodes in a group.")
+    @RequestMapping(value = "engine/{engine}/sendschema", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final SendSchemaResponse postSendSchema(@PathVariable("engine") String engineName,
+            @RequestBody SendSchemaRequest request) {
+        return sendSchemaImpl(getSymmetricEngine(engineName), request);
+    }
+
+    /**
+     * Send schema updates for all tables or a list of tables to a list of nodes
+     * or to all nodes in a group. See
+     * {@link RestService#postSendSchema(String, SendSchemaRequest)} for
+     * additional details.
+     * 
+     * @param request
+     * @return {@link SendSchemaResponse}
+     */
+    @ApiOperation(value = "Send schema updates for all tables or a list of tables to a list of nodes or to all nodes in a group.")
+    @RequestMapping(value = "engine/sendschema", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final SendSchemaResponse postSendSchema(@RequestBody SendSchemaRequest request) {
+        return sendSchemaImpl(getSymmetricEngine(), request);
     }
 
     /**
@@ -864,8 +920,8 @@ public class RestService {
                                 useDelimitedIdentifiers);
                 List<Batch> batches = new ArrayList<Batch>();
                 for (OutgoingBatchWithPayload outgoingBatchWithPayload : extractedBatches) {
-                    if (outgoingBatchWithPayload.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.LD ||
-                            outgoingBatchWithPayload.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.IG) {
+                    if (outgoingBatchWithPayload.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.LD
+                            || outgoingBatchWithPayload.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.IG) {
                         Batch batch = new Batch();
                         batch.setBatchId(outgoingBatchWithPayload.getBatchId());
                         batch.setChannelId(outgoingBatchWithPayload.getChannelId());
@@ -1053,7 +1109,7 @@ public class RestService {
         List<BatchAck> batchAcks = new ArrayList<BatchAck>();
         long transferTimeInMillis = batchResults.getTransferTimeInMillis();
         if (transferTimeInMillis > 0) {
-            transferTimeInMillis = transferTimeInMillis/batchResults.getBatchResults().size();
+            transferTimeInMillis = transferTimeInMillis / batchResults.getBatchResults().size();
         }
         for (BatchResult batchResult : batchResults.getBatchResults()) {
             batchAck = new BatchAck(batchResult.getBatchId());
@@ -1202,6 +1258,110 @@ public class RestService {
         HashSet<String> tables = new HashSet<String>();
         tables.add(tableName);
         triggerRouterService.dropTriggers(tables);
+    }
+
+    private SendSchemaResponse sendSchemaImpl(ISymmetricEngine engine, SendSchemaRequest request) {
+
+        IConfigurationService configurationService = engine.getConfigurationService();
+        INodeService nodeService = engine.getNodeService();
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+        IDataService dataService = engine.getDataService();
+
+        SendSchemaResponse response = new SendSchemaResponse();
+
+        org.jumpmind.symmetric.model.Node identity = nodeService.findIdentity();
+        if (identity != null) {
+            List<org.jumpmind.symmetric.model.Node> nodesToSendTo = new ArrayList<org.jumpmind.symmetric.model.Node>();
+
+            List<String> nodeIds = request.getNodeIdsToSendTo();
+            if (nodeIds == null || nodeIds.size() == 0) {
+                nodeIds = new ArrayList<String>();
+                String nodeGroupIdToSendTo = request.getNodeGroupIdToSendTo();
+                if (isNotBlank(nodeGroupIdToSendTo)) {
+                    NodeGroupLink link = configurationService.getNodeGroupLinkFor(
+                            identity.getNodeGroupId(), nodeGroupIdToSendTo, false);
+                    if (link != null) {
+                        Collection<org.jumpmind.symmetric.model.Node> nodes = nodeService
+                                .findEnabledNodesFromNodeGroup(nodeGroupIdToSendTo);
+                        nodesToSendTo.addAll(nodes);
+                    } else {
+                        log.warn("Could not send schema to all nodes in the '"
+                                + nodeGroupIdToSendTo + "' node group.  No node group link exists");
+                    }
+                } else {
+                    log.warn("Could not send schema to nodes.  There are none that were provided and the nodeGroupIdToSendTo was also not provided");
+                }
+            } else {
+                for (String nodeIdToValidate : nodeIds) {
+                    org.jumpmind.symmetric.model.Node node = nodeService.findNode(nodeIdToValidate);
+                    if (node != null) {
+                        NodeGroupLink link = configurationService.getNodeGroupLinkFor(
+                                identity.getNodeGroupId(), node.getNodeGroupId(), false);
+                        if (link != null) {
+                            nodesToSendTo.add(node);
+                        } else {
+                            log.warn("Could not send schema to node '" + nodeIdToValidate
+                                    + "'. No node group link exists");
+                        }
+                    } else {
+                        log.warn("Could not send schema to node '" + nodeIdToValidate
+                                + "'.  It was not present in the database");
+                    }
+                }
+            }
+
+            Map<String, List<TableName>> results = response.getNodeIdsSentTo();
+            List<String> nodeIdsToSendTo = toNodeIds(nodesToSendTo);
+            for (String nodeId : nodeIdsToSendTo) {
+                results.put(nodeId, new ArrayList<TableName>());
+            }
+
+            if (nodesToSendTo.size() > 0) {
+                List<TableName> tablesToSend = request.getTablesToSend();
+                List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters();
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    Trigger trigger = triggerRouter.getTrigger();
+                    NodeGroupLink link = triggerRouter.getRouter().getNodeGroupLink();
+                    if (link.getSourceNodeGroupId().equals(identity.getNodeGroupId())) {
+                        for (org.jumpmind.symmetric.model.Node node : nodesToSendTo) {
+                            if (link.getTargetNodeGroupId().equals(node.getNodeGroupId())) {
+                                if (tablesToSend == null || tablesToSend.size() == 0
+                                        || contains(trigger, tablesToSend)) {
+                                    dataService.sendSchema(node.getNodeId(),
+                                            trigger.getSourceCatalogName(),
+                                            trigger.getSourceSchemaName(),
+                                            trigger.getSourceTableName(), false);
+                                    results.get(node.getNodeId()).add(
+                                            new TableName(trigger.getSourceCatalogName(), trigger
+                                                    .getSourceSchemaName(), trigger
+                                                    .getSourceTableName()));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return response;
+    }
+
+    private boolean contains(Trigger trigger, List<TableName> tables) {
+        for (TableName tableName : tables) {
+            if (trigger.getFullyQualifiedSourceTableName().equals(
+                    Table.getFullyQualifiedTableName(tableName.getCatalogName(),
+                            tableName.getSchemaName(), tableName.getTableName()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<String> toNodeIds(List<org.jumpmind.symmetric.model.Node> nodes) {
+        List<String> nodeIds = new ArrayList<String>(nodes.size());
+        for (org.jumpmind.symmetric.model.Node node : nodes) {
+            nodeIds.add(node.getNodeId());
+        }
+        return nodeIds;
     }
 
     private void uninstallImpl(ISymmetricEngine engine) {
