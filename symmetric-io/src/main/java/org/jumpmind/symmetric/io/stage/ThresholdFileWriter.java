@@ -91,6 +91,7 @@ public class ThresholdFileWriter extends Writer {
             fileWriter.write(buffer.toString());
             fileWriter.write(cbuf, off, len);
             fileWriter.flush();
+            buffer.setLength(0);
         } else {
             buffer.append(new String(cbuf), off, len);
         }
