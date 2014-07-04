@@ -142,7 +142,7 @@ public class StagedResource implements IStagedResource {
                             }
                         }
                         
-                        if (FileUtils.deleteQuietly(newFile)) {
+                        if (!FileUtils.deleteQuietly(newFile)) {
                             log.warn("Failed to delete '{}' for a second time", newFile.getAbsolutePath());
                         }
                     }
