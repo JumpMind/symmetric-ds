@@ -91,26 +91,33 @@ public class StagingManager implements IStagingManager {
             long purgedMemSize = 0;
             for (String key : keys) {
                 IStagedResource resource = resourceList.get(key);
-                boolean resourceIsOld = (System.currentTimeMillis() - resource.getLastUpdateTime()) > ttlInMs;
-                if ((resource.getState() == State.READY || resource.getState() == State.DONE)
-                        && (resourceIsOld || !resource.exists())) {                    
-                    if (!resource.isInUse()) {
-                        boolean file = resource.isFileResource();
-                        long size = resource.getSize(); 
-                        if (resource.delete()) {                            
-                            if (file) {
-                                purgedFileCount++;
-                                purgedFileSize += size;
+                /* resource could have deleted itself between the time the keys were cloned and now */
+                if (resource != null) {
+                    boolean resourceIsOld = (System.currentTimeMillis() - resource
+                            .getLastUpdateTime()) > ttlInMs;
+                    if ((resource.getState() == State.READY || resource.getState() == State.DONE)
+                            && (resourceIsOld || !resource.exists())) {
+                        if (!resource.isInUse()) {
+                            boolean file = resource.isFileResource();
+                            long size = resource.getSize();
+                            if (resource.delete()) {
+                                if (file) {
+                                    purgedFileCount++;
+                                    purgedFileSize += size;
+                                } else {
+                                    purgedMemCount++;
+                                    purgedMemSize += size;
+                                }
+                                resourceList.remove(key);
                             } else {
-                                purgedMemCount++;
-                                purgedMemSize += size;
+                                log.warn("Failed to delete the '{}' staging resource",
+                                        resource.getPath());
                             }
-                           resourceList.remove(key);
                         } else {
-                            log.warn("Failed to delete the '{}' staging resource", resource.getPath());
+                            log.info(
+                                    "The '{}' staging resource qualified for being cleaned, but was in use.  It will not be cleaned right now",
+                                    resource.getPath());
                         }
-                    } else {
-                        log.info("The '{}' staging resource qualified for being cleaned, but was in use.  It will not be cleaned right now", resource.getPath());
                     }
                 }
             }
