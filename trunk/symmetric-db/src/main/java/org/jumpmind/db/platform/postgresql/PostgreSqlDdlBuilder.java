@@ -108,7 +108,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         ddl.append("DROP TABLE ");
-        printIdentifier(getTableName(table.getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(" CASCADE");
         printEndOfStatement(ddl);
         if (!temporary && !recreate) {
@@ -300,15 +300,13 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
 
     protected void processChange(Database currentModel, Database desiredModel,
             PrimaryKeyChange change, StringBuilder ddl) {
-        ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        writeTableAlterStmt(change.getChangedTable(), ddl);
         printIndent(ddl);
         ddl.append(" DROP CONSTRAINT ");
         printIdentifier(change.getChangedTable().getPrimaryKeyConstraintName(), ddl);
         printEndOfStatement(ddl);
 
-        ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        writeTableAlterStmt(change.getChangedTable(), ddl);
         printIndent(ddl);
         ddl.append(" ADD ");
         writePrimaryKeyStmt(change.getChangedTable(), change.getNewPrimaryKeyColumns(), ddl);
@@ -321,8 +319,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
      */
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
-        ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        writeTableAlterStmt(change.getChangedTable(), ddl);
         printIndent(ddl);
         ddl.append(" ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -335,8 +332,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
      */
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
-        ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        writeTableAlterStmt(change.getChangedTable(), ddl);
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
