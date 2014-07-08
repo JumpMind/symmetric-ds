@@ -149,7 +149,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         String output = export.exportTables(tables).toLowerCase();
 
         Assert.assertEquals(output, 41, StringUtils.countMatches(output, "create table \"sym_"));
-        final int EXPECTED_VARCHAR_MAX = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 257 : 42;
+        final int EXPECTED_VARCHAR_MAX = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 258 : 42;
         final String EXPECTED_STRING = "varchar(" + Integer.MAX_VALUE + ")";
         Assert.assertEquals("Expected " + EXPECTED_VARCHAR_MAX + " " + EXPECTED_STRING
                 + " in the following output: " + output, EXPECTED_VARCHAR_MAX,
