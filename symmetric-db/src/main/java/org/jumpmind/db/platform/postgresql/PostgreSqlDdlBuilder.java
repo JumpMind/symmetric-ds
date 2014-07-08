@@ -406,5 +406,14 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             return false;
         }
     }
+    
+    @Override
+    protected void printDefaultValue(String defaultValue, int typeCode, StringBuilder ddl) {
+        if (defaultValue != null && defaultValue.endsWith("::uuid") && Types.OTHER == typeCode) {
+            ddl.append(defaultValue);
+        } else {
+            super.printDefaultValue(defaultValue, typeCode, ddl);
+        }
+    }
 
 }
