@@ -110,6 +110,8 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         
         putSql("deleteIncomingErrorSql", "delete from $(incoming_error) where node_id = ?");
         
+        putSql("deleteTableReloadRequestSql", "delete from $(table_reload_request) where source_node_id = ? or target_node_id=?");
+        
         putSql("deleteExtractRequestSql", "delete from $(extract_request) where node_id = ?");
         
         putSql("deleteNodeCommunicationSql", "delete from $(node_communication) where node_id = ?");
