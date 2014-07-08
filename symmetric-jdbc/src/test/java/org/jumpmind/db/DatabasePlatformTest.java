@@ -234,7 +234,7 @@ public class DatabasePlatformTest {
     public void testCreateAndReadTestSimpleTable() throws Exception {
         platform.createDatabase(DatabaseXmlUtil.read(new InputStreamReader(
                 DatabasePlatformTest.class.getResourceAsStream("/testCreateDatabase.xml"))), true,
-                false);
+                true);
         Table table = platform.getTableFromCache(SIMPLE_TABLE, true);
         assertNotNull("Could not find " + SIMPLE_TABLE, table);
         assertEquals("The id column was not read in as an autoincrement column", true, table
