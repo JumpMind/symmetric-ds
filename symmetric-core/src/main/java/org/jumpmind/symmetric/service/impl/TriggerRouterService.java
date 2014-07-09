@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1235,7 +1237,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     catalogNames.add(null);
                 }
             } else {
-                catalogNames.add(trigger.getSourceCatalogName());
+                if (isBlank(trigger.getSourceCatalogName())) {
+                   catalogNames.add(platform.getDefaultCatalog()); 
+                } else {
+                   catalogNames.add(trigger.getSourceCatalogName());
+                }
             }
             
             for (String catalogName : catalogNames) {
@@ -1251,7 +1257,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         schemaNames.add(null);
                     }
                 } else {
-                    schemaNames.add(trigger.getSourceSchemaName());
+                    if (isBlank(trigger.getSourceSchemaName())) {
+                        schemaNames.add(platform.getDefaultSchema());
+                    } else {
+                        schemaNames.add(trigger.getSourceSchemaName());
+                    }
                 }
 
                 for (String schemaName : schemaNames) {
