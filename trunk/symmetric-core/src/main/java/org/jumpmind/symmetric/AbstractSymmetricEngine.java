@@ -722,13 +722,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
     
     public void removeAndCleanupNode(String nodeId) {
-        log.warn("Removing node {}", nodeId);
+        log.info("Removing node {}", nodeId);
         nodeService.deleteNode(nodeId, false);
-        log.warn("Marking outgoing batch records as OK for node ID {}", nodeId);
-        outgoingBatchService.markAllAsSentForNode(nodeId, true);
-        log.warn("Removing incoming batch records for node ID {}", nodeId);
-        incomingBatchService.removingIncomingBatches(nodeId);
-        log.warn("Done removing node ID {}", nodeId);        
+        log.info("Done removing node ID {}", nodeId);        
     }
 
     public RemoteNodeStatuses pull() {

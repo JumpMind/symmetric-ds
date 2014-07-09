@@ -292,7 +292,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 table.getFullyQualifiedTableName());
 
         String previousCatalog = null;
-        String sourceCatalogName = trigger.getSourceCatalogName();
+        String sourceCatalogName = table.getCatalog();
         String defaultCatalog = platform.getDefaultCatalog();
         String defaultSchema = platform.getDefaultSchema();
 
