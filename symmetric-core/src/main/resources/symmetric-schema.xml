@@ -670,9 +670,9 @@
 
     <table name="trigger" description="Configures database triggers that capture changes in the database. Configuration of which triggers are generated for which tables is stored here.  Triggers are created in a node's database if the source_node_group_id of a router is mapped to a row in this table.">
         <column name="trigger_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
-        <column name="source_catalog_name" type="VARCHAR" size="255"  description="Optional name for the catalog the configured table is in." />
-        <column name="source_schema_name" type="VARCHAR" size="255"  description="Optional name for the schema a configured table is in." />
-        <column name="source_table_name" type="VARCHAR" size="255" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes." />
+        <column name="source_catalog_name" type="VARCHAR" size="255"  description="Optional name for the catalog the configured table is in.  If the name includes * then a wildcard match on the table name will be attempted.  Wildcard names can include a list of names that are comma separated.  The ! symbol may be used to indicate a NOT match condition." />
+        <column name="source_schema_name" type="VARCHAR" size="255"  description="Optional name for the schema a configured table is in.  If the name includes * then a wildcard match on the table name will be attempted.  Wildcard names can include a list of names that are comma separated.  The ! symbol may be used to indicate a NOT match condition." />
+        <column name="source_table_name" type="VARCHAR" size="255" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes.  If the name includes * then a wildcard match on the table name will be attempted.  Wildcard names can include a list of names that are comma separated.  The ! symbol may be used to indicate a NOT match condition." />
         <column name="channel_id" type="VARCHAR" size="128" required="true"  description="The channel_id of the channel that data changes will flow through." />
         <column name="reload_channel_id" type="VARCHAR" size="128" required="true" default="reload" description="The channel_id of the channel that will be used for reloads." />
         <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an update trigger." />
