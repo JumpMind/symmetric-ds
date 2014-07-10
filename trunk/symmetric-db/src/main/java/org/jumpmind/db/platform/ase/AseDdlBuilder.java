@@ -157,7 +157,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         println("BEGIN", ddl);
         printIndent(ddl);
         ddl.append("DROP TABLE ");
-        printlnIdentifier(getTableName(table.getFullyQualifiedTableName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(table), ddl);
         ddl.append("END");
         printEndOfStatement(ddl);
     }
@@ -171,8 +171,8 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         printAlwaysSingleQuotedIdentifier(constraintName, ddl);
         println(")", ddl);
         printIndent(ddl);
-        ddl.append("ALTER TABLE ");
-        printIdentifier(getTableName(table.getName()), ddl);
+        ddl.append("ALTER TABLE ");        
+        ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(" DROP CONSTRAINT ");
         printIdentifier(constraintName, ddl);
         printEndOfStatement(ddl);
@@ -181,7 +181,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
-        printIdentifier(getTableName(table.getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(".");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
@@ -207,11 +207,9 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
      */
     protected String getEnableIdentityOverrideSql(Table table) {
         StringBuffer result = new StringBuffer();
-
         result.append("SET IDENTITY_INSERT ");
-        result.append(getDelimitedIdentifier(getTableName(table.getName())));
+        result.append(getFullyQualifiedTableNameShorten(table));
         result.append(" ON");
-
         return result.toString();
     }
 
@@ -224,11 +222,9 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
      */
     protected String getDisableIdentityOverrideSql(Table table) {
         StringBuffer result = new StringBuffer();
-
         result.append("SET IDENTITY_INSERT ");
-        result.append(getDelimitedIdentifier(getTableName(table.getName())));
+        result.append(getFullyQualifiedTableNameShorten(table));
         result.append(" OFF");
-
         return result.toString();
     }
 
@@ -273,14 +269,14 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
 
         if (hasIdentity) {
             ddl.append("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable.getName()), ddl);
+            ddl.append(getFullyQualifiedTableNameShorten(targetTable));
             ddl.append(" ON");
             printEndOfStatement(ddl);
         }
         super.writeCopyDataStatement(sourceTable, targetTable, ddl);
         if (hasIdentity) {
             ddl.append("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable.getName()), ddl);
+            ddl.append(getFullyQualifiedTableNameShorten(targetTable));
             ddl.append(" OFF");
             printEndOfStatement(ddl);
         }
@@ -426,7 +422,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(change.getChangedTable()), ddl);
         printIndent(ddl);
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -440,7 +436,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(change.getChangedTable()), ddl);
         printIndent(ddl);
         ddl.append("DROP ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
@@ -495,7 +491,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             ColumnDefaultValueChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(change.getChangedTable()), ddl);
         printIndent(ddl);
         ddl.append("REPLACE ");
         printIdentifier(getColumnName(change.getChangedColumn()), ddl);
@@ -537,7 +533,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
             // the
             // datatype changes
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable.getName()), ddl);
+            printlnIdentifier(getFullyQualifiedTableNameShorten(sourceTable), ddl);
             printIndent(ddl);
             ddl.append("REPLACE ");
             printIdentifier(getColumnName(sourceColumn), ddl);
@@ -545,14 +541,14 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
             printEndOfStatement(ddl);
         }
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(sourceTable.getName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(sourceTable), ddl);
         printIndent(ddl);
         ddl.append("MODIFY ");
         writeColumn(sourceTable, targetColumn, ddl);
         printEndOfStatement(ddl);
         if (defaultChanges) {
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable.getName()), ddl);
+            printlnIdentifier(getFullyQualifiedTableNameShorten(sourceTable), ddl);
             printIndent(ddl);
             ddl.append("REPLACE ");
             printIdentifier(getColumnName(sourceColumn), ddl);

@@ -158,7 +158,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl)  {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);

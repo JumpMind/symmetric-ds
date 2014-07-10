@@ -134,7 +134,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -148,7 +148,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);

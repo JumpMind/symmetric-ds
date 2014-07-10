@@ -85,7 +85,7 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         ddl.append("DROP TABLE ");
-        printIdentifier(getTableName(table.getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(" IF EXISTS");
         printEndOfStatement(ddl);
     }
@@ -190,7 +190,7 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -208,7 +208,7 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);

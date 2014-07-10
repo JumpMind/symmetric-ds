@@ -150,7 +150,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
         println("BEGIN", ddl);
         printIndent(ddl);
         ddl.append("DROP TABLE ");
-        printlnIdentifier(getTableName(table.getName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(table), ddl);
         ddl.append("END");
         printEndOfStatement(ddl);
     }
@@ -165,7 +165,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
         println(")", ddl);
         printIndent(ddl);
         ddl.append("ALTER TABLE ");
-        printIdentifier(getTableName(table.getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(" DROP CONSTRAINT ");
         printIdentifier(constraintName, ddl);
         printEndOfStatement(ddl);
@@ -174,7 +174,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
-        printIdentifier(getTableName(table.getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(".");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
@@ -366,7 +366,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(change.getChangedTable()), ddl);
         printIndent(ddl);
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -380,7 +380,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(change.getChangedTable()), ddl);
         printIndent(ddl);
         ddl.append("DROP ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
@@ -400,7 +400,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemovePrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(change.getChangedTable()), ddl);
         printIndent(ddl);
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
@@ -414,7 +414,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             ColumnDefaultValueChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(change.getChangedTable()), ddl);
         printIndent(ddl);
         ddl.append("REPLACE ");
         printIdentifier(getColumnName(change.getChangedColumn()), ddl);
@@ -456,7 +456,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
             // the
             // datatype changes
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable.getName()), ddl);
+            printlnIdentifier(getFullyQualifiedTableNameShorten(sourceTable), ddl);
             printIndent(ddl);
             ddl.append("REPLACE ");
             printIdentifier(getColumnName(sourceColumn), ddl);
@@ -464,14 +464,14 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
             printEndOfStatement(ddl);
         }
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(sourceTable.getName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(sourceTable), ddl);
         printIndent(ddl);
         ddl.append("MODIFY ");
         writeColumn(sourceTable, targetColumn, ddl);
         printEndOfStatement(ddl);
         if (defaultChanges) {
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable.getName()), ddl);
+            printlnIdentifier(getFullyQualifiedTableNameShorten(sourceTable), ddl);
             printIndent(ddl);
             ddl.append("REPLACE ");
             printIdentifier(getColumnName(sourceColumn), ddl);

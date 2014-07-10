@@ -149,7 +149,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         }
 
         ddl.append("DROP TABLE ");
-        printIdentifier(getTableName(table.getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(" CASCADE CONSTRAINTS PURGE");
         printEndOfStatement(ddl);
     }
@@ -177,7 +177,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             ddl.append("CREATE OR REPLACE TRIGGER ");
             printlnIdentifier(triggerName, ddl);
             ddl.append("BEFORE INSERT ON ");
-            printlnIdentifier(getTableName(table.getName()), ddl);
+            ddl.append(getFullyQualifiedTableNameShorten(table));
             ddl.append("FOR EACH ROW WHEN (new.");
             printIdentifier(columnName, ddl);
             println(" IS NULL)", ddl);
@@ -201,7 +201,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             ddl.append("CREATE OR REPLACE TRIGGER ");
             printIdentifier(triggerName, ddl);
             ddl.append(" BEFORE INSERT ON ");
-            printIdentifier(getTableName(table.getName()), ddl);
+            ddl.append(getFullyQualifiedTableNameShorten(table));
             ddl.append(" FOR EACH ROW WHEN (new.");
             printIdentifier(columnName, ddl);
             println(" IS NULL)", ddl);
@@ -487,7 +487,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        printlnIdentifier(getFullyQualifiedTableNameShorten(change.getChangedTable()), ddl);
         printIndent(ddl);
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -509,7 +509,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             dropAutoIncrementSequence(change.getChangedTable(), change.getColumn(), ddl);
         }
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
@@ -523,7 +523,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemovePrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
