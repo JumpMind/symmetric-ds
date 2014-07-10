@@ -1417,7 +1417,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         StringBuffer buffer = new StringBuffer("UPDATE ");
         boolean addSep = false;
 
-        buffer.append(table.getFullyQualifiedTableName());
+        buffer.append(getFullyQualifiedTableNameShorten(table));
         buffer.append(" SET ");
 
         for (int idx = 0; idx < table.getColumnCount(); idx++) {
@@ -2217,7 +2217,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             StringBuilder ddl) {
         if ((primaryKeyColumns.length > 0) && shouldGeneratePrimaryKeys(primaryKeyColumns)) {
             ddl.append("ALTER TABLE ");
-            ddl.append(table.getFullyQualifiedTableName());
+            ddl.append(getFullyQualifiedTableNameShorten(table));
             println(ddl);
             printIndent(ddl);
             ddl.append("ADD CONSTRAINT ");
@@ -2386,7 +2386,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         printIdentifier(getIndexName(index), ddl);
         if (!databaseInfo.isAlterTableForDropUsed()) {
             ddl.append(" ON ");
-            ddl.append(table.getFullyQualifiedTableName());
+            ddl.append(getFullyQualifiedTableNameShorten(table));
         }
         printEndOfStatement(ddl);
     }
