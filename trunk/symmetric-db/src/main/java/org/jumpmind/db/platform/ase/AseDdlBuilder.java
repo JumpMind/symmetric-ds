@@ -157,7 +157,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         println("BEGIN", ddl);
         printIndent(ddl);
         ddl.append("DROP TABLE ");
-        printlnIdentifier(getFullyQualifiedTableNameShorten(table), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append("END");
         printEndOfStatement(ddl);
     }
@@ -422,7 +422,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getFullyQualifiedTableNameShorten(change.getChangedTable()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -436,7 +436,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getFullyQualifiedTableNameShorten(change.getChangedTable()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("DROP ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
@@ -491,7 +491,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             ColumnDefaultValueChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getFullyQualifiedTableNameShorten(change.getChangedTable()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("REPLACE ");
         printIdentifier(getColumnName(change.getChangedColumn()), ddl);
@@ -533,7 +533,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
             // the
             // datatype changes
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getFullyQualifiedTableNameShorten(sourceTable), ddl);
+            ddl.append(getFullyQualifiedTableNameShorten(sourceTable));
             printIndent(ddl);
             ddl.append("REPLACE ");
             printIdentifier(getColumnName(sourceColumn), ddl);
@@ -541,14 +541,14 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
             printEndOfStatement(ddl);
         }
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getFullyQualifiedTableNameShorten(sourceTable), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(sourceTable));
         printIndent(ddl);
         ddl.append("MODIFY ");
         writeColumn(sourceTable, targetColumn, ddl);
         printEndOfStatement(ddl);
         if (defaultChanges) {
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getFullyQualifiedTableNameShorten(sourceTable), ddl);
+            ddl.append(getFullyQualifiedTableNameShorten(sourceTable));
             printIndent(ddl);
             ddl.append("REPLACE ");
             printIdentifier(getColumnName(sourceColumn), ddl);
