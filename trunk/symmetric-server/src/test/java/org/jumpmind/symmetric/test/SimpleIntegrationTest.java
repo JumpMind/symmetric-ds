@@ -985,6 +985,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
         Date rootHeartbeatTimeAfter = getServer().getSqlTemplate().queryForObject(
                 checkHeartbeatSql, Timestamp.class);
+        
+        assertNotSame("The root heartbeat time before should have been different than the root heartbeat time after",
+                rootHeartbeatTimeBefore, rootHeartbeatTimeAfter);
+        
         assertEquals(
                 "The client heartbeat time should have been the same as the root heartbeat time.",
                 clientHeartbeatTimeAfter, rootHeartbeatTimeAfter);
