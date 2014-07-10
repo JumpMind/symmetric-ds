@@ -265,7 +265,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
         ddl.append("DROP INDEX ");
-        printIdentifier(getTableName(table.getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(".");
         printIdentifier(getIndexName(index), ddl);
         printEndOfStatement(ddl);
@@ -281,7 +281,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         println(")", ddl);
         printIndent(ddl);
         ddl.append("ALTER TABLE ");
-        printIdentifier(getTableName(table.getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(" DROP CONSTRAINT ");
         printIdentifier(constraintName, ddl);
         printEndOfStatement(ddl);
@@ -352,7 +352,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
 
         if (hasIdentityColumns) {
             ddl.append("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable.getName()), ddl);
+            ddl.append(getFullyQualifiedTableNameShorten(targetTable));
             ddl.append(" ON");
             printEndOfStatement(ddl);
         }
@@ -361,7 +361,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         // per session
         if (hasIdentityColumns) {
             ddl.append("SET IDENTITY_INSERT ");
-            printIdentifier(getTableName(targetTable.getName()), ddl);
+            ddl.append(getFullyQualifiedTableNameShorten(targetTable));
             ddl.append(" OFF");
             printEndOfStatement(ddl);
         }
@@ -542,7 +542,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -561,7 +561,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         }
         
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
@@ -683,7 +683,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         if ((targetColumn.getMappedType().equalsIgnoreCase(TypeMap.LONGNVARCHAR) && sourceColumn.getJdbcTypeName().equalsIgnoreCase("text")) ||
                 (targetColumn.getMappedType().equalsIgnoreCase(TypeMap.LONGVARCHAR) && sourceColumn.getJdbcTypeName().equalsIgnoreCase("ntext"))) {
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable.getName()), ddl);
+            ddl.append(getFullyQualifiedTableNameShorten(sourceTable));
             printIndent(ddl);
             ddl.append("ALTER COLUMN ");
             printIdentifier(getColumnName(targetColumn), ddl);
@@ -692,7 +692,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         }
 
         ddl.append("ALTER TABLE ");
-        printlnIdentifier(getTableName(sourceTable.getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(sourceTable));
         printIndent(ddl);
         ddl.append("ALTER COLUMN ");
         writeColumnTypeDefaultRequired(sourceTable, targetColumn, ddl);
@@ -706,7 +706,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
              * constraint
              */
             ddl.append("ALTER TABLE ");
-            printlnIdentifier(getTableName(sourceTable.getName()), ddl);
+            ddl.append(getFullyQualifiedTableNameShorten(sourceTable));
             printIndent(ddl);
             ddl.append("ADD CONSTRAINT ");
             printIdentifier(getConstraintName("DF", sourceTable, sourceColumn.getName(), null), ddl);

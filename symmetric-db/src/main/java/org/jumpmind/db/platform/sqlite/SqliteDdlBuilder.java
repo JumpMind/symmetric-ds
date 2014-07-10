@@ -118,7 +118,7 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {        
         ddl.append("DROP TABLE IF EXISTS ");
-        printIdentifier(getTableName(table.getName()), ddl);
+        ddl.append(getFullyQualifiedTableNameShorten(table));
         printEndOfStatement(ddl);
     }
     
