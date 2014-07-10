@@ -401,7 +401,7 @@ public class DmlStatement {
         for (int i = 0; i < columnsToProcess.size(); i++) {
             Column column = columnsToProcess.get(i);
             String name = column.getName();
-            int type = column.getJdbcTypeCode();
+            int type = column.getMappedTypeCode();
 
             if (row.get(name) != null) {
                 if (column.isOfTextType()) {
