@@ -41,11 +41,6 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     public boolean createOrAlterTablesIfNecessary(String... tables) {
         boolean tablesCreated = super.createOrAlterTablesIfNecessary(tables);
         if (tablesCreated) {
-            long triggerHistId = platform.getSqlTemplate().queryForLong("select max(trigger_hist_id) from "
-                    + parameterService.getTablePrefix() + "_trigger_hist") + 1;
-            platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
-                    + "_trigger_hist alter column trigger_hist_id restart with " + triggerHistId);
-            log.info("Resetting auto increment columns for {}", parameterService.getTablePrefix() + "_trigger_hist");
             long dataId = platform.getSqlTemplate().queryForLong("select max(data_id) from " + parameterService.getTablePrefix()
                     + "_data") + 1;
             platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
