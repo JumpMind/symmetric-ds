@@ -199,8 +199,19 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             NetworkedNode rootNetworkedNode, Node me, SimpleRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> possibleTargetNodes, boolean initialLoad) {
         String nodeIdInQuestion = columnValues.get("NODE_ID");
-        if (!(me.getNodeId().equals(nodeIdInQuestion) && dataMetaData.getData().getDataEventType() == DataEventType.DELETE))
-        {
+        if (dataMetaData.getData().getDataEventType() == DataEventType.DELETE) {
+            String createAtNodeId = columnValues.get("CREATED_AT_NODE_ID");
+            for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
+                if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo
+                        .getDeploymentType())
+                        && !nodeIdInQuestion.equals(nodeThatMayBeRoutedTo.getNodeId())
+                        && !nodeThatMayBeRoutedTo.getNodeId().equals(createAtNodeId)
+                        && (nodeThatMayBeRoutedTo.getCreatedAtNodeId() == null || !nodeThatMayBeRoutedTo
+                                .getCreatedAtNodeId().equals(nodeIdInQuestion))) {
+                    nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
+                }
+            }
+        } else {
             List<NodeGroupLink> nodeGroupLinks = getNodeGroupLinksFromContext(routingContext);
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                 if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo
@@ -256,15 +267,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
 
                 /*
-                 * Don't route insert events for a node to itself. they will be
+                 * Don't route insert events for a node to itself. They will be
                  * loaded during registration. If we route them, then an old
                  * state can override the correct state
                  * 
                  * Don't send deletes to a node. A node should be responsible
                  * for deleting itself.
                  */
-                if (dataMetaData.getData().getDataEventType() == DataEventType.INSERT
-                        || dataMetaData.getData().getDataEventType() == DataEventType.DELETE) {
+                if (dataMetaData.getData().getDataEventType() == DataEventType.INSERT) {
                     nodeIds.remove(nodeIdInQuestion);
                 }
             }
@@ -413,6 +423,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 } else {
                     return false;
                 }
+                
             } else {
                 return true;
             }
