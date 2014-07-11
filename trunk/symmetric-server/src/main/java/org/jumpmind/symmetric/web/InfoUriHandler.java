@@ -21,8 +21,10 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.jumpmind.symmetric.common.InfoConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeGroup;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -58,18 +60,26 @@ public class InfoUriHandler extends AbstractUriHandler {
             ServletException {
         res.setContentType("text/plain");
         Node node = nodeService.findIdentity();
-        List<NodeGroup> nodeGroups = configurationService.getNodeGroups();
+        List<NodeGroupLink> nodeGroupLinks = configurationService.getNodeGroupLinks(true);
         Properties properties = new Properties();
         properties.setProperty(ParameterConstants.EXTERNAL_ID, parameterService.getExternalId());
         properties.setProperty(ParameterConstants.NODE_GROUP_ID, parameterService.getNodeGroupId());
         properties.setProperty(ParameterConstants.EXTERNAL_ID, parameterService.getExternalId());
-        if (nodeGroups != null) {
+        if (nodeGroupLinks != null) {
+            Set<String> groups = new HashSet<String>();
             StringBuilder b = new StringBuilder();
-            for (NodeGroup nodeGroup : nodeGroups) {
-                b.append(nodeGroup.getNodeGroupId());
-                b.append(",");
+            for (NodeGroupLink nodeGroupLink : nodeGroupLinks) {
+                if (nodeGroupLink.getSourceNodeGroupId().equals(node.getNodeGroupId())) {
+                    groups.add(nodeGroupLink.getTargetNodeGroupId());
+                } else if (nodeGroupLink.getTargetNodeGroupId().equals(node.getNodeGroupId())) {
+                    groups.add(nodeGroupLink.getSourceNodeGroupId());
+                }
             }
-            properties.setProperty(InfoConstants.NODE_GROUP_IDS, b.substring(0, b.length() - 1));
+            
+            for (String group : groups) {
+                b.append(group).append(",");
+            }
+            properties.setProperty(InfoConstants.NODE_GROUP_IDS, b.substring(0, b.length() > 0 ? b.length() - 1 : 0));
         }
 
         if (node != null) {
