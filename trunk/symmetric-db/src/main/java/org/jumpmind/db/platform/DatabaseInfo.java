@@ -180,6 +180,10 @@ public class DatabaseInfo {
      */
     private String valueQuoteToken = "'";
 
+    private String binaryQuoteStart = "'";
+    
+    private String binaryQuoteEnd = "'";
+
     /** The string that starts a comment. */
     private String commentPrefix = "--";
 
@@ -1276,5 +1280,20 @@ public class DatabaseInfo {
         this.requiredCharColumnEmptyStringSameAsNull = requiredCharColumnEmptyStringSameAsNull;
     }
 	
+    public String getBinaryQuoteStart() {
+        return binaryQuoteStart;
+    }
+
+    public void setBinaryQuoteStart(String binaryQuoteStart) {
+        this.binaryQuoteStart = binaryQuoteStart;
+    }
+
+    public String getBinaryQuoteEnd() {
+        return binaryQuoteEnd;
+    }
+
+    public void setBinaryQuoteEnd(String binaryQuoteEnd) {
+        this.binaryQuoteEnd = binaryQuoteEnd;
+    }
 	
 }

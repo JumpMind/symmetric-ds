@@ -78,6 +78,8 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
+        databaseInfo.setBinaryQuoteStart("blob(X'");
+        databaseInfo.setBinaryQuoteEnd("')");
 
         addEscapedCharSequence("'", "''");
     }
