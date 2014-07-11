@@ -392,6 +392,8 @@ public class DmlStatement {
         final String QUESTION_MARK = "<!QUESTION_MARK!>";
         String newSql = sql;
         String quote = databaseInfo.getValueQuoteToken();
+        String binaryQuoteStart = databaseInfo.getBinaryQuoteStart();
+        String binaryQuoteEnd = databaseInfo.getBinaryQuoteEnd();
         String regex = "\\?";
         
         List<Column> columnsToProcess = new ArrayList<Column>();
@@ -441,8 +443,8 @@ public class DmlStatement {
                         newSql = newSql.replaceFirst(regex,
                                 quote + new String(Base64.encodeBase64(bytes)) + quote);
                     } else if (encoding == BinaryEncoding.HEX) {
-                        newSql = newSql.replaceFirst(regex, quote
-                                + new String(Hex.encodeHex(bytes)) + quote);
+                        newSql = newSql.replaceFirst(regex, binaryQuoteStart
+                                + new String(Hex.encodeHex(bytes)) + binaryQuoteEnd);
                     }
                 } else {
                     newSql = newSql.replaceFirst(regex, row.getString(name));
