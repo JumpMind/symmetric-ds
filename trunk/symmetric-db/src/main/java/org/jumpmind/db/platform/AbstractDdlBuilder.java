@@ -911,12 +911,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     public String getFullyQualifiedTableNameShorten(Table table) {
     	String result="";
-        // TODO: use getDelimitedIdentifier() around catalog/schema, but we'll need to get the case right
         if (StringUtils.isNotBlank(table.getCatalog())) {
-            result+=table.getCatalog().concat(".");
+            result+=getDelimitedIdentifier(table.getCatalog()).concat(".");
         }
         if (StringUtils.isNotBlank(table.getSchema())) {
-        	result+=table.getSchema().concat(".");
+        	result+=getDelimitedIdentifier(table.getSchema()).concat(".");
         }
         result+=getDelimitedIdentifier(getTableName(table.getName()));
         return result;
@@ -2410,13 +2409,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 ddl.append("FOREIGN KEY (");
                 writeLocalReferences(key, ddl);
                 ddl.append(") REFERENCES ");
-                // TODO: use getDelimitedIdentifier() around catalog/schema, but we'll need to get the case right
-                // TODO : suppose to use same catalog and schema than table because catalog and schema are not present in key.getforeignTable object
                 if (StringUtils.isNotBlank(table.getCatalog())) {
-                    ddl.append(table.getCatalog()).append(".");
+                    ddl.append(getDelimitedIdentifier(table.getCatalog())).append(".");
                 }
                 if (StringUtils.isNotBlank(table.getSchema())) {
-                    ddl.append(table.getSchema()).append(".");
+                    ddl.append(getDelimitedIdentifier(table.getSchema())).append(".");
                 }
                 printIdentifier(getTableName(key.getForeignTableName()), ddl);
                 ddl.append(" (");
