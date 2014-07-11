@@ -20,22 +20,23 @@
  */
 package org.jumpmind.symmetric.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
-
-import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.exception.InterruptedException;
 import org.jumpmind.properties.EnvironmentSpecificProperties;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.TestConstants;
-import org.jumpmind.exception.InterruptedException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
@@ -44,7 +45,6 @@ import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.AppUtils;
-import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
