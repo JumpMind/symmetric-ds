@@ -969,7 +969,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         Level previous = setLoggingLevelForTest(Level.DEBUG);
         try {
-            final String checkHeartbeatSql = "select heartbeat_time from sym_node_host where node_id='"
+            final String checkHeartbeatSql = "select max(heartbeat_time) from sym_node_host where node_id='"
                     + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
             Date clientHeartbeatTimeBefore = getClient().getSqlTemplate().queryForObject(
                     checkHeartbeatSql, Timestamp.class);
