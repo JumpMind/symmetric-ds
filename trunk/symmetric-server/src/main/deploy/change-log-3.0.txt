@@ -1,3 +1,26 @@
+SymmetricDS - 3.6.2 (Released 2014-07-12) 
+=========================================
+- 0001755: [Bug] XML Data (schema and data) is not properly escaped. (chenson) - closed.
+- 0001758: [Bug] PostgreSQL default value for 'uuid' field type (chenson) - closed.
+- 0001781: [Bug] Uninstall fails if file sync is configured (chenson) - closed.
+- 0001782: [Bug] initial.load.create.first fails for tables with a unique index on the primary key (chenson) - closed.
+- 0001783: [Bug] A default value of (sysdate) should not translate to '(sysdate)' in the create statement when initial.load.create.first is on (chenson) - closed.
+- 0001785: [Bug] Hard coded EXECUTE AS OWNER in Sql Server triggers causes issues if the tables are created under another account (chenson) - closed.
+- 0001787: [Bug] Reverse initial load is broken in 3.6 (chenson) - closed.
+- 0001789: [Bug] external.id.is.unique.enabled property is defined backwards. It is being used opposite of the definition. (chenson) - closed.
+- 0001790: [Improvement] Add REST service to send schema changes (chenson) - closed.
+- 0001793: [Bug] When the stream.to.file.threshold.bytes is reached and the staging manager writes the buffer to a file the buffer is not removed (chenson) - closed.
+- 0001794: [Bug] Fix null pointer on busy system during staging area clean (chenson) - closed.
+- 0001795: [Bug] DDL modification in schema different than symetricds one (chenson) - closed.
+- 0001796: [Bug] Unable to parse ISO-8601 datetime on sqlite (chenson) - closed.
+- 0001797: [Bug] sym_table_reload_request should be cleaned up when a node is deleted (chenson) - closed.
+- 0001798: [Improvement] Add support for wildcarded catalogs and schemas (chenson) - closed.
+- 0001801: [Bug] DbExport does not handle timestamp(9) on Oracle (elong) - closed.
+- 0001802: [Bug] DbExport does not handle BLOB on DB2 (elong) - closed.
+- 0001803: [Bug] Removing a node using engine.removeAndCleanupNode method on a master to master cluster does not send the remove to other nodes (chenson) - closed.
+- 0001804: [Bug] sym_node_host on the heartbeat channel can cause FK errors when a node is removed (chenson) - closed.
+
+
 SymmetricDS - 3.6.1 (Released 2014-06-26) 
 =========================================
 - 0001771: [Bug] Add support for ansi literal default date values. Also support well known sql 92 function types for the default values (chenson) - closed.
