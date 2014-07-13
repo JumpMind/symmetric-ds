@@ -104,6 +104,8 @@ public class Column implements Cloneable, Serializable {
     private int precisionRadix;
     
     private Map<String, PlatformColumn> platformColumns;
+    
+    private String[] enumValues;
 
     public Column() {
     }
@@ -700,6 +702,18 @@ public class Column implements Cloneable, Serializable {
     
     public boolean containsJdbcTypes() {
         return jdbcTypeCode != Integer.MIN_VALUE && jdbcTypeName != null;
+    }
+    
+    public void setEnumValues(String[] enumValues) {
+        this.enumValues = enumValues;
+    }
+    
+    public String[] getEnumValues() {
+        return enumValues;
+    }
+    
+    public boolean isEnum() {
+        return enumValues != null && enumValues.length > 0;
     }
 
 }

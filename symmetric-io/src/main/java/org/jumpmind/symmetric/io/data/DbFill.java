@@ -560,7 +560,9 @@ public class DbFill {
     private Object generateRandomValueForColumn(Column column) {
         Object objectValue = null;
         int type = column.getMappedTypeCode();
-        if (column.isTimestampWithTimezone()) {
+        if (column.isEnum()) {
+            objectValue = column.getEnumValues()[new Random().nextInt(column.getEnumValues().length)];
+        } else if (column.isTimestampWithTimezone()) {
             objectValue = String.format("%s %s",
                     FormatUtils.TIMESTAMP_FORMATTER.format(randomDate()),
                     AppUtils.getTimezoneOffset());
