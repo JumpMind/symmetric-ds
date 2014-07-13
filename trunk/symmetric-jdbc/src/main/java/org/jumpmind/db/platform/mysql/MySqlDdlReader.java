@@ -37,6 +37,7 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTemplate;
 
 /*
  * Reads a database model from a MySql database.
@@ -115,6 +116,36 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
                 column.getJdbcTypeName().equalsIgnoreCase(TypeMap.LINESTRING) ||
                 column.getJdbcTypeName().equalsIgnoreCase(TypeMap.POLYGON) ) {
             column.setJdbcTypeName(TypeMap.GEOMETRY);
+        }
+        
+        if (column.getJdbcTypeName().equalsIgnoreCase("enum")) {
+            ISqlTemplate template = platform.getSqlTemplate();
+            String unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
+                    + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?", metaData.getCatalog(), (String) values.get("TABLE_NAME"), column.getName());
+            if (unParsedEnums != null) {
+                unParsedEnums = unParsedEnums.trim();
+                if (unParsedEnums.startsWith("(")) {
+                    unParsedEnums = unParsedEnums.substring(1);
+                    if (unParsedEnums.endsWith(")")) {
+                        unParsedEnums = unParsedEnums.substring(0, unParsedEnums.length()-1);
+                    }
+                }                
+                
+                String[] parsedEnums = unParsedEnums.split(",");
+                for (int i = 0; i < parsedEnums.length; i++) {
+                    String parsedEnum = parsedEnums[i];
+                    if (parsedEnum.startsWith("'")) {
+                        parsedEnum = parsedEnum.substring(1);
+                        if (parsedEnum.endsWith("'")) {
+                            parsedEnum = parsedEnum.substring(0, parsedEnum.length() - 1);
+                        }
+                    }
+                        
+                    parsedEnums[i] = parsedEnum;
+                }
+                
+                column.setEnumValues(parsedEnums);
+            }
         }
         return column;
     }
