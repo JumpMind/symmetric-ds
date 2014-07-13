@@ -369,15 +369,20 @@ public class DbFill {
                 if (verbose) {
                     System.out.println("Successful insert into " + tbl.getName());
                 }
-            } catch (SqlException ex) {
-                log.error("Failed to process {} with values of {}", statement.getSql(),
-                        ArrayUtils.toString(statementValues));
+            } catch (Exception ex) {
+                log.error("Failed to process {} with values of {} because: {}", new Object[] {statement.getSql(),
+                        ArrayUtils.toString(statementValues), ex.getMessage() });
                 if (continueOnError) {
-                    if (debug) {
-                        ex.printStackTrace();
+                    if (debug || !(ex instanceof SqlException)) {
+                        log.debug(ex.getMessage(), ex);
                     }
                 } else {
-                    throw ex;
+                    if (ex instanceof RuntimeException) {
+                        throw (RuntimeException)ex;
+                    } else {
+                        throw new RuntimeException(ex);
+                    }
+                    
                 }
             }
         }
