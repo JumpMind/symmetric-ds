@@ -570,12 +570,10 @@ public class DbFill {
              objectValue = DateUtils.truncate(randomDate(), Calendar.DATE);
         } else if (type == Types.TIMESTAMP || type == Types.TIME) {
             objectValue = randomTimestamp();
-        } else if (type == Types.CHAR) {
-            objectValue = randomChar().toString();
         } else if (type == Types.INTEGER || type == Types.BIGINT) {
             objectValue = randomInt();
         } else if (type == Types.SMALLINT) {
-            objectValue = randomSmallInt();
+            objectValue = randomSmallInt(column.getJdbcTypeName().toLowerCase().contains("unsigned"));
         } else if (type == Types.FLOAT) {
             objectValue = randomFloat();
         } else if (type == Types.DOUBLE) {
@@ -594,7 +592,7 @@ public class DbFill {
             objectValue = randomBytes();
         } else if (type == Types.ARRAY) {
             objectValue = null;
-        } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR) {
+        } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR || type == Types.CHAR) {
             int size = 0;
             // Assume if the size is 0 there is no max size configured.
             if (column.getSizeAsInt() != 0) {
@@ -612,9 +610,13 @@ public class DbFill {
         return objectValue;
     }
 
-    private Object randomSmallInt() {
-        // TINYINT (-32768 32767)
-        return new Integer(getRand().nextInt(65535) - 32768);
+    private Object randomSmallInt(boolean unsigned) {
+        if (unsigned) {
+            return new Integer(getRand().nextInt(32768));
+        } else {
+            // TINYINT (-32768 32767)
+            return new Integer(getRand().nextInt(65535) - 32768);
+        }
     }
 
     private Object randomFloat() {
