@@ -126,7 +126,7 @@ public class DbFill {
                     for (String ignoreName : ignore) {
                         if (table.getName().startsWith(ignoreName)) {
                             if (verbose) {
-                                System.out.println("Ignore table " + table.getName());
+                                log.info("Ignore table " + table.getName());
                             }
                             continue table_loop;
                         }
@@ -134,7 +134,7 @@ public class DbFill {
                     for (String prefixedName : prefixed) {
                         if (!table.getName().startsWith(prefixedName)) {
                             if (verbose) {
-                                System.out.println("Non prefixed table (" + prefixedName + ")" + table.getName());
+                                log.info("Non prefixed table (" + prefixedName + ")" + table.getName());
                             }
                             continue table_loop;
                         }
@@ -264,19 +264,19 @@ public class DbFill {
             switch (dmlType) {
                 case INSERT:
                     if (verbose) {
-                        System.out.println("Inserting into table " + table.getName());
+                        log.info("Inserting into table " + table.getName());
                     }
                     insertRandomRecord(table);
                     break;
                 case UPDATE:
                     if (verbose) {
-                        System.out.println("Updating record in table " + table.getName());
+                        log.info("Updating record in table " + table.getName());
                     }
                     updateRandomRecord(table);
                     break;
                 case DELETE:
                     if (verbose) {
-                        System.out.println("Deleting record in table " + table.getName());
+                        log.info("Deleting record in table " + table.getName());
                     }
                     deleteRandomRecord(table);
                     break;
@@ -367,10 +367,10 @@ public class DbFill {
             try {
                 platform.getSqlTemplate().update(statement.getSql(), statementValues, statement.getTypes());
                 if (verbose) {
-                    System.out.println("Successful insert into " + tbl.getName());
+                    log.info("Successful insert into " + tbl.getName());
                 }
             } catch (Exception ex) {
-                log.error("Failed to process {} with values of {} because: {}", new Object[] {statement.getSql(),
+                log.info("Failed to process {} with values of {} because: {}", new Object[] {statement.getSql(),
                         ArrayUtils.toString(statementValues), ex.getMessage() });
                 if (continueOnError) {
                     if (debug || !(ex instanceof SqlException)) {
@@ -418,7 +418,7 @@ public class DbFill {
         try {
             platform.getSqlTemplate().update(updStatement.getSql(), values);
             if (verbose) {
-                System.out.println("Successful update in " + table.getName());
+                log.info("Successful update in " + table.getName());
             }
         } catch (SqlException ex) {
             log.error("Failed to process {} with values of {}", updStatement.getSql(),
@@ -498,7 +498,7 @@ public class DbFill {
             try {
                 platform.getSqlTemplate().update(statement.getSql(), keyValues);
                 if (verbose) {
-                    System.out.println("Successful delete from " + table.getName());
+                    log.info("Successful delete from " + table.getName());
                 }
             } catch (SqlException ex) {
                 log.error("Failed to process {} with values of {}", statement.getSql(),
@@ -586,13 +586,13 @@ public class DbFill {
         } else if (type == Types.BOOLEAN || type == Types.BIT) {
             objectValue = randomBoolean();
         } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY
-                || type == Types.VARBINARY || type == Types.CLOB ||
-                // SQLServer next type
+                || type == Types.VARBINARY ||
+                // SQLServer ntext type
                 type == -10) {
             objectValue = randomBytes();
         } else if (type == Types.ARRAY) {
             objectValue = null;
-        } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR || type == Types.CHAR) {
+        } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR || type == Types.CHAR || type == Types.CLOB) {
             int size = 0;
             // Assume if the size is 0 there is no max size configured.
             if (column.getSizeAsInt() != 0) {
