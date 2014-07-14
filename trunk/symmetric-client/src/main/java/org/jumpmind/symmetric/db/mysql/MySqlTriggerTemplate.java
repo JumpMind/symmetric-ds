@@ -24,6 +24,7 @@ import java.util.HashMap;
 
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 
 public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 
@@ -113,6 +114,11 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select concat($(columns)) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                        " );
+    }
+    
+    @Override
+    protected String castDatetimeColumnToString(String columnName) {
+        return "cast(" + SymmetricUtils.quote(symmetricDialect, columnName) + " as char) as " + columnName;
     }
 
 }
