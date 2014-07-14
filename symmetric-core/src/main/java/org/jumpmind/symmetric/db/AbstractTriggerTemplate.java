@@ -127,6 +127,8 @@ abstract public class AbstractTriggerTemplate {
                     false, channel, triggerRouter.getTrigger()).columnString;
             sql = FormatUtils.replace("columns", columnsText, sql);
         } else {
+            boolean dateTimeAsString = symmetricDialect.getParameterService().is(
+                    ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR);
             sql = "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)";
             StringBuilder columnList = new StringBuilder();
             for (int i = 0; i < columns.length; i++) {
@@ -136,7 +138,12 @@ abstract public class AbstractTriggerTemplate {
                     if (i > 0) {
                         columnList.append(",");
                     }
-                    columnList.append(SymmetricUtils.quote(symmetricDialect, column.getName()));
+                    
+                    if (dateTimeAsString && TypeMap.isDateTimeType(column.getMappedTypeCode())) {
+                        columnList.append(castDatetimeColumnToString(column.getName()));
+                    } else {
+                        columnList.append(SymmetricUtils.quote(symmetricDialect, column.getName()));
+                    }
                 }
             }
             sql = FormatUtils.replace("columns", columnList.toString(), sql);
@@ -172,6 +179,10 @@ abstract public class AbstractTriggerTemplate {
                 triggerRouter.getTrigger().isUseCaptureLobs() ? "to_clob('')||" : "", sql);
 
         return sql;
+    }
+    
+    protected String castDatetimeColumnToString(String columnName) {
+        return SymmetricUtils.quote(symmetricDialect, columnName);
     }
 
     protected String getSourceTablePrefix(Table table) {

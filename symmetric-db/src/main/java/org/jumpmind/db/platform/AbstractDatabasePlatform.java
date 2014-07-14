@@ -482,14 +482,18 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return values;
     }
     
-    protected String getDateTimeStringValue(String name, int type, Row row,
-            boolean useVariableDates) {
-        Date date = row.getDateTime(name);
-        if (useVariableDates) {
-            long diff = date.getTime() - System.currentTimeMillis();
-            return "${curdate" + diff + "}";
+    protected String getDateTimeStringValue(String name, int type, Row row, boolean useVariableDates) {
+        Object dateObj = row.get(name);
+        if (dateObj instanceof String) {
+            return (String) dateObj;
         } else {
-            return FormatUtils.TIMESTAMP_FORMATTER.format(date);
+            Date date = row.getDateTime(name);
+            if (useVariableDates) {
+                long diff = date.getTime() - System.currentTimeMillis();
+                return "${curdate" + diff + "}";
+            } else {
+                return FormatUtils.TIMESTAMP_FORMATTER.format(date);
+            }
         }
     }
 
