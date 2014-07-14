@@ -421,11 +421,11 @@ public class DbFill {
                 log.info("Successful update in " + table.getName());
             }
         } catch (SqlException ex) {
-            log.error("Failed to process {} with values of {}", updStatement.getSql(),
+            log.info("Failed to process {} with values of {}", updStatement.getSql(),
                     ArrayUtils.toString(values));
             if (continueOnError) {
                 if (debug) {
-                    ex.printStackTrace();
+                    log.info(ex.getMessage(), ex);
                 }
             } else {
                 throw ex;
@@ -501,11 +501,11 @@ public class DbFill {
                     log.info("Successful delete from " + table.getName());
                 }
             } catch (SqlException ex) {
-                log.error("Failed to process {} with values of {}", statement.getSql(),
+                log.info("Failed to process {} with values of {}", statement.getSql(),
                         ArrayUtils.toString(keyValues));
                 if (continueOnError) {
                     if (debug) {
-                        ex.printStackTrace();
+                        log.info(ex.getMessage(), ex);
                     }
                 } else {
                     throw ex;
