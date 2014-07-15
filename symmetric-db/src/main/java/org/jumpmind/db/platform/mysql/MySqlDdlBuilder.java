@@ -64,7 +64,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDelimiterToken("`");
 
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "LONGBLOB", Types.LONGVARBINARY);
-        databaseInfo.addNativeTypeMapping(Types.BIT, "TINYINT(1)");
+        databaseInfo.addNativeTypeMapping(Types.BIT, "BIT");
         databaseInfo.addNativeTypeMapping(Types.BLOB, "LONGBLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.CLOB, "LONGTEXT", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "LONGBLOB", Types.LONGVARBINARY);
@@ -86,7 +86,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME");
         // In MySql, TINYINT has only a range of -128 to 127
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
-        databaseInfo.addNativeTypeMapping("BOOLEAN", "TINYINT(1)", "BIT");
+        databaseInfo.addNativeTypeMapping("BOOLEAN", "BIT", "BIT");
         databaseInfo.addNativeTypeMapping("DATALINK", "MEDIUMBLOB", "LONGVARBINARY");
 
         databaseInfo.setDefaultSize(Types.CHAR, 254);
