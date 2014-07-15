@@ -46,6 +46,8 @@ import org.slf4j.LoggerFactory;
 public class ExtractDataReader implements IDataReader {
     
     protected static final Logger log = LoggerFactory.getLogger(ExtractDataReader.class);
+    
+    public static final String DATA_CONTEXT_CURRENT_CSV_DATA = CsvData.class.getName(); 
 
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
@@ -60,6 +62,8 @@ public class ExtractDataReader implements IDataReader {
     protected Table table;
 
     protected CsvData data;
+    
+    protected DataContext dataContext;
 
     public ExtractDataReader(IDatabasePlatform platform, IExtractDataReaderSource source) {
         this.sourcesToUse = new ArrayList<IExtractDataReaderSource>();
@@ -73,6 +77,7 @@ public class ExtractDataReader implements IDataReader {
     }
 
     public void open(DataContext context) {
+        this.dataContext = context;
     }
 
     public Batch nextBatch() {
@@ -125,6 +130,7 @@ public class ExtractDataReader implements IDataReader {
 
         CsvData dataToReturn = this.data;
         this.data = null;
+        this.dataContext.put(DATA_CONTEXT_CURRENT_CSV_DATA, dataToReturn);
         return dataToReturn;
     }
 
