@@ -45,7 +45,6 @@ import org.jumpmind.util.FormatUtils;
  * Responsible for generating dialect specific SQL such as trigger bodies and
  * functions
  */
-@SuppressWarnings("deprecation")
 abstract public class AbstractTriggerTemplate {
 
     protected static final String ORIG_TABLE_ALIAS = "orig";
@@ -114,10 +113,9 @@ abstract public class AbstractTriggerTemplate {
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                 triggerHistory.getParsedPkColumnNames(), true);
 
-        String sql = null;
+        Column[] columns = table.getColumns();
 
-        Column[] columns = symmetricDialect.orderColumns(triggerHistory.getParsedColumnNames(),
-                table);
+        String sql = null;
 
         if (symmetricDialect.getParameterService().is(
                 ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
@@ -133,16 +131,20 @@ abstract public class AbstractTriggerTemplate {
             StringBuilder columnList = new StringBuilder();
             for (int i = 0; i < columns.length; i++) {
                 Column column = columns[i];
-                boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
-                if (!(isLob && triggerRouter.getTrigger().isUseStreamLobs())) {
-                    if (i > 0) {
-                        columnList.append(",");
-                    }
-                    
-                    if (dateTimeAsString && TypeMap.isDateTimeType(column.getMappedTypeCode())) {
-                        columnList.append(castDatetimeColumnToString(column.getName()));
-                    } else {
-                        columnList.append(SymmetricUtils.quote(symmetricDialect, column.getName()));
+                if (column != null) {
+                    boolean isLob = symmetricDialect.getPlatform()
+                            .isLob(column.getMappedTypeCode());
+                    if (!(isLob && triggerRouter.getTrigger().isUseStreamLobs())) {
+                        if (i > 0) {
+                            columnList.append(",");
+                        }
+
+                        if (dateTimeAsString && TypeMap.isDateTimeType(column.getMappedTypeCode())) {
+                            columnList.append(castDatetimeColumnToString(column.getName()));
+                        } else {
+                            columnList.append(SymmetricUtils.quote(symmetricDialect,
+                                    column.getName()));
+                        }
                     }
                 }
             }
