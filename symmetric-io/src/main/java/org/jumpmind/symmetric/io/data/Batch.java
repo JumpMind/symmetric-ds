@@ -24,6 +24,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.jumpmind.db.util.BinaryEncoding;
 
 public class Batch {
@@ -197,5 +200,33 @@ public class Batch {
     public void setSourceNodeId(String sourceNodeId) {
         this.sourceNodeId = sourceNodeId;
     }
-    
+
+    public String encodeBinary(String value) {
+        if (value != null) {
+            if (binaryEncoding == BinaryEncoding.HEX) {
+                value = new String(Hex.encodeHex(value.getBytes()));
+            } else if (binaryEncoding == BinaryEncoding.BASE64) {
+                value = new String(Base64.encodeBase64(value.getBytes()));
+            }
+        }
+        return value;
+    }
+
+    public byte[] decodeBinary(String value) {
+        if (value != null) {
+            try {
+                if (binaryEncoding == BinaryEncoding.HEX) {
+                    return Hex.decodeHex(value.toCharArray());
+                } else if (binaryEncoding == BinaryEncoding.BASE64) {
+                    return Base64.decodeBase64(value.getBytes());
+                } else {
+                    return value.getBytes();
+                }
+            } catch (DecoderException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
+
 }
