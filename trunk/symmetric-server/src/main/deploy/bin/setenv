@@ -52,22 +52,5 @@ then
    SEP=";"
 fi
 
-# Check whether or not we are using Java 5
-if "$SYM_JAVA" -version 2>&1 | grep '"1.5' > /dev/null
-then
-   # Build classpath with individual JAR entries
-   CLASSPATH="$SYM_HOME/patches"
-   for jar in "$SYM_HOME/lib/"*
-   do
-      CLASSPATH="${CLASSPATH}${SEP}${jar}"
-   done
-
-   for jar in "$SYM_HOME/web/WEB-INF/lib/"*
-   do
-      CLASSPATH="${CLASSPATH}${SEP}${jar}"
-   done
-else
-   # Build classpath using wildcards
-   CLASSPATH="${SYM_HOME}/patches${SEP}${SYM_HOME}/lib/*${SEP}${SYM_HOME}/web/WEB-INF/lib/*"
-fi
+CLASSPATH="${SYM_HOME}/patches${SEP}${SYM_HOME}/lib/*${SEP}${SYM_HOME}/web/WEB-INF/lib/*"
 export CLASSPATH
