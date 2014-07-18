@@ -359,6 +359,7 @@ public class WindowsService extends WrapperService {
                 logger.log(Level.INFO, "Service manager requesting control code " + controlCode);
             }
             if (controlCode == Winsvc.SERVICE_CONTROL_STOP) {
+                logger.log(Level.INFO, "Service manager requesting to stop service");
                 shutdown();
             }
         }
