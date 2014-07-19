@@ -74,6 +74,7 @@ final public class ParameterConstants {
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
 
     public final static String REGISTRATION_NUMBER_OF_ATTEMPTS = "registration.number.of.attempts";
+    public final static String REGISTRATION_REOPEN_USE_SAME_PASSWORD = "registration.reopen.use.same.password";
     public final static String REGISTRATION_REQUIRE_NODE_GROUP_LINK = "registration.require.node.group.link";
     public final static String REGISTRATION_REINITIALIZE_ENABLED = "registration.reinitialize.enable";
 
