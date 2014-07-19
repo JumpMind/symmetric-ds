@@ -455,8 +455,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
      */
     public synchronized void reOpenRegistration(String nodeId) {
         Node node = nodeService.findNode(nodeId);
-        String password = nodeService.getNodeIdCreator().generatePassword(node);
-        password = filterPasswordOnSaveIfNeeded(password);
+        NodeSecurity security = nodeService.findNodeSecurity(nodeId);
+        String password = null;
+        if (security != null && parameterService.is(ParameterConstants.REGISTRATION_REOPEN_USE_SAME_PASSWORD, true)) {
+            password = security.getNodePassword();
+        } else {
+            password = nodeService.getNodeIdCreator().generatePassword(node);
+            password = filterPasswordOnSaveIfNeeded(password);
+        }
         if (node != null) {
             int updateCount = sqlTemplate.update(getSql("reopenRegistrationSql"), new Object[] {
                     password, nodeId });
