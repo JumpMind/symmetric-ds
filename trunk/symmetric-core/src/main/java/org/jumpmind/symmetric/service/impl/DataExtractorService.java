@@ -904,8 +904,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         Table table = null;
         if (useDatabaseDefinition) {
             table = platform.getTableFromCache(catalogName, schemaName, tableName, false);
+            
+            if (table != null && table.getColumnCount() < triggerHistory.getParsedColumnNames().length) {
+                /*
+                 * If the column count is less than what trigger history reports, then
+                 * chances are the table cache is out of date.
+                 */
+                table = platform.getTableFromCache(catalogName, schemaName, tableName, true);
+            }
+
             if (table != null) {
-            table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
+                table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                     triggerHistory.getParsedPkColumnNames(), true);
             } else {
                 throw new SymmetricException("Could not find the following table.  It might have been dropped: %s", Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
