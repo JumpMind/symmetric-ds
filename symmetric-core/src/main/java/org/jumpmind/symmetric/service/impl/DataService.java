@@ -32,6 +32,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlReadCursor;
@@ -40,6 +42,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -357,6 +360,9 @@ public class DataService extends AbstractService implements IDataService {
                             targetNode.getNodeGroupId(), triggerHistories);
 
             callReloadListeners(true, targetNode, transactional, transaction, loadId);
+            
+            insertCreateSchemaScriptPriorToReload(targetNode, nodeIdRecord, loadId, createBy, transactional, 
+                    transaction);
 
             insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy, transactional,
                     transaction);
@@ -434,6 +440,48 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
         }
+    }
+    
+    private void insertCreateSchemaScriptPriorToReload(Node targetNode, String nodeIdRecord, long loadId,
+            String createBy, boolean transactional, ISqlTransaction transaction) {
+        String dumpCommand = parameterService.getString(ParameterConstants.INITIAL_LOAD_SCHEMA_DUMP_COMMAND);
+        String loadCommand = parameterService.getString(ParameterConstants.INITIAL_LOAD_SCHEMA_LOAD_COMMAND);
+        if (isNotBlank(dumpCommand) && isNotBlank(loadCommand)) {
+            try {            
+                log.info("Dumping schema using the following dump command: " + dumpCommand);
+                
+                ProcessBuilder pb = new ProcessBuilder(FormatUtils.splitOnSpacePreserveQuotedStrings(dumpCommand));
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
+                java.io.InputStream is = process.getInputStream();
+                java.io.StringWriter ow = new java.io.StringWriter();
+                IOUtils.copy(is, ow);
+                String output = ow.toString();
+                output = StringEscapeUtils.escapeJavaScript(output);
+                
+                String script = IOUtils.toString(getClass().getResourceAsStream("/load-schema-at-target.bsh"));
+                script = script.replace("${data}", output);
+                script = script.replace("${commands}", formatCommandForScript(loadCommand));
+                
+                if (process.waitFor() != 0) {
+                    throw new IoException(output.toString());
+                }
+                log.info("Inserting script to load dump at client");
+                engine.getDataService().insertScriptEvent(transaction, Constants.CHANNEL_RELOAD, targetNode,
+                        script, true, loadId, "reload listener");
+            } catch (Exception e) {
+                throw new IoException(e);
+            }
+        }
+    }
+    
+    private String formatCommandForScript(String command) {
+        String[] tokens = FormatUtils.splitOnSpacePreserveQuotedStrings(command);
+        StringBuilder builder = new StringBuilder();
+        for (String string : tokens) {
+            builder.append("\"" + StringEscapeUtils.escapeJava(string) + "\",");
+        }
+        return builder.substring(0, builder.length()-1);
     }
 
     private void insertSqlEventsPriorToReload(Node targetNode, String nodeIdRecord, long loadId,
@@ -694,6 +742,26 @@ public class DataService extends AbstractService implements IDataService {
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
                 CsvUtils.escapeCsvData(sql), null, history, isLoad ? reloadChannelId : channelId,
                 null, null);
+        if (isLoad) {
+            insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
+                    Constants.UNKNOWN_ROUTER_ID, isLoad, loadId, createBy, Status.NE);
+        } else {
+            data.setNodeList(targetNode.getNodeId());
+            insertData(transaction, data);
+        }
+    }
+
+    public void insertScriptEvent(ISqlTransaction transaction, String channelId,
+            Node targetNode, String script, boolean isLoad, long loadId, String createBy) {
+        TriggerHistory history = engine.getTriggerRouterService()
+                .findTriggerHistoryForGenericSync();
+        Trigger trigger = engine.getTriggerRouterService().getTriggerById(history.getTriggerId(),
+                false);
+        String reloadChannelId = getReloadChannelIdForTrigger(trigger, engine
+                .getConfigurationService().getChannels(false));
+        Data data = new Data(history.getSourceTableName(), DataEventType.BSH,
+                CsvUtils.escapeCsvData(script), null, history,
+                isLoad ? reloadChannelId : channelId, null, null);
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
                     Constants.UNKNOWN_ROUTER_ID, isLoad, loadId, createBy, Status.NE);

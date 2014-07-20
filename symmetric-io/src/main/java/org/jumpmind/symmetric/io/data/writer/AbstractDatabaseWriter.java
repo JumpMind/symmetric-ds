@@ -386,6 +386,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
     protected void bindVariables(Map<String, Object> variables) {
         variables.put("SOURCE_NODE_ID", batch.getSourceNodeId());
         variables.put("TARGET_NODE_ID", batch.getTargetNodeId());
+        variables.put("log", log);
         variables.putAll(context.getContext());
     }
 

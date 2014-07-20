@@ -99,6 +99,9 @@ public interface IDataService {
     public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
 
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
+    
+    public void insertScriptEvent(ISqlTransaction transaction, String channelId,
+            Node targetNode, String script, boolean isLoad, long loadId, String createBy);
 
     public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String routerId, boolean isLoad, long loadId, String createBy);
     
