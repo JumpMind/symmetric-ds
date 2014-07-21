@@ -34,9 +34,15 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
+    
+    String syncTriggersDisabledUserVariable;
+    
+    String syncTriggersDisabledNodeVariable;
 
     public Db2v9SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
+        syncTriggersDisabledUserVariable = this.parameterService.getTablePrefix() + "_" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE;
+        syncTriggersDisabledNodeVariable = this.parameterService.getTablePrefix() + "_" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE;
     }
     
     @Override
@@ -48,8 +54,8 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
             transaction.commit();
         } catch (Exception e) {
             try {
-                log.info("Creating environment variables {} and {}", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
-                        SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
+                log.info("Creating environment variables {} and {}", syncTriggersDisabledUserVariable,
+                        syncTriggersDisabledNodeVariable);
                 new SqlScript(getSqlScriptUrl(), getPlatform().getSqlTemplate(), ";").execute();
             } catch (Exception ex) {
                 log.error("Error while initializing DB2 dialect", ex);
@@ -67,25 +73,25 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
     
     @Override
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-       transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
+       transaction.execute("set " + syncTriggersDisabledUserVariable + "=1");
        if (StringUtils.isNotBlank(nodeId)) {
-           transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
+           transaction.execute("set " + syncTriggersDisabledNodeVariable + "='" + nodeId + "'");
        }
     }
 
     @Override
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
-        transaction.execute("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
+        transaction.execute("set " + syncTriggersDisabledUserVariable + "=null");
+        transaction.execute("set " + syncTriggersDisabledNodeVariable + "=null");
     }
 
     public String getSyncTriggersExpression() {
-        return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
+        return syncTriggersDisabledUserVariable + " is null";
     }
     
     @Override
     public String getSourceNodeExpression() {
-        return SYNC_TRIGGERS_DISABLED_NODE_VARIABLE;
+        return syncTriggersDisabledNodeVariable;
     }
     
 }
