@@ -19,6 +19,23 @@ JAVA="${wrapper.java.command}"
 JARFILE="${wrapper.jarfile}"
 PROP="${wrapper.propfile}"
 SYM_HOME="${wrapper.home}"
+RUN_AS_USER=""
+
+if [ "$RUN_AS_USER" != "" ]
+then
+   user=`id -u -n`
+   if [ $? -ne 0 ]
+   then
+      echo "Unable to locate 'id' command to determine current user"
+      exit 1
+   fi
+   if [ "$RUN_AS_USER" != "$user" ]
+   then
+      echo "Switching to user $RUN_AS_USER"
+      su - $RUN_AS_USER -c "`pwd`/$0 $1"
+      exit $?
+   fi
+fi
 
 cd "$SYM_HOME"
 
@@ -36,7 +53,7 @@ case "$1" in
       "$JAVA" -jar "$JARFILE" status "$PROP"
       ;;
    *)
-      echo "Usage: $0 {start|stop|restart|status}"
+      echo "Usage: `basename $0` {start|stop|restart|status}"
       exit 1
 esac
 
