@@ -461,6 +461,7 @@ public class DbExport {
                     if (format == Format.SQL) {
                         IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(compatible
                                 .toString().toLowerCase());
+                        target.setDelimitedIdentifierModeOn(useQuotedIdentifiers);
                         write(target.createTables(getDatabase(table), addDropTable));
                     } else if (format == Format.XML) {
                         DatabaseXmlUtil.write(table, writer);
