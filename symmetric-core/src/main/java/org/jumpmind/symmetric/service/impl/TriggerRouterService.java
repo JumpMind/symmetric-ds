@@ -208,9 +208,33 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setSourceSchemaName(schemaName);
             trigger.setSourceTableName(table);
             String triggerId = table;
-            if (table.length() > 50 || findMatchingTrigger(existingTriggers, catalogName, schemaName, table) != null) {
+            if (table.length() > 50) {
                 triggerId = table.substring(0,13) + "_" + UUID.randomUUID().toString();
             }
+            
+            boolean uniqueNameCreated = false;
+            int suffix = 0;
+            while (!uniqueNameCreated) {
+                String triggerIdPriorToCheck = triggerId;
+                for (Trigger existingTrigger : existingTriggers) {
+                    if (triggerId.equals(existingTrigger.getTriggerId())) {
+                        String suffixString = "_" + suffix;
+                        if (suffix == 0) {
+                            triggerId = triggerId + suffixString;
+                        } else {
+                            triggerId = triggerId.substring(0, triggerId.length()
+                                    - ("_" + (suffix - 1)).length())
+                                    + suffixString;
+                        }
+                        suffix++;
+                    }
+                }
+                
+                if (triggerId.equals(triggerIdPriorToCheck)) {
+                    uniqueNameCreated = true;
+                }
+            }
+            
             trigger.setTriggerId(triggerId);
             trigger.setLastUpdateBy(lastUpdateBy);
             trigger.setLastUpdateTime(new Date());
@@ -219,22 +243,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
     
-    public void createTriggersOnChannelForTables(String channelId, Set<Table> tables,
-            String lastUpdateBy) {
-        for (Table table : tables) {
-            Trigger trigger = new Trigger();
-            trigger.setChannelId(channelId);
-            trigger.setSourceTableName(table.getName());
-            trigger.setTriggerId(table.getName());
-            trigger.setLastUpdateBy(lastUpdateBy);
-            trigger.setLastUpdateTime(new Date());
-            trigger.setCreateTime(new Date());
-            saveTrigger(trigger);
-        }
-    }
-    
-    public Trigger findMatchingTrigger(List<Trigger> triggers, String catalog, String schema,
+    public Collection<Trigger> findMatchingTriggers(List<Trigger> triggers, String catalog, String schema,
             String table) {
+        Set<Trigger> matches = new HashSet<Trigger>();
         for (Trigger trigger : triggers) {
             boolean catalogMatches = trigger.isSourceCatalogNameWildCarded() 
                     || (catalog == null && trigger.getSourceCatalogName() == null)
@@ -251,10 +262,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             boolean tableMatches = trigger.isSourceTableNameWildCarded() 
                     || table.equalsIgnoreCase(trigger.getSourceTableName());
             if (catalogMatches && schemaMatches && tableMatches) {
-                return trigger;
+                matches.add(trigger);
             }
         }
-        return null;
+        return matches;
     }
 
     public void inactivateTriggerHistory(TriggerHistory history) {
