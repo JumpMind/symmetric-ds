@@ -1440,7 +1440,7 @@ transformations are applied.</listitem>
     is the TransformedData that contains information about the source and target values being transformed,
     including the TransformTable.
     <code>sourceValues</code>
-    is a Map<String, String> contain all source column values for the row.
+    is a Map&lt;String, String&gt; contain all source column values for the row.
     <code>newValue</code>
     is a String for the new value of the column.
     <code>oldValue</code>
