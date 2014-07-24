@@ -200,6 +200,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void createTriggersOnChannelForTables(String channelId, String catalogName,
             String schemaName, List<String> tables, String lastUpdateBy) {
+        List<Trigger> existingTriggers = getTriggers();
         for (String table : tables) {
             Trigger trigger = new Trigger();
             trigger.setChannelId(channelId);
@@ -207,7 +208,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setSourceSchemaName(schemaName);
             trigger.setSourceTableName(table);
             String triggerId = table;
-            if (table.length() > 50) {
+            if (table.length() > 50 || findMatchingTrigger(existingTriggers, catalogName, schemaName, table) != null) {
                 triggerId = table.substring(0,13) + "_" + UUID.randomUUID().toString();
             }
             trigger.setTriggerId(triggerId);
@@ -230,6 +231,30 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setCreateTime(new Date());
             saveTrigger(trigger);
         }
+    }
+    
+    public Trigger findMatchingTrigger(List<Trigger> triggers, String catalog, String schema,
+            String table) {
+        for (Trigger trigger : triggers) {
+            boolean catalogMatches = trigger.isSourceCatalogNameWildCarded() 
+                    || (catalog == null && trigger.getSourceCatalogName() == null)
+                    || (StringUtils.isBlank(trigger.getSourceCatalogName())
+                            && StringUtils.isNotBlank(catalog) && catalog.equals(platform.getDefaultCatalog()))
+                    || (StringUtils.isNotBlank(catalog) && catalog.equals(trigger
+                            .getSourceCatalogName()));
+            boolean schemaMatches = trigger.isSourceSchemaNameWildCarded()
+                    || (schema == null && trigger.getSourceSchemaName() == null)
+                    || (StringUtils.isBlank(trigger.getSourceSchemaName())
+                            && StringUtils.isNotBlank(schema) && schema.equals(platform.getDefaultSchema()))
+                    || (StringUtils.isNotBlank(schema) && schema.equals(trigger
+                            .getSourceSchemaName()));
+            boolean tableMatches = trigger.isSourceTableNameWildCarded() 
+                    || table.equalsIgnoreCase(trigger.getSourceTableName());
+            if (catalogMatches && schemaMatches && tableMatches) {
+                return trigger;
+            }
+        }
+        return null;
     }
 
     public void inactivateTriggerHistory(TriggerHistory history) {

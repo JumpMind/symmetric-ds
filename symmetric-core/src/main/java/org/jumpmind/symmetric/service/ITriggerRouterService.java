@@ -185,5 +185,8 @@ public interface ITriggerRouterService {
     public TriggerHistory findTriggerHistoryForGenericSync();
     
     public void clearCache();
+    
+    public Trigger findMatchingTrigger(List<Trigger> triggers, String catalog, String schema,
+            String table);
 
 }
