@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -116,8 +117,6 @@ public interface ITriggerRouterService {
     
     public void dropTriggers(Set<String> tables);
     
-    public void createTriggersOnChannelForTables(String channelId, Set<Table> tables, String lastUpdateBy);
-    
     public void createTriggersOnChannelForTables(String channelId, String catalogName, String schemaName, List<String> tables, String lastUpdateBy);
     
     public boolean isTriggerBeingUsed(String triggerId);
@@ -186,7 +185,7 @@ public interface ITriggerRouterService {
     
     public void clearCache();
     
-    public Trigger findMatchingTrigger(List<Trigger> triggers, String catalog, String schema,
+    public Collection<Trigger> findMatchingTriggers(List<Trigger> triggers, String catalog, String schema,
             String table);
 
 }
