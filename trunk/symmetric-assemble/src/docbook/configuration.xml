@@ -1395,7 +1395,7 @@ transformations are applied.</listitem>
 	colon (e.g., :MY_COLUMN).</listitem>
 	
 	<listitem>
-	Shell Script Transform ('bsh'): This transformation allows you to
+	BeanShell Script Transform ('bsh'): This transformation allows you to
 	provide a Bean Shell script in transform_expression and executes the
 	script at the time of transformation. Some variables are provided to the
 	script:
@@ -1421,6 +1421,31 @@ transformations are applied.</listitem>
 	<code>org.jumpmind.symmetric.model.Node</code>
 	object that represents the node where the data is being loaded.
 	</listitem>
+
+    <listitem>
+    Java Transform ('java'): Use Java code in the transform expression that is included in the
+    transform method of a class that extends JavaColumnTransform.  The class is compiled 
+    whenever the transform expression changes and kept in memory for runtime.
+    The code must return a String for the new value of the column being mapped. 
+    The following variables are available:
+    <code>platform</code>
+    is the IDatabasePlatform that contains objects for the database platform, such as
+    DatabaseInfo, IDdlReader, IDdlBuilder, and ISqlTemplate. 
+    <code>context</code>
+    is the DataContext that contains information about current row and the data loader session, such as
+    Batch, Table, and CsvData. 
+    <code>column</code>
+    is the TransformColumn that contains information from the TRANSFORM_COLUMN configuration.
+    <code>data</code>
+    is the TransformedData that contains information about the source and target values being transformed,
+    including the TransformTable.
+    <code>sourceValues</code>
+    is a Map<String, String> contain all source column values for the row.
+    <code>newValue</code>
+    is a String for the new value of the column.
+    <code>oldValue</code>
+    is a String for the old value of the column if the event is an update or delete.
+    </listitem>
 	
 	<listitem>Identity Transform ('identity'): This
 	transformation allows you to insert into an identity column by computing
