@@ -104,6 +104,8 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
         settings.setDatabaseWriterFilters(filters);
         settings.setDatabaseWriterErrorHandlers(errorHandlers);
+        settings.setCreateTableAlterCaseToMatchDatabaseDefault(parameterService
+                .is(ParameterConstants.DATA_LOADER_CREATE_TABLE_ALTER_TO_MATCH_DB_CASE, true));
         settings.setMaxRowsBeforeCommit(parameterService
                 .getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT));
         settings.setCommitSleepInterval(parameterService
