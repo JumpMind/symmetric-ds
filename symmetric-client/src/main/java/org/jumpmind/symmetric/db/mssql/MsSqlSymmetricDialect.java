@@ -99,14 +99,25 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                             + tablePrefix.toLowerCase()
                             + "_data', '"
                             + tablePrefix.toLowerCase()
-                            + "_data_event') and (i.allow_row_locks !='true' or t.lock_escalation != 1)") > 0) {
+                            + "_data_event') and (i.allow_row_locks !='true' "
+                            + "or t.lock_escalation != 1 "
+                            + "or i.allow_page_locks = 'true')") > 0) {
                 log.info("Updating indexes to prevent lock escalation");
+                
                 sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
                         + "_DATA SET (ALLOW_ROW_LOCKS = ON)");
                 sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
                         + "_DATA_EVENT SET (ALLOW_ROW_LOCKS = ON)");
                 sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
                         + "_OUTGOING_BATCH SET (ALLOW_ROW_LOCKS = ON)");
+                
+                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
+                        + "_DATA SET (ALLOW_PAGE_LOCKS = OFF)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
+                        + "_DATA_EVENT SET (ALLOW_PAGE_LOCKS = OFF)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
+                        + "_OUTGOING_BATCH SET (ALLOW_PAGE_LOCKS = OFF)");
+                
                 sqlTemplate.update("ALTER TABLE " + tablePrefix.toUpperCase()
                         + "_DATA SET (LOCK_ESCALATION = DISABLE)");
                 sqlTemplate.update("ALTER TABLE " + tablePrefix.toUpperCase()
