@@ -1417,7 +1417,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 addTriggerCreationListeners(listener);
             }
 
-            List<TriggerHistory> histories = getActiveTriggerHistories(trigger);
+            List<TriggerHistory> histories = getActiveTriggerHistories();
             if (triggersForCurrentNode.contains(trigger)) {
                 if (!trigger.isSourceTableNameWildCarded()) {
                     for (TriggerHistory triggerHistory : histories) {
@@ -1520,6 +1520,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
 
             if (newestHistory != null) {
+                activeTriggerHistories.add(newestHistory);
                 newestHistory.setErrorMessage(errorMessage);
                 if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                     if (this.triggerCreationListeners != null) {
