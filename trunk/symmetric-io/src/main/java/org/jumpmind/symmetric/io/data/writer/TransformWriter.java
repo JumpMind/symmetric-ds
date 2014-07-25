@@ -305,12 +305,12 @@ public class TransformWriter extends NestedDataWriter {
                             try {
                                 Object value = transformColumn(context, data, transformColumn,
                                         sourceValues, oldSourceValues);
-                                if (value instanceof String) {
-                                    data.put(transformColumn, (String) value, null, false);
-                                } else if (value instanceof NewAndOldValue) {
+                                if (value instanceof NewAndOldValue) {
                                     data.put(transformColumn,
                                             ((NewAndOldValue) value).getNewValue(),
                                             ((NewAndOldValue) value).getOldValue(), false);
+                                } else {
+                                    data.put(transformColumn, (String) value, null, false);
                                 }
                             } catch (IgnoreColumnException e) {
                                 // Do nothing. We are ignoring the column
