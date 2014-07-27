@@ -20,12 +20,10 @@
  */
 package org.jumpmind.symmetric.db.db2;
 
-import java.net.URL;
-
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -56,7 +54,13 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
             try {
                 log.info("Creating environment variables {} and {}", syncTriggersDisabledUserVariable,
                         syncTriggersDisabledNodeVariable);
-                new SqlScript(getSqlScriptUrl(), getPlatform().getSqlTemplate(), ";").execute();
+                ISqlTemplate template = getPlatform().getSqlTemplate();
+                template.update("CREATE VARIABLE "+syncTriggersDisabledNodeVariable+" VARCHAR(50)");
+                template.update("GRANT READ on VARIABLE "+syncTriggersDisabledNodeVariable+" TO PUBLIC");
+                template.update("GRANT WRITE on VARIABLE "+syncTriggersDisabledNodeVariable+" TO PUBLIC");
+                template.update("CREATE VARIABLE "+syncTriggersDisabledUserVariable+" INTEGER");
+                template.update("GRANT READ on VARIABLE "+syncTriggersDisabledUserVariable+" TO PUBLIC");
+                template.update("GRANT WRITE on VARIABLE "+syncTriggersDisabledUserVariable+" TO PUBLIC");
             } catch (Exception ex) {
                 log.error("Error while initializing DB2 dialect", ex);
             }
@@ -65,10 +69,6 @@ public class Db2v9SymmetricDialect extends Db2SymmetricDialect implements ISymme
         }
 
         super.createRequiredDatabaseObjects();
-    }
-
-    private URL getSqlScriptUrl() {
-        return getClass().getResource("/org/jumpmind/symmetric/db/db2.sql");
     }
     
     @Override
