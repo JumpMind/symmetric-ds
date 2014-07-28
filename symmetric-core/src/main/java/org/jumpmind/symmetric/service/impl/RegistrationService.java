@@ -316,7 +316,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 getSql("updateRegistrationRequestSql"),
                 new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
                         request.getRegisteredNodeId(), request.getStatus().name(), request.getErrorMessage(),
-                        nodeGroupId, externalId, request.getIpAddress(), request.getHostName() });
+                        nodeGroupId, externalId, request.getIpAddress(), request.getHostName() },
+                        new int[] { Types.VARCHAR, Types.DATE, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, 
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         if (count == 0) {
             sqlTemplate.update(
                     getSql("insertRegistrationRequestSql"),

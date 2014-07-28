@@ -46,7 +46,7 @@
 			primaryKey="true" />
 		<column name="string_one_value" type="VARCHAR" size="50" />
 		<column name="string_two_value" type="VARCHAR" size="255" />
-		<column name="long_string_value" type="LONGVARCHAR" />
+		<column name="long_string_value" type="VARCHAR" size="255" />
 		<column name="time_value" type="TIMESTAMP" />
 		<column name="date_value" type="DATE" />
 		<column name="boolean_value" type="BIT" size="1" />
