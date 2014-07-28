@@ -140,6 +140,8 @@ public class DefaultParameterParser {
         public static final String TYPE_BOOLEAN = "boolean";
         public static final String TYPE_INT = "integer";
         public static final String TYPE_TEXT_BOX = "textbox";
+        public static final String TYPE_SQL = "sql";
+        public static final String TYPE_CODE = "code";
 
         private static final long serialVersionUID = 1L;
         private String key;
@@ -205,6 +207,14 @@ public class DefaultParameterParser {
             }
         }
 
+        public boolean isSqlType() {
+            return type != null && type.equals(TYPE_SQL);
+        }
+        
+        public boolean isCodeType() {
+            return type != null && type.equals(TYPE_CODE);
+        }
+        
         public boolean isBooleanType() {
             return type != null && type.equals(TYPE_BOOLEAN);
         }
