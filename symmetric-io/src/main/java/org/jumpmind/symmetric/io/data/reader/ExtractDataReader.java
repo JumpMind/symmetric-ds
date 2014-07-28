@@ -45,9 +45,9 @@ import org.slf4j.LoggerFactory;
 
 public class ExtractDataReader implements IDataReader {
     
-    protected static final Logger log = LoggerFactory.getLogger(ExtractDataReader.class);
+    protected static final Logger log = LoggerFactory.getLogger(ExtractDataReader.class);    
     
-    public static final String DATA_CONTEXT_CURRENT_CSV_DATA = CsvData.class.getName(); 
+    public static final String DATA_CONTEXT_CURRENT_CSV_DATA = "csvData"; 
 
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
