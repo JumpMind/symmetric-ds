@@ -102,6 +102,8 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
                 interpreter.set("targetNodeId", context.getBatch().getTargetNodeId());
                 interpreter.set("context", context);
                 interpreter.set("bshContext", bshContext);
+                interpreter.set("transformColumn", column);
+                interpreter.set("transformedData", data);
                 
                 if (StringUtils.isNotBlank(globalScript)) {
                     interpreter.eval(globalScript);
