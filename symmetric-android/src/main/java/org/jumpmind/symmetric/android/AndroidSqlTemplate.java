@@ -227,8 +227,13 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
         return false;
     }
 
+    @Override
+    public ISqlTransaction startSqlTransaction(boolean autoCommit) {
+        return new AndroidSqlTransaction(this, autoCommit);
+    }
+    
     public ISqlTransaction startSqlTransaction() {
-        return new AndroidSqlTransaction(this);
+        return startSqlTransaction(false);
     }
 
     public int getDatabaseMajorVersion() {

@@ -280,6 +280,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         });
     }
 
+    public ISqlTransaction startSqlTransaction(boolean autoCommit) {
+        return new JdbcSqlTransaction(this, autoCommit);
+    }
+
     public ISqlTransaction startSqlTransaction() {
         return new JdbcSqlTransaction(this);
     }

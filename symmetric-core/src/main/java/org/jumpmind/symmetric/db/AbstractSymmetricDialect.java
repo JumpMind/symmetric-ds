@@ -305,7 +305,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             ISqlTransaction transaction = null;
             try {
-                transaction = this.platform.getSqlTemplate().startSqlTransaction();
+                transaction = this.platform.getSqlTemplate().startSqlTransaction(
+                        platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                 previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, transaction);
 
                 try {
