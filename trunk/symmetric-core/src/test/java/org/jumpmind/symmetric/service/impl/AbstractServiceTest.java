@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Date;
 
 import org.apache.log4j.Level;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -209,8 +208,7 @@ public abstract class AbstractServiceTest {
     }
 
     protected void forceRebuildOfTrigers() {
-        getSqlTemplate().update("update sym_trigger set last_update_time=?", new Date());
-        getTriggerRouterService().syncTriggers();
+        getTriggerRouterService().syncTriggers(true);
     }
 
     protected int countData() {

@@ -210,15 +210,17 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
         boolean oldvalue = getParameterService().is(
                 ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY);
         try {
+            ISqlTemplate template = getSqlTemplate();
             getParameterService().saveParameter(
                     ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY, true, "test");
             if (!Constants.ALWAYS_TRUE_CONDITION.equals(getDbDialect().getDataHasChangedCondition(
                     getTriggerRouterService().getTriggers().get(0)))) {
                 forceRebuildOfTrigers();
-                Assert.assertTrue(getSqlTemplate().queryForInt(
+                insert(INSERT2_VALUES, template, getDbDialect());
+                Assert.assertTrue(template.queryForInt(
                         "select count(*) from " + TEST_TRIGGERS_TABLE) > 0);
                 int dataCount = countData();
-                getSqlTemplate().update(
+                template.update(
                         "update " + TEST_TRIGGERS_TABLE + " set string_one_value=string_one_value");
                 Assert.assertEquals(dataCount, countData());
             }
