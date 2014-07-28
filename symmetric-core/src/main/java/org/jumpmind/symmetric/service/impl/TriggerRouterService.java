@@ -425,10 +425,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         boolean syncChanges = !TableConstants.getTablesThatDoNotSync(tablePrefix).contains(
                 tableName)
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
-        boolean syncOnIncoming = parameterService.is(
+        boolean syncOnIncoming = !configurationService.isMasterToMaster() && (parameterService.is(
                 ParameterConstants.AUTO_SYNC_CONFIGURATION_ON_INCOMING, true)
                 || tableName.equals(TableConstants.getTableName(tablePrefix,
-                        TableConstants.SYM_TABLE_RELOAD_REQUEST));
+                        TableConstants.SYM_TABLE_RELOAD_REQUEST)));
         Trigger trigger = new Trigger();
         trigger.setTriggerId(tableName);
         trigger.setSyncOnDelete(syncChanges);

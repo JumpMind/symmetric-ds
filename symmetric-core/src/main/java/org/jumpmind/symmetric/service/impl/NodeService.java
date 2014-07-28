@@ -278,7 +278,7 @@ public class NodeService extends AbstractService implements INodeService {
         String password = nodeIdCreator.generatePassword(new Node(id, null, null));
         password = filterPasswordOnSaveIfNeeded(password);
         sqlTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, password,
-                findIdentity().getNodeId() });
+                null });
     }
 
     public void insertNodeIdentity(String nodeId) {

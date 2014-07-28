@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroup;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
@@ -89,6 +90,15 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         setSqlMap(new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
+    }
+    
+    public boolean isMasterToMaster() {
+        boolean masterToMaster = false;
+        Node me = nodeService.findIdentity();
+        if (me != null) {
+            masterToMaster = getNodeGroupLinkFor(me.getNodeGroupId(), me.getNodeGroupId(), false) != null;
+        }
+        return masterToMaster;
     }
 
     public boolean refreshFromDatabase() {
