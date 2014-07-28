@@ -265,7 +265,7 @@ public class Column implements Cloneable, Serializable {
     public void setMappedTypeCode(int typeCode) {
         this.mappedType = TypeMap.getJdbcTypeName(typeCode);
         if (this.mappedType == null) {
-            throw new ModelException("Unknown JDBC type code " + typeCode);
+            throw new ModelException("Unknown JDBC type code " + typeCode + " for : " + toString());
         }
         this.mappedTypeCode = typeCode;
     }
@@ -289,7 +289,7 @@ public class Column implements Cloneable, Serializable {
         Integer typeCode = TypeMap.getJdbcTypeCode(type);
 
         if (typeCode == null) {
-            throw new ModelException("Unknown JDBC type " + type);
+            throw new ModelException("Unknown JDBC type " + type + " for : " + toString());
         } else {
             this.mappedTypeCode = typeCode.intValue();
             // we get the corresponding string value from the TypeMap in order
@@ -624,7 +624,9 @@ public class Column implements Cloneable, Serializable {
 
         result.append("Column [name=");
         result.append(getName());
-        result.append("; type=");
+        result.append("; jdbcType=");
+        result.append(getJdbcTypeName());
+        result.append("; mappedType=");
         result.append(getMappedType());
         result.append("]");
 
