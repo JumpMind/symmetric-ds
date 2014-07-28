@@ -158,7 +158,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         printIndent(ddl);
         ddl.append("DROP TABLE ");
         ddl.append(getFullyQualifiedTableNameShorten(table));
-        ddl.append("END");
+        ddl.append(" END");
         printEndOfStatement(ddl);
     }
 
