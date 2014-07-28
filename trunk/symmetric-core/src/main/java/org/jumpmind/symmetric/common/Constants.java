@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.common;
 
+import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
 import org.jumpmind.symmetric.model.DataEvent;
 
 /**
@@ -43,6 +44,8 @@ final public class Constants {
     public static final String DATA_CONTEXT_TARGET_NODE_GROUP_ID = "targetNodeGroupId";
     
     public static final String DATA_CONTEXT_TARGET_NODE_EXTERNAL_ID = "targetNodeExternalId";
+    
+    public static final String DATA_CONTEXT_CURRENT_CSV_DATA = ExtractDataReader.DATA_CONTEXT_CURRENT_CSV_DATA; 
     
     public static final String DATA_CONTEXT_SOURCE_NODE = "sourceNode";
     
