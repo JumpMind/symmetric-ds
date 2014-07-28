@@ -107,5 +107,11 @@ public interface IConfigurationService {
      * @return a map of nodes to redirect to that is keyed by a list of external_ids that should be redirected.
      */
     public Map<String,String> getRegistrationRedirectMap();
+    
+    /**
+     * Indicates that this node participates in a master to master link
+     * @return
+     */
+    public boolean isMasterToMaster();
 
 }
