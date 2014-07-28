@@ -103,6 +103,8 @@ public interface ISqlTemplate {
     public boolean isForeignKeyViolation(Throwable ex);
 
     public ISqlTransaction startSqlTransaction();
+    
+    public ISqlTransaction startSqlTransaction(boolean autoCommit);
 
     public int getDatabaseMajorVersion();
 
