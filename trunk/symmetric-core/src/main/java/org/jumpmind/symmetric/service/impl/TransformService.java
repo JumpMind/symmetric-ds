@@ -32,6 +32,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.transform.BshColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ColumnPolicy;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
@@ -71,7 +72,8 @@ public class TransformService extends AbstractService implements ITransformServi
         addColumnTransform(new SourceCatalogNameColumnTransform());
         addColumnTransform(new SourceSchemaNameColumnTransform());
         addColumnTransform(new SourceTableNameColumnTransform());
-
+        addColumnTransform(new BshColumnTransform(parameterService));
+        
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }    

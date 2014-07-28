@@ -35,7 +35,6 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.BshColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ClarionDateTimeColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsKeyColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransform;
@@ -92,7 +91,6 @@ public class TransformWriter extends NestedDataWriter {
     public static Map<String, IColumnTransform<?>> buildDefaultColumnTransforms() {
         Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
         addColumnTransform(columnTransforms, new AdditiveColumnTransform());
-        addColumnTransform(columnTransforms, new BshColumnTransform());
         addColumnTransform(columnTransforms, new JavaColumnTransform());
         addColumnTransform(columnTransforms, new ConstantColumnTransform());
         addColumnTransform(columnTransforms, new CopyColumnTransform());

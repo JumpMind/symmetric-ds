@@ -24,9 +24,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,10 +45,16 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
 
     public static final String NAME = "bsh";
 
+    IParameterService parameterService;
+
     /*
      * Static context object used to maintain objects in memory for reference between BSH transforms.
      */
     private static Map<String, Object> bshContext = new HashMap<String, Object>();
+
+    public BshColumnTransform(IParameterService parameterService) {
+        this.parameterService = parameterService;
+    }
 
     public String getName() {
         return NAME;
@@ -83,7 +92,9 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             }
             
             String transformExpression = column.getTransformExpression();
-            String methodName = String.format("transform_%d()",Math.abs(transformExpression.hashCode()));
+            String globalScript = parameterService.getString(ParameterConstants.BSH_TRANSFORM_GLOBAL_SCRIPT);
+            String methodName = String.format("transform_%d()",
+                    Math.abs(transformExpression.hashCode() + (globalScript == null ? 0 : globalScript.hashCode())));
             if (context.get(methodName) == null) {
                 interpreter.set("log", log);
                 interpreter.set("sqlTemplate", platform.getSqlTemplate());
@@ -92,6 +103,9 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
                 interpreter.set("context", context);
                 interpreter.set("bshContext", bshContext);
                 
+                if (StringUtils.isNotBlank(globalScript)) {
+                    interpreter.eval(globalScript);
+                }
                 interpreter.eval(String.format("%s {\n%s\n}", methodName, transformExpression));
                 context.put(methodName, Boolean.TRUE);
             }
