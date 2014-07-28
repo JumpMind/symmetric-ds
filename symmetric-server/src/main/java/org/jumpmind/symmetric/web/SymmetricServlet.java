@@ -66,6 +66,7 @@ public class SymmetricServlet extends HttpServlet {
     protected void service(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         ServerSymmetricEngine engine = findEngine(req);
+        MDC.put("engineName", engine != null ? engine.getEngineName() : "?");
         if (engine == null) {
             boolean nodesBeingCreated = ServletUtils.getSymmetricEngineHolder(getServletContext())
                     .areEnginesStarting();
@@ -85,7 +86,6 @@ public class SymmetricServlet extends HttpServlet {
         } else if (engine.isStarted()) {
             IUriHandler handler = findMatchingHandler(engine, req);
             if (handler != null) {
-                MDC.put("engineName", engine.getEngineName());
                 List<IInterceptor> interceptors = handler.getInterceptors();
                 try {
                     if (interceptors != null) {
