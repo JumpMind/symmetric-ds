@@ -29,8 +29,6 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 
 /**
  * Utility class to pair down a list of triggers from a list of TriggerRouters
- *
- * 
  */
 public class TriggerSelector {
 
@@ -43,7 +41,7 @@ public class TriggerSelector {
     public List<Trigger> select() {
         List<Trigger> filtered = new ArrayList<Trigger>(triggers.size());
         for (TriggerRouter trigger : triggers) {
-            if (!filtered.contains(trigger)) {
+            if (!filtered.contains(trigger.getTrigger())) {
                 filtered.add(trigger.getTrigger());
             }
         }
