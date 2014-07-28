@@ -39,7 +39,7 @@ public class MSSql2008DdlTypesTest extends AbstractDdlTypesTest {
                 "char", "varchar", "text", 
                 "nchar", "nvarchar", "ntext", 
                 "binary", "varbinary", "image",
-                "timestamp", "uniqueidentifier", "sql_variant", "xml"
+                "timestamp", "uniqueidentifier", "xml"//, "sql_variant"
         };
     }
 }
