@@ -69,7 +69,7 @@ public class TransformationTest extends AbstractTest {
         ISqlTemplate rootTemplate = rootServer.getDatabasePlatform().getSqlTemplate();
         ISqlTemplate clientTemplate = clientServer.getDatabasePlatform().getSqlTemplate();
         
-        rootTemplate.update(String.format("insert into %s values(?,?)", rootTableName), 1, 1);
+        rootTemplate.update(String.format("insert into %s values(?,?)", rootTableName), "1", 1);
         assertEquals(0, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
         pull("client");
         assertEquals(1, clientTemplate.queryForInt(String.format("select count(*) from %s",clientTableName)));
