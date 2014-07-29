@@ -136,14 +136,14 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
                         obj.getTimestampValue(), obj.getDateValue(), obj.isBitValue(),
                         obj.getBigIntValue(), obj.getDecimalValue(), obj.getId() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.DATE, Types.BIT,
-                        Types.NUMERIC, Types.NUMERIC, Types.DECIMAL })) {
+                        Types.NUMERIC, Types.NUMERIC, Types.NUMERIC })) {
             getSqlTemplate().update(
                     insertSql,
                     new Object[] { obj.getVarcharValue(), obj.getLongVarcharValue(),
                             obj.getTimestampValue(), obj.getDateValue(), obj.isBitValue(),
                             obj.getBigIntValue(), obj.getDecimalValue(), obj.getId() },
                     new int[] { Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.DATE,
-                            Types.BIT, Types.NUMERIC, Types.NUMERIC, Types.DECIMAL });
+                            Types.BIT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC });
         }
 
     }

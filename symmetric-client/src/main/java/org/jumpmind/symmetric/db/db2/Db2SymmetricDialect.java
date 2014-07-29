@@ -104,7 +104,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
         return false;
     }
 
-    public void purgeRecycleBin() {
+    public void cleanDatabase() {
     }
 
     @Override

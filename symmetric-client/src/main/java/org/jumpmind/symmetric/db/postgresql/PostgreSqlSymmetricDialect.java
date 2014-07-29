@@ -230,7 +230,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         return supportsTransactionId;
     }
 
-    public void purgeRecycleBin() {
+    public void cleanDatabase() {
     }
 
     @Override

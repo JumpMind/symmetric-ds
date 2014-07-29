@@ -341,7 +341,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     /*
      * Nothing to do for SQL Server
      */
-    public void purgeRecycleBin() {
+    public void cleanDatabase() {
     }
 
     @Override

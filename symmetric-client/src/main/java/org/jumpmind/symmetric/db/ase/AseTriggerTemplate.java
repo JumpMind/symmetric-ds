@@ -66,7 +66,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   \n" +
 "                                  declare @txid varchar(50)             \n" +
 "                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
-"                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              \n" +
+"                                      select @txid = $(txIdExpression)                              \n" +
 "                                  end                                                                                                                                                                \n" +
 "                                  declare @clientname varchar(50)    \n" +
 "                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +
@@ -109,7 +109,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   \n" +
 "                                  declare @txid varchar(50)                                                                                                                                            \n" +
 "                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
-"                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              \n" +
+"                                      select @txid = $(txIdExpression)                             \n" +
 "                                  end                                                                                                                                                                \n" +
 "                                  declare @clientname varchar(50)    \n" +
 "                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +
@@ -148,7 +148,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   \n" +
 "                                  declare @txid varchar(50)                                                                                                                                            \n" +
 "                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
-"                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              \n" +
+"                                      select @txid = $(txIdExpression)                            \n" +
 "                                  end                                                                                                                                                                \n" +
 "                                  declare @clientname varchar(50)    \n" +
 "                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +

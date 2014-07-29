@@ -66,7 +66,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     public void dropRequiredDatabaseObjects() {
     }
 
-    public void purgeRecycleBin() {
+    public void cleanDatabase() {
     }
 
     

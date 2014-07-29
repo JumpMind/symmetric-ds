@@ -116,7 +116,7 @@ public interface ISymmetricDialect {
      * that needs to be run when dropping database objects. An example is
      * Oracle's 'purge recyclebin'
      */
-    public void purgeRecycleBin();
+    public void cleanDatabase();
 
     public void disableSyncTriggers(ISqlTransaction transaction);
 

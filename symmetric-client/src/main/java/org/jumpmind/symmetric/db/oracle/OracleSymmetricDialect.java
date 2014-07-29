@@ -261,7 +261,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         return null;
     }
 
-    public void purgeRecycleBin() {
+    public void cleanDatabase() {
         platform.getSqlTemplate().update("purge recyclebin");
     }
 

@@ -92,20 +92,31 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         getTriggerRouterService().saveTriggerRouter(trigger1);
+        
         TriggerRouter trigger2 = getTestRoutingTableTrigger(TEST_TABLE_2);
         getTriggerRouterService().saveTriggerRouter(trigger2);
+        
         getTriggerRouterService().syncTriggers();
+        
         NodeChannel testChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID, false);
+        
         NodeChannel otherChannel = getConfigurationService().getNodeChannel(
                 TestConstants.TEST_CHANNEL_ID_OTHER, false);
+        
         Assert.assertEquals(50, testChannel.getMaxBatchSize());
+        
         Assert.assertEquals(1, otherChannel.getMaxBatchSize());
-        // should be 1 batch for table 1 on the testchannel w/ max batch size of
-        // 50
+        
+        /*
+         * Should be 1 batch for table 1 on the testchannel w/ max batch size of
+         * 50
+         */
         insert(TEST_TABLE_1, 5, false);
-        // this should generate 15 batches because the max batch size is 1
+        
+        /* this should generate 15 batches because the max batch size is 1 */
         insert(TEST_TABLE_2, 15, false);
+        
         insert(TEST_TABLE_1, 50, true);
 
         getRouterService().routeData(true);
@@ -169,7 +180,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         triggerRouter
                 .getRouter()
                 .setRouterExpression(
-                        "LOOKUP_TABLE=test_lookup_table\nKEY_COLUMN=ROUTING_VARCHAR\nLOOKUP_KEY_COLUMN=COLUMN_ONE\nEXTERNAL_ID_COLUMN=COLUMN_TWO");
+                        "LOOKUP_TABLE=test_lookup_table\nKEY_COLUMN=routing_varchar\nLOOKUP_KEY_COLUMN=column_one\nEXTERNAL_ID_COLUMN=column_two");
         getTriggerRouterService().saveTriggerRouter(triggerRouter);
         getTriggerRouterService().syncTriggers();
 
@@ -469,7 +480,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         try {
             transaction = getSqlTemplate().startSqlTransaction();
             count = transaction.prepareAndExecute(
-                    String.format("update %s set ROUTING_VARCHAR=?", TEST_TABLE_1),
+                    String.format("update %s set routing_varchar=?", TEST_TABLE_1),
                     NODE_GROUP_NODE_3.getNodeId());
             transaction.commit();
         } finally {
@@ -559,6 +570,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                 || name.equals(DatabaseNamesConstants.MSSQL2000) 
                 || name.equals(DatabaseNamesConstants.MSSQL2005) 
                 || name.equals(DatabaseNamesConstants.MSSQL2008) 
+                || name.equals(DatabaseNamesConstants.ASE) 
                 || name.equals(DatabaseNamesConstants.SQLANYWHERE)) {
             // TODO could not get subselect to work in trigger text for derby or
             // mssql. probably need to work on derby's support of
@@ -566,8 +578,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             trigger2.getTrigger().setExternalSelect("'" + NODE_GROUP_NODE_1.getNodeId() + "'");
         } else {
             trigger2.getTrigger().setExternalSelect(
-                    "select ROUTING_VARCHAR from " + TEST_TABLE_1
-                            + " where PK=$(curTriggerValue).$(curColumnPrefix)FK");
+                    "select routing_varchar from " + TEST_TABLE_1
+                            + " where pk=$(curTriggerValue).$(curColumnPrefix)FK");
         }
         getTriggerRouterService().saveTriggerRouter(trigger2);
 
@@ -578,9 +590,9 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         resetBatches();
 
         int pk = getSqlTemplate().queryForInt(
-                "select PK from " + TEST_TABLE_1 + " where ROUTING_VARCHAR='"
+                "select pk from " + TEST_TABLE_1 + " where routing_varchar='"
                         + NODE_GROUP_NODE_1.getNodeId() + "'");
-        getSqlTemplate().update("insert into " + TEST_SUBTABLE + " (FK) values(?)", pk);
+        getSqlTemplate().update("insert into " + TEST_SUBTABLE + " (fk) values(?)", pk);
 
         Assert.assertEquals(
                 0,
@@ -786,9 +798,9 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         resetBatches();
 
         int pk = getSqlTemplate().queryForInt(
-                "select PK from " + TEST_TABLE_1 + " where ROUTING_VARCHAR='"
+                "select pk from " + TEST_TABLE_1 + " where routing_varchar='"
                         + NODE_GROUP_NODE_1.getNodeId() + "'");
-        getSqlTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=1 where PK=?", pk);
+        getSqlTemplate().update("update " + TEST_TABLE_1 + " set routing_int=1 where pk=?", pk);
 
         getRouterService().routeData(true);
 
@@ -799,7 +811,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                         testChannel));
 
         resetBatches();
-        getSqlTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=1 where PK=?",
+        getSqlTemplate().update("update " + TEST_TABLE_1 + " set routing_int=1 where pk=?",
                 new Object[] { pk });
 
         getRouterService().routeData(true);
@@ -811,7 +823,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                         testChannel));
 
         resetBatches();
-        getSqlTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=10 where PK=?",
+        getSqlTemplate().update("update " + TEST_TABLE_1 + " set routing_int=10 where pk=?",
                 new Object[] { pk });
 
         getRouterService().routeData(true);
@@ -1238,7 +1250,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         String columnName = platform.alterCaseToMatchDatabaseDefaultCase("ROUTING_VARCHAR");
         ISqlTransaction transaction = null;
         try {
-            transaction = platform.getSqlTemplate().startSqlTransaction();
+            transaction = platform.getSqlTemplate().startSqlTransaction(!transactional);
             if (node2disable != null) {
                 dialect.disableSyncTriggers(transaction, node2disable);
             }
@@ -1247,10 +1259,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             for (int i = 0; i < count; i++) {
                 transaction.addRow(i, new Object[] { routingVarcharFieldValue },
                         new int[] { Types.VARCHAR });
-                if (!transactional) {
-                    transaction.flush();
-                    transaction.commit();
-                }
             }
             if (node2disable != null) {
                 dialect.enableSyncTriggers(transaction);

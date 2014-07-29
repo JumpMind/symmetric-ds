@@ -130,7 +130,7 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
         return BinaryEncoding.HEX;
     }
 
-    public void purgeRecycleBin() {
+    public void cleanDatabase() {
     }
 
     @Override

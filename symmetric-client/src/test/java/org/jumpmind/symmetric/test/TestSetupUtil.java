@@ -99,7 +99,7 @@ abstract public class TestSetupUtil {
         
         platform.resetDataSource();
 
-        dialect.purgeRecycleBin();
+        dialect.cleanDatabase();
         
         platform.resetCachedTableModel();
 
