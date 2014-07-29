@@ -72,7 +72,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     protected void buildSqlReplacementTokens() {
         super.buildSqlReplacementTokens();
         if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_HINTS,  true)) {
-            sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "/*+ index(d SYM_IDX_D_CHANNEL_ID) */");
+            sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "/*+ index(d " + parameterService.getTablePrefix() + "_IDX_D_CHANNEL_ID) */");
         }
     }
     
@@ -252,11 +252,11 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
         case REQUEST:
-            return "SEQ_SYM_EXTRACT_EST_REQUEST_ID";
+            return "SEQ_" + parameterService.getTablePrefix() + "_EXTRACT_EST_REQUEST_ID";
         case DATA:
-            return "SEQ_SYM_DATA_DATA_ID";
+            return "SEQ_" + parameterService.getTablePrefix() + "_DATA_DATA_ID";
         case TRIGGER_HIST:
-            return "SEQ_SYM_TRIGGER_RIGGER_HIST_ID";
+            return "SEQ_" + parameterService.getTablePrefix() + "_TRIGGER_RIGGER_HIST_ID";
         }
         return null;
     }
