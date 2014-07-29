@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.route;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +34,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,23 +55,23 @@ public abstract class AbstractDataRouter implements IDataRouter {
         DataEventType dml = dataMetaData.getData().getDataEventType();
         switch (dml) {
             case UPDATE:
-                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 4);
+                data = new LinkedCaseInsensitiveMap<String>(dataMetaData.getTable().getColumnCount() * 4);
                 data.putAll(getNewDataAsString(null, dataMetaData, symmetricDialect));
                 data.putAll(getOldDataAsString(OLD_, dataMetaData, symmetricDialect));
                 break;
             case INSERT:
-                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 4);
+                data = new LinkedCaseInsensitiveMap<String>(dataMetaData.getTable().getColumnCount() * 4);
                 data.putAll(getNewDataAsString(null, dataMetaData, symmetricDialect));
                 Map<String, String> map = getNullData(OLD_, dataMetaData);
                 data.putAll(map);
                 break;
             case DELETE:
-                data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 4);
+                data = new LinkedCaseInsensitiveMap<String>(dataMetaData.getTable().getColumnCount() * 4);
                 data.putAll(getOldDataAsString(null, dataMetaData, symmetricDialect));
                 data.putAll(getOldDataAsString(OLD_, dataMetaData, symmetricDialect));
                 break;
             default:
-                data = new HashMap<String, String>(1);
+                data = new LinkedCaseInsensitiveMap<String>(1);
                 break;
         }
 
@@ -97,7 +97,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
     protected Map<String, String> getDataAsString(String prefix, DataMetaData dataMetaData, ISymmetricDialect symmetricDialect,
             String[] rowData) {
         String[] columns = dataMetaData.getTriggerHistory().getParsedColumnNames();
-        Map<String, String> map = new HashMap<String, String>(columns.length * 2);
+        Map<String, String> map = new LinkedCaseInsensitiveMap<String>(columns.length * 2);
         if (rowData != null) {
             testColumnNamesMatchValues(dataMetaData, symmetricDialect, columns, rowData);
             for (int i = 0; i < columns.length; i++) {
@@ -113,7 +113,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
     protected Map<String, String> getPkDataAsString(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect) {
         String[] columns = dataMetaData.getTriggerHistory().getParsedPkColumnNames();
         String[] rowData = dataMetaData.getData().toParsedPkData();
-        Map<String, String> map = new HashMap<String, String>(columns.length);
+        Map<String, String> map = new LinkedCaseInsensitiveMap<String>(columns.length);
         if (rowData != null) {
             testColumnNamesMatchValues(dataMetaData, symmetricDialect, columns, rowData);
             for (int i = 0; i < columns.length; i++) {
@@ -130,18 +130,18 @@ public abstract class AbstractDataRouter implements IDataRouter {
         DataEventType dml = dataMetaData.getData().getDataEventType();
         switch (dml) {
             case UPDATE:
-                data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
+                data = new LinkedCaseInsensitiveMap<Object>(dataMetaData.getTable().getColumnCount() * 2);
                 data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect, upperCase));
                 data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect, upperCase));
                 break;
             case INSERT:
-                data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
+                data = new LinkedCaseInsensitiveMap<Object>(dataMetaData.getTable().getColumnCount() * 2);
                 data.putAll(getNewDataAsObject(null, dataMetaData, symmetricDialect, upperCase));
                 Map<String, Object> map = getNullData(OLD_, dataMetaData);
                 data.putAll(map);
                 break;
             case DELETE:
-                data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
+                data = new LinkedCaseInsensitiveMap<Object>(dataMetaData.getTable().getColumnCount() * 2);
                 data.putAll(getOldDataAsObject(null, dataMetaData, symmetricDialect, upperCase));
                 data.putAll(getOldDataAsObject(OLD_, dataMetaData, symmetricDialect, upperCase));
                 if (data.size() == 0) {
@@ -158,7 +158,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
 
         if (StringUtils.isNotBlank(dataMetaData.getData().getExternalData())) {
             if (data == null) {
-                data = new HashMap<String, Object>(1);
+                data = new LinkedCaseInsensitiveMap<Object>(1);
             }
             data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
         } else if (data != null) {
@@ -181,7 +181,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
 
     protected <T> Map<String, T> getNullData(String prefix, DataMetaData dataMetaData) {
         String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
-        Map<String, T> data = new HashMap<String, T>(columnNames.length * 2);
+        Map<String, T> data = new LinkedCaseInsensitiveMap<T>(columnNames.length * 2);
         for (String columnName : columnNames) {
             columnName = prefix != null ? prefix + columnName : columnName;
             data.put(columnName, null);
@@ -193,7 +193,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
     protected Map<String, Object> getDataAsObject(String prefix, DataMetaData dataMetaData,
             ISymmetricDialect symmetricDialect, String[] rowData, boolean upperCase) {
         if (rowData != null) {
-            Map<String, Object> data = new HashMap<String, Object>(rowData.length);
+            Map<String, Object> data = new LinkedCaseInsensitiveMap<Object>(rowData.length);
             String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
             Object[] objects = symmetricDialect.getPlatform().getObjectValues(
                     symmetricDialect.getBinaryEncoding(), dataMetaData.getTable(), columnNames,
@@ -233,7 +233,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
             ISymmetricDialect symmetricDialect) {
         String[] rowData = dataMetaData.getData().toParsedPkData();
         if (rowData != null) {
-            Map<String, Object> data = new HashMap<String, Object>(rowData.length);
+            Map<String, Object> data = new LinkedCaseInsensitiveMap<Object>(rowData.length);
             String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
             Object[] objects = symmetricDialect.getPlatform().getObjectValues(
                     symmetricDialect.getBinaryEncoding(), dataMetaData.getTable(), columnNames,
