@@ -27,8 +27,10 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.Context;
 import org.slf4j.Logger;
@@ -80,7 +82,12 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             interpreter.set("includeOn", column.getIncludeOn());
             interpreter.set("sourceDmlType", data.getSourceDmlType());
             interpreter.set("sourceDmlTypeString", data.getSourceDmlType().toString());
-
+            Data csvData = (Data)context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
+            if (csvData != null && csvData.getTriggerHistory() != null) {
+                interpreter.set("sourceSchemaName", csvData.getTriggerHistory().getSourceSchemaName());
+                interpreter.set("sourceCatalogName", csvData.getTriggerHistory().getSourceCatalogName());
+                interpreter.set("sourceTableName", csvData.getTriggerHistory().getSourceTableName());
+            }  
             for (String columnName : sourceValues.keySet()) {
                 interpreter.set(columnName.toUpperCase(), sourceValues.get(columnName));
                 interpreter.set(columnName, sourceValues.get(columnName));

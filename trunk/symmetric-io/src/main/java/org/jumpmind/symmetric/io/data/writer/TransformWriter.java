@@ -60,7 +60,6 @@ import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
 import org.jumpmind.symmetric.io.data.transform.ValueMapColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +96,6 @@ public class TransformWriter extends NestedDataWriter {
         addColumnTransform(columnTransforms, new IdentityColumnTransform());
         addColumnTransform(columnTransforms, new MultiplierColumnTransform());
         addColumnTransform(columnTransforms, new SubstrColumnTransform());
-        addColumnTransform(columnTransforms, new VariableColumnTransform());
         addColumnTransform(columnTransforms, new LookupColumnTransform());
         addColumnTransform(columnTransforms, new RemoveColumnTransform());
         addColumnTransform(columnTransforms, new MathColumnTransform());
