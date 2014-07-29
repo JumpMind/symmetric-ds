@@ -40,7 +40,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
         timeColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS','NLS_CALENDAR=''GREGORIAN''')),'\"'))" ;
         dateColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS','NLS_CALENDAR=''GREGORIAN''')),'\"'))" ;
         clobColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;
-        blobColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||sym_blob2clob($(tableAlias).\"$(columnName)\")||'\"')" ;
+        blobColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||$(prefixName)_blob2clob($(tableAlias).\"$(columnName)\")||'\"')" ;
         booleanColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number("+symmetricDialect.getTemplateNumberPrecisionSpec()+"))||'\"')" ;
         triggerConcatCharacter = "||" ;
         newTriggerValue = ":new" ;
@@ -64,7 +64,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                  $(oracleToClob)$(columns),                                             \n" +
 "                  $(channelExpression),                                                      \n" +
 "                  $(txIdExpression),                                                     \n" +
-"                  sym_pkg.disable_node_id,                                               \n" +
+"                  $(prefixName)_pkg.disable_node_id,                                     \n" +
 "                  $(externalSelect),                                                     \n" +
 "                  CURRENT_TIMESTAMP                                                      \n" +
 "                 );                                                                      \n" +
@@ -94,7 +94,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                          var_old_data,                                                                                                                                                  \n" +
 "                                          $(channelExpression),                                                                                                                                              \n" +
 "                                          $(txIdExpression),                                                                                                                                             \n" +
-"                                          sym_pkg.disable_node_id,                                                                                                                                       \n" +
+"                                          $(prefixName)_pkg.disable_node_id,                                                                                                                             \n" +
 "                                          $(externalSelect),                                                                                                                                             \n" +
 "                                          CURRENT_TIMESTAMP                                                                                                                                              \n" +
 "                                        );                                                                                                                                                               \n" +
@@ -118,7 +118,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(oracleToClob)$(oldColumns),                                                                                                                                    \n" +
 "                                      $(channelExpression),                                                                                                                                                \n" +
 "                                      $(txIdExpression),                                                                                                                                               \n" +
-"                                      sym_pkg.disable_node_id,                                                                                                                                         \n" +
+"                                      $(prefixName)_pkg.disable_node_id,                                                                                                                               \n" +
 "                                      $(externalSelect),                                                                                                                                               \n" +
 "                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
 "                                    );                                                                                                                                                                 \n" +
