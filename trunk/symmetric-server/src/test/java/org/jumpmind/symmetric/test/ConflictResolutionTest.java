@@ -80,7 +80,7 @@ public class ConflictResolutionTest extends AbstractTest {
     protected void testBasicSync(ISymmetricEngine rootServer, ISymmetricEngine clientServer) throws Exception {
 
         clientServer.getSqlTemplate().update(
-                String.format(clientServer.getDatabasePlatform().scrubSql("insert into %s values (?,?,current_timestamp)"), testTableA.getName()), "1", "c1");
+                clientServer.getDatabasePlatform().scrubSql(String.format("insert into %s values (?,?,current_timestamp)", testTableA.getName())), "1", "c1");
 
         push("client");
 
@@ -93,14 +93,14 @@ public class ConflictResolutionTest extends AbstractTest {
             throws Exception {
 
         rootServer.getSqlTemplate().update(
-                String.format(rootServer.getDatabasePlatform().scrubSql("insert into %s values (?,?,current_timestamp)"), testTableA.getName()), "2", "s1");
+                rootServer.getDatabasePlatform().scrubSql(String.format("insert into %s values (?,?,current_timestamp)", testTableA.getName())), "2", "s1");
 
         assertEquals(2, rootServer.getSqlTemplate().queryForInt("select count(*) from conflict_table_a"));
         assertEquals("s1",
                 rootServer.getSqlTemplate().queryForString("select string_a from conflict_table_a where id='2'"));
 
         clientServer.getSqlTemplate().update(
-                String.format(clientServer.getDatabasePlatform().scrubSql("insert into %s values (?,?,current_timestamp)"), testTableA.getName()), "2", "c1");
+                clientServer.getDatabasePlatform().scrubSql(String.format("insert into %s values (?,?,current_timestamp)", testTableA.getName())), "2", "c1");
 
         assertTrue(push("client"));
 
