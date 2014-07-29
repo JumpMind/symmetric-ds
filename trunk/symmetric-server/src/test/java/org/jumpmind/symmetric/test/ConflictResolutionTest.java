@@ -38,10 +38,10 @@ public class ConflictResolutionTest extends AbstractTest {
 
     @Override
     protected Table[] getTables(String name) {
-        testTableA = new Table("CONFLICT_TABLE_A");
-        testTableA.addColumn(new Column("ID", true, Types.VARCHAR, 255, 0));
-        testTableA.addColumn(new Column("STRING_A", false, Types.VARCHAR, 255, 0));
-        testTableA.addColumn(new Column("TM", false, Types.TIMESTAMP, -1, -1));
+        testTableA = new Table("conflict_table_a");
+        testTableA.addColumn(new Column("id", true, Types.VARCHAR, 255, 0));
+        testTableA.addColumn(new Column("string_a", false, Types.VARCHAR, 255, 0));
+        testTableA.addColumn(new Column("tm", false, Types.TIMESTAMP, -1, -1));
 
         return new Table[] { testTableA };
     }
@@ -80,32 +80,32 @@ public class ConflictResolutionTest extends AbstractTest {
     protected void testBasicSync(ISymmetricEngine rootServer, ISymmetricEngine clientServer) throws Exception {
 
         clientServer.getSqlTemplate().update(
-                String.format("insert into %s values (?,?,current_timestamp)", testTableA.getName()), "1", "c1");
+                String.format(clientServer.getDatabasePlatform().scrubSql("insert into %s values (?,?,current_timestamp)"), testTableA.getName()), "1", "c1");
 
         push("client");
 
-        assertEquals(1, rootServer.getSqlTemplate().queryForInt("select count(*) from CONFLICT_TABLE_A"));
+        assertEquals(1, rootServer.getSqlTemplate().queryForInt("select count(*) from conflict_table_a"));
 
-        assertEquals("c1", rootServer.getSqlTemplate().queryForString("select STRING_A from CONFLICT_TABLE_A"));
+        assertEquals("c1", rootServer.getSqlTemplate().queryForString("select string_a from conflict_table_a"));
     }
 
     protected void testExistingRowInServerInsertOnClient(ISymmetricEngine rootServer, ISymmetricEngine clientServer)
             throws Exception {
 
         rootServer.getSqlTemplate().update(
-                String.format("insert into %s values (?,?,current_timestamp)", testTableA.getName()), "2", "s1");
+                String.format(rootServer.getDatabasePlatform().scrubSql("insert into %s values (?,?,current_timestamp)"), testTableA.getName()), "2", "s1");
 
-        assertEquals(2, rootServer.getSqlTemplate().queryForInt("select count(*) from CONFLICT_TABLE_A"));
+        assertEquals(2, rootServer.getSqlTemplate().queryForInt("select count(*) from conflict_table_a"));
         assertEquals("s1",
-                rootServer.getSqlTemplate().queryForString("select STRING_A from CONFLICT_TABLE_A where ID='2'"));
+                rootServer.getSqlTemplate().queryForString("select string_a from conflict_table_a where id='2'"));
 
         clientServer.getSqlTemplate().update(
-                String.format("insert into %s values (?,?,current_timestamp)", testTableA.getName()), "2", "c1");
+                String.format(clientServer.getDatabasePlatform().scrubSql("insert into %s values (?,?,current_timestamp)"), testTableA.getName()), "2", "c1");
 
         assertTrue(push("client"));
 
         assertEquals("s1",
-                rootServer.getSqlTemplate().queryForString("select STRING_A from CONFLICT_TABLE_A where ID='2'"));
+                rootServer.getSqlTemplate().queryForString("select string_a from conflict_table_a where id='2'"));
 
         IncomingError error = getOnlyIncomingError(rootServer, "client");
         String rowData = error.getRowData();
@@ -120,7 +120,7 @@ public class ConflictResolutionTest extends AbstractTest {
         assertTrue(push("client"));
 
         assertEquals("s2",
-                rootServer.getSqlTemplate().queryForString("select STRING_A from CONFLICT_TABLE_A where ID='2'"));
+                rootServer.getSqlTemplate().queryForString("select string_a from conflict_table_a where id='2'"));
     }
 
     public IncomingError getOnlyIncomingError(ISymmetricEngine server, String nodeId) {
@@ -146,17 +146,17 @@ public class ConflictResolutionTest extends AbstractTest {
     protected void testUpdateRowOnServerThenUpdateRowOnClient(ISymmetricEngine rootServer, ISymmetricEngine clientServer)
             throws Exception {
         int count = rootServer.getSqlTemplate().update(
-                String.format("update %s set STRING_A=? where ID=?", testTableA.getName()), "notS3", "2");
+                String.format("update %s set string_a=? where id=?", testTableA.getName()), "notS3", "2");
         assertEquals(1, count);
 
         count = clientServer.getSqlTemplate().update(
-                String.format("update %s set STRING_A=? where ID=?", testTableA.getName()), "S3", "2");
+                String.format("update %s set string_a=? where id=?", testTableA.getName()), "S3", "2");
         assertEquals(1, count);
 
         assertTrue(push("client"));
 
         assertEquals("notS3",
-                rootServer.getSqlTemplate().queryForString("select STRING_A from CONFLICT_TABLE_A where ID='2'"));
+                rootServer.getSqlTemplate().queryForString("select string_a from conflict_table_a where id='2'"));
 
         IncomingError error = getOnlyIncomingError(rootServer, "client");
         String rowData = error.getRowData();
@@ -172,28 +172,28 @@ public class ConflictResolutionTest extends AbstractTest {
         assertEquals(null, error);
 
         assertEquals("S4",
-                rootServer.getSqlTemplate().queryForString("select STRING_A from CONFLICT_TABLE_A where ID='2'"));
+                rootServer.getSqlTemplate().queryForString("select string_a from conflict_table_a where id='2'"));
 
         // Same test, but we're ignore row this time
 
         count = rootServer.getSqlTemplate().update(
-                String.format("update %s set STRING_A=? where ID=?", testTableA.getName()), "notS5", "2");
+                String.format("update %s set string_a=? where id=?", testTableA.getName()), "notS5", "2");
         assertEquals(1, count);
 
         count = clientServer.getSqlTemplate().update(
-                String.format("update %s set STRING_A=? where ID=?", testTableA.getName()), "S5", "2");
+                String.format("update %s set string_a=? where id=?", testTableA.getName()), "S5", "2");
         assertEquals(1, count);
 
         assertTrue(push("client"));
 
         assertEquals("notS5",
-                rootServer.getSqlTemplate().queryForString("select STRING_A from CONFLICT_TABLE_A where ID='2'"));
+                rootServer.getSqlTemplate().queryForString("select string_a from conflict_table_a where id='2'"));
 
         error = getOnlyIncomingError(rootServer, "client");
         rowData = error.getRowData();
         
         rootServer.getSqlTemplate().update("update sym_incoming_error set resolve_ignore=? where batch_id=?",
-                "1", error.getBatchId());
+                1, error.getBatchId());
 
         assertTrue(push("client"));
         
@@ -201,7 +201,7 @@ public class ConflictResolutionTest extends AbstractTest {
         assertEquals(null,error);
         
         assertEquals("notS5",
-                rootServer.getSqlTemplate().queryForString("select STRING_A from CONFLICT_TABLE_A where ID='2'"));
+                rootServer.getSqlTemplate().queryForString("select string_a from conflict_table_a where id='2'"));
 
         
     }
