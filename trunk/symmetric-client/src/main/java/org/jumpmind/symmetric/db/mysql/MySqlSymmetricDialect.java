@@ -184,7 +184,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         return getTransactionFunctionName() + "()";
     }
 
-    public void purgeRecycleBin() {
+    public void cleanDatabase() {
     }
 
     @Override
