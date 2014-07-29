@@ -56,7 +56,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "     set nocount on;                                                                                                                                                             " +
             "     declare @TransactionId varchar(1000)                                                                                                                                 " +
             "     declare @DataRow varchar(8000) " +
-            "     declare @ChannelId varchar(20)                                                                                                                                          " +
+            "     declare @ChannelId varchar(128)                                                                                                                                          " +
             "     $(declareNewKeyVariables)                                                                                                                                            " +
             "     if (@@TRANCOUNT > 0) begin                                                                                                                                           " +
             "       execute sp_getbindtoken @TransactionId output; " +
@@ -92,7 +92,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "     declare @DataRow varchar(8000)                                                                                                                                        " +
             "     declare @OldPk varchar(2000)                                                                                                                                         " +
             "     declare @OldDataRow varchar(8000)                                                                                                                                     " +
-            "     declare @ChannelId varchar(20)                                                                                                                                          " +            
+            "     declare @ChannelId varchar(128)                                                                                                                                          " +            
             "     $(declareOldKeyVariables)                                                                                                                                            " +
             "     $(declareNewKeyVariables)                                                                                                                                            " +
             "     if (@@TRANCOUNT > 0) begin                                                                                                                                           " +
@@ -129,7 +129,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "     declare @OldPk varchar(2000)                                                                                                                                         " +
             "     declare @OldDataRow varchar(8000)                                                                                                                                     " +
             "     declare @DataRow varchar(8000)                                                                                                                                        " +
-            "     declare @ChannelId varchar(20)                                                                                                                                          " +            
+            "     declare @ChannelId varchar(128)                                                                                                                                          " +            
             "     $(declareOldKeyVariables)                                                                                                                                            " +
             "     $(declareNewKeyVariables)                                                                                                                                            " +
             "     if (@@TRANCOUNT > 0) begin                                                                                                                                           " +
