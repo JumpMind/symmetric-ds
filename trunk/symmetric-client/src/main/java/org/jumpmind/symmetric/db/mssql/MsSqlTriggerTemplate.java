@@ -190,7 +190,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "    declare @TransactionId varchar(1000)                                                                                                                                 \n" +
 "    declare @OldPk "+(castToNVARCHAR ? "n" : "")+"varchar(2000)                                                                                                                                         \n" +
 "    declare @OldDataRow "+(castToNVARCHAR ? "n" : "")+"varchar(max)                                                                                                                                     \n" +
-"    declare @ChannelId varchar(20)                                                                                                                                       \n" +
+"    declare @ChannelId varchar(128)                                                                                                                                       \n" +
 "    $(declareOldKeyVariables)                                                                                                                                            \n" +
 "    if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
 "       select @TransactionId = convert(VARCHAR(1000),transaction_id)    from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                           \n" +
