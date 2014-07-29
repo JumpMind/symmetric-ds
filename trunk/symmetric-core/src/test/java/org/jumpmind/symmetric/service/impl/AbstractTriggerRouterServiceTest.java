@@ -59,20 +59,20 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
 
     public final static String INSERT = "insert into "
             + TEST_TRIGGERS_TABLE
-            + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
+            + " (string_one_value,string_two_value,long_string_value,time_value,date_value,boolean_value,bigint_value,decimal_value) "
             + "values(?,?,?,?,?,?,?,?)"; // '\\\\','\"','\"1\"',null,null,1,1,1)";
 
     public final static int[] INSERT_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR,
-            Types.VARCHAR, Types.TIMESTAMP, Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
+            Types.VARCHAR, Types.TIMESTAMP, Types.DATE, Types.BIT, Types.INTEGER, Types.DECIMAL };
 
     public final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null,
-            Boolean.TRUE, 1, 1 };
+            1, 1, 1 };
 
     public final static Object[] INSERT2_VALUES = new Object[] { "here", "here", "1", null, null,
-            Boolean.TRUE, 1, 1 };
+            1, 1, 1 };
 
     public final static Object[] INSERT3_VALUES = new Object[] { "inactive", "inactive", "0", null,
-            null, Boolean.TRUE, 1, 1 };
+            null, 1, 1, 1 };
 
     public final static String EXPECTED_INSERT1_CSV_ENDSWITH = "\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,\"1\",\"1\",\"1\"";
 
