@@ -1353,7 +1353,13 @@ transformations are applied.</listitem>
 	<code>target_node_id</code>
 	is the node id of the target,
 	<code>null</code>
-	is a null value, and <code>old_column_value</code> is the column's old value prior to the DML operation.
+	is a null value, and <code>old_column_value</code> is the column's old value prior to the DML operation,
+    <code>source_table_name</code>
+    is the name of the source table as captured in the trigger hist table,
+    <code>source_catalog_name</code>
+    is the name of the source catalog as captured in the trigger hist table,
+    <code>source_schema_name</code>
+    is the name of the source schema as captured in the trigger hist table.
 	</listitem>
 	
 	<listitem>Additive Transform ('additive'): This

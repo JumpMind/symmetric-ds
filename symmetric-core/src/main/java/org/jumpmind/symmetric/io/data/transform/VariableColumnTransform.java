@@ -25,7 +25,9 @@ import java.util.Map;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.model.Data;
 
 public class VariableColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
@@ -48,9 +50,16 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
     protected static final String OPTION_NULL = "null";
 
     protected static final String OPTION_OLD_VALUE = "old_column_value";
+    
+    protected static final String OPTION_SOURCE_TABLE_NAME = "source_table_name";
+    
+    protected static final String OPTION_SOURCE_CATALOG_NAME = "source_catalog_name";
+    
+    protected static final String OPTION_SOURCE_SCHEMA_NAME = "source_schema_name";
 
     private static final String[] OPTIONS = new String[] { OPTION_TIMESTAMP, OPTION_DATE,
-            OPTION_SOURCE_NODE_ID, OPTION_TARGET_NODE_ID, OPTION_NULL, OPTION_OLD_VALUE };
+            OPTION_SOURCE_NODE_ID, OPTION_TARGET_NODE_ID, OPTION_NULL, OPTION_OLD_VALUE, OPTION_SOURCE_CATALOG_NAME,
+            OPTION_SOURCE_SCHEMA_NAME, OPTION_SOURCE_TABLE_NAME };
 
     public String getName() {
         return NAME;
@@ -86,6 +95,22 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
                 return oldValue;   
             } else if (varName.equals(OPTION_NULL)) {
                 return null;
+            } else if (varName.equals(OPTION_SOURCE_TABLE_NAME)) {
+                Data csvData = (Data)context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
+                if (csvData != null && csvData.getTriggerHistory() != null) {
+                    return csvData.getTriggerHistory().getSourceTableName();
+                }
+            } else if (varName.equals(OPTION_SOURCE_CATALOG_NAME)) {
+                Data csvData = (Data)context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
+                if (csvData != null && csvData.getTriggerHistory() != null) {
+                    return csvData.getTriggerHistory().getSourceCatalogName();
+                }
+                
+            } else if (varName.equals(OPTION_SOURCE_SCHEMA_NAME)) {
+                Data csvData = (Data)context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
+                if (csvData != null && csvData.getTriggerHistory() != null) {
+                    return csvData.getTriggerHistory().getSourceSchemaName();
+                }                
             }
         }
         return null;

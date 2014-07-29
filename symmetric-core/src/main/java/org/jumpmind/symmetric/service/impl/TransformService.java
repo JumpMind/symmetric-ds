@@ -37,13 +37,11 @@ import org.jumpmind.symmetric.io.data.transform.ColumnPolicy;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ParameterColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.SourceCatalogNameColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.SourceSchemaNameColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.SourceTableNameColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
+import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -69,9 +67,7 @@ public class TransformService extends AbstractService implements ITransformServi
         
         columnTransforms = TransformWriter.buildDefaultColumnTransforms();
         addColumnTransform(new ParameterColumnTransform(parameterService));
-        addColumnTransform(new SourceCatalogNameColumnTransform());
-        addColumnTransform(new SourceSchemaNameColumnTransform());
-        addColumnTransform(new SourceTableNameColumnTransform());
+        addColumnTransform(new VariableColumnTransform());
         addColumnTransform(new BshColumnTransform(parameterService));
         
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
