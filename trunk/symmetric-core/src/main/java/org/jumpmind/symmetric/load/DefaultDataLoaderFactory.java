@@ -124,7 +124,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
             for (Conflict conflictSetting : conflictSettings) {
                 String qualifiedTableName = conflictSetting.toQualifiedTableName();
                 if (StringUtils.isNotBlank(qualifiedTableName)) {
-                    byTable.put(qualifiedTableName, conflictSetting); // ADB
+                    byTable.put(qualifiedTableName, conflictSetting); 
                 } else if (StringUtils.isNotBlank(conflictSetting.getTargetChannelId())) {
                     byChannel.put(conflictSetting.getTargetChannelId(), conflictSetting);
                 } else {
