@@ -1,3 +1,33 @@
+SymmetricDS - 3.6.3 (Released 2014-07-29) 
+=========================================
+- 0001845: [Bug] The transaction id for sybase ase isn't always unique (chenson) - closed.
+- 0001846: [Improvement] Update router helper methods that get column values use a case insensitive map (chenson) - closed.
+- 0001805: [Improvement] Add support for mysql enums in dbfill (chenson) - closed.
+- 0001806: [Bug] dbfill only inserts 1 char for char fields. It should respect the size of the char field (chenson) - closed.
+- 0001807: [Bug] dbfill mishandles clob fields (chenson) - closed.
+- 0001808: [Bug] '0000-00-00 00:00:00' fails when initial.load.concat.csv.in.sql.enabled=false and db.treat.date.time.as.varchar.enabled=true (chenson) - closed.
+- 0001812: [Bug] bit type in should be mapped to a bit type in mysql. not a tinyint(1) (chenson) - closed.
+- 0001814: [Bug] NullPointerException in AbstractTriggerTemplate.createInitalLoadSql (chenson) - closed.
+- 0001818: [Bug] sym script error with Java 5 detection (elong) - closed.
+- 0001820: [Improvement] Add property that instructs symmetric to keep the same node_password for a node on re-registration (chenson) - closed.
+- 0001821: [Improvement] Add the ability, through configuration, to specify a system commands to dump and load a database's schema during initial load. (chenson) - closed.
+- 0001829: [Bug] dbexport doesn't respect "use quoted identifiers" for schema exports (chenson) - closed.
+- 0001830: [Bug] sql server needs to explicitly ALLOW_PAGE_LOCKS = OFF if mssql.allow.only.row.level.locks.on.runtime.tables is set (chenson) - closed.
+- 0001831: [Improvement] Add new property that instructs the data loader to alter the case of db artifacts being created to the default case of the db. (chenson) - closed.
+- 0001832: [Bug] Null values aren't being passed through transforms (chenson) - closed.
+- 0001619: [Improvement] Stabilize the Sybase unit tests. (chenson) - closed.
+- 0001811: [Improvement] Add new transform types that will put the source catalog, schema or table names into a column (chenson) - closed.
+- 0001823: [Improvement] DB2 sync trigger variables should use prefix (elong) - closed.
+- 0001827: [Bug] Long Oracle tables generate ORA-04095 on trigger creation (chenson) - closed.
+- 0001833: [Bug] ASE 12.5 create triggers in a multi-statement fails (chenson) - closed.
+- 0001836: [Bug] The removal of a node isn't synchronized to other nodes in a master to master scenario (chenson) - closed.
+- 0001837: [Bug] If the engine isn't found, the logging context should be '?', not the previously handled symmetric engine name for that thread (chenson) - closed.
+- 0001839: [Improvement] Global BSH script for transforms (elong) - closed.
+- 0001841: [Bug] Update registration request doesn't work on sql server with the latest microsoft jdbc driver (chenson) - closed.
+- 0001842: [Improvement] Additional transform variables for bsh (elong) - closed.
+- 0001843: [Bug] Oracle dialect has static "sym" prefix on objects (elong) - closed.
+- 0001844: [Improvement] Make picking conflict detection strategy case independent when matching tables (chenson) - closed.
+
 SymmetricDS - 3.6.2 (Released 2014-07-12) 
 =========================================
 - 0001755: [Bug] XML Data (schema and data) is not properly escaped. (chenson) - closed.
