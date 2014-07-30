@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -193,7 +194,11 @@ public class TransformWriter extends NestedDataWriter {
             }
 
             List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
-            for (TransformTable transformation : activeTransforms) {
+            TransformTable[] transformTables = activeTransforms.toArray(new TransformTable[activeTransforms.size()]);
+            if (data.getDataEventType() == DataEventType.DELETE) {
+                CollectionUtils.reverseArray(transformTables);
+            }
+            for (TransformTable transformation : transformTables) {
                 transformation = transformation.enhanceWithImpliedColumns(sourceKeyValues,
                         oldSourceValues, sourceValues);
                 dataThatHasBeenTransformed.addAll(transform(eventType, context, transformation,
