@@ -48,6 +48,7 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
@@ -365,7 +366,17 @@ public class DbFill {
                         + statementColumns[j].getName());
             }
             try {
-                platform.getSqlTemplate().update(statement.getSql(), statementValues, statement.getTypes());
+                boolean success = false;
+                int attempt = 0;
+                while (!success && attempt < 5) {
+                    try {
+                        platform.getSqlTemplate().update(statement.getSql(), statementValues,
+                                statement.getTypes());
+                        success = true;
+                    } catch (UniqueKeyException e) {
+                        attempt++;
+                    }
+                }
                 if (verbose) {
                     log.info("Successful insert into " + tbl.getName());
                 }
