@@ -38,7 +38,7 @@
 		<column name="date_value" type="DATE" />
 		<column name="bit_value" type="BIT" size="1" />
 		<column name="bigint_value" type="BIGINT" />
-		<column name="decimal_value" type="NUMERIC"  size="22,15" />
+		<column name="decimal_value" type="DECIMAL"  size="18,15" />
 	</table>	
 
 	<table name="test_triggers_table">
