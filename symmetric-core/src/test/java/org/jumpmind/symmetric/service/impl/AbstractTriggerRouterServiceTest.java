@@ -63,7 +63,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
             + "values(?,?,?,?,?,?,?,?)"; // '\\\\','\"','\"1\"',null,null,1,1,1)";
 
     public final static int[] INSERT_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR,
-            Types.VARCHAR, Types.TIMESTAMP, Types.DATE, Types.BIT, Types.INTEGER, Types.DECIMAL };
+            Types.VARCHAR, Types.TIMESTAMP, Types.DATE, Types.SMALLINT, Types.INTEGER, Types.DECIMAL };
 
     public final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null,
             1, 1, 1 };
