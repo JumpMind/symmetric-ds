@@ -314,6 +314,8 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         if (context.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
             log.info("About to refresh the cache of transformation because new configuration came through the data loader");
             engine.getTransformService().clearCache();
+            log.info("About to clear the staging area because new transform configuration came through the data loader");
+            engine.getStagingManager().clean(0);
             context.remove(CTX_KEY_FLUSH_TRANSFORMS_NEEDED);
         }
 
