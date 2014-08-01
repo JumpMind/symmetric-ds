@@ -77,6 +77,7 @@ import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.route.SubSelectDataRouter;
 import org.jumpmind.symmetric.route.TransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
@@ -197,8 +198,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         if (engine.getParameterService().isRegistrationServer() || 
                                 (identitySecurity != null && !identitySecurity.isRegistrationEnabled()
                                 && identitySecurity.getRegistrationTime() != null)) {
-                            List<NodeSecurity> nodeSecurities = nodeService
-                                    .findNodeSecurityWithLoadEnabled();
+                            List<NodeSecurity> nodeSecurities = findNodesThatAreReadyForInitialLoad();
                             if (nodeSecurities != null) {
                                 boolean reverseLoadFirst = parameterService
                                         .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
@@ -208,15 +208,11 @@ public class RouterService extends AbstractService implements IRouterService {
                                         boolean reverseLoadQueued = security
                                                 .isRevInitialLoadEnabled();
                                         boolean initialLoadQueued = security.isInitialLoadEnabled();
-                                        boolean thisMySecurityRecord = security.getNodeId().equals(
-                                                identity.getNodeId());
                                         boolean registered = security.getRegistrationTime() != null;
-                                        boolean parent = identity.getNodeId().equals(
-                                                security.getCreatedAtNodeId());
-                                        if (thisMySecurityRecord && reverseLoadQueued
+                                        if (reverseLoadQueued
                                                 && (reverseLoadFirst || !initialLoadQueued)) {
                                             sendReverseInitialLoad();
-                                        } else if (!thisMySecurityRecord && registered && parent
+                                        } else if (registered 
                                                 && initialLoadQueued
                                                 && (!reverseLoadFirst || !reverseLoadQueued)) {
                                             long ts = System.currentTimeMillis();
@@ -259,6 +255,23 @@ public class RouterService extends AbstractService implements IRouterService {
         } else {
             log.info("Not attempting to insert reload events because sync trigger is currently running");
         }
+    }
+    
+    public List<NodeSecurity> findNodesThatAreReadyForInitialLoad() {
+        INodeService nodeService = engine.getNodeService();
+        IConfigurationService configurationService = engine.getConfigurationService();
+        String me = nodeService.findIdentityNodeId();
+        List<NodeSecurity> toReturn = new ArrayList<NodeSecurity>();
+        List<NodeSecurity> securities = nodeService.findNodeSecurityWithLoadEnabled();
+        for (NodeSecurity nodeSecurity : securities) {
+            if (!nodeSecurity.getNodeId().equals(me) &&
+                    ((me.equals(nodeSecurity.getCreatedAtNodeId()) && nodeSecurity.isInitialLoadEnabled()) ||
+                        configurationService.isMasterToMaster() ||
+                        (!me.equals(nodeSecurity.getCreatedAtNodeId()) && nodeSecurity.isRevInitialLoadEnabled()))) {
+                toReturn.add(nodeSecurity);
+            }
+        }
+        return toReturn;
     }
 
     protected void sendReverseInitialLoad() {
