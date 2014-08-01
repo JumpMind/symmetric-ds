@@ -82,6 +82,8 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             interpreter.set("includeOn", column.getIncludeOn());
             interpreter.set("sourceDmlType", data.getSourceDmlType());
             interpreter.set("sourceDmlTypeString", data.getSourceDmlType().toString());
+            interpreter.set("transformedData", data);
+            interpreter.set("transformColumn", column);
             Data csvData = (Data)context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
             if (csvData != null && csvData.getTriggerHistory() != null) {
                 interpreter.set("sourceSchemaName", csvData.getTriggerHistory().getSourceSchemaName());
@@ -109,8 +111,6 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
                 interpreter.set("targetNodeId", context.getBatch().getTargetNodeId());
                 interpreter.set("context", context);
                 interpreter.set("bshContext", bshContext);
-                interpreter.set("transformColumn", column);
-                interpreter.set("transformedData", data);
                 
                 if (StringUtils.isNotBlank(globalScript)) {
                     interpreter.eval(globalScript);
