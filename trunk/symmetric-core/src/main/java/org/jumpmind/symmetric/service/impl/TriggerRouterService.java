@@ -731,7 +731,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return getTriggerById(triggerId, true);
     }
 
-    public Trigger getTriggerById(String triggerId, boolean refreshCache) {
+    public Trigger getTriggerById(String triggerId, boolean refreshCache) {        
+        Trigger trigger = null;
         final long triggerCacheTimeoutInMs = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
         Map<String, Trigger> cache = this.triggersCache;
@@ -742,13 +743,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 List<Trigger> triggers = new ArrayList<Trigger>(getTriggers());
                 triggers.addAll(buildTriggersForSymmetricTables(Version.version()));
                 cache = new HashMap<String, Trigger>(triggers.size());
-                for (Trigger trigger : triggers) {
-                    cache.put(trigger.getTriggerId(), trigger);
+                for (Trigger t : triggers) {
+                    cache.put(t.getTriggerId(), t);
                 }
                 this.triggersCache = cache;
             }
         }
-        return cache.get(triggerId);
+        trigger = cache.get(triggerId);
+        if (trigger == null && !refreshCache) {
+            trigger = getTriggerById(triggerId, true);
+        }
+        return trigger;
     }
 
     public Router getRouterById(String routerId) {
@@ -1417,19 +1422,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 addTriggerCreationListeners(listener);
             }
 
-            List<TriggerHistory> histories = getActiveTriggerHistories();
+            List<TriggerHistory> allHistories = getActiveTriggerHistories();
             if (triggersForCurrentNode.contains(trigger)) {
                 if (!trigger.isSourceTableNameWildCarded()) {
-                    for (TriggerHistory triggerHistory : histories) {
+                    for (TriggerHistory triggerHistory : getActiveTriggerHistories(trigger)) {
                         if (!triggerHistory.getFullyQualifiedSourceTableName().equals(trigger.getFullyQualifiedSourceTableName())) {
                             dropTriggers(triggerHistory, sqlBuffer);
                         }
                     }
                 }
                 updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
-                    force, verifyInDatabase, histories);
-            } else {
-                for (TriggerHistory triggerHistory : histories) {
+                    force, verifyInDatabase, allHistories);
+            } else {                
+                for (TriggerHistory triggerHistory : getActiveTriggerHistories(trigger)) {
                     dropTriggers(triggerHistory, sqlBuffer);
                 }
             }
