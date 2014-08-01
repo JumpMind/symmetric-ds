@@ -244,7 +244,7 @@
 
     <table name="incoming_error" description="The captured data change that is in error for a batch.  The user can tell the system what to do by updating the resolve columns.  Entries in data_error are created when an incoming batch encounters an error.">
         <column name="batch_id" type="BIGINT" size="50" required="true" primaryKey="true" description="The id of the outgoing_batch that is being loaded." />
-        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node_id of the source of the batch being loaded." />
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node_id of the source of the batch being loaded.  A node_id of -1 means that the batch was 'unrouted'." />
         <column name="failed_row_number" type="BIGINT" required="true" primaryKey="true" description="The row number in the batch that encountered an error when loading." />
         <column name="failed_line_number" type="BIGINT" required="true" default="0" description="The current line number in the CSV for this batch that failed." />
         <column name="target_catalog_name" type="VARCHAR" size="255" description="The catalog name for the table being loaded." />
