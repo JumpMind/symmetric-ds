@@ -269,10 +269,12 @@ public class RouterService extends AbstractService implements IRouterService {
         List<NodeSecurity> toReturn = new ArrayList<NodeSecurity>();
         List<NodeSecurity> securities = nodeService.findNodeSecurityWithLoadEnabled();
         for (NodeSecurity nodeSecurity : securities) {
-            if (!nodeSecurity.getNodeId().equals(me) &&
-                    ((me.equals(nodeSecurity.getCreatedAtNodeId()) && nodeSecurity.isInitialLoadEnabled()) ||
-                        configurationService.isMasterToMaster() ||
-                        (!me.equals(nodeSecurity.getCreatedAtNodeId()) && nodeSecurity.isRevInitialLoadEnabled()))) {
+            if (((!nodeSecurity.getNodeId().equals(me)
+                    && me.equals(nodeSecurity.getCreatedAtNodeId()) && nodeSecurity
+                        .isInitialLoadEnabled())
+                    || (!nodeSecurity.getNodeId().equals(me) && configurationService
+                            .isMasterToMaster()) || (nodeSecurity.getNodeId().equals(me) && nodeSecurity
+                    .isRevInitialLoadEnabled()))) {
                 toReturn.add(nodeSecurity);
             }
         }
