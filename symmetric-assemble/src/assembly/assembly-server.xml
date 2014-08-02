@@ -130,20 +130,8 @@
                         <useTransitiveFiltering>true</useTransitiveFiltering>
                         <excludes>
                             <exclude>junit:junit</exclude>
-                            <exclude>org.jumpmind.symmetric:symmetric-wrapper</exclude>
                         </excludes>                        
                     </dependencySet>
-                    <dependencySet>
-                        <outputDirectory>/lib</outputDirectory>
-                        <unpack>false</unpack>
-                        <scope>provided</scope>
-                        <outputFileNameMapping>symmetric-wrapper.jar</outputFileNameMapping>
-                        <useProjectArtifact>false</useProjectArtifact>
-                        <useTransitiveFiltering>true</useTransitiveFiltering>
-                        <includes>
-                            <include>org.jumpmind.symmetric:symmetric-wrapper</include>
-                        </includes>                        
-                    </dependencySet>                    
                 </dependencySets>
             </binaries>
         </moduleSet>
