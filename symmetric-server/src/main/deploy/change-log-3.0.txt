@@ -1,3 +1,13 @@
+SymmetricDS - 3.6.4 (Released 2014-08-02) 
+=========================================
+- 0001852: [Bug] When a table has multiple transforms, the order of execution should be reversed when a delete comes through the system (chenson) - closed.
+- 0001853: [Improvement] Clear staging if transformation changes come through the data loader or data router (chenson) - closed.
+- 0001856: [Bug] Bsh variables for transformedData and transformColumn not being updated (elong) - closed.
+- 0001857: [Bug] Initial load is broken for the master to master sync scenario (chenson) - closed.
+- 0001859: [Improvement] Document that a -1 node id in outgoing batch means that the batch was unrouted (chenson) - closed.
+- 0001860: [Bug] symmetric-wrapper should not include the version number, otherwise the service needs to be reinstalled on each upgrade (chenson) - closed.
+- 0001863: [Bug] Triggers get blown away when saving a link for an individual table. broke with 0001827 fix (chenson) - closed.
+
 SymmetricDS - 3.6.3 (Released 2014-07-29) 
 =========================================
 - 0001845: [Bug] The transaction id for sybase ase isn't always unique (chenson) - closed.
