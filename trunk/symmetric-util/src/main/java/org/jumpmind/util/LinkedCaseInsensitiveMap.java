@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * {@link LinkedHashMap} variant that stores String keys in a case-insensitive
@@ -96,6 +97,14 @@ public class LinkedCaseInsensitiveMap<V> extends LinkedHashMap<String, V> {
 	public V put(String key, V value) {
 		this.caseInsensitiveKeys.put(convertKey(key), key);
 		return super.put(key, value);
+	}
+	
+	@Override
+	public void putAll(Map<? extends String, ? extends V> map) {
+	    Set<? extends String> keys = map.keySet();
+	    for (String key : keys) {
+            put(key, map.get(key));
+        }
 	}
 
 	@Override
