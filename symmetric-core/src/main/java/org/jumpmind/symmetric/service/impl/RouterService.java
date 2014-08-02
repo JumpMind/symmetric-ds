@@ -205,15 +205,20 @@ public class RouterService extends AbstractService implements IRouterService {
                                 for (NodeSecurity security : nodeSecurities) {                                    
                                     if (engine.getTriggerRouterService()
                                             .getActiveTriggerHistories().size() > 0) {
+                                        boolean thisMySecurityRecord = security.getNodeId().equals(
+                                                identity.getNodeId());
                                         boolean reverseLoadQueued = security
                                                 .isRevInitialLoadEnabled();
                                         boolean initialLoadQueued = security.isInitialLoadEnabled();
                                         boolean registered = security.getRegistrationTime() != null;
-                                        if (reverseLoadQueued
+                                        boolean parent = identity.getNodeId().equals(
+                                                security.getCreatedAtNodeId()) || 
+                                                engine.getConfigurationService().isMasterToMaster();
+                                        if (thisMySecurityRecord && reverseLoadQueued
                                                 && (reverseLoadFirst || !initialLoadQueued)) {
                                             sendReverseInitialLoad();
-                                        } else if (registered 
-                                                && initialLoadQueued
+                                        } else if (!thisMySecurityRecord && registered 
+                                                && initialLoadQueued && parent
                                                 && (!reverseLoadFirst || !reverseLoadQueued)) {
                                             long ts = System.currentTimeMillis();
                                             engine.getDataService().insertReloadEvents(
