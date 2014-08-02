@@ -52,7 +52,7 @@ public class WrapperConfig {
         try {
             File libDir = new File(workingDirectory.getCanonicalPath() + File.separator + ".." + File.separator + "lib");
             for (String filename : libDir.list()) {
-                if (filename.startsWith("symmetric-wrapper-")) {
+                if (filename.startsWith("symmetric-wrapper")) {
                     return new File(libDir.getCanonicalPath() + File.separator + filename).getCanonicalPath();
                 }
             }
