@@ -198,16 +198,16 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     protected void routeNodeTables(Set<String> nodeIds, Map<String, String> columnValues,
             NetworkedNode rootNetworkedNode, Node me, SimpleRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> possibleTargetNodes, boolean initialLoad) {
-        String nodeIdInQuestion = columnValues.get("NODE_ID");
+        String nodeIdForRecordBeingRouted = columnValues.get("NODE_ID");
         if (dataMetaData.getData().getDataEventType() == DataEventType.DELETE) {
             String createAtNodeId = columnValues.get("CREATED_AT_NODE_ID");
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                 if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo
                         .getDeploymentType())
-                        && !nodeIdInQuestion.equals(nodeThatMayBeRoutedTo.getNodeId())
+                        && !nodeIdForRecordBeingRouted.equals(nodeThatMayBeRoutedTo.getNodeId())
                         && !nodeThatMayBeRoutedTo.getNodeId().equals(createAtNodeId)
                         && (nodeThatMayBeRoutedTo.getCreatedAtNodeId() == null || !nodeThatMayBeRoutedTo
-                                .getCreatedAtNodeId().equals(nodeIdInQuestion))) {
+                                .getCreatedAtNodeId().equals(nodeIdForRecordBeingRouted))) {
                     nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
                 }
             }
@@ -217,7 +217,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo
                         .getDeploymentType())
                         && !nodeThatMayBeRoutedTo.requires13Compatiblity()
-                        && isLinked(nodeIdInQuestion, nodeThatMayBeRoutedTo, rootNetworkedNode, me,
+                        && isLinked(nodeIdForRecordBeingRouted, nodeThatMayBeRoutedTo, rootNetworkedNode, me,
                                 nodeGroupLinks)
                         && !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo,
                                 rootNetworkedNode, me)
@@ -228,15 +228,17 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
             if (!initialLoad && nodeIds != null) {
                 DataEventType eventType = dataMetaData.getData().getDataEventType();
-                /*
-                 * Don't route node security to it's own node. That node will
-                 * get node security via registration and it will be updated by
-                 * initial load. Otherwise, updates can be unpredictable in the
-                 * order they will be applied at the node because updates are on
-                 * a different channel than reloads
-                 */
+
                 if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
-                    if (nodeIds.contains(nodeIdInQuestion)) {
+                    
+                    if (nodeIds.contains(nodeIdForRecordBeingRouted)) {
+                        /*
+                         * Don't route node security to it's own node. That node will
+                         * get node security via registration and it will be updated by
+                         * initial load. Otherwise, updates can be unpredictable in the
+                         * order they will be applied at the node because updates are on
+                         * a different channel than reloads
+                         */
                         boolean remove = true;
                         if (eventType == DataEventType.UPDATE) {
                             if ("1".equals(columnValues.get("REV_INITIAL_LOAD_ENABLED"))) {
@@ -253,10 +255,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                                 if (reverseLoadQueued) {
                                     remove = false;
                                 }
-                            }
+                            }                            
                         }
                         if (remove) {
-                            nodeIds.remove(nodeIdInQuestion);
+                            nodeIds.remove(nodeIdForRecordBeingRouted);
                         }
                     }
 
@@ -264,6 +266,16 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                      * The parent node never needs node_security updates.
                      */
                     nodeIds.remove(columnValues.get("CREATED_AT_NODE_ID"));
+                    
+                    if (engine.getConfigurationService().isMasterToMaster()) {
+                        /*
+                         * Don't send updates where the initial load flags are enabled to other 
+                         * nodes in the cluster 
+                         */
+                        if ("1".equals(columnValues.get("INITIAL_LOAD_ENABLED"))) {
+                            nodeIds.clear();
+                        }
+                    }
                 }
 
                 /*
@@ -275,7 +287,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                  * for deleting itself.
                  */
                 if (dataMetaData.getData().getDataEventType() == DataEventType.INSERT) {
-                    nodeIds.remove(nodeIdInQuestion);
+                    nodeIds.remove(nodeIdForRecordBeingRouted);
                 }
             }
         }
