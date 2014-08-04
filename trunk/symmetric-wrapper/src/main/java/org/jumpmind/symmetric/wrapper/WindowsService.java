@@ -49,7 +49,9 @@ import com.sun.jna.ptr.IntByReference;
 public class WindowsService extends WrapperService {
 
     private final static Logger logger = Logger.getLogger(WindowsService.class.getName());
-            
+
+    protected ServiceControlHandler serviceControlHandler;
+    
     protected SERVICE_STATUS_HANDLE serviceStatusHandle;
 
     protected Winsvc.SERVICE_STATUS serviceStatus;
@@ -336,7 +338,8 @@ public class WindowsService extends WrapperService {
         @Override
         public void serviceMain(int argc, Pointer argv) {
             logger.log(Level.INFO, "Getting service status");
-            serviceStatusHandle = Advapi32Ex.INSTANCE.RegisterServiceCtrlHandlerEx(config.getName(), new ServiceControlHandler(),
+            serviceControlHandler = new ServiceControlHandler();
+            serviceStatusHandle = Advapi32Ex.INSTANCE.RegisterServiceCtrlHandlerEx(config.getName(), serviceControlHandler,
                     null);
             if (serviceStatusHandle == null) {
                 System.exit(Constants.RC_FAIL_REGISTER_SERVICE);
