@@ -20,6 +20,9 @@
  */
 package org.jumpmind.util;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -62,8 +65,27 @@ public class AppUtils {
         String hostName = System.getProperty(SYSPROP_HOST_NAME, UNKNOWN);
         if (UNKNOWN.equals(hostName)) {
             try {
-                hostName = InetAddress.getByName(
-                        InetAddress.getLocalHost().getHostAddress()).getHostName();
+                hostName = System.getenv("HOSTNAME");
+                
+                if (isBlank(hostName)) {
+                    hostName = System.getenv("COMPUTERNAME");
+                }
+
+                if (isBlank(hostName)) {
+                    try {
+                        hostName = IOUtils.toString(Runtime.getRuntime().exec("hostname").getInputStream());
+                    } catch (Exception ex) {}
+                }
+                
+                if (isBlank(hostName)) {
+                    hostName = InetAddress.getByName(
+                            InetAddress.getLocalHost().getHostAddress()).getHostName();
+                }
+                
+                if (isNotBlank(hostName)) {
+                    hostName = hostName.trim();
+                }
+
             } catch (Exception ex) {
                 log.warn(ex.getMessage(), ex);
             }
