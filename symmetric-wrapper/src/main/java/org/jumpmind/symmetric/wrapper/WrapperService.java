@@ -345,6 +345,8 @@ public abstract class WrapperService {
     public abstract void uninstall();
 
     public abstract boolean isInstalled();
+    
+    public abstract boolean isPrivileged();
 
     protected abstract boolean setWorkingDirectory(String dir);
 
