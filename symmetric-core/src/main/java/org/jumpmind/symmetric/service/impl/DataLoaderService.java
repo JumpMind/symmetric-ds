@@ -238,11 +238,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     public void loadDataFromPull(Node remote, RemoteNodeStatus status) throws IOException {
+        Node local = nodeService.findIdentity();
+        if (local == null) {
+            local = new Node(this.parameterService, symmetricDialect);
+        }
         try {
-            Node local = nodeService.findIdentity();
-            if (local == null) {
-                local = new Node(this.parameterService, symmetricDialect);
-            }
             NodeSecurity localSecurity = nodeService.findNodeSecurity(local.getNodeId());
             IIncomingTransport transport = null;
             if (remote != null && localSecurity != null) {
@@ -307,8 +307,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 nodeService.findIdentity(false);
             } else {
                 log.warn(
-                        "Node '{}' must not have a security record to allow communication.  Will try again on the next pull",
-                        remote.getNodeId());
+                        "Failed to pull data from node '{}'. It probably is missing a node security record for '{}'.",
+                        remote.getNodeId(), local.getNodeId());
             }
         } catch (MalformedURLException e) {
             if (remote != null) {
