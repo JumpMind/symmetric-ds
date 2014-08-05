@@ -90,7 +90,8 @@ public class Wrapper {
             }
             if (e.getNativeErrorCode() > 0) {
                 System.out.println("Native error " + e.getErrorCode());    
-            }            
+            }
+            System.exit(e.getErrorCode());
         }
     }
 
