@@ -55,7 +55,7 @@ public class UnixService extends WrapperService {
         String rcDir = getRunCommandDir();
         String runFile = INITD_DIR + "/" + config.getName();
 
-        if (CLibrary.INSTANCE.geteuid() != 0) {
+        if (!isPrivileged()) {
             throw new WrapperException(Constants.RC_MUST_BE_ROOT, 0, "Must be root to install");
         }
         System.out.println("Installing " + config.getName() + " ...");
@@ -99,7 +99,7 @@ public class UnixService extends WrapperService {
         String rcDir = getRunCommandDir();
         String runFile = INITD_DIR + "/" + config.getName();
         
-        if (CLibrary.INSTANCE.geteuid() != 0) {
+        if (!isPrivileged()) {
             throw new WrapperException(Constants.RC_MUST_BE_ROOT, 0, "Must be root to uninstall");
         }
 
@@ -125,6 +125,11 @@ public class UnixService extends WrapperService {
             throw new WrapperException(Constants.RC_MISSING_INIT_FOLDER, 0, "Unable to locate run level folders");
         }
         return rcDir;
+    }
+
+    @Override
+    public boolean isPrivileged() {
+        return CLibrary.INSTANCE.geteuid() == 0;
     }
 
     @Override

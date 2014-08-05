@@ -74,7 +74,7 @@ public class WindowsService extends WrapperService {
 
     @Override
     public void start() {
-        if (!isInstalled()) {
+        if (!isPrivileged() || !isInstalled()) {
             super.start();
         } else if (isRunning()) {
             throw new WrapperException(Constants.RC_SERVER_ALREADY_RUNNING, 0, "Server is already running");
@@ -105,7 +105,7 @@ public class WindowsService extends WrapperService {
 
     @Override
     public void stop() {
-        if (!isInstalled()) {
+        if (!isPrivileged() || !isInstalled()) {
             super.stop();
         } else if (!isRunning()) {
             throw new WrapperException(Constants.RC_SERVER_NOT_RUNNING, 0, "Server is not running");
@@ -152,6 +152,16 @@ public class WindowsService extends WrapperService {
     @Override
     protected int getCurrentPid() {
         return Kernel32.INSTANCE.GetCurrentProcessId();
+    }
+
+    @Override
+    public boolean isPrivileged() {
+        try {
+            closeServiceHandle(openServiceManager());
+            return true;
+        } catch (WrapperException e) {
+            return false;
+        }
     }
 
     @Override
