@@ -942,9 +942,10 @@ public class RestService {
                     this.heartbeatImpl(engine, heartbeat);
                 }
                 return results;
-            } catch (RuntimeException ex) {
-                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.ERROR);
-                throw ex;
+            } finally {
+                if (processInfo.getStatus() != org.jumpmind.symmetric.model.ProcessInfo.Status.OK) {
+                    processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.ERROR);
+                }
             }
         } else {
             throw new NotAllowedException();
