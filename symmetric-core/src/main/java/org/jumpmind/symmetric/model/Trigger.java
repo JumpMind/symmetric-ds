@@ -88,7 +88,7 @@ public class Trigger implements Serializable {
 
     private String syncOnDeleteCondition = DEFAULT_CONDITION;
     
-    private String channelExpression = "'" + Constants.CHANNEL_DEFAULT + "'";
+    private String channelExpression = null;
 
     private String customOnUpdateText;
 
