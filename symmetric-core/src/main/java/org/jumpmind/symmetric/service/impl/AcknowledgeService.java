@@ -53,7 +53,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
     private IRegistrationService registrationService;
 
-    private IStagingManager stagingManger;
+    private IStagingManager stagingManager;
     
     private ISymmetricEngine engine;
 
@@ -63,7 +63,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         super(parameterService, symmetricDialect);
         this.outgoingBatchService = outgoingBatchService;
         this.registrationService = registrationService;
-        this.stagingManger = stagingManager;
+        this.stagingManager = stagingManager;
         this.engine = engine;
         setSqlMap(new AcknowledgeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -134,7 +134,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                         log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
                     }
                 } else if (!outgoingBatch.isCommonFlag()) {
-                    IStagedResource stagingResource = stagingManger.find(
+                    IStagedResource stagingResource = stagingManager.find(
                             Constants.STAGING_CATEGORY_OUTGOING, outgoingBatch.getNodeId(),
                             outgoingBatch.getBatchId());
                     if (stagingResource != null) {
