@@ -119,9 +119,10 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                         if (processInfo.getStatus() != Status.ERROR) {
                             processInfo.setStatus(Status.OK);
                         }
-                    } catch (RuntimeException ex) {
-                        processInfo.setStatus(Status.ERROR);
-                        throw ex;
+                    } finally {
+                        if (processInfo.getStatus() != Status.OK) {
+                            processInfo.setStatus(Status.ERROR);
+                        }
                     }
                     outgoingTransport.close();
                 }
