@@ -264,10 +264,14 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
 
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
-        ddl.append("DROP INDEX ");
-        ddl.append(getFullyQualifiedTableNameShorten(table));
+        String prefix = Table.getQualifiedTablePrefix(table.getCatalog(), table.getSchema(), 
+                delimitedIdentifierModeOn? databaseInfo.getDelimiterToken() : "");
+        ddl.append(prefix);
+        ddl.append("sp_executesql N'DROP INDEX ");
+        ddl.append(getDelimitedIdentifier(table.getName()));
         ddl.append(".");
         printIdentifier(getIndexName(index), ddl);
+        ddl.append("'");
         printEndOfStatement(ddl);
     }
 
