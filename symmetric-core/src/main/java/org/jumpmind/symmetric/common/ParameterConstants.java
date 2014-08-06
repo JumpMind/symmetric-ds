@@ -266,6 +266,8 @@ final public class ParameterConstants {
     public final static String MSSQL_USE_NTYPES_FOR_SYNC = "mssql.use.ntypes.for.sync";
     
     public final static String MSSQL_TRIGGER_EXECUTE_AS = "mssql.trigger.execute.as";
+    
+    public final static String EXTENSIONS_XML = "extensions.xml";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

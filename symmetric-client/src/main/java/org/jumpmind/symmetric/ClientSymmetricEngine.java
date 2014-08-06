@@ -24,6 +24,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -34,6 +35,8 @@ import java.util.Properties;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
@@ -68,6 +71,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jndi.JndiObjectFactoryBean;
+import org.xml.sax.InputSource;
 
 /**
  * Represents the client portion of a SymmetricDS engine. This class can be used
@@ -166,33 +170,44 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         try {
             LogSummaryAppenderUtils.registerLogSummaryAppender();
             
-            this.propertiesFactory = createTypedPropertiesFactory();
-            
-            this.securityService = SecurityServiceFactory.create(getSecurityServiceType(), propertiesFactory.reload());
-            TypedProperties properties = this.propertiesFactory.reload();
+            super.init();
+
+            this.dataSource = platform.getDataSource();
             
             PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
-            configurer.setProperties(properties);
+            configurer.setProperties(parameterService.getAllParameters());
             
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(springContext);
             ctx.addBeanFactoryPostProcessor(configurer);
             
+            List<String> extensionLocations = new ArrayList<String>();
+            extensionLocations.add("classpath:/symmetric-ext-points.xml");
             if (registerEngine) {
-                ctx.setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml",
-                        "classpath:/symmetric-jmx.xml" });
-            } else {
-                ctx.setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml" });
+                extensionLocations.add("classpath:/symmetric-jmx.xml");
+            } 
+                            
+            String xml = parameterService.getString(ParameterConstants.EXTENSIONS_XML);
+            if (isNotBlank(xml)) {
+                try {
+                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    factory.setValidating(false);
+                    factory.setNamespaceAware(true);
+                    DocumentBuilder builder = factory.newDocumentBuilder();
+                    // the "parse" method also validates XML, will throw an exception if misformatted
+                    builder.parse(new InputSource(new StringReader(xml)));
+                    File file = new File(parameterService.getTempDirectory(), "extension.xml");
+                    FileUtils.write(file, xml); 
+                    extensionLocations.add("file:" + file.getAbsolutePath());
+                } catch (Exception e) {
+                    log.error("Invalid " + ParameterConstants.EXTENSIONS_XML + " parameter.");
+                }
             }
+            
+            ctx.setConfigLocations(extensionLocations.toArray(new String[extensionLocations.size()]));
             ctx.refresh();
 
             this.springContext = ctx;
             
-            super.init();
-
-
-
-            this.dataSource = platform.getDataSource();
-
             this.extensionPointManger = createExtensionPointManager(springContext);
             this.extensionPointManger.register();
         } catch (RuntimeException ex) {

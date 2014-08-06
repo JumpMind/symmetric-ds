@@ -33,13 +33,13 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultParameterParser {
 
-    private static final String IGNORE_COMMENT = "#";
     private static final String COMMENT = "# ";
     private static final String DATABASE_OVERRIDABLE = "DatabaseOverridable:";
     private static final String TAGS = "Tags:";
@@ -70,10 +70,23 @@ public class DefaultParameterParser {
                 inputStream = getClass().getResourceAsStream(fileName);
             }
             List<String> lines = IOUtils.readLines(inputStream);
-
+            boolean extraLine = false;
             ParameterMetaData currentMetaData = new ParameterMetaData();
             for (String line : lines) {
-                if (line.trim().startsWith(COMMENT) && line.length() > 1) {
+                if (extraLine) {
+                    extraLine = false;
+                    if (currentMetaData != null) {
+                        if (line.endsWith("\\")) {
+                            extraLine = true;
+                            line = line.substring(0, line.length() - 1);                            
+                        }
+                        currentMetaData.setDefaultValue(currentMetaData.getDefaultValue() + "\n" + line);                        
+                    }
+                    
+                    if (!extraLine) {
+                        currentMetaData = new ParameterMetaData();
+                    }
+                } else if (line.trim().startsWith(COMMENT) && line.length() > 1) {
                     line = line.substring(line.indexOf(COMMENT) + 1);
                     if (line.contains(DATABASE_OVERRIDABLE)) {
                         currentMetaData.setDatabaseOverridable(Boolean.parseBoolean(line.substring(
@@ -91,13 +104,20 @@ public class DefaultParameterParser {
                     } else {
                         currentMetaData.appendDescription(line);
                     }
-                } else if (!line.trim().startsWith(IGNORE_COMMENT) && line.contains("=")) {
+                } else if (!line.trim().startsWith(COMMENT) && line.contains("=")) {
                     String key = line.substring(0, line.indexOf("="));
                     String defaultValue = line.substring(line.indexOf("=") + 1);
                     currentMetaData.setKey(key);
+                    if (defaultValue.endsWith("\\")) {
+                        extraLine = true;
+                        defaultValue = defaultValue.substring(0, defaultValue.length()-1);
+                    }
+                    defaultValue = StringEscapeUtils.unescapeJava(defaultValue);
                     currentMetaData.setDefaultValue(defaultValue);
                     metaData.put(key, currentMetaData);
-                    currentMetaData = new ParameterMetaData();
+                    if (!extraLine) {
+                        currentMetaData = new ParameterMetaData();
+                    }
                 } else if (StringUtils.isBlank(line)) {
                     // reset the metadata
                     currentMetaData = new ParameterMetaData();
@@ -128,7 +148,9 @@ public class DefaultParameterParser {
             if ((isDatabaseOverridable && parm.isDatabaseOverridable()) || (!isDatabaseOverridable && !parm.isDatabaseOverridable())) {
                 writer.write("<varlistentry>\n<term><command>" + parm.getKey() + "</command></term>\n");
                 writer.write("<listitem><para>" + parm.getDescription()
-                        + " [ Default: " + parm.getDefaultValue() + " ]</para></listitem>\n</varlistentry>\n");
+                        + " [ Default: " 
+                        + (parm.isXmlType() ? StringEscapeUtils.escapeXml(parm.getDefaultValue()) : parm.getDefaultValue()) 
+                        + " ]</para></listitem>\n</varlistentry>\n");
             }
         }
         writer.write("</variablelist>\n");
@@ -142,6 +164,7 @@ public class DefaultParameterParser {
         public static final String TYPE_TEXT_BOX = "textbox";
         public static final String TYPE_SQL = "sql";
         public static final String TYPE_CODE = "code";
+        public static final String TYPE_XML = "xml";
 
         private static final long serialVersionUID = 1L;
         private String key;
@@ -205,6 +228,10 @@ public class DefaultParameterParser {
             } else {
                 description = description + value;
             }
+        }
+        
+        public boolean isXmlType() {
+            return type != null && type.equals(TYPE_XML);
         }
 
         public boolean isSqlType() {
