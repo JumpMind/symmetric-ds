@@ -104,7 +104,9 @@ public class StagedResource implements IStagedResource {
     }
     
     public boolean isInUse() {
-        return readers.size() > 0 || writers.size() > 0;
+        return readers.size() > 0 || writers.size() > 0 || 
+                (inputStreams != null && inputStreams.size() > 0) ||
+                (outputStreams != null && outputStreams.size() > 0);
     }
     
     public boolean isFileResource() {     
