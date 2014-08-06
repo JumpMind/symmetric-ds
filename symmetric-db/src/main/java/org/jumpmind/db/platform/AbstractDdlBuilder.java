@@ -905,11 +905,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     
     /**
 	 * The fully qualified table name shorten
-     * @param Table
-     *            
-     * @return 
      */
-    public String getFullyQualifiedTableNameShorten(Table table) {
+    protected String getFullyQualifiedTableNameShorten(Table table) {
     	String result="";
         if (StringUtils.isNotBlank(table.getCatalog())) {
             result+=getDelimitedIdentifier(table.getCatalog()).concat(".");
@@ -920,6 +917,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         result+=getDelimitedIdentifier(getTableName(table.getName()));
         return result;
     }
+        
     /**
      * Creates a temporary table object that corresponds to the given table.
      * Database-specific implementations may redefine this method if e.g. the
