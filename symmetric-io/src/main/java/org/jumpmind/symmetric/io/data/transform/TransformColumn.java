@@ -185,7 +185,7 @@ public class TransformColumn implements Comparable<TransformColumn> {
                 transformType.equals(tc.transformType) &&
                 StringUtils.equals(transformExpression, tc.transformExpression) &&
                 includeOn == tc.includeOn &&
-                StringUtils.equals(lastUpdateBy, tc.lastUpdateBy) ) {
+                StringUtils.equals(lastUpdateBy, tc.lastUpdateBy) && transformOrder == tc.transformOrder) {
             return true;
         } else {
             return false;
@@ -210,7 +210,20 @@ public class TransformColumn implements Comparable<TransformColumn> {
     }
     
     public int compareTo(TransformColumn o) {
-        return new Integer(transformOrder).compareTo(new Integer(o.transformOrder));
+        //return new Integer(transformOrder).compareTo(new Integer(o.transformOrder));
+        TransformColumn tc = o;
+        if (tc != null &&
+                StringUtils.equals(sourceColumnName, tc.sourceColumnName) &&
+                StringUtils.equals(targetColumnName, tc.targetColumnName) &&
+                pk == tc.pk &&
+                transformType.equals(tc.transformType) &&
+                StringUtils.equals(transformExpression, tc.transformExpression) &&
+                includeOn == tc.includeOn &&
+                StringUtils.equals(lastUpdateBy, tc.lastUpdateBy) && transformOrder == tc.transformOrder) {
+            return 0;
+        } else {
+            return -1;
+        }
     }
 
 }
