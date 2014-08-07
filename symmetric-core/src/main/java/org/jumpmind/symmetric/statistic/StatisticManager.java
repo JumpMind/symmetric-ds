@@ -112,8 +112,9 @@ public class StatisticManager implements IStatisticManager {
         if (old != null) {
             if (old.getStatus() != Status.OK && old.getStatus() != Status.ERROR) {
                 log.warn(
-                        "Starting a new process even though the previous one ({}) had not finished",
-                        old.toString());
+                        "Starting a new process even though the previous '{}' process had not finished",
+                        old.getProcessType().toString());
+                log.info("Details from the previous process: {}", old.toString());
             }
 
             if (old.getCurrentBatchDataCount() > 0) {
