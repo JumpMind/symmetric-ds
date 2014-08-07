@@ -197,10 +197,12 @@ public class StagedResource implements IStagedResource {
 
         if (writer != null) {
             IOUtils.closeQuietly(writer);
+            writer = null;
         }
         
         if (outputStream != null) {
             IOUtils.closeQuietly(outputStream);
+            outputStream = null;
         }
         
         if (inputStreams != null) {
