@@ -103,6 +103,8 @@ final public class ParameterConstants {
 
     public final static String INITIAL_LOAD_BEFORE_SQL = "initial.load.before.sql";
     public final static String INITIAL_LOAD_AFTER_SQL = "initial.load.after.sql";
+    public final static String INITIAL_LOAD_REVERSE_BEFORE_SQL = "initial.load.reverse.before.sql";
+    public final static String INITIAL_LOAD_REVERSE_AFTER_SQL = "initial.load.reverse.after.sql";
     public final static String INITIAL_LOAD_DELETE_BEFORE_RELOAD = "initial.load.delete.first";
     public final static String INITIAL_LOAD_DELETE_FIRST_SQL = "initial.load.delete.first.sql";
     public final static String INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
@@ -266,7 +268,7 @@ final public class ParameterConstants {
     public final static String MSSQL_USE_NTYPES_FOR_SYNC = "mssql.use.ntypes.for.sync";
     
     public final static String MSSQL_TRIGGER_EXECUTE_AS = "mssql.trigger.execute.as";
-    
+
     public final static String EXTENSIONS_XML = "extensions.xml";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
