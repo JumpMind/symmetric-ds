@@ -61,13 +61,13 @@ public class StagedResource implements IStagedResource {
 
     private State state;
     
-    private Map<Thread, OutputStream> outputStreams = null;
+    private OutputStream outputStream = null;
     
     private Map<Thread, InputStream> inputStreams = null;
     
     private Map<Thread, BufferedReader> readers = new HashMap<Thread, BufferedReader>();
 
-    private Map<Thread, BufferedWriter> writers = new HashMap<Thread, BufferedWriter>();
+    private BufferedWriter writer;
     
     private StagingManager stagingManager;
 
@@ -104,9 +104,9 @@ public class StagedResource implements IStagedResource {
     }
     
     public boolean isInUse() {
-        return readers.size() > 0 || writers.size() > 0 || 
+        return readers.size() > 0 || writer != null || 
                 (inputStreams != null && inputStreams.size() > 0) ||
-                (outputStreams != null && outputStreams.size() > 0);
+                outputStream != null;
     }
     
     public boolean isFileResource() {     
@@ -126,6 +126,10 @@ public class StagedResource implements IStagedResource {
             File newFile = buildFile(state);
             if (!newFile.equals(file)) {
                 if (newFile.exists()) {
+                    if (writer != null || outputStream != null) {
+                        throw new IoException("Could not write '{}' it is currently being written to", newFile.getAbsolutePath());                                
+                    }
+                    
                     if (!FileUtils.deleteQuietly(newFile)) {
                         log.warn("Failed to delete '{}' in preparation for renaming '{}'", newFile.getAbsolutePath(), file.getAbsoluteFile());
                         if (readers.size() > 0) {
@@ -133,14 +137,6 @@ public class StagedResource implements IStagedResource {
                                 BufferedReader reader = readers.get(thread);
                                 log.warn("Closing unwanted reader for '{}' that had been created on thread '{}'", newFile.getAbsolutePath(), thread.getName());                                         
                                 IOUtils.closeQuietly(reader);                                
-                            }
-                        }
-                        
-                        if (writers.size() > 0) {
-                            for (Thread thread : writers.keySet()) {
-                                BufferedWriter writer = writers.get(thread);
-                                log.warn("Closing unwanted writer for '{}' that had been created on thread '{}'", newFile.getAbsolutePath(), thread.getName());                                         
-                                IOUtils.closeQuietly(writer);                                
                             }
                         }
                         
@@ -199,18 +195,12 @@ public class StagedResource implements IStagedResource {
             readers.remove(thread);
         }
 
-        BufferedWriter writer = writers.get(thread);
         if (writer != null) {
             IOUtils.closeQuietly(writer);
-            writers.remove(thread);
         }
         
-        if (outputStreams != null) {
-            OutputStream outputStream = outputStreams.get(thread);
-            if (outputStream != null) {
-                IOUtils.closeQuietly(outputStream);
-                outputStreams.remove(thread);
-            }
+        if (outputStream != null) {
+            IOUtils.closeQuietly(outputStream);
         }
         
         if (inputStreams != null) {
@@ -220,28 +210,20 @@ public class StagedResource implements IStagedResource {
                 inputStreams.remove(thread);
             }
         }
-        
-
     }
     
     public OutputStream getOutputStream() {
-        try {
-            if (outputStreams == null) {
-                outputStreams = new HashMap<Thread, OutputStream>();
-            }
-            Thread thread = Thread.currentThread();            
-            OutputStream writer = outputStreams.get(thread);
-            if (writer == null) {
+        try {            
+            if (outputStream == null) {
                 if (file.exists()) {
                     log.warn("We had to delete {} because it already existed",
                             file.getAbsolutePath());
                     file.delete();
                 }
                 file.getParentFile().mkdirs();
-                writer = new BufferedOutputStream(new FileOutputStream(file));
-                outputStreams.put(thread, writer);
+                outputStream = new BufferedOutputStream(new FileOutputStream(file));
             }
-            return writer;
+            return outputStream;
         } catch (FileNotFoundException e) {
             throw new IoException(e);
         }
@@ -270,8 +252,6 @@ public class StagedResource implements IStagedResource {
     }
     
     public BufferedWriter getWriter() {
-        Thread thread = Thread.currentThread();
-        BufferedWriter writer = writers.get(thread);
         if (writer == null) {
             if (file.exists()) {
                 log.warn("We had to delete {} because it already existed", file.getAbsolutePath());
@@ -283,7 +263,6 @@ public class StagedResource implements IStagedResource {
             this.memoryBuffer = new StringBuilder();
             writer = new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer,
                     this.file));
-            writers.put(thread, writer);
         }
         return writer;
     }
