@@ -365,7 +365,7 @@ public class DataService extends AbstractService implements IDataService {
                     transaction);
 
             insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy, transactional,
-                    transaction);
+                    transaction, reverse);
 
             insertCreateBatchesForReload(targetNode, loadId, createBy, triggerHistories,
                     triggerRoutersByHistoryId, transactional, transaction);
@@ -376,7 +376,8 @@ public class DataService extends AbstractService implements IDataService {
             insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
                     triggerRoutersByHistoryId, transactional, transaction);
 
-            String afterSql = parameterService.getString(ParameterConstants.INITIAL_LOAD_AFTER_SQL);
+            String afterSql = parameterService.getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_AFTER_SQL
+                    : ParameterConstants.INITIAL_LOAD_AFTER_SQL);
             if (isNotBlank(afterSql)) {
                 insertSqlEvent(transaction, targetNode, afterSql, true, loadId, createBy);
             }
@@ -485,7 +486,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     private void insertSqlEventsPriorToReload(Node targetNode, String nodeIdRecord, long loadId,
-            String createBy, boolean transactional, ISqlTransaction transaction) {
+            String createBy, boolean transactional, ISqlTransaction transaction, boolean reverse) {
         if (!Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
             /*
              * Insert node security so the client doing the initial load knows
@@ -507,7 +508,8 @@ public class DataService extends AbstractService implements IDataService {
                     loadId, createBy);
         }
         
-        String beforeSql = parameterService.getString(ParameterConstants.INITIAL_LOAD_BEFORE_SQL);
+        String beforeSql = parameterService.getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_BEFORE_SQL
+                : ParameterConstants.INITIAL_LOAD_BEFORE_SQL);
         if (isNotBlank(beforeSql)) {
             insertSqlEvent(
                     transaction,
