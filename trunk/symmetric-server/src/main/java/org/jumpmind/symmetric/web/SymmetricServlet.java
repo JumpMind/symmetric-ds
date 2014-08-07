@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -86,11 +87,15 @@ public class SymmetricServlet extends HttpServlet {
         } else if (engine.isStarted()) {
             IUriHandler handler = findMatchingHandler(engine, req);
             if (handler != null) {
-                List<IInterceptor> interceptors = handler.getInterceptors();
+                List<IInterceptor> beforeInterceptors = handler.getInterceptors();
+                List<IInterceptor> afterInterceptors = null;
                 try {
-                    if (interceptors != null) {
-                        for (IInterceptor interceptor : interceptors) {
-                            if (!interceptor.before(req, res)) {
+                    if (beforeInterceptors != null) {
+                        afterInterceptors = new ArrayList<IInterceptor>(beforeInterceptors.size());
+                        for (IInterceptor interceptor : beforeInterceptors) {
+                            if (interceptor.before(req, res)) {
+                                afterInterceptors.add(interceptor);
+                            } else {
                                 return;
                             }
                         }
@@ -103,8 +108,8 @@ public class SymmetricServlet extends HttpServlet {
                         ServletUtils.sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     }
                 } finally {
-                    if (interceptors != null) {
-                        for (IInterceptor interceptor : interceptors) {
+                    if (afterInterceptors != null) {
+                        for (IInterceptor interceptor : afterInterceptors) {
                             interceptor.after(req, res);
                         }
                     }
