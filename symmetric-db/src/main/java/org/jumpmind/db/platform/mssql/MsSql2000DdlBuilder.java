@@ -159,8 +159,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 + " nvarchar(256)", ddl);
         println("  DECLARE refcursor CURSOR FOR", ddl);
         println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname", ddl);
-        println("    FROM sysobjects objs JOIN sysconstraints cons ON objs.id = cons.constid", ddl);
-        ddl.append("    WHERE objs.xtype != 'PK' AND object_name(objs.parent_obj) = ");
+        println("    FROM sysobjects objs", ddl);
+        ddl.append("    WHERE objs.xtype in ('C','D','F','UQ') AND object_name(objs.parent_obj) = ");
         printAlwaysSingleQuotedIdentifier(tableName, ddl);
         println("  OPEN refcursor", ddl);
         println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
@@ -268,9 +268,9 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 delimitedIdentifierModeOn? databaseInfo.getDelimiterToken() : "");
         ddl.append(prefix);
         ddl.append("sp_executesql N'DROP INDEX ");
-        ddl.append(getDelimitedIdentifier(table.getName()));
-        ddl.append(".");
         printIdentifier(getIndexName(index), ddl);
+        ddl.append(" ON ");
+        ddl.append(getDelimitedIdentifier(table.getName()));
         ddl.append("'");
         printEndOfStatement(ddl);
     }
@@ -509,17 +509,21 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             for (Iterator<ColumnChange> changeIt = columnChanges.iterator(); changeIt.hasNext();) {
                 ColumnChange change = changeIt.next();
                 Column sourceColumn = change.getChangedColumn();
-                Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
-                        delimitedIdentifierModeOn);
+                if (!sourceColumn.isPrimaryKey()) {
+                    Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
+                            delimitedIdentifierModeOn);
 
-                if (!processedColumns.contains(targetColumn)) {
-                    processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn,
-                            (change instanceof ColumnDataTypeChange)
-                                    || (change instanceof ColumnSizeChange), ddl);
-                    processedColumns.add(targetColumn);
+                    if (!processedColumns.contains(targetColumn)) {
+                        processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn,
+                                (change instanceof ColumnDataTypeChange)
+                                        || (change instanceof ColumnSizeChange), ddl);
+                        processedColumns.add(targetColumn);
+                    }
+                    changes.remove(change);
+                    change.apply(currentModel, delimitedIdentifierModeOn);
+                } else {
+                    log.debug("Cannot alter a primay key column on sql server (azure).  Just let the table rebuild.");
                 }
-                changes.remove(change);
-                change.apply(currentModel, delimitedIdentifierModeOn);
             }
         }
         // Finally we add primary keys
@@ -589,7 +593,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 + " nvarchar(256)", ddl);
         println("  DECLARE refcursor CURSOR FOR", ddl);
         println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname", ddl);
-        println("    FROM sysobjects objs JOIN sysconstraints cons ON objs.id = cons.constid", ddl);
+        println("    FROM sysobjects objs", ddl);
         ddl.append("    WHERE objs.xtype = 'PK' AND object_name(objs.parent_obj) = ");
         printAlwaysSingleQuotedIdentifier(tableName, ddl);
         println("  OPEN refcursor", ddl);
@@ -653,17 +657,14 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             println("  DECLARE @" + tableNameVar + " nvarchar(256), @" + constraintNameVar
                     + " nvarchar(256)", ddl);
             println("  DECLARE refcursor CURSOR FOR", ddl);
-            println("  SELECT object_name(objs.parent_obj) tablename, objs.name constraintname",
+            println("  SELECT object_name(cons.parent_object_id) tablename, cons.name constraintname FROM sys.default_constraints cons ",
                     ddl);
-            println("    FROM sysobjects objs JOIN sysconstraints cons ON objs.id = cons.constid",
-                    ddl);
-            println("    WHERE objs.xtype = 'D' AND", ddl);
-            ddl.append("          cons.colid = (SELECT colid FROM syscolumns WHERE id = object_id(");
+            println("    WHERE  cons.parent_column_id = (SELECT colid FROM syscolumns WHERE id = object_id(", ddl);
             printAlwaysSingleQuotedIdentifier(tableName, ddl);
             ddl.append(") AND name = ");
             printAlwaysSingleQuotedIdentifier(columnName, ddl);
             println(") AND", ddl);
-            ddl.append("          object_name(objs.parent_obj) = ");
+            ddl.append("          object_name(cons.parent_object_id) = ");
             printAlwaysSingleQuotedIdentifier(tableName, ddl);
             println("  OPEN refcursor", ddl);
             println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
