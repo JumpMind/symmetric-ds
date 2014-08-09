@@ -29,7 +29,8 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 
     public PostgreSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
-        //@formatter:off
+        //@formatter:off        
+        geometryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast(ST_AsEWKT($(tableAlias).\"$(columnName)\") as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
         xmlColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar),$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
