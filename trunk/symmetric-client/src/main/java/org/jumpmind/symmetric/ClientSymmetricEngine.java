@@ -187,6 +187,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             } 
                             
             String xml = parameterService.getString(ParameterConstants.EXTENSIONS_XML);
+            File file = new File(parameterService.getTempDirectory(), "extension.xml");     
+            FileUtils.deleteQuietly(file);
             if (isNotBlank(xml)) {
                 try {
                     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -194,9 +196,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                     factory.setNamespaceAware(true);
                     DocumentBuilder builder = factory.newDocumentBuilder();
                     // the "parse" method also validates XML, will throw an exception if misformatted
-                    builder.parse(new InputSource(new StringReader(xml)));
-                    File file = new File(parameterService.getTempDirectory(), "extension.xml");
-                    FileUtils.write(file, xml); 
+                    builder.parse(new InputSource(new StringReader(xml)));               
+                    FileUtils.write(file, xml, false); 
                     extensionLocations.add("file:" + file.getAbsolutePath());
                 } catch (Exception e) {
                     log.error("Invalid " + ParameterConstants.EXTENSIONS_XML + " parameter.");

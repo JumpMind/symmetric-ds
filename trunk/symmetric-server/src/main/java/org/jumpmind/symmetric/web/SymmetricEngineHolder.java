@@ -219,12 +219,15 @@ public class SymmetricEngineHolder {
             engine = new ServerSymmetricEngine(propertiesFile != null ? new File(propertiesFile)
                     : null, springContext);
             engine.setDeploymentType(deploymentType);
-            if (!engines.containsKey(engine.getEngineName())) {
-                engines.put(engine.getEngineName(), engine);
-            } else {
-                log.error(
-                        "An engine with the name of {} was not started because an engine of the same name has already been started.  Please set the engine.name property in the properties file to a unique name.",
-                        engine.getEngineName());
+            synchronized (this) {
+                if (!engines.containsKey(engine.getEngineName())) {
+                    engines.put(engine.getEngineName(), engine);
+                } else {
+                    log.error(
+                            "An engine with the name of {} was not started because an engine of the same name has already been started.  Please set the engine.name property in the properties file to a unique name.",
+                            engine.getEngineName());
+                }
+
             }
             return engine;
         } catch (Exception e) {
@@ -419,12 +422,14 @@ public class SymmetricEngineHolder {
         return createTime;
     }
 
+    static int threadNumber = 0;
+    
     class EngineStarter extends Thread {
 
         String propertiesFile;
 
         public EngineStarter(String propertiesFile) {
-            super("symmetric-startup");
+            super("symmetric-engine-startup-"+threadNumber++);
             this.propertiesFile = propertiesFile;
         }
 
