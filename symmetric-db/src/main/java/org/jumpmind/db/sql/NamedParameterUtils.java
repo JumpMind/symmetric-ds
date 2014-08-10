@@ -178,18 +178,18 @@ public abstract class NamedParameterUtils {
      * Named parameters are substituted for a JDBC placeholder and any select
      * list is expanded to the required number of placeholders. Select lists may
      * contain an array of objects and in that case the placeholders will be
-     * grouped and enclosed with parantheses. This allows for the use of
+     * grouped and enclosed with parentheses. This allows for the use of
      * "expression lists" in the SQL statement like:<br/>
      * select id, name, state from table where (name, age) in (('John', 35),
      * ('Ann', 50))
      * <p>
      * The parameter values passed in are used to determine the number of
      * placeholder to be used for a select list. Select lists should be limited
-     * to 100 or fewer elements. A larger number of elements is not guaramteed
+     * to 100 or fewer elements. A larger number of elements is not guaranteed
      * to be supported by the database and is strictly vendor-dependent.
      * 
      * @param parsedSql
-     *            the parsed represenation of the SQL statement
+     *            the parsed representation of the SQL statement
      * @param paramSource
      *            the source for named parameters
      * @return the SQL statement with substituted parameters
