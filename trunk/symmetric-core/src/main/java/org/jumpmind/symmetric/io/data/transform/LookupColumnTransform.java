@@ -87,7 +87,7 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
                         "Expected a single row, but returned multiple rows from lookup for target column {} on transform {} ",
                         column.getTargetColumnName(), column.getTransformId());
             } else if (values.size() == 0) {
-                log.warn(
+                log.info(
                         "Expected a single row, but returned no rows from lookup for target column {} on transform {}",
                         column.getTargetColumnName(), column.getTransformId());
             }
