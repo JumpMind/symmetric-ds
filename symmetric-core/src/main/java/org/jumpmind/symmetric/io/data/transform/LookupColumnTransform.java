@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +30,10 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +61,9 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
     public String transform(IDatabasePlatform platform, DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
-        String sql = column.getTransformExpression();
+        
+        String sql = doTokenReplacementOnSql(context, column.getTransformExpression());
+        
         String lookupValue = null;
 
         if (StringUtils.isNotBlank(sql)) {
@@ -90,6 +97,23 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
                     column.getTargetColumnName(), column.getTransformId());
         }
         return lookupValue;
+    }
+    
+    protected String doTokenReplacementOnSql(DataContext context, String sql) {
+        if (isNotBlank(sql)) {
+            Data csvData = (Data) context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
+
+            if (csvData != null && csvData.getTriggerHistory() != null) {
+                sql = FormatUtils.replaceToken(sql, "sourceCatalogName", csvData
+                        .getTriggerHistory().getSourceCatalogName(), true);
+            }
+
+            if (csvData != null && csvData.getTriggerHistory() != null) {
+                sql = FormatUtils.replaceToken(sql, "sourceSchemaName", csvData.getTriggerHistory()
+                        .getSourceSchemaName(), true);
+            }
+        }
+        return sql;
     }
 
 }
