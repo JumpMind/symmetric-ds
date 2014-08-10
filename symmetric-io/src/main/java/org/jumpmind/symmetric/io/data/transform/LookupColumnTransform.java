@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +29,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,11 +63,11 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
             ISqlTransaction transaction = context.findTransaction();
             List<String> values = null;
             if (transaction != null) {
-                values = transaction.query(sql, lookupColumnRowMapper, new HashMap<String, Object>(
+                values = transaction.query(sql, lookupColumnRowMapper, new LinkedCaseInsensitiveMap<Object>(
                         sourceValues));
             } else {
                 values = platform.getSqlTemplate().query(sql, lookupColumnRowMapper,
-                        new HashMap<String, Object>(sourceValues));
+                        new LinkedCaseInsensitiveMap<Object>(sourceValues));
             }
 
             int rowCount = values.size();
