@@ -47,12 +47,17 @@ public class LinkedCaseInsensitiveMap<V> extends LinkedHashMap<String, V> {
 	private final Locale locale;
 
 
+	public LinkedCaseInsensitiveMap(Map<String, ? extends V> values) {
+	   this();
+	   putAll(values);
+	}
+	
 	/**
 	 * Create a new LinkedCaseInsensitiveMap for the default Locale.
 	 * @see java.lang.String#toLowerCase()
 	 */
 	public LinkedCaseInsensitiveMap() {
-		this(null);
+		this((Locale)null);
 	}
 
 	/**
