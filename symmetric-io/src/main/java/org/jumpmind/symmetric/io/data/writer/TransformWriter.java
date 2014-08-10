@@ -448,9 +448,9 @@ public class TransformWriter extends NestedDataWriter {
                 .get(transformColumn.getTransformType()) : null;
         if (transform != null) {
             try {
-            String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
-            returnValue = transform.transform(platform, context, transformColumn, data,
-                    sourceValues, value, oldValue);
+                String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
+                returnValue = transform.transform(platform, context, transformColumn, data,
+                        sourceValues, value, oldValue);
             } catch (RuntimeException ex) {
                 log.warn("Column transform failed {}.{} ({}) for source values of {}", new Object[] { transformColumn.getTransformId(), transformColumn.getTargetColumnName(), transformColumn.getIncludeOn().name(), sourceValues.toString() });
                 throw ex;
