@@ -264,9 +264,17 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         MDC.put("engineName", properties.get(ParameterConstants.ENGINE_NAME));
         
         this.platform = createDatabasePlatform(properties);
-        this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
-                ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));        
+        
 
+        this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
+                ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
+        
+        boolean parameterTableExists = this.platform.getTableFromCache(TableConstants.getTableName(properties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX), TableConstants.SYM_PARAMETER), false) != null;
+        if (parameterTableExists) {
+            this.parameterService.setDatabaseHasBeenInitialized(true);
+            this.parameterService.rereadParameters();
+        }
+         
         this.platform.setMetadataIgnoreCase(this.parameterService
                 .is(ParameterConstants.DB_METADATA_IGNORE_CASE));
         this.platform.setClearCacheModelTimeoutInMs(parameterService

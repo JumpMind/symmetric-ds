@@ -80,7 +80,8 @@ public class DefaultParameterParser {
                             extraLine = true;
                             line = line.substring(0, line.length() - 1);                            
                         }
-                        currentMetaData.setDefaultValue(currentMetaData.getDefaultValue() + "\n" + line);                        
+                        line = StringEscapeUtils.unescapeJava(line);
+                        currentMetaData.setDefaultValue(currentMetaData.getDefaultValue() + line);                        
                     }
                     
                     if (!extraLine) {
