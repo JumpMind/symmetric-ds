@@ -48,7 +48,6 @@ import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IgnoreColumnException;
 import org.jumpmind.symmetric.io.data.transform.IgnoreRowException;
 import org.jumpmind.symmetric.io.data.transform.JavaColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.LookupColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.MathColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.NewAndOldValue;
@@ -97,7 +96,6 @@ public class TransformWriter extends NestedDataWriter {
         addColumnTransform(columnTransforms, new IdentityColumnTransform());
         addColumnTransform(columnTransforms, new MultiplierColumnTransform());
         addColumnTransform(columnTransforms, new SubstrColumnTransform());
-        addColumnTransform(columnTransforms, new LookupColumnTransform());
         addColumnTransform(columnTransforms, new RemoveColumnTransform());
         addColumnTransform(columnTransforms, new MathColumnTransform());
         addColumnTransform(columnTransforms, new ValueMapColumnTransform());
