@@ -264,6 +264,7 @@ public class SnapshotUtil {
 
         writeRuntimeStats(engine, tmpDir);
         writeJobsStats(engine, tmpDir);
+        writeDirectoryListing(engine, tmpDir);
 
         fos = null;
         try {
@@ -287,6 +288,46 @@ public class SnapshotUtil {
         } catch (IOException e) {
             throw new IoException("Failed to package snapshot files into archive", e);
         }
+    }
+    
+    protected static void writeDirectoryListing(ISymmetricEngine engine, File tmpDir) {
+        try {
+            File home = new File(System.getProperty("user.dir"));
+            if (home.getName().equalsIgnoreCase("bin")) {
+                home = home.getParentFile();
+            }
+            
+            StringBuilder output = new StringBuilder();
+            printDirectoryContents(home, output);
+            FileUtils.write(new File(tmpDir, "directory-listing.txt"), output);
+        } catch (Exception ex) {
+            log.warn("Failed to output the direcetory listing" , ex);
+        }
+    }
+    
+    protected static void printDirectoryContents(File dir, StringBuilder output) throws IOException {
+        output.append("\n");
+        output.append(dir.getCanonicalPath());
+        output.append("\n");
+
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                printDirectoryContents(file, output);
+            } else {
+                output.append("  ");
+                output.append(file.canRead() ? "r" : "-");
+                output.append(file.canWrite() ? "w" : "-");
+                output.append(file.canExecute() ? "x" : "-");
+                output.append(StringUtils.leftPad(file.length() + "", 11));
+                output.append(" ");
+                output.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(file.lastModified())));
+                output.append(" ");
+                output.append(file.getName());
+                output.append("\n");
+            }
+        }
+
     }
     
     protected static void writeRuntimeStats(ISymmetricEngine engine, File tmpDir) {
