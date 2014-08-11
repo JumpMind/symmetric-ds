@@ -1,0 +1,4 @@
+*.project
+/target
+/torque
+/velocity.log

@@ -1,0 +1,591 @@
+/**
+ * Licensed to JumpMind Inc under one or more contributor
+ * license agreements.  See the NOTICE file distributed
+ * with this work for additional information regarding
+ * copyright ownership.  JumpMind Inc licenses this file
+ * to you under the GNU General Public License, version 3.0 (GPLv3)
+ * (the "License"); you may not use this file except in compliance
+ * with the License.
+ *
+ * You should have received a copy of the GNU General Public License,
+ * version 3.0 (GPLv3) along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+#banner {
+  background: transparent url( ../images/banner-bg.gif ) no-repeat scroll left top;
+  border-bottom: 1px solid #fff;
+  padding:10px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: url( ../images/book-bg.gif ) top left repeat-x;
+  font-family: Verdana, Arial, helvetica, sans-serif;
+}
+
+a, a[accesskey="h"], a[accesskey="n"], a[accesskey="u"], a[accesskey="p"] {
+  font-size: 13px;
+  color: #0066ff;
+  text-decoration: none;
+}
+
+a:active {
+  color: #0066CC;
+}
+
+a:visited {
+  color: #990066;
+}
+
+a:hover {
+  color: #0066ff;
+  text-decoration: underline;
+}
+
+p, li {
+  font-size: 13px;
+  line-height: 133%;
+}
+
+tt {
+  font-size: 110%;
+  font-family: "Courier New", Courier, monospace;
+  color: #000000;
+}
+
+dt {
+  font-size: 13px;
+}
+
+p, dl, dt, dd, blockquote {
+  color: #000000;
+  margin-bottom: 3px;
+  margin-top: 3px;
+  padding-top: 0;
+}
+
+ol, ul, p {
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+/*p, blockquote {
+    font-size: 90%;
+}*/
+
+p.releaseinfo {
+  font-size: 100%;
+  font-weight: bold;
+  padding-top: 10px;
+}
+
+p.pubdate {
+  font-size: 120%;
+  font-weight: bold;
+}
+
+blockquote {
+  margin-right: 0;
+}
+
+pre {
+  padding: 15px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #CCCCCC;
+  background-color: #EEEEEE;
+}
+
+ul, ol, li {
+  list-style: disc;
+}
+
+ul li, ol li {
+  list-style-image: url( ../images/bullet.gif );
+}
+
+hr {
+  width: 100%;
+  height: 1px;
+  background-color: transparent;
+  border-width: 0;
+  padding: 0;
+  border-color: transparent;
+  color: transparent;
+}
+
+/* titles */
+
+h1, h2, h3, h4, h6, H6 {
+  color: #000000;
+  font-weight: 500;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 8px 0 8px 0;
+}
+
+h1.title {
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #0066ff;
+}
+
+h2.title {
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+h2.subtitle {
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+h2.title, h3.title, h4.title, h5.title, h6.title {
+  color: #454545;
+}
+
+h1 {
+  font-size: 175%;
+}
+
+h2 {
+  font-size: 145%;
+}
+
+h3 {
+  font-size: 133%;
+  font-weight: bold;
+}
+
+h4 {
+  font-size: 120%;
+  font-weight: bold;
+}
+
+h5 {
+  font-size: 110%;
+  font-weight: bold;
+}
+
+h6 {
+  font-size: 100%;
+  font-weight: bold;
+}
+
+/* Tables */
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  border: 1px solid black;
+  empty-cells: hide;
+  margin: 10px 0 30px 50px;
+  width: 90%;
+}
+
+div.table {
+  margin: 30px 0 30px 0;
+  border: 1px dashed gray;
+  padding: 10px;
+}
+
+div .table-contents table {
+  border: 1px solid black;
+}
+
+div.table > p.title {
+  padding-left: 10px;
+}
+
+td, th, span {
+  color: #000000;
+}
+
+td {
+  font-size: 80%;
+  padding: 4pt;
+}
+
+td.even {
+  color: black;
+  background-color: white;
+}
+
+td.odd {
+  color: black;
+  background-color: #DDEEFF;
+}
+
+td[width="40%"] {
+  font-size: 13px;
+  color: #003399;
+}
+
+table[summary="Navigation header"] tbody tr th[colspan="3"] {
+}
+
+th {
+  border: none;
+  empty-cells: hide;
+  background-color: #0066CC;
+  color: white;
+  font-weight: bold;
+  font-size: 90%;
+}
+
+table[summary="Navigation footer"] {
+  border-collapse: collapse;
+  border-spacing: 0;
+  border: 1px black;
+  empty-cells: hide;
+  margin: 0;
+  width: 100%;
+}
+
+table[summary="Note"], table[summary="Warning"], table[summary="Tip"] {
+  border-collapse: collapse;
+  border-spacing: 0;
+  border: 1px black;
+  empty-cells: hide;
+  margin: 10px 0 10px -20px;
+  width: 100%;
+}
+
+div.warning TD {
+  text-align: justify;
+}
+
+/* misc decorations */
+
+.navheader, .navfooter {
+  border: none;
+}
+
+.navfooter {
+  width: 960px;
+  padding: 10px 30px 20px 30px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
+  background-color: #DDEEFF;
+  border: 1px solid #99ccee;
+}
+
+div.navfooter table {
+}
+
+div.navfooter table td {
+  padding: 10px;
+}
+
+.variablelist {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin: 0;
+}
+
+.term {
+  font-weight: bold;
+}
+
+.mediaobject {
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+.legalnotice {
+  font-size: 12px;
+  font-style: italic;
+}
+
+.legalnotice p {
+  color: #454545;
+}
+
+.sidebar {
+  float: right;
+  margin: 10px 0 10px 30px;
+  padding: 10px 20px 20px 20px;
+  width: 33%;
+  border: 1px solid black;
+  background-color: #F4F4F4;
+  font-size: 14px;
+}
+
+.property {
+  font-family: "Courier New", Courier, monospace;
+}
+
+a code {
+  font-family: Verdana, Arial, monospace;
+}
+
+td code {
+  font-size: 110%;
+}
+
+div.note * td, div.tip * td, div.warning * td, div.calloutlist * td {
+  text-align: justify;
+  font-size: 100%;
+}
+
+.programlisting .interfacename, .programlisting .literal, .programlisting .classname {
+  font-size: 95%;
+}
+
+.title .interfacename, .title .literal, .title .classname {
+  font-size: 130%;
+}
+
+.programlisting * .lineannotation, .programlisting * .lineannotation * {
+  color: #003399;
+}
+
+/* Modifications by tsoulcie may the 10th 2007 */
+
+.programlisting {
+  overflow: auto;
+}
+
+.book, .chapter, .appendix, .part {
+  width: 900px;
+  margin-top: 30px;
+  margin-left: auto;
+  margin-bottom: 20px;
+  margin-right: auto;
+  padding: 20px 60px 20px 60px;
+  border-top: 1px solid #666;
+  border-left: 1px solid #666;
+  border-right: 1px solid #666;
+  border-bottom: 1px solid #666;
+  background-color: #fff;
+}
+
+.book .chapter, .book .appendix, .book .part {
+  margin: 0;
+  padding: 0;
+  border-style: none;
+}
+
+.titlepage {
+  color: #666;
+}
+
+span.application {
+  /* add some emphasis here */
+}
+
+.warning {
+  background: #FFF8DE url( ../images/warning.gif ) no-repeat scroll 10px 12px;
+  border: 1px solid #EE8C00;
+  padding: 10px;
+  margin: 25px 20px;
+}
+
+.warning .title {
+  font-size: 100%;
+  padding-top: 0;
+  margin-left: 20px;
+}
+
+.important {
+  background: #FFF8DE url( ../images/important.gif ) no-repeat scroll 10px 12px;
+  border: 1px solid #EE8C00;
+  padding: 10px;
+  margin: 25px 20px;
+}
+
+.important .title {
+  font-size: 100%;
+  padding-top: 0;
+  margin-left: 40px;
+}
+
+.note {
+  background: #EBF5FF url( ../images/info.gif ) no-repeat scroll 10px 12px;
+  border: 1px solid #0074E7;
+  padding: 10px;
+  margin: 25px 20px;
+}
+
+.note .title {
+  font-size: 100%;
+  padding-top: 0;
+  margin-left: 20px;
+}
+
+.tip {
+  background: #e6ffdb url( ../images/tip.gif ) no-repeat scroll 10px 12px;
+  border: 1px solid #339900;
+  padding: 10px;
+  margin: 25px 20px;
+}
+
+.tip .title {
+  font-size: 100%;
+  padding-top: 0;
+  margin-left: 20px;
+}
+
+.msg {
+	background: #e6ffdb url(../images/success.png ) no-repeat 20px center;
+	border: 1px solid #339900;
+	padding: 10px 10px 10px 90px;
+	margin: 25px 0px;
+}
+
+.msg .title {
+  font-size: 100%;
+  padding-top: 0;
+  margin-left: 20px;
+}
+
+.toc, .list-of-examples {
+  padding-bottom: 20px;
+}
+
+.list-of-examples dl {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.list-of-examples dl dt {
+  padding-top: 3px;
+  padding-bottom: 2px;
+}
+
+.toc p b, .list-of-examples p b {
+  color: #666;
+  font-size: 18px;
+}
+
+.toc .chapter, .toc .appendix, .toc .part {
+  padding-top: 5px;
+  display: block;
+}
+
+.toc .chapter a, .toc .appendix a, .toc .part a {
+  font-weight: bold;
+}
+
+.toc dl dd dl dt {
+  padding-top: 3px;
+}
+
+.toc dl dd dl dt dd {
+  padding-bottom: 5px;
+}
+
+.toc dl dd dl dd dl dt {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.toc dl dd dl dd dl dt span.section a {
+  /*font-size: 11px; */
+  padding-bottom: 0;
+  font-weight: normal;
+}
+
+.toc dd {
+  padding-bottom: 0;
+}
+
+.inlinemediaobject img, .mediaobject img {
+  
+  vertical-align: middle;
+ /* 
+ border: 1px solid #959595;
+ padding: 10px;
+ */
+}
+
+/* Modifications by lkemen + tsoulcie june the 13th 2007 */
+
+/* FAQ */
+
+div.qandaset .toc td {
+  padding-bottom: 20px;
+}
+
+div.qandaset .toc td dl dt {
+  padding: 5px 10px 5px 25px;
+}
+
+div.qandaset .toc td dl dt a {
+  font-weight: normal;
+}
+
+div.qandaset dl dt {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-weight: bold;
+}
+
+div.qandaset dl dd dl {
+  padding-bottom: 10px;
+}
+
+div.qandaset dl dd dt {
+  font-weight: normal;
+  padding: 5px 10px 5px 25px;
+  background: url( ../images/comment.gif ) no-repeat scroll 5px 5px;
+}
+
+div.qandaset table {
+  margin: 0;
+  border: none;
+  width: 100%;
+}
+
+div.qandaset table h3 {
+  padding-bottom: 15px;
+}
+
+div.qandaset table tr td {
+  padding: 0;
+}
+
+div.qandaset table tr.question p {
+  background: url( ../images/comment.gif ) no-repeat scroll 5px 5px;
+  padding: 5px 10px 5px 25px;
+  background-color: #f1f2f3;
+}
+
+div.qandaset table tr p {
+  margin: 0 0 10px 0;
+  padding: 0;
+}
+
+div.qandaset table tr.answer ul p, div.qandaset table tr.answer ol p {
+  padding-left: 0;
+}
+
+div.qandaset table tr.answer p, div.qandaset table tr.answer div.itemizedlist,
+    div.qandaset table tr.answer div.orderedlist {
+  padding-left: 25px;
+}
+
+div.qandaset table tr.answer td {
+  padding-bottom: 30px;
+}
+
+.sect1 .mediaobject {
+	padding: 0px;
+	text-align: left;
+}
+
+.sect1 .mediaobject table {
+	border: none;
+	width: auto;
+	margin: 10px 0px 0px 50px;
+	float: left;
+}
