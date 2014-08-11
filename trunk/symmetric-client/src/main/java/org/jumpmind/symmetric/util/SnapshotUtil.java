@@ -42,6 +42,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
@@ -64,6 +65,7 @@ import org.jumpmind.util.JarBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@IgnoreJRERequirement
 public class SnapshotUtil {
 
     protected static final Logger log = LoggerFactory.getLogger(SnapshotUtil.class);
