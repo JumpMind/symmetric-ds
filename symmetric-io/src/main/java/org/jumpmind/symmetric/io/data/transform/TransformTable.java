@@ -76,8 +76,8 @@ public class TransformTable implements Cloneable {
     }
 
     public String getFullyQualifiedTargetTableName() {
-        return Table.getFullyQualifiedTableName(sourceCatalogName, sourceSchemaName,
-                sourceTableName);
+        return Table.getFullyQualifiedTableName(targetCatalogName, targetSchemaName,
+                targetTableName);
     }
 
     public String getTransformId() {
