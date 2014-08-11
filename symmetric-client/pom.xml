@@ -164,6 +164,12 @@
 			<artifactId>geronimo-j2ee-connector_1.6_spec</artifactId>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>animal-sniffer-annotations</artifactId>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>        
 	</dependencies>
 
 </project>
