@@ -1,3 +1,23 @@
+SymmetricDS - 3.6.5 (Released 2014-08-11)
+=========================================
+- 0001668: [Bug] PostGIS Spatial data replication fails with SRID problem (chenson) - closed.
+- 0001860: [Bug] symmetric-wrapper should not include the version number, otherwise the service needs to be reinstalled on each upgrade (elong) - closed.
+- 0001868: [Bug] Introduce a more accurate way to get a machine's hostname (chenson) - closed.
+- 0001870: [Improvement] Include directory listing of symmetricds installation in snapshot (chenson) - closed.
+- 0001873: [Bug] Control Center doesn't start on Windows if not Administrator (elong) - closed.
+- 0001875: [Improvement] Add extensions.xml property which can be used to configure symmetric extensions (like jms) via database configuration (chenson) - closed.
+- 0001877: [Bug] Process status can be stranded in non-ok or non-error status on pull if an io expection occurs in the uri handler (chenson) - closed.
+- 0001879: [Bug] Database upgrade fails on sql server because drop index doesn't allow database name in the ddl (chenson) - closed.
+- 0001881: [Bug] MS Azure does not support the sysconstraints view (chenson) - closed.
+- 0001886: [Bug] SymmetricDS upgrade on Azure fails. (chenson) - closed.
+- 0001887: [Bug] http.concurrent.workers.max doesn't prevent the same node from over pulling on itself (chenson) - closed.
+- 0001888: [Improvement] Improve stagedresource (chenson) - closed.
+- 0001889: [Improvement] Add reverse version of initial load before/after sql (elong) - closed.
+- 0001892: [Bug] New version of Postgis fails to replicate (chenson) - closed.
+- 0001893: [Improvement] Log information about failed column transform to make it easier to debug transforms (chenson) - closed.
+- 0001894: [Improvement] Make lookup transform column names case insensitive when used as named parameters in sql (chenson) - closed.
+- 0001895: [Improvement] Add support for token replacement for $(sourceCatalogName) and $(sourceSchemaName) in lookup table transform (chenson) - closed.
+
 SymmetricDS - 3.6.4 (Released 2014-08-02) 
 =========================================
 - 0001852: [Bug] When a table has multiple transforms, the order of execution should be reversed when a delete comes through the system (chenson) - closed.
