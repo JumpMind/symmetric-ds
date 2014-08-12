@@ -253,13 +253,33 @@ public class WindowsService extends WrapperService {
                 if (!advapi.DeleteService(service)) {
                     throwException("DeleteService");
                 }
-                System.out.println("Done");
             } else {
                 throw new WrapperException(Constants.RC_NOT_INSTALLED, 0, "Service " + config.getName() + " is not installed");
             }
         } finally {
             closeServiceHandle(service);
             closeServiceHandle(manager);                
+        }
+        
+        int seconds = 0;
+        while (seconds <= 30) {
+            if (!isInstalled()) {
+                break;
+            }
+            System.out.print(".");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+            seconds++;
+        }
+        if (seconds > 0) {
+            System.out.println("");
+        }
+        if (isInstalled()) {
+            System.out.println("Service manager did not complete");
+        } else {
+            System.out.println("Done");
         }
     }
 
