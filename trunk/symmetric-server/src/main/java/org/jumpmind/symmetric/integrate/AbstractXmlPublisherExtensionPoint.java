@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.integrate;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,9 +36,19 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
+import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
+import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.util.Context;
@@ -54,7 +65,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
  */
 @ManagedResource(description = "The management interface for an xml publisher")
 abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint,
-        INodeGroupExtensionPoint {
+        INodeGroupExtensionPoint, ISymmetricEngineAware {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -71,6 +82,8 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     protected List<String> groupByColumnNames;
 
     protected Format xmlFormat;
+    
+    protected ISymmetricEngine engine;
 
     protected ITimeGenerator timeStringGenerator = new ITimeGenerator() {
         public String getTime() {
@@ -83,6 +96,50 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
         xmlFormat.setOmitDeclaration(true);
     }
     
+    @ManagedOperation(description = "Looks up rows in the database and resends them to the publisher")
+    @ManagedOperationParameters({ @ManagedOperationParameter(name = "args", description = "A comma separated list of key values to use to look up the tables to resend") })
+    public boolean resend(String args) {
+        try {
+            String[] argArray = CsvUtils.tokenizeCsvData(args);
+            DataContext context = new DataContext();
+            IDatabasePlatform platform = engine.getDatabasePlatform();
+            for (String tableName : tableNamesToPublishAsGroup) {
+                Table table = platform.getTableFromCache(tableName, false);
+                List<String[]> dataRowsForTable = readData(table, argArray);
+                for (String[] values : dataRowsForTable) {
+                    Batch batch = new Batch();
+                    batch.setBinaryEncoding(engine.getSymmetricDialect().getBinaryEncoding());
+                    batch.setSourceNodeId("republish");
+                    context.setBatch(batch);
+                    CsvData data = new CsvData(DataEventType.INSERT);
+                    data.putParsedData(CsvData.ROW_DATA, values);
+
+                    Element xml = getXmlFromCache(context, context.getBatch().getBinaryEncoding(),
+                            table.getColumnNames(), data.getParsedData(CsvData.ROW_DATA),
+                            table.getPrimaryKeyColumnNames(), data.getParsedData(CsvData.PK_DATA));
+                    if (xml != null) {
+                        toXmlElement(data.getDataEventType(), xml, table.getCatalog(),
+                                table.getSchema(), table.getName(), table.getColumnNames(),
+                                data.getParsedData(CsvData.ROW_DATA),
+                                table.getPrimaryKeyColumnNames(),
+                                data.getParsedData(CsvData.PK_DATA));
+                    }
+                }
+            }
+
+            if (doesXmlExistToPublish(context)) {
+                finalizeXmlAndPublish(context);
+                return true;
+            } else {
+                log.warn(String.format("Failed to resend message for tables %s, columns %s, and args %s", tableNamesToPublishAsGroup, groupByColumnNames, args));
+            }
+        } catch (RuntimeException ex) {
+            log.error(String.format("Failed to resend message for tables %s, columns %s, and args %s", tableNamesToPublishAsGroup, groupByColumnNames, args), ex);
+        }
+
+        return false;
+    }
+    
     @ManagedAttribute(description = "A comma separated list of columns that act as the key values for the tables that will be published")
     public String getKeyColumnNames() {
        return groupByColumnNames != null ? groupByColumnNames.toString() : "";
@@ -92,11 +149,43 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     public String getTableNames() {
        return tableNamesToPublishAsGroup != null ? tableNamesToPublishAsGroup.toString() : "";
     }
-    
-    @ManagedOperation(description = "Looks up rows in the database and resends them to the publisher")
-    @ManagedOperationParameters({ @ManagedOperationParameter(name = "args", description = "A comma separated list of key values to use to look up the tables to resend") })
-    public boolean resend(String args) {
-        return false;
+
+    protected List<String[]> readData(final Table table, String[] args) {
+        final IDatabasePlatform platform = engine.getDatabasePlatform();
+        List<String[]> rows = new ArrayList<String[]>();
+        final String[] columnNames = table.getColumnNames();
+        if (columnNames != null && columnNames.length > 0) {
+            StringBuilder builder = new StringBuilder("select ");
+            for (int i = 0; i < columnNames.length; i++) {
+                String columnName = columnNames[i];
+                if (i > 0) {
+                    builder.append(",");
+                }
+                builder.append(columnName);
+            }
+            builder.append(" from ").append(table.getName()).append(" where ");
+
+            for (int i = 0; i < groupByColumnNames.size(); i++) {
+                String columnName = groupByColumnNames.get(i);
+                if (i > 0 && i < groupByColumnNames.size()) {
+                    builder.append(" and ");
+                }
+                builder.append(columnName).append("=?");
+            }
+
+            ISqlTemplate template = platform.getSqlTemplate();
+            Object[] argObjs = platform.getObjectValues(engine.getSymmetricDialect()
+                    .getBinaryEncoding(), args, table.getColumnsWithName(groupByColumnNames
+                    .toArray(new String[groupByColumnNames.size()])));
+            rows = template.query(builder.toString(), new ISqlRowMapper<String[]>() {
+                @Override
+                public String[] mapRow(Row row) {
+                    return platform.getStringValues(engine.getSymmetricDialect()
+                            .getBinaryEncoding(), table.getColumns(), row, false);
+                }
+            }, argObjs);
+        }
+        return rows;
     }
 
     protected final static Namespace getXmlNamespace() {
@@ -295,6 +384,11 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
 
     public interface ITimeGenerator {
         public String getTime();
+    }
+    
+    @Override
+    public void setSymmetricEngine(ISymmetricEngine engine) {
+        this.engine = engine;
     }
 
 }
