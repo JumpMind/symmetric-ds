@@ -204,13 +204,20 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 }
             }
             
-            ctx.setConfigLocations(extensionLocations.toArray(new String[extensionLocations.size()]));
-            ctx.refresh();
+            try {
+                ctx.setConfigLocations(extensionLocations.toArray(new String[extensionLocations
+                        .size()]));
+                ctx.refresh();
 
-            this.springContext = ctx;
-            
-            this.extensionPointManger = createExtensionPointManager(springContext);
-            this.extensionPointManger.register();
+                this.springContext = ctx;
+
+                this.extensionPointManger = createExtensionPointManager(springContext);
+                this.extensionPointManger.register();
+            } catch (Exception ex) {
+                log.error(
+                        "Failed to initialize the extension points.  Please fix the problem and restart the server.",
+                        ex);
+            }
         } catch (RuntimeException ex) {
             destroy();
             throw ex;
