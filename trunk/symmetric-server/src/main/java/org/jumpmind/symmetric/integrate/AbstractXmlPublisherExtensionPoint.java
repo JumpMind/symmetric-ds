@@ -43,10 +43,16 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.util.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jmx.export.annotation.ManagedAttribute;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedOperationParameter;
+import org.springframework.jmx.export.annotation.ManagedOperationParameters;
+import org.springframework.jmx.export.annotation.ManagedResource;
 
 /**
  * An abstract class that accumulates data to publish.
  */
+@ManagedResource(description = "The management interface for an xml publisher")
 abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint,
         INodeGroupExtensionPoint {
 
@@ -75,6 +81,22 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     public AbstractXmlPublisherExtensionPoint() {
         xmlFormat = Format.getCompactFormat();
         xmlFormat.setOmitDeclaration(true);
+    }
+    
+    @ManagedAttribute(description = "A comma separated list of columns that act as the key values for the tables that will be published")
+    public String getKeyColumnNames() {
+       return groupByColumnNames != null ? groupByColumnNames.toString() : "";
+    }
+    
+    @ManagedAttribute(description = "A comma separated list of tables that will be published")
+    public String getTableNames() {
+       return tableNamesToPublishAsGroup != null ? tableNamesToPublishAsGroup.toString() : "";
+    }
+    
+    @ManagedOperation(description = "Looks up rows in the database and resends them to the publisher")
+    @ManagedOperationParameters({ @ManagedOperationParameter(name = "args", description = "A comma separated list of key values to use to look up the tables to resend") })
+    public boolean resend(String args) {
+        return false;
     }
 
     protected final static Namespace getXmlNamespace() {
