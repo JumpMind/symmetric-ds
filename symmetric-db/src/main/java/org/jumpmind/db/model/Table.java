@@ -1020,6 +1020,15 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         }
         return null;
     }
+    
+    public Column[] getColumnsWithName(String[] columnNames) {
+        Column[] columns = new Column[columnNames.length];
+        int index = 0;
+        for (String columnName : columnNames) {
+            columns[index++] = getColumnWithName(columnName);
+        }
+        return columns;
+    }
 
     public boolean doesIndexContainOnlyPrimaryKeyColumns(IIndex index) {
         IndexColumn[] columns = index.getColumns();
