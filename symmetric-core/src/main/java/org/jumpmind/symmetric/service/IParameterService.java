@@ -70,6 +70,8 @@ public interface IParameterService {
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey);
     
     public TypedProperties getDatabaseParametersByNodeGroupId(String nodeGroupId);
+    
+    public TypedProperties getDatabaseParametersByExternalId(String externalId);
 
     public TypedProperties getAllParameters();
 

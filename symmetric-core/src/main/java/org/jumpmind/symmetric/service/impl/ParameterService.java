@@ -114,8 +114,12 @@ public class ParameterService extends AbstractParameterService implements IParam
     }
 
     protected TypedProperties rereadDatabaseParameters(String externalId, String nodeGroupId) {
+        return readParametersFromDatabase("selectParametersSql", externalId, nodeGroupId);
+    }
+    
+    protected TypedProperties readParametersFromDatabase(String sqlKey, Object... values) {
         final TypedProperties properties = new TypedProperties();
-        sqlTemplate.query(sql.getSql("selectParametersSql"), new ISqlRowMapper<Object>() {
+        sqlTemplate.query(sql.getSql(sqlKey), new ISqlRowMapper<Object>() {
             public Object mapRow(Row row) {
                 String value = row.getString("param_value");
                 if (value != null) {
@@ -123,7 +127,7 @@ public class ParameterService extends AbstractParameterService implements IParam
                 }
                 return row;
             }
-        }, externalId, nodeGroupId);
+        }, values);
         return properties;
     }
 
@@ -146,7 +150,11 @@ public class ParameterService extends AbstractParameterService implements IParam
     }
 
     public TypedProperties getDatabaseParametersByNodeGroupId(String nodeGroupId) {
-        return rereadDatabaseParameters(ParameterConstants.ALL, nodeGroupId);
+        return readParametersFromDatabase("selectParametersByNodeGroupIdSql", nodeGroupId);
+    }
+
+    public TypedProperties getDatabaseParametersByExternalId(String externalId) {
+        return readParametersFromDatabase("selectParametersByExternalIdSql", externalId);
     }
 
     class DatabaseParameterMapper implements ISqlRowMapper<DatabaseParameter> {
