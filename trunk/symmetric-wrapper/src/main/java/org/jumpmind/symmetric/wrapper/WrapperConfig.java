@@ -207,8 +207,8 @@ public class WrapperConfig {
             if (!line.matches("^\\s*#.*") && !line.matches("\\s*")) {
                 int index = line.indexOf("=");
                 if (index != -1) {
-                    String name = line.substring(0, index);
-                    String value = line.substring(index + 1);
+                    String name = line.substring(0, index).trim();
+                    String value = line.substring(index + 1).trim();
                     if (name.matches(".*\\d{1,2}")) {
                         name = name.substring(0, name.lastIndexOf("."));
                     }

@@ -120,6 +120,7 @@ public abstract class WrapperService {
 
         ArrayList<String> cmd = config.getCommand(isConsole);
         String cmdString = commandToString(cmd);
+        boolean usingHeapDump = cmdString.indexOf("-XX:+HeapDumpOnOutOfMemoryError") != -1;
         logger.log(Level.INFO, "Working directory is " + System.getProperty("user.dir"));
 
         long startTime = 0;
@@ -166,7 +167,9 @@ public abstract class WrapperService {
                         } else {
                             logger.log(Level.INFO, line, "java");
                         }
-                        if (line.matches(".*java.lang.OutOfMemoryError.*") || line.matches(".*java.net.BindException.*")) {
+                        if ((usingHeapDump && line.matches("Heap dump file created.*")) || 
+                                (!usingHeapDump && line.matches("java.lang.OutOfMemoryError.*")) ||
+                                line.matches(".*java.net.BindException.*")) {
                             logger.log(Level.SEVERE, "Stopping server because its output matches a failure condition");
                             child.destroy();
                             childReader.close();
