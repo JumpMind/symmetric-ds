@@ -100,4 +100,9 @@ public class MockParameterService extends AbstractParameterService implements IP
         return null;
     }
 
+	@Override
+	public void deleteParameterWithUpdate(String externalId,
+			String nodeGroupId, String key) {		
+	}
+
 }
