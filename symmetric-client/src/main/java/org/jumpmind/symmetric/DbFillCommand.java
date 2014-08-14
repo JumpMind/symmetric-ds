@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang.ArrayUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DbFill;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -51,6 +52,8 @@ public class DbFillCommand extends AbstractCommandLauncher {
     private static final String OPTION_WEIGHTS = "weights";
     
     private static final String OPTION_CONTINUE = "continue";
+    
+    private static final String OPTION_PRINT = "print";
 
     public DbFillCommand() {
         super("dbfill", "[tablename...]", "DbFill.Option.");
@@ -89,6 +92,7 @@ public class DbFillCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_INTERVAL, true);
         addOption(options, null, OPTION_WEIGHTS, true);
         addOption(options, null, OPTION_CONTINUE, false);
+        addOption(options, null, OPTION_PRINT, false);
     }
 
     @Override
@@ -138,6 +142,9 @@ public class DbFillCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_CONTINUE)) {
             dbFill.setContinueOnError(true);
         }
+        if (line.hasOption(OPTION_PRINT)) {
+        	dbFill.setPrint(true);
+        }
         // Ignore the Symmetric config tables.
         getSymmetricEngine();
         IParameterService parameterService = engine.getParameterService();
@@ -154,8 +161,34 @@ public class DbFillCommand extends AbstractCommandLauncher {
         } else {
             tableNames = line.getArgs();
         }
-
-        dbFill.fillTables(tableNames, tableProperties);
+        
+        if (!dbFill.getPrint()) {
+        	dbFill.fillTables(tableNames, tableProperties);
+        } else {
+        	for (String tableName : tableNames) {
+                Table table = platform.readTableFromDatabase(dbFill.getCatalogToUse(), dbFill.getSchemaToUse(),
+                        tableName);
+                if (table != null) {
+                	for (int i = 0; i < dbFill.getRecordCount(); i++) {
+	                	for (int j = 0; j < dbFill.getInsertWeight(); j++) {
+	                        dbFill.createInsertRandomRecord(table);
+	                        String sql = dbFill.getSql() + ";";
+	                        System.out.println(sql);
+	                    }
+	                    for (int j = 0; j < dbFill.getUpdateWeight(); j++) {
+	                        dbFill.createUpdateRandomRecord(table);
+	                        String sql = dbFill.getSql() + ";";
+	                        System.out.println(sql);
+	                    }
+	                    for (int j = 0; j < dbFill.getDeleteWeight(); j++) {
+	                        dbFill.createDeleteRandomRecord(table, null);
+	                        String sql = dbFill.getSql() + ";";
+	                        System.out.println(sql);
+	                    }        
+                	}
+                }
+        	}
+        }
 
         return true;
     }
