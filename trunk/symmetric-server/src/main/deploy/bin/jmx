@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # Licensed to JumpMind Inc under one or more contributor
 # license agreements.  See the NOTICE file distributed
@@ -18,45 +19,6 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
-#host.bind.name=
-
-# Enable synchronization over HTTP.
-#
-http.enable=true
-
-# Port number for synchronization over HTTP.
-#
-http.port=31415
-
-# Enable synchronization over HTTPS (HTTP over SSL).
-#
-https.enable=false
-
-# Port number for synchronization over HTTPS (HTTP over SSL).
-#
-https.port=31417
-
-# Use a trust manager that allows self-signed server SSL certificates.
-#
-https.allow.self.signed.certs=true
-
-# List host names that are allowed for server SSL certificates.
-#
-https.verified.server.names=all
-
-# Enable Java Management Extensions (JMX) web console.
-#
-jmx.http.enable=true
-
-# Port number for Java Management Extensions (JMX) web console.
-#
-jmx.http.port=31416
-
-# Enable Java Management Extensions (JMX) remote agent.
-#
-jmx.agent.enable=true
-
-# Port number for the Java Management Extensions (JMX) remote agent.
-#
-jmx.agent.port=31418
+ 
+. "`dirname "$0"`/setenv"
+exec "$SYM_JAVA" $SYM_OPTIONS -cp "$CLASSPATH" org.jumpmind.symmetric.JmxCommand "$@"

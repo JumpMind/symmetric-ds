@@ -20,9 +20,6 @@
  */
 package org.jumpmind.symmetric;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 
@@ -35,7 +32,6 @@ import javax.servlet.ServletContext;
 import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.XSLTProcessor;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
@@ -80,9 +76,6 @@ public class SymmetricWebServer {
 
     protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(
             SystemConstants.SYSPROP_WEB_DIR, "../web");
-
-    protected static final String DEFAULT_SERVER_PROPERTIES = System.getProperty(
-            SystemConstants.SYSPROP_SERVER_PROPERTIES_PATH, "../conf/symmetric-server.properties");
 
     public static final String DEFAULT_HTTP_PORT = System.getProperty(
             SystemConstants.SYSPROP_DEFAULT_HTTP_PORT, "31415");
@@ -173,35 +166,13 @@ public class SymmetricWebServer {
     }
 
     protected void initFromProperties() {
-        File serverPropertiesFile = new File(DEFAULT_SERVER_PROPERTIES);
-        TypedProperties serverProperties = new TypedProperties();
-
-        if (serverPropertiesFile.exists() && serverPropertiesFile.isFile()) {
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(serverPropertiesFile);
-                serverProperties.load(fis);
-                
-                /* System properties always override */
-                serverProperties.merge(System.getProperties());
-
-                /*
-                 * Put server properties back into System properties so they are
-                 * available to the parameter service
-                 */
-                System.getProperties().putAll(serverProperties);
-
-            } catch (IOException ex) {
-                log.error("Failed to load " + DEFAULT_SERVER_PROPERTIES, ex);
-            } finally {
-                IOUtils.closeQuietly(fis);
-            }
-        } else if (!serverPropertiesFile.exists()) {
-            log.warn("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". File does not exist.");
-        } else if (!serverPropertiesFile.isFile()) {
-            log.warn("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". Object is not a file.");
+        
+        try {
+            Class.forName(AbstractCommandLauncher.class.getName());
+        } catch (ClassNotFoundException e) {
         }
 
+        TypedProperties serverProperties = new TypedProperties(System.getProperties());
         httpEnabled = serverProperties.is(ServerConstants.HTTP_ENABLE,
                 Boolean.parseBoolean(System.getProperty(ServerConstants.HTTP_ENABLE, "true")));
         httpsEnabled = serverProperties.is(ServerConstants.HTTPS_ENABLE,

@@ -48,7 +48,6 @@ import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.util.Context;
@@ -97,10 +96,10 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     }
     
     @ManagedOperation(description = "Looks up rows in the database and resends them to the publisher")
-    @ManagedOperationParameters({ @ManagedOperationParameter(name = "args", description = "A comma separated list of key values to use to look up the tables to resend") })
+    @ManagedOperationParameters({ @ManagedOperationParameter(name = "args", description = "A pipe deliminated list of key values to use to look up the tables to resend") })
     public boolean resend(String args) {
         try {
-            String[] argArray = CsvUtils.tokenizeCsvData(args);
+            String[] argArray = args != null ? args.split("\\|") : new String[0];
             DataContext context = new DataContext();
             IDatabasePlatform platform = engine.getDatabasePlatform();
             for (String tableName : tableNamesToPublishAsGroup) {
