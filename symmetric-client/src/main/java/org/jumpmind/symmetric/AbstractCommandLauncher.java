@@ -60,6 +60,9 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractCommandLauncher {
 
     protected static final Logger log = LoggerFactory.getLogger(AbstractCommandLauncher.class);
+    
+    public static final String DEFAULT_SERVER_PROPERTIES = System.getProperty(
+            SystemConstants.SYSPROP_SERVER_PROPERTIES_PATH, "../conf/symmetric-server.properties");
 
     protected static final String HELP = "help";
 
@@ -94,11 +97,50 @@ public abstract class AbstractCommandLauncher {
     protected ISymmetricEngine engine;
 
     protected IDatabasePlatform platform;
+    
+    private static boolean serverPropertiesInitialized = false;
+    static {
+        initFromServerProperties();
+    }
 
     public AbstractCommandLauncher(String app, String argSyntax, String messageKeyPrefix) {
         this.app = app;
         this.argSyntax = argSyntax;
         this.messageKeyPrefix = messageKeyPrefix;
+    }
+    
+    protected static void initFromServerProperties() {
+        if (!serverPropertiesInitialized) {
+            File serverPropertiesFile = new File(DEFAULT_SERVER_PROPERTIES);
+            TypedProperties serverProperties = new TypedProperties();
+
+            if (serverPropertiesFile.exists() && serverPropertiesFile.isFile()) {
+                FileInputStream fis = null;
+                try {
+                    fis = new FileInputStream(serverPropertiesFile);
+                    serverProperties.load(fis);
+
+                    /* System properties always override */
+                    serverProperties.merge(System.getProperties());
+
+                    /*
+                     * Put server properties back into System properties so they
+                     * are available to the parameter service
+                     */
+                    System.getProperties().putAll(serverProperties);
+
+                } catch (IOException ex) {
+                    log.error("Failed to load " + DEFAULT_SERVER_PROPERTIES, ex);
+                } finally {
+                    IOUtils.closeQuietly(fis);
+                }
+            } else if (!serverPropertiesFile.exists()) {
+                log.warn("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". File does not exist.");
+            } else if (!serverPropertiesFile.isFile()) {
+                log.warn("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". Object is not a file.");
+            }
+            serverPropertiesInitialized = true;
+        }
     }
 
     abstract protected boolean printHelpIfNoOptionsAreProvided();
@@ -113,7 +155,7 @@ public abstract class AbstractCommandLauncher {
             CommandLine line = parser.parse(options, args);
 
             if (line.hasOption(HELP) || (line.getArgList().contains(HELP))
-                    || (line.getArgList().size() == 0 && printHelpIfNoOptionsAreProvided())) {
+                    || (line.getOptions().length == 0 && printHelpIfNoOptionsAreProvided())) {
                 printHelp(line, options);
                 System.exit(2);
             }
@@ -348,6 +390,10 @@ public abstract class AbstractCommandLauncher {
                     propertiesFile), null, false);
         }
         return platform;
+    }
+    
+    protected TypedProperties getTypedProperties() {
+        return new TypedProperties(propertiesFile);
     }
 
     protected void buildOptions(Options options) {

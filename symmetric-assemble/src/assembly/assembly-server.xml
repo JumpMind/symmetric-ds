@@ -44,6 +44,7 @@
                 <exclude>bin/dbexport</exclude>
                 <exclude>bin/dbimport</exclude>
                 <exclude>bin/dbfill</exclude>
+                <exclude>bin/jmx</exclude>
                 <exclude>bin/dbsql</exclude>
                 <exclude>bin/sym_service</exclude>
             </excludes>
@@ -84,6 +85,11 @@
             <outputDirectory>/bin</outputDirectory>
             <fileMode>755</fileMode>
         </file>
+        <file>
+            <source>../symmetric-server/src/main/deploy/bin/jmx</source>
+            <outputDirectory>/bin</outputDirectory>
+            <fileMode>755</fileMode>
+        </file>        
         <file>
             <source>../symmetric-server/src/main/deploy/bin/dbsql</source>
             <outputDirectory>/bin</outputDirectory>
