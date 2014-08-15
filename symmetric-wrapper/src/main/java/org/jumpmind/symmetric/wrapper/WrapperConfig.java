@@ -69,7 +69,9 @@ public class WrapperConfig {
                     }
                 }
             }
-        }        
+        } else {
+            throw new WrapperException(Constants.RC_MISSING_SERVER_PROPERTIES, 0, "Could not locate the " + serverPropertiesFile.getAbsolutePath() + " file");
+        }
     }
 
     public String getWrapperJarPath()  {
