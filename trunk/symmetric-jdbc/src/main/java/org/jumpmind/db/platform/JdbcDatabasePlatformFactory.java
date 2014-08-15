@@ -49,6 +49,7 @@ import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.platform.redshift.RedshiftDatabasePlatform;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.db.sql.SqlException;
@@ -101,6 +102,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.DB2ZOS, Db2zOsDatabasePlatform.class);
         addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.REDSHIFT, RedshiftDatabasePlatform.class);
 
         jdbcSubProtocolToPlatform.put(Db2DatabasePlatform.JDBC_SUBPROTOCOL, Db2DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(DerbyDatabasePlatform.JDBC_SUBPROTOCOL, DerbyDatabasePlatform.class);
@@ -195,7 +197,6 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
             nameVersion[2] = url;
-            log.info("Detected database '" + nameVersion[0] + "', version '" + nameVersion[1] + "', protocol '" + nameVersion[2] + "'");
             
             /*
              * if the productName is PostgreSQL, it could be either PostgreSQL
@@ -206,6 +207,8 @@ public class JdbcDatabasePlatformFactory {
                 if (isGreenplumDatabase(connection)) {
                     nameVersion[0] = DatabaseNamesConstants.GREENPLUM;
                     nameVersion[1] = Integer.toString(getGreenplumVersion(connection));
+                } else if (isRedshiftDatabase(connection)) {
+                    nameVersion[0] = DatabaseNamesConstants.REDSHIFT;
                 }
             }
 
@@ -224,6 +227,8 @@ public class JdbcDatabasePlatformFactory {
                     nameVersion[0] = DatabaseNamesConstants.DB2ZOS;
                 }
             }
+
+            log.info("Detected database '" + nameVersion[0] + "', version '" + nameVersion[1] + "', protocol '" + nameVersion[2] + "'");
 
             return nameVersion;
         } catch (SQLException ex) {
@@ -270,6 +275,19 @@ public class JdbcDatabasePlatformFactory {
             }
         }
         return isGreenplum;
+    }
+
+    private static boolean isRedshiftDatabase(Connection connection) {
+        boolean isRedshift = false;
+        try {
+            DatabaseMetaData dmd = connection.getMetaData();
+            dmd.getMaxColumnsInIndex();
+        } catch (SQLException ex) {
+            if (ex.getSQLState().equals("99999")) {
+                isRedshift = true;
+            }
+        }
+        return isRedshift;
     }
 
     private static boolean isMariaDBDatabase(Connection connection) {

@@ -1047,8 +1047,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void syncTriggers(StringBuilder sqlBuffer, boolean force) {
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)
-                || isCalledFromSymmetricAdminTool()) {
+        if (platform.getDdlBuilder().getDatabaseInfo().isTriggersSupported() &&
+                (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) || isCalledFromSymmetricAdminTool())) {
             synchronized (this) {
                 if (clusterService.lock(ClusterConstants.SYNCTRIGGERS)) {
                     try {
@@ -1109,8 +1109,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
             }
         } else {
-            log.info("Not synchronizing triggers.  {} is set to false",
-                    ParameterConstants.AUTO_SYNC_TRIGGERS);
+            if (!platform.getDdlBuilder().getDatabaseInfo().isTriggersSupported()) {
+                log.info("Not synchronizing triggers.  Platform does not support triggers.");
+            } else {
+                log.info("Not synchronizing triggers.  {} is set to false",
+                        ParameterConstants.AUTO_SYNC_TRIGGERS);
+            }
         }
     }
 

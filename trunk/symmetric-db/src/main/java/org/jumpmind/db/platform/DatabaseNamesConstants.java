@@ -45,5 +45,6 @@ final public class DatabaseNamesConstants {
     public final static String ASE = "ase";
     public final static String SQLANYWHERE = "sqlanywhere";
     public final static String MARIADB = "mariadb";
+    public final static String REDSHIFT = "redshift";
 
 }

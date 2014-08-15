@@ -175,30 +175,32 @@ public class ModelComparator {
                 }
             }
         }
-        for (int indexIdx = 0; indexIdx < sourceTable.getIndexCount(); indexIdx++) {
-            IIndex sourceIndex = sourceTable.getIndex(indexIdx);
-            IIndex targetIndex = findCorrespondingIndex(targetTable, sourceIndex);
-
-            if (targetIndex == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Index " + sourceIndex.getName() + " needs to be removed from table "
-                            + sourceTable.getName());
+        if (platformInfo.isIndicesSupported()) {
+            for (int indexIdx = 0; indexIdx < sourceTable.getIndexCount(); indexIdx++) {
+                IIndex sourceIndex = sourceTable.getIndex(indexIdx);
+                IIndex targetIndex = findCorrespondingIndex(targetTable, sourceIndex);
+    
+                if (targetIndex == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Index " + sourceIndex.getName() + " needs to be removed from table "
+                                + sourceTable.getName());
+                    }
+                    changes.add(new RemoveIndexChange(sourceTable, sourceIndex));
                 }
-                changes.add(new RemoveIndexChange(sourceTable, sourceIndex));
             }
-        }
-        for (int indexIdx = 0; indexIdx < targetTable.getIndexCount(); indexIdx++) {
-            IIndex targetIndex = targetTable.getIndex(indexIdx);
-            IIndex sourceIndex = findCorrespondingIndex(sourceTable, targetIndex);
-
-            if (sourceIndex == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Index " + targetIndex.getName() + " needs to be created for table "
-                            + sourceTable.getName());
+            for (int indexIdx = 0; indexIdx < targetTable.getIndexCount(); indexIdx++) {
+                IIndex targetIndex = targetTable.getIndex(indexIdx);
+                IIndex sourceIndex = findCorrespondingIndex(sourceTable, targetIndex);
+    
+                if (sourceIndex == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Index " + targetIndex.getName() + " needs to be created for table "
+                                + sourceTable.getName());
+                    }
+                    // we have to use the target table here because the index might
+                    // reference a new column
+                    changes.add(new AddIndexChange(targetTable, targetIndex));
                 }
-                // we have to use the target table here because the index might
-                // reference a new column
-                changes.add(new AddIndexChange(targetTable, targetIndex));
             }
         }
 

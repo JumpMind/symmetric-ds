@@ -1007,17 +1007,19 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected Collection<ForeignKey> readForeignKeys(Connection connection,
             DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
         Map<String, ForeignKey> fks = new LinkedHashMap<String, ForeignKey>();
-        ResultSet fkData = null;
-
-        try {
-            fkData = metaData.getForeignKeys(tableName);
-
-            while (fkData.next()) {
-                Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
-                readForeignKey(metaData, values, fks);
+        if (getPlatformInfo().isForeignKeysSupported()) {
+            ResultSet fkData = null;
+    
+            try {
+                fkData = metaData.getForeignKeys(tableName);
+    
+                while (fkData.next()) {
+                    Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
+                    readForeignKey(metaData, values, fks);
+                }
+            } finally {
+                close(fkData);
             }
-        } finally {
-            close(fkData);
         }
         return fks.values();
     }
@@ -1065,18 +1067,20 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected Collection<IIndex> readIndices(Connection connection,
             DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
         Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
-        ResultSet indexData = null;
-
-        try {
-            indexData = metaData.getIndices(getTableNamePattern(tableName), false, false);
-
-            while (indexData.next()) {
-                Map<String, Object> values = readMetaData(indexData, getColumnsForIndex());
-
-                readIndex(metaData, values, indices);
+        if (getPlatformInfo().isIndicesSupported()) {
+            ResultSet indexData = null;
+    
+            try {
+                indexData = metaData.getIndices(getTableNamePattern(tableName), false, false);
+    
+                while (indexData.next()) {
+                    Map<String, Object> values = readMetaData(indexData, getColumnsForIndex());
+    
+                    readIndex(metaData, values, indices);
+                }
+            } finally {
+                close(indexData);
             }
-        } finally {
-            close(indexData);
         }
         return indices.values();
     }
