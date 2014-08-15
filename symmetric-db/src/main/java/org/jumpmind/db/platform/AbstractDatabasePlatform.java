@@ -226,10 +226,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Table readTableFromDatabase(String catalogName, String schemaName, String tableName) {
+        return readTableFromDatabase(catalogName, schemaName, tableName, true);
+    }
+    
+    public Table readTableFromDatabase(String catalogName, String schemaName, String tableName, boolean useDefaultSchema) {
         String originalFullyQualifiedName = Table.getFullyQualifiedTableName(catalogName,
                 schemaName, tableName);
-        catalogName = catalogName == null ? getDefaultCatalog() : catalogName;
-        schemaName = schemaName == null ? getDefaultSchema() : schemaName;        
+        catalogName = catalogName == null && useDefaultSchema ? getDefaultCatalog() : catalogName;
+        schemaName = schemaName == null && useDefaultSchema ? getDefaultSchema() : schemaName;        
         Table table = ddlReader.readTable(catalogName, schemaName, tableName);
         if (table == null && metadataIgnoreCase) {
             if (isStoresUpperCaseIdentifiers()) {
@@ -301,15 +305,16 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (System.currentTimeMillis() - lastTimeCachedModelClearedInMs > clearCacheModelTimeoutInMs) {
             resetCachedTableModel();
         }
-        catalogName = catalogName == null ? getDefaultCatalog() : catalogName;
-        schemaName = schemaName == null ? getDefaultSchema() : schemaName;
         Map<String, Table> model = tableCache;
         String key = Table.getFullyQualifiedTableName(catalogName, schemaName, tableName);
         Table retTable = model != null ? model.get(key) : null;
         if (retTable == null || forceReread) {
             synchronized (this.getClass()) {
                 try {
-                    Table table = readTableFromDatabase(catalogName, schemaName, tableName);
+                    Table table = readTableFromDatabase(catalogName, schemaName, tableName, true);
+                    if (table == null) {
+                        table = readTableFromDatabase(catalogName, schemaName, tableName, false);
+                    }
                     tableCache.put(key, table);
                     retTable = table;
                 } catch (RuntimeException ex) {

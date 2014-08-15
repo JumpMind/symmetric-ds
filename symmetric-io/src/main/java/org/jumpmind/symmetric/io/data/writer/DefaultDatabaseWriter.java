@@ -800,14 +800,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         sourceTable.getPrimaryKeyColumnNames(),
                         this.writerSettings.isUsePrimaryKeysFromSource());
 
-                if (StringUtils.isBlank(sourceTable.getCatalog())) {
-                    table.setCatalog(null);
-                }
-
-                if (StringUtils.isBlank(sourceTable.getSchema())) {
-                    table.setSchema(null);
-                }
-
                 Column[] columns = table.getColumns();
                 for (Column column : columns) {
                     if (column != null) {

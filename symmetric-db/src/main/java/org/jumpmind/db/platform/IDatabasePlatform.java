@@ -88,6 +88,8 @@ public interface IDatabasePlatform {
     public Database readFromDatabase(Table... tables);
     
     public Table readTableFromDatabase(String catalogName, String schemaName, String tablename);
+    
+    public Table readTableFromDatabase(String catalogName, String schemaName, String tableName, boolean useDefaultSchema);
 
     public void resetCachedTableModel();
 
