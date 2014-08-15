@@ -2280,7 +2280,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             IIndex index = table.getIndex(idx);
 
             if (!index.isUnique() && !databaseInfo.isIndicesSupported()) {
-                throw new ModelException("Platform does not support non-unique indices");
+                return;
             }
             writeExternalIndexCreateStmt(table, index, ddl);
         }

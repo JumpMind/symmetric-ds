@@ -39,6 +39,7 @@ import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.platform.redshift.RedshiftDatabasePlatform;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.symmetric.db.ase.AseSymmetricDialect;
@@ -59,6 +60,7 @@ import org.jumpmind.symmetric.db.mysql.MySqlSymmetricDialect;
 import org.jumpmind.symmetric.db.oracle.OracleSymmetricDialect;
 import org.jumpmind.symmetric.db.postgresql.GreenplumSymmetricDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlSymmetricDialect;
+import org.jumpmind.symmetric.db.redshift.RedshiftSymmetricDialect;
 import org.jumpmind.symmetric.db.sqlanywhere.SqlAnywhereSymmetricDialect;
 import org.jumpmind.symmetric.db.sqlite.SqliteSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -100,6 +102,8 @@ public class JdbcSymmetricDialectFactory {
             dialect = new MsSql2000SymmetricDialect(parameterService, platform);
         } else if (platform instanceof GreenplumPlatform) {
             dialect = new GreenplumSymmetricDialect(parameterService, platform);
+        } else if (platform instanceof RedshiftDatabasePlatform) {
+            dialect = new RedshiftSymmetricDialect(parameterService, platform);
         } else if (platform instanceof PostgreSqlDatabasePlatform) {
             dialect = new PostgreSqlSymmetricDialect(parameterService, platform);
         } else if (platform instanceof DerbyDatabasePlatform) {
