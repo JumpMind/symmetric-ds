@@ -46,5 +46,6 @@ public class Constants {
     public static final int RC_FAIL_UNINSTALL = 18;
     public static final int RC_NATIVE_ERROR = 19;
     public static final int RC_MISSING_LIB_FOLDER = 20;
+    public static final int RC_MISSING_SERVER_PROPERTIES = 21;
     
 }
