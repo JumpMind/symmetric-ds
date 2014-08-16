@@ -23,7 +23,9 @@ package org.jumpmind.symmetric;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
 import java.lang.reflect.Constructor;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
@@ -116,8 +118,26 @@ public class JmxCommand extends AbstractCommandLauncher {
                         if (info != null) {
                             if (line.hasOption(OPTION_LISTMETHODS)) {
                                 MBeanOperationInfo[] operations = info.getOperations();
+                                Map<String, MBeanOperationInfo> orderedMap = new TreeMap<String, MBeanOperationInfo>();
                                 for (MBeanOperationInfo methodInfo : operations) {
-                                    System.out.println(methodInfo.toString());
+                                    orderedMap.put(methodInfo.getName(), methodInfo);
+                                }
+                                for (MBeanOperationInfo methodInfo : orderedMap.values()) {
+                                    System.out.print(methodInfo.getName() + "(" );
+                                    MBeanParameterInfo[] params =  methodInfo.getSignature();
+                                    int index = 0;
+                                    for (MBeanParameterInfo p : params) {
+                                        if (index > 0) {
+                                            System.out.print(", ");
+                                        }
+                                        System.out.print(p.getType() + " " + p.getName());
+                                        index++;
+                                    }
+                                    System.out.print(")");
+                                    if (methodInfo.getReturnType() != null && !methodInfo.getReturnType().equals("void")) {
+                                        System.out.print(" : " + methodInfo.getReturnType());
+                                    }
+                                    System.out.println();                                                                        
                                 }
                             } else if (line.hasOption(OPTION_METHOD)) {
                                 String argsDelimiter = line.getOptionValue(OPTION_ARGS_DELIM);
