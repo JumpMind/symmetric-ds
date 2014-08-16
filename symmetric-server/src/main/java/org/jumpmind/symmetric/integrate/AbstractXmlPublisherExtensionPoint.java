@@ -53,6 +53,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.util.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedOperationParameter;
@@ -64,7 +65,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
  */
 @ManagedResource(description = "The management interface for an xml publisher")
 abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint,
-        INodeGroupExtensionPoint, ISymmetricEngineAware {
+        INodeGroupExtensionPoint, ISymmetricEngineAware, BeanNameAware {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -81,8 +82,18 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     protected List<String> groupByColumnNames;
 
     protected Format xmlFormat;
-    
+
+    protected String name;
+
     protected ISymmetricEngine engine;
+
+    protected long timeBetweenStatisticsPrintTime = 300000;
+
+    protected transient long lastStatisticsPrintTime = System.currentTimeMillis();
+
+    protected transient long numberOfMessagesPublishedSinceLastPrintTime = 0;
+
+    protected transient long amountOfTimeToPublishMessagesSinceLastPrintTime = 0;
 
     protected ITimeGenerator timeStringGenerator = new ITimeGenerator() {
         public String getTime() {
@@ -94,7 +105,12 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
         xmlFormat = Format.getCompactFormat();
         xmlFormat.setOmitDeclaration(true);
     }
-    
+
+    @Override
+    public void setBeanName(String name) {
+        this.name = name;
+    }
+
     @ManagedOperation(description = "Looks up rows in the database and resends them to the publisher")
     @ManagedOperationParameters({ @ManagedOperationParameter(name = "args", description = "A pipe deliminated list of key values to use to look up the tables to resend") })
     public boolean resend(String args) {
@@ -130,23 +146,27 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                 finalizeXmlAndPublish(context);
                 return true;
             } else {
-                log.warn(String.format("Failed to resend message for tables %s, columns %s, and args %s", tableNamesToPublishAsGroup, groupByColumnNames, args));
+                log.warn(String.format(
+                        "Failed to resend message for tables %s, columns %s, and args %s",
+                        tableNamesToPublishAsGroup, groupByColumnNames, args));
             }
         } catch (RuntimeException ex) {
-            log.error(String.format("Failed to resend message for tables %s, columns %s, and args %s", tableNamesToPublishAsGroup, groupByColumnNames, args), ex);
+            log.error(String.format(
+                    "Failed to resend message for tables %s, columns %s, and args %s",
+                    tableNamesToPublishAsGroup, groupByColumnNames, args), ex);
         }
 
         return false;
     }
-    
+
     @ManagedAttribute(description = "A comma separated list of columns that act as the key values for the tables that will be published")
     public String getKeyColumnNames() {
-       return groupByColumnNames != null ? groupByColumnNames.toString() : "";
+        return groupByColumnNames != null ? groupByColumnNames.toString() : "";
     }
-    
+
     @ManagedAttribute(description = "A comma separated list of tables that will be published")
     public String getTableNames() {
-       return tableNamesToPublishAsGroup != null ? tableNamesToPublishAsGroup.toString() : "";
+        return tableNamesToPublishAsGroup != null ? tableNamesToPublishAsGroup.toString() : "";
     }
 
     protected List<String[]> readData(final Table table, String[] args) {
@@ -214,7 +234,29 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
             String xml = new XMLOutputter(xmlFormat).outputString(new Document(iterator.next()));
             log.debug("Sending XML to IPublisher: {}", xml);
             iterator.remove();
+            long ts = System.currentTimeMillis();
             publisher.publish(context, xml.toString());
+            amountOfTimeToPublishMessagesSinceLastPrintTime += (System.currentTimeMillis() - ts);
+            numberOfMessagesPublishedSinceLastPrintTime++;
+        }
+
+        if ((System.currentTimeMillis() - lastStatisticsPrintTime) > timeBetweenStatisticsPrintTime) {
+            synchronized (this) {
+                if ((System.currentTimeMillis() - lastStatisticsPrintTime) > timeBetweenStatisticsPrintTime) {
+                    log.info(name
+                            + " published "
+                            + numberOfMessagesPublishedSinceLastPrintTime
+                            + " messages in the last "
+                            + (System.currentTimeMillis() - lastStatisticsPrintTime)
+                            / 1000
+                            + " seconds.  Spent "
+                            + (amountOfTimeToPublishMessagesSinceLastPrintTime / numberOfMessagesPublishedSinceLastPrintTime)
+                            + "ms doing the actual publishing per message");
+                    lastStatisticsPrintTime = System.currentTimeMillis();
+                    numberOfMessagesPublishedSinceLastPrintTime = 0;
+                    amountOfTimeToPublishMessagesSinceLastPrintTime = 0;
+                }
+            }
         }
     }
 
@@ -274,8 +316,8 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
         }
     }
 
-    protected Element getXmlFromCache(Context context, BinaryEncoding binaryEncoding, String[] columnNames, String[] data,
-            String[] keyNames, String[] keys) {
+    protected Element getXmlFromCache(Context context, BinaryEncoding binaryEncoding,
+            String[] columnNames, String[] data, String[] keyNames, String[] keys) {
         Map<String, Element> xmlCache = getXmlCache(context);
         Element xml = null;
         String txId = toXmlGroupId(columnNames, data, keyNames, keys);
@@ -372,6 +414,10 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
         this.xmlTagNameToUseForGroup = xmlTagNameToUseForGroup;
     }
 
+    public void setTimeBetweenStatisticsPrintTime(long timeBetweenStatisticsPrintTime) {
+        this.timeBetweenStatisticsPrintTime = timeBetweenStatisticsPrintTime;
+    }
+
     /**
      * This attribute is required. It needs to identify the columns that will be
      * used to key on rows in the specified tables that need to be grouped
@@ -384,7 +430,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
     public interface ITimeGenerator {
         public String getTime();
     }
-    
+
     @Override
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
