@@ -542,6 +542,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             } catch (RuntimeException e) {
                 SQLException se = unwrapSqlException(e);
                 if (currentBatch != null) {
+                    /* Reread batch in case the ignore flag has been set */
+                    currentBatch = outgoingBatchService.
+                            findOutgoingBatch(currentBatch.getBatchId(), currentBatch.getNodeId());
                     statisticManager.incrementDataExtractedErrors(currentBatch.getChannelId(), 1);
                     if (se != null) {
                         currentBatch.setSqlState(se.getSQLState());
@@ -551,10 +554,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.setSqlMessage(getRootMessage(e));
                     }
                     currentBatch.revertStatsOnError();
-                    if (currentBatch.getStatus() != Status.IG) {
+                    if (currentBatch.getStatus() != Status.IG &&
+                            currentBatch.getStatus() != Status.OK) {
                         currentBatch.setStatus(Status.ER);
+                        currentBatch.setErrorFlag(true);
                     }
-                    currentBatch.setErrorFlag(true);
                     outgoingBatchService.updateOutgoingBatch(currentBatch);
 
                     if (isStreamClosedByClient(e)) {
