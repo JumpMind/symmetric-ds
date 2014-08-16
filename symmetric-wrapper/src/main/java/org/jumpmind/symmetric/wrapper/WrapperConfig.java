@@ -55,7 +55,7 @@ public class WrapperConfig {
     
     protected void loadServerPropertiesFile() throws IOException {
         serverProperties = new Properties();
-        File serverPropertiesFile = new File(workingDirectory, "symmetric-server.properties");
+        File serverPropertiesFile = new File(workingDirectory.getParent() + "/conf", "symmetric-server.properties");
         if (serverPropertiesFile.exists()) {
             FileInputStream fis = null;
             try {
