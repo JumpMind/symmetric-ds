@@ -170,21 +170,18 @@ public class DbFillCommand extends AbstractCommandLauncher {
                         tableName);
                 if (table != null) {
                 	for (int i = 0; i < dbFill.getRecordCount(); i++) {
-	                	for (int j = 0; j < dbFill.getInsertWeight(); j++) {
-	                        dbFill.createInsertRandomRecord(table);
-	                        String sql = dbFill.getSql() + ";";
-	                        System.out.println(sql);
-	                    }
-	                    for (int j = 0; j < dbFill.getUpdateWeight(); j++) {
-	                        dbFill.createUpdateRandomRecord(table);
-	                        String sql = dbFill.getSql() + ";";
-	                        System.out.println(sql);
-	                    }
-	                    for (int j = 0; j < dbFill.getDeleteWeight(); j++) {
-	                        dbFill.createDeleteRandomRecord(table, null);
-	                        String sql = dbFill.getSql() + ";";
-	                        System.out.println(sql);
-	                    }        
+                		for (int j = 0; j < dbFill.getInsertWeight(); j++) {
+                            String sql = dbFill.createDynamicRandomInsertSql(table);
+                            System.out.println(sql);
+                        }
+                        for (int j = 0; j < dbFill.getUpdateWeight(); j++) {
+                            String sql = dbFill.createDynamicRandomUpdateSql(table);
+                            System.out.println(sql);
+                        }
+                        for (int j = 0; j < dbFill.getDeleteWeight(); j++) {
+                            String sql = dbFill.createDynamicRandomDeleteSql(table);
+                            System.out.println(sql);
+                        }        
                 	}
                 }
         	}
