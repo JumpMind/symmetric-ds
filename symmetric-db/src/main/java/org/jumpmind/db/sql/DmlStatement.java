@@ -388,8 +388,8 @@ public class DmlStatement {
     }
     
     public String buildDynamicSql(BinaryEncoding encoding, Row row,
-            boolean useVariableDates, boolean useJdbcTimestampFormat) {
-        final String QUESTION_MARK = "<!QUESTION_MARK!>";
+            boolean useVariableDates, boolean useJdbcTimestampFormat, Column[] columns) {
+    	final String QUESTION_MARK = "<!QUESTION_MARK!>";
         String newSql = sql;
         String quote = databaseInfo.getValueQuoteToken();
         String binaryQuoteStart = databaseInfo.getBinaryQuoteStart();
@@ -398,7 +398,6 @@ public class DmlStatement {
         
         List<Column> columnsToProcess = new ArrayList<Column>();
         columnsToProcess.addAll(Arrays.asList(columns));
-        columnsToProcess.addAll(Arrays.asList(keys));
         
         for (int i = 0; i < columnsToProcess.size(); i++) {
             Column column = columnsToProcess.get(i);
@@ -455,7 +454,17 @@ public class DmlStatement {
         }
         
         newSql = newSql.replace(QUESTION_MARK, "?");
-        return newSql + databaseInfo.getSqlCommandDelimiter();
+        return newSql + databaseInfo.getSqlCommandDelimiter();	
+    }
+    
+    public String buildDynamicDeleteSql(BinaryEncoding encoding, Row row,
+            boolean useVariableDates, boolean useJdbcTimestampFormat) {
+    	return buildDynamicSql(encoding, row, useVariableDates, useJdbcTimestampFormat, keys);
+    }
+    
+    public String buildDynamicSql(BinaryEncoding encoding, Row row,
+            boolean useVariableDates, boolean useJdbcTimestampFormat) {
+    	return buildDynamicSql(encoding, row, useVariableDates, useJdbcTimestampFormat, (Column[]) ArrayUtils.addAll(columns, keys));
     }
     
     public boolean isUpsertSupported() {
