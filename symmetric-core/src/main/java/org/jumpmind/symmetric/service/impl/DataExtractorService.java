@@ -1414,9 +1414,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     routerId, triggerHistory, true, true);
                             Database db = new Database();
                             db.setName("dataextractor");
+                            /*
+                             * Force a reread of table so new columns are picked up.  A create
+                             * event is usually sent after there is a change to the table so 
+                             * we want to make sure that the cache is updated
+                             */
+                            Table table = platform.getTableFromCache(targetTable.getCatalog(), 
+                                    targetTable.getSchema(), targetTable.getName(), true);
                             db.setCatalog(targetTable.getCatalog());
                             db.setSchema(targetTable.getSchema());
-                            db.addTable(targetTable);
+                            db.addTable(table != null ? table : targetTable);
                             data.setRowData(CsvUtils.escapeCsvData(DatabaseXmlUtil.toXml(db)));
                         }
                     }
