@@ -621,7 +621,7 @@ public class DbFill {
 	public DmlStatement createInsertDmlStatement(Table table) {
 		return platform.createDmlStatement(DmlType.INSERT,
 				table.getCatalog(), table.getSchema(), table.getName(),
-				table.getPrimaryKeyColumns(), table.getNonPrimaryKeyColumns(),
+				table.getPrimaryKeyColumns(), table.getColumns(),
 				null);
 	}
 	
@@ -640,14 +640,8 @@ public class DbFill {
 	}
 	
 	private Row createRandomInsertValues(DmlStatement updStatement, Table table) {
-		Row row = selectRandomRow(table);
-		if (row == null) {
-			log.warn("Unable to update a random record in empty table '"
-					+ table.getName() + "'.");
-			return null;
-		}
 		Column[] columns = updStatement.getMetaData();
-	
+        Row row = new Row(columns.length);
 		for (int i = 0; i < columns.length; i++) {
 			row.put(columns[i].getName(), generateRandomValueForColumn(columns[i]));
 		}
