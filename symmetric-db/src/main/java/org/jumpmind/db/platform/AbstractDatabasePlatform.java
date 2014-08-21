@@ -478,10 +478,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             int type = column.getJdbcTypeCode();
             
             if (row.get(name) != null) {
-                if (column.isOfNumericType()) {
+                if (type == Types.BOOLEAN || type == Types.BIT) {
+                    values[i] = row.getBoolean(name) ? "1" : "0";
+                } else if (column.isOfNumericType()) {
                     values[i] = row.getString(name);
-                } else if (!column.isTimestampWithTimezone() && 
-                        (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
+                } else if (!column.isTimestampWithTimezone()
+                        && (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
                     values[i] = getDateTimeStringValue(name, type, row, useVariableDates);
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
