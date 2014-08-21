@@ -391,25 +391,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                             .rightPad(value.toString(), column.getSizeAsInt(), ' ');
                 }
             } else if (type == Types.BIGINT) {
-                if (StringUtils.isNumeric(value)) {
-                    objectValue = parseBigInteger(value);
-                } else {
-                    objectValue = Boolean.parseBoolean(value);
-                }                
-            } else if (type == Types.INTEGER || type == Types.SMALLINT || 
-                    type == Types.BIT) {
-                if (StringUtils.isNumeric(value)) {
-                    objectValue = parseInteger(value);
-                } else {
-                    objectValue = Boolean.parseBoolean(value);
-                }
+                objectValue = parseBigInteger(value);
+            } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
+                objectValue = parseInteger(value);
             } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
-                    || type == Types.DOUBLE || type == Types.REAL) {                
-                if (StringUtils.isNumeric(value)) {
-                    objectValue = parseBigDecimal(value);
-                } else {
-                    objectValue = Boolean.parseBoolean(value);
-                }                
+                    || type == Types.DOUBLE || type == Types.REAL) {
+                objectValue = parseBigDecimal(value);
             } else if (type == Types.BOOLEAN) {
                 objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
             } else if (!(column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase()
@@ -442,22 +429,35 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
          * The number will have either one period or one comma for the decimal
          * point, but we need a period
          */
+        value = cleanNumber(value);
         return new BigDecimal(value.replace(',', '.').trim());
-    }
+    }    
     
     protected Object parseBigInteger(String value) {
         try {
+            value = cleanNumber(value);
             return new Long(value.trim());
-        } catch (NumberFormatException ex) {
+        } catch (NumberFormatException ex) {            
             return new BigInteger(value.trim());        
         }
     }    
         
     protected Object parseInteger(String value) {
         try {
+            value = cleanNumber(value);
             return Integer.parseInt(value.trim());
         } catch (NumberFormatException ex) {
             return new BigInteger(value.trim());        
+        }
+    }
+    
+    protected String cleanNumber(String value) {
+        if (value.equalsIgnoreCase("true")) {
+            return "1";
+        } else if (value.equalsIgnoreCase("false")) {
+            return "0";
+        } else {
+            return value;
         }
     }
     
