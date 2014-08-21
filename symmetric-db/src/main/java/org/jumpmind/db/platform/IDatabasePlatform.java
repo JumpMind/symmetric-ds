@@ -124,10 +124,10 @@ public interface IDatabasePlatform {
             String[] values);
 
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
-            String[] values, boolean useVariableDates);
+            String[] values, boolean useVariableDates, boolean fitToColumn);
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
-            Column[] orderedMetaData, boolean useVariableDates);
+            Column[] orderedMetaData, boolean useVariableDates, boolean fitToColumn);
 
     public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates);
 

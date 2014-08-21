@@ -52,6 +52,8 @@ public class DatabaseWriterSettings {
     protected boolean ignoreMissingTables = true;
 
     protected boolean saveCurrentValueOnError = false;
+    
+    protected boolean fitToColumn = false;
 
     protected Map<String, Conflict> conflictSettingsByChannel;
 
@@ -59,7 +61,7 @@ public class DatabaseWriterSettings {
 
     protected List<IDatabaseWriterFilter> databaseWriterFilters;
 
-    protected List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers;
+    protected List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers;        
 
     protected List<ResolvedData> resolvedData;
 
@@ -251,6 +253,14 @@ public class DatabaseWriterSettings {
 
     public void setSaveCurrentValueOnError(boolean saveCurrentValueOnError) {
         this.saveCurrentValueOnError = saveCurrentValueOnError;
+    }
+    
+    public void setFitToColumn(boolean fitToColumn) {
+        this.fitToColumn = fitToColumn;
+    }
+    
+    public boolean isFitToColumn() {
+        return fitToColumn;
     }
 
 }

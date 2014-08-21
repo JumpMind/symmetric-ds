@@ -146,6 +146,7 @@ final public class ParameterConstants {
     public final static String INCOMING_BATCH_RECORD_OK_ENABLED = "incoming.batches.record.ok.enabled";
     public final static String DATA_LOADER_ENABLED = "dataloader.enable";
     public final static String DATA_LOADER_IGNORE_MISSING_TABLES = "dataloader.ignore.missing.tables";
+    public final static String DATA_LOADER_FIT_TO_COLUMN = "dataloader.fit.to.column";
     public final static String DATA_LOADER_ERROR_RECORD_CUR_VAL = "dataloader.error.save.curval";
     public final static String DATA_LOADER_NUM_OF_ACK_RETRIES = "num.of.ack.retries";
     public final static String DATA_LOADER_TIME_BETWEEN_ACK_RETRIES = "time.between.ack.retries.ms";

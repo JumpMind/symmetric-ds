@@ -334,18 +334,18 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
-            String[] values, boolean useVariableDates) {
+            String[] values, boolean useVariableDates, boolean fitToColumn) {
         Column[] metaData = Table.orderColumns(columnNames, table);
-        return getObjectValues(encoding, values, metaData, useVariableDates);
+        return getObjectValues(encoding, values, metaData, useVariableDates, fitToColumn);
     }
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData) {
-        return getObjectValues(encoding, values, orderedMetaData, false);
+        return getObjectValues(encoding, values, orderedMetaData, false, false);
     }
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
-            Column[] orderedMetaData, boolean useVariableDates) {
+            Column[] orderedMetaData, boolean useVariableDates, boolean fitToColumn) {
         if (values != null) {
             List<Object> list = new ArrayList<Object>(values.length);
             for (int i = 0; i < values.length; i++) {
@@ -353,7 +353,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 Column column = orderedMetaData.length > i ? orderedMetaData[i] : null;
                 try {
                     if (column != null) {
-                        list.add(getObjectValue(value, column, encoding, useVariableDates));
+                        list.add(getObjectValue(value, column, encoding, useVariableDates, fitToColumn));
                     }
                 } catch (Exception ex) {
                     String valueTrimmed = FormatUtils.abbreviateForLogging(value);
@@ -371,7 +371,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
     
     protected Object getObjectValue(String value, Column column, BinaryEncoding encoding,
-            boolean useVariableDates) throws DecoderException {
+            boolean useVariableDates, boolean fitToColumn) throws DecoderException {
         Object objectValue = value;
         int type = column.getMappedTypeCode();
         if ((value == null || (getDdlBuilder().getDatabaseInfo().isEmptyStringNulled() && value
@@ -417,7 +417,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
         }
         if (objectValue instanceof String) {
-            objectValue = cleanTextForTextBasedColumns((String) objectValue);
+            String stringValue = cleanTextForTextBasedColumns((String) objectValue);
+            int size = column.getSizeAsInt();
+            if (fitToColumn && size > 0 && stringValue.length() > size) {
+                stringValue = stringValue.substring(0, size);
+            }
+            objectValue = stringValue;
         }
 
         return objectValue;
@@ -430,7 +435,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
          * point, but we need a period
          */
         value = cleanNumber(value);
-        return new BigDecimal(value.replace(',', '.').trim());
+        return new BigDecimal(value.replace(',', '.'));
     }    
     
     protected Object parseBigInteger(String value) {
@@ -438,20 +443,21 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             value = cleanNumber(value);
             return new Long(value.trim());
         } catch (NumberFormatException ex) {            
-            return new BigInteger(value.trim());        
+            return new BigInteger(value);        
         }
     }    
         
     protected Object parseInteger(String value) {
         try {
             value = cleanNumber(value);
-            return Integer.parseInt(value.trim());
+            return Integer.parseInt(value);
         } catch (NumberFormatException ex) {
-            return new BigInteger(value.trim());        
+            return new BigInteger(value);        
         }
     }
     
     protected String cleanNumber(String value) {
+        value = value.trim();
         if (value.equalsIgnoreCase("true")) {
             return "1";
         } else if (value.equalsIgnoreCase("false")) {
