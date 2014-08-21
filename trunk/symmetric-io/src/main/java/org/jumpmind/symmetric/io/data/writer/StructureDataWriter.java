@@ -162,7 +162,7 @@ public class StructureDataWriter implements IDataWriter {
         // TODO support primary key updates
         DmlStatement statement = DmlStatementFactory.createDmlStatement(targetDatabaseName,
                 dmlType, currentTable, useQuotedIdentifiers);
-        Object[] objects = platform.getObjectValues(binaryEncoding, values, columns, false);
+        Object[] objects = platform.getObjectValues(binaryEncoding, values, columns, false, false);
         Row row = new Row(columns.length);
         for (int i = 0; i < columns.length; i++) {
             row.put(columns[i].getName(), objects[i]);

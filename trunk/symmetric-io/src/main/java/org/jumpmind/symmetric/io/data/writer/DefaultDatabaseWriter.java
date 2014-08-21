@@ -780,7 +780,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
     protected int execute(CsvData data, String[] values) {
         Object[] objectValues = platform.getObjectValues(batch.getBinaryEncoding(), values,
-                currentDmlStatement.getMetaData());
+                currentDmlStatement.getMetaData(), false, writerSettings.isFitToColumn());
         if (log.isDebugEnabled()) {
             log.debug("Submitting data {} with types {}", Arrays.toString(objectValues),
                     Arrays.toString(this.currentDmlStatement.getTypes()));
