@@ -367,7 +367,8 @@ public class DbFill {
     	DmlStatement insertStatement = createInsertDmlStatement(table); 
     	Row row = createRandomInsertValues(insertStatement, table);
         try {
-            platform.getSqlTemplate().update(insertStatement.getSql(), row.toArray(table.getColumnNames()));
+            platform.getSqlTemplate().update(insertStatement.getSql(), insertStatement.getValueArray(row.toArray(table.getColumnNames()), 
+                    row.toArray(table.getPrimaryKeyColumnNames())));
             if (verbose) {
                 log.info("Successful update in " + table.getName());
             }
