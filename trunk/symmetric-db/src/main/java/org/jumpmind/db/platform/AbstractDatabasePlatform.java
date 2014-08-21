@@ -391,7 +391,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                             .rightPad(value.toString(), column.getSizeAsInt(), ' ');
                 }
             } else if (type == Types.BIGINT) {
-                objectValue = parseBigInteger(value);
+                if (StringUtils.isNumeric(value)) {
+                    objectValue = parseBigInteger(value);
+                } else {
+                    objectValue = Boolean.parseBoolean(value);
+                }                
             } else if (type == Types.INTEGER || type == Types.SMALLINT || 
                     type == Types.BIT) {
                 if (StringUtils.isNumeric(value)) {
@@ -400,8 +404,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     objectValue = Boolean.parseBoolean(value);
                 }
             } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
-                    || type == Types.DOUBLE || type == Types.REAL) {
-                objectValue = parseBigDecimal(value);
+                    || type == Types.DOUBLE || type == Types.REAL) {                
+                if (StringUtils.isNumeric(value)) {
+                    objectValue = parseBigDecimal(value);
+                } else {
+                    objectValue = Boolean.parseBoolean(value);
+                }                
             } else if (type == Types.BOOLEAN) {
                 objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
             } else if (!(column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase()
