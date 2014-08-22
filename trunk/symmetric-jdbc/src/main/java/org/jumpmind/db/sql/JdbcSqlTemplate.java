@@ -548,7 +548,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (rs != null) {
                 rs.close();
             }
-        } catch (SQLException ex) {
+        } catch (Throwable ex) {
         }
     }
 
@@ -557,7 +557,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (ps != null) {
                 ps.close();
             }
-        } catch (SQLException ex) {
+        } catch (Throwable ex) {
         }
     }
 
@@ -566,7 +566,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (stmt != null) {
                 stmt.close();
             }
-        } catch (SQLException ex) {
+        } catch (Throwable ex) {
         }
     }
 
@@ -575,7 +575,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (c != null) {
                 c.setAutoCommit(autoCommitValue);
             }
-        } catch (SQLException ex) {
+        } catch (Throwable ex) {
         } finally {
             close(c);
         }
@@ -589,7 +589,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     c.setTransactionIsolation(transactionIsolationLevel);
                 }
             }
-        } catch (SQLException ex) {
+        } catch (Throwable ex) {
         } finally {
             close(c);
         }
@@ -600,7 +600,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (c != null) {
                 c.close();
             }
-        } catch (SQLException ex) {
+        } catch (Throwable ex) {
         }
     }
 
