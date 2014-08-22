@@ -882,7 +882,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public void batchInError(DataContext context, Throwable ex) {
             try {
                 if (this.currentBatch == null) {
-                    /* if the current batch is null, there isn't really 
+                    /* if the current batch is null, there isn't  
                      * anything we can do other than log the error
                      */
                     throw ex;
