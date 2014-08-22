@@ -251,7 +251,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                             / 1000
                             + " seconds.  Spent "
                             + (amountOfTimeToPublishMessagesSinceLastPrintTime / numberOfMessagesPublishedSinceLastPrintTime)
-                            + "ms doing the actual publishing per message");
+                            + "ms of publishing time per message");
                     lastStatisticsPrintTime = System.currentTimeMillis();
                     numberOfMessagesPublishedSinceLastPrintTime = 0;
                     amountOfTimeToPublishMessagesSinceLastPrintTime = 0;
