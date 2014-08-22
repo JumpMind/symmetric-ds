@@ -881,7 +881,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void batchInError(DataContext context, Throwable ex) {
             try {
-                Batch batch = context.getBatch();
+                if (this.currentBatch == null) {
+                    /* if the current batch is null, there isn't really 
+                     * anything we can do other than log the error
+                     */
+                    throw ex;
+                }
+                Batch batch = context.getBatch();                
                 if (context.getWriter() != null && 
                         context.getReader().getStatistics().get(batch) != null &&
                         context.getWriter().getStatistics().get(batch) != null) {
@@ -990,7 +996,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         incomingBatchService.insertIncomingBatch(this.currentBatch);
                     }
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.error("Failed to record status of batch {}",
                         this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
                                 .getBatch().getNodeBatchId(), e);
