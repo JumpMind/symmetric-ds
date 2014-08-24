@@ -190,7 +190,7 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
     }
 
     public int compareTo(NetworkedNode o) {
-        return node.getNodeId().compareTo(o.getNode().getNodeId());
+        return node.compareTo(o.getNode());
     }
 
     public void setAllNetworkedNodes(Map<String, NetworkedNode> allNetworkedNodes) {
