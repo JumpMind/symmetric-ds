@@ -125,6 +125,10 @@
             <xsl:apply-templates mode="titlepage.mode"/>
         </div>
     </xsl:template>
+
+    <xsl:template match="emphasis[@role='bold']">
+        <b><xsl:apply-templates/></b>
+    </xsl:template>
     
     <!--###################################################
                      Headers and Footers
