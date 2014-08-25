@@ -33,6 +33,7 @@ public class RedshiftSymmetricDialect extends AbstractSymmetricDialect implement
 
     public RedshiftSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
+        triggerTemplate = new RedshiftTriggerTemplate(this); 
     }
 
     @Override

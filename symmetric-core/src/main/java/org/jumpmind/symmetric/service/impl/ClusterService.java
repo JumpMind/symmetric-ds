@@ -75,23 +75,21 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     public void init() {
         sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
-        initLockTable(ROUTE);
-        initLockTable(PULL);
-        initLockTable(PUSH);
-        initLockTable(HEARTBEAT);
-        initLockTable(PURGE_INCOMING);
-        initLockTable(PURGE_OUTGOING);
-        initLockTable(PURGE_STATISTICS);
-        initLockTable(SYNCTRIGGERS);
-        initLockTable(PURGE_DATA_GAPS);
-        initLockTable(STAGE_MANAGEMENT);
-        initLockTable(WATCHDOG);
-        initLockTable(STATISTICS);
-        initLockTable(FILE_SYNC_PULL);
-        initLockTable(FILE_SYNC_PUSH);
-        initLockTable(FILE_SYNC_TRACKER);
-        initLockTable(FILE_SYNC_SHARED, TYPE_SHARED);
-        initLockTable(INITIAL_LOAD_EXTRACT);
+
+        Map<String, Lock> allLocks = findLocks();
+        for (String action : new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING, PURGE_STATISTICS, SYNCTRIGGERS,
+                PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL, FILE_SYNC_PUSH, FILE_SYNC_TRACKER,
+                INITIAL_LOAD_EXTRACT }) {
+            if (allLocks.get(action) == null) {
+                initLockTable(action, TYPE_CLUSTER);
+            }
+        }
+
+        for (String action : new String[] { FILE_SYNC_SHARED }) {
+            if (allLocks.get(action) == null) {
+                initLockTable(action, TYPE_SHARED);
+            }
+        }
     }
 
     public void initLockTable(final String action) {
