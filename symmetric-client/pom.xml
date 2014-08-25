@@ -158,6 +158,11 @@
 			<artifactId>jaybird</artifactId>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk</artifactId>
+            <scope>provided</scope>
+        </dependency>
 		<!-- Required for jaybird -->
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
