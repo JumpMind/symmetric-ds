@@ -48,16 +48,25 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public void init() {
-        initSequence(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID, 1);
+        Map<String, Sequence> sequences = getAll();
+        if (sequences.get(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID) == null) {
+            initSequence(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID, 1);
+        }
         
-        long maxBatchId = sqlTemplate.queryForLong(getSql("maxOutgoingBatchSql"));
-        initSequence(Constants.SEQUENCE_OUTGOING_BATCH, maxBatchId);
+        if (sequences.get(Constants.SEQUENCE_OUTGOING_BATCH) == null) {
+            long maxBatchId = sqlTemplate.queryForLong(getSql("maxOutgoingBatchSql"));
+            initSequence(Constants.SEQUENCE_OUTGOING_BATCH, maxBatchId);
+        }
         
-        long maxTriggerHistId = sqlTemplate.queryForLong(getSql("maxTriggerHistSql"));
-        initSequence(Constants.SEQUENCE_TRIGGER_HIST, maxTriggerHistId);
+        if (sequences.get(Constants.SEQUENCE_TRIGGER_HIST) == null) {
+            long maxTriggerHistId = sqlTemplate.queryForLong(getSql("maxTriggerHistSql"));
+            initSequence(Constants.SEQUENCE_TRIGGER_HIST, maxTriggerHistId);
+        }
         
-        long maxRequestId = sqlTemplate.queryForLong(getSql("maxExtractRequestSql"));
-        initSequence(Constants.SEQUENCE_EXTRACT_REQ, maxRequestId);
+        if (sequences.get(Constants.SEQUENCE_EXTRACT_REQ) == null) {
+            long maxRequestId = sqlTemplate.queryForLong(getSql("maxExtractRequestSql"));
+            initSequence(Constants.SEQUENCE_EXTRACT_REQ, maxRequestId);
+        }
     }
     
     private void initSequence(String name, long initialValue) {
@@ -196,6 +205,15 @@ public class SequenceService extends AbstractService implements ISequenceService
         } else {
             return null;
         }
+    }
+
+    protected Map<String, Sequence> getAll() {
+        Map<String, Sequence> map = new HashMap<String, Sequence>();
+        List<Sequence> sequences = sqlTemplate.query(getSql("getAllSequenceSql"), new SequenceRowMapper());
+        for (Sequence sequence : sequences) {
+            map.put(sequence.getSequenceName(), sequence);
+        }
+        return map;
     }
 
     class SequenceRowMapper implements ISqlRowMapper<Sequence> {

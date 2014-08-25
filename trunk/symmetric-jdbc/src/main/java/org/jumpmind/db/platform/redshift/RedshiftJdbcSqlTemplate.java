@@ -40,4 +40,12 @@ public class RedshiftJdbcSqlTemplate extends JdbcSqlTemplate {
         return false;
     }
 
+    @Override
+    protected String getSelectLastInsertIdSql(String sequenceName) {
+        if (sequenceName.equals("sym_data_data_id")) {
+            return "select max(data_id) from sym_data";
+        }
+        throw new UnsupportedOperationException();
+    }
+
 }
