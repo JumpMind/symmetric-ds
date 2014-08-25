@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
@@ -34,6 +35,8 @@ import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
+import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 
@@ -58,10 +61,13 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
     private String accessKey;
     private String secretKey;
 
-    public RedshiftBulkDatabaseWriter(IDatabasePlatform platform, IStagingManager stagingManager, int maxRowsBeforeFlush,
-            long maxBytesBeforeFlush, String bucket, String accessKey, String secretKey) {
+    public RedshiftBulkDatabaseWriter(IDatabasePlatform platform, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
+            List<IDatabaseWriterErrorHandler> errorHandlers, int maxRowsBeforeFlush, long maxBytesBeforeFlush, String bucket,
+            String accessKey, String secretKey) {
         super(platform);
         this.stagingManager = stagingManager;
+        this.writerSettings.setDatabaseWriterFilters(filters);
+        this.writerSettings.setDatabaseWriterErrorHandlers(errorHandlers);
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
         this.maxBytesBeforeFlush = maxBytesBeforeFlush;
         this.bucket = bucket;
@@ -101,35 +107,44 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
     }
 
     public void write(CsvData data) {
-        DataEventType dataEventType = data.getDataEventType();
-
-        switch (dataEventType) {
-            case INSERT:
-                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-                statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-                try {
-                    String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
-                    String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '"', CsvWriter.ESCAPE_MODE_DOUBLED, "\\N");
-                    stagedInputFile.getWriter().write(formattedData);
-                    loadedRows++;
-                    loadedBytes += formattedData.getBytes().length;
-                } catch (Exception ex) {
-                    throw getPlatform().getSqlTemplate().translate(ex);
-                } finally {
-                    statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        if (filterBefore(data)) {
+            try {
+                DataEventType dataEventType = data.getDataEventType();
+        
+                switch (dataEventType) {
+                    case INSERT:
+                        statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                        statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
+                        statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                        try {
+                            String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
+                            String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '"', CsvWriter.ESCAPE_MODE_DOUBLED, "\\N");
+                            stagedInputFile.getWriter().write(formattedData);
+                            loadedRows++;
+                            loadedBytes += formattedData.getBytes().length;
+                        } catch (Exception ex) {
+                            throw getPlatform().getSqlTemplate().translate(ex);
+                        } finally {
+                            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                        }
+                        break;
+                    case UPDATE:
+                    case DELETE:
+                    default:
+                        flush();
+                        super.write(data);
+                        break;
                 }
-                break;
-            case UPDATE:
-            case DELETE:
-            default:
-                flush();
-                super.write(data);
-                break;
-        }
-
-        if (loadedRows >= maxRowsBeforeFlush || loadedBytes >= maxBytesBeforeFlush) {
-            flush();
+        
+                if (loadedRows >= maxRowsBeforeFlush || loadedBytes >= maxBytesBeforeFlush) {
+                    flush();
+                }
+                filterAfter(data);
+            } catch (RuntimeException e) {
+                if (filterError(data, e)) {
+                    throw e;
+                }
+            }
         }
     }
 
