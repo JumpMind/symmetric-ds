@@ -117,6 +117,18 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
               + "  from sym_outgoing_batch b where status != 'OK' and status != 'RT'          "
               + "  group by b.node_id, b.status, b.channel_id");
 
+        putSql("deleteOutgoingBatchesForNodeSql", 
+                "delete from $(outgoing_batch) where node_id=? and channel_id=? and batch_id < "
+                + "(select max(batch_id) from $(outgoing_batch) where node_id=? and channel_id=?) ");
+
+        putSql("copyOutgoingBatchesSql", 
+                  "insert into $(outgoing_batch)                                                                                                                 "
+                + "  (batch_id, node_id, channel_id, status, load_id, extract_job_flag, load_flag, common_flag, reload_event_count, other_event_count,           "
+                + "  last_update_hostname, last_update_time, create_time, create_by)                                                                             "
+                + "  (select batch_id, ?, channel_id, 'NE', load_id, extract_job_flag, load_flag, common_flag, reload_event_count, other_event_count,          " 
+                + "   last_update_hostname, current_timestamp, create_time, 'copy' from $(outgoing_batch) where node_id=? and channel_id=? and batch_id > ?)     ");
+
+
     }
 
 }

@@ -69,7 +69,8 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
         this.uriHandlers.add(new RegistrationUriHandler(parameterService, registrationService,
                 concurrencyInterceptor));
         this.uriHandlers.add(new FileSyncPullUriHandler(this, concurrencyInterceptor, authInterceptor));
-        this.uriHandlers.add(new FileSyncPushUriHandler(this, concurrencyInterceptor, authInterceptor));        
+        this.uriHandlers.add(new FileSyncPushUriHandler(this, concurrencyInterceptor, authInterceptor));
+        this.uriHandlers.add(new CopyNodeUriHandler(this, authInterceptor));
         if (parameterService.is(ParameterConstants.WEB_BATCH_URI_HANDLER_ENABLE)) {
             this.uriHandlers.add(new BatchUriHandler(parameterService, dataExtractorService));
         }

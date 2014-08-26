@@ -23,8 +23,10 @@ package org.jumpmind.symmetric.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 
 /**
@@ -66,4 +68,6 @@ public interface IIncomingBatchService {
     
     public boolean isRecordOkBatchesEnabled();
 
+    public Map<String,BatchId> findMaxBatchIdsByChannel();
+    
 }

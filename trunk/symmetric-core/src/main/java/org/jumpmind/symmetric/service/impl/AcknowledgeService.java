@@ -26,7 +26,6 @@ import java.util.List;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -37,7 +36,6 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.statistic.RouterStats;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
@@ -47,23 +45,12 @@ import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
  */
 public class AcknowledgeService extends AbstractService implements IAcknowledgeService {
 
-    private IOutgoingBatchService outgoingBatchService;
-
     private List<IAcknowledgeEventListener> batchEventListeners;
 
-    private IRegistrationService registrationService;
-
-    private IStagingManager stagingManager;
-    
     private ISymmetricEngine engine;
 
-    public AcknowledgeService(IParameterService parameterService,
-            ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
-            IRegistrationService registrationService, IStagingManager stagingManager, ISymmetricEngine engine) {
-        super(parameterService, symmetricDialect);
-        this.outgoingBatchService = outgoingBatchService;
-        this.registrationService = registrationService;
-        this.stagingManager = stagingManager;
+    public AcknowledgeService(ISymmetricEngine engine) {
+        super(engine.getParameterService(), engine.getSymmetricDialect());
         this.engine = engine;
         setSqlMap(new AcknowledgeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -71,6 +58,10 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
     public BatchAckResult ack(final BatchAck batch) {
 
+        IRegistrationService registrationService = engine.getRegistrationService();
+        IStagingManager stagingManager = engine.getStagingManager();
+        IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
+        
     	BatchAckResult result = new BatchAckResult(batch);
     	
         if (batchEventListeners != null) {

@@ -39,11 +39,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.IoConstants;
+import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -58,15 +59,35 @@ import org.jumpmind.util.AppUtils;
  */
 public class HttpTransportManager extends AbstractTransportManager implements ITransportManager {
 
-    private IParameterService parameterService;
+    private ISymmetricEngine engine;
 
     public HttpTransportManager() {
     }
 
     public HttpTransportManager(ISymmetricEngine engine) {
-        this.parameterService = engine.getParameterService();
+        this.engine = engine;
         this.addExtensionSyncUrlHandler("httpBandwidthUrlSelector", new HttpBandwidthUrlSelector(
                 engine.getNodeService(), engine.getBandwidthService()));
+    }
+
+    public int sendCopyRequest(Node local) throws IOException {
+        StringBuilder data = new StringBuilder();
+        Map<String, BatchId> batchIds = engine.getIncomingBatchService().findMaxBatchIdsByChannel();
+        for (String channelId : batchIds.keySet()) {
+            if (!Constants.CHANNEL_CONFIG.equals(channelId) && !Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
+                BatchId batchId = batchIds.get(channelId);
+                append(data, channelId + "-" + batchId.getNodeId(), batchId.getBatchId());
+            }
+        }
+        String securityToken = engine.getNodeService().findNodeSecurity(local.getNodeId())
+                .getNodePassword();
+        String url = addSecurityToken(engine.getParameterService().getRegistrationUrl() + "/copy",
+                "&", local.getNodeId(), securityToken);
+        url = add(url, WebConstants.EXTERNAL_ID, engine.getParameterService().getExternalId(), "&");
+        url = add(url, WebConstants.NODE_GROUP_ID, engine.getParameterService().getNodeGroupId(), "&");
+
+        log.info("Contact server to do node copy using a url of: " + url);
+        return sendMessage(new URL(url), data.toString());
     }
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,
@@ -122,35 +143,35 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public int getOutputStreamSize() {
-        return parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_PUSH_STREAM_SIZE);
+        return engine.getParameterService().getInt(ParameterConstants.TRANSPORT_HTTP_PUSH_STREAM_SIZE);
     }
 
     public boolean isOutputStreamEnabled() {
-        return parameterService.is(ParameterConstants.TRANSPORT_HTTP_PUSH_STREAM_ENABLED);
+        return engine.getParameterService().is(ParameterConstants.TRANSPORT_HTTP_PUSH_STREAM_ENABLED);
     }
 
     public int getHttpTimeOutInMs() {
-        return parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
+        return engine.getParameterService().getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
     }
 
     public boolean isUseCompression() {
-        return parameterService.is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION_CLIENT);
+        return engine.getParameterService().is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION_CLIENT);
     }
 
     public int getCompressionLevel() {
-        return parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL);
+        return engine.getParameterService().getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL);
     }
 
     public int getCompressionStrategy() {
-        return parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY);
+        return engine.getParameterService().getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY);
     }
 
     public String getBasicAuthUsername() {
-        return parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_USERNAME);
+        return engine.getParameterService().getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_USERNAME);
     }
 
     public String getBasicAuthPassword() {
-        return parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_PASSWORD);
+        return engine.getParameterService().getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_PASSWORD);
     }
 
     public void writeMessage(OutputStream out, String data) throws IOException {
@@ -168,7 +189,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
                 conn.addRequestProperty(key, requestProperties.get(key));
             }
         }
-        return new HttpIncomingTransport(conn, parameterService);
+        return new HttpIncomingTransport(conn, engine.getParameterService());
     }
 
     public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken,
@@ -180,7 +201,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
                 conn.addRequestProperty(key, requestProperties.get(key));
             }
         }
-        return new HttpIncomingTransport(conn, parameterService);
+        return new HttpIncomingTransport(conn, engine.getParameterService());
     }
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local,
@@ -202,11 +223,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl)
             throws IOException {
         return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(
-                registrationUrl, node))), parameterService);
-    }
-
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
+                registrationUrl, node))), engine.getParameterService());
     }
 
     public static String buildRegistrationUrl(String baseUrl, Node node) throws IOException {
@@ -280,12 +297,16 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     protected String addNodeId(String base, String nodeId, String connector) {
+        return add(base, WebConstants.NODE_ID, nodeId, connector);
+    }
+    
+    protected String add(String base, String key, String value, String connector) {
         StringBuilder sb = new StringBuilder(base);
         sb.append(connector);
-        sb.append(WebConstants.NODE_ID);
+        sb.append(key);
         sb.append("=");
         try {
-            sb.append(URLEncoder.encode(nodeId, IoConstants.ENCODING));
+            sb.append(URLEncoder.encode(value, IoConstants.ENCODING));
         } catch (UnsupportedEncodingException e) {
             throw new IoException(e);
         }
