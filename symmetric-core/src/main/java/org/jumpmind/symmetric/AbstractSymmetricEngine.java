@@ -310,11 +310,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.dataExtractorService = new DataExtractorService(this);
         this.transportManager = new TransportManagerFactory(this).create();
         this.dataLoaderService = new DataLoaderService(this);
-        this.registrationService = new RegistrationService(parameterService, symmetricDialect,
-                nodeService, dataExtractorService, dataService, dataLoaderService,
-                transportManager, statisticManager, configurationService, outgoingBatchService);
-        this.acknowledgeService = new AcknowledgeService(parameterService, symmetricDialect,
-                outgoingBatchService, registrationService, stagingManager, this);
+        this.registrationService = new RegistrationService(this);
+        this.acknowledgeService = new AcknowledgeService(this);
         this.pushService = new PushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
                 clusterService, nodeCommunicationService, statisticManager, configurationService);
@@ -510,21 +507,40 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 setup();
                 if (isConfigured()) {
                     Node node = nodeService.findIdentity();
-                    if (node != null) {
+                    if (node != null && (!node.getExternalId().equals(getParameterService().getExternalId())
+                            || !node.getNodeGroupId().equals(
+                                    getParameterService().getNodeGroupId()))) {
+                        if (parameterService.is(ParameterConstants.NODE_COPY_MODE_ENABLED,
+                                false)) {
+                            registrationService.requestNodeCopy();
+                        } else {
+                            throw new SymmetricException(
+                                    "The configured state does not match recorded database state.  The recorded external id is %s while the configured external id is %s. The recorded node group id is {} while the configured node group id is {}",
+                                    new Object[] { node.getExternalId(),
+                                            getParameterService().getExternalId(),
+                                            node.getNodeGroupId(),
+                                            getParameterService().getNodeGroupId() });
+                        }
+                   } else if (node != null) {
+                        
                         log.info(
                                 "Starting registered node [group={}, id={}, externalId={}]",
                                 new Object[] { node.getNodeGroupId(), node.getNodeId(),
                                         node.getExternalId() });
 
-                        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP, true)) {
+                        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP,
+                                true)) {
                             triggerRouterService.syncTriggers();
                         } else {
-                            log.info(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP + " is turned off");
+                            log.info(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP
+                                    + " is turned off");
                         }
 
                         if (parameterService
-                                .is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false) || isBlank(node.getDatabaseType()) ||
-                                !StringUtils.equals(node.getSyncUrl(),parameterService.getSyncUrl())) {
+                                .is(ParameterConstants.HEARTBEAT_SYNC_ON_STARTUP, false)
+                                || isBlank(node.getDatabaseType())
+                                || !StringUtils.equals(node.getSyncUrl(),
+                                        parameterService.getSyncUrl())) {
                             heartbeat(false);
                         }
 
@@ -543,7 +559,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 } else {
                     log.error("Did not start SymmetricDS.  It has not been configured properly");
                 }
-            } catch (Throwable ex) {
+            } catch (SymmetricException ex) {
+                log.error(ex.getMessage());
+            } catch (Throwable ex) {                
                 log.error("An error occurred while starting SymmetricDS", ex);
             } finally {
                 starting = false;
@@ -750,7 +768,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         purgeService.purgeOutgoing(true);
         purgeService.purgeIncoming(true);
         purgeService.purgeDataGaps(true);
-    }
+    }    
 
     public boolean isConfigured() {
         boolean configurationValid = false;
@@ -790,13 +808,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             log.warn("Please set the group.id for the node");
         } else if (Constants.PLEASE_SET_ME.equals(getParameterService().getExternalId())) {
             log.warn("Please set the external.id for the node");            
-        } else if (node != null
-                && (!node.getExternalId().equals(getParameterService().getExternalId()) || !node
-                        .getNodeGroupId().equals(getParameterService().getNodeGroupId()))) {
-            log.warn(
-                    "The configured state does not match recorded database state.  The recorded external id is {} while the configured external id is {}. The recorded node group id is {} while the configured node group id is {}",
-                    new Object[] { node.getExternalId(), getParameterService().getExternalId(),
-                            node.getNodeGroupId(), getParameterService().getNodeGroupId() });
         } else if (offlineNodeDetectionPeriodSeconds > 0
                 && offlineNodeDetectionPeriodSeconds <= heartbeatSeconds) {
             // Offline node detection is not disabled (-1) and the value is too
@@ -815,13 +826,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             }
             configurationValid = true;
         }
-
-        // TODO Add more validation checks to make sure that the system is
-        // configured correctly
-
-        // TODO Add method to configuration service to validate triggers and
-        // call from here.
-        // Make sure there are not duplicate trigger rows with the same name
 
         return configurationValid;
     }

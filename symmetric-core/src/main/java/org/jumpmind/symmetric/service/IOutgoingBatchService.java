@@ -88,5 +88,7 @@ public interface IOutgoingBatchService {
             List<OutgoingBatch.Status> statuses, long startAtBatchId, int rowsExpected, boolean ascending);
     
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly);
+    
+    public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId);
 
 }

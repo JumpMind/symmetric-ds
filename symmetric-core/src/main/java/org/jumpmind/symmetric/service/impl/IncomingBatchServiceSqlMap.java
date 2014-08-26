@@ -69,6 +69,8 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
 "delete from $(incoming_batch) where batch_id = ? and node_id = ?                                                                                     " );
 
         putSql("deleteIncomingBatchByNodeSql" ,"delete from $(incoming_batch) where node_id = ?");
+        
+        putSql("maxBatchIdsSql", "select max(batch_id) as batch_id, node_id, channel_id from $(incoming_batch) where status = ? group by node_id, channel_id");
     }
 
 }

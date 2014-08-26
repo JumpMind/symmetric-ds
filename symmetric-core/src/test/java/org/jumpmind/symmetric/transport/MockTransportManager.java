@@ -64,6 +64,11 @@ public class MockTransportManager implements ITransportManager {
                 Node local, String securityToken, String registrationUrl) throws IOException {
         return HttpURLConnection.HTTP_OK;
     }
+    
+    @Override
+    public int sendCopyRequest(Node local) throws IOException {
+        return -1;
+    }
 
     public void writeAcknowledgement(OutputStream out, Node remote,
             List<IncomingBatch> list, Node local, String securityToken)
