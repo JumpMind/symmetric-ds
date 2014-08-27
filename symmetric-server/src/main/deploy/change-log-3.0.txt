@@ -1,3 +1,19 @@
+SymmetricDS - 3.6.6 (Released 2014-08-27)
+=========================================
+- 0001920: [New Feature] Redshift database dialect (elong) - resolved.
+- 0001869: [Bug] The symmetric wrapper kills the process when an OOM error occurs before the heap can be dumped (elong) - closed.
+- 0001907: [Improvement] Add the ability to republish xml messages via jmx (chenson) - closed.
+- 0001910: [Bug] Too many connections when network environment is bad. Bug in DBCP. (chenson) - closed.
+- 0001917: [Improvement] SymmetricDS should find tables in schemas and catalogs other than the default schema/catalog when schema/catalog is left blank (chenson) - closed.
+- 0001921: [Bug] While sending a batch, if a batch is set to IG and an error occurs, then the batch gets set to ER and the IG status is ignored (chenson) - closed.
+- 0001922: [Bug] Incorrect conversion of values of type BIT in SQL Server 2005 to SQLite (chenson) - closed.
+- 0001925: [Bug] Send Table Schema uses cached tables (chenson) - closed.
+- 0001926: [Improvement] Add dataloader.fit.to.column that when set will truncate data to fit in the target column (chenson) - closed.
+- 0001929: [Bug] Routing reader can get stuck if an Error is thrown during the close of the read cursor (chenson) - closed.
+- 0001930: [Bug] Upgrade from 3.5 to 3.6 of Sybase ASA fails (chenson) - closed.
+- 0001935: [Improvement] Upgrade mongodb java client (chenson) - closed.
+- 0001938: [Improvement] Add the ability to copy a node to a new node id (chenson) - closed.
+
 SymmetricDS - 3.6.5 (Released 2014-08-11)
 =========================================
 - 0001668: [Bug] PostGIS Spatial data replication fails with SRID problem (chenson) - closed.
