@@ -78,9 +78,7 @@ public class XmlPublisherDatabaseWriterFilter extends AbstractXmlPublisherExtens
                         table.getName(), table.getColumnNames(),
                         data.getParsedData(CsvData.ROW_DATA), table.getPrimaryKeyColumnNames(), data.getParsedData(CsvData.PK_DATA));
             }
-        } else if (log.isDebugEnabled()) {
-            log.debug("'{}' not in list to publish", table.getName());
-        }
+        } 
         return loadDataInTargetDatabase;
     }
 
