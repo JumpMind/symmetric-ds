@@ -216,16 +216,15 @@ abstract public class AbstractParameterService {
         this.parameters = null;
     }
 
-    abstract protected TypedProperties rereadDatabaseParameters(String externalId,
-            String nodeGroupId);
+    abstract public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId);
 
     protected TypedProperties rereadDatabaseParameters(Properties p) {
         if (databaseHasBeenInitialized) {
-            TypedProperties properties = rereadDatabaseParameters(ParameterConstants.ALL,
+            TypedProperties properties = getDatabaseParameters(ParameterConstants.ALL,
                     ParameterConstants.ALL);
-            properties.putAll(rereadDatabaseParameters(ParameterConstants.ALL,
+            properties.putAll(getDatabaseParameters(ParameterConstants.ALL,
                     p.getProperty(ParameterConstants.NODE_GROUP_ID)));
-            properties.putAll(rereadDatabaseParameters(
+            properties.putAll(getDatabaseParameters(
                     p.getProperty(ParameterConstants.EXTERNAL_ID),
                     p.getProperty(ParameterConstants.NODE_GROUP_ID)));
             databaseHasBeenInitialized = true;

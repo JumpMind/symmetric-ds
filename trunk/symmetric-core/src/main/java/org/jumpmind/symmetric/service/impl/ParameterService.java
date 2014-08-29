@@ -134,10 +134,6 @@ public class ParameterService extends AbstractParameterService implements IParam
             saveParameter(externalId, nodeGroupId, key, parameters.get(key), lastUpdateBy);
         }
     }
-
-    protected TypedProperties rereadDatabaseParameters(String externalId, String nodeGroupId) {
-        return readParametersFromDatabase("selectParametersSql", externalId, nodeGroupId);
-    }
     
     protected TypedProperties readParametersFromDatabase(String sqlKey, Object... values) {
         final TypedProperties properties = new TypedProperties();
@@ -171,12 +167,8 @@ public class ParameterService extends AbstractParameterService implements IParam
                 new DatabaseParameterMapper(), paramKey);
     }
 
-    public TypedProperties getDatabaseParametersByNodeGroupId(String nodeGroupId) {
-        return readParametersFromDatabase("selectParametersByNodeGroupIdSql", nodeGroupId);
-    }
-
-    public TypedProperties getDatabaseParametersByExternalId(String externalId) {
-        return readParametersFromDatabase("selectParametersByExternalIdSql", externalId);
+    public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId) {
+        return readParametersFromDatabase("selectParametersSql", externalId, nodeGroupId);
     }
 
     class DatabaseParameterMapper implements ISqlRowMapper<DatabaseParameter> {
