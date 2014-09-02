@@ -1,0 +1,1034 @@
+SymmetricDS - 3.6.7 (Released 2014-09-02)
+=========================================
+- 0001940: [Bug] On MySQL sym_transaction_id_post_5_1_23 function should not be checking the autocommit session variable (chenson) - closed.
+- 0001946: [Bug] ConcurrentModificationException due to timing issue in OutgoingBatchService (chenson) - closed.
+
+SymmetricDS - 3.6.6 (Released 2014-08-27)
+=========================================
+- 0001920: [New Feature] Redshift database dialect (elong) - resolved.
+- 0001869: [Bug] The symmetric wrapper kills the process when an OOM error occurs before the heap can be dumped (elong) - closed.
+- 0001907: [Improvement] Add the ability to republish xml messages via jmx (chenson) - closed.
+- 0001910: [Bug] Too many connections when network environment is bad. Bug in DBCP. (chenson) - closed.
+- 0001917: [Improvement] SymmetricDS should find tables in schemas and catalogs other than the default schema/catalog when schema/catalog is left blank (chenson) - closed.
+- 0001921: [Bug] While sending a batch, if a batch is set to IG and an error occurs, then the batch gets set to ER and the IG status is ignored (chenson) - closed.
+- 0001922: [Bug] Incorrect conversion of values of type BIT in SQL Server 2005 to SQLite (chenson) - closed.
+- 0001925: [Bug] Send Table Schema uses cached tables (chenson) - closed.
+- 0001926: [Improvement] Add dataloader.fit.to.column that when set will truncate data to fit in the target column (chenson) - closed.
+- 0001929: [Bug] Routing reader can get stuck if an Error is thrown during the close of the read cursor (chenson) - closed.
+- 0001930: [Bug] Upgrade from 3.5 to 3.6 of Sybase ASA fails (chenson) - closed.
+- 0001935: [Improvement] Upgrade mongodb java client (chenson) - closed.
+- 0001938: [Improvement] Add the ability to copy a node to a new node id (chenson) - closed.
+
+SymmetricDS - 3.6.5 (Released 2014-08-11)
+=========================================
+- 0001668: [Bug] PostGIS Spatial data replication fails with SRID problem (chenson) - closed.
+- 0001860: [Bug] symmetric-wrapper should not include the version number, otherwise the service needs to be reinstalled on each upgrade (elong) - closed.
+- 0001868: [Bug] Introduce a more accurate way to get a machine's hostname (chenson) - closed.
+- 0001870: [Improvement] Include directory listing of symmetricds installation in snapshot (chenson) - closed.
+- 0001873: [Bug] Control Center doesn't start on Windows if not Administrator (elong) - closed.
+- 0001875: [Improvement] Add extensions.xml property which can be used to configure symmetric extensions (like jms) via database configuration (chenson) - closed.
+- 0001877: [Bug] Process status can be stranded in non-ok or non-error status on pull if an io expection occurs in the uri handler (chenson) - closed.
+- 0001879: [Bug] Database upgrade fails on sql server because drop index doesn't allow database name in the ddl (chenson) - closed.
+- 0001881: [Bug] MS Azure does not support the sysconstraints view (chenson) - closed.
+- 0001886: [Bug] SymmetricDS upgrade on Azure fails. (chenson) - closed.
+- 0001887: [Bug] http.concurrent.workers.max doesn't prevent the same node from over pulling on itself (chenson) - closed.
+- 0001888: [Improvement] Improve stagedresource (chenson) - closed.
+- 0001889: [Improvement] Add reverse version of initial load before/after sql (elong) - closed.
+- 0001892: [Bug] New version of Postgis fails to replicate (chenson) - closed.
+- 0001893: [Improvement] Log information about failed column transform to make it easier to debug transforms (chenson) - closed.
+- 0001894: [Improvement] Make lookup transform column names case insensitive when used as named parameters in sql (chenson) - closed.
+- 0001895: [Improvement] Add support for token replacement for $(sourceCatalogName) and $(sourceSchemaName) in lookup table transform (chenson) - closed.
+
+SymmetricDS - 3.6.4 (Released 2014-08-02) 
+=========================================
+- 0001852: [Bug] When a table has multiple transforms, the order of execution should be reversed when a delete comes through the system (chenson) - closed.
+- 0001853: [Improvement] Clear staging if transformation changes come through the data loader or data router (chenson) - closed.
+- 0001856: [Bug] Bsh variables for transformedData and transformColumn not being updated (elong) - closed.
+- 0001857: [Bug] Initial load is broken for the master to master sync scenario (chenson) - closed.
+- 0001859: [Improvement] Document that a -1 node id in outgoing batch means that the batch was unrouted (chenson) - closed.
+- 0001863: [Bug] Triggers get blown away when saving a link for an individual table. broke with 0001827 fix (chenson) - closed.
+
+SymmetricDS - 3.6.3 (Released 2014-07-29) 
+=========================================
+- 0001845: [Bug] The transaction id for sybase ase isn't always unique (chenson) - closed.
+- 0001846: [Improvement] Update router helper methods that get column values use a case insensitive map (chenson) - closed.
+- 0001805: [Improvement] Add support for mysql enums in dbfill (chenson) - closed.
+- 0001806: [Bug] dbfill only inserts 1 char for char fields. It should respect the size of the char field (chenson) - closed.
+- 0001807: [Bug] dbfill mishandles clob fields (chenson) - closed.
+- 0001808: [Bug] '0000-00-00 00:00:00' fails when initial.load.concat.csv.in.sql.enabled=false and db.treat.date.time.as.varchar.enabled=true (chenson) - closed.
+- 0001812: [Bug] bit type in should be mapped to a bit type in mysql. not a tinyint(1) (chenson) - closed.
+- 0001814: [Bug] NullPointerException in AbstractTriggerTemplate.createInitalLoadSql (chenson) - closed.
+- 0001818: [Bug] sym script error with Java 5 detection (elong) - closed.
+- 0001820: [Improvement] Add property that instructs symmetric to keep the same node_password for a node on re-registration (chenson) - closed.
+- 0001821: [Improvement] Add the ability, through configuration, to specify a system commands to dump and load a database's schema during initial load. (chenson) - closed.
+- 0001829: [Bug] dbexport doesn't respect "use quoted identifiers" for schema exports (chenson) - closed.
+- 0001830: [Bug] sql server needs to explicitly ALLOW_PAGE_LOCKS = OFF if mssql.allow.only.row.level.locks.on.runtime.tables is set (chenson) - closed.
+- 0001831: [Improvement] Add new property that instructs the data loader to alter the case of db artifacts being created to the default case of the db. (chenson) - closed.
+- 0001832: [Bug] Null values aren't being passed through transforms (chenson) - closed.
+- 0001619: [Improvement] Stabilize the Sybase unit tests. (chenson) - closed.
+- 0001811: [Improvement] Add new transform types that will put the source catalog, schema or table names into a column (chenson) - closed.
+- 0001823: [Improvement] DB2 sync trigger variables should use prefix (elong) - closed.
+- 0001827: [Bug] Long Oracle tables generate ORA-04095 on trigger creation (chenson) - closed.
+- 0001833: [Bug] ASE 12.5 create triggers in a multi-statement fails (chenson) - closed.
+- 0001836: [Bug] The removal of a node isn't synchronized to other nodes in a master to master scenario (chenson) - closed.
+- 0001837: [Bug] If the engine isn't found, the logging context should be '?', not the previously handled symmetric engine name for that thread (chenson) - closed.
+- 0001839: [Improvement] Global BSH script for transforms (elong) - closed.
+- 0001841: [Bug] Update registration request doesn't work on sql server with the latest microsoft jdbc driver (chenson) - closed.
+- 0001842: [Improvement] Additional transform variables for bsh (elong) - closed.
+- 0001843: [Bug] Oracle dialect has static "sym" prefix on objects (elong) - closed.
+- 0001844: [Improvement] Make picking conflict detection strategy case independent when matching tables (chenson) - closed.
+
+SymmetricDS - 3.6.2 (Released 2014-07-12) 
+=========================================
+- 0001755: [Bug] XML Data (schema and data) is not properly escaped. (chenson) - closed.
+- 0001758: [Bug] PostgreSQL default value for 'uuid' field type (chenson) - closed.
+- 0001781: [Bug] Uninstall fails if file sync is configured (chenson) - closed.
+- 0001782: [Bug] initial.load.create.first fails for tables with a unique index on the primary key (chenson) - closed.
+- 0001783: [Bug] A default value of (sysdate) should not translate to '(sysdate)' in the create statement when initial.load.create.first is on (chenson) - closed.
+- 0001785: [Bug] Hard coded EXECUTE AS OWNER in Sql Server triggers causes issues if the tables are created under another account (chenson) - closed.
+- 0001787: [Bug] Reverse initial load is broken in 3.6 (chenson) - closed.
+- 0001789: [Bug] external.id.is.unique.enabled property is defined backwards. It is being used opposite of the definition. (chenson) - closed.
+- 0001790: [Improvement] Add REST service to send schema changes (chenson) - closed.
+- 0001793: [Bug] When the stream.to.file.threshold.bytes is reached and the staging manager writes the buffer to a file the buffer is not removed (chenson) - closed.
+- 0001794: [Bug] Fix null pointer on busy system during staging area clean (chenson) - closed.
+- 0001795: [Bug] DDL modification in schema different than symetricds one (chenson) - closed.
+- 0001796: [Bug] Unable to parse ISO-8601 datetime on sqlite (chenson) - closed.
+- 0001797: [Bug] sym_table_reload_request should be cleaned up when a node is deleted (chenson) - closed.
+- 0001798: [Improvement] Add support for wildcarded catalogs and schemas (chenson) - closed.
+- 0001801: [Bug] DbExport does not handle timestamp(9) on Oracle (elong) - closed.
+- 0001802: [Bug] DbExport does not handle BLOB on DB2 (elong) - closed.
+- 0001803: [Bug] Removing a node using engine.removeAndCleanupNode method on a master to master cluster does not send the remove to other nodes (chenson) - closed.
+- 0001804: [Bug] sym_node_host on the heartbeat channel can cause FK errors when a node is removed (chenson) - closed.
+
+
+SymmetricDS - 3.6.1 (Released 2014-06-26) 
+=========================================
+- 0001771: [Bug] Add support for ansi literal default date values. Also support well known sql 92 function types for the default values (chenson) - closed.
+- 0001772: [Bug] Custom IColumnTransform weren't being marked as installed. (chenson) - closed.
+- 0001776: [Bug] Postgres should auto commit ddl changes. Otherwise, if a ddl fails to run it cannot continue to move forward. (chenson) - closed.
+
+SymmetricDS - 3.6.0 (Released 2014-06-16) 
+=========================================
+- 0001441: [New Feature] Add ability to sync on control file (chenson) - closed.
+- 0001485: [New Feature] Create a delete_after_sync function for file sync (chenson) - closed.
+- 0000166: [New Feature] Integrate changes to support spatial data replication using http://postgis.refractions.net/ [^] (elong) - closed.
+- 0001581: [New Feature] Add support for multiple channels for file sync (chenson) - closed.
+- 0001609: [Improvement] File sync mutex limits scaling multiple clients (elong) - closed.
+- 0001637: [Improvement] Refactor databasewriter into abstractdatabasewriter and defaultdatabasewriter so we can subclass off of abstract databasewriter (chenson) - closed.
+- 0001642: [Bug] Triggers referencing tables with case sensitive schemas fail to create on H2 (chenson) - closed.
+- 0001643: [Improvement] Support multiple reload channels (chenson) - closed.
+- 0001647: [New Feature] Create a Java router, transform, and load filter that uses compiled Java code (elong) - closed.
+- 0001648: [New Feature] Add support for choosing the channel a trigger/table will use dynamically (chenson) - closed.
+- 0001653: [Improvement] Allow downgrades within same minor version (elong) - closed.
+- 0001654: [Bug] Restarting server crashes due to primary key violation (elong) - closed.
+- 0001655: [Bug] host.bind.name has no effect when running stand-alone (elong) - closed.
+- 0001656: [Improvement] PostgreSQL server side prepared statements causing slow query processing (elong) - closed.
+- 0001658: [Improvement] Add sync triggers by table to REST API (elong) - closed.
+- 0001371: [Improvement] Add a drop triggers feature (elong) - closed.
+- 0001467: [Bug] trigger creation failed with MSSQL database column of nvarchar and ntext data type using the microsoft jdbc driver (chenson) - closed.
+- 0001592: [New Feature] Create bulk loader for MySQL (elong) - closed.
+- 0001652: [Improvement] Add BLOB support to PostgreSQL bulk loader (elong) - closed.
+- 0000952: [Bug] Data can be skipped due to aggressive purge on some platforms (chenson) - closed.
+- 0001240: [Bug] No way to send schema changes in schema other, than public (elong) - closed.
+- 0001606: [New Feature] Create dialect for DB2 z/OS (elong) - closed.
+- 0001624: [Improvement] Add setting to sym_node_group_link to prevent clients from updating configuration (chenson) - closed.
+- 0001626: [Improvement] Create event should not store XML is row data (elong) - closed.
+- 0001644: [Improvement] SQL Optimizations (chenson) - closed.
+- 0001660: [Bug] Table creation generates wrong syntax when source is SQLServer (josh-a-hicks) - closed.
+- 0001661: [Improvement] Parameter to collect router statistics (elong) - closed.
+- 0001665: [Improvement] Upgrade JDBC drivers (elong) - closed.
+- 0001678: [Improvement] Make trigger id column size larger (chenson) - closed.
+- 0001689: [Improvement] While routing config changes sync triggers by id that haven't already been sync'd versus calling syncTriggers() (chenson) - closed.
+- 0001691: [Improvement] Additional Logging for compliance (chenson) - closed.
+- 0001699: [Bug] Changing Trigger results in Error om Tables with an uppercase letter (chenson) - closed.
+- 0001700: [Improvement] Parameterized the node Id assignment directly from external Id (josh-a-hicks) - closed.
+- 0001701: [Improvement] Re-add support for db.spring.bean.name (chenson) - closed.
+- 0001705: [Improvement] Improve initial load query performance (chenson) - closed.
+- 0001707: [Bug] Trigger for all tables * is not creating triggers for some of the tables (chenson) - closed.
+- 0001717: [Improvement] IReloadListener should be passed the current loadId for use (chenson) - closed.
+- 0001718: [Bug] If a node is deregistered by deleting it's sym_node* records and it is registered it will route and sync the deletes (chenson) - closed.
+- 0001721: [Improvement] Heartbeat immediately after registration so node information doesn't have to wait for next heartbeat to show up at reg server (chenson) - closed.
+- 0001727: [Bug] 100% CPU when expiring SYM_DATA_GAP with missing SYM_DATA (chenson) - closed.
+- 0001224: [Task] Remove dependency on java service wrapper (elong) - closed.
+- 0001391: [Improvement] Table existing on MS SQL Server is not being auto created correctly on the target DB SQLServer. (josh-a-hicks) - closed.
+- 0001615: [Improvement] Figure out a way to make the usage of source schema and catalog more user friendly (elong) - closed.
+- 0001618: [New Feature] Create a MongoDB data loader for SymmetricDS (chenson) - closed.
+- 0001723: [Improvement] Unique constraint violation is not logged for tables declared for conflict detection (chenson) - closed.
+- 0001729: [Bug] create of table with a varchar/char column with a default values of: ('N') fails to create table on client side (chenson) - closed.
+- 0001735: [Improvement] Transforms write out the start of a table before every row which is inefficient and causes bulk loaders to become unusable (chenson) - closed.
+- 0001737: [Improvement] Trim numeric values before parsing into primitive to handle situations where the source db might have whitespace prepended (chenson) - closed.
+- 0001738: [Improvement] Introduce a new columntransform type that returns both new and old data. use it for the copy transform (chenson) - closed.
+- 0001742: [Bug] Fix SQLServer 2005 issue where defaults for BIGINT's are being read with an extra "." at the end. (gwilmer) - closed.
+- 0001743: [Improvement] package android dependency jars in zip under the libs directory. not lib. it is misleading because eclipse adk requires libs (chenson) - closed.
+- 0001744: [Improvement] NodeService.deleteNode should remove delete from all ancillary tables (in addition to node, node_security and node_host) (chenson) - closed.
+- 0001746: [Improvement] Add jdbc driver version to sym_node_host (chenson) - closed.
+- 0001748: [Task] Remove auto increment from sym_trigger_hist and sym_extract_request. Use sym_sequence to get the pks. (chenson) - closed.
+- 0001749: [Bug] Incoming ProcessInfo is not marked as ERROR when a batch ERROR occurs. It is marked as OK. (chenson) - closed.
+- 0001750: [Task] Upgrade the spring framework to the latest released version (chenson) - closed.
+- 0001752: [Improvement] Date format setting in triggers (chenson) - closed.
+- 0001757: [Bug] java.lang.NumberFormatException w/ MSSQL and BIT column (chenson) - closed.
+- 0001759: [Bug] PostgreSqlTriggerTemplate not handling timezone fractional minutes properly when timezone minute < 10 (gwilmer) - closed.
+- 0001760: [Improvement] increase channel_id size (chenson) - closed.
+- 0001762: [Bug] old data showing up as an array of nulls versus an array that is null causes a code path to be missed that strips out pks (chenson) - closed.
+- 0001764: [Improvement] Add parameter to disable sync triggers at server startup (chenson) - closed.
+- 0001765: [Bug] Uninstalling symmetric from the database staging area doesn't get wiped out (chenson) - closed.
+- 0001766: [Bug] nvarchar data can be corrupted when the default database collation is set to a value that does not support double byte character (chenson) - closed.
+- 0001767: [Improvement] On sql server build triggers with "execute as owner" so less grants are need for application users (chenson) - closed.
+
+SymmetricDS - 3.5.22 (Released 2014-05-27) 
+==========================================
+- 0001712: [Bug] null pointer at startup when sync.url is null in the database (chenson) - resolved.
+- 0001722: [Bug] Trigger errors for large numerics on SQL Server: Arithmetic Overflow Error (josh-a-hicks) - resolved.
+- 0001713: [Improvement] Add initial.load.before.sql and initial.load.after.sql which can contain sql that runs on the client before and after a load (chenson) - resolved.
+- 0001671: [Improvement] Cache node group links (chenson) - closed.
+- 0001708: [Improvement] Disable page level locking and enable row level locking on sym_data and sym_data_event (chenson) - closed.
+- 0001714: [Bug] The keystore type should be settable via a system property. It is currently hardcoded. (chenson) - closed.
+- 0001715: [Improvement] Add a new column transform that can be used to set a column to the value from a SymmetricDS parameter (chenson) - closed.
+- 0001725: [Improvement] MSSQL Bulk Loader support for UNC paths (elong) - closed.
+- 0001726: [Bug] When trigger.update.capture.changed.data.only.enabled is enabled on SQL Server and old data capture is off, updates don't work (chenson) - closed.
+- 0001728: [Improvement] MSSQL Bulk Loader support for columns in different order (elong) - closed.
+
+SymmetricDS - 3.5.21 (Released 2014-04-28) 
+==========================================
+- 0001299: [Improvement] Transforms should be case insensitive when matching catalog, schema, tablename and columns to make configuration much easier (chenson) - closed.
+- 0001649: [Improvement] Default auto.reload.sym.tables.on.upgrade to false (chenson) - closed.
+- 0001672: [Bug] network_millis on outgoing batch is incorrect (chenson) - closed.
+- 0001673: [Bug] snapshot functionality null pointers in open source (chenson) - closed.
+- 0001684: [Improvement] Passing the correct data type to select data statement improves performance on Postgres (chenson) - closed.
+- 0001685: [Bug] early commit doesn't work when data rows are in conflict. the uncommitted count doesn't increment (chenson) - closed.
+- 0001697: [Bug] Extract millis aren't captured on outgoing batch when initial.load.use.extract.job.enabled is true (chenson) - closed.
+- 0001698: [Improvement] Provide the ability to pass the load time and network time to be populated in outgoing batch via the rest service (chenson) - closed.
+
+SymmetricDS - 3.5.20 (Released 2014-04-14) 
+==========================================
+- 0001651: [Bug] MySQL and SQL-Server bulk loaders handle BLOBs between different platforms (elong) - closed.
+- 0001662: [Bug] SqlUtils is not thread safe. Can result in OOM errors. (chenson) - closed.
+- 0001664: [Bug] NullPointer with MSSQL Bulk Loader (elong) - closed.
+- 0001666: [Bug] SQL Server bulk loader does not handle comma (elong) - closed.
+- 0001667: [Improvement] Support capturing only changed data (trigger.update.capture.changed.data.only.enabled) on SQL Server (chenson) - closed.
+
+
+SymmetricDS - 3.5.19 (Released 2014-03-16)
+==========================================
+- 0001629: [Improvement] SQL Server bulk loader option to fire triggers (elong) - closed.
+- 0001630: [Bug] SQL Server bulk loader extra spaces causes truncation error (elong) - closed.
+- 0001631: [Bug] CSV is missing "columns" row when two different sets of columns are being used with three different inserts or updates (chenson) - closed.
+- 0001632: [Bug] SQL Server bulk loader does not handle BLOB (elong) - closed.
+- 0001633: [Bug] MySQL bulk loader error with Windows-based server (elong) - closed.
+- 0001634: [Improvement] Snapshot utility properties show changes, remove passwords, and sort (elong) - closed.
+- 0001636: [New Feature] Add capture changed data only to Postgres (elong) - closed.
+- 0001638: [Improvement] REST call for client to know how many batches and rows are waiting (elong) - closed.
+- 0001639: [Improvement] MySQL and SQL-Server bulk loaders loading rows multiple times (elong) - closed.
+- 0001645: [Bug] MySQL bulk loader does not load NULL (elong) - closed.
+- 0001646: [Bug] MySQL bulk loader columns out of order (elong) - closed.
+
+SymmetricDS - 3.5.18 (Released 2014-03-02) 
+==========================================
+- 0001586: [Bug] Stage manager doesn't check to see if a file is actually deleted when it qualifies for cleaning. (chenson) - closed.
+- 0001593: [Bug] Background initial load extract can get stuck. (chenson) - closed.
+- 0001597: [Bug] Overlapping database pull processes after connection outage - Default pull.thread.per.server.count=1 (chenson) - closed.
+- 0001601: [Improvement] Add Map-based methods to TransformData so one can more easily lookup target transform data (mhanes) - closed.
+- 0001602: [Improvement] Allow old source values to be accessible to other column transforms than just copy column (mhanes) - closed.
+- 0001603: [Improvement] Create new 'copy if the value has changed' column transform (mhanes) - closed.
+- 0001604: [Improvement] Create a set of two transforms that can map a series of columns to a series of rows based on a Map (mhanes) - closed.
+- 0001608: [Improvement] Reduce default purge retention period (elong) - closed.
+- 0001610: [Bug] CopyIfChangedTransform should only evaluate on non-delete DML (mhanes) - closed.
+
+SymmetricDS - 3.5.17 (Released 2014-02-15)
+==========================================
+- 0001420: [Task] Generate parameter documentation automatically from symmetric-default.properties. (elong) - resolved.
+- 0001578: [Bug] Jobs can lock up if jobs.synchronized.enable is on and routing.peek.ahead.window.after.max.size is smaller then data rows (chenson) - resolved.
+- 0001566: [Improvement] Column match router support for "contains" and "not contains" (elong) - resolved.
+- 0000810: [Improvement] symadmin reload-table - pass multiple tables (elong) - closed.
+- 0001568: [Bug] NullPointerException when initial.load.create.first is on using wildcard trigger definitions on postgres (chenson) - closed.
+- 0001455: [Bug] Audit tables don't get created (chenson) - closed.
+- 0001484: [Improvement] Firebird trigger should be created at a position other than 0 so that users can define triggers that fire before the sym trigger (chenson) - closed.
+- 0001562: [Bug] Routing using TransactionId causes bad routing when H2 DB is restarted (chenson) - closed.
+- 0001565: [Bug] Ambiguous reference to sysindexes (elong) - closed.
+- 0001567: [Bug] Transforms that are symmetric aware can get the wrong symmetric engine when multi-homed (chenson) - closed.
+- 0001569: [Bug] System clock goes too fast (elong) - closed.
+- 0001572: [Bug] Windows Problem Calling sym.bat from Another Drive (chenson) - closed.
+- 0001573: [Bug] Peek ahead window smaller than expected (chenson) - closed.
+- 0001574: [Bug] Too many routers are run when file sync targets more than one node group (chenson) - closed.
+- 0001576: [Improvement] File Sync's default batch algorithm should be nontransactional (chenson) - closed.
+- 0001579: [Bug] target_base_dir can be null in file_trigger. causes null pointer in filesyncservice save of snapshot due to / replacement (mhanes) - closed.
+- 0001580: [New Feature] Expose the relative target directory as a variable that can be scripted in order to flatten the directory structure in file sync (chenson) - closed.
+- 0001583: [Improvement] Create new value map column transform (mhanes) - closed.
+
+SymmetricDS - 3.5.16 (Released 2014-02-05) 
+==========================================
+- 0000677: [Improvement] Allow the sym commands to be added to PATH and be called from any location (elong) - closed.
+- 0001542: [Improvement] Need a math transform for transforming columns. (abrougher) - closed.
+- 0001543: [Bug] Upgrade of schema from 3.3 to 3.5 on H2 fails (chenson) - closed.
+- 0001544: [Bug] API - transactions aren't being committed in the sequence service api for applications (outside of symmetricds) that use the api (chenson) - closed.
+- 0001545: [Improvement] Unlock should use symmetricds server time, not database time, for consistency. (chenson) - closed.
+- 0001546: [Bug] Table definition does not update correctly (postgresql) (chenson) - closed.
+- 0001548: [Bug] Subdirectories with file sync from Windows to Linux has backslashes (elong) - closed.
+- 0001549: [Bug] Delete of file is not synced (chenson) - closed.
+- 0001550: [Bug] Sybase ASE : Lost precision from Datetime fields (elong) - closed.
+- 0001553: [Bug] REST API HEARTBEAT returning NotAllowException (chenson) - closed.
+- 0001555: [Bug] API - ddl of type CLOB for sql server tries to change the column type on restarts (chenson) - closed.
+- 0001556: [Bug] Wildcard triggers for tables with same name in different catalog/schema (elong) - closed.
+- 0001529: [Bug] Columns in old data are not transformed causing conflict detection (chenson) - closed.
+- 0001558: [Improvement] Add the ability to use the old column value to the list of variable column transform options (mhanes) - closed.
+- 0001561: [Task] Example of configuring log4j to send errors over email (elong) - closed.
+
+SymmetricDS - 3.5.15 (Released 2014-01-22) 
+==========================================
+- 0001536: [Improvement] Change to sync.url not picked up (elong) - closed.
+- 0001538: [Bug] Target schema and catalog are not picked up on second router to the same node if different from the first router (chenson) - closed.
+- 0001539: [Bug] Fix *nix sym and setenv shell scripts after bug introduced in 3.5.14 (elong) - closed.
+
+SymmetricDS - 3.5.14 (Released 2014-01-17) 
+==========================================
+- 0001534: [Bug] API - createTriggersOnChannelForTables() fails when it encounters a table name that is longer than 50 characters (chenson) - closed.
+- 0001434: [Improvement] Build up classpath differently so path too long error isn't encountered in windows (elong) - closed.
+- 0001518: [Bug] rebuild of trigger hist fails on some platforms (postgres, firebird, oracle) when upgrading from 3.1 to 3.5 (chenson) - closed.
+- 0001521: [Improvement] For system snapshot capture not only outbound table definitions, but also incoming table definitions (chenson) - closed.
+- 0001524: [Improvement] When applying a SQL event, support multiple SQL statements. Support additional replacement tokens. (chenson) - closed.
+- 0001527: [Improvement] Add information about data gaps to the snapshot (chenson) - closed.
+- 0001528: [Bug] Routing can get stuck if there are lots of gaps that range across a large amount of data that has already been routed (chenson) - closed.
+- 0001531: [Bug] isDataGapExpired() in DataGapDectector can leave old gaps if the next data id is not present (chenson) - closed.
+- 0001532: [Bug] integer value logged correctly at server, but inserted as different value at client (chenson) - closed.
+- 0001533: [Bug] Unable to create trigger if primary key column excluded (chenson) - closed.
+- 0001520: [Improvement] Add further details about Linux installation as a service options (mhanes) - closed.
+
+SymmetricDS - 3.5.13 (Released 2014-01-06) 
+==========================================
+- 0001496: [Bug] Triggers not created when "handle key updates" enabled (mhanes) - closed.
+- 0001502: [Improvement] Assign a load id to batches that contain reload events when the batch is created during routing (chenson) - closed.
+- 0001505: [Task] Add blurb about the resolve_row_only column's functionality in the NEWER_WINS resolve type documentation. (chenson) - closed.
+- 0001506: [Bug] NullPointerException on Android when INTENTKEY_PROPERTIES is not provided in the Intent when starting service (chenson) - closed.
+- 0001507: [Improvement] API Improvement - Added getTableTypes() to IDdlReader (chenson) - closed.
+- 0001511: [Bug] Firebird TIME fields don't synchronize properly because of the fractional seconds component (chenson) - closed.
+- 0001512: [Bug] sqlscriptreader has bug where tokens aren't replaced if the script has a single sql statement with no end of statement token (chenson) - closed.
+- 0001513: [Improvement] Add API Operation description to the REST API (mhanes) - closed.
+- 0001514: [Bug] Stream Lobs for SQL Server fails with bad trigger syntax (mhanes) - closed.
+- 0001469: [Bug] Time and Timestamp field issues on Firebird and Postgres databases (chenson) - closed.
+- 0001498: [Bug] Table reload broken on Sybase ASA 9 (elong) - closed.
+- 0001504: [Improvement] Add variables to initial load delete SQL (elong) - closed.
+
+SymmetricDS - 3.5.12 (Released 2013-12-18)
+==========================================
+- 0001465: [Bug] REST API - default schema and/or catalog are filled in for generated sql statement even if they are blank in sym_trigger (chenson) - closed.
+- 0001466: [Bug] REST API - setting the target schema and/or catalog does not work when using the REST API (chenson) - closed.
+- 0001467: [Bug] trigger creation failed with MSSQL database column of nvarchar and ntext data type using the microsoft jdbc driver (chenson) - closed.
+- 0001468: [Bug] Sync triggers on Oracle: Maximum open cursors exceeded (elong) - closed.
+- 0001471: [Bug] Reload from TABLE_RELOAD_REQUEST does not support deletes (elong) - closed.
+- 0001472: [Bug] Node Ids don't work in URLs if they have spaces in them. Need to urlencode the node id. (chenson) - closed.
+- 0001473: [Bug] Oracle DDL Util issue isn't correctly recognizing varchar2() columns (chenson) - closed.
+- 0001474: [Bug] sync blocks with java error when a field with affinity 'INTEGER' contains a (empty) string (chenson) - closed.
+- 0001479: [Improvement] When using DmlStatement if columns are not provided then generate a select * for the SELECT_ALL type (chenson) - closed.
+- 0001480: [Bug] SymmetricEngineHolder doesn't update engine count when installing a new engine (mhanes) - closed.
+- 0001481: [Bug] Updates and Deletes can fail when a transform exists that have PKs where the source and target column names are different (chenson) - closed.
+- 0001475: [Bug] Replication From Branch to Central Broken (Firebird at Both Ends) (chenson) - closed.
+- 0001488: [Bug] If a create event and update event for a file happen in the same batch the building of the zip file fails (chenson) - closed.
+- 0001489: [Improvement] Don't log stack trace on a file sync conflict. Just log the message. (chenson) - closed.
+- 0001486: [Bug] File Sync "sync_on_delete" not honored. (chenson) - closed.
+- 0001490: [Improvement] Background extract process currently just handles one request at a time. Change to handle multiple requests. (chenson) - closed.
+- 0001491: [Bug] Mark outgoing batches as OK during the start of an initial load can hang until the config channel has been pulled (chenson) - closed.
+- 0001492: [Bug] Staging manager bases purging of staging files based on create time of the resource, not the last modified time of the file. (chenson) - closed.
+
+SymmetricDS - 3.5.11 (Released 2013-11-15) 
+==========================================
+- 0001269: [New Feature] Update ddl utils xml to support specific database types so create schema commands replicate the same schema on same databases (chenson) - closed.
+- 0001448: [Improvement] Provide global parameter to specify that BSH database writer filters will handle missing tables (mhanes) - closed.
+- 0001449: [Improvement] Add support for allowing a database writer filter to change the target tables catalog, schema and table name (chenson) - closed.
+- 0001450: [Bug] ignore case parameter should apply to only the table (not schema and catalog) for now in the load filter (chenson) - closed.
+- 0001451: [Improvement] Expose apis to prefix a Database and read a list of Table from the physical database (chenson) - closed.
+- 0001457: [Bug] PostgreSQL timestamp with timezone columns won't sync for very old, European dates. (mhanes) - closed.
+- 0001458: [Improvement] Add support for Oracle's TIMESTAMP WITH LOCAL TIME ZONE data type (chenson) - closed.
+- 0001460: [Bug] On postgres, when sync triggers is run from symadmin tool the generated triggers put null into the transaction id field (chenson) - closed.
+- 0001462: [Bug] Stored procedure with NOCOUNT is rolled back (elong) - closed.
+
+SymmetricDS - 3.5.10 (Released 2013-10-20) 
+==========================================
+- 0001429: [Bug] sym_pkg is hard coded in the oracle dialect so the prefix parameter doesn't work on Oracle (chenson) - closed.
+- 0001438: [Improvement] Improve memory footprint usage when big lobs are in flight (chenson) - closed.
+- 0001440: [Improvement] Implement simple conflict resolution for file sync (chenson) - closed.
+- 0001442: [Bug] Statements are being prepared too often. Results in poor data loading performance on Firebird (and possibly other platforms) (chenson) - closed.
+- 0001447: [Improvement] Change error message if a batch fails to transport because of an EOF error to be more intuitive. (chenson) - closed.
+
+SymmetricDS - 3.5.9 (Released 2013-10-10) 
+=========================================
+- 0001430: [Bug] When a file is modified on Windows it is not unpacked at the target of a file sync (chenson) - closed.
+- 0001431: [Bug] SQLite primary keys only recognized when they are in column position 1. (mhanes) - closed.
+- 0001433: [Improvement] Expose api so a single sym table and single trigger can be installed without other SymmetricDS configuration (chenson) - closed.
+- 0001436: [Improvement] Set table name on processinfo before attempting extract query for initial load (chenson) - closed.
+- 0001437: [Bug] Multi-homed temp file system should be keyed by engine name to prevent collisions (mhanes) - closed.
+
+SymmetricDS - 3.5.8 (Released 2013-09-24) 
+=========================================
+- 0001426: [Bug] Postgres datetime with timezone not formatted correctly when timezone_hour offset = 0 and timezone_minute offset < 0 (gwilmer) - closed.
+
+SymmetricDS - 3.5.7 (Released 2013-09-14) 
+=========================================
+- 0001413: [Bug] SymmetricDS not returning the fully qualified hostname (abrougher) - closed.
+- 0001419: [Bug] USE_STREAM_LOBS=1 in Oracle does not replicate LOB data (chenson) - closed.
+- 0001416: [Improvement] TriggerRouterService should cache a list of TriggerRouter's for each channel instead of querying db each time. (abrougher) - closed.
+- 0001412: [Bug] Numeric(15,5) type columns are truncated when written to Sybase dialects. (abrougher) - closed.
+
+SymmetricDS - 3.5.6 (Released 2013-09-05)
+=========================================
+- 0001356: [Bug] money field type with PostgreSQL (chenson) - closed.
+- 0001410: [Bug] When USE_CAPTURE_OLD_DATA is not set, the database writer will not update non null columns to null. (abrougher) - closed.
+- 0001409: [Bug] The database uninstall feature does not remove the sym_ H2 trigger tables. (abrougher) - closed.
+
+SymmetricDS - 3.5.5 (Released 2013-08-27) 
+=========================================
+- 0001381: [Bug] transform_table.target_table_name should be optional according the documentation. the transform code requires that is be set (chenson) - closed.
+- 0001395: [Improvement] When data is transformed the old values are not retained. (abrougher) - closed.
+- 0001396: [Bug] Null pointer in log message when initial load extract job is turned on and a table takes longer than 60 seconds to extract (chenson) - closed.
+- 0001399: [Bug] Config and heartbeat batches can be lost if initial load is scheduled (chenson) - closed.
+- 0001405: [Bug] If sym_trigger_router.initial_load_delete_stmt is not set, then the initial.load.delete.first.sql property should be used (chenson) - closed.
+- 0001400: [Bug] Implied transforms are not implying individual DML transforms. (abrougher) - closed.
+- 0001397: [Improvement] Conflict detection mechanism USE_CHANGED_DATA should be able to specify columns to ignore. (abrougher) - closed.
+- 0001404: Add db.read.strings.as.bytes to turn on functionality to better control character encoding on MySQL (chenson) - closed.
+
+SymmetricDS - 3.5.4 (Released 2013-08-20) 
+=========================================
+- 0001393: [Bug] Setting a batch to status of IG causes exception when initial.load.use.extract.job.enabled is set to true (chenson) - closed.
+- 0001392: [Bug] When initial.load.use.extract.job.enabled is set to true the byte count and data count aren't being captured (chenson) - closed.
+- 0001335: [Bug] dbexport doesn't work with SQL Anywhere (abrougher) - closed.
+- 0001388: [Bug] "The current version of 3.5.3 is newer than the last running version of 3.4.5" prints out many times in the log file at INFO (chenson) - closed.
+- 0001389: [Bug] Postgres alter to add a default varchar value to a column without a default value fails (chenson) - closed.
+- 0001390: [Bug] Not routing configuration properly when a source node group has multiple target node groups (chenson) - closed.
+- 0001334: [Bug] The issue with jConnect JDBC, SQL Anywhere and decimal value (chenson) - closed.
+- 0001382: [Bug] Bad external_data: The bean shell router should unbind external data if it is void because the interpreter is reused (chenson) - closed.
+
+SymmetricDS - 3.5.3 (Released 2013-08-10)
+=========================================
+- 0001368: [Bug] On extraction retries the data_event_count is not reset (chenson) - closed.
+- 0001369: [Bug] Alter generated by table upgrade that requires and rebuild of the table and includes the addition or removal of columns fails (chenson) - closed.
+- 0001370: [Improvement] When initial loads are configured to extract in the background, multiple load requests can queue up on top of each other (chenson) - closed.
+- 0001373: [Bug] dropping a column with a default value fails on sql server because of default constraint (chenson) - closed.
+- 0001374: [Bug] The primary key constraint name needs to be quoted when dropping a PK on Postgres (chenson) - closed.
+- 0001375: [Bug] DB2 dropping column that is part of a composite primary key on a table causes error (chenson) - closed.
+- 0001377: [Bug] RestService handleError method should be public. Exceptions are not being serialized to the client properly (chenson) - closed.
+- 0001378: [Bug] alterTables(boolean continueOnError, Table... desiredTables) in platform should use isRequiresAutoCommitForDdl (chenson) - closed.
+- 0001379: [Improvement] When SymmetricDS starts, schedule the first run of the periodic jobs the period amount away from the last run (chenson) - closed.
+- 0001376: [Improvement] DB2 table needs reorg after dropping a column. (abrougher) - closed.
+
+SymmetricDS - 3.5.2 (Released 2013-08-04) 
+=========================================
+- 0001363: [Bug] SQL Server DateTime2 type does not work with conflict resolution. (abrougher) - closed.
+- 0001366: [Bug] If a custom column transformation isn't found the engine silently ignores it. An error should be thrown. (chenson) - closed.
+- 0001364: [Improvement] Speed up bsh column transform by evaluating a transform as a method once and then call that method for each data element (chenson) - closed.
+- 0001365: [Improvement] Print out statistics if data rows in associated with a table/batch take longer than 60 seconds to process (chenson) - closed.
+- 0001346: [Bug] reloadTable JMX method and command should always route to the node_list (chenson) - closed.
+- 0001347: [Bug] Initial load ignores subselect routers and routes to all nodes. (chenson) - closed.
+- 0001348: [Bug] Table object passed to DatabaseWriterFilters do not have types on them any more (chenson) - closed.
+- 0001350: [Bug] Push batch not getting acked when multiple batches exist and it passed the transport.max.bytes.to.sync threshold (chenson) - closed.
+- 0001351: [Bug] PK transform columns transformations run twice (chenson) - closed.
+- 0001353: [Bug] The batch URL feature is broken (chenson) - closed.
+- 0001360: [Bug] rest service should set the engine name for logging (chenson) - closed.
+- 0001361: [Bug] StagedResource.setState should support setting the state to itself without failing (chenson) - closed.
+- 0001362: [Bug] Background initial load extract was allowing the client to start pulling data for a table that was currently extracting (chenson) - closed.
+
+SymmetricDS - 3.5.1 (Released 2013-07-24) 
+=========================================
+- 0001334: [Bug] The issue with jConnect JDBC, SQL Anywhere and decimal value (abrougher) - closed.
+- 0001342: [Bug] Upgrade to 3.5.0 causes sym_trigger_hist to be rebuilt (chenson) - closed.
+- 0001343: [Bug] alter of default column value on postgres is not working (chenson) - closed.
+- 0001344: [Bug] Sybase ASE can not return columns with the alias "count". (abrougher) - closed.
+- 0001345: [Bug] The reload table JMX method and command isn't working (chenson) - closed.
+- 0001339: [Bug] When using PayloadType.SQL Symmetric doesn't pay attention to target database catalog and schema rules (gwilmer) - closed.
+
+
+SymmetricDS - 3.5.0 (Released 2013-07-22)
+=========================================
+- 0001307: [Improvement] Allow users to insert custom trigger text in the Symmetric triggers. (abrougher) - closed.
+- 0001188: [Improvement] Inserting leading or trailing spaces in column ROUTER_EXPRESSION on table ROUTER produce ER in outgoing batch (chenson) - closed.
+- 0001192: [Bug] Unrouted batches can't be extracted http://localhost:31415/batch/-1-50 [^] gets a 404 (chenson) - closed.
+- 0001193: [Improvement] rename snapshot files from yyyyMMddhhmmss.jar to {engine.name}-yyyyMMddhhmmss.zip (chenson) - closed.
+- 0001194: [Improvement] Use a constant router_id for the virtual sym_ tables instead of an ever incrementing number (chenson) - closed.
+- 0000032: [New Feature] Implement file synchronization (chenson) - closed.
+- 0000370: [New Feature] SymmetricDS support for Sybase Database (abrougher) - closed.
+- 0001052: [Improvement] Install a default ssl cert if none exists when ssl is turned on so that ssl works by default (chenson) - closed.
+- 0001064: [New Feature] Add interactive command line sql tool. dbsql (chenson) - closed.
+- 0001182: [New Feature] Open source the android client implementation (chenson) - closed.
+- 0001199: [Improvement] EXCLUDED COLUMNS in triggers can't participate in lookuptable router expressions (chenson) - closed.
+- 0001204: [Bug] Invalid target node on "lookup table data router", trouble cache key resolution (chenson) - closed.
+- 0001210: [Bug] Wildcards don't work on Derby, DB2, and HSQLDB (chenson) - closed.
+- 0001218: [Improvement] bind a logger as the "log" variable to the beanshell router, column transform and load filter to make debugging easier (chenson) - closed.
+- 0001222: [Bug] db. properties are not overridable as -D system properties (chenson) - closed.
+- 0001226: [Bug] Table sym_node_group_channel_window exceeds the max table name length for Sybase ASE 12. (chenson) - closed.
+- 0001231: [Improvement] Bind initialLoad flag to the beanshell data router so it can making routing decisions on initial load (chenson) - closed.
+- 0001237: [Improvement] JdbcSqlTransaction not logging sql and args for some methods (chenson) - closed.
+- 0001245: [Bug] Mariab driver doesn't recognize tables in a different database (chenson) - closed.
+- 0001247: [Task] Change license to GPL 3.0 (chenson) - closed.
+- 0001249: [New Feature] Add REST API methods to allow a "Pull Only" client (gwilmer) - closed.
+- 0001260: [Bug] A null pointer happens when trying to schedule load when sync triggers has never run (chenson) - closed.
+- 0001262: [Bug] Locally suspended channels are ignored when a node is pushing during extraction. (abrougher) - closed.
+- 0001270: [Improvement] Update sqlite jdbc driver to the latest version to fix result set metadata issue. Allows unit tests to pass. (chenson) - closed.
+- 0001271: [Bug] Table creation on reload creates columns with default of 'NULL' incorrectly. (chenson) - closed.
+- 0001273: [Improvement] Add new parameter to dbexport to request that dates and time NOT be in JDBC format (chenson) - closed.
+- 0001274: [Improvement] Do not query the RECYCLEBIN while reading table metadata to see if the table has been recycled. (chenson) - closed.
+- 0001203: [Bug] SymmetricDS cannot operate on Oracle tables with dollar sign in name (chenson) - closed.
+- 0001277: [Bug] NPE during conflict resolution (use_version -> newer_wins) (chenson) - closed.
+- 0001278: [Bug] The IDatabaseWriterFilter should always be passed the source table, not the target table (chenson) - closed.
+- 0000949: [Bug] reload table doesn't work with wildcard triggers (chenson) - closed.
+- 0001223: [Bug] the sendSql JMX method and command can end up with multiple batches due to timing issue (chenson) - closed.
+- 0001272: [Improvement] Add support for the MySQL POINT data type. (abrougher) - closed.
+- 0001295: [Bug] Numeric type on postgres should be read in as a JDBC decimal type (chenson) - closed.
+- 0001296: [Bug] Prevent invalid size DDL of (0) or (0,0) to be written for data types that have size (chenson) - closed.
+- 0001301: [Bug] BSH Load filter will not execute unless table exists on the target database. (abrougher) - closed.
+- 0001302: [Improvement] Speed up queries against sym_data, sym_data_gap and sym_outgoing_batch on postgres (chenson) - closed.
+- 0001056: [Bug] Sync on incoming batch causes ping-back when in common batch mode (chenson) - closed.
+- 0001143: [Improvement] (Firebird) 64-bit Sym_UDF.dll (chenson) - closed.
+- 0001236: [Improvement] Hash trigger text in sym_trigger_hist so we know when triggers change to force a rebuild. (abrougher) - closed.
+- 0001297: [Improvement] The load filter target table value should only be case sensitive on case sensitive databases. (abrougher) - closed.
+- 0001298: [Improvement] The conflict resolution target table value should only be case sensitive on case sensitive databases. (abrougher) - closed.
+- 0001299: [Improvement] The transform source table should only be case sensitive on case sensitive databases. (abrougher) - closed.
+- 0001303: [Bug] REST API doesn't return heartbeat interval properly when getting node status (gwilmer) - closed.
+- 0001309: [Bug] Reload node events are not taking place in the correct order. (chenson) - closed.
+- 0001317: [Improvement] Bind column names using original case versus requiring router expressions to reference them in UPPER case. (abrougher) - closed.
+- 0001318: [Improvement] Bind column names using original case and UPPER case for load filters. (abrougher) - closed.
+- 0001321: [Improvement] Attempt recovery from corrupt trigger_hist table by looking up trigger_hist rows by table name when the table name mismatches (chenson) - closed.
+- 0001322: [Bug] node_communication locks don't time out (chenson) - closed.
+- 0001325: [Improvement] Add sym_registration_request to the purge process (chenson) - closed.
+- 0001329: [Bug] ArrayOutOfBoundsException - during removal of column (chenson) - closed.
+- 0001330: [Bug] stream.to.file.threshold.bytes and stream.to.file.ttl.ms were documented as overridable in the database but weren't really (chenson) - closed.
+- 0001332: [Bug] The /batch url always extracts from the database. It should extract the same way the pull does (use staging). (chenson) - closed.
+- 0001333: [Bug] Transforms with a source column containing an empty string or white space fail. (abrougher) - closed.
+- 0001334: [Bug] The issue with jConnect JDBC, SQL Anywhere and decimal value (abrougher) - closed.
+- 0001336: [Bug] Restart of Android job manager fails when job parameters are changed in the database (chenson) - closed.
+
+SymmetricDS - 3.4.9 (Released 2013-07-16) 
+=========================================
+- 0001323: [Bug] Missing columns at target table can cause columns after the missing columns to not be updated (chenson) - closed.
+
+SymmetricDS - 3.4.8 (Released 2013-07-03)
+=========================================
+- 0001291: [Bug] Transforms can cause an error when attempting to use the create tables feature of SymmetricDS (chenson) - closed.
+- 0001305: [Bug] Possible lock up during extraction. If the max number of locks are reached on a batch the extract method can hang forever (chenson) - closed.
+- 0001306: [Improvement] Add setting in web.xml to allow the engines to be stored statically so multiple wars in an ear can reference the same engine (chenson) - closed.
+
+SymmetricDS - 3.4.7 (Released 2013-06-18)
+=========================================
+- 0001284: [Bug] StackOverflowError can happen when a transform exists and the primary keys mismatch causing conflicts on both update and insert (chenson) - closed.
+- 0001285: [Bug] If an Error (versus an Exception) happens during the data load process, the database transaction can be left hanging (chenson) - closed.
+- 0001287: [Bug] EXTERNAL_DATA is not available for routing for event types other than I, U, or D (chenson) - closed.
+
+SymmetricDS - 3.4.6 (Released 2013-06-06) 
+=========================================
+- 0001244: [Bug] Mariadb driver is chosen even though the MySQL driver is specified (chenson) - closed.
+- 0001246: [Bug] Oracle NUMBER datatype is incorrectly mapped to an Integer data type. (abrougher) - closed.
+- 0001253: [Bug] Node communication records can be stranded (chenson) - closed.
+- 0001254: [Improvement] Allow additional paramters min idle and max idle on connection pool (gwilmer) - closed.
+- 0001256: [Improvement] Add a parameter that turns off writing to sym_incoming_batch altogether unless there is an ER (chenson) - closed.
+- 0001257: [Bug] common batches report data_event_count on outgoing_batch only on the first batch (chenson) - closed.
+- 0001258: [Bug] When an incoming_batch is finished, it's status is updated twice. (chenson) - closed.
+- 0001259: [Improvement] Add JMX method to extract batches to a file for a node and time and channel ranges (chenson) - closed.
+
+SymmetricDS - 3.4.5 (Released 2013-05-29) 
+=========================================
+- 0001211: [Bug] Backwards compatibility change. Use the client's Charset-Accept http header to decide what encoding to use. (chenson) - closed.
+- 0001214: [Bug] reloadTable race condition (chenson) - closed.
+- 0001215: [Bug] The initial load sql is not overridden in the reloadTable method (chenson) - closed.
+- 0001220: [Bug] Wrong number of sym_data_events being logged when routing common batch (chenson) - closed.
+- 0001227: [Bug] Reading of MySQL tables can sometimes include the PRIMARY index if the primary key columns aren't at the start (chenson) - closed.
+- 0001232: [Bug] NullPointerException in BshDataRouter for reload events (chenson) - closed.
+- 0001233: [Bug] DataService.insertData(Data data) should populate external_data (chenson) - closed.
+- 0001235: [Bug] https settings in symmetric-server.properties not working with sym_service (chenson) - closed.
+- 0001238: [Bug] Issue with detecting whether batch is common or not. (chenson) - closed.
+- 0001239: [Improvement] Add the ability to NOT add triggers to a client database until initial load has finished (chenson) - closed.
+- 0001242: [Bug] ping_back settings broken for conflict resolution. class cast exception. (chenson) - closed.
+
+SymmetricDS - 3.4.4 (Released 2013-05-12) 
+=========================================
+- 0001207: [Bug] DB2 text column default value metadata values are quoted. Need to remove quotes when reading table metadata from database. (chenson) - resolved.
+- 0001206: [Bug] dataloader.ignore.missing.tables not working for initial load when initial.load.delete.first=true (chenson) - resolved.
+
+SymmetricDS - 3.4.3 (Released 2013-05-07) 
+======================================
+- 0001202: [Bug] Wild card expressions are currently broken (chenson) - closed.
+
+SymmetricDS - 3.4.2 (Released 2013-04-26) 
+=========================================
+- 0001190: [Improvement] Remove file sync tables. They should not have been released yet. (chenson) - closed.
+
+SymmetricDS - 3.4.1 (Released 2013-04-24)
+=========================================
+- 0001053: [Improvement] Verify that NOCOUNT is off for SQL Server before starting SymmetricDS. When NOCOUNT is turned on SymmetricDS won't work. (chenson) - closed.
+- 0001183: [Improvement] Add new property db.init.sql that allows sql to be run against a database connection right after it is created (chenson) - closed.
+- 0001184: [Improvement] Record ProcessInfo for server side registration process so it can more easily be monitored for errors (chenson) - closed.
+
+SymmetricDS - 3.4.0 (Released 2013-04-21)  
+=========================================
+- 0001117: [Bug] registration_enabled doesn't get set to 0 when node is really registered (chenson) - resolved.
+- 0001116: [Bug] sym_data_gap referenced directly instead of using sync.table.prefix (chenson) - resolved.
+- 0001115: [New Feature] Add option to dbexport to NOT use quoted identifiers when exporting data as SQL (chenson) - resolved.
+- 0001111: [Bug] MySQL upgrade issue: Columns not modified when symmetricds table columns type or size change (chenson) - resolved.
+- 0001110: [Bug] Triggers not removed when sym_trigger source_ catalog, schema or table name changed (chenson) - resolved.
+- 0001109: [Bug] Registration can fail when multiple sym_node records exist with a null created_at_node_id value (chenson) - resolved.
+- 0000580: [Improvement] MySQL trigger throwing error on special characters (chenson) - resolved.
+- 0001107: [Improvement] Bind all of the symmetric properties to the spring context for use in extensions points (chenson) - resolved.
+- 0001105: [Improvement] Add new web.xml setting that controls whether the symmetric engine(s) are started (chenson) - resolved.
+- 0001046: [Bug] There are 2 log4j-1.2.16.jar files in the symmetricds deployment (chenson) - resolved.
+- 0001104: [Improvement] Exclude sym_ tables from being effected by wildcard load filters (chenson) - resolved.
+- 0001086: [Improvement] Make the 3.x use 1.x protocol for backwards compatibility (chenson) - resolved.
+- 0000865: [Bug] Ignore batch is not working for an initial load batch that was failing to extract because of a bad initial_load_select (chenson) - closed.
+- 0000958: [New Feature] JNDI DataSource Support (chenson) - closed.
+- 0000989: [Improvement] Provide a way to blank out the target schema/catalogs in sym_router (chenson) - closed.
+- 0001118: [Improvement] Allow the sync.url to be blank. Past versions of SymmetricDS allowed this and defaulted to using the registration.url (chenson) - closed.
+- 0001119: [Bug] When dead triggers are disabled SymmetricDS attempts to delete triggers that don't exist. Causes warning in log file. (chenson) - closed.
+- 0001121: [New Feature] Add a new "remove" column transform type that can be used with implied table transforms to remove a column completely. (chenson) - closed.
+- 0001124: [Improvement] Add support to use the jboss.binding.address system property in JBoss 7 for the cluster.server.id (chenson) - closed.
+- 0001128: [Improvement] Add new parameter to make heartbeat at server startup optional. Defaulting heartbeat at startup to off. (chenson) - closed.
+- 0001129: [Bug] Null pointer happens if trigger router is removed for a reload event that has not been sent. Should just skip the reload event. (chenson) - closed.
+- 0001139: [New Feature] Expose information about the processes that are currently running via an api to be used to inspect what is going on in an engine (chenson) - closed.
+- 0001149: [Bug] Log error message when an invalid sync_key_name column is specified. If no columns match, then return the original keys. (chenson) - closed.
+- 0001154: [Improvement] Make the max_batch_size for the config channel bigger (2000) than its current default of 100 (chenson) - closed.
+- 0001160: [Bug] Marking of old incoming batches as OK during initial load should also include the setting of the error_flag to 0 (chenson) - closed.
+- 0001161: [Improvement] Set the default fetch size to 100. 1000 is a little big for smaller installations or for database with very BIG rows. (chenson) - closed.
+- 0001162: [Improvement] Reuse nodes when auto.registration is turned on so you don't end up with a bunch of stranded nodes (chenson) - closed.
+- 0001163: [Bug] If a database error occurs while initializing SymmetricDS the error bubbles out of a startup thread and is logged to std err (chenson) - closed.
+- 0001164: [Bug] If a protocol error happens during extract (corrupted staging file), then delete the staging file so it will be reextracted (chenson) - closed.
+- 0001165: [Bug] For an initial load on push, exit out of load loop if one of the batches failed (chenson) - closed.
+- 0001166: [Improvement] Add DbFill support for PostgreSQL 'text' and 'active_inactive' column types. (chenson) - closed.
+- 0001168: [Bug] Audit router throws NPE on Oracle and PostgreSQL. (chenson) - closed.
+- 0001169: [Bug] Selection of batches is short circuited when a channel is encountered that is missing or disabled (chenson) - closed.
+- 0001171: [Bug] Don't refresh the ParameterService cache if the database is unavailable because you can end up misconfigured for a timeperiod (chenson) - closed.
+- 0001175: [Improvement] Add reload_id and create_by to sym_outgoing_batch (chenson) - closed.
+- 0001176: [Improvement] Add support for MariaDB's Jdbc Driver (chenson) - closed.
+- 0001179: [Bug] Parameters are not refreshed right after registration (chenson) - closed.
+
+SymmetricDS - 3.3.6 (Released 2013-04-03) 
+=========================================
+- 0001140: [Bug] SQL Server 2000 triggers are being created using the 'max' keyword, which 2000 does not support. (abrougher) - closed.
+- 0001131: [Bug] NPE in conflict resolution when detecting a conflict using TIMESTAMP and existing row doesn't exist (gwilmer) - closed.
+- 0001133: [Bug] Multiple reverse reloads can be queued up because of timing issues (chenson) - closed.
+- 0001134: [Bug] An incoming batch can be left stranded in the ER state after an initial load sets the outgoing batch to OK (chenson) - closed.
+- 0001135: [Bug] symmetric-server.properties enable flags for ssl are not working (chenson) - closed.
+- 0001141: [Bug] Prevent invalid warning that expected ack was not received (chenson) - closed.
+- 0001144: [Bug] When a reload is queued up the outgoing batches should be marked as OK in reverse order so as to not cause FK issues (chenson) - closed.
+- 0001151: [Bug] NullPointerException can happen on reload events queued up by sym_table_reload_request during an upgrade (chenson) - closed.
+- 0001155: [Bug] Audit router causes NPE on MySQL. (chenson) - closed.
+- 0001156: [Bug] Fatal Error (like OOM) could possibly cause a reload event to be stranded in sym_data and routed to all child nodes (chenson) - closed.
+- 0001157: [Bug] Don't allow api status methods if the engine isn't registered (gwilmer) - closed.
+
+SymmetricDS - 3.3.5 (Released 2013-03-18) 
+=========================================
+- 0001122: [Improvement] Add support for Sql Server 2000 (abrougher) - closed.
+
+SymmetricDS - 3.3.4 (Released 2013-03-09) 
+=========================================
+- 0001087: [Bug] If engine.name isn't used, then some services are not available. Should be available as long as there is only one node deployed (chenson) - closed.
+- 0001094: [Bug] sync_keys isn't used to create triggers which causes a SQL Server table w/out primary keys and sync_keys to not capture updates (chenson) - closed.
+- 0001100: [Bug] sqlite create tables quotes create_timestamp default values (chenson) - closed.
+- 0001101: [Bug] sqlite create tables doesn't work because a transaction is in process and the database is locked (chenson) - closed.
+
+SymmetricDS - 3.3.3 (Released 2013-03-01)
+=========================================
+- 0001079: [Improvement] Children node are selected from the database each heartbeat but not necessarily used, can be time consuming w. lots of children (chenson) - closed.
+- 0001080: [Bug] Reload and config channel should never be "common" channels (chenson) - closed.
+- 0001082: [Bug] error calling unknown function sym_transaction_idnull() (chenson) - closed.
+- 0001083: [Bug] Registration slow on Oracle with lots of nodes (chenson) - closed.
+
+SymmetricDS - 3.3.2 (Released 2013-02-26) 
+=========================================
+- 0001077: [Bug] SymmetricDS has to be restarted to recognize a change in the data load filter table. (chenson) - closed.
+- 0001078: [Improvement] Allow sym_load_filter.target_table_name to be left blank so that filters are applied to all tables (chenson) - closed.
+- 0000396: [Improvement] Updates of primary keys are not captured on SQL Server (gwilmer) - closed.
+- 0001045: [Bug] Upgrade from 3.0.9 to 3.3.1 fails. Fix the oracle dialect so it can run alter statements to change column sizes (chenson) - closed.
+- 0001047: [Improvement] Incoming Error's cur_data columns should reflect values at moment of conflict, not values prior to start of transaction (mhanes) - closed.
+- 0001050: [Improvement] Introduce conf/symmetric-server.properties which contains http/https/jmx port/enabled settings and other server specific setting (chenson) - closed.
+- 0001051: [Bug] --jmx-port and --jmx-disabled command line help is not available (chenson) - closed.
+- 0001057: [Bug] Postgres datetime with timezone not formatted correctly when timezone offset < 0 and timezone offset has minutes (gwilmer) - closed.
+- 0001061: [Improvement] Support synchronization of Oracle Synonyms (chenson) - closed.
+- 0001067: [Bug] syncTriggers called multiple times when multiple batches have queued up for the client and at least one has config changes (chenson) - closed.
+- 0001048: [Bug] Timestamps are not exported correctly using dbexport. (abrougher) - closed.
+- 0001049: [Bug] DbExport allows --sql option without a table name argument. (abrougher) - closed.
+- 0001058: [Improvement] Provide access to include-on and source dml type in bean shell transforms (mhanes) - closed.
+- 0001066: [Bug] Reverse initial load may be computed and routed before triggers are done synchronizing when a client first registers (chenson) - closed.
+- 0001068: [Improvement] Add new extension point ILoadSyncLifecycleListener which gets callbacks before and after a load sync (chenson) - closed.
+- 0001070: [Bug] If trigger table name changes and the new trigger table name doesn't exist, the old triggers don't get remove from the old table (chenson) - closed.
+- 0001071: [Improvement] Column transforms are being called even if the includeOn does not match. Only effects custom transforms that take some action. (chenson) - closed.
+- 0001074: [Bug] sym_node_channel_ctl should not be included in the list of tables to load during registration (chenson) - closed.
+- 0001075: [Improvement] Turn on sym_trigger.use_capture_lobs and sym_channel.contains_big_lobs by default for sym tables and the config channel (chenson) - closed.
+- 0001076: [Bug] Update transform that falls back to insert does not retransform (chenson) - closed.
+
+SymmetricDS - 3.3.1 (Released 2013-02-12) 
+=========================================
+- 0001041: [Improvement] If an outgoing_batches status is set back to NE, then always re-extract it versus using the already staged batch. (chenson) - closed.
+- 0001042: [New Feature] MariaDB Dialect (gwilmer) - closed.
+- 0001043: [Bug] dataloader.error.save.curval=true doesn't work (chenson) - closed.
+- 0001044: [Bug] Map of semaphores used to prevent concurrent extraction of individual batches are not cleaned up (chenson) - closed.
+
+SymmetricDS - 3.3.0 (Released 2013-02-08) 
+=========================================
+- 0001040: [Bug] When use_stream_lobs is on use_changed_data conflict resolution doesn't work because the lobs old data is always null (chenson) - closed.
+- 0000994: [Improvement] Update Users Guide to describe how to deploy to separate machines (tutorial is multi-homed) (chenson) - closed.
+- 0001036: [Bug] Error is not getting recorded in outgoing batch if there isn't a line number (chenson) - closed.
+- 0001037: [Improvement] Default dataloader.ignore.missing.tables to false instead of true (chenson) - closed.
+- 0001039: [Bug] syncTriggers should not abort when metadata cannot be read due to db permissions for just one trigger (chenson) - closed.
+- 0000986: [New Feature] Include conflict_id reference in sym_incoming_error table to crossreference the type of conflict that occurred (chenson) - closed.
+- 0001028: [Bug] stream.to.file.enabled=false is broken (chenson) - closed.
+- 0001031: [Bug] Documentation for outgoing_batch is missing IG and has RE instead of RT and QE instead of QY (chenson) - closed.
+- 0000987: [New Feature] Add the "current" (conflicting) data to a column in sym_incoming_error (chenson) - closed.
+- 0001033: [Improvement] Before allocating push/pull jobs check to see if thread count has changed and if so, restart thread pool (chenson) - closed.
+- 0001030: [Bug] Exception in clustered firebird environment (chenson) - closed.
+- 0001034: [New Feature] Add last_update_by, last_update_time, create_time to transform_*, parameter, channel, node_group, and node_group_link (chenson) - closed.
+- 0001035: [New Feature] Add new refresh cache job that can be turned on in a clustered environment to check for configuration changes (chenson) - closed.
+- 0000967: [Bug] Unknown table "INFORMATION_SCHEMA.SESSION_STATUS" error for MySQL 5.0.XX (chenson) - closed.
+- 0001010: [Improvement] Log better messages when server node is unavailable giving users a clue as to what action needs to be taken (admin) - closed.
+- 0001013: [Improvement] BshDatabaseWriterFilter should bind the error to use in a HANDLE_ERROR script (chenson) - closed.
+- 0001014: [Improvement] Don't write STOPPED for the last server id in sym_lock when releasing an infinite lock (chenson) - closed.
+- 0001015: [Bug] Data event count and insert event count get lost for big reload batches because status is requeried and overwrites the values (chenson) - closed.
+- 0001018: [New Feature] Add a mechanism for a remote node to request a table reload. This is helpful while rolling out new tables. (chenson) - closed.
+- 0001019: [New Feature] Grouplets - Add a feature to specify a subset of nodes for which a router is enabled to allow piloting of configuration. (chenson) - closed.
+- 0001024: [Improvement] Use the symmetric table name as the virtual trigger name instead of a hashcode of the table name (chenson) - closed.
+- 0001025: [Improvement] Don't log staging area cleanup at the info level. Change logging to debug level (chenson) - closed.
+- 0001026: [New Feature] If the minor version is upgraded, then (if you aren't the reg server) request a reload of key symmetric tables (chenson) - closed.
+- 0001027: [New Feature] Add the ability to enable or disable trigger routers with an enabled column (chenson) - closed.
+
+SymmetricDS - 3.2.3 (Released 2013-01-24) 
+=========================================
+- 0000983: [Bug] Table wasn't being quoted while selected lob data when stream_lobs is turned on and db.delimited.identifier.mode=true (chenson) - closed.
+- 0000988: [Bug] use_stream_lobs uses routers target schema and catalog instead of the triggers source schema and catalog (chenson) - closed.
+- 0000995: [Improvement] Upgrade to the latest postgres jdbc driver to get bug fix for retrieval of result set metadata (chenson) - closed.
+- 0000997: [Improvement] dbimport and symmetricds dataloader throttle (abrougher) - closed.
+- 0000998: [Improvement] Add parameters that allow the routing query to be optimized for large numbers of gaps with a large set of unrouted sym_data rows (chenson) - closed.
+- 0001000: [Bug] Prevent null pointer if node channel control exists and channel does not. (chenson) - closed.
+- 0001003: [Improvement] Don't allow a node to register if there are not links defined that will allow it to be part of the network (chenson) - closed.
+
+SymmetricDS - 3.2.2 (Released 2013-01-12)  
+=========================================
+- 0000976: [Bug] Using wildcards in the source_table_name in databases that have foreign keys across schemas can cause triggers to not be built (chenson) - closed.
+- 0000973: [Bug] batch_to_send_count not getting set properly unless you have batches in error (gwilmer) - closed.
+- 0000974: [Bug] Informix - Function created with the schema name as part of the function name (chenson) - closed.
+- 0000978: [Bug] int8 datatype doesn't work as a primary key for an update on postgresql (chenson) - closed.
+- 0000982: [Bug] A conflict is not recorded in sym_incoming_error for sqlite because the database is locked and we use a different connection (chenson) - closed.
+
+SymmetricDS - 3.2.1 (Released 2012-12-18) 
+=========================================
+- 0000961: [Bug] Uninstall feature needs to delete conflicts and transforms before trying to delete group links (chenson) - closed.
+- 0000964: [Bug] Unchecked substring() while retrieving database name in firebird (chenson) - closed.
+- 0000965: [Bug] Firebird and Interbase report unique constraint error code of 335544349 (chenson) - closed.
+- 0000968: [Bug] Staging area clean up job can corrupt data extractions in progress (chenson) - closed.
+- 0000969: [Bug] Trying to open registration on a node that has not been configured/registered itself causes null pointer (chenson) - closed.
+- 0000971: [Bug] Push / Pull threads should run in Job's thread when jobs.synchronized.enable is true (mhanes) - closed.
+
+SymmetricDS - 3.2.0 (Released 2012-12-16) 
+=========================================
+- 0000880: [New Feature] Add support for cascading random data to DbFill. (abrougher) - closed.
+- 0000896: [Bug] RouterService.getUnroutedDataCount() is not accurate. Uses max(last_id) when it should use max(start_id) (chenson) - closed.
+- 0000900: [Improvement] Add grant information to User's Guide for PostreSQL when a different schema is involved. (chenson) - closed.
+- 0000902: [Bug] Don't allow an engine to service a request if that engine is not "started" (chenson) - closed.
+- 0000831: [Bug] Timeout is not set on a re-directed registration request (chenson) - closed.
+- 0000855: [Improvement] Create a new heartbeat channel for sym_node_host. Deprecate heartbeat_time on sym_node (chenson) - closed.
+- 0000872: [New Feature] Add an uninstall feature to SymmetricDS (chenson) - closed.
+- 0000890: [Improvement] The symmetricds client should always request UTF-8 character encoding. Also set -Dfile.encoding=utf-8 (chenson) - closed.
+- 0000893: [Bug] Hidden feature to override the sym_ tables virtual triggers shouldn't look at router id to see if needs to replace the trigger (chenson) - closed.
+- 0000899: [Bug] Prevent nodes from syncing with themselves (chenson) - closed.
+- 0000904: [Bug] DbExport does not respect the compatible setting for data (chenson) - closed.
+- 0000903: [Bug] dbexport not replacing ? in cases (chenson) - closed.
+- 0000906: [Bug] Altering a default value for a varchar column on oracle fails. Default value not quoted. (chenson) - closed.
+- 0000908: [Bug] Table that has a sequence for increment column fails to migrate data (chenson) - closed.
+- 0000909: [New Feature] Support GEOMETRY type on MySQL (chenson) - closed.
+- 0000911: [New Feature] Support GEOMETRY type on SQL Server (chenson) - closed.
+- 0000912: [Bug] Missing primary key columns from source at target can cause data corruption or errors. Columns misaligned. (chenson) - closed.
+- 0000914: [Improvement] Update startup scripts to explicitly use the -server option, output out of memory errors, and restart on memory errors (chenson) - closed.
+- 0000915: [Bug] backslash (\) is exported as doubule backslash (\\) in CSV format (chenson) - closed.
+- 0000916: [Bug] After registration sym_node_security does not get updated with update enabled flag and times (chenson) - closed.
+- 0000918: [Bug] Add startup parameters to support basic authentication (chenson) - closed.
+- 0000920: [Improvement] Support timestamp with time zone in dbfill (chenson) - closed.
+- 0000921: [Improvement] postgres trigger template for timestamp with time zone did not zero pad negative time zone hours (chenson) - closed.
+- 0000924: [Bug] dbexport's xml format does not export null data values correctly (chenson) - closed.
+- 0000925: [Improvement] DbFill should ignore the symmetric tables by default. (abrougher) - closed.
+- 0000936: [Bug] Oracle integer datatype has a larger precision than the java Integer datatype. (chenson) - closed.
+- 0000708: [New Feature] Add ability to exclude BFILE columns from triggers for Oracle (chenson) - closed.
+- 0000779: [New Feature] Add a symmetric parameter that tells the data loader that it is NOT ok to ignore a table if it is missing in the database (chenson) - closed.
+- 0000806: [Bug] DbFill --help argument captions are not displayed correctly. (abrougher) - closed.
+- 0000809: [Improvement] Firebird trigger template improvement for generators. (chenson) - closed.
+- 0000848: [Bug] Tutorial doesn't work for MySQL (chenson) - closed.
+- 0000852: [Improvement] Add the ability to define the "sync key" of a table versus using the actual primary key (chenson) - closed.
+- 0000892: [Bug] Common batch mode should not be detected if a channel is bidirectional with separate trigger definitions for the same table. (chenson) - closed.
+- 0000907: [Improvement] Document conflict resolution's ping-back settings, and resolve booleans (row only, changes only) (chenson) - closed.
+- 0000937: [New Feature] Provide capability to specify initial load / reverse initial load ordering (chenson) - closed.
+- 0000940: [Bug] Conflict resolution uses the target table to lookup data for timestamp and version checks. Should be using source. (chenson) - closed.
+- 0000941: [Bug] Triggers should exclude excluded columns even if column is part of primary key (mhanes) - closed.
+- 0000942: [New Feature] Add a router type of 'audit' that captures changes in an dynamically created audit table. (chenson) - closed.
+- 0000943: [Improvement] Do simple column validation of extracted initial load row during the extraction process. Log better message. (chenson) - closed.
+- 0000944: [Bug] Recursive call while processing data for routing when there are a lot of gaps can cause stack over flow error (chenson) - closed.
+- 0000945: [Bug] batchCommit was being called for earlyCommit and for normal commit. The api is suppose to only be call for a normal commit (chenson) - closed.
+- 0000947: [Bug] Bad alter statement generated on oracle upgrade: ALTER TABLE "SYM_DATA_EVENT" MODIFY ("BATCH_ID" DEFAULT ) (chenson) - closed.
+- 0000948: [Bug] Fix upgrade to sym_trigger_hist to not blow away sequences (chenson) - closed.
+- 0000021: [New Feature] Add support for Sqlite over JDBC (mhanes) - closed.
+- 0000871: [New Feature] Implement a REST API for SymmetricDS (gwilmer) - closed.
+- 0000946: [Bug] Cannot delete triggers from tables if SymmetricDS user doesn't own those tables (chenson) - closed.
+- 0000951: [Bug] use_timestamp conflict resolution with transform can get into endless loop (chenson) - closed.
+- 0000954: [Improvement] Change default file permissions for executables to 755 (vs 774) (chenson) - closed.
+- 0000955: [Improvement] Add parameter to allow SymmetricDS jobs to be synchronized (mhanes) - closed.
+- 0000935: [Bug] dbexport null timestamp values from Oracle result in empty string ("") in CSV. (chenson) - closed.
+
+SymmetricDS - 3.1.11 (Released 2012-11-29) 
+=======================================
+- 0000894: [New Feature] Add property to turn sync_on_incoming off for sym_ table triggers (chenson) - closed.
+- 0000929: [Improvement] Add oracle hint to query to select data from sym_data to force it to use the obvious index - closed.
+- 0000931: [New Feature] Add property that specifies minimum time between pushes and pulls. Default to 0 so pull and push periods have same behavior - closed.
+
+SymmetricDS - 3.1.10 (Released 2012-11-27) 
+==========================================
+- 0000926: [Bug] Staging area is not being cleaned up. Can cause out of memory or file system issues. (chenson) - closed.
+- 0000913: [Bug] Verify that a staged resource reference exists before returning the reference. Symmetricds wasn't allowing me to remove failed (chenson) - closed.
+
+SymmetricDS - 3.1.9 (Released 2012-10-30) 
+=========================================
+- 0000889: [Bug] dbimport of xml format fails with mark/reset error (chenson) - closed.
+- 0000886: [Improvement] Routing of configuration data (especially the node tables) is very slow when there are lots of nodes (chenson) - closed.
+
+SymmetricDS - 3.1.8 (Released 2012-10-29) 
+=========================================
+- 0000860: [Bug] Timestamp with timezone doesn't work with timestamp new wins conflict resolution (chenson) - closed.
+- 0000868: [Task] dbimport needs to support imports from xml format (chenson) - closed.
+- 0000870: [Improvement] Do not attempt to route data if a node does not have an identity (chenson) - closed.
+- 0000875: [Bug] Node attempts to re-register when it attempts to pull from a non-registration server node that does yet have its security record (chenson) - closed.
+- 0000876: [Improvement] During schema upgrade log the old version before attempting upgrade (chenson) - closed.
+- 0000877: [Improvement] Downgrade not supported. Don't allow a older version of symmetricds start up against an newer schema (chenson) - closed.
+- 0000882: [Bug] Stats Purge Job needs to be clustered. Running on multiple nodes can cause deadlocks (chenson) - closed.
+- 0000883: [Bug] Non-authenticated pull wasn't being recorded as a failed pull attempt in sym_node_communication (chenson) - closed.
+- 0000884: [Bug] Documented cluster.server.id property is not supported. Add support. (chenson) - closed.
+- 0000886: [Improvement] Routing of configuration data (especially the node tables) is very slow when there are lots of nodes (chenson) - closed.
+
+SymmetricDS - 3.1.7 (Released 2012-10-22) 
+=========================================
+- 0000825: [Improvement] Improve error handling around SymmetricEngineHolder if the engines dir isn't writeable or isn't a directory (chenson) - closed.
+- 0000834: [Improvement] Add clarity to mention of CRON to differentiate Springs version vs the typical Unix one. (mhanes) - closed.
+- 0000846: [Bug] SymmetricDS won't work with database names with a '-' in them on MySQL (chenson) - closed.
+- 0000847: [Bug] dbexport does not extract timestamp columns correctly on oracle (chenson) - closed.
+- 0000851: [Bug] Add primary key to SYM_REGISTRATION_REQUEST to make Azure happy (chenson) - closed.
+- 0000856: [Bug] DbExport to XML and SYM_XML does not escape data (chenson) - closed.
+- 0000859: [Bug] Changing external_select on sym_trigger does not cause syncTriggers to regenerate a trigger (chenson) - closed.
+- 0000860: [Bug] Timestamp with timezone doesn't work with timestamp new wins conflict resolution (chenson) - closed.
+- 0000862: [Bug] Wildcard matches in sym_trigger match more than they should (chenson) - closed.
+- 0000863: [Bug] When testing to see if a symmetric trigger exists on postgres, also check for the existence of the function (chenson) - closed.
+- 0000864: [Bug] LoadFilterService insert method fails. Effects the pro gui. (chenson) - closed.
+
+SymmetricDS - 3.1.6 (Released 2012-10-02) 
+=========================================
+- 0000843: [Improvement] Add ability wire in database writer filters to dbimport (chenson) - closed.
+- 0000845: [Bug] The STAGE_MANGEMENT and WATCHDOG jobs are not initialized (they won't work in a clustered environment) (chenson) - closed.
+- 0000841: [Bug] 2 triggers for the same table that sync different subsets can end up causing errors (chenson) - closed.
+- 0000844: [Bug] Windows Azure does not allow the use of context_info which SymmetricDS uses (chenson) - closed.
+
+SymmetricDS - 3.1.5 (Released 2012-09-12) 
+=========================================
+- 0000822: [Improvement] Add new constructor to ClientSymmetricEngine so SymmetricDS can share an embedding application's Datasource and Spring Context (chenson) - closed.
+- 0000820: [Bug] Inactivate database trigger when trigger_router is removed. (chenson) - closed.
+- 0000811: [Bug] H2 trigger template doesn't resolve schema (chenson) - closed.
+- 0000821: [Bug] Mark data row as unrouted if no trigger_router can be found for it (chenson) - closed.
+- 0000815: [Bug] decode() function needs qualified in most recent version of Greenplum (mhanes) - closed.
+- 0000819: [Bug] Support alter table alter column on H2 when column size changes (chenson) - closed.
+- 0000816: [Bug] Log messages in AbstractJob are reversed (chenson) - closed.
+- 0000813: [Bug] Trigger and Router Cache should be refreshed prior to syncTriggers (chenson) - closed.
+- 0000808: [Improvement] Document installing as a service for Ubuntu (chenson) - closed.
+- 0000817: [Improvement] Take only the first 50 characters of an ipaddress in order to make sure database save to tables doesn't fail (chenson) - closed.
+- 0000814: [Bug] SqlScript autocommit=false with unique key error doesn't rollback or report exception in listener (chenson) - closed.
+- 0000818: [Bug] Support alters tables statements for column size changes in postgres (chenson) - closed.
+- 0000812: [Improvement] Better document various options related to inital loads in the User's Guide (chenson) - closed.
+- 0000807: [Improvement] Allow the symmetric-core parameter parser to work with other parameter files. (abrougher) - closed.
+
+SymmetricDS - 3.1.4 (Release 2012-09-08) 
+======================================
+- 0000796: [Improvement] AbstractSqlTemplate should report an error if a named parameter map is passed in that does not contain a required parameter (chenson) - closed.
+- 0000793: [Bug] Columns of type OID and LO in Postgres do not work with sym_trigger.use_stream_lobs set to 1 (chenson) - closed.
+- 0000800: [Bug] DbFill is incorrectly generating new random values for columns containing a FK reference. (abrougher) - closed.
+- 0000797: [Bug] table structure sync with wildcards (chenson) - closed.
+- 0000794: [Improvement] Support the lo datatype in postgres (chenson) - closed.
+- 0000803: [Improvement] Check that column names match column values in the abstract router. If not log details. (chenson) - closed.
+- 0000798: [Improvement] Refactor and improved Subselect Router, External Select, and Column Match Router documentation (chenson) - closed.
+- 0000795: [Bug] ip_address field is not long enough to contain ipv6 addresses (chenson) - closed.
+- 0000792: [Improvement] Support tables with names greater than 50 chars (chenson) - closed.
+- 0000804: [Bug] Derby update trigger doubles up the row data (capture columns twice) (chenson) - closed.
+- 0000799: [Bug] Tutorial initial load select needs single quotes around external id variable (chenson) - closed.
+
+SymmetricDS - 3.1.3 (Released 2012-08-28) 
+=========================================
+- 0000787: [Bug] DbFill does not generate random values from BigInteger columns. (abrougher) - closed.
+- 0000784: [Improvement] Use the NetworkInterface Java class to get the current ipAddress of a node (chenson) - closed.
+- 0000788: [Bug] DbFill is populating columns with foreign values when a foreign key is not defined for the column. (abrougher) - closed.
+- 0000785: [Bug] syncTriggers(true) does not force trigger to be rebuilt (chenson) - closed.
+- 0000790: [Bug] stream.to.file.enabled=false opens outgoing transport multiple times which causes ack to be lost sometimes (chenson) - closed.
+- 0000786: [Improvement] Create a unit test for DbFill. (abrougher) - closed.
+- 0000783: [Bug] Null date in the primary key causes parse exception on postgres (chenson) - closed.
+
+SymmetricDS - 3.1.2 (Released 2012-08-22)
+=========================================
+- 0000776: [Improvement] Change SqlScriptReader to allow comments in places other than the beginning of a line in a sql script (chenson) - closed.
+- 0000778: [Bug] If database user doesn't have permission to drop trigger, extra trigger_hist rows get created and the old are not deactivated (chenson) - closed.
+- 0000774: [Bug] DbFill does not respect a columns scale and precision. (abrougher) - closed.
+- 0000781: [Bug] Restart of jobs can cause embedded derby database connections to fail (chenson) - closed.
+- 0000775: [Improvement] Change SqlScript to use SqlScriptReader so that statements are streamed (chenson) - closed.
+
+SymmetricDS - 3.1.1 (Released 2012-08-14) 
+=========================================
+- 0000773: [Bug] SqlScriptReader doesn't handle // comments correctly (chenson) - closed.
+
+SymmetricDS - 3.1.0 (Released 2012-08-13)  
+=========================================
+- 0000655: [Task] Update dbexport and dbimport to support the SymmetricDS XML format (abrougher) - closed.
+- 0000771: [Improvement] DbFill should have the ability to load all of the tables in a given schema with random data. (abrougher) - closed.
+- 0000770: [New Feature] Improve DbImport so that it incorporates the SymmetricDS data loader (chenson) - closed.
+- 0000757: [Improvement] All tables are synchronized during a CREATE batch when initial.load.create.first is true resulting in a lot of table missing (chenson) - closed.
+- 0000769: [Bug] Tomcat Deployment Broken (chenson) - closed.
+- 0000669: [Improvement] Add schema and catalog to the SymmetricDS Batch XML and change the publisher to fill in the schema and catalog (chenson) - closed.
+- 0000725: [New Feature] Add a feature to allow dynamic load filters to be created and executed based configuration (gwilmer) - closed.
+- 0000728: [Improvement] Lookup table router should throw an exception when the router expression is invalid. (abrougher) - closed.
+- 0000747: [Improvement] DbImport should have an empty constructor to make dependency injection easier. (abrougher) - closed.
+- 0000730: [Bug] dbexport schema property ignored when data is exported. (abrougher) - closed.
+- 0000748: [Bug] Data in a single transaction is split across batches and is out of order on Firebird (gwilmer) - closed.
+- 0000753: [Bug] The url for extracting a batch http://server:31415/sync/batch/nodeid-batchid [^] does not work if the nodeid has a '-' in it (chenson) - closed.
+- 0000759: [New Feature] Create utility to fill a given database with random data. (abrougher) - closed.
+- 0000716: [Improvement] dbimport should have an option that allows tables to be altered to match the import versus always trying to create them. (chenson) - closed.
+- 0000768: [Bug] Don't hide startup errors if the spring context fails to start (chenson) - closed.
+- 0000767: [Bug] Latest oracle jdbc drivers for 11g return (0,-127) for types defined as integer resulting in bad mappings (chenson) - closed.
+- 0000763: [Improvement] When logging to the console, log to system.err so that command line utilities can redirect system.out to files (chenson) - closed.
+- 0000762: [Improvement] Change command line options --noconsole to --no-log-console and --nologfile to --no-log-file (chenson) - closed.
+- 0000760: [Bug] Columns mismatched on updates when source table has more columns than the target table. (chenson) - closed.
+- 0000756: [Bug] If an initial load is aborted by marking batches as OK, the client might remain in initial load mode and end up in a loop. (chenson) - closed.
+- 0000752: [Bug] Null pointer during trigger inactivation of deleted table can cause SymmetricDS engine not to start (chenson) - closed.
+- 0000751: [Improvement] Add new extension point called INodeIdCreator that replaces INodeIdGenerator and gets the remote address and host passed to it (chenson) - closed.
+- 0000746: [Improvement] Improve documentation on how to handle Oracle error 'ORA-01489: result of string concatenation is too long' (chenson) - closed.
+- 0000745: [Bug] Type of float(63) on oracle loses precision during data load. (chenson) - closed.
+- 0000740: [Bug] Symadmin help subcommand missing (chenson) - closed.
+- 0000724: [Task] Include an example of filtering or data subsetting (route items to a store) in the User Guide Tutorial (chenson) - closed.
+- 0000738: [Bug] AbstractSymmetricEngine should call init() method of the SecurityService (chenson) - closed.
+- 0000744: [Bug] Inefficient 'Sort by Foreign Keys' algorithm (chenson) - closed.
+- 0000726: [New Feature] Add a new parameter that, when set, is evaluated to choose a node id (chenson) - closed.
+- 0000743: [Bug] Load fails when a null lob column is updated in same batch where the lob column is not null (chenson) - closed.
+- 0000742: [Bug] "ORA-01000: maximum open cursors exceeded" during initial load (RouterService.insertInitialLoadEvents) (chenson) - closed.
+- 0000739: [Bug] Multiple wildcard expressions, only one used (chenson) - closed.
+- 0000737: [Bug] The symmetric engine won't startup in single server mode as a war unless a property file has been specified in the web.xml (chenson) - closed.
+- 0000736: [Bug] deployment_type not being recorded properly in sym_node (chenson) - closed.
+- 0000735: [New Feature] dbimport and dbexport should support symmetric batch xml. (chenson) - closed.
+- 0000733: [Improvement] dbexport should use the default schema and default catalog if they aren't specified (chenson) - closed.
+- 0000734: [Bug] H2 wasn't selecting the schema or catalog in the table lookup (chenson) - closed.
+- 0000729: [Bug] oracle.template.precision should be supported in 3.0 (chenson) - closed.
+- 0000732: [Bug] Support varying Locales for the "REAL" data type (e.g., Oracle's Float(63)) (chenson) - closed.
+- 0000731: [Improvement] Redo the derby database triggers so they can handle tables with more columns (chenson) - closed.
+- 0000727: [Improvement] Upgrade Derby to 10.9.1.0 (chenson) - closed.
+
+SymmetricDS - 3.0.10 (Released 2012-07-23) 
+==========================================
+- 0000713: [Bug] Automate upgrade from 2.x to 3.x on most platforms (chenson) - closed.
+- 0000700: [Bug] StackOverflowError when filtering data during initial load (chenson) - closed.
+- 0000722: [Bug] Sync of a date field on the source to a datetime field on a target fails (chenson) - closed.
+- 0000715: [Bug] Default values with underscores end up escaped (unecessarily) with a '\' or '%' character on MySQL (chenson) - closed.
+- 0000720: [Bug] Variable Transform source-node-id incorrect on Extract type transforms (chenson) - closed.
+- 0000721: [Improvement] Explicitly set the key alias and the keystore type on the ssl connector (chenson) - closed.
+- 0000723: [Bug] XML with DATE column type gets created as a DATETIME on SQL Server (chenson) - closed.
+
+SymmetricDS - 3.0.9 (Released 2012-07-14) 
+======================================
+- 0000707: [Bug] Fix JarBuilder for Windows (gwilmer) - closed.
+- 0000709: [Bug] Wildcard table lookup should respect the db.metadata.ignore.case property (chenson) - closed.
+- 0000711: [Bug] Table inactivation doesn't work properly when using the wildcard feature of sym_trigger (chenson) - closed.
+- 0000712: [Bug] drop trigger doesn't work on Oracle if the trigger is in a different schema (chenson) - closed.
+
+SymmetricDS - 3.0.8 (Released 2012-07-11) 
+======================================
+- 0000696: [Bug] Data is being pinged back during a re-registration (chenson) - closed.
+- 0000694: [Bug] JdbcSqlTemplate allows null SqlTemplateSettings and then uses it without null check later on (gwilmer) - closed.
+- 0000705: [Bug] When using the wildcard feature of SymmetricDS, the reload events aren't being generated properly (chenson) - closed.
+- 0000695: [Bug] UseVariableDates option for DbImport and DbExport do not work properly (gwilmer) - closed.
+
+SymmetricDS - 3.0.7 (Released 2012-07-04)
+=========================================
+- 0000690: [Bug] symmetric-util test code is being packaged with runtime application (chenson) - closed.
+- 0000692: [Bug] Escaped varchar data can get corrupted (chenson) - closed.
+
+SymmetricDS - 3.0.6 (Released 2012-06-29) 
+=========================================
+- 0000670: [Improvement] Better document how nodes are deployed in the engines directory. (chenson) - closed.
+- 0000671: [Bug] When the router type is null the batch type is always common. (chenson) - closed.
+- 0000672: [Improvement] Support a --engine option for the syadmin create-war command (chenson) - closed.
+- 0000673: [Improvement] Start symmetricds engine instance in background (chenson) - closed.
+- 0000676: [Bug] dbimport fails to create unique indexes (chenson) - closed.
+- 0000678: [Bug] auto.reload is broke in 3.0 (chenson) - closed.
+- 0000679: [Bug] DbImport help screen does not display description for --use-variable-dates. (abrougher) - closed.
+- 0000680: [Improvement] Don't run the sync triggers process at all if in a SymmetricDS instance and auto.sync.triggers is false (chenson) - closed.
+- 0000683: [Bug] Error synchronyzing triggers (NPE) (chenson) - closed.
+
+SymmetricDS - 3.0.5 (Released 2012-06-26) 
+=========================================
+- 0000665: [Bug] Don't commit a batch that doesn't have commit in the csv protocol (chenson) - closed.
+- 0000666: [Improvement] Don't capture the raw record in the csv parser. It allocates more memory than need be. (chenson) - closed.
+- 0000667: [Improvement] Improve debug logging when the payload is VERY big. truncate data in the log. (chenson) - closed.
+- 0000668: [Bug] sym_trigger.use_stream_lobs had a bug where every column after a lob is not captured (chenson) - closed.
+
+SymmetricDS - 3.0.4 (Released 2012-06-22) 
+=========================================
+- 0000664: [Improvement] Pass a reference to ISymmetricEngine to the Scripted Router so it has access to SymmetricDS services - closed.
+- 0000663: [Improvement] Add a variable transform that makes a column <null> (chenson) - closed.
+- 0000659: [Improvement] Instead of failing to load a failed file, log warnings and delete staged resource if it was abandoned during xfer (chenson) - closed.
+- 0000656: [Bug] Change the default secret key algorithm used for encrypting/decrypting password from PBEWithMD5AndTripleDES to PBEWithMD5AndDES (chenson) - closed.
+- 0000657: [Improvement] SymmetricEngineHolder.install should encrypt database password by default (chenson) - closed.
+- 0000658: [Bug] Fix null pointer exception that hides true exception during install of triggers (chenson) - closed.
+
+SymmetricDS - 3.0.3 (Released 2012-06-18) 
+=========================================
+- 0000652: [Bug] Update documentation about how to configure purge (chenson) - closed.
+- 0000647: [Bug] Fallback from insert to update causes an array index out of bounds exception (admin) - closed.
+
+SymmetricDS - 3.0.2 (Released 2012-06-18)  
+======================================
+- 0000648: [Bug] Nested database transactions prevents H2 installation from deleting transforms sometimes. (chenson) - closed.
+- 0000649: [Bug] Column matching routers can't match values with spaces. (abrougher) - closed.
+- 0000651: [Bug] Initial Load Order not being honored. (chenson) - closed.
+- 0000645: [Bug] Empty staged resource can be left around during the extract if there is an error during data extraction which causes SymmetricDS (chenson) - closed.
+
+SymmetricDS - 3.0.1 (Released 2012-06-06)  
+=========================================
+- 0000638: [Improvement] Support Microsoft's JDBC 4 Driver for SQL Server - closed.
+- 0000639: [Improvement] Support Windows Azure - closed.
+- 0000640: [Improvement] For fallback, if update fails and then the insert fails (pk changed and row already exists), then attempt to update using the ne - closed.
+- 0000641: [Improvement] Don't initial load a table if the initial load order is < 0 - closed.
+- 0000642: [Bug] transforms with a transform_policy of implied don't copy primary keys to transform on insert - closed.
+- 0000643: [Bug] Firebird requires commits after each ddl statement during upgrades - closed.
+- 0000644: [Bug] Carriage return and line feeds are not being handled properly in the creation and parsing of CSV for 3.0.0 - closed.
+
+SymmetricDS - 3.0.0 (Released 2012-06-04)  
+=========================================
+
+This major release restructures the code for performance improvements and adds conflict management.
+
+- 0000629: [Bug] We don't quote the catalog and schema when allowing sql server identity inserts - closed.
+- 0000630: [Bug] Make sure cached table definitions are cleared out before running sync triggers. - closed.
+- 0000560: [Improvement] Support of AES Encryption Is Needed (elong) - closed.
+- 0000628: [Bug] Duplicate columns in table. Fix jdbc ddl reader so that reading table columns is qualified by schema and catalog - closed.
+- 0000608: [Improvement] Optimization - Only capture one row in sym_data_event per sym_data when all the routers on a channel always send to all nodes in - closed.
+- 0000618: [New Feature] Add setting on trigger that indicates whether old data should be captured by the triggers - closed.
+- 0000621: [Improvement] Reload parameters from sym_parameter when they come through the data loader or data router (so you don't have to wait for the ca - closed.
+- 0000622: [Improvement] Restart jobs if job parameters come through the data loader or data router - closed.
+- 0000623: [New Feature] Add the ability to set a status of IG (ignore) on either an incoming or outgoing batch so that the status will be transmitted re - closed.
+- 0000624: [Bug] The subselect router should not kick in during an initial load if the initial_load_select is used - closed.
+- 0000625: [Improvement] Upgrade Jetty from 7.1 to 7.6 (latest stable 7.x version) to fix sporadic EOF exceptions - closed.
+- 0000626: [Improvement] Use prepared args for the OK status in the purge service. Not sure if it makes a difference, but the wrong query plans are somet - closed.
+- 0000006: [New Feature] Add more robust conflict resolution strategies - closed.
+- 0000423: [Improvement] Add configurable file cache folder - closed.
+- 0000543: [Bug] Column's JdbcTypeName is Null - closed.
+- 0000548: [Bug] Remove invalid documentation for embedded.webserver.basic.auth.username and embedded.webserver.basic.auth.password - closed.
+- 0000549: [Bug] Section 4.8.2 Transformation Types fails to mention pre-defined Lookup Transform type - closed.
+- 0000562: [Bug] Fix DataService bug. Max data id that is currently handled in 2.x is Integer.MAX_VALUE. It should go all the way up to Long.MAX_ - closed.
+- 0000564: [Improvement] Add external_data to subselect router - closed.
+- 0000566: [Improvement] Add documentation re purge requirements and sym_node_security - closed.
+- 0000592: [New Feature] Make the data loader pluggable so that bulk loaders can be configured at the channel level. - closed.
+- 0000593: [Improvement] Re-factor the data loader and data extractor so the components can be re-used outside of the core symmetricds engine - closed.
+- 0000594: [Improvement] Remove dependency on commons-logging in favor of using slf4j everywhere for logging - closed.
+- 0000595: [Improvement] Turn on multiServerMode as the default. Update tutorial and documentation - closed.
+- 0000601: [Bug] Data type for data_id and batch_id should be a type that scales bigger than an integer - closed.
+- 0000605: [New Feature] Support wildcards for the source_table_name in sym_trigger so you only have to configure one trigger entry to sync and entire da - closed.
+- 0000607: [New Feature] Order triggers by FK constraints for initial load when initial_load_order is the same. - closed.
+- 0000609: [New Feature] Add dbexport and dbimport features to SymmetricDS - closed.
+- 0000613: [New Feature] Add a column_policy column to sym_transform_table that indicates whether undefined columns are specified or implied - closed.
+- 0000616: [Improvement] Refresh parameter cache whenever new parameters come through the data loader or data router. - closed.
+- 0000597: [Improvement] Consolidate database platform (former ddlutils) code and symmetricdialect code that contains information that should be in the p (chenson) - closed.
+- 0000596: [Improvement] Load each batch as it arrives at the target (instead of transporting all batches for 1 sync and then loading them all) (chenson) - closed.
+- 0000631: [Improvement] Add FKs to the SymmetricDS configuration tables - closed.
+- 0000632: [New Feature] Create new feature to allow concurrent pulling and pushing of nodes - closed.
+- 0000633: [Bug] Don't route inserts of sym_node or sym_node_security to the associated node_id - closed.
+- 0000634: [Improvement] Speed up node reloads on push. Continuously push to a node if the previous push contained a reload event. - closed.
+- 0000636: [Improvement] Support bigger than 32k clobs and varchar columns by swapping out sym_escape for REPLACE in the Firebird dialect - closed.
+- 0000637: [Improvement] By default delete sym_data_gap rows instead of marking them as OK or SK - closed.
