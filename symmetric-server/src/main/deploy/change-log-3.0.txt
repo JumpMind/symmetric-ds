@@ -1,3 +1,8 @@
+SymmetricDS - 3.6.7 (Released 2014-09-02)
+=========================================
+- 0001940: [Bug] On MySQL sym_transaction_id_post_5_1_23 function should not be checking the autocommit session variable (chenson) - closed.
+- 0001946: [Bug] ConcurrentModificationException due to timing issue in OutgoingBatchService (chenson) - closed.
+
 SymmetricDS - 3.6.6 (Released 2014-08-27)
 =========================================
 - 0001920: [New Feature] Redshift database dialect (elong) - resolved.
