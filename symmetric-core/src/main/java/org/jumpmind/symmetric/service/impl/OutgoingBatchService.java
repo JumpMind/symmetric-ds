@@ -358,7 +358,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         OutgoingBatches batches = new OutgoingBatches(list);
 
-        List<NodeChannel> channels = configurationService.getNodeChannels(nodeId, true);
+        List<NodeChannel> channels = new ArrayList<NodeChannel>(configurationService.getNodeChannels(nodeId, true));
         batches.sortChannels(channels);
 
         List<OutgoingBatch> keepers = new ArrayList<OutgoingBatch>();
