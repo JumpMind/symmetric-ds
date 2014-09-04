@@ -414,11 +414,11 @@ public class TransformWriter extends NestedDataWriter {
                             } else {
                                 throw new IgnoreRowException();
                             }
-                        } else if (columnValue instanceof String){
-                            data.put(transformColumn, (String) columnValue, (String) columnValue, true);
                         } else if (columnValue instanceof NewAndOldValue) {
                             data.put(transformColumn, ((NewAndOldValue) columnValue).getNewValue(),
                                     ((NewAndOldValue) columnValue).getOldValue(), true);
+                        } else {
+                            data.put(transformColumn, (String) columnValue, (String) columnValue, true);                            
                         }
                     } catch (IgnoreColumnException e) {
                         // Do nothing. We are suppose to ignore the column.
