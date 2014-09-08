@@ -188,7 +188,11 @@ public class DatabasePlatformTest {
         tableFromDatabase = platform.getTableFromCache(table.getName(), true);
         
         assertFalse(tableFromDatabase.getColumnWithName("ID").isAutoIncrement());
-        assertEquals(1000, tableFromDatabase.getColumnWithName("COL1").getSizeAsInt());
+        
+        /* sqlite character fields do not limit based on size */
+        if (!platform.getName().equals(DatabaseNamesConstants.SQLITE)) {
+            assertEquals(1000, tableFromDatabase.getColumnWithName("COL1").getSizeAsInt());
+        }
         
     }
 
