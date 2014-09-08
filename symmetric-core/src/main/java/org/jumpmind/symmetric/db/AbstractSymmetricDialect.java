@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.db;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.IOException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -677,6 +679,12 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String massageDataExtractionSql(String sql, Channel channel) {
+        String textColumnExpression = parameterService.getString(ParameterConstants.DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION);
+        if (isNotBlank(textColumnExpression)) {
+            sql = sql.replace("d.old_data", textColumnExpression.replace("$(columnName)", "d.old_data"));
+            sql = sql.replace("d.row_data", textColumnExpression.replace("$(columnName)", "d.row_data"));
+            sql = sql.replace("d.pk_data", textColumnExpression.replace("$(columnName)", "d.pk_data"));
+        }
         return sql;
     }
 
