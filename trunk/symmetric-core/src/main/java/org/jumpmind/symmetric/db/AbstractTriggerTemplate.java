@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.db;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.sql.Types;
 import java.util.Map;
 
@@ -38,6 +40,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.FormatUtils;
 
@@ -110,22 +113,29 @@ abstract public class AbstractTriggerTemplate {
     public String createInitalLoadSql(Node node, TriggerRouter triggerRouter, Table originalTable,
             TriggerHistory triggerHistory, Channel channel, String overrideSelectSql) {
 
+        IParameterService parameterService = symmetricDialect.getParameterService();
+        
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                 triggerHistory.getParsedPkColumnNames(), true);
 
         Column[] columns = table.getColumns();
 
+        String textColumnExpression = parameterService.getString(ParameterConstants.DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION);
+
         String sql = null;
 
-        if (symmetricDialect.getParameterService().is(
+        if (parameterService.is(
                 ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
             sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
             String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
                     symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
                     false, channel, triggerRouter.getTrigger()).columnString;
+            if (isNotBlank(textColumnExpression)) {
+                columnsText = textColumnExpression.replace("$(columnName)", columnsText);
+            }            
             sql = FormatUtils.replace("columns", columnsText, sql);
-        } else {
-            boolean dateTimeAsString = symmetricDialect.getParameterService().is(
+        } else {            
+            boolean dateTimeAsString = parameterService.is(
                     ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR);
             sql = "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)";
             StringBuilder columnList = new StringBuilder();
@@ -139,12 +149,17 @@ abstract public class AbstractTriggerTemplate {
                             columnList.append(",");
                         }
 
+                        String columnExpression = SymmetricUtils.quote(symmetricDialect,
+                                column.getName()); 
+                        
                         if (dateTimeAsString && TypeMap.isDateTimeType(column.getMappedTypeCode())) {
-                            columnList.append(castDatetimeColumnToString(column.getName()));
-                        } else {
-                            columnList.append(SymmetricUtils.quote(symmetricDialect,
-                                    column.getName()));
+                            columnExpression = castDatetimeColumnToString(column.getName());
+                        } else if (isNotBlank(textColumnExpression) && TypeMap.isTextType(column.getMappedTypeCode())) {
+                            columnExpression = textColumnExpression.replace("$(columnName)", columnExpression) + " as " + column.getName();
                         }
+                        
+                        columnList.append(columnExpression);
+                        
                     }
                 }
             }
@@ -613,7 +628,7 @@ abstract public class AbstractTriggerTemplate {
         String lastCommandToken = symmetricDialect.escapesTemplatesForDatabaseInserts() ? (triggerConcatCharacter
                 + "'',''" + triggerConcatCharacter)
                 : (triggerConcatCharacter + "','" + triggerConcatCharacter);
-
+        
         for (int i = 0; i < columns.length; i++) {
             Column column = columns[i];
             if (column != null) {
@@ -654,7 +669,7 @@ abstract public class AbstractTriggerTemplate {
                             templateToUse = emptyColumnTemplate;
                         } else {
                             templateToUse = clobColumnTemplate;
-                        }
+                        }                        
                         break;
                     case Types.BLOB:
                         if (requiresWrappedBlobTemplateForBlobType()) {
