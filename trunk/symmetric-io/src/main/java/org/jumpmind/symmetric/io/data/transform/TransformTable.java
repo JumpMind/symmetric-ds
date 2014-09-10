@@ -41,7 +41,7 @@ public class TransformTable implements Cloneable {
     protected TransformPoint transformPoint;
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
-    protected DeleteAction deleteAction = DeleteAction.NONE;
+    protected DeleteAction deleteAction = DeleteAction.DEL_ROW;
     protected ColumnPolicy columnPolicy = ColumnPolicy.IMPLIED;
     protected boolean updateFirst = false;
     protected int transformOrder = 0;
