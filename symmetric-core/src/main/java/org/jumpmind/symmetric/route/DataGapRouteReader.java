@@ -127,7 +127,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             cursor = prepareCursor();
             processInfo.setStatus(Status.EXTRACTING);
             boolean moreData = true;
-            while (dataCount <= maxDataToRoute || lastTransactionId != null) {
+            while (dataCount <= maxDataToRoute || (lastTransactionId != null && !nontransactional)) {
                 if (moreData) {
                     moreData = fillPeekAheadQueue(peekAheadQueue, peekAheadCount, cursor);
                 }
