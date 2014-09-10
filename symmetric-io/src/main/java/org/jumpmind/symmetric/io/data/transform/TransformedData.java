@@ -277,7 +277,10 @@ public class TransformedData implements Cloneable {
                     return false;
                 }
                 for (int i = 0; i < otherKeyValues.length; i++) {
-                    if (!keyValues[i].equals(otherKeyValues[i])) {
+                    if (!(keyValues[i] == null && otherKeyValues[i] == null) &&
+                         ((keyValues[i] == null && otherKeyValues[i] != null) ||
+                          (otherKeyValues[i] == null && keyValues[i] != null) ||                            
+                          (!keyValues[i].equals(otherKeyValues[i])))) {
                         return false;
                     }
                 }
