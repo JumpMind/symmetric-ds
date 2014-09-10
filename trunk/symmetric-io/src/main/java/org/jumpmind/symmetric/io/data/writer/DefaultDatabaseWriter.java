@@ -57,6 +57,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
+    
+    protected static final int MAX_DATA_SIZE_TO_PRINT_TO_LOG = 1024 * 1000;
 
     protected final static Logger log = LoggerFactory.getLogger(DefaultDatabaseWriter.class);
     
@@ -67,6 +69,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected ISqlTransaction transaction;
 
     protected DmlStatement currentDmlStatement;
+    
+    protected Object[] currentDmlValues;
 
     public DefaultDatabaseWriter(IDatabasePlatform platform) {
         this(platform, null, null);
@@ -190,7 +194,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 }
             }
         } catch (SqlException ex) {
-            logFailure(ex, data);
+            logFailureDetails(ex, data, true);
             throw ex;
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
@@ -305,7 +309,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 }
             }
         } catch (SqlException ex) {
-            logFailure(ex, data);
+            logFailureDetails(ex, data, true);
             throw ex;
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
@@ -472,7 +476,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 return LoadStatus.SUCCESS;
             }
         } catch (SqlException ex) {
-            logFailure(ex, data);
+            logFailureDetails(ex, data, true);
             throw ex;
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
@@ -627,18 +631,30 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         }
     }
 
-    protected void logFailure(SqlException e, CsvData data) {
+    @Override
+    protected void logFailureDetails(Throwable e, CsvData data, boolean logLastDmlDetails) {
         StringBuilder failureMessage = new StringBuilder();
         failureMessage.append("Failed to process a ");
         failureMessage.append(data.getDataEventType().toString().toLowerCase());
         failureMessage.append(" event in batch ");
         failureMessage.append(batch.getBatchId());
         failureMessage.append(".\n");
-        if (this.currentDmlStatement != null) {
+        
+        if (logLastDmlDetails && this.currentDmlStatement != null) {
             failureMessage.append("Failed sql was: ");
             failureMessage.append(this.currentDmlStatement.getSql());
             failureMessage.append("\n");
         }
+        
+        if (logLastDmlDetails && this.currentDmlValues != null) {
+            failureMessage.append("Failed sql parameters: ");
+            failureMessage.append(StringUtils.abbreviate(Arrays.toString(currentDmlValues), MAX_DATA_SIZE_TO_PRINT_TO_LOG));
+            failureMessage.append("\n");
+            failureMessage.append("Failed sql parameters types: ");
+            failureMessage.append(Arrays.toString(this.currentDmlStatement.getTypes()));
+            failureMessage.append("\n");
+        }
+        
         String rowData = data.getCsvData(CsvData.PK_DATA);
         if (StringUtils.isNotBlank(rowData)) {
             failureMessage.append("Failed pk data was: ");
@@ -646,7 +662,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             failureMessage.append("\n");
         }
 
-        final long MAX_DATA_SIZE_TO_PRINT_TO_LOG = 1024 * 1000;
         rowData = data.getCsvData(CsvData.ROW_DATA);
         if (StringUtils.isNotBlank(rowData)) {
             if (rowData.length() < MAX_DATA_SIZE_TO_PRINT_TO_LOG) {
@@ -779,13 +794,13 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
 
     protected int execute(CsvData data, String[] values) {
-        Object[] objectValues = platform.getObjectValues(batch.getBinaryEncoding(), values,
+        currentDmlValues = platform.getObjectValues(batch.getBinaryEncoding(), values,
                 currentDmlStatement.getMetaData(), false, writerSettings.isFitToColumn());
         if (log.isDebugEnabled()) {
-            log.debug("Submitting data {} with types {}", Arrays.toString(objectValues),
+            log.debug("Submitting data {} with types {}", Arrays.toString(currentDmlValues),
                     Arrays.toString(this.currentDmlStatement.getTypes()));
         }
-        return transaction.addRow(data, objectValues, this.currentDmlStatement.getTypes());
+        return transaction.addRow(data, currentDmlValues, this.currentDmlStatement.getTypes());
     }
 
     @Override

@@ -81,6 +81,13 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
     protected LoadStatus update(CsvData data, boolean applyChangesOnly, boolean useConflictDetection) {
         return upsert(data);
     }
+    
+    @Override
+    protected void logFailureDetails(Throwable e, CsvData data, boolean logLastDmlDetails) {
+        /*
+         * Stacktrace will be printed after the error continues to bubble up 
+         */
+    }
 
     protected LoadStatus upsert(CsvData data) {
         statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);

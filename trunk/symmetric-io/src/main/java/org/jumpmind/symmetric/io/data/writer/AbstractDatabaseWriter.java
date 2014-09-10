@@ -192,6 +192,12 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                 throw ex;
             } catch (RuntimeException ex) {
                 if (filterError(data, ex)) {
+                    if (!(ex instanceof SqlException)) {
+                        /*
+                         * SQL exceptions should have already been logged
+                         */
+                       logFailureDetails(ex, data, false);
+                    }
                     throw ex;
                 } else {
                     uncommittedCount++;
@@ -359,6 +365,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
     protected abstract LoadStatus update(CsvData data, boolean applyChangesOnly, boolean useConflictDetection);
     protected abstract boolean create(CsvData data);
     protected abstract boolean sql(CsvData data);
+    protected abstract void logFailureDetails(Throwable e, CsvData data, boolean logLastDmlDetails);
     
     protected String[] getRowData(CsvData data, String dataType) {
         String[] targetValues = new String[targetTable.getColumnCount()];
