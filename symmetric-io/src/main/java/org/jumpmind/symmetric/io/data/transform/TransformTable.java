@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 
 public class TransformTable implements Cloneable {
@@ -41,7 +42,7 @@ public class TransformTable implements Cloneable {
     protected TransformPoint transformPoint;
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
-    protected DeleteAction deleteAction = DeleteAction.NONE;
+    protected DeleteAction deleteAction = DeleteAction.DEL_ROW;
     protected ColumnPolicy columnPolicy = ColumnPolicy.IMPLIED;
     protected boolean updateFirst = false;
     protected int transformOrder = 0;
