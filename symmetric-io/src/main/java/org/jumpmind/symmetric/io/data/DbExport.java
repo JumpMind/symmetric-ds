@@ -210,7 +210,7 @@ public class DbExport {
 
         if (!noData) {
             if (sql == null) {
-                sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
+                sql = platform.createDmlStatement(DmlType.SELECT_ALL, table, null).getSql();
             }
 
             if (StringUtils.isNotBlank(whereClause)) {

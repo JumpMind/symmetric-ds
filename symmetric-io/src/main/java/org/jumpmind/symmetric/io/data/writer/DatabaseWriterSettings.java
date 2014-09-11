@@ -54,6 +54,8 @@ public class DatabaseWriterSettings {
     protected boolean saveCurrentValueOnError = false;
     
     protected boolean fitToColumn = false;
+    
+    protected String textColumnExpression;
 
     protected Map<String, Conflict> conflictSettingsByChannel;
 
@@ -263,4 +265,11 @@ public class DatabaseWriterSettings {
         return fitToColumn;
     }
 
+    public void setTextColumnExpression(String textColumnExpression) {
+        this.textColumnExpression = textColumnExpression;
+    }
+    
+    public String getTextColumnExpression() {
+        return textColumnExpression;
+    }
 }

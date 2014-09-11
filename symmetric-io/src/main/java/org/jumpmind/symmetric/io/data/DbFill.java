@@ -87,6 +87,8 @@ public class DbFill {
     
     private boolean print = false;
     
+    private String textColumnExpression;
+    
     // Weights given to insert, update, and delete commands when
     // randomly selecting a command for any given table.
     private int[] dmlWeight = {1,0,0};
@@ -321,7 +323,7 @@ public class DbFill {
         Row row = null;
         // Select all rows and return the primary key columns.
         String sql = platform.createDmlStatement(DmlType.SELECT_ALL, table.getCatalog(), table.getSchema(), table.getName(),
-                table.getPrimaryKeyColumns(), table.getColumns(), null).getSql();
+                table.getPrimaryKeyColumns(), table.getColumns(), null, textColumnExpression).getSql();
         final List<Row> rows = new ArrayList<Row>();
         platform.getSqlTemplate().query(sql, RANDOM_SELECT_SIZE, new ISqlRowMapper<Object>() {
             public Object mapRow(Row row) {
@@ -623,21 +625,21 @@ public class DbFill {
 		return platform.createDmlStatement(DmlType.INSERT,
 				table.getCatalog(), table.getSchema(), table.getName(),
 				table.getPrimaryKeyColumns(), table.getColumns(),
-				null);
+				null, textColumnExpression);
 	}
 	
 	public DmlStatement createUpdateDmlStatement(Table table) {
 		return platform.createDmlStatement(DmlType.UPDATE,
 				table.getCatalog(), table.getSchema(), table.getName(),
 				table.getPrimaryKeyColumns(), table.getNonPrimaryKeyColumns(),
-				null);
+				null, textColumnExpression);
 	}
 	
 	public DmlStatement createDeleteDmlStatement(Table table) {
 		return platform.createDmlStatement(DmlType.DELETE,
 				table.getCatalog(), table.getSchema(), table.getName(),
 				table.getPrimaryKeyColumns(), table.getNonPrimaryKeyColumns(),
-				null);
+				null, textColumnExpression);
 	}
 	
 	private Row createRandomInsertValues(DmlStatement updStatement, Table table) {
@@ -787,4 +789,11 @@ public class DbFill {
     	return dmlWeight[2];
     }
 
+    public void setTextColumnExpression(String textColumnExpression) {
+        this.textColumnExpression = textColumnExpression;
+    }
+    
+    public String getTextColumnExpression() {
+        return textColumnExpression;
+    }
 }
