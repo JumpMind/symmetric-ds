@@ -51,7 +51,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         String[] pkData = data.getPkData(targetTable);
         Object[] objectValues = databaseWriter.getPlatform().getObjectValues(
                 writer.getBatch().getBinaryEncoding(), pkData, targetTable.getPrimaryKeyColumns());
-        DmlStatement stmt = databaseWriter.getPlatform().createDmlStatement(DmlType.FROM, targetTable);
+        DmlStatement stmt = databaseWriter.getPlatform().createDmlStatement(DmlType.FROM, targetTable
+                , writer.getWriterSettings().getTextColumnExpression());
         Column column = targetTable.getColumnWithName(columnName);
         String sql = stmt.getColumnsSql(new Column[] { column });
 
@@ -108,7 +109,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         String[] pkData = data.getPkData(targetTable);
         Object[] objectValues = databaseWriter.getPlatform().getObjectValues(
                 writer.getBatch().getBinaryEncoding(), pkData, targetTable.getPrimaryKeyColumns());
-        DmlStatement stmt = databaseWriter.getPlatform().createDmlStatement(DmlType.FROM, targetTable);
+        DmlStatement stmt = databaseWriter.getPlatform().createDmlStatement(DmlType.FROM, targetTable
+                , writer.getWriterSettings().getTextColumnExpression());
         String sql = stmt.getColumnsSql(new Column[] { targetTable.getColumnWithName(columnName) });
         Long existingVersion = databaseWriter.getTransaction()
                 .queryForObject(sql, Long.class, objectValues);

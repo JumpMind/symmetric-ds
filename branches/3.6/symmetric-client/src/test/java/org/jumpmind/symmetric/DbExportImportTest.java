@@ -224,7 +224,7 @@ public class DbExportImportTest extends AbstractServiceTest {
                             TEST_TS_W_TZ);
             template.update(createSql);
             DmlStatement statement = platform.createDmlStatement(DmlType.INSERT,
-                    platform.getTableFromCache(TEST_TS_W_TZ, true));
+                    platform.getTableFromCache(TEST_TS_W_TZ, true), null);
             template.update(statement.getSql(), statement.getValueArray(new Object[] { 1,
                     "1973-06-08 07:00:00.000 -04:00" }, new Object[] { 1 }));
             return true;

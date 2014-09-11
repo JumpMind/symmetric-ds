@@ -29,9 +29,9 @@ public class MySqlDmlStatement extends DmlStatement {
 
     public MySqlDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers) {
+            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
         super(type, catalogName, schemaName, tableName, keysColumns, columns, 
-                nullKeyValues, databaseInfo, useQuotedIdentifiers);
+                nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
     }
 
     @Override

@@ -20,6 +20,8 @@
  */
 package org.jumpmind.db.sql;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +35,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.util.FormatUtils;
@@ -65,12 +68,15 @@ public class DmlStatement {
     protected Column[] columns;
 
     protected boolean[] nullKeyValues;
-
+    
+    protected String textColumnExpression;
+    
     public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers) {
+            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
         this.databaseInfo = databaseInfo;
         this.columns = columns;
+        this.textColumnExpression = textColumnExpression;
         if (nullKeyValues == null || keysColumns == null
                 || nullKeyValues.length != keysColumns.length) {
             this.keys = keysColumns;
@@ -245,7 +251,12 @@ public class DmlStatement {
                         sql.append(separator);
                     }
                     if (!nullColumns[i]) {
-                        sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?");
+                        boolean textType = TypeMap.isTextType(columns[i].getMappedTypeCode());
+                        if (textType && isNotBlank(textColumnExpression)) {
+                            sql.append(quote).append(columns[i].getName()).append(quote).append(" = ").append(textColumnExpression.replace("$(columnName)", "?"));
+                        } else {
+                            sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?");   
+                        }                        
                     } else {
                         sql.append(quote).append(columns[i].getName()).append(quote)
                                 .append(" is NULL");
@@ -271,16 +282,20 @@ public class DmlStatement {
     }
     
     protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
-        String columnName = column.getName();
+        String columnName = column.getName();        
         sql.append(quote).append(columnName).append(quote);
     }
-    
 
     protected void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         if (columns != null) {
             for (int i = 0; i < columns.length; i++) {
                 if (columns[i] != null) {
-                    sql.append("?").append(",");
+                    boolean textType = TypeMap.isTextType(columns[i].getMappedTypeCode());
+                    if (textType && isNotBlank(textColumnExpression)) {
+                        sql.append(textColumnExpression.replace("$(columnName)", "?")).append(",");
+                    } else {
+                        sql.append("?").append(",");
+                    }
                 }
             }
 
