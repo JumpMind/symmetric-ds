@@ -117,6 +117,8 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory {
         settings.setSaveCurrentValueOnError(parameterService.is(
                 ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
         settings.setFitToColumn(parameterService.is(ParameterConstants.DATA_LOADER_FIT_TO_COLUMN, false));
+        settings.setTextColumnExpression(parameterService.getString(
+                ParameterConstants.DATA_LOADER_TEXT_COLUMN_EXPRESSION));
 
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();

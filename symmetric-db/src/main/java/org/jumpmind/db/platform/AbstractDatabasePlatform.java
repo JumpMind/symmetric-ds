@@ -107,15 +107,15 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     abstract public ISqlTemplate getSqlTemplate();
 
-    public DmlStatement createDmlStatement(DmlType dmlType, Table table) {
+    public DmlStatement createDmlStatement(DmlType dmlType, Table table, String textColumnExpression) {
         return createDmlStatement(dmlType, table.getCatalog(), table.getSchema(), table.getName(),
-                table.getPrimaryKeyColumns(), table.getColumns(), null);
+                table.getPrimaryKeyColumns(), table.getColumns(), null, textColumnExpression);
     }
 
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues) {
+            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression) {
         return DmlStatementFactory.createDmlStatement(getName(), dmlType, catalogName, schemaName,
-                tableName, keys, columns, nullKeyValues, getDdlBuilder());
+                tableName, keys, columns, nullKeyValues, getDdlBuilder(), textColumnExpression);
     }
 
     public IDdlReader getDdlReader() {

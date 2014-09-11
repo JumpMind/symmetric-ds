@@ -28,9 +28,9 @@ public class SqliteDmlStatement extends DmlStatement {
 
     public SqliteDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers) {
+            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
         super(type, catalogName, null, tableName, keysColumns, columns, 
-                nullKeyValues, databaseInfo, useQuotedIdentifiers);
+                nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
     }
     
     @Override

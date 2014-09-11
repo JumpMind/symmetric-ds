@@ -53,41 +53,41 @@ final public class DmlStatementFactory {
         } else {
         	ddlBuilder.setDelimitedIdentifierModeOn(useQuotedIdentifiers);
             return createDmlStatement(databaseName, dmlType, catalogName, schemaName, tableName, keys,
-                    columns, nullKeyValues, ddlBuilder);        	
+                    columns, nullKeyValues, ddlBuilder, null);        	
         }
     }
 
     public static DmlStatement createDmlStatement(String databaseName, DmlType dmlType,
             String catalogName, String schemaName, String tableName, Column[] keys,
-            Column[] columns, boolean[] nullKeyValues, IDdlBuilder ddlBuilder) {
+            Column[] columns, boolean[] nullKeyValues, IDdlBuilder ddlBuilder, String textColumnExpression) {
         if (DatabaseNamesConstants.ORACLE.equals(databaseName)) {
             return new OracleDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
                     columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
-                    ddlBuilder.isDelimitedIdentifierModeOn());
+                    ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else if (DatabaseNamesConstants.POSTGRESQL.equals(databaseName)) {
             return new PostgreSqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
                     columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
-                    ddlBuilder.isDelimitedIdentifierModeOn());
+                    ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else if (DatabaseNamesConstants.REDSHIFT.equals(databaseName)) {
             return new RedshiftDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
                     columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
-                    ddlBuilder.isDelimitedIdentifierModeOn());
+                    ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else if (DatabaseNamesConstants.MYSQL.equals(databaseName)) {
             return new MySqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
                     columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
-                    ddlBuilder.isDelimitedIdentifierModeOn());
+                    ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else if (DatabaseNamesConstants.SQLITE.equals(databaseName)) {
             return new SqliteDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
                     columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
-                    ddlBuilder.isDelimitedIdentifierModeOn());
+                    ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else if (DatabaseNamesConstants.SQLANYWHERE.equals(databaseName)) {
             return new SqlAnywhereDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                     nullKeyValues, ddlBuilder.getDatabaseInfo(),
-                    ddlBuilder.isDelimitedIdentifierModeOn());
+                    ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else {
             return new DmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                     nullKeyValues, ddlBuilder.getDatabaseInfo(),
-                    ddlBuilder.isDelimitedIdentifierModeOn());
+                    ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         }
 
     }
