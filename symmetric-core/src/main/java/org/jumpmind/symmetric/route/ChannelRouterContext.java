@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.route;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -243,7 +245,9 @@ public class ChannelRouterContext extends SimpleRouterContext {
     }
 
     public void addTransaction(String transactionId) {
-        this.transactions.add(transactionId);
+        if (isNotBlank(transactionId)) {
+            this.transactions.add(transactionId);
+        }
     }
 
 }
