@@ -112,10 +112,10 @@ public interface IDatabasePlatform {
     
     public void dropTables(boolean continueOnError, Table...tables);
 
-    public DmlStatement createDmlStatement(DmlType dmlType, Table table);
+    public DmlStatement createDmlStatement(DmlType dmlType, Table table, String textColumnExpression);
 
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues);
+            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression);
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData);

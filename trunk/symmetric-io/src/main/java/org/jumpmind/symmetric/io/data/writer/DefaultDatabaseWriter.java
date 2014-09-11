@@ -162,7 +162,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.INSERT, data, false, true, null)) {
                 this.lastUseConflictDetection = true;
-                this.currentDmlStatement = platform.createDmlStatement(DmlType.INSERT, targetTable);
+                this.currentDmlStatement = platform.createDmlStatement(DmlType.INSERT, targetTable, writerSettings.getTextColumnExpression());
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                 }
@@ -283,7 +283,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE,
                         targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
-                        lookupKeys.toArray(new Column[lookupKeys.size()]), null, nullKeyValues);
+                        lookupKeys.toArray(new Column[lookupKeys.size()]), null, nullKeyValues, writerSettings.getTextColumnExpression());
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                 }
@@ -438,7 +438,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             targetTable.getName(),
                             lookupKeys.toArray(new Column[lookupKeys.size()]),
                             changedColumnsList.toArray(new Column[changedColumnsList.size()]),
-                            nullKeyValues);
+                            nullKeyValues, writerSettings.getTextColumnExpression());
                     if (log.isDebugEnabled()) {
                         log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                     }
@@ -880,7 +880,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
 
             DmlStatement sqlStatement = platform
-                    .createDmlStatement(DmlType.SELECT, targetTable);
+                    .createDmlStatement(DmlType.SELECT, targetTable, writerSettings.getTextColumnExpression());
 
 
             Row row = null;
