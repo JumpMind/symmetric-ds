@@ -28,6 +28,8 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  */
 public class TransactionalBatchAlgorithm implements IBatchAlgorithm {
 
+    public static final String NAME = "transactional";
+    
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData,
             SimpleRouterContext routingContext) {
         return routingContext.isEncountedTransactionBoundary();
