@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.route;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -56,7 +57,6 @@ import org.jumpmind.symmetric.service.impl.ParameterService;
 import org.jumpmind.symmetric.service.impl.RouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -76,24 +76,29 @@ public class DataGapRouteReaderTest {
     final static String TRAN1 = "1";
     final static String TRAN2 = "2";
 
-    DataGapRouteReader dataGapRouteReader;
     DataService dataService;
     ISqlTemplate sqlTemplate;
+    IParameterService parameterService;
+    NodeChannel nodeChannel;
     
     @Before
-    public void setUp() throws Exception {
-        
+    public void setUp() throws Exception {        
         sqlTemplate = mock(ISqlTemplate.class);
-        dataService = mock(DataService.class);
-       
-        IParameterService parameterService = mock(ParameterService.class);
-        when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(2);
+        dataService = mock(DataService.class);       
+        parameterService = mock(ParameterService.class);
+        nodeChannel = new NodeChannel(CHANNEL_ID);
+        nodeChannel.setMaxDataToRoute(100);
+        nodeChannel.setBatchAlgorithm(DefaultBatchAlgorithm.NAME);
+    }
+     
+    protected DataGapRouteReader buildReader() throws Exception {
+
+        when(parameterService.getEngineName()).thenReturn(ENGINE_NAME);
+        when(parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)).thenReturn(true);
         when(parameterService.getInt(ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS)).thenReturn(330);
         when(parameterService.getInt(ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL)).thenReturn(100);
         when(parameterService.getInt(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY)).thenReturn(100);
         when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED)).thenReturn(true);
-        when(parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)).thenReturn(true);
-        when(parameterService.getEngineName()).thenReturn(ENGINE_NAME);
 
         IStatisticManager statisticManager = mock(StatisticManager.class);
         when(statisticManager.newProcessInfo((ProcessInfoKey) any())).thenReturn(new ProcessInfo());
@@ -118,20 +123,22 @@ public class DataGapRouteReaderTest {
         IRouterService routerService = new RouterService(engine);
         when(engine.getRouterService()).thenReturn(routerService);
 
-        NodeChannel nodeChannel = new NodeChannel(CHANNEL_ID);
-        nodeChannel.setMaxDataToRoute(100);
-        nodeChannel.setBatchAlgorithm("default");
         ChannelRouterContext context = new ChannelRouterContext(NODE_ID, nodeChannel,  mock(ISqlTransaction.class));
 
-        dataGapRouteReader = new DataGapRouteReader(context, engine);    
-    }
-
-    @After
-    public void tearDown() throws Exception {
+        return new DataGapRouteReader(context, engine);    
     }
     
+    @SuppressWarnings("unchecked")
     @Test
-    public void myTest() throws Exception {       
+    public void testTransactionalOrderingWithGaps() throws Exception {       
+        
+        nodeChannel.setBatchAlgorithm(DefaultBatchAlgorithm.NAME);
+        nodeChannel.setMaxDataToRoute(100);
+        
+        when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(2);
+
+        DataGapRouteReader dataGapRouteReader = buildReader();
+        
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, 3));
         dataGaps.add(new DataGap(4, Long.MAX_VALUE));
@@ -146,15 +153,99 @@ public class DataGapRouteReaderTest {
         when(dataService.findDataGaps()).thenReturn(dataGaps);
         when(sqlTemplate.queryForCursor((String) any(), (ISqlRowMapper<Data>) any(), (Object[]) any(),
                 (int[]) any())).thenReturn(new ListReadCursor(data));
-
+        
         dataGapRouteReader.execute();
         
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
-        System.out.println("Queue size: " + queue.size());
+        assertEquals(6, queue.size());
         Iterator<Data> iter = queue.iterator();
+        int index = 0;
+        long ids[] = { 1, 2, 4, 3, 5, -1 };
         while (iter.hasNext()) {
             Data d = iter.next();
-            System.out.println("Data: " + d.getDataId() + "," + d.getTableName() + "," + d.getTransactionId());
+            assertEquals(ids[index], d.getDataId());
+            index++;
+        }
+        
+    }
+
+    @Test
+    public void testTransactionalChannelMaxDataToRoute() throws Exception {
+        
+        nodeChannel.setBatchAlgorithm(TransactionalBatchAlgorithm.NAME);
+        nodeChannel.setMaxDataToRoute(3);
+        
+        when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(100);
+
+        DataGapRouteReader dataGapRouteReader = buildReader();
+        
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(0, Long.MAX_VALUE));
+
+        List<Data> data = new ArrayList<Data>();
+        data.add(new Data(1, null, null, null, TABLE1, null, null, null, TRAN1, null));
+        data.add(new Data(2, null, null, null, TABLE1, null, null, null, TRAN1, null));
+        data.add(new Data(3, null, null, null, TABLE1, null, null, null, TRAN2, null));
+        data.add(new Data(4, null, null, null, TABLE1, null, null, null, TRAN2, null));
+        data.add(new Data(5, null, null, null, TABLE1, null, null, null, TRAN1, null));
+        data.add(new Data(6, null, null, null, TABLE1, null, null, null, TRAN1, null));
+        
+        when(dataService.findDataGaps()).thenReturn(dataGaps);
+        ISqlRowMapper<Data> mapper = any();
+        when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(),
+                (int[]) any())).thenReturn(new ListReadCursor(data));
+        
+        dataGapRouteReader.execute();
+        
+        BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
+        assertEquals(5, queue.size());
+        Iterator<Data> iter = queue.iterator();
+        int index = 0;
+        long ids[] = { 1, 2, 5, 6, -1 };
+        while (iter.hasNext()) {
+            Data d = iter.next();
+            assertEquals(ids[index], d.getDataId());
+            index++;
+        }
+
+    }
+
+    @Test
+    public void testNonTransactionalChannelMaxDataToRoute() throws Exception {
+        
+        nodeChannel.setBatchAlgorithm(NonTransactionalBatchAlgorithm.NAME);
+        nodeChannel.setMaxDataToRoute(3);
+        
+        when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(2);
+
+        DataGapRouteReader dataGapRouteReader = buildReader();
+        
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(0, Long.MAX_VALUE));
+
+        List<Data> data = new ArrayList<Data>();
+        data.add(new Data(1, null, null, null, TABLE1, null, null, null, TRAN1, null));
+        data.add(new Data(2, null, null, null, TABLE1, null, null, null, TRAN1, null));
+        data.add(new Data(3, null, null, null, TABLE1, null, null, null, TRAN2, null));
+        data.add(new Data(4, null, null, null, TABLE1, null, null, null, TRAN1, null));
+        data.add(new Data(5, null, null, null, TABLE1, null, null, null, TRAN2, null));        
+        
+        when(dataService.findDataGaps()).thenReturn(dataGaps);
+        ISqlRowMapper<Data> mapper = any();
+        when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(),
+                (int[]) any())).thenReturn(new ListReadCursor(data));
+        
+        dataGapRouteReader.execute();
+        
+        BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
+        assertEquals(4, queue.size());
+        Iterator<Data> iter = queue.iterator();
+        int index = 0;
+        long ids[] = { 1, 2, 4, -1 };
+        while (iter.hasNext()) {
+            Data d = iter.next();
+            assertEquals(ids[index], d.getDataId());
+            index++;
         }
         
     }

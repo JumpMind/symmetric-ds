@@ -119,20 +119,21 @@ public class DataGapRouteReader implements IDataToRouteReader {
             long maxDataToRoute = context.getChannel().getMaxDataToRoute();
             String lastTransactionId = null;
             List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
-            boolean nontransactional = context.getChannel().getBatchAlgorithm()
-                    .equals("nontransactional")
+            boolean transactional = !context.getChannel().getBatchAlgorithm()
+                    .equals(NonTransactionalBatchAlgorithm.NAME)
                     || !symmetricDialect.supportsTransactionId();
 
             processInfo.setStatus(Status.QUERYING);
             cursor = prepareCursor();
             processInfo.setStatus(Status.EXTRACTING);
             boolean moreData = true;
-            while (dataCount <= maxDataToRoute || (lastTransactionId != null && !nontransactional)) {
-                if (moreData) {
+            while (dataCount < maxDataToRoute || (lastTransactionId != null && transactional)) {
+                if (moreData  && (lastTransactionId != null || peekAheadQueue.size() == 0)) {
                     moreData = fillPeekAheadQueue(peekAheadQueue, peekAheadCount, cursor);
                 }
 
-                if ((lastTransactionId == null || nontransactional) && peekAheadQueue.size() > 0) {
+                while (peekAheadQueue.size() > 0 && lastTransactionId == null &&
+                        dataCount < maxDataToRoute) {
                     Data data = peekAheadQueue.remove(0);
                     copyToQueue(data);
                     dataCount++;
@@ -140,16 +141,18 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     processInfo.setCurrentTableName(data.getTableName());
                     lastTransactionId = data.getTransactionId();
                     context.addTransaction(lastTransactionId);
-                } else if (lastTransactionId != null && peekAheadQueue.size() > 0) {
+                }
+
+                if (lastTransactionId != null && peekAheadQueue.size() > 0) {
                     Iterator<Data> datas = peekAheadQueue.iterator();
                     int dataWithSameTransactionIdCount = 0;
-                    while (datas.hasNext()) {
+                    while (datas.hasNext() && (dataCount < maxDataToRoute || transactional)) {
                         Data data = datas.next();
                         if (lastTransactionId.equals(data.getTransactionId())) {
                             dataWithSameTransactionIdCount++;
                             datas.remove();
                             copyToQueue(data);
-                            dataCount++;                            
+                            dataCount++;
                             processInfo.incrementCurrentDataCount();
                             processInfo.setCurrentTableName(data.getTableName());
                         } else {
@@ -161,7 +164,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
                         lastTransactionId = null;
                     }
 
-                } else if (peekAheadQueue.size() == 0) {
+                } 
+                
+                if (!moreData && peekAheadQueue.size() == 0) {
                     // we've reached the end of the result set
                     break;
                 }
