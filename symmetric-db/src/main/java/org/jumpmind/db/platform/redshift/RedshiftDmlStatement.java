@@ -51,7 +51,7 @@ public class RedshiftDmlStatement extends DmlStatement {
             if (keyColumns == null || keyColumns.length == 0) {
                 sql.append("1 != 1");
             } else {
-                appendColumnEquals(sql, keyColumns, " and ");
+                appendColumnsEquals(sql, keyColumns, " and ");
             }
             sql.append(") = 0)");
             return sql.toString();
@@ -109,24 +109,5 @@ public class RedshiftDmlStatement extends DmlStatement {
             return super.buildTypes(keys, columns, isDateOverrideToTimestamp);
         }
     }
-
-    @Override
-    public void appendColumnEquals(StringBuilder sql, Column[] columns, boolean[] nullValues, String separator) {
-        for (int i = 0; i < columns.length; i++) {
-            if (columns[i] != null) {
-                if (nullValues[i]) {
-                    sql.append(quote).append(columns[i].getName()).append(quote)
-                    .append(" is NULL").append(separator);
-                } else {
-                    sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?")
-                            .append(separator);
-                }
-            }
-        }
-
-        if (columns.length > 0) {
-            sql.replace(sql.length() - separator.length(), sql.length(), "");
-        }
-    }
-
+    
 }
