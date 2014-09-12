@@ -249,12 +249,6 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         printIndent(ddl);
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
-        if (change.getPreviousColumn() != null) {
-            ddl.append(" AFTER ");
-            printIdentifier(getColumnName(change.getPreviousColumn()), ddl);
-        } else {
-            ddl.append(" FIRST");
-        }
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
