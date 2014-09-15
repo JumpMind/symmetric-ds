@@ -791,6 +791,17 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 indexColumn.setName(alterCaseToMatchDatabaseDefaultCase(indexColumn.getName()));
             }
         }
+        
+        ForeignKey[] fks = table.getForeignKeys();
+        for (ForeignKey foreignKey : fks) {
+            foreignKey.setName(alterCaseToMatchDatabaseDefaultCase(foreignKey.getName()));
+            foreignKey.setForeignTableName(alterCaseToMatchDatabaseDefaultCase(foreignKey.getForeignTableName()));
+            Reference[] references = foreignKey.getReferences();
+            for (Reference reference : references) {
+                reference.setForeignColumnName(alterCaseToMatchDatabaseDefaultCase(reference.getForeignColumnName()));
+                reference.setLocalColumnName(alterCaseToMatchDatabaseDefaultCase(reference.getLocalColumnName()));
+            }
+        }
     }
 
     public Database readDatabaseFromXml(InputStream is, boolean alterCaseToMatchDatabaseDefaultCase) {
