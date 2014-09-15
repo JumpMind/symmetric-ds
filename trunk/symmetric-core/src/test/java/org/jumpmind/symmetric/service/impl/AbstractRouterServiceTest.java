@@ -1250,7 +1250,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         String columnName = platform.alterCaseToMatchDatabaseDefaultCase("ROUTING_VARCHAR");
         ISqlTransaction transaction = null;
         try {
-            transaction = platform.getSqlTemplate().startSqlTransaction(!transactional);
+            transaction = platform.getSqlTemplate().startSqlTransaction();
             if (node2disable != null) {
                 dialect.disableSyncTriggers(transaction, node2disable);
             }
@@ -1259,7 +1259,11 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             for (int i = 0; i < count; i++) {
                 transaction.addRow(i, new Object[] { routingVarcharFieldValue },
                         new int[] { Types.VARCHAR });
+                if (!transactional) {
+                    transaction.commit();
+                }
             }
+            
             if (node2disable != null) {
                 dialect.enableSyncTriggers(transaction);
             }
