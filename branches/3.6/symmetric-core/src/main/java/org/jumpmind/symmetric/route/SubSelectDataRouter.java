@@ -88,8 +88,10 @@ public class SubSelectDataRouter extends AbstractDataRouter {
                     nodeIds = new HashSet<String>(ids);
                 }
             } catch (InvalidSqlException ex) {
-                log.error("The subselect expression was invalid for the {} subselect router",
-                        dataMetaData.getRouter().getRouterId());
+                log.error("The subselect expression was invalid for the {} subselect router for the '{}' event for table '{}'",
+                        new Object[] {dataMetaData.getRouter().getRouterId(), 
+                        dataMetaData.getData().getDataEventType().name(), 
+                        dataMetaData.getData().getTableName() });
                 throw ex;
             }
         } else if (initialLoadSelectUsed) {
