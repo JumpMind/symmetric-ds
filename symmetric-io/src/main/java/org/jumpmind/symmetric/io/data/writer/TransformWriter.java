@@ -308,8 +308,15 @@ public class TransformWriter extends NestedDataWriter {
                                     data.put(transformColumn,
                                             ((NewAndOldValue) value).getNewValue(),
                                             ((NewAndOldValue) value).getOldValue(), false);
-                                } else {
+                                } else if (value == null || value instanceof String) {
                                     data.put(transformColumn, (String) value, null, false);
+                                } else if (value instanceof List) {
+                                    throw new IllegalStateException(String.format("Column transform failed %s.%s. Transforms that multiply rows must be marked as part of the primary key", 
+                                            transformColumn.getTransformId(), transformColumn.getTargetColumnName()));                                    
+                                } else {                                    
+                                    throw new IllegalStateException(String.format("Column transform failed %s.%s. It returned an unexpected type of %s", 
+                                            transformColumn.getTransformId(), transformColumn.getTargetColumnName(), 
+                                            value.getClass().getSimpleName()));
                                 }
                             } catch (IgnoreColumnException e) {
                                 // Do nothing. We are ignoring the column
