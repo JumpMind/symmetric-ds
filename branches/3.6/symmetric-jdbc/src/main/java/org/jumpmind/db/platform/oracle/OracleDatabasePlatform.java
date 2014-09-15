@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.oracle.OracleJdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
@@ -69,12 +70,9 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override
     protected OracleJdbcSqlTemplate createSqlTemplate() {
-        OracleLobHandler lobHandler = new OracleLobHandler();
-        lobHandler.setNativeJdbcExtractor(JdbcUtils.getNativeJdbcExtractory());
-        SymmetricLobHandler symmetricLobHandler = new SymmetricLobHandler(lobHandler);
-        return new OracleJdbcSqlTemplate(dataSource, settings, symmetricLobHandler, getDatabaseInfo());
+        return new OracleJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
-    
+        
     public String getName() {
         return DatabaseNamesConstants.ORACLE;
     }
