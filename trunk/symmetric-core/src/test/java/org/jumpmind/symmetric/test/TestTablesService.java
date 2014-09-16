@@ -180,7 +180,7 @@ public class TestTablesService extends AbstractService {
 
     public String getCustomerNotes(int id) {
         return sqlTemplate
-                .queryForClob("select notes from test_customer where customer_id=?", id);
+                .queryForString("select notes from test_customer where customer_id=?", id);
     }
 
     public byte[] getCustomerIcon(int id) {

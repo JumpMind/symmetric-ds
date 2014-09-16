@@ -28,19 +28,19 @@ import org.springframework.jdbc.support.lob.LobHandler;
 
 public class SymmetricLobHandler {
 
-    private LobHandler lobHandler;
+    protected LobHandler lobHandler;
 
     public SymmetricLobHandler() {
-        super();
-        this.lobHandler = new DefaultLobHandler();
+        this(new DefaultLobHandler());
     }
-
+    
     public SymmetricLobHandler(LobHandler lobHandler) {
         super();
         this.lobHandler = lobHandler;
     }
 
-    public String getClobAsString(ResultSet rs, int columnIndex) throws SQLException {
+    public String getClobAsString(ResultSet rs, int columnIndex, int jdbcTypeCode,
+            String jdbcTypeName) throws SQLException {
         return lobHandler.getClobAsString(rs, columnIndex);
     }
 
