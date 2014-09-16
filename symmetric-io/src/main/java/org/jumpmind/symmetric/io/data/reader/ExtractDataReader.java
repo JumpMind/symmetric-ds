@@ -188,7 +188,7 @@ public class ExtractDataReader implements IDataReader {
                             binaryData = null;
                         }
                     } else {
-                        valueForCsv = sqlTemplate.queryForClob(sql, args);
+                        valueForCsv = sqlTemplate.queryForClob(sql, lobColumn.getJdbcTypeCode(),lobColumn.getJdbcTypeName(), args);
                     }
 
                     int index = ArrayUtils.indexOf(columnNames, lobColumn.getName());

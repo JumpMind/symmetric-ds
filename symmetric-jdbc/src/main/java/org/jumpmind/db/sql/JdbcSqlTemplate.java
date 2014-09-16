@@ -195,8 +195,13 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         });
     }
-
+    
+    @Deprecated
     public String queryForClob(final String sql, final Object... args) {
+        return queryForClob(sql, -1, null, args);
+    }
+
+    public String queryForClob(final String sql, final int jdbcTypeCode, final String jdbcTypeName, final Object... args) {
         logSql(sql, args);
         return execute(new IConnectionCallback<String>() {
             public String execute(Connection con) throws SQLException {
@@ -209,7 +214,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     setValues(ps, args);
                     rs = ps.executeQuery();
                     if (rs.next()) {
-                        result = lobHandler.getClobAsString(rs, 1);
+                        result = lobHandler.getClobAsString(rs, 1, jdbcTypeCode, jdbcTypeName);
                     }
                 } finally {
                     close(rs);

@@ -29,7 +29,6 @@ import org.jumpmind.db.platform.oracle.OracleJdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
-import org.springframework.jdbc.support.lob.OracleLobHandler;
 
 /*
  * Provides support for the Oracle platform.
@@ -70,7 +69,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override
     protected OracleJdbcSqlTemplate createSqlTemplate() {
-        return new OracleJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
+        return new OracleJdbcSqlTemplate(dataSource, settings, new OracleLobHandler(), getDatabaseInfo());
     }
         
     public String getName() {
