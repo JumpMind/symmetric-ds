@@ -164,16 +164,16 @@ public class TransformWriter extends NestedDataWriter {
             long ts = System.currentTimeMillis();
             Map<String, String> sourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
                     CsvData.ROW_DATA);
-            Map<String, String> oldSourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
-                    CsvData.OLD_DATA);
+            
+            Map<String, String> oldSourceValues = null;
+            if (data.contains(CsvData.OLD_DATA)) {
+                oldSourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
+                        CsvData.OLD_DATA);
+            }
+            
             Map<String, String> sourceKeyValues = null;
-
             if (data.contains(CsvData.PK_DATA)) {
                 sourceKeyValues = data.toColumnNameValuePairs(this.sourceTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
-            } else if (oldSourceValues.size() > 0) {
-                sourceKeyValues = data.toColumnNameValuePairs(this.sourceTable.getPrimaryKeyColumnNames(), CsvData.OLD_DATA);
-            } else {
-                sourceKeyValues = data.toColumnNameValuePairs(this.sourceTable.getPrimaryKeyColumnNames(), CsvData.ROW_DATA);
             }
 
             if (eventType == DataEventType.DELETE) {
@@ -197,8 +197,8 @@ public class TransformWriter extends NestedDataWriter {
                 CollectionUtils.reverseArray(transformTables);
             }
             for (TransformTable transformation : transformTables) {
-                transformation = transformation.enhanceWithImpliedColumns(sourceKeyValues,
-                        oldSourceValues, sourceValues);
+                transformation = transformation.enhanceWithImpliedColumns(this.sourceTable.getPrimaryKeyColumnNames(), 
+                        this.sourceTable.getColumnNames());
                 dataThatHasBeenTransformed.addAll(transform(eventType, context, transformation,
                         sourceKeyValues, oldSourceValues, sourceValues));
             }
@@ -307,7 +307,7 @@ public class TransformWriter extends NestedDataWriter {
                                 if (value instanceof NewAndOldValue) {
                                     data.put(transformColumn,
                                             ((NewAndOldValue) value).getNewValue(),
-                                            ((NewAndOldValue) value).getOldValue(), false);
+                                            oldSourceValues != null ? ((NewAndOldValue) value).getOldValue() : null, false);
                                 } else if (value == null || value instanceof String) {
                                     data.put(transformColumn, (String) value, null, false);
                                 } else if (value instanceof List) {
@@ -407,14 +407,14 @@ public class TransformWriter extends NestedDataWriter {
                             @SuppressWarnings("unchecked")
                             List<String> values = (List<String>) columnValue;
                             if (values.size() > 0) {
-                                data.put(transformColumn, values.get(0), values.get(0), true);
+                                data.put(transformColumn, values.get(0), oldSourceValues != null ? values.get(0) : null, true);
                                 if (values.size() > 1) {
                                     if (newDatas == null) {
                                         newDatas = new ArrayList<TransformedData>(values.size() - 1);
                                     }
                                     for (int i = 1; i < values.size(); i++) {
                                         TransformedData newData = data.copy();
-                                        newData.put(transformColumn, values.get(i), null, true);
+                                        newData.put(transformColumn, values.get(i), oldSourceValues != null ? values.get(0) : null, true);
                                         newDatas.add(newData);
                                     }
                                 }
@@ -423,9 +423,9 @@ public class TransformWriter extends NestedDataWriter {
                             }
                         } else if (columnValue instanceof NewAndOldValue) {
                             data.put(transformColumn, ((NewAndOldValue) columnValue).getNewValue(),
-                                    ((NewAndOldValue) columnValue).getOldValue(), true);
+                                    oldSourceValues != null ? ((NewAndOldValue) columnValue).getOldValue() : null, true);
                         } else {
-                            data.put(transformColumn, (String) columnValue, (String) columnValue, true);                            
+                            data.put(transformColumn, (String) columnValue, oldSourceValues != null ? (String) columnValue : null, true);                            
                         }
                     } catch (IgnoreColumnException e) {
                         // Do nothing. We are suppose to ignore the column.
@@ -453,7 +453,10 @@ public class TransformWriter extends NestedDataWriter {
                 .get(transformColumn.getTransformType()) : null;
         if (transform != null) {
             try {
-                String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
+                String oldValue = null;
+                if (oldSourceValues != null) {
+                    oldSourceValues.get(transformColumn.getSourceColumnName());
+                }
                 returnValue = transform.transform(platform, context, transformColumn, data,
                         sourceValues, value, oldValue);
             } catch (RuntimeException ex) {
