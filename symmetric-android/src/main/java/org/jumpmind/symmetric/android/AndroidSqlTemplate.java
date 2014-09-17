@@ -21,13 +21,11 @@
 package org.jumpmind.symmetric.android;
 
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.sql.AbstractSqlTemplate;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlResultsListener;
@@ -66,13 +64,8 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     public byte[] queryForBlob(String sql, Object... params) {
         return queryForObject(sql, byte[].class, params);
     }
-    
-    @Override
-    public String queryForClob(String sql, Object... args) {
-        return queryForClob(sql, Types.CLOB, TypeMap.CLOB, args);
-    }
 
-    public String queryForClob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... params) {
+    public String queryForClob(String sql, Object... params) {
         return queryForString(sql, params);
     }
 
@@ -234,13 +227,8 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
         return false;
     }
 
-    @Override
-    public ISqlTransaction startSqlTransaction(boolean autoCommit) {
-        return new AndroidSqlTransaction(this, autoCommit);
-    }
-    
     public ISqlTransaction startSqlTransaction() {
-        return startSqlTransaction(false);
+        return new AndroidSqlTransaction(this);
     }
 
     public int getDatabaseMajorVersion() {

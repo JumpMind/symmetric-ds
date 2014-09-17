@@ -64,7 +64,8 @@ public class DbExport {
     };
 
     public enum Compatible {
-        DB2, DERBY, FIREBIRD, GREENPLUM, H2, HSQLDB, HSQLDB2, INFORMIX, INTERBASE, MSSQL, MSSQL2000, MSSQL2005, MSSQL2008, MYSQL, ORACLE, POSTGRES, SYBASE, SQLITE, MARIADB, ASE, SQLANYWHERE
+        DB2, DERBY, FIREBIRD, GREENPLUM, H2, HSQLDB, HSQLDB2, INFORMIX, INTERBASE,
+        MSSQL, MYSQL, ORACLE, POSTGRES, SYBASE, SQLITE, MARIADB, ASE, SQLANYWHERE
     };
 
     private Format format = Format.SQL;
@@ -210,7 +211,7 @@ public class DbExport {
 
         if (!noData) {
             if (sql == null) {
-                sql = platform.createDmlStatement(DmlType.SELECT_ALL, table, null).getSql();
+                sql = platform.createDmlStatement(DmlType.SELECT_ALL, table).getSql();
             }
 
             if (StringUtils.isNotBlank(whereClause)) {
@@ -425,14 +426,7 @@ public class DbExport {
                     if (format == Format.SYM_XML) {
                         write("<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n");
                     } else if (format == Format.XML) {
-                        write("<database xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" name=\"dbexport\"");
-                        if (catalog != null && !catalog.equals(platform.getDefaultCatalog())) {
-                            write(" catalog=\"" + catalog + "\"");
-                        }
-                        if (schema != null && !schema.equals(platform.getDefaultSchema())) {
-                            write(" schema=\"" + schema + "\"");
-                        }
-                        write(">\n");
+                        write("<database xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" name=\"dbexport\">\n");
                     }
                     startedWriting = true;
                 }
@@ -444,32 +438,24 @@ public class DbExport {
                     csvWriter.setUseTextQualifier(true);
                     csvWriter.setForceQualifier(true);
                 } else if (format == Format.SQL) {
-                    if (table.getCatalog() != null
-                            && table.getCatalog().equals(platform.getDefaultCatalog())) {
-                        table.setCatalog(null);
-                    }
-                    if (table.getSchema() != null
-                            && table.getSchema().equals(platform.getDefaultSchema())) {
-                        table.setSchema(null);
-                    }
                     Table targetTable = table.copy();
-                    insertSql = DmlStatementFactory.createDmlStatement(compatible.toString()
-                            .toLowerCase(), DmlType.INSERT, targetTable, useQuotedIdentifiers);
+                    targetTable.setSchema(schema);
+                    targetTable.setCatalog(catalog);
+                    insertSql = DmlStatementFactory.createDmlStatement(
+                            compatible.toString().toLowerCase(), DmlType.INSERT, targetTable, useQuotedIdentifiers);
                 }
 
                 if (!noCreateInfo) {
                     if (format == Format.SQL) {
                         IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(compatible
                                 .toString().toLowerCase());
-                        target.setDelimitedIdentifierModeOn(useQuotedIdentifiers);
                         write(target.createTables(getDatabase(table), addDropTable));
                     } else if (format == Format.XML) {
                         DatabaseXmlUtil.write(table, writer);
                     }
                 }
 
-                writeComment("DbExport: "
-                        + StringUtils.defaultString(IoVersion.getVersion().version()));
+                writeComment("DbExport: " + StringUtils.defaultString(IoVersion.getVersion().version()));
                 writeComment("Catalog: " + StringUtils.defaultString(getCatalogToUse()));
                 writeComment("Schema: " + StringUtils.defaultString(getSchemaToUse()));
                 writeComment("Table: " + table.getName());
@@ -513,8 +499,8 @@ public class DbExport {
                 if (format == Format.CSV) {
                     csvWriter.writeRecord(values, true);
                 } else if (format == Format.SQL) {
-                    write(insertSql.buildDynamicSql(BinaryEncoding.HEX, row, useVariableDates,
-                            useJdbcTimestampFormat), "\n");
+                    write(insertSql.buildDynamicSql(BinaryEncoding.HEX, row,
+                            useVariableDates, useJdbcTimestampFormat), "\n");
 
                 } else if (format == Format.XML) {
                     write("\t<row>\n");

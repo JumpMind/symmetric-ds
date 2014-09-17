@@ -32,9 +32,9 @@ public class PostgreSqlDmlStatement extends DmlStatement {
 
     public PostgreSqlDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
+            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers) {
         super(type, catalogName, schemaName, tableName, keysColumns, columns, 
-                nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
+                nullKeyValues, databaseInfo, useQuotedIdentifiers);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             if (keyColumns == null || keyColumns.length == 0) {
                 sql.append("1 != 1");
             } else {
-                appendColumnsEquals(sql, keyColumns, " and ");
+                appendColumnEquals(sql, keyColumns, " and ");
             }
             sql.append(") is null)");
             return sql.toString();
@@ -112,41 +112,56 @@ public class PostgreSqlDmlStatement extends DmlStatement {
     }
 
     @Override
-    protected void appendColumnQuestion(StringBuilder sql, Column column) {
-        if (column.isTimestampWithTimezone()) {
-            sql.append("cast(? as timestamp with time zone)").append(",");
-        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
-            sql.append("cast(? as uuid)").append(",");
-        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
-            sql.append("cast(? as bit varying)").append(",");
-        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
-            sql.append("cast(? as interval)").append(",");
-        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
-            sql.append("ST_GEOMFROMTEXT(?)").append(",");
-        } else {
-            super.appendColumnQuestion(sql, column);
+    public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
+        for (int i = 0; i < columns.length; i++) {
+            if (columns[i] != null) {
+                if (columns[i].isTimestampWithTimezone()) {
+                    sql.append("cast(? as timestamp with time zone)").append(",");
+                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
+                    sql.append("cast(? as uuid)").append(",");
+                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
+                    sql.append("cast(? as bit varying)").append(",");
+                } else if (columns[i].getJdbcTypeName() != null && columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
+                    sql.append("cast(? as interval)").append(",");
+                } else {
+                    sql.append("?").append(",");
+                }
+            }
+        }
+
+        if (columns.length > 0) {
+            sql.replace(sql.length() - 1, sql.length(), "");
         }
     }
-    
+
     @Override
-    protected void appendColumnEquals(StringBuilder sql, Column column, String separator) {
-        if (column.isTimestampWithTimezone()) {
-            sql.append(quote).append(column.getName()).append(quote)
-                    .append(" = cast(? as timestamp with time zone)").append(separator);
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
-            sql.append(quote).append(column.getName()).append(quote)
-                    .append(" = cast(? as uuid)").append(separator);
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
-            sql.append(quote).append(column.getName()).append(quote)
-                    .append(" = cast(? as bit varying)").append(separator);
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
-            sql.append(quote).append(column.getName()).append(quote)
-                  .append(" = cast(? as interval)").append(separator);
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
-            sql.append(quote).append(column.getName()).append(quote)
-            .append(" = ST_GEOMFROMTEXT(?)").append(separator);
-        } else {
-            super.appendColumnEquals(sql, column, separator);
+    public void appendColumnEquals(StringBuilder sql, Column[] columns, boolean[] nullValues, String separator) {
+        for (int i = 0; i < columns.length; i++) {
+            if (columns[i] != null) {
+                if (nullValues[i]) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                    .append(" is NULL").append(separator);
+                } else if (columns[i].isTimestampWithTimezone()) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                            .append(" = cast(? as timestamp with time zone)").append(separator);
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                            .append(" = cast(? as uuid)").append(separator);
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                            .append(" = cast(? as bit varying)").append(separator);
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                          .append(" = cast(? as interval)").append(separator);
+                } else {
+                    sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?")
+                            .append(separator);
+                }
+            }
+        }
+
+        if (columns.length > 0) {
+            sql.replace(sql.length() - separator.length(), sql.length(), "");
         }
     }
 

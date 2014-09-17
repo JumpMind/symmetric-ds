@@ -78,8 +78,6 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
-        databaseInfo.setBinaryQuoteStart("blob(X'");
-        databaseInfo.setBinaryQuoteEnd("')");
 
         addEscapedCharSequence("'", "''");
     }
@@ -233,7 +231,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -247,7 +245,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
@@ -263,7 +261,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemovePrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
@@ -276,7 +274,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             PrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
@@ -295,7 +293,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
 
     protected void writeReorgStmt(Table table, StringBuilder ddl) {
         ddl.append("CALL SYSPROC.ADMIN_CMD('REORG TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(table));
+        printlnIdentifier(getTableName(table.getName()), ddl);
         ddl.append("')");
     }
 }

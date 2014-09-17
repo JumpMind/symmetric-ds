@@ -19,8 +19,6 @@ package org.jumpmind.db.platform.oracle;
  * under the License.
  */
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Date;
@@ -224,11 +222,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 }
             }
         } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
-            String defaultValue = column.getDefaultValue();
-            if (isNotBlank(defaultValue) && defaultValue.startsWith("('") && defaultValue.endsWith("')")) {
-                defaultValue = defaultValue.substring(2, defaultValue.length()-2);
-            }
-            column.setDefaultValue(unescape(defaultValue, "'", "''"));
+            column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
         return column;
     }

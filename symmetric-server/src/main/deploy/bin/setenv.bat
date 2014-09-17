@@ -41,4 +41,16 @@ set SYM_OPTIONS=-Dfile.encoding=utf-8 ^
 set SYM_JAVA=java
 if /i NOT "%JAVA_HOME%" == "" set SYM_JAVA=%JAVA_HOME%\bin\java
 
+@REM Check whether or not we are using Java 5
+for /f "delims=" %%i in ('"%SYM_HOME%\bin\isjava5.bat"') do set isjava5=%%i
+if %isjava5% GTR 0 goto :java5
+
+@REM Build classpath using wildcards
 set CLASSPATH=%SYM_HOME%\patches;%SYM_HOME%\lib\*;%SYM_HOME%\web\WEB-INF\lib\*
+goto :eof
+
+@REM Build classpath with individual JAR entries
+:java5
+set CLASSPATH=%SYM_HOME%\patches
+for %%i in ("%SYM_HOME%\lib\*.jar") do call "%SYM_HOME%\bin\cpappend.bat" %%i
+for %%i in ("%SYM_HOME%\web\WEB-INF\lib\*.jar") do call "%SYM_HOME%\bin\cpappend.bat" %%i

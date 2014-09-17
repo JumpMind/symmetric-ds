@@ -21,8 +21,6 @@
 
 package org.jumpmind.symmetric.model;
 
-import static org.apache.commons.lang.StringUtils.isNumeric;
-
 import java.io.Serializable;
 import java.util.Properties;
 
@@ -37,7 +35,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This class represents a node who has registered for sync updates. 
  */
-public class Node implements Serializable, Comparable<Node> {
+public class Node implements Serializable {
     
     private static final long serialVersionUID = 1L;
     
@@ -267,20 +265,6 @@ public class Node implements Serializable, Comparable<Node> {
             return true;
         }
         return false;
-    }
-    
-    @Override
-    public int compareTo(Node other) {
-        String otherNodeId = other.getNodeId();
-        if (nodeId != null && otherNodeId != null) {
-            if (isNumeric(otherNodeId) && isNumeric(nodeId)) {
-                return new Long(nodeId).compareTo(new Long(otherNodeId));
-            } else {
-                return nodeId.compareTo(otherNodeId);
-            }
-        } else {
-            return 0;
-        }
     }
 
     

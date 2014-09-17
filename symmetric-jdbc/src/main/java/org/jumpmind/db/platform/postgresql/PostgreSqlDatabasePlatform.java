@@ -180,8 +180,9 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
-            Column[] orderedMetaData, boolean useVariableDates, boolean fitToColumn) {
-        Object[] objectValues = super.getObjectValues(encoding, values, orderedMetaData, useVariableDates, fitToColumn);
+        Column[] orderedMetaData) {
+
+        Object[] objectValues = super.getObjectValues(encoding, values, orderedMetaData);
         for (int i = 0; i < orderedMetaData.length; i++) {
             if (orderedMetaData[i] != null && orderedMetaData[i].getMappedTypeCode() == Types.BLOB
                     && objectValues[i] != null) {

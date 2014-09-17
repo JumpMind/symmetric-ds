@@ -75,8 +75,6 @@ public interface IRegistrationService {
      */
     public String openRegistration(String nodeGroupId, String externalId);
     
-    public String openRegistration(String nodeGroup, String externalId, String remoteHost, String remoteAddress);
-    
     public String openRegistration(Node node);
     
     public boolean isRegistrationOpen(String nodeGroupId, String externalId);
@@ -122,8 +120,6 @@ public interface IRegistrationService {
     public void saveRegistrationRedirect(String externalIdToRedirect, String nodeIdToRedirectTo);   
     
     public String getRedirectionUrlFor(String externalId);
-    
-    public void requestNodeCopy();
        
 
 }

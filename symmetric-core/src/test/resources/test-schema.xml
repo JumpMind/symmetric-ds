@@ -38,7 +38,7 @@
 		<column name="date_value" type="DATE" />
 		<column name="bit_value" type="BIT" size="1" />
 		<column name="bigint_value" type="BIGINT" />
-		<column name="decimal_value" type="DECIMAL"  size="18,15" />
+		<column name="decimal_value" type="DECIMAL" />
 	</table>	
 
 	<table name="test_triggers_table">
@@ -46,10 +46,10 @@
 			primaryKey="true" />
 		<column name="string_one_value" type="VARCHAR" size="50" />
 		<column name="string_two_value" type="VARCHAR" size="255" />
-		<column name="long_string_value" type="VARCHAR" size="255" />
+		<column name="long_string_value" type="LONGVARCHAR" />
 		<column name="time_value" type="TIMESTAMP" />
 		<column name="date_value" type="DATE" />
-		<column name="boolean_value" type="BOOLEANINT" size="1" />
+		<column name="boolean_value" type="BIT" size="1" />
 		<column name="bigint_value" type="BIGINT" />
 		<column name="decimal_value" type="DECIMAL" />
 	</table>

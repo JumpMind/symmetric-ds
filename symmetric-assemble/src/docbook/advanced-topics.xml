@@ -21,7 +21,7 @@
     under the License.
 
 -->
-<chapter version="5.0" xml:id="advanced" xmlns="http://docbook.org/ns/docbook"
+<chapter version="5.0" xml:id="advanced-topics" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:svg="http://www.w3.org/2000/svg"
@@ -33,6 +33,7 @@
        This chapter focuses on a variety of topics, including deployment options, jobs, clustering, encryptions, synchronization control,
        and configuration of SymmetricDS.
     </para>
+
  <section id="advanced-sync">
     <title>Advanced Synchronization</title>
  <section id="bi-direction-sync">
@@ -57,7 +58,8 @@
     <section id="multi-tier">
         <title>Multi-Tiered Synchronization</title>
         <para>
-            There may be scenarios where data needs to flow through multiple tiers of nodes that
+            As shown in <xref linkend="organizing-nodes"/>, there may be
+            scenarios where data needs to flow through multiple tiers of nodes that
             are organized in a tree-like network with each tier requiring a different subset of data.  For example,
             you may have a system where the lowest tier may be a computer or device located in a store.  Those devices
             may connect to a server located physically at that store.  Then the store server may communicate with
@@ -97,7 +99,7 @@
             that matches the <literal>registration_node_id</literal>.
         </para>
         <important>
-            <para>Please see <xref linkend="manage-node-initial-load" /> for important details around initial loads
+            <para>Please see <xref linkend="configuration-initial-load" /> for important details around initial loads
             and registration when using registration redirect.
             </para>
             </important>
@@ -106,7 +108,121 @@
     </section>
 </section>
 
+<section id='jms-publishing'>
+        <title>JMS Publishing</title>
+        <para>
+            With the proper configuration SymmetricDS can publish XML messages of captured data changes to
+            JMS during routing or transactionally while data loading synchronized data into a target database.
+            The following explains how to publish to JMS during synchronization to the target database.
+       </para>
+       <para>
+            The XmlPublisherDatabaseWriterFilter is a
+            <xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to
+            publish specific tables as an XML message to a JMS provider.
+            See <xref linkend="extensions"/> for information on how
+            to configure an extension point.  If the publish to JMS fails, the batch will be marked in error,
+            the loaded data for the batch will be rolled back
+            and the batch will be retried during the next synchronization run.
+        </para>
+        <para>
+        The following is an example extension point configuration that will publish four tables in XML with a root
+        tag of <emphasis>'sale'</emphasis>.  Each XML message will be grouped by the batch and the column names identified by
+        the groupByColumnNames property which have the same values.
+                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
+    <bean id="configuration-publishingFilter"
+      class="org.jumpmind.symmetric.integrate.XmlPublisherDatabaseWriterFilter">
+        <property name="xmlTagNameToUseForGroup" value="sale"/>
+        <property name="tableNamesToPublishAsGroup">
+            <list>
+               <value>SALE_TX</value>
+               <value>SALE_LINE_ITEM</value>
+               <value>SALE_TAX</value>
+               <value>SALE_TOTAL</value>
+            </list>
+        </property>
+        <property name="groupByColumnNames">
+            <list>
+               <value>STORE_ID</value>
+               <value>BUSINESS_DAY</value>
+               <value>WORKSTATION_ID</value>
+               <value>TRANSACTION_ID</value>
+            </list>
+        </property>
+        <property name="publisher">
+           <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
+               <property name="jmsTemplate" ref="definedSpringJmsTemplate"/>
+           </bean>
+        </property>
+    </bean>
+</beans>]]></programlisting>
+        </para>
+        <para>
+          The publisher property on the XmlPublisherDatabaseWriterFilter takes an interface of type IPublisher.  The implementation
+          demonstrated here is an implementation that publishes to JMS using Spring's
+          <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate">JMS template</ulink>.
+          Other implementations of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
+        </para>
+        <para>
+          The above configuration will publish XML similar to the following:
+            <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<sale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  id="0012010-01-220031234" nodeid="00001" time="1264187704155">
+  <row entity="SALE_TX" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="CASHIER_ID">010110</data>
+  </row>
+  <row entity="SALE_LINE_ITEM" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="SKU">9999999</data>
+    <data key="PRICE">10.00</data>
+    <data key="DESC" xsi:nil="true"/>
+  </row>
+  <row entity="SALE_LINE_ITEM" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="SKU">9999999</data>
+    <data key="PRICE">10.00</data>
+    <data key="DESC" xsi:nil="true"/>
+  </row>
+  <row entity="SALE_TAX" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="AMOUNT">1.33</data>
+  </row>
+  <row entity="SALE_TOTAL" dml="I">
+    <data key="STORE_ID">001</data>
+    <data key="BUSINESS_DAY">2010-01-22</data>
+    <data key="WORKSTATION_ID">003</data>
+    <data key="TRANSACTION_ID">1234</data>
+    <data key="AMOUNT">21.33</data>
+  </row>
+</sale>
+            ]]></programlisting>
+            To publish JMS messages during routing
+            the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router
+            would be configured by setting the <literal>router_type</literal> of a <xref linkend="table_router" xrefstyle="table"/> to the Spring bean
+            name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="table"/>s
+            to each <xref linkend="table_trigger" xrefstyle="table"/>  table that needs published.
+        </para>
+    </section>
 <section id="deployment-options">
         <title>Deployment Options</title>
         <para>An instance of SymmetricDS can be deployed in several ways:</para>
@@ -172,6 +288,11 @@
             <para>
                 <command>../bin/symadmin -p my-symmetric-ds.properties create-war /some/path/to/symmetric-ds.war</command>
             </para>
+            <para>
+                The <literal>web.base.servlet.path</literal> property in <filename>symmetric.properties</filename> can be set if the SymmetricServlet needs to
+                coexist with other Servlets.  By default, the value is blank.  If you set it to, say, <literal>web.base.servlet.path=sync</literal> for example,
+                <literal>registration.url</literal> would be <literal>http://server:port/sync</literal>.
+            </para>
         </section>
         <section id="deployment-options-embedded">
             <title>Embedded</title>
@@ -206,6 +327,7 @@ public class StartSymmetricEngine {
                 at <code>conf/web_dir</code>.  The web.xml is expected to be found at <code>conf/web_dir/WEB-INF/web.xml</code>.
             </para>
         </section>
+    </section>
         <section id="deployment-options-standalone">
             <title>Standalone</title>
             <para>
@@ -230,49 +352,132 @@ public class StartSymmetricEngine {
                 It is also suggested that SymmetricDS be configured to run as a service according to the instructions for your platform as documented in the following section.
             </para>
         </section>
-    </section>
 
     <section id="running-service">
     <title>Running SymmetricDS as a Service</title>
-    <para>
-        SymmetricDS can be configured to start automatically when the system boots, running as a Windows service or Linux/Unix daemon.
-        A wrapper process starts SymmetricDS and monitors it, so it can be restarted if it runs out of memory or exits unexpectedly.
-        The wrapper writes standard output and standard error to the <filename class="filename">logs/wrapper.log</filename> file.
+        <para>
+    SymmetricDS can be configured to start and run as a service in both Windows and *nix platforms.
     </para>
     <section id="running-service-windows">
         <title>Running as a Windows Service</title>
         <para>
-            To install the service, run the following command as Administrator:
-            <programlisting>bin\sym_service.bat install</programlisting>
+            SymmetricDS uses the
+            <ulink url="http://wrapper.tanukisoftware.org/">Java Service Wrapper</ulink>
+            product from Tanuki Software to run in the background as a Windows system service.
+            The Java Service Wrapper executable is named <filename class="file">sym_service.exe</filename>
+            so it can be easily identified from a list of running processes.
+            To install the service, use the provided script:
+            <programlisting>bin\install_service.bat</programlisting>
+        </para>
+        <para>
+            The service configuration is found in <filename class="filename">conf/sym_service.conf</filename>.
+            Edit this file if you want to change the default port number (8080), initial memory size
+            (256 MB), log file size (10 MB), or other settings.
+            When started, the server will look in the <filename class="directory">conf</filename> directory
+            for the <filename class="filename">symmetric.properties</filename> file
+            and the  <filename class="filename">log4j.xml</filename> file.
+            Logging for standard out, error, and application are written to the
+            <filename class="directory">logs</filename> directory.
         </para>
         <para>
             Most configuration changes do not require the service to be re-installed.
-            To un-install the service, run the following command as Administrator:
-            <programlisting>bin\sym_service.bat uninstall</programlisting>
+            To un-install the service, use the provided script:
+            <programlisting>bin\uninstall_service.bat</programlisting>
         </para>
         <para>
-            To start and stop the service manually, run the following commands as Administrator:
-            <programlisting>bin\sym_service.bat start
-bin\sym_service.bat stop</programlisting>
+            Use the <command>net</command> command to start and stop the service:
+            <programlisting>net start symmetricds
+net stop symmetricds</programlisting>
         </para>
     </section>
     <section id="running-service-unix">
-        <title>Running as a Linux/Unix daemon</title>
+        <title>Running as a *nix Service</title>
         <para>
-            An init script is written to the system <filename class="directory">/etc/init.d</filename> directory.
-            Symbolic links are created for starting on run levels 2, 3, and 5 and stopping on run levels 0, 1, and 6.
-            To install the script, running the following command as root:
-            <programlisting>bin/sym_service install</programlisting>
+            SymmetricDS uses the 32 bit
+            <ulink url="http://wrapper.tanukisoftware.org/">Java Service Wrapper</ulink>
+            product from Tanuki Software to run in the background as a Unix system service.
+            The Java Service Wrapper executable is named <filename class="file">sym_service</filename>
+            so it can be easily identified from a list of running processes.
+            The service configuration is found in <filename class="filename">conf/sym_service.conf</filename>.
+            Edit this file if you want to change the initial memory size
+            (256 MB), log file size (10 MB), or other settings.
+        </para>
+        <para>If you happen to need a 64 bit wrapper, you'll need to download the Java Service Wrapper 64 bit version, 
+            then do the following:
+           <orderedlist>
+                <listitem>Unzip the download to some directory, say /tmp</listitem>
+                <listitem>Change directory to the unzip location</listitem>
+                <listitem>Run the following three commands:
+                <programlisting>
+cp ./bin/wrapper /opt/symmetric-ds/bin/sym_service
+cp ./lib/wrapper.jar /opt/symmetric-ds/lib/wrapper.jar
+cp ./lib/libwrapper.so /opt/symmetric-ds/lib/libwrapper.so
+                </programlisting>
+                where <literal>/opt/symmetric-ds</literal> should be replaced with wherever you have installed SymmetricDS.
+                </listitem>
+            </orderedlist>
         </para>
         <para>
-            Most configuration changes do not require the service to be re-installed.
-            To un-install the service, run the following command as root:
-            <programlisting>bin/sym_service uninstall</programlisting>
+            An init script is provided to work with standard Unix run configuration levels.
+            The <filename class="file">sym_service.initd</filename> file follows the
+            Linux Standard Base specification, which should work on many systems, including
+            Fedora and Debian-based distributions.
+            To install the script, copy it into the system init directory:
         </para>
         <para>
-            To start and stop the service manually, run the following commands:
-            <programlisting>bin/sym_service start
-bin/sym_service stop</programlisting>
+            <programlisting>cp bin/sym_service.initd /etc/init.d/sym_service</programlisting>
+        </para>
+        <para>
+            Edit the init script to set the SYM_HOME variable to the directory
+            where SymmetricDS is located.  The init script calls the
+            <filename class="file">sym_service</filename> executable.
+        </para>
+        <para>Enabling the service varies based on the version of Linux in use.  Three possible approaches are listed below:</para>
+        <orderedlist>
+                <listitem>Using <literal>chkconfig</literal> command:
+        <para>
+            To enable the service to run automatically when the system is started:
+            <programlisting>/sbin/chkconfig --add sym_service</programlisting>
+        </para>
+        <para>
+            To disable the service from running automatically:
+            <programlisting>/sbin/chkconfig --del sym_service</programlisting>
+        </para>
+        </listitem>
+        <listitem>Using <literal>install_initd</literal> command (CentOS Linux, Oracle Linux, SUSE Linux):
+        <para>
+            On CentOS Linux, Oracle Linux, and SUSE Linux install the service by calling:
+            <programlisting>/usr/lib/lsb/install_initd sym_service</programlisting>
+            Remove the service by calling:
+            <programlisting>/usr/lib/lsb/remove_initd sym_service</programlisting>
+        </para></listitem>
+          <listitem>
+            Using <literal>sysv-rc-conf</literal> command (Ubuntu Linux):
+        <para>
+            On Ubuntu Linux, you might need to use sysv-rc-conf instead of chkconfig.
+            Try running sys-rc-conf as a super user (consider utilizing apt-get to install sysv-rc-conf
+            if it is not present:  <literal>sudo apt-get install sysv-rc-conf</literal>).
+            Run sysv-rc-conf with the following command:
+            <programlisting>sudo sysv-rc-conf </programlisting>
+            You should see a list of the scripts residing in your /etc/init.d folder.
+            Use control-N to navigate through the list to locate sym_service, then activate the service
+            for the desired run-levels (most likely 2-5).
+        </para>
+        </listitem>
+        </orderedlist>
+        <para>
+            Finally, you can use the <command>service</command> command to start, stop, and query
+            the status of the service:
+            <programlisting>/sbin/service sym_service start
+/sbin/service sym_service stop
+/sbin/service sym_service status</programlisting>
+        </para>
+        <para>
+            Alternatively, call the init.d script directly:
+            <programlisting>/etc/init.d/sym_service start
+/etc/init.d/sym_service stop
+/etc/init.d/sym_service status
+            </programlisting>
         </para>
     </section>
     </section>
@@ -284,7 +489,7 @@ bin/sym_service stop</programlisting>
         <para>
         When clustered, a hardware load balancer is typically used
         to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.
-        Also, the <literal>sync.url</literal> (discussed in <xref linkend="setup-engine-files"/>)
+        Also, the <literal>sync.url</literal> (discussed in <xref linkend="configuration-node-properties"/>)
         SymmetricDS property should be set to the URL of the load balancer.
         </para>
         <para>
@@ -587,222 +792,6 @@ Enter key password for <sym>
             basic authentication is setup with the standard configuration in the WEB.xml file.
         </para>
     </section>
-    <section id="dataloaders">
-        <title>Data Loaders</title>
-        <para>
-        SymmetricDS supports the concept of pluggable data loaders.  A data loader defines how data is loaded into a target
-        datasource.  The default data loader for SymmetricDS loads data to the relational database that is represented by the SymmetricDS node.  
-        Data loaders do not always have to load into the target relational database.  They can write to
-        a file, a web service, or any other type of non-relational data source.  Data loaders can also use other techniques to increase performance
-        of data loads into the target relation database.  Data loaders are pluggable at the 
-        <xref linkend="table_channel" xrefstyle="table" /> level.  They are configured by setting the <ns:literal>data_loader_type</ns:literal> on
-        the channel table.
-        </para>
-        <section id="mysqlbulk">
-            <title>Bulk Data Loaders</title>
-            <para>
-            To use the preconfigured bulk data loaders,
-             you set the <ns:literal>data_loader_type</ns:literal> on a channel to one of the following:  
-           <itemizedlist>
-           <listitem>mysql_bulk</listitem>
-           <listitem>mssql_bulk</listitem>
-           <listitem>postgres_bulk</listitem>
-           <listitem>oracle_bulk</listitem>
-           </itemizedlist>
-             Tables that should be data loaded should be configured to use this channel.  Many times, a reload channel will
-             be set to bulk load to increase the performance of an initial load.  
-            </para>
-        </section>
-        <section id="mongodb">
-            <title>MongoDB</title>
-            <para>
-            The MongoDB data loader maps relational database rows to MongoDB documents in collections.  To use the preconfigured MongoDB data loader,
-             you set the <ns:literal>data_loader_type</ns:literal> to <ns:emphasis>MongoDB</ns:emphasis> on a channel.  
-             Tables that should be synchronized to MongoDB should be configured to use this channel.  
-             In order to point it to a MongoDB instance
-             set the following properties in the engines properties file.
-          <programlisting><![CDATA[
-mongodb.username=xxxx
-mongodb.password=xxxx
-mongodb.host=xxxx
-mongodb.port=xxxx
-mongodb.default.databasename=default
-          ]]></programlisting>
-            </para>
-            <para>
-            By default, the catalog or schema passed by SymmetricDS will be used for the MongoDB database name. The table passed by SymmetricDS 
-            will be used as the MongoDB collection name.  If the catalog or schema are not set, the default database name property is used as the 
-            database name. 
-            </para>
-            <para>
-            The _id of the MongoDB document will be the primary key of the database record. If the table has a composite primary key, then the 
-            _id will be an embedded document that has name value pairs of the composite key. The body of the document will be name value pairs 
-            of the table column name and table row value.
-            </para>
-            <para>
-            SymmetricDS uses the MongoDB Java Driver to upsert documents.
-            </para>
-            <para>
-            SymmetricDS transforms can be used to transform the data.  If a complex mapping is required that is not supported by transforms, then
-            the <ns:literal>IDBObjectMapper</ns:literal> can be implemented and a new <ns:literal>MongoDataLoaderFactory</ns:literal> can be wired up
-            as an extension point.
-            </para>
-        </section>
-    </section>
-    
-    <section id="admin-jmx">
-        <title>Java Management Extensions</title>
-        <para>
-          Monitoring and administrative operations can be performed using Java Management Extensions (JMX).
-          SymmetricDS uses MX4J to expose JMX attributes and operations that can be accessed
-          from the built-in web console, Java's jconsole, or an application server.
-          By default, the web management console can be opened from the following address:
-
-          <programlisting><![CDATA[http://localhost:31416/]]></programlisting>
-
-          In order to use jconsole, you must enable JMX remote management in the JVM. You can edit the startup scripts to set the following system
-          parameters.
-
-          <programlisting><![CDATA[
-          -Dcom.sun.management.jmxremote.port=31417
-          -Dcom.sun.management.jmxremote.authenticate=false
-          -Dcom.sun.management.jmxremote.ssl=false
-          ]]></programlisting>
-
-          More details about enabling JMX for JConsole can be found <ulink url="http://docs.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html">here</ulink>.
-          </para>
-          <para>
-          Using the Java jconsole command, SymmetricDS is listed as a local process named SymmetricLauncher.
-          In jconsole, SymmetricDS appears under the MBeans tab under the name defined by the <literal>engine.name</literal>
-          property.  The default value is SymmetricDS.
-        </para>
-        <para>
-          The management interfaces under SymmetricDS are organized as follows:
-
-            <itemizedlist>
-                <listitem>
-                    <para>Node - administrative operations </para>
-                </listitem>
-                <listitem>
-                    <para>Parameters - access to properties set through the parameter service </para>
-                </listitem>
-            </itemizedlist>
-
-        </para>
-    </section>
-<section id='jms-publishing'>
-        <title>JMS Publishing</title>
-        <para>
-            With the proper configuration SymmetricDS can publish XML messages of captured data changes to
-            JMS during routing or transactionally while data loading synchronized data into a target database.
-            The following explains how to publish to JMS during synchronization to the target database.
-       </para>
-       <para>
-            The XmlPublisherDatabaseWriterFilter is a
-            <xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to
-            publish specific tables as an XML message to a JMS provider.
-            See <xref linkend="extensions"/> for information on how
-            to configure an extension point.  If the publish to JMS fails, the batch will be marked in error,
-            the loaded data for the batch will be rolled back
-            and the batch will be retried during the next synchronization run.
-        </para>
-        <para>
-        The following is an example extension point configuration that will publish four tables in XML with a root
-        tag of <emphasis>'sale'</emphasis>.  Each XML message will be grouped by the batch and the column names identified by
-        the groupByColumnNames property which have the same values.
-                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-           http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-
-    <bean id="configuration-publishingFilter"
-      class="org.jumpmind.symmetric.integrate.XmlPublisherDatabaseWriterFilter">
-        <property name="xmlTagNameToUseForGroup" value="sale"/>
-        <property name="tableNamesToPublishAsGroup">
-            <list>
-               <value>SALE_TX</value>
-               <value>SALE_LINE_ITEM</value>
-               <value>SALE_TAX</value>
-               <value>SALE_TOTAL</value>
-            </list>
-        </property>
-        <property name="groupByColumnNames">
-            <list>
-               <value>STORE_ID</value>
-               <value>BUSINESS_DAY</value>
-               <value>WORKSTATION_ID</value>
-               <value>TRANSACTION_ID</value>
-            </list>
-        </property>
-        <property name="publisher">
-           <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
-               <property name="jmsTemplate" ref="definedSpringJmsTemplate"/>
-           </bean>
-        </property>
-    </bean>
-</beans>]]></programlisting>
-        </para>
-        <para>
-          The publisher property on the XmlPublisherDatabaseWriterFilter takes an interface of type IPublisher.  The implementation
-          demonstrated here is an implementation that publishes to JMS using Spring's
-          <ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate">JMS template</ulink>.
-          Other implementations of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
-        </para>
-        <para>
-          The above configuration will publish XML similar to the following:
-            <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<sale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  id="0012010-01-220031234" nodeid="00001" time="1264187704155">
-  <row entity="SALE_TX" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="CASHIER_ID">010110</data>
-  </row>
-  <row entity="SALE_LINE_ITEM" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="SKU">9999999</data>
-    <data key="PRICE">10.00</data>
-    <data key="DESC" xsi:nil="true"/>
-  </row>
-  <row entity="SALE_LINE_ITEM" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="SKU">9999999</data>
-    <data key="PRICE">10.00</data>
-    <data key="DESC" xsi:nil="true"/>
-  </row>
-  <row entity="SALE_TAX" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="AMOUNT">1.33</data>
-  </row>
-  <row entity="SALE_TOTAL" dml="I">
-    <data key="STORE_ID">001</data>
-    <data key="BUSINESS_DAY">2010-01-22</data>
-    <data key="WORKSTATION_ID">003</data>
-    <data key="TRANSACTION_ID">1234</data>
-    <data key="AMOUNT">21.33</data>
-  </row>
-</sale>
-            ]]></programlisting>
-            To publish JMS messages during routing
-            the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router
-            would be configured by setting the <literal>router_type</literal> of a <xref linkend="table_router" xrefstyle="table"/> to the Spring bean
-            name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="table"/>s
-            to each <xref linkend="table_trigger" xrefstyle="table"/>  table that needs published.
-        </para>
-    </section>    
+    <xi:include href="extensions.xml" />
+    <xi:include href="android.xml"/>
 </chapter>

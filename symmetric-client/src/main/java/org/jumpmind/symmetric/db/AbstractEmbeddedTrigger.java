@@ -252,7 +252,7 @@ abstract public class AbstractEmbeddedTrigger {
     protected Map<String, String> getTemplates(Connection conn) throws SQLException {
         Map<String, String> templates = new HashMap<String, String>();
         Statement stmt = conn.createStatement();
-        String schemaPrefix = schemaName != null && schemaName.length() > 0 ? "\"" + schemaName+"\"." : "";
+        String schemaPrefix = schemaName != null && schemaName.length() > 0 ? schemaName+"." : "";
         ResultSet rs = stmt.executeQuery(String.format("select * from %s%s%s", schemaPrefix, triggerName, TEMPLATE_TABLE_SUFFIX));
         if (rs.next()) {
             ResultSetMetaData metaData = rs.getMetaData();

@@ -174,7 +174,7 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
         return BinaryEncoding.HEX;
     }
 
-    public void cleanDatabase() {
+    public void purgeRecycleBin() {
     }
 
     @Override

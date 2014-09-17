@@ -31,38 +31,58 @@ public class OracleDmlStatement extends DmlStatement {
 
     public OracleDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
+            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers) {
         super(type, catalogName, schemaName, tableName, keysColumns, columns, 
-                nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
+                nullKeyValues, databaseInfo, useQuotedIdentifiers);
     }
-   
+
     @Override
-    protected void appendColumnQuestion(StringBuilder sql, Column column) {
-        String name = column.getJdbcTypeName();
-        if (column.isTimestampWithTimezone()) {
-            sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
-                    .append(",");
-        } else if (name != null && name.toUpperCase().contains(TypeMap.GEOMETRY)) {
-            sql.append("SYM_WKT2GEOM(?)").append(",");
-        } else {
-            super.appendColumnQuestion(sql, column);
+    public void appendColumnQuestions(StringBuilder sql, Column[] columns) {
+        for (int i = 0; i < columns.length; i++) {
+            if (columns[i] != null) {
+                String name = columns[i].getJdbcTypeName();
+                if (columns[i].isTimestampWithTimezone()) {
+                    sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
+                            .append(",");
+                } else if (name != null && name.toUpperCase().contains(TypeMap.GEOMETRY)) {
+                    sql.append("SYM_WKT2GEOM(?)").append(",");
+                } else {
+                    sql.append("?").append(",");
+                }
+            }
+        }
+
+        if (columns.length > 0) {
+            sql.replace(sql.length() - 1, sql.length(), "");
+        }
+    }
+
+    @Override
+    public void appendColumnEquals(StringBuilder sql, Column[] columns, boolean[] nullValues, String separator) {
+        for (int i = 0; i < columns.length; i++) {
+            if (columns[i] != null) {
+                if (nullValues[i]) {
+                    sql.append(quote).append(columns[i].getName()).append(quote).append(" is NULL")
+                            .append(separator);
+                } else if (columns[i].isTimestampWithTimezone()) {
+                    sql.append(quote).append(columns[i].getName()).append(quote)
+                            .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
+                            .append(separator);
+                } else if (columns[i].getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+                    sql.append(quote).append(columns[i].getName()).append(quote).append(" = ")
+                            .append("SYM_WKT2GEOM(?)").append(separator);
+                } else {
+                    sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?")
+                            .append(separator);
+                }
+            }
+        }
+
+        if (columns.length > 0) {
+            sql.replace(sql.length() - separator.length(), sql.length(), "");
         }
     }
     
-    @Override
-    protected void appendColumnEquals(StringBuilder sql, Column column, String separator) {
-        if (column.isTimestampWithTimezone()) {
-            sql.append(quote).append(column.getName()).append(quote)
-                    .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
-                    .append(separator);
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
-            sql.append(quote).append(column.getName()).append(quote).append(" = ")
-                    .append("SYM_WKT2GEOM(?)").append(separator);
-        } else {
-            super.appendColumnEquals(sql, column, separator);
-        }        
-    }
-
     @Override
     protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
         int typeCode = super.getTypeCode(column, isDateOverrideToTimestamp);

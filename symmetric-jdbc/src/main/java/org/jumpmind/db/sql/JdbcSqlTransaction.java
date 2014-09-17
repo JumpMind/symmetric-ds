@@ -54,19 +54,11 @@ public class JdbcSqlTransaction implements ISqlTransaction {
 
     protected JdbcSqlTemplate jdbcSqlTemplate;
 
-    protected boolean autoCommit = false;
-    
     protected boolean oldAutoCommitValue;
 
     protected List<Object> markers = new ArrayList<Object>();
 
-    
     public JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate) {
-        this(jdbcSqlTemplate, false);
-    }
-    
-    public JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate, boolean autoCommit) {
-        this.autoCommit = autoCommit;
         this.jdbcSqlTemplate = jdbcSqlTemplate;
         this.init();
     }
@@ -87,7 +79,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         try {
             this.connection = jdbcSqlTemplate.getDataSource().getConnection();
             this.oldAutoCommitValue = this.connection.getAutoCommit();
-            this.connection.setAutoCommit(autoCommit);
+            this.connection.setAutoCommit(false);
             SqlUtils.addSqlTransaction(this);
         } catch (SQLException ex) {
             close();
@@ -112,9 +104,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 if (pstmt != null && inBatchMode) {
                     flush();
                 }
-                if (!autoCommit) {
-                   connection.commit();
-                }
+                connection.commit();
             } catch (SQLException ex) {
                 throw jdbcSqlTemplate.translate(ex);
             }
@@ -132,9 +122,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 if (clearMarkers) {
                     markers.clear();
                 }
-                if (!autoCommit) {
-                    connection.rollback();
-                }
+                connection.rollback();
             } catch (SQLException ex) {
                 // do nothing
             }

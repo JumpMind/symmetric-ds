@@ -62,8 +62,6 @@ public interface IParameterService {
     public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters, String lastUpdateBy);
     
     public void deleteParameter(String externalId, String nodeGroupId, String key);
-    
-    public void deleteParameterWithUpdate(String externalId, String nodeGroupId, String key);
 
     public void rereadParameters();
 
@@ -71,7 +69,7 @@ public interface IParameterService {
     
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey);
     
-    public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId);
+    public TypedProperties getDatabaseParametersByNodeGroupId(String nodeGroupId);
 
     public TypedProperties getAllParameters();
 

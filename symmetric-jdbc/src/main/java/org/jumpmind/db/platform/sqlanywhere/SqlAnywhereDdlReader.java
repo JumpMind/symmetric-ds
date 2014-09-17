@@ -66,12 +66,6 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
             // Sybase does not return the auto-increment status via the database
             // metadata
             determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
-            Column[] columns = table.getColumns();
-            for (Column column : columns) {
-                if (column.isAutoIncrement() && "autoincrement".equalsIgnoreCase(column.getDefaultValue())) {
-                    column.setDefaultValue(null);
-                }
-            }
         }
         return table;
     }
@@ -117,7 +111,6 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
                 column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
             }
         }
-        
         return column;
     }
 

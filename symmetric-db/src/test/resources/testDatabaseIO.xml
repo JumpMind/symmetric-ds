@@ -36,9 +36,5 @@
         <column name="bigInt_value" type="BIGINT" />
         <column name="decimal_value" type="DECIMAL" />
     </table>
-    
-    <table name="testColumnWith&amp;">
-        <column name="&amp;Amp" type="VARCHAR" size="50" />    
-    </table>
 
 </database>

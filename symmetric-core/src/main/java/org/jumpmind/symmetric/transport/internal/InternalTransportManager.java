@@ -79,7 +79,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                                 .getNodeId(), ProcessType.FILE_SYNC_PULL_HANDLER));
                 try {
                     engine.getFileSyncService().sendFiles(processInfo, local, transport);
-                    processInfo.setStatus(Status.OK);
+                    processInfo.setStatus(Status.DONE);
                 } catch (RuntimeException ex) {
                     processInfo.setStatus(Status.ERROR);
                     throw ex;
@@ -108,7 +108,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                                 .getNodeId(), ProcessType.PULL_HANDLER));
                 try {
                     engine.getDataExtractorService().extract(processInfo, local, transport);
-                    processInfo.setStatus(Status.OK);
+                    processInfo.setStatus(Status.DONE);
                 } catch (RuntimeException ex) {
                     processInfo.setStatus(Status.ERROR);
                     throw ex;
@@ -170,11 +170,6 @@ public class InternalTransportManager extends AbstractTransportManager implement
             }
         });
         return new InternalIncomingTransport(respIs);
-    }
-    
-    @Override
-    public int sendCopyRequest(Node local) throws IOException {
-        return -1;
     }
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,

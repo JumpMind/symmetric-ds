@@ -64,7 +64,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDelimiterToken("`");
 
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "LONGBLOB", Types.LONGVARBINARY);
-        databaseInfo.addNativeTypeMapping(Types.BIT, "BIT");
+        databaseInfo.addNativeTypeMapping(Types.BIT, "TINYINT(1)");
         databaseInfo.addNativeTypeMapping(Types.BLOB, "LONGBLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.CLOB, "LONGTEXT", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "LONGBLOB", Types.LONGVARBINARY);
@@ -86,7 +86,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME");
         // In MySql, TINYINT has only a range of -128 to 127
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
-        databaseInfo.addNativeTypeMapping("BOOLEAN", "BIT", "BIT");
+        databaseInfo.addNativeTypeMapping("BOOLEAN", "TINYINT(1)", "BIT");
         databaseInfo.addNativeTypeMapping("DATALINK", "MEDIUMBLOB", "LONGVARBINARY");
 
         databaseInfo.setDefaultSize(Types.CHAR, 254);
@@ -119,7 +119,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {        
         ddl.append("DROP TABLE IF EXISTS ");
-        ddl.append(getFullyQualifiedTableNameShorten(table));
+        printIdentifier(getTableName(table.getName()), ddl);
         printEndOfStatement(ddl);
     }
 
@@ -245,10 +245,16 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
+        if (change.getPreviousColumn() != null) {
+            ddl.append(" AFTER ");
+            printIdentifier(getColumnName(change.getPreviousColumn()), ddl);
+        } else {
+            ddl.append(" FIRST");
+        }
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
@@ -259,7 +265,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);
@@ -273,7 +279,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemovePrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
@@ -286,7 +292,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             PrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
@@ -301,7 +307,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     protected void processColumnChange(Table sourceTable, Table targetTable, Column sourceColumn,
             Column targetColumn, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(sourceTable));
+        printlnIdentifier(getTableName(sourceTable.getName()), ddl);
         printIndent(ddl);
         ddl.append("MODIFY COLUMN ");
         writeColumn(targetTable, targetColumn, ddl);

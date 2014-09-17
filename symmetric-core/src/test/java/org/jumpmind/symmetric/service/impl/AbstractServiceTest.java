@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Date;
 
 import org.apache.log4j.Level;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -30,7 +31,6 @@ import org.jumpmind.db.sql.SqlUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
-import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -51,9 +51,9 @@ public abstract class AbstractServiceTest {
     static protected ISymmetricEngine engine;
 
     protected final static Logger logger = LoggerFactory.getLogger(AbstractServiceTest.class);
-    
+
     @BeforeClass
-    public static void setup() throws Exception {
+    public static void setup() throws Exception {        
         if (engine == null) {
             //Level old = setLoggingLevelForTest(Level.DEBUG);
             SqlUtils.setCaptureOwner(true);
@@ -146,10 +146,6 @@ public abstract class AbstractServiceTest {
         return getSymmetricEngine().getIncomingBatchService();
     }
 
-    protected IClusterService getClusterService() {
-        return getSymmetricEngine().getClusterService();
-    }
-    
     protected ISqlTemplate getSqlTemplate() {
         return getSymmetricEngine().getSymmetricDialect().getPlatform().getSqlTemplate();
     }
@@ -208,7 +204,8 @@ public abstract class AbstractServiceTest {
     }
 
     protected void forceRebuildOfTrigers() {
-        getTriggerRouterService().syncTriggers(true);
+        getSqlTemplate().update("update sym_trigger set last_update_time=?", new Date());
+        getTriggerRouterService().syncTriggers();
     }
 
     protected int countData() {

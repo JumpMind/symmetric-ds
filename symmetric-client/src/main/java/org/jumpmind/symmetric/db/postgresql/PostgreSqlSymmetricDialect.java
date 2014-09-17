@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.db.postgresql;
 
 import java.sql.Types;
 
-import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -163,10 +162,8 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName) {
-        Table table = platform.getTableFromCache(catalogName, schemaName, tableName, false);
-        String quoteChar = platform.getDatabaseInfo().getDelimiterToken();
-        schemaName = table.getSchema() == null ? "" : (quoteChar + table.getSchema() + quoteChar + ".");
-        final String dropSql = "drop trigger " + triggerName + " on " + schemaName + quoteChar + table.getName() + quoteChar;
+        schemaName = schemaName == null ? "" : (schemaName + ".");
+        final String dropSql = "drop trigger " + triggerName + " on " + schemaName + tableName;
         logSql(dropSql, sqlBuffer);
         final String dropFunction = "drop function " + schemaName + "f" + triggerName + "() cascade";
         logSql(dropFunction, sqlBuffer);
@@ -230,7 +227,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         return supportsTransactionId;
     }
 
-    public void cleanDatabase() {
+    public void purgeRecycleBin() {
     }
 
     @Override

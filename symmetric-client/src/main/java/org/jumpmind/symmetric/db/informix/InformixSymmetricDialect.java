@@ -155,7 +155,7 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
         return false;
     }
 
-    public void cleanDatabase() {
+    public void purgeRecycleBin() {
     }
 
     @Override

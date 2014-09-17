@@ -173,7 +173,8 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        return "bintostr(xactkey) from master.dbo.systransactions where spid = @@spid";
+
+        return "select convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid";
     }
 
     @Override
@@ -186,8 +187,7 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
         return false;
     }
 
-    public void cleanDatabase() {
-        platform.getSqlTemplate().update("dump transaction "+platform.getDefaultCatalog()+" with no_log");
+    public void purgeRecycleBin() {
     }
 
     public boolean needsToSelectLobData() {

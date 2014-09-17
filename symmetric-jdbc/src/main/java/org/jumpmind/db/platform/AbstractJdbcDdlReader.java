@@ -459,8 +459,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     public Database execute(Connection connection) throws SQLException {
                         Database db = new Database();
                         db.setName(Table.getQualifiedTablePrefix(catalog, schema));
-                        db.setCatalog(catalog);
-                        db.setSchema(schema);
                         db.addTables(readTables(connection, catalog, schema, tableTypes));
                         db.initialize();
                         return db;
@@ -631,59 +629,51 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         String tableName = (String) values.get("TABLE_NAME");
-        try {
-            Table table = null;
+        Table table = null;
 
-            if ((tableName != null) && (tableName.length() > 0)) {
-                String type = (String) values.get("TABLE_TYPE");
-                String[] unsupportedTableTypes = getUnsupportedTableTypes();
-                for (String unsupportedTableType : unsupportedTableTypes) {
-                    if (StringUtils.isNotBlank(type) && type.equals(unsupportedTableType)) {
-                        return null;
-                    }
-                }
-
-                table = new Table();
-                table.setName(tableName);
-                table.setType(type);
-
-                String catalog = (String) values.get(getResultSetCatalogName());
-                table.setCatalog(catalog);
-                metaData.setCatalog(catalog);
-
-                String schema = (String) values.get(getResultSetSchemaName());
-                table.setSchema(schema);
-                metaData.setSchemaPattern(schema);
-
-                table.setDescription((String) values.get("REMARKS"));
-
-                table.addColumns(readColumns(metaData, tableName));
-
-                if (table.getColumnCount() > 0) {
-                    table.addForeignKeys(readForeignKeys(connection, metaData, tableName));
-                    table.addIndices(readIndices(connection, metaData, tableName));
-
-                    Collection<String> primaryKeys = readPrimaryKeyNames(metaData, tableName);
-
-                    for (Iterator<String> it = primaryKeys.iterator(); it.hasNext();) {
-                        table.findColumn(it.next(), true).setPrimaryKey(true);
-                    }
-
-                    if (getPlatformInfo().isSystemIndicesReturned()) {
-                        removeSystemIndices(connection, metaData, table);
-                    }
-                } else {
-                    table = null;
+        if ((tableName != null) && (tableName.length() > 0)) {
+            String type = (String) values.get("TABLE_TYPE");
+            String[] unsupportedTableTypes = getUnsupportedTableTypes();
+            for (String unsupportedTableType : unsupportedTableTypes) {
+                if (StringUtils.isNotBlank(type) && type.equals(unsupportedTableType)) {
+                    return null;
                 }
             }
-            return table;
-        } catch (RuntimeException ex) {
-            log.error("Failed to read table: {}", tableName);
-            throw ex;
-        } catch (SQLException ex) {
-            log.error("Failed to read table: {}", tableName);
-            throw ex;
+
+            table = new Table();
+            table.setName(tableName);
+            table.setType(type);
+
+            String catalog = (String) values.get(getResultSetCatalogName());
+            table.setCatalog(catalog);
+            metaData.setCatalog(catalog);
+
+            String schema = (String) values.get(getResultSetSchemaName());
+            table.setSchema(schema);
+            metaData.setSchemaPattern(schema);
+
+            table.setDescription((String) values.get("REMARKS"));
+
+            table.addColumns(readColumns(metaData, tableName));
+            
+            if (table.getColumnCount() > 0) {
+                table.addForeignKeys(readForeignKeys(connection, metaData, tableName));
+                table.addIndices(readIndices(connection, metaData, tableName));
+
+                Collection<String> primaryKeys = readPrimaryKeyNames(metaData, tableName);
+
+                for (Iterator<String> it = primaryKeys.iterator(); it.hasNext();) {
+                    table.findColumn(it.next(), true).setPrimaryKey(true);
+                }
+
+                if (getPlatformInfo().isSystemIndicesReturned()) {
+                    removeSystemIndices(connection, metaData, table);
+                }
+            } else {
+                table = null;
+            }
         }
+        return table;
     }
 
     protected String[] getUnsupportedTableTypes() {
@@ -904,9 +894,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             column.setDefaultValue(defaultValue.trim());
         }
 
-        String typeName = (String) values.get("TYPE_NAME");
-        column.setJdbcTypeName(typeName);
-
         Integer mappedType = mapUnknownJdbcTypeForColumn(values);
         if (mappedType != null) {
             column.setMappedTypeCode(mappedType);
@@ -918,6 +905,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                
         column.setPrecisionRadix(((Integer) values.get("NUM_PREC_RADIX")).intValue());
 
+        String typeName = (String) values.get("TYPE_NAME");
         String columnSize = (String) values.get("COLUMN_SIZE");
         int decimalDigits = ((Integer) values.get("DECIMAL_DIGITS")).intValue();
 
@@ -930,7 +918,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             column.addPlatformColumn(platformColumn);
         } catch (Exception ex) {
             log.warn(ex.getMessage(), ex);
-        }        
+        }
+        
+        column.setJdbcTypeName(typeName);
         
         if (columnSize == null) {
             columnSize = (String) _defaultSizes.get(new Integer(column.getMappedTypeCode()));
@@ -1007,19 +997,17 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected Collection<ForeignKey> readForeignKeys(Connection connection,
             DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
         Map<String, ForeignKey> fks = new LinkedHashMap<String, ForeignKey>();
-        if (getPlatformInfo().isForeignKeysSupported()) {
-            ResultSet fkData = null;
-    
-            try {
-                fkData = metaData.getForeignKeys(tableName);
-    
-                while (fkData.next()) {
-                    Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
-                    readForeignKey(metaData, values, fks);
-                }
-            } finally {
-                close(fkData);
+        ResultSet fkData = null;
+
+        try {
+            fkData = metaData.getForeignKeys(tableName);
+
+            while (fkData.next()) {
+                Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
+                readForeignKey(metaData, values, fks);
             }
+        } finally {
+            close(fkData);
         }
         return fks.values();
     }
@@ -1067,20 +1055,18 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected Collection<IIndex> readIndices(Connection connection,
             DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
         Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
-        if (getPlatformInfo().isIndicesSupported()) {
-            ResultSet indexData = null;
-    
-            try {
-                indexData = metaData.getIndices(getTableNamePattern(tableName), false, false);
-    
-                while (indexData.next()) {
-                    Map<String, Object> values = readMetaData(indexData, getColumnsForIndex());
-    
-                    readIndex(metaData, values, indices);
-                }
-            } finally {
-                close(indexData);
+        ResultSet indexData = null;
+
+        try {
+            indexData = metaData.getIndices(getTableNamePattern(tableName), false, false);
+
+            while (indexData.next()) {
+                Map<String, Object> values = readMetaData(indexData, getColumnsForIndex());
+
+                readIndex(metaData, values, indices);
             }
+        } finally {
+            close(indexData);
         }
         return indices.values();
     }

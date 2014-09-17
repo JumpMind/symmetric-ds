@@ -36,19 +36,6 @@ public class MockParameterService extends AbstractParameterService implements IP
 
     }
     
-    public MockParameterService(String... parameters) {
-      if (parameters != null) {
-          String key = null;
-          for (int i = 0; i < parameters.length; i++) {              
-              if (i % 2 == 1) {
-                  properties.setProperty(key, parameters[i]);
-              } else {
-                  key = parameters[0];
-              }
-          }
-      }
-    }
-    
     public boolean refreshFromDatabase() {
         return false;
     }
@@ -91,13 +78,9 @@ public class MockParameterService extends AbstractParameterService implements IP
     }
 
     @Override
-    public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId) {
+    protected TypedProperties rereadDatabaseParameters(String externalId, String nodeGroupId) {
         return new TypedProperties(properties);
     }
 
-	@Override
-	public void deleteParameterWithUpdate(String externalId,
-			String nodeGroupId, String key) {		
-	}
 
 }

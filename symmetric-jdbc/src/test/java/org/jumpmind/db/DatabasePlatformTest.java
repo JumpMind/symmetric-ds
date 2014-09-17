@@ -162,38 +162,8 @@ public class DatabasePlatformTest {
         Database database = new Database();
         database.addTable(table);        
         platform.createDatabase(database, true, false);        
-        return platform.getTableFromCache(table.getName(), true);    
-    }
+        return platform.getTableFromCache(table.getName(), true);
     
-    @Test 
-    public void testDisableAutoincrement() throws Exception {
-        Table table = new Table("TEST_AUTOPK_DISABLE");
-        table.addColumn(new Column("ID", true));
-        table.getColumnWithName("ID").setTypeCode(Types.INTEGER);
-        table.getColumnWithName("ID").setAutoIncrement(true);
-        table.getColumnWithName("ID").setRequired(true);
-        table.addColumn(new Column("COL1"));
-        table.getColumnWithName("COL1").setTypeCode(Types.VARCHAR);
-        table.getColumnWithName("COL1").setSize("100");
-        platform.alterCaseToMatchDatabaseDefaultCase(table);
-        
-        Table tableFromDatabase = dropCreateAndThenReadTable(table);
-        
-        table.getColumnWithName("ID").setAutoIncrement(false);
-        table.getColumnWithName("COL1").setSize("1000");
-        table.getColumnWithName("COL1").setRequired(true);
-        
-        platform.alterTables(false, table);
-        
-        tableFromDatabase = platform.getTableFromCache(table.getName(), true);
-        
-        assertFalse(tableFromDatabase.getColumnWithName("ID").isAutoIncrement());
-        
-        /* sqlite character fields do not limit based on size */
-        if (!platform.getName().equals(DatabaseNamesConstants.SQLITE)) {
-            assertEquals(1000, tableFromDatabase.getColumnWithName("COL1").getSizeAsInt());
-        }
-        
     }
 
     @Test
@@ -202,11 +172,7 @@ public class DatabasePlatformTest {
                 && !platform.getName().equals(DatabaseNamesConstants.HSQLDB2)
                 && !platform.getName().equals(DatabaseNamesConstants.INFORMIX)
                 && !platform.getName().equals(DatabaseNamesConstants.DB2)
-                && !platform.getName().equals(DatabaseNamesConstants.ASE)
-                && !platform.getName().equals(DatabaseNamesConstants.MSSQL2000)
-                && !platform.getName().equals(DatabaseNamesConstants.MSSQL2005)
-                && !platform.getName().equals(DatabaseNamesConstants.MSSQL2008)
-                && !platform.getName().equals(DatabaseNamesConstants.SQLANYWHERE);
+                && !platform.getName().equals(DatabaseNamesConstants.ASE);
 
         if (upgradeSupported) {
             Table table = new Table("TEST_UPGRADE");
@@ -267,7 +233,7 @@ public class DatabasePlatformTest {
     public void testCreateAndReadTestSimpleTable() throws Exception {
         platform.createDatabase(DatabaseXmlUtil.read(new InputStreamReader(
                 DatabasePlatformTest.class.getResourceAsStream("/testCreateDatabase.xml"))), true,
-                true);
+                false);
         Table table = platform.getTableFromCache(SIMPLE_TABLE, true);
         assertNotNull("Could not find " + SIMPLE_TABLE, table);
         assertEquals("The id column was not read in as an autoincrement column", true, table

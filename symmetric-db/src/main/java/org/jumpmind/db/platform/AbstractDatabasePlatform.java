@@ -107,15 +107,15 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     abstract public ISqlTemplate getSqlTemplate();
 
-    public DmlStatement createDmlStatement(DmlType dmlType, Table table, String textColumnExpression) {
+    public DmlStatement createDmlStatement(DmlType dmlType, Table table) {
         return createDmlStatement(dmlType, table.getCatalog(), table.getSchema(), table.getName(),
-                table.getPrimaryKeyColumns(), table.getColumns(), null, textColumnExpression);
+                table.getPrimaryKeyColumns(), table.getColumns(), null);
     }
 
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression) {
+            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues) {
         return DmlStatementFactory.createDmlStatement(getName(), dmlType, catalogName, schemaName,
-                tableName, keys, columns, nullKeyValues, getDdlBuilder(), textColumnExpression);
+                tableName, keys, columns, nullKeyValues, getDdlBuilder());
     }
 
     public IDdlReader getDdlReader() {
@@ -226,14 +226,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Table readTableFromDatabase(String catalogName, String schemaName, String tableName) {
-        return readTableFromDatabase(catalogName, schemaName, tableName, true);
-    }
-    
-    public Table readTableFromDatabase(String catalogName, String schemaName, String tableName, boolean useDefaultSchema) {
         String originalFullyQualifiedName = Table.getFullyQualifiedTableName(catalogName,
                 schemaName, tableName);
-        catalogName = catalogName == null && useDefaultSchema ? getDefaultCatalog() : catalogName;
-        schemaName = schemaName == null && useDefaultSchema ? getDefaultSchema() : schemaName;        
+        catalogName = catalogName == null ? getDefaultCatalog() : catalogName;
+        schemaName = schemaName == null ? getDefaultSchema() : schemaName;        
         Table table = ddlReader.readTable(catalogName, schemaName, tableName);
         if (table == null && metadataIgnoreCase) {
             if (isStoresUpperCaseIdentifiers()) {
@@ -305,16 +301,15 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (System.currentTimeMillis() - lastTimeCachedModelClearedInMs > clearCacheModelTimeoutInMs) {
             resetCachedTableModel();
         }
+        catalogName = catalogName == null ? getDefaultCatalog() : catalogName;
+        schemaName = schemaName == null ? getDefaultSchema() : schemaName;
         Map<String, Table> model = tableCache;
         String key = Table.getFullyQualifiedTableName(catalogName, schemaName, tableName);
         Table retTable = model != null ? model.get(key) : null;
         if (retTable == null || forceReread) {
             synchronized (this.getClass()) {
                 try {
-                    Table table = readTableFromDatabase(catalogName, schemaName, tableName, true);
-                    if (table == null) {
-                        table = readTableFromDatabase(catalogName, schemaName, tableName, false);
-                    }
+                    Table table = readTableFromDatabase(catalogName, schemaName, tableName);
                     tableCache.put(key, table);
                     retTable = table;
                 } catch (RuntimeException ex) {
@@ -334,18 +329,18 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
-            String[] values, boolean useVariableDates, boolean fitToColumn) {
+            String[] values, boolean useVariableDates) {
         Column[] metaData = Table.orderColumns(columnNames, table);
-        return getObjectValues(encoding, values, metaData, useVariableDates, fitToColumn);
+        return getObjectValues(encoding, values, metaData, useVariableDates);
     }
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData) {
-        return getObjectValues(encoding, values, orderedMetaData, false, false);
+        return getObjectValues(encoding, values, orderedMetaData, false);
     }
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
-            Column[] orderedMetaData, boolean useVariableDates, boolean fitToColumn) {
+            Column[] orderedMetaData, boolean useVariableDates) {
         if (values != null) {
             List<Object> list = new ArrayList<Object>(values.length);
             for (int i = 0; i < values.length; i++) {
@@ -353,7 +348,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 Column column = orderedMetaData.length > i ? orderedMetaData[i] : null;
                 try {
                     if (column != null) {
-                        list.add(getObjectValue(value, column, encoding, useVariableDates, fitToColumn));
+                        list.add(getObjectValue(value, column, encoding, useVariableDates));
                     }
                 } catch (Exception ex) {
                     String valueTrimmed = FormatUtils.abbreviateForLogging(value);
@@ -371,7 +366,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
     
     protected Object getObjectValue(String value, Column column, BinaryEncoding encoding,
-            boolean useVariableDates, boolean fitToColumn) throws DecoderException {
+            boolean useVariableDates) throws DecoderException {
         Object objectValue = value;
         int type = column.getMappedTypeCode();
         if ((value == null || (getDdlBuilder().getDatabaseInfo().isEmptyStringNulled() && value
@@ -417,53 +412,35 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
         }
         if (objectValue instanceof String) {
-            String stringValue = cleanTextForTextBasedColumns((String) objectValue);
-            int size = column.getSizeAsInt();
-            if (fitToColumn && size > 0 && stringValue.length() > size) {
-                stringValue = stringValue.substring(0, size);
-            }
-            objectValue = stringValue;
+            objectValue = cleanTextForTextBasedColumns((String) objectValue);
         }
 
         return objectValue;
 
     }
+
     
     protected Object parseBigDecimal(String value) {
         /*
          * The number will have either one period or one comma for the decimal
          * point, but we need a period
          */
-        value = cleanNumber(value);
         return new BigDecimal(value.replace(',', '.'));
-    }    
+    }
     
     protected Object parseBigInteger(String value) {
         try {
-            value = cleanNumber(value);
-            return new Long(value.trim());
-        } catch (NumberFormatException ex) {            
+            return new Long(value);
+        } catch (NumberFormatException ex) {
             return new BigInteger(value);        
         }
     }    
         
     protected Object parseInteger(String value) {
         try {
-            value = cleanNumber(value);
             return Integer.parseInt(value);
         } catch (NumberFormatException ex) {
             return new BigInteger(value);        
-        }
-    }
-    
-    protected String cleanNumber(String value) {
-        value = value.trim();
-        if (value.equalsIgnoreCase("true")) {
-            return "1";
-        } else if (value.equalsIgnoreCase("false")) {
-            return "0";
-        } else {
-            return value;
         }
     }
     
@@ -478,12 +455,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             int type = column.getJdbcTypeCode();
             
             if (row.get(name) != null) {
-                if (type == Types.BOOLEAN || type == Types.BIT) {
-                    values[i] = row.getBoolean(name) ? "1" : "0";
-                } else if (column.isOfNumericType()) {
+                if (column.isOfNumericType()) {
                     values[i] = row.getString(name);
-                } else if (!column.isTimestampWithTimezone()
-                        && (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
+                } else if (!column.isTimestampWithTimezone() && 
+                        (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
                     values[i] = getDateTimeStringValue(name, type, row, useVariableDates);
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
@@ -502,18 +477,16 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return values;
     }
     
-    protected String getDateTimeStringValue(String name, int type, Row row, boolean useVariableDates) {
-        Object dateObj = row.get(name);
-        if (dateObj instanceof String) {
-            return (String) dateObj;
+    protected String getDateTimeStringValue(String name, int type, Row row,
+            boolean useVariableDates) {
+        Date date = row.getDateTime(name);
+        if (useVariableDates) {
+            long diff = date.getTime() - System.currentTimeMillis();
+            return "${curdate" + diff + "}";
+        } else if (type == Types.TIME) {
+            return FormatUtils.TIME_FORMATTER.format(date);
         } else {
-            Date date = row.getDateTime(name);
-            if (useVariableDates) {
-                long diff = date.getTime() - System.currentTimeMillis();
-                return "${curdate" + diff + "}";
-            } else {
-                return FormatUtils.TIMESTAMP_FORMATTER.format(date);
-            }
+            return FormatUtils.TIMESTAMP_FORMATTER.format(date);
         }
     }
 
@@ -789,17 +762,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             IndexColumn[] indexColumns = index.getColumns();
             for (IndexColumn indexColumn : indexColumns) {
                 indexColumn.setName(alterCaseToMatchDatabaseDefaultCase(indexColumn.getName()));
-            }
-        }
-        
-        ForeignKey[] fks = table.getForeignKeys();
-        for (ForeignKey foreignKey : fks) {
-            foreignKey.setName(alterCaseToMatchDatabaseDefaultCase(foreignKey.getName()));
-            foreignKey.setForeignTableName(alterCaseToMatchDatabaseDefaultCase(foreignKey.getForeignTableName()));
-            Reference[] references = foreignKey.getReferences();
-            for (Reference reference : references) {
-                reference.setForeignColumnName(alterCaseToMatchDatabaseDefaultCase(reference.getForeignColumnName()));
-                reference.setLocalColumnName(alterCaseToMatchDatabaseDefaultCase(reference.getLocalColumnName()));
             }
         }
     }

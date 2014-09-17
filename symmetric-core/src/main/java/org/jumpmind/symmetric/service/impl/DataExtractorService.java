@@ -36,23 +36,20 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.io.DatabaseXmlUtil;
-import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.DdlBuilderFactory;
-import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlConstants;
-import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -111,8 +108,8 @@ import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRouterService;
-import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
@@ -140,8 +137,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private ITriggerRouterService triggerRouterService;
 
     private ITransformService transformService;
-    
-    private ISequenceService sequenceService;
 
     private IDataService dataService;
 
@@ -157,21 +152,26 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private Map<String, Semaphore> locks = new HashMap<String, Semaphore>();
 
-    public DataExtractorService(ISymmetricEngine engine) {
-        super(engine.getParameterService(), engine.getSymmetricDialect());
-        this.outgoingBatchService = engine.getOutgoingBatchService();
-        this.routerService = engine.getRouterService();
-        this.dataService = engine.getDataService();
-        this.configurationService = engine.getConfigurationService();
-        this.triggerRouterService = engine.getTriggerRouterService();
-        this.nodeService = engine.getNodeService();
-        this.transformService = engine.getTransformService();
-        this.statisticManager = engine.getStatisticManager();
-        this.stagingManager = engine.getStagingManager();
-        this.nodeCommunicationService = engine.getNodeCommunicationService();
-        this.clusterService = engine.getClusterService();
-        this.sequenceService = engine.getSequenceService();
-        setSqlMap(new DataExtractorServiceSqlMap(symmetricDialect.getPlatform(),
+    public DataExtractorService(IParameterService parameterService,
+            ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
+            IRouterService routingService, IConfigurationService configurationService,
+            ITriggerRouterService triggerRouterService, INodeService nodeService,
+            IDataService dataService, ITransformService transformService,
+            IStatisticManager statisticManager, IStagingManager stagingManager,
+            IClusterService clusterService, INodeCommunicationService nodeCommunicationService) {
+        super(parameterService, symmetricDialect);
+        this.outgoingBatchService = outgoingBatchService;
+        this.routerService = routingService;
+        this.dataService = dataService;
+        this.configurationService = configurationService;
+        this.triggerRouterService = triggerRouterService;
+        this.nodeService = nodeService;
+        this.transformService = transformService;
+        this.statisticManager = statisticManager;
+        this.stagingManager = stagingManager;
+        this.nodeCommunicationService = nodeCommunicationService;
+        this.clusterService = clusterService;
+        setSqlMap(new DataExtractorSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
 
@@ -210,8 +210,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = triggerRouters.size() - 1; i >= 0; i--) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            String channelId = triggerRouter.getTrigger().getChannelId();
-            if (Constants.CHANNEL_CONFIG.equals(channelId) || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
+            if (!triggerRouter.getTrigger().getChannelId().equals(Constants.CHANNEL_FILESYNC)) {
                 TriggerHistory triggerHistory = triggerRouterService
                         .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
                                 .getTriggerId(), null, null, triggerRouter.getTrigger()
@@ -244,8 +243,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = 0; i < triggerRouters.size(); i++) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            String channelId = triggerRouter.getTrigger().getChannelId();
-            if (Constants.CHANNEL_CONFIG.equals(channelId) || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
+            if (!triggerRouter.getTrigger().getChannelId().equals(Constants.CHANNEL_FILESYNC)) {
                 TriggerHistory triggerHistory = triggerRouterService
                         .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
                                 .getTriggerId(), null, null, null);
@@ -306,10 +304,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             ChannelMap suspendIgnoreChannelsList) {
 
         if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
-            List<Channel> fileSyncChannels = configurationService.getFileSyncChannels();
-            for (Channel channel : fileSyncChannels) {
-                batches.filterBatchesForChannel(channel);    
-            }            
+            batches.filterBatchesForChannel(Constants.CHANNEL_FILESYNC);
         }
 
         // We now have either our local suspend/ignore list, or the combined
@@ -361,15 +356,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, channelMap);
 
             if (activeBatches.size() > 0) {
-                IDdlBuilder builder = DdlBuilderFactory.createDdlBuilder(targetNode
-                        .getDatabaseType());
-                if (builder == null) {
-                    throw new IllegalStateException(
-                            "Could not find a ddl builder registered for the database type of "
-                                    + targetNode.getDatabaseType()
-                                    + ".  Please check the database type setting for node '"
-                                    + targetNode.getNodeId() + "'");
-                }
                 StructureDataWriter writer = new StructureDataWriter(
                         symmetricDialect.getPlatform(), targetNode.getDatabaseType(), payloadType,
                         useDelimiterIdentifiers, symmetricDialect.getBinaryEncoding(),
@@ -474,17 +460,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                 for (int i = 0; i < activeBatches.size(); i++) {
                     currentBatch = activeBatches.get(i);
-                    
+
                     channelsProcessed.add(currentBatch.getChannelId());
-                    processInfo.setDataCount(currentBatch.getDataEventCount());
                     processInfo.incrementBatchCount();
                     processInfo.setCurrentBatchId(currentBatch.getBatchId());
-                    processInfo.setCurrentLoadId(currentBatch.getLoadId());
 
                     currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
 
                     if (currentBatch.isExtractJobFlag() && currentBatch.getStatus() != Status.IG) {
-                        if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
+                        if (parameterService.is(ParameterConstants.INTITAL_LOAD_USE_EXTRACT_JOB)) {
                             if (currentBatch.getStatus() != Status.RQ && currentBatch.getStatus() != Status.IG
                                     && !isPreviouslyExtracted(currentBatch)) {
                                 /*
@@ -542,9 +526,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             } catch (RuntimeException e) {
                 SQLException se = unwrapSqlException(e);
                 if (currentBatch != null) {
-                    /* Reread batch in case the ignore flag has been set */
-                    currentBatch = outgoingBatchService.
-                            findOutgoingBatch(currentBatch.getBatchId(), currentBatch.getNodeId());
                     statisticManager.incrementDataExtractedErrors(currentBatch.getChannelId(), 1);
                     if (se != null) {
                         currentBatch.setSqlState(se.getSQLState());
@@ -554,11 +535,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.setSqlMessage(getRootMessage(e));
                     }
                     currentBatch.revertStatsOnError();
-                    if (currentBatch.getStatus() != Status.IG &&
-                            currentBatch.getStatus() != Status.OK) {
+                    if (currentBatch.getStatus() != Status.IG) {
                         currentBatch.setStatus(Status.ER);
-                        currentBatch.setErrorFlag(true);
                     }
+                    currentBatch.setErrorFlag(true);
                     outgoingBatchService.updateOutgoingBatch(currentBatch);
 
                     if (isStreamClosedByClient(e)) {
@@ -574,7 +554,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                         log.error("Failed to extract batch {}", currentBatch, e);
                     }
-                    processInfo.setStatus(ProcessInfo.Status.ERROR);
                 } else {
                     log.error("Could not log the outgoing batch status because the batch was null",
                             e);
@@ -908,35 +887,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         Table table = null;
         if (useDatabaseDefinition) {
             table = platform.getTableFromCache(catalogName, schemaName, tableName, false);
-            
-            if (table != null && table.getColumnCount() < triggerHistory.getParsedColumnNames().length) {
-                /*
-                 * If the column count is less than what trigger history reports, then
-                 * chances are the table cache is out of date.
-                 */
-                table = platform.getTableFromCache(catalogName, schemaName, tableName, true);
-            }
-
-            if (table != null) {
-                table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
+            table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                     triggerHistory.getParsedPkColumnNames(), true);
-            } else {
-                throw new SymmetricException("Could not find the following table.  It might have been dropped: %s", Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
-            }
         } else {
             table = new Table(tableName);
             table.addColumns(triggerHistory.getParsedColumnNames());
             table.setPrimaryKeys(triggerHistory.getParsedPkColumnNames());
         }
-
+        
+        table.setCatalog(catalogName);
+        table.setSchema(schemaName);
         Router router = triggerRouterService.getRouterById(routerId, false);
-        if (router != null && router.isUseSourceCatalogSchema()) {
-            table.setCatalog(catalogName);
-            table.setSchema(schemaName);
-        } else {
-            table.setCatalog(null);
-            table.setSchema(null);
-        }
         if (router != null && setTargetTableName) {
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetCatalogName())) {
                 table.setCatalog(null);
@@ -958,7 +919,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public RemoteNodeStatuses queueWork(boolean force) {
-        final RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
+        final RemoteNodeStatuses statuses = new RemoteNodeStatuses();
         Node identity = nodeService.findIdentity();
         if (identity != null) {
             if (force || clusterService.lock(ClusterConstants.INITIAL_LOAD_EXTRACT)) {
@@ -1005,11 +966,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void requestExtractRequest(ISqlTransaction transaction, String nodeId,
             TriggerRouter triggerRouter, long startBatchId, long endBatchId) {
-        long requestId = sequenceService.nextVal(transaction, Constants.SEQUENCE_EXTRACT_REQ);
-        transaction.prepareAndExecute(getSql("insertExtractRequestSql"),
-                new Object[] { requestId, nodeId, ExtractStatus.NE.name(), startBatchId,
-                        endBatchId, triggerRouter.getTrigger().getTriggerId(),
-                        triggerRouter.getRouter().getRouterId() }, new int[] { Types.BIGINT, Types.VARCHAR,
+        transaction.insertWithGeneratedKey(
+        getSql("insertExtractRequestSql"),
+                symmetricDialect.getSequenceKeyName(SequenceIdentifier.REQUEST),
+                symmetricDialect.getSequenceName(SequenceIdentifier.REQUEST), new Object[] {
+                        nodeId, ExtractStatus.NE.name(), startBatchId, endBatchId,
+                        triggerRouter.getTrigger().getTriggerId(),
+                        triggerRouter.getRouter().getRouterId() }, new int[] { Types.VARCHAR,
                         Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR });
     }
 
@@ -1125,7 +1088,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 } finally {
                     close(transaction);
                 }
-                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.OK);
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.DONE);
 
             } catch (RuntimeException ex) {
                 log.debug(
@@ -1395,11 +1358,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                             data.setNoBinaryOldData(requiresLobSelectedFromSource
                                     || symmetricDialect.getName().equals(
-                                            DatabaseNamesConstants.MSSQL2000)
-                                    || symmetricDialect.getName().equals(
-                                            DatabaseNamesConstants.MSSQL2005)
-                                    || symmetricDialect.getName().equals(
-                                            DatabaseNamesConstants.MSSQL2008));
+                                            DatabaseNamesConstants.MSSQL));
                             
                             outgoingBatch.incrementDataEventCount();
                         } else {
@@ -1408,23 +1367,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     new Object[] { triggerHistory.getTriggerId(),
                                             triggerHistory.getSourceTableName(),
                                             triggerHistory.getTriggerHistoryId() });
-                        }
-                        if (data.getDataEventType() == DataEventType.CREATE && StringUtils.isBlank(data.getCsvData(CsvData.ROW_DATA))) {
-                            this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
-                                    routerId, triggerHistory, true, true);
-                            Database db = new Database();
-                            db.setName("dataextractor");
-                            /*
-                             * Force a reread of table so new columns are picked up.  A create
-                             * event is usually sent after there is a change to the table so 
-                             * we want to make sure that the cache is updated
-                             */
-                            Table table = platform.getTableFromCache(targetTable.getCatalog(), 
-                                    targetTable.getSchema(), targetTable.getName(), true);
-                            db.setCatalog(targetTable.getCatalog());
-                            db.setSchema(targetTable.getSchema());
-                            db.addTable(table != null ? table : targetTable);
-                            data.setRowData(CsvUtils.escapeCsvData(DatabaseXmlUtil.toXml(db)));
                         }
                     }
 
@@ -1595,9 +1537,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     overrideSelectSql);
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row rs) {
-                    
                     String csvRow = null;
-                    if (symmetricDialect.getParameterService().is(
+                    if (parameterService.is(
                             ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
                         csvRow = rs.stringValue();
                     } else {

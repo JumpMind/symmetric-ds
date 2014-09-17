@@ -28,8 +28,6 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  * batch size, but never breaks a transaction boundary
  */
 public class DefaultBatchAlgorithm implements IBatchAlgorithm {
-    
-    public static final String NAME = "default";
 
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData, SimpleRouterContext routingContext) {
         return batch.getDataEventCount() >= dataMetaData.getNodeChannel().getMaxBatchSize()

@@ -115,10 +115,8 @@ public class TriggerHistory implements Serializable {
         this.sourceTableName = trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
                 .getSourceTableName();
         this.columnNames = Table.getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
-        this.sourceSchemaName = trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : 
-            trigger.getSourceSchemaName();
-        this.sourceCatalogName = trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : 
-            trigger.getSourceCatalogName();
+        this.sourceSchemaName = trigger.getSourceSchemaName();
+        this.sourceCatalogName = trigger.getSourceCatalogName();
         this.triggerId = trigger.getTriggerId();
         this.pkColumnNames = Table.getCommaDeliminatedColumns(trigger.filterExcludedColumns(trigger
                 .getSyncKeysColumnsForTable(table)));

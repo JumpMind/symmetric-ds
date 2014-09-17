@@ -20,11 +20,8 @@
  */
 package org.jumpmind.symmetric;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,8 +32,6 @@ import java.util.Properties;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
@@ -60,7 +55,6 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
-import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.symmetric.util.SnapshotUtil;
 import org.jumpmind.util.AppUtils;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -71,7 +65,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jndi.JndiObjectFactoryBean;
-import org.xml.sax.InputSource;
 
 /**
  * Represents the client portion of a SymmetricDS engine. This class can be used
@@ -109,7 +102,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         this.dataSource = dataSource;
         this.springContext = springContext;
         this.properties = properties;
-        this.init();        
+        this.init();
     }
 
     public ClientSymmetricEngine(DataSource dataSource, Properties properties,
@@ -130,15 +123,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public ClientSymmetricEngine(File propertiesFile) {
         this(propertiesFile, true);
-    }
-    
-    public ClientSymmetricEngine(File propertiesFile, ApplicationContext springContext) {
-        super(true);
-        setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
-        this.propertiesFile = propertiesFile;
-        this.springContext = springContext;
-        this.init();
-                
     }
 
     public ClientSymmetricEngine(Properties properties, boolean registerEngine) {
@@ -168,56 +152,30 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     protected void init() {
         try {
-            LogSummaryAppenderUtils.registerLogSummaryAppender();
-            
             super.init();
 
             this.dataSource = platform.getDataSource();
-            
-            PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
-            configurer.setProperties(parameterService.getAllParameters());
-            
-            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(springContext);
-            ctx.addBeanFactoryPostProcessor(configurer);
-            
-            List<String> extensionLocations = new ArrayList<String>();
-            extensionLocations.add("classpath:/symmetric-ext-points.xml");
-            if (registerEngine) {
-                extensionLocations.add("classpath:/symmetric-jmx.xml");
-            } 
-                            
-            String xml = parameterService.getString(ParameterConstants.EXTENSIONS_XML);
-            File file = new File(parameterService.getTempDirectory(), "extension.xml");     
-            FileUtils.deleteQuietly(file);
-            if (isNotBlank(xml)) {
-                try {
-                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                    factory.setValidating(false);
-                    factory.setNamespaceAware(true);
-                    DocumentBuilder builder = factory.newDocumentBuilder();
-                    // the "parse" method also validates XML, will throw an exception if misformatted
-                    builder.parse(new InputSource(new StringReader(xml)));               
-                    FileUtils.write(file, xml, false); 
-                    extensionLocations.add("file:" + file.getAbsolutePath());
-                } catch (Exception e) {
-                    log.error("Invalid " + ParameterConstants.EXTENSIONS_XML + " parameter.");
+
+            if (springContext == null) {
+                PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
+                configurer.setProperties(parameterService.getAllParameters());
+
+                ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext();
+                ctx.addBeanFactoryPostProcessor(configurer);
+
+                if (registerEngine) {
+                    ctx.setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml",
+                            "classpath:/symmetric-jmx.xml" });
+                } else {
+                    ctx.setConfigLocations(new String[] { "classpath:/symmetric-ext-points.xml" });
                 }
-            }
-            
-            try {
-                ctx.setConfigLocations(extensionLocations.toArray(new String[extensionLocations
-                        .size()]));
                 ctx.refresh();
 
                 this.springContext = ctx;
-
-                this.extensionPointManger = createExtensionPointManager(springContext);
-                this.extensionPointManger.register();
-            } catch (Exception ex) {
-                log.error(
-                        "Failed to initialize the extension points.  Please fix the problem and restart the server.",
-                        ex);
             }
+
+            this.extensionPointManger = createExtensionPointManager(springContext);
+            this.extensionPointManger.register();
         } catch (RuntimeException ex) {
             destroy();
             throw ex;
@@ -252,16 +210,17 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected IDatabasePlatform createDatabasePlatform(TypedProperties properties) {
-        IDatabasePlatform platform = createDatabasePlatform(springContext, properties, dataSource, 
-                Boolean.parseBoolean(System.getProperty(SystemConstants.SYSPROP_WAIT_FOR_DATABASE, "true")));
+        IDatabasePlatform platform = createDatabasePlatform(properties, dataSource, Boolean.parseBoolean(System.getProperty(SystemConstants.SYSPROP_WAIT_FOR_DATABASE, "true")));
         return platform;
     }
 
-    public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
+    public static IDatabasePlatform createDatabasePlatform(TypedProperties properties,
             DataSource dataSource, boolean waitOnAvailableDatabase) {
         if (dataSource == null) {
             String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);
-            if (StringUtils.isNotBlank(jndiName)) {
+            if (StringUtils.isBlank(jndiName)) {
+                dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
+            } else {
                 try {
                     log.info("Looking up datasource in jndi.  The jndi name is {}", jndiName);
                     JndiObjectFactoryBean jndiFactory = new JndiObjectFactoryBean();
@@ -277,16 +236,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 } catch (NamingException e) {
                     throw new SymmetricException("Could not locate the configured datasource in jndi.  The jndi name is %s", e, jndiName);
                 }
-            }
-            
-            String springBeanName = properties.getProperty(ParameterConstants.DB_SPRING_BEAN_NAME);
-            if (isNotBlank(springBeanName)) {
-                log.info("Using datasource from spring.  The spring bean name is {}", springBeanName);
-                dataSource = (DataSource)springContext.getBean(springBeanName);
-            }
-            
-            if (dataSource == null) {
-                dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
             }
         }
         if (waitOnAvailableDatabase) {

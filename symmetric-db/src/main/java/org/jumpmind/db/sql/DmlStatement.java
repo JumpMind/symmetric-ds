@@ -20,8 +20,6 @@
  */
 package org.jumpmind.db.sql;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +33,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.util.FormatUtils;
@@ -68,15 +65,12 @@ public class DmlStatement {
     protected Column[] columns;
 
     protected boolean[] nullKeyValues;
-    
-    protected String textColumnExpression;
-    
+
     public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
+            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers) {
         this.databaseInfo = databaseInfo;
         this.columns = columns;
-        this.textColumnExpression = textColumnExpression;
         if (nullKeyValues == null || keysColumns == null
                 || nullKeyValues.length != keysColumns.length) {
             this.keys = keysColumns;
@@ -189,23 +183,23 @@ public class DmlStatement {
 
     protected String buildUpdateSql(String tableName, Column[] keyColumns, Column[] columns) {
         StringBuilder sql = new StringBuilder("update ").append(tableName).append(" set ");
-        appendColumnsEquals(sql, columns, ", ");
+        appendColumnEquals(sql, columns, ", ");
         if (keyColumns != null && keyColumns.length > 0) {
             sql.append(" where ");
-            appendColumnsEquals(sql, keyColumns, nullKeyValues, " and ");
+            appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
         }
         return sql.toString();
     }
 
     protected String buildDeleteSql(String tableName, Column[] keyColumns) {
         StringBuilder sql = new StringBuilder("delete from ").append(tableName).append(" where ");
-        appendColumnsEquals(sql, keyColumns, nullKeyValues, " and ");
+        appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
         return sql.toString();
     }
 
     protected String buildFromSql(String tableName, Column[] keyColumns) {
         StringBuilder sql = new StringBuilder(" from ").append(tableName).append(" where ");
-        appendColumnsEquals(sql, keyColumns, nullKeyValues, " and ");
+        appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
         return sql.toString();
     }
 
@@ -213,7 +207,7 @@ public class DmlStatement {
         StringBuilder sql = new StringBuilder("select count(*) from ").append(tableName);
         if (keyColumns != null && keyColumns.length > 0) {
             sql.append(" where ");
-            appendColumnsEquals(sql, keyColumns, nullKeyValues, " and ");
+            appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
         }
         return sql.toString();
     }
@@ -222,7 +216,7 @@ public class DmlStatement {
         StringBuilder sql = new StringBuilder("select ");
         appendColumns(sql, columns, true);
         sql.append(" from ").append(tableName).append(" where ");
-        appendColumnsEquals(sql, keyColumns, nullKeyValues, " and ");
+        appendColumnEquals(sql, keyColumns, nullKeyValues, " and ");
         return sql.toString();
     }
 
@@ -237,11 +231,11 @@ public class DmlStatement {
         return sql.toString();
     }
 
-    protected void appendColumnsEquals(StringBuilder sql, Column[] columns, String separator) {
-        appendColumnsEquals(sql, columns, new boolean[columns.length], separator);
+    protected void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
+        appendColumnEquals(sql, columns, new boolean[columns.length], separator);
     }
 
-    protected void appendColumnsEquals(StringBuilder sql, Column[] columns, boolean[] nullColumns,
+    protected void appendColumnEquals(StringBuilder sql, Column[] columns, boolean[] nullColumns,
             String separator) {
         int existingCount = 0;
         if (columns != null) {
@@ -251,7 +245,7 @@ public class DmlStatement {
                         sql.append(separator);
                     }
                     if (!nullColumns[i]) {
-                        appendColumnEquals(sql, columns[i], separator);                   
+                        sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?");
                     } else {
                         sql.append(quote).append(columns[i].getName()).append(quote)
                                 .append(" is NULL");
@@ -259,16 +253,6 @@ public class DmlStatement {
                 }
             }
         }
-    }
-    
-    protected void appendColumnEquals(StringBuilder sql, Column column,
-            String separator) {
-        boolean textType = TypeMap.isTextType(column.getMappedTypeCode());
-        if (textType && isNotBlank(textColumnExpression)) {
-            sql.append(quote).append(column.getName()).append(quote).append(" = ").append(textColumnExpression.replace("$(columnName)", "?"));
-        } else {
-            sql.append(quote).append(column.getName()).append(quote).append(" = ?");   
-        } 
     }
 
     protected int appendColumns(StringBuilder sql, Column[] columns, boolean select) {
@@ -287,15 +271,16 @@ public class DmlStatement {
     }
     
     protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
-        String columnName = column.getName();        
+        String columnName = column.getName();
         sql.append(quote).append(columnName).append(quote);
     }
+    
 
     protected void appendColumnQuestions(StringBuilder sql, Column[] columns) {
         if (columns != null) {
             for (int i = 0; i < columns.length; i++) {
                 if (columns[i] != null) {
-                    appendColumnQuestion(sql, columns[i]);
+                    sql.append("?").append(",");
                 }
             }
 
@@ -303,15 +288,7 @@ public class DmlStatement {
                 sql.replace(sql.length() - 1, sql.length(), "");
             }
         }
-    }
-    
-    protected void appendColumnQuestion(StringBuilder sql, Column column) {
-        boolean textType = TypeMap.isTextType(column.getMappedTypeCode());
-        if (textType && isNotBlank(textColumnExpression)) {
-            sql.append(textColumnExpression.replace("$(columnName)", "?")).append(",");
-        } else {
-            sql.append("?").append(",");
-        }
+
     }
 
     public String getColumnsSql(Column[] columns) {
@@ -411,21 +388,20 @@ public class DmlStatement {
     }
     
     public String buildDynamicSql(BinaryEncoding encoding, Row row,
-            boolean useVariableDates, boolean useJdbcTimestampFormat, Column[] columns) {
-    	final String QUESTION_MARK = "<!QUESTION_MARK!>";
+            boolean useVariableDates, boolean useJdbcTimestampFormat) {
+        final String QUESTION_MARK = "<!QUESTION_MARK!>";
         String newSql = sql;
         String quote = databaseInfo.getValueQuoteToken();
-        String binaryQuoteStart = databaseInfo.getBinaryQuoteStart();
-        String binaryQuoteEnd = databaseInfo.getBinaryQuoteEnd();
         String regex = "\\?";
         
         List<Column> columnsToProcess = new ArrayList<Column>();
         columnsToProcess.addAll(Arrays.asList(columns));
+        columnsToProcess.addAll(Arrays.asList(keys));
         
         for (int i = 0; i < columnsToProcess.size(); i++) {
             Column column = columnsToProcess.get(i);
             String name = column.getName();
-            int type = column.getMappedTypeCode();
+            int type = column.getJdbcTypeCode();
 
             if (row.get(name) != null) {
                 if (column.isOfTextType()) {
@@ -465,8 +441,8 @@ public class DmlStatement {
                         newSql = newSql.replaceFirst(regex,
                                 quote + new String(Base64.encodeBase64(bytes)) + quote);
                     } else if (encoding == BinaryEncoding.HEX) {
-                        newSql = newSql.replaceFirst(regex, binaryQuoteStart
-                                + new String(Hex.encodeHex(bytes)) + binaryQuoteEnd);
+                        newSql = newSql.replaceFirst(regex, quote
+                                + new String(Hex.encodeHex(bytes)) + quote);
                     }
                 } else {
                     newSql = newSql.replaceFirst(regex, row.getString(name));
@@ -477,36 +453,11 @@ public class DmlStatement {
         }
         
         newSql = newSql.replace(QUESTION_MARK, "?");
-        return newSql + databaseInfo.getSqlCommandDelimiter();	
-    }
-    
-    public String buildDynamicDeleteSql(BinaryEncoding encoding, Row row,
-            boolean useVariableDates, boolean useJdbcTimestampFormat) {
-    	return buildDynamicSql(encoding, row, useVariableDates, useJdbcTimestampFormat, keys);
-    }
-    
-    public String buildDynamicSql(BinaryEncoding encoding, Row row,
-            boolean useVariableDates, boolean useJdbcTimestampFormat) {
-    	return buildDynamicSql(encoding, row, useVariableDates, useJdbcTimestampFormat, (Column[]) ArrayUtils.addAll(columns, keys));
+        return newSql + databaseInfo.getSqlCommandDelimiter();
     }
     
     public boolean isUpsertSupported() {
         return false;
-    }
-    
-    public String[] getLookupKeyData(Map<String, String> lookupDataMap) {
-        Column[] lookupColumns = getKeys();
-        if (lookupColumns != null && lookupColumns.length > 0) {
-            if (lookupDataMap != null && lookupDataMap.size() > 0) {
-                String[] keyDataAsArray = new String[lookupColumns.length];
-                int index = 0;
-                for (Column keyColumn : lookupColumns) {
-                    keyDataAsArray[index++] = lookupDataMap.get(keyColumn.getName());
-                }
-                return keyDataAsArray;
-            }
-        }
-        return null;
     }
 
 }

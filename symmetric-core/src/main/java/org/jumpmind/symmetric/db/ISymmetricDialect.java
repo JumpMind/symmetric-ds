@@ -116,7 +116,7 @@ public interface ISymmetricDialect {
      * that needs to be run when dropping database objects. An example is
      * Oracle's 'purge recyclebin'
      */
-    public void cleanDatabase();
+    public void purgeRecycleBin();
 
     public void disableSyncTriggers(ISqlTransaction transaction);
 
@@ -129,6 +129,8 @@ public interface ISymmetricDialect {
     public String getSourceNodeExpression();
 
     public String getCreateSymmetricDDL();
+
+    public String getCreateTableXML(TriggerHistory triggerHistory, TriggerRouter triggerRouter);
 
     public boolean isBlobSyncSupported();
 

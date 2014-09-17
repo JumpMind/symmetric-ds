@@ -87,9 +87,9 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("findNodeSecurityWithLoadEnabledSql",
                 "select node_id, node_password, registration_enabled, registration_time,                   "
                         + " initial_load_enabled, initial_load_time, created_at_node_id,                   "
-                        + " rev_initial_load_enabled, rev_initial_load_time, initial_load_id,              "
-                        + " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by        "
-                        + " from $(node_security)                                                          "
+                        + " rev_initial_load_enabled, rev_initial_load_time, initial_load_id, " +
+                          " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by " +
+                          " from $(node_security)          "
                         + " where initial_load_enabled=1 or rev_initial_load_enabled=1                     ");
 
         putSql("findAllNodeSecuritySql",
@@ -104,20 +104,6 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("deleteNodeSql", "delete from $(node) where node_id = ?");
 
         putSql("deleteNodeHostSql", "delete from $(node_host) where node_id = ?");
-        
-        putSql("deleteNodeChannelCtlSql", "delete from $(node_channel_ctl) where node_id = ?");
-        
-        putSql("deleteIncomingErrorSql", "delete from $(incoming_error) where node_id = ?");
-        
-        putSql("deleteTableReloadRequestSql", "delete from $(table_reload_request) where source_node_id = ? or target_node_id=?");
-        
-        putSql("deleteExtractRequestSql", "delete from $(extract_request) where node_id = ?");
-        
-        putSql("deleteNodeCommunicationSql", "delete from $(node_communication) where node_id = ?");
-        
-        putSql("setOutgoingBatchOkSql", "update $(outgoing_batch) set status='OK', error_flag=0 where node_id = ?");
-        
-        putSql("setIncomingBatchOkSql", "update $(incoming_batch) set status='OK', error_flag=0 where node_id = ?");
 
         putSql("findNodeIdentitySql", "inner join $(node_identity) i on c.node_id =   "
                 + "  i.node_id                                          ");
@@ -144,7 +130,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("selectNodeHostPrefixSql",
                 ""
                         + "select node_id, host_name, ip_address, os_user, os_name, os_arch, os_version, available_processors,        "
-                        + "  free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, jdbc_version, symmetric_version,   "
+                        + "  free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, symmetric_version,   "
                         + "  timezone_offset, heartbeat_time, last_restart_time, create_time from $(node_host) h");
 
         putSql("selectNodeHostByNodeIdSql", "where node_id=? order by heartbeat_time desc");
@@ -171,20 +157,22 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                 + "  $(node_identity) ni where ns.node_id=ni.node_id                          ");
 
         putSql("insertNodeHostSql",
-                "insert into $(node_host)                                                                                                                                                                                                                                            "
-                        + "  (ip_address, os_user, os_name, os_arch, os_version, available_processors, free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, jdbc_version, symmetric_version, timezone_offset, heartbeat_time, last_restart_time, create_time, node_id, host_name)   "
-                        + "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, current_timestamp,?,?)                                                                                                                                                                                                            ");
+                ""
+                        + "insert into $(node_host)                                                                                                                                                                                                                                            "
+                        + "  (ip_address, os_user, os_name, os_arch, os_version, available_processors, free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, symmetric_version, timezone_offset, heartbeat_time, last_restart_time, create_time, node_id, host_name)   "
+                        + "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, current_timestamp,?,?)                                                                                                                                                                                                            ");
 
         putSql("updateNodeHostSql",
                 ""
                         + "update $(node_host) set                                                                                                          "
                         + "  ip_address=?, os_user=?, os_name=?, os_arch=?, os_version=?, available_processors=?, free_memory_bytes=?,                            "
-                        + "  total_memory_bytes=?, max_memory_bytes=?, java_version=?, java_vendor=?, jdbc_version=?, symmetric_version=?, timezone_offset=?, heartbeat_time=?,   "
+                        + "  total_memory_bytes=?, max_memory_bytes=?, java_version=?, java_vendor=?, symmetric_version=?, timezone_offset=?, heartbeat_time=?,   "
                         + "  last_restart_time=? where node_id=? and host_name=?                                                                                  ");
 
         putSql("findNodeHeartbeatsSql",
                 "select h.node_id, h.heartbeat_time, h.timezone_offset from $(node_host) h inner join $(node) n on h.node_id=n.node_id"
               + " where n.sync_enabled = 1 and h.heartbeat_time = (select max(hh.heartbeat_time) from $(node_host) hh where hh.node_id = h.node_id)");
+
 
     }
 

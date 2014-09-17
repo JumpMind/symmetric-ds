@@ -53,7 +53,7 @@ public class InformixTriggerTemplate extends AbstractTriggerTemplate {
 "                                  'I',                                                                                                                                                                 " +
 "                                  $(triggerHistoryId),                                                                                                                                                 " +
 "                                  $(columns),                                                                                                                                                          " +
-"                                  $(channelExpression),                                                                                                                                                    " +
+"                                  '$(channelName)',                                                                                                                                                    " +
 "                                  $(txIdExpression),                                                                                                                                                   " +
 "                                  $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                       " +
 "                                  $(externalSelect),                                                                                                                                                   " +
@@ -72,7 +72,7 @@ public class InformixTriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(oldKeys),                                                                                                                                                          " +
 "                                  $(columns),                                                                                                                                                          " +
 "                                  $(oldColumns),                                                                                                                                                       " +
-"                                  $(channelExpression),                                                                                                                                                    " +
+"                                  '$(channelName)',                                                                                                                                                    " +
 "                                  $(txIdExpression),                                                                                                                                                   " +
 "                                  $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                       " +
 "                                  $(externalSelect),                                                                                                                                                   " +
@@ -90,7 +90,7 @@ public class InformixTriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(triggerHistoryId),                                                                                                                                                 " +
 "                                  $(oldKeys),                                                                                                                                                          " +
 "                                  $(oldColumns),                                                                                                                                                       " +
-"                                  $(channelExpression),                                                                                                                                                    " +
+"                                  '$(channelName)',                                                                                                                                                    " +
 "                                  $(txIdExpression),                                                                                                                                                   " +
 "                                  $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                       " +
 "                                  $(externalSelect),                                                                                                                                                   " +

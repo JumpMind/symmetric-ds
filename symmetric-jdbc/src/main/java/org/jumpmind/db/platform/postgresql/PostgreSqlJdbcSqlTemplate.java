@@ -34,10 +34,7 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
             DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
         this.requiresAutoCommitFalseToSetFetchSize = true;
-        primaryKeyViolationSqlStates = new String[] { "23000", "23505" };
-        primaryKeyViolationMessageParts = new String[] {"duplicate key value violates"};
-        
-        foreignKeyViolationMessageParts = new String[] {"violates foreign key constraint"};
+        primaryKeyViolationSqlStates = new String[] { "23505" };
     }
 
     @Override

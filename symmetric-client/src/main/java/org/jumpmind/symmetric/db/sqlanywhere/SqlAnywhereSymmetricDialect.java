@@ -264,7 +264,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
         return false;
     }
 
-    public void cleanDatabase() {
+    public void purgeRecycleBin() {
     }
 
     public boolean needsToSelectLobData() {

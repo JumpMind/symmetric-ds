@@ -119,44 +119,38 @@ public class DataGapRouteReader implements IDataToRouteReader {
             long maxDataToRoute = context.getChannel().getMaxDataToRoute();
             String lastTransactionId = null;
             List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
-            boolean transactional = !context.getChannel().getBatchAlgorithm()
-                    .equals(NonTransactionalBatchAlgorithm.NAME)
+            boolean nontransactional = context.getChannel().getBatchAlgorithm()
+                    .equals("nontransactional")
                     || !symmetricDialect.supportsTransactionId();
 
             processInfo.setStatus(Status.QUERYING);
             cursor = prepareCursor();
             processInfo.setStatus(Status.EXTRACTING);
             boolean moreData = true;
-            while (dataCount < maxDataToRoute || (lastTransactionId != null && transactional)) {
-                if (moreData  && (lastTransactionId != null || peekAheadQueue.size() == 0)) {
+            while (dataCount <= maxDataToRoute || lastTransactionId != null) {
+                if (moreData) {
                     moreData = fillPeekAheadQueue(peekAheadQueue, peekAheadCount, cursor);
                 }
 
-                while (peekAheadQueue.size() > 0 && lastTransactionId == null &&
-                        dataCount < maxDataToRoute) {
+                if ((lastTransactionId == null || nontransactional) && peekAheadQueue.size() > 0) {
                     Data data = peekAheadQueue.remove(0);
                     copyToQueue(data);
                     dataCount++;
-                    processInfo.incrementCurrentDataCount();
+                    processInfo.incrementDataCount();
                     processInfo.setCurrentTableName(data.getTableName());
                     lastTransactionId = data.getTransactionId();
-                    context.addTransaction(lastTransactionId);
-                }
-
-                if (lastTransactionId != null && peekAheadQueue.size() > 0) {
+                } else if (lastTransactionId != null && peekAheadQueue.size() > 0) {
                     Iterator<Data> datas = peekAheadQueue.iterator();
                     int dataWithSameTransactionIdCount = 0;
-                    while (datas.hasNext() && (dataCount < maxDataToRoute || transactional)) {
+                    while (datas.hasNext()) {
                         Data data = datas.next();
                         if (lastTransactionId.equals(data.getTransactionId())) {
                             dataWithSameTransactionIdCount++;
                             datas.remove();
                             copyToQueue(data);
-                            dataCount++;
-                            processInfo.incrementCurrentDataCount();
+                            dataCount++;                            
+                            processInfo.incrementDataCount();
                             processInfo.setCurrentTableName(data.getTableName());
-                        } else {
-                            context.addTransaction(data.getTransactionId());
                         }
                     }
 
@@ -164,14 +158,12 @@ public class DataGapRouteReader implements IDataToRouteReader {
                         lastTransactionId = null;
                     }
 
-                } 
-                
-                if (!moreData && peekAheadQueue.size() == 0) {
+                } else if (peekAheadQueue.size() == 0) {
                     // we've reached the end of the result set
                     break;
                 }
             }
-            processInfo.setStatus(Status.OK);
+            processInfo.setStatus(Status.DONE);
         } catch (Throwable ex) {
             processInfo.setStatus(Status.ERROR);
             log.error(ex.getMessage(), ex);
@@ -227,9 +219,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
         int maxGapsBeforeGreaterThanQuery = parameterService.getInt(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY, 100);
 
         this.dataGaps = engine.getDataService().findDataGaps();
-        if (this.dataGaps != null) {
-            context.setDataGaps(new ArrayList<DataGap>(this.dataGaps));
-        }
                 
         boolean useGreaterThanDataId = false;
         if (maxGapsBeforeGreaterThanQuery > 0 && this.dataGaps.size() > maxGapsBeforeGreaterThanQuery) {
@@ -248,8 +237,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         if (useGreaterThanDataId) {            
             sql = getSql("selectDataUsingStartDataId", context.getChannel().getChannel());
             if (!lastSelectUsedGreaterThanQuery) {
-                log.info("Switching to select from the data table where data_id >= start gap because there were {} gaps found "
-                        + "which was more than the configured threshold of {}", dataGaps.size(), maxGapsBeforeGreaterThanQuery);
+                log.info("Switching to select from the data table where data_id >= start gap");
                 lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.TRUE);
             }
         } else {
@@ -342,10 +330,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
         boolean moreData = true;
         int dataCount = 0;
         long ts = System.currentTimeMillis();
-        Data data = null;
-        boolean isFirstRead = context.getStartDataId() == 0;
         while (reading && dataCount < peekAheadCount) {
-            data = cursor.next();
+            Data data = cursor.next();
             if (data != null) {
                 if (process(data)) {
                     peekAheadQueue.add(data);
@@ -356,11 +342,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     context.incrementStat(System.currentTimeMillis() - ts,
                             ChannelRouterContext.STAT_REREAD_DATA_MS);
                 }
-                if (isFirstRead) {
-                    context.setStartDataId(data.getDataId());
-                    isFirstRead = false;
-                }
-                context.setEndDataId(data.getDataId());
+
                 ts = System.currentTimeMillis();
             } else {
                 moreData = false;
@@ -368,8 +350,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
             }
 
         }
-        context.incrementDataReadCount(dataCount);
-        context.incrementPeekAheadFillCount(1);
         return moreData;
     }
 

@@ -43,14 +43,14 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
                 .getDatabaseInfo().getDelimiterToken();
         quote = quote == null ? "\"" : quote;
 
-        emptyColumnTemplate = "null" ;
-        stringColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then null else '\"' + str_replace(str_replace($(tableAlias)." + quote + "$(columnName)" + quote + ",'\\','\\\\'),'\"','\\\"') + '\"' end" ;
-        numberColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then null else ('\"' + convert(varchar,$(tableAlias)." + quote + "$(columnName)" + quote + ") + '\"') end" ;
-        datetimeColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then null else ('\"' + str_replace(convert(varchar,$(tableAlias)." + quote + "$(columnName)" + quote + ",102),'.','-') + ' ' + right('00'+convert(varchar,datepart(HOUR,$(tableAlias)." + quote + "$(columnName)" + quote + ")),2)+':'+right('00'+convert(varchar,datepart(MINUTE,$(tableAlias)." + quote + "$(columnName)" + quote + ")),2)+':'+right('00'+convert(varchar,datepart(SECOND,$(tableAlias)." + quote + "$(columnName)" + quote + ")),2)+'.'+right('000'+convert(varchar,datepart(MILLISECOND,$(tableAlias)." + quote + "$(columnName)" + quote + ")),3) + '\"') end" ;
-        clobColumnTemplate = "case when datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ") is null or datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ")=0 then null else '\"' + str_replace(str_replace(cast($(origTableAlias)." + quote + "$(columnName)" + quote + " as varchar(16384)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
-        blobColumnTemplate = "case when $(origTableAlias)." + quote + "$(columnName)" + quote + " is null then null else '\"' + bintostr(convert(varbinary(16384),$(origTableAlias)." + quote + "$(columnName)" + quote + ")) + '\"' end" ;
-        imageColumnTemplate = "case when datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ") is null or datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ")=0 then null else '\"' + bintostr(convert(varbinary(16384),$(origTableAlias)." + quote + "$(columnName)" + quote + ")) + '\"' end" ;
-        booleanColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then null when $(tableAlias)." + quote + "$(columnName)" + quote + " = 1 then '\"1\"' else '\"0\"' end" ;
+        emptyColumnTemplate = "''" ;
+        stringColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then '' else '\"' + str_replace(str_replace($(tableAlias)." + quote + "$(columnName)" + quote + ",'\\','\\\\'),'\"','\\\"') + '\"' end" ;
+        numberColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then '' else ('\"' + convert(varchar,$(tableAlias)." + quote + "$(columnName)" + quote + ") + '\"') end" ;
+        datetimeColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then '' else ('\"' + str_replace(convert(varchar,$(tableAlias)." + quote + "$(columnName)" + quote + ",102),'.','-') + ' ' + right('00'+convert(varchar,datepart(HOUR,$(tableAlias)." + quote + "$(columnName)" + quote + ")),2)+':'+right('00'+convert(varchar,datepart(MINUTE,$(tableAlias)." + quote + "$(columnName)" + quote + ")),2)+':'+right('00'+convert(varchar,datepart(SECOND,$(tableAlias)." + quote + "$(columnName)" + quote + ")),2)+'.'+right('000'+convert(varchar,datepart(MILLISECOND,$(tableAlias)." + quote + "$(columnName)" + quote + ")),3) + '\"') end" ;
+        clobColumnTemplate = "case when datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ") is null or datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ")=0 then '' else '\"' + str_replace(str_replace(cast($(origTableAlias)." + quote + "$(columnName)" + quote + " as varchar(16384)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
+        blobColumnTemplate = "case when $(origTableAlias)." + quote + "$(columnName)" + quote + " is null then '' else '\"' + bintostr(convert(varbinary(16384),$(origTableAlias)." + quote + "$(columnName)" + quote + ")) + '\"' end" ;
+        imageColumnTemplate = "case when datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ") is null or datalength($(origTableAlias)." + quote + "$(columnName)" + quote + ")=0 then '' else '\"' + bintostr(convert(varbinary(16384),$(origTableAlias)." + quote + "$(columnName)" + quote + ")) + '\"' end" ;
+        booleanColumnTemplate = "case when $(tableAlias)." + quote + "$(columnName)" + quote + " is null then '' when $(tableAlias)." + quote + "$(columnName)" + quote + " = 1 then '\"1\"' else '\"0\"' end" ;
         triggerConcatCharacter = "+" ;
         newTriggerValue = "inserted" ;
         oldTriggerValue = "deleted" ;
@@ -59,115 +59,112 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) for insert as                                                                                                                               \n" +
-"                                begin                                                                                                                                                                  \n" +
-"                                  set nocount on      \n" +
-"                                  declare @clientapplname varchar(50)  \n" +
-"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   \n" +
-"                                  declare @txid varchar(50)             \n" +
-"                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
-"                                      select @txid = $(txIdExpression)                              \n" +
-"                                  end                                                                                                                                                                \n" +
-"                                  declare @clientname varchar(50)    \n" +
-"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +
-"                                  declare @DataRow varchar(16384)  \n" + 
-"                                  declare @ChannelId varchar(128)   \n" +                                                                                             
-"                                  $(declareNewKeyVariables)                                                                                                                                            \n" +
-"                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
-"                                    declare DataCursor cursor for                                                                                                                                      \n" +
-"                                    $(if:containsBlobClobColumns)                                                                                                                                      \n" +
-"                                       select $(columns) $(newKeyNames), $(channelExpression) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)\n" +
-"                                    $(else:containsBlobClobColumns)                                                                                                                                    \n" +
-"                                       select $(columns) $(newKeyNames), $(channelExpression) from inserted where $(syncOnInsertCondition)                                                                                  \n" +
-"                                    $(end:containsBlobClobColumns)                                                                                                                                     \n" +
-"                                       open DataCursor                                                                                                                                                 \n" +
-"                                       fetch DataCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                     \n" +
-"                                       while @@sqlstatus = 0 begin                                                                                                                                  \n" +
-"                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, @ChannelId, @txid, @clientname, $(externalSelect), getdate())                                   \n" +
-"                                           fetch DataCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                 \n" +
-"                                       end                                                                                                                                                             \n" +
-"                                       close DataCursor                                                                                                                                                \n" +
-"                                       deallocate cursor DataCursor                                                                                                                                           \n" +
-"                                  end                                                                                                                                                                  \n" +
-"                                  $(custom_on_insert_text) \n" +
-"                                  set nocount off      \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) for insert as                                                                                                                               " +
+"                                begin                                                                                                                                                                  " +
+"                                  set nocount on      " +
+"                                  declare @clientapplname varchar(50)  " +
+"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   " +
+"                                  declare @txid varchar(50)             " +
+"                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         " +
+"                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " +
+"                                  end                                                                                                                                                                " +
+"                                  declare @clientname varchar(50)    " +
+"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     " +
+"                                  declare @DataRow varchar(16384)                                                                                                                                      " +
+"                                  $(declareNewKeyVariables)                                                                                                                                            " +
+"                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
+"                                    declare DataCursor cursor for                                                                                                                                      " +
+"                                    $(if:containsBlobClobColumns)                                                                                                                                      " +
+"                                       select $(columns) $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)" +
+"                                    $(else:containsBlobClobColumns)                                                                                                                                    " +
+"                                       select $(columns) $(newKeyNames) from inserted where $(syncOnInsertCondition)                                                                                  " +
+"                                    $(end:containsBlobClobColumns)                                                                                                                                     " +
+"                                       open DataCursor                                                                                                                                                 " +
+"                                       fetch DataCursor into @DataRow $(newKeyVariables)                                                                                                     " +
+"                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
+"                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
+"                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', @txid, @clientname, $(externalSelect), getdate())                                   " +
+"                                           fetch DataCursor into @DataRow $(newKeyVariables)                                                                                                 " +
+"                                       end                                                                                                                                                             " +
+"                                       close DataCursor                                                                                                                                                " +
+"                                       deallocate cursor DataCursor                                                                                                                                           " +
+"                                  end                                                                                                                                                                  " +
+"                                  $(custom_on_insert_text) " +
+"                                  set nocount off      " +
 "                                end                                                                                                                                                                    " );
 
 
 
 
         sqlTemplates.put("updateTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) for update as                                                                                                                               \n" +
-"                                begin                                                                                                                                                                  \n" +
-"                                  set nocount on      \n" +
-"                                  declare @DataRow varchar(16384)                                                                                                                                      \n" +
-"                                  declare @OldPk varchar(2000)                                                                                                                                         \n" +
-"                                  declare @OldDataRow varchar(16384)                                                                                                                                   \n" +
-"                                  declare @clientapplname varchar(50)  \n" +
-"                                  declare @ChannelId varchar(128)   \n" +
-"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   \n" +
-"                                  declare @txid varchar(50)                                                                                                                                            \n" +
-"                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
-"                                      select @txid = $(txIdExpression)                             \n" +
-"                                  end                                                                                                                                                                \n" +
-"                                  declare @clientname varchar(50)    \n" +
-"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +
-"                                  $(declareOldKeyVariables)                                                                                                                                            \n" +
-"                                  $(declareNewKeyVariables)                                                                                                                                            \n" +
-"                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
-"                                    declare DataCursor cursor for                                                                                                                                      \n" +
-"                                    $(if:containsBlobClobColumns)                                                                                                                                      \n" +
-"                                       select $(columns), $(oldKeys), $(oldColumns) $(oldKeyNames) $(newKeyNames), $(channelExpression) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)\n" +
-"                                    $(else:containsBlobClobColumns)                                                                                                                                    \n" +
-"                                       select $(columns), $(oldKeys), $(oldColumns) $(oldKeyNames) $(newKeyNames), $(channelExpression) from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)                                    \n" +
-"                                    $(end:containsBlobClobColumns)                                                                                                                                     \n" +
-"                                       open DataCursor                                                                                                                                                 \n" +
-"                                       fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables), @ChannelId                                                             \n" +
-"                                       while @@sqlstatus = 0 begin                                                                                                                                  \n" +
-"                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, @txid, @clientname, $(externalSelect), getdate())\n" +
-"                                         fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables), @ChannelId                                                           \n" +
-"                                       end                                                                                                                                                             \n" +
-"                                       close DataCursor                                                                                                                                                \n" +
-"                                       deallocate cursor DataCursor                                                                                                                                           \n" +
-"                                    end                                                                                                                                                                \n" +
-"                                  $(custom_on_update_text) \n" +
-"                                  set nocount off      \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) for update as                                                                                                                               " +
+"                                begin                                                                                                                                                                  " +
+"                                  set nocount on      " +
+"                                  declare @DataRow varchar(16384)                                                                                                                                      " +
+"                                  declare @OldPk varchar(2000)                                                                                                                                         " +
+"                                  declare @OldDataRow varchar(16384)                                                                                                                                   " +
+"                                  declare @clientapplname varchar(50)  " +
+"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   " +
+"                                  declare @txid varchar(50)                                                                                                                                            " +
+"                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         " +
+"                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " +
+"                                  end                                                                                                                                                                " +
+"                                  declare @clientname varchar(50)    " +
+"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     " +
+"                                  $(declareOldKeyVariables)                                                                                                                                            " +
+"                                  $(declareNewKeyVariables)                                                                                                                                            " +
+"                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
+"                                    declare DataCursor cursor for                                                                                                                                      " +
+"                                    $(if:containsBlobClobColumns)                                                                                                                                      " +
+"                                       select $(columns), $(oldKeys), $(oldColumns) $(oldKeyNames) $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)" +
+"                                    $(else:containsBlobClobColumns)                                                                                                                                    " +
+"                                       select $(columns), $(oldKeys), $(oldColumns) $(oldKeyNames) $(newKeyNames) from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)                                    " +
+"                                    $(end:containsBlobClobColumns)                                                                                                                                     " +
+"                                       open DataCursor                                                                                                                                                 " +
+"                                       fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                             " +
+"                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
+"                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
+"                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', @txid, @clientname, $(externalSelect), getdate())" +
+"                                         fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables)                                                           " +
+"                                       end                                                                                                                                                             " +
+"                                       close DataCursor                                                                                                                                                " +
+"                                       deallocate cursor DataCursor                                                                                                                                           " +
+"                                    end                                                                                                                                                                " +
+"                                  $(custom_on_update_text) " +
+"                                  set nocount off      " +
 "                                  end                                                                                                                                                                  " );
 
 
         sqlTemplates.put("deleteTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) for delete as                                                                                                                               \n" +
-"                                begin                                                                                                                                                                  \n" +
-"                                  set nocount on      \n" +
-"                                  declare @OldPk varchar(2000)                                                                                                                                         \n" +
-"                                  declare @OldDataRow varchar(16384)                                                                                                                                   \n" +
-"                                  declare @clientapplname varchar(50)  \n" +
-"                                  declare @ChannelId varchar(128)   \n" +
-"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   \n" +
-"                                  declare @txid varchar(50)                                                                                                                                            \n" +
-"                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
-"                                      select @txid = $(txIdExpression)                            \n" +
-"                                  end                                                                                                                                                                \n" +
-"                                  declare @clientname varchar(50)    \n" +
-"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +
-"                                  $(declareOldKeyVariables)                                                                                                                                            \n" +
-"                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
-"                                    declare DataCursor cursor for                                                                                                                                      \n" +
-"                                      select $(oldKeys), $(oldColumns) $(oldKeyNames), $(channelExpression) from deleted where $(syncOnDeleteCondition)                                                                      \n" +
-"                                      open DataCursor                                                                                                                                                  \n" +
-"                                       fetch DataCursor into @OldPk, @OldDataRow $(oldKeyVariables), @ChannelId                                                                                          \n" +
-"                                       while @@sqlstatus = 0 begin                                                                                                                                  \n" +
-"                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, @ChannelId, @txid, @clientname, $(externalSelect), getdate())\n" +
-"                                         fetch DataCursor into @OldPk,@OldDataRow $(oldKeyVariables), @ChannelId                                                                                         \n" +
-"                                       end                                                                                                                                                             \n" +
-"                                       close DataCursor                                                                                                                                                \n" +
-"                                       deallocate cursor DataCursor                                                                                                                                           \n" +
-"                                  end                                                                                                                                                                  \n" +
-"                                  $(custom_on_delete_text) \n" +
-"                                  set nocount off          \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) for delete as                                                                                                                               " +
+"                                begin                                                                                                                                                                  " +
+"                                  set nocount on      " +
+"                                  declare @OldPk varchar(2000)                                                                                                                                         " +
+"                                  declare @OldDataRow varchar(16384)                                                                                                                                   " +
+"                                  declare @clientapplname varchar(50)  " +
+"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   " +
+"                                  declare @txid varchar(50)                                                                                                                                            " +
+"                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         " +
+"                                      select @txid = convert(varchar, starttime, 20) + '.' + convert(varchar, loid) from master.dbo.systransactions where spid = @@spid                              " +
+"                                  end                                                                                                                                                                " +
+"                                  declare @clientname varchar(50)    " +
+"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     " +
+"                                  $(declareOldKeyVariables)                                                                                                                                            " +
+"                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
+"                                    declare DataCursor cursor for                                                                                                                                      " +
+"                                      select $(oldKeys), $(oldColumns) $(oldKeyNames) from deleted where $(syncOnDeleteCondition)                                                                      " +
+"                                      open DataCursor                                                                                                                                                  " +
+"                                       fetch DataCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          " +
+"                                       while @@sqlstatus = 0 begin                                                                                                                                  " +
+"                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) " +
+"                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', @txid, @clientname, $(externalSelect), getdate())" +
+"                                         fetch DataCursor into @OldPk,@OldDataRow $(oldKeyVariables)                                                                                         " +
+"                                       end                                                                                                                                                             " +
+"                                       close DataCursor                                                                                                                                                " +
+"                                       deallocate cursor DataCursor                                                                                                                                           " +
+"                                  end                                                                                                                                                                  " +
+"                                  $(custom_on_delete_text) " +
+"                                  set nocount off          " +
 "                                end                                                                                                                                                                    " );
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
@@ -179,7 +176,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
             TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
             String defaultCatalog, String defaultSchema, String ddl) {
         ddl = FormatUtils.replace("oldColumns", trigger.isUseCaptureOldData() ?
-                super.buildColumnsString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, table.getColumns(), dml, true, channel, trigger).toString() : "convert(VARCHAR,null)", ddl);
+                super.buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, table.getColumns(), dml, true, channel, trigger).toString() : "convert(VARCHAR,null)", ddl);
         ddl = super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);
         Column[] columns = table.getPrimaryKeyColumns();

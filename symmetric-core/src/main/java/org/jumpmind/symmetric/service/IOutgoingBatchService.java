@@ -36,8 +36,6 @@ import org.jumpmind.symmetric.model.OutgoingBatches;
 public interface IOutgoingBatchService {
 
     public void markAllAsSentForNode(String nodeId, boolean includeConfigChannel);
-    
-    public void markAllConfigAsSentForNode(String nodeId);
 
     public void updateAbandonedRoutingBatches();
 
@@ -47,13 +45,9 @@ public interface IOutgoingBatchService {
 
     public OutgoingBatches getOutgoingBatchRange(long startBatchId, long endBatchId);
     
-    public int cancelLoadBatches(long loadId);
-    
     public OutgoingBatches getOutgoingBatchRange(String nodeId, Date startDate, Date endDate, String... channels);
 
     public OutgoingBatches getOutgoingBatchErrors(int maxRows);
-    
-    public List<OutgoingBatch> getNextOutgoingBatchForEachNode();
 
     public boolean isInitialLoadComplete(String nodeId);
     
@@ -88,7 +82,5 @@ public interface IOutgoingBatchService {
             List<OutgoingBatch.Status> statuses, long startAtBatchId, int rowsExpected, boolean ascending);
     
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly);
-    
-    public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId);
 
 }

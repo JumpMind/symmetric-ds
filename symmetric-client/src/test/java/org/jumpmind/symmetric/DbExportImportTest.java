@@ -149,7 +149,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         String output = export.exportTables(tables).toLowerCase();
 
         Assert.assertEquals(output, 41, StringUtils.countMatches(output, "create table \"sym_"));
-        final int EXPECTED_VARCHAR_MAX = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 258 : 42;
+        final int EXPECTED_VARCHAR_MAX = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 250 : 41;
         final String EXPECTED_STRING = "varchar(" + Integer.MAX_VALUE + ")";
         Assert.assertEquals("Expected " + EXPECTED_VARCHAR_MAX + " " + EXPECTED_STRING
                 + " in the following output: " + output, EXPECTED_VARCHAR_MAX,
@@ -224,7 +224,7 @@ public class DbExportImportTest extends AbstractServiceTest {
                             TEST_TS_W_TZ);
             template.update(createSql);
             DmlStatement statement = platform.createDmlStatement(DmlType.INSERT,
-                    platform.getTableFromCache(TEST_TS_W_TZ, true), null);
+                    platform.getTableFromCache(TEST_TS_W_TZ, true));
             template.update(statement.getSql(), statement.getValueArray(new Object[] { 1,
                     "1973-06-08 07:00:00.000 -04:00" }, new Object[] { 1 }));
             return true;

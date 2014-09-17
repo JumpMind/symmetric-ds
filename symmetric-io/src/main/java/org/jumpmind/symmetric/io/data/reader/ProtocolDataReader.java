@@ -125,7 +125,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
         this.next = readNext();
     }
 
-    public Object readNext() {
+    protected Object readNext() {
         try {
             Set<String> keys = null;
             String schemaName = null;

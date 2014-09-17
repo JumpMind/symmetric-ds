@@ -130,7 +130,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         ddl.append("CREATE TRIGGER ");
         printIdentifier(getTriggerName(table, column), ddl);
         ddl.append(" FOR ");
-        ddl.append(getFullyQualifiedTableNameShorten(table));
+        printlnIdentifier(getTableName(table.getName()), ddl);
         println("ACTIVE BEFORE INSERT POSITION 0 AS", ddl);
         ddl.append("BEGIN IF (NEW.");
         printIdentifier(getColumnName(column), ddl);
@@ -341,7 +341,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -361,7 +361,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
             // Even though Firebird can only add columns, we can move them later
             // on
             ddl.append("ALTER TABLE ");
-            ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+            printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
             printIndent(ddl);
             ddl.append("ALTER ");
             printIdentifier(getColumnName(change.getNewColumn()), ddl);
@@ -386,7 +386,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
             writeAutoIncrementDropStmts(change.getChangedTable(), change.getColumn(), ddl);
         }
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP ");
         printIdentifier(getColumnName(change.getColumn()), ddl);

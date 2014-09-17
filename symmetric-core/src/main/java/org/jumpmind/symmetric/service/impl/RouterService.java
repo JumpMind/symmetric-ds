@@ -41,7 +41,6 @@ import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -70,14 +69,12 @@ import org.jumpmind.symmetric.route.FileSyncDataRouter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
-import org.jumpmind.symmetric.route.JavaDataRouter;
 import org.jumpmind.symmetric.route.LookupTableDataRouter;
 import org.jumpmind.symmetric.route.NonTransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.route.SubSelectDataRouter;
 import org.jumpmind.symmetric.route.TransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
@@ -112,7 +109,6 @@ public class RouterService extends AbstractService implements IRouterService {
         this.routers = new HashMap<String, IDataRouter>();
         this.routers.put(ConfigurationChangedDataRouter.ROUTER_TYPE, new ConfigurationChangedDataRouter(engine));
         this.routers.put("bsh", new BshDataRouter(engine));
-        this.routers.put("java", new JavaDataRouter(engine));
         this.routers.put("subselect", new SubSelectDataRouter(symmetricDialect));
         this.routers.put("lookuptable", new LookupTableDataRouter(symmetricDialect));
         this.routers.put("default", new DefaultDataRouter());
@@ -198,27 +194,27 @@ public class RouterService extends AbstractService implements IRouterService {
                         if (engine.getParameterService().isRegistrationServer() || 
                                 (identitySecurity != null && !identitySecurity.isRegistrationEnabled()
                                 && identitySecurity.getRegistrationTime() != null)) {
-                            List<NodeSecurity> nodeSecurities = findNodesThatAreReadyForInitialLoad();
+                            List<NodeSecurity> nodeSecurities = nodeService
+                                    .findNodeSecurityWithLoadEnabled();
                             if (nodeSecurities != null) {
                                 boolean reverseLoadFirst = parameterService
-                                        .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
+                                        .is(ParameterConstants.INTITAL_LOAD_REVERSE_FIRST);
                                 for (NodeSecurity security : nodeSecurities) {                                    
                                     if (engine.getTriggerRouterService()
                                             .getActiveTriggerHistories().size() > 0) {
-                                        boolean thisMySecurityRecord = security.getNodeId().equals(
-                                                identity.getNodeId());
                                         boolean reverseLoadQueued = security
                                                 .isRevInitialLoadEnabled();
                                         boolean initialLoadQueued = security.isInitialLoadEnabled();
+                                        boolean thisMySecurityRecord = security.getNodeId().equals(
+                                                identity.getNodeId());
                                         boolean registered = security.getRegistrationTime() != null;
                                         boolean parent = identity.getNodeId().equals(
-                                                security.getCreatedAtNodeId()) || 
-                                                engine.getConfigurationService().isMasterToMaster();
+                                                security.getCreatedAtNodeId());
                                         if (thisMySecurityRecord && reverseLoadQueued
                                                 && (reverseLoadFirst || !initialLoadQueued)) {
                                             sendReverseInitialLoad();
-                                        } else if (!thisMySecurityRecord && registered 
-                                                && initialLoadQueued && parent
+                                        } else if (!thisMySecurityRecord && registered && parent
+                                                && initialLoadQueued
                                                 && (!reverseLoadFirst || !reverseLoadQueued)) {
                                             long ts = System.currentTimeMillis();
                                             engine.getDataService().insertReloadEvents(
@@ -236,7 +232,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                             }
                                         }
                                     } else {
-                                        List<NodeGroupLink> links = engine.getConfigurationService().getNodeGroupLinksFor(parameterService.getNodeGroupId(), false);
+                                        List<NodeGroupLink> links = engine.getConfigurationService().getNodeGroupLinksFor(parameterService.getNodeGroupId());
                                         if (links == null || links.size() == 0) {
                                             log.warn("Could not queue up a load for {} because a node group link is NOT configured over which a load could be delivered", security.getNodeId());
                                         } else {
@@ -260,25 +256,6 @@ public class RouterService extends AbstractService implements IRouterService {
         } else {
             log.info("Not attempting to insert reload events because sync trigger is currently running");
         }
-    }
-    
-    public List<NodeSecurity> findNodesThatAreReadyForInitialLoad() {
-        INodeService nodeService = engine.getNodeService();
-        IConfigurationService configurationService = engine.getConfigurationService();
-        String me = nodeService.findIdentityNodeId();
-        List<NodeSecurity> toReturn = new ArrayList<NodeSecurity>();
-        List<NodeSecurity> securities = nodeService.findNodeSecurityWithLoadEnabled();
-        for (NodeSecurity nodeSecurity : securities) {
-            if (((!nodeSecurity.getNodeId().equals(me)
-                    && me.equals(nodeSecurity.getCreatedAtNodeId()) && nodeSecurity
-                        .isInitialLoadEnabled())
-                    || (!nodeSecurity.getNodeId().equals(me) && configurationService
-                            .isMasterToMaster()) || (nodeSecurity.getNodeId().equals(me) && nodeSecurity
-                    .isRevInitialLoadEnabled()))) {
-                toReturn.add(nodeSecurity);
-            }
-        }
-        return toReturn;
     }
 
     protected void sendReverseInitialLoad() {
@@ -309,7 +286,6 @@ public class RouterService extends AbstractService implements IRouterService {
         Node sourceNode = engine.getNodeService().findIdentity();
         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                 new ProcessInfoKey(sourceNode.getNodeId(), null, ProcessType.ROUTER_JOB));
-        processInfo.setStatus(ProcessInfo.Status.PROCESSING);
         try {
             final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(
                     false);
@@ -323,7 +299,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     dataCount += routeDataForChannel(processInfo,
                             nodeChannel,
                             sourceNode,
-                            producesCommonBatches(nodeChannel.getChannel(),
+                            producesCommonBatches(nodeChannel.getChannelId(),
                                     triggerRouters.get(nodeChannel.getChannelId())), gapDetector);
                 } else {
                     if (log.isDebugEnabled()) {
@@ -333,7 +309,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
             }
-            processInfo.setStatus(ProcessInfo.Status.OK);
+            processInfo.setStatus(ProcessInfo.Status.DONE);
         } catch (RuntimeException ex) {
             processInfo.setStatus(ProcessInfo.Status.ERROR);
             throw ex;
@@ -341,12 +317,11 @@ public class RouterService extends AbstractService implements IRouterService {
         return dataCount;
     }
 
-    protected boolean producesCommonBatches(Channel channel,
+    protected boolean producesCommonBatches(String channelId,
             List<TriggerRouter> allTriggerRoutersForChannel) {
-        String channelId = channel.getChannelId();
         Boolean producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
-                && !channel.isFileSyncFlag()
-                && !channel.isReloadFlag() 
+                && !Constants.CHANNEL_FILESYNC.equals(channelId)
+                && !Constants.CHANNEL_RELOAD.equals(channelId) 
                 && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
         String nodeGroupId = parameterService.getNodeGroupId();
         if (allTriggerRoutersForChannel != null) {
@@ -448,8 +423,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                 lastDataProcessed.getDataId());
                         queryTs = System.currentTimeMillis() - queryTs;
                         if (queryTs > Constants.LONG_OPERATION_THRESHOLD) {
-                            log.warn("Unrouted query for channel {} took longer than expected", channelId, queryTs);
-                            log.info("The query took {} ms", queryTs);
+                            log.warn("Unrouted query for channel {} took {} ms", channelId, queryTs);
                         }
                         engine.getStatisticManager().setDataUnRouted(channelId, dataLeftToRoute);
                     }
@@ -462,7 +436,7 @@ public class RouterService extends AbstractService implements IRouterService {
             } finally {
                 long totalTime = System.currentTimeMillis() - ts;
                 context.incrementStat(totalTime, ChannelRouterContext.STAT_ROUTE_TOTAL_TIME);
-                context.logStats(log, totalTime);
+                context.logStats(log, totalTime);                
                 boolean detectGaps = context.isRequestGapDetection();
                 context.cleanup();
                 if (detectGaps) {
@@ -477,13 +451,6 @@ public class RouterService extends AbstractService implements IRouterService {
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
                 .values());
         context.commit();
-
-        if (engine.getParameterService().is(ParameterConstants.ROUTING_LOG_STATS_ON_BATCH_ERROR)) {
-            engine.getStatisticManager().addRouterStats(context.getStartDataId(), context.getEndDataId(), 
-                    context.getDataReadCount(), context.getPeekAheadFillCount(),
-                    context.getDataGaps(), context.getTransactions(), batches);
-        }
-
         for (OutgoingBatch batch : batches) {
             batch.setRouterMillis(System.currentTimeMillis() - batch.getCreateTime().getTime());
             for (IDataRouter dataRouter : usedRouters) {
@@ -511,7 +478,7 @@ public class RouterService extends AbstractService implements IRouterService {
             Router router = triggerRouter.getRouter();
             NodeGroupLink link = engine.getConfigurationService().getNodeGroupLinkFor(
                     router.getNodeGroupLink().getSourceNodeGroupId(),
-                    router.getNodeGroupLink().getTargetNodeGroupId(), false);
+                    router.getNodeGroupLink().getTargetNodeGroupId());
             if (link != null) {
                 nodes.addAll(engine.getNodeService().findEnabledNodesFromNodeGroup(
                         router.getNodeGroupLink().getTargetNodeGroupId()));
@@ -586,7 +553,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     nextData = reader.take();
                     if (data != null) {
                         processInfo.setCurrentTableName(data.getTableName());
-                        processInfo.incrementCurrentDataCount();
+                        processInfo.incrementDataCount();
                         boolean atTransactionBoundary = false;
                         if (nextData != null) {
                             String nextTxId = nextData.getTransactionId();
@@ -696,14 +663,10 @@ public class RouterService extends AbstractService implements IRouterService {
 
         } else {
             log.warn(
-                    "Could not find trigger routers for trigger history id of {}.  There is a good chance that data was captured and the trigger router link was removed before the data could be routed",
-                    data.getTriggerHistory().getTriggerHistoryId());
-            log.info(
-                    "Not processing data with the data id of {}",
-                    data.getDataId());
+                    "Could not find trigger routers for trigger history id of {}.  Not processing data with the data id of {}",
+                    data.getTriggerHistory().getTriggerHistoryId(), data.getDataId());
             numberOfDataEventsInserted += insertDataEvents(processInfo, context, new DataMetaData(data, table,
                     null, context.getChannel()), new HashSet<String>());
-
         }
 
         context.incrementStat(numberOfDataEventsInserted,

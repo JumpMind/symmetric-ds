@@ -24,20 +24,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.db.sql.mapper.NumberMapper;
-import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.BatchAckResult;
-import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.statistic.RouterStats;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 
 /**
@@ -45,23 +44,27 @@ import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
  */
 public class AcknowledgeService extends AbstractService implements IAcknowledgeService {
 
+    private IOutgoingBatchService outgoingBatchService;
+
     private List<IAcknowledgeEventListener> batchEventListeners;
 
-    private ISymmetricEngine engine;
+    private IRegistrationService registrationService;
 
-    public AcknowledgeService(ISymmetricEngine engine) {
-        super(engine.getParameterService(), engine.getSymmetricDialect());
-        this.engine = engine;
+    private IStagingManager stagingManger;
+
+    public AcknowledgeService(IParameterService parameterService,
+            ISymmetricDialect symmetricDialect, IOutgoingBatchService outgoingBatchService,
+            IRegistrationService registrationService, IStagingManager stagingManager) {
+        super(parameterService, symmetricDialect);
+        this.outgoingBatchService = outgoingBatchService;
+        this.registrationService = registrationService;
+        this.stagingManger = stagingManager;
         setSqlMap(new AcknowledgeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
 
     public BatchAckResult ack(final BatchAck batch) {
 
-        IRegistrationService registrationService = engine.getRegistrationService();
-        IStagingManager stagingManager = engine.getStagingManager();
-        IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
-        
     	BatchAckResult result = new BatchAckResult(batch);
     	
         if (batchEventListeners != null) {
@@ -88,14 +91,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     // clearing the error flag in case the user set the batch
                     // status to OK
                     outgoingBatch.setErrorFlag(false);
-                    if (status == Status.OK) {
-                        log.info("Batch {} was already set to OK.  Not updating to {}.",
+                    log.warn("Batch {} was already set to OK.  Not updating to {}.",
                             batch.getBatchId(), status.name());
-                    } else {
-                        log.info("Batch {} was already set to OK",
-                                batch.getBatchId());
-                        log.warn("Not updating batch to {}.", status.name());
-                    }
                 }
                 if (batch.isIgnored()) {
                     outgoingBatch.incrementIgnoreCount();
@@ -118,14 +115,10 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
                 if (status == Status.ER) {
                     log.error(
-                            "The outgoing batch {} failed{}",
-                            outgoingBatch.getNodeBatchId(), batch.getSqlMessage() != null ? ". " + batch.getSqlMessage() : "");
-                    RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
-                    if (routerStats != null) {
-                        log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
-                    }
+                            "Received an error from node {} for batch {}.  Check the outgoing_batch table for more info.",
+                            outgoingBatch.getNodeId(), outgoingBatch.getBatchId());
                 } else if (!outgoingBatch.isCommonFlag()) {
-                    IStagedResource stagingResource = stagingManager.find(
+                    IStagedResource stagingResource = stagingManger.find(
                             Constants.STAGING_CATEGORY_OUTGOING, outgoingBatch.getNodeId(),
                             outgoingBatch.getBatchId());
                     if (stagingResource != null) {
@@ -133,15 +126,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     }
                 }
 
+                //TODO: I should really be able to catch errors here, but can't do to how this is coded
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
-                if (status == Status.OK) {
-                    Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
-                    if (channel != null && channel.isFileSyncFlag()){
-                        /* Acknowledge the file_sync in case the file needs deleted. */
-                        engine.getFileSyncService().acknowledgeFiles(outgoingBatch);
-                    }
-                    engine.getStatisticManager().removeRouterStatsByBatch(batch.getBatchId());
-                }
             } else {
                 log.error("Could not find batch {}-{} to acknowledge as {}", new Object[] {batch.getNodeId(), batch.getBatchId(),
                         status.name()});

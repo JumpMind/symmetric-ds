@@ -27,7 +27,6 @@ import java.util.List;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.springframework.context.ApplicationContext;
 
 public class ServerSymmetricEngine extends ClientSymmetricEngine {
 
@@ -35,10 +34,6 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
 
     public ServerSymmetricEngine(File propertiesFile) {
         super(propertiesFile);
-    }
-    
-    public ServerSymmetricEngine(File propertiesFile, ApplicationContext springContext) {
-        super(propertiesFile, springContext);
     }
     
     @Override
@@ -69,8 +64,7 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
         this.uriHandlers.add(new RegistrationUriHandler(parameterService, registrationService,
                 concurrencyInterceptor));
         this.uriHandlers.add(new FileSyncPullUriHandler(this, concurrencyInterceptor, authInterceptor));
-        this.uriHandlers.add(new FileSyncPushUriHandler(this, concurrencyInterceptor, authInterceptor));
-        this.uriHandlers.add(new CopyNodeUriHandler(this, authInterceptor));
+        this.uriHandlers.add(new FileSyncPushUriHandler(this, concurrencyInterceptor, authInterceptor));        
         if (parameterService.is(ParameterConstants.WEB_BATCH_URI_HANDLER_ENABLE)) {
             this.uriHandlers.add(new BatchUriHandler(parameterService, dataExtractorService));
         }

@@ -48,38 +48,26 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public void init() {
-        Map<String, Sequence> sequences = getAll();
-        if (sequences.get(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID) == null) {
-            initSequence(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID, 1);
+        long maxBatchId = sqlTemplate.queryForLong(getSql("maxOutgoingBatchSql"));
+        if (maxBatchId < 1) {
+            maxBatchId = 1;
         }
-        
-        if (sequences.get(Constants.SEQUENCE_OUTGOING_BATCH) == null) {
-            long maxBatchId = sqlTemplate.queryForLong(getSql("maxOutgoingBatchSql"));
-            initSequence(Constants.SEQUENCE_OUTGOING_BATCH, maxBatchId);
-        }
-        
-        if (sequences.get(Constants.SEQUENCE_TRIGGER_HIST) == null) {
-            long maxTriggerHistId = sqlTemplate.queryForLong(getSql("maxTriggerHistSql"));
-            initSequence(Constants.SEQUENCE_TRIGGER_HIST, maxTriggerHistId);
-        }
-        
-        if (sequences.get(Constants.SEQUENCE_EXTRACT_REQ) == null) {
-            long maxRequestId = sqlTemplate.queryForLong(getSql("maxExtractRequestSql"));
-            initSequence(Constants.SEQUENCE_EXTRACT_REQ, maxRequestId);
-        }
-    }
-    
-    private void initSequence(String name, long initialValue) {
         try {
-            if (initialValue < 1) {
-                initialValue = 1;
-            }
-            create(new Sequence(name, initialValue, 1, 1, 9999999999l,
+            create(new Sequence(Constants.SEQUENCE_OUTGOING_BATCH, maxBatchId, 1, 1, 9999999999l,
                     "system", false));
         } catch (UniqueKeyException ex) {
             log.debug("Failed to create sequence {}.  Must be initialized already.",
-                    name);
+                    Constants.SEQUENCE_OUTGOING_BATCH);
         }
+        
+        try {
+            create(new Sequence(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID, 1, 1, 1, 9999999999l,
+                    "system", false));
+        } catch (UniqueKeyException ex) {
+            log.debug("Failed to create sequence {}.  Must be initialized already.",
+                    Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+        }
+
     }
 
     public long nextVal(String name) {
@@ -205,15 +193,6 @@ public class SequenceService extends AbstractService implements ISequenceService
         } else {
             return null;
         }
-    }
-
-    protected Map<String, Sequence> getAll() {
-        Map<String, Sequence> map = new HashMap<String, Sequence>();
-        List<Sequence> sequences = sqlTemplate.query(getSql("getAllSequenceSql"), new SequenceRowMapper());
-        for (Sequence sequence : sequences) {
-            map.put(sequence.getSequenceName(), sequence);
-        }
-        return map;
     }
 
     class SequenceRowMapper implements ISqlRowMapper<Sequence> {

@@ -41,8 +41,8 @@ public class TransformTable implements Cloneable {
     protected TransformPoint transformPoint;
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
-    protected DeleteAction deleteAction = DeleteAction.DEL_ROW;
-    protected ColumnPolicy columnPolicy = ColumnPolicy.IMPLIED;
+    protected DeleteAction deleteAction = DeleteAction.NONE;
+    protected ColumnPolicy columnPolicy = ColumnPolicy.SPECIFIED;
     protected boolean updateFirst = false;
     protected int transformOrder = 0;
     protected Date createTime;
@@ -76,8 +76,8 @@ public class TransformTable implements Cloneable {
     }
 
     public String getFullyQualifiedTargetTableName() {
-        return Table.getFullyQualifiedTableName(targetCatalogName, targetSchemaName,
-                targetTableName);
+        return Table.getFullyQualifiedTableName(sourceCatalogName, sourceSchemaName,
+                sourceTableName);
     }
 
     public String getTransformId() {

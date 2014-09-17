@@ -28,7 +28,6 @@ import java.util.Date;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.apache.log4j.Level;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.TestConstants;
@@ -46,9 +45,7 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.util.AppUtils;
-
 import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 public class SimpleIntegrationTest extends AbstractIntegrationTest {
@@ -967,48 +964,30 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void testHeartbeat() throws Exception {
         logTestRunning();
-        Level previous = setLoggingLevelForTest(Level.DEBUG);
-        try {
-            final String checkHeartbeatSql = "select max(heartbeat_time) from sym_node_host where node_id='"
-                    + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
-            Date clientHeartbeatTimeBefore = getClient().getSqlTemplate().queryForObject(
-                    checkHeartbeatSql, Timestamp.class);
-
+        final String checkHeartbeatSql = "select heartbeat_time from sym_node_host where node_id='"
+                + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
+        Date clientHeartbeatTimeBefore = getClient().getSqlTemplate().queryForObject(
+                checkHeartbeatSql, Timestamp.class);
+        Thread.sleep(1000);
+        getClient().heartbeat(true);
+        Date clientHeartbeatTimeAfter = getClient().getSqlTemplate().queryForObject(
+                checkHeartbeatSql, Timestamp.class);
+        assertNotSame("The heartbeat time was not updated at the client",
+                clientHeartbeatTimeAfter, clientHeartbeatTimeBefore);
+        Date rootHeartbeatTimeBefore = getServer().getSqlTemplate().queryForObject(
+                checkHeartbeatSql, Timestamp.class);
+        assertNotSame(
+                "The root heartbeat time should not be the same as the updated client heartbeat time",
+                clientHeartbeatTimeAfter, rootHeartbeatTimeBefore);
+        while (clientPush()) {
+            // continue to push while there data to push
             Thread.sleep(1000);
-
-            getClient().heartbeat(true);
-
-            Date clientHeartbeatTimeAfter = getClient().getSqlTemplate().queryForObject(
-                    checkHeartbeatSql, Timestamp.class);
-
-            assertNotSame("The heartbeat time was not updated at the client",
-                    clientHeartbeatTimeAfter, clientHeartbeatTimeBefore);
-
-            Date rootHeartbeatTimeBefore = getServer().getSqlTemplate().queryForObject(
-                    checkHeartbeatSql, Timestamp.class);
-
-            assertNotSame(
-                    "The root heartbeat time should not be the same as the updated client heartbeat time",
-                    clientHeartbeatTimeAfter, rootHeartbeatTimeBefore);
-
-            while (clientPush()) {
-                // continue to push while there data to push
-                Thread.sleep(1000);
-            }
-
-            Date rootHeartbeatTimeAfter = getServer().getSqlTemplate().queryForObject(
-                    checkHeartbeatSql, Timestamp.class);
-
-            assertNotSame(
-                    "The root heartbeat time before should have been different than the root heartbeat time after",
-                    rootHeartbeatTimeBefore, rootHeartbeatTimeAfter);
-
-            assertEquals(
-                    "The client heartbeat time should have been the same as the root heartbeat time.",
-                    clientHeartbeatTimeAfter, rootHeartbeatTimeAfter);
-        } finally {
-            setLoggingLevelForTest(previous);
         }
+        Date rootHeartbeatTimeAfter = getServer().getSqlTemplate().queryForObject(
+                checkHeartbeatSql, Timestamp.class);
+        assertEquals(
+                "The client heartbeat time should have been the same as the root heartbeat time.",
+                clientHeartbeatTimeAfter, rootHeartbeatTimeAfter);
     }
 
     @Test(timeout = 120000)

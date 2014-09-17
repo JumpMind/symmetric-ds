@@ -215,7 +215,7 @@ public class DerbySymmetricDialect extends AbstractSymmetricDialect implements I
         return String.format("%s_transaction_id()", parameterService.getTablePrefix());
     }
 
-    public void cleanDatabase() {
+    public void purgeRecycleBin() {
     }
 
     @Override

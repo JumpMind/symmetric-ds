@@ -32,7 +32,6 @@ import java.util.regex.Pattern;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
-import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
@@ -140,8 +139,6 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.toLowerCase().startsWith("text")) {
             return Types.LONGVARCHAR;
-        } else if (typeName != null && typeName.toLowerCase().startsWith("ntext")) {
-            return Types.LONGNVARCHAR;
         } else if (typeName != null && typeName.toUpperCase().contains(TypeMap.GEOMETRY)) {
             return Types.VARCHAR;
         } else {
@@ -180,8 +177,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                 if (timestamp != null) {
                     defaultValue = timestamp.toString();
                 }
-            } else if (column.getMappedTypeCode() == Types.DECIMAL || 
-            		column.getMappedTypeCode() == Types.BIGINT) {
+            } else if (column.getMappedTypeCode() == Types.DECIMAL) {
                 // For some reason, Sql Server 2005 always returns DECIMAL
                 // default values with a dot
                 // even if the scale is 0, so we remove the dot
@@ -194,31 +190,11 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
 
             column.setDefaultValue(defaultValue);
         }
-        
         if ((column.getMappedTypeCode() == Types.DECIMAL) && (column.getSizeAsInt() == 19)
                 && (column.getScale() == 0)) {
             column.setMappedTypeCode(Types.BIGINT);
         }
-        
-        // These columns return sizes and/or decimal places with the metat data from MSSql Server however
-        // the values are not adjustable through the create table so they are omitted 
-        if (column.getJdbcTypeName() != null && 
-                (column.getJdbcTypeName().equals("smallmoney") 
-                || column.getJdbcTypeName().equals("money") 
-                || column.getJdbcTypeName().equals("timestamp")
-                || column.getJdbcTypeName().equals("uniqueidentifier")
-                || column.getJdbcTypeName().equals("time")
-                || column.getJdbcTypeName().equals("datetime2")
-                || column.getJdbcTypeName().equals("date"))) {
-            removePlatformSizeAndDecimal(column);
-        }
+
         return column;
-    }
-    
-    protected void removePlatformSizeAndDecimal(Column column) {
-        for (PlatformColumn platformColumn : column.getPlatformColumns().values()) {
-            platformColumn.setSize(-1);
-            platformColumn.setDecimalDigits(-1);
-        }
     }
 }

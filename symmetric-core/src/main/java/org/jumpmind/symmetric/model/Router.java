@@ -62,8 +62,6 @@ public class Router implements Serializable {
 
     private String targetTableName;
 
-    private boolean useSourceCatalogSchema;
-
     private Date createTime;
 
     private Date lastUpdateTime;
@@ -209,22 +207,14 @@ public class Router implements Serializable {
     public String createDefaultName() {
         if (nodeGroupLink != null) {
             return nodeGroupLink.getSourceNodeGroupId()
-            .toLowerCase()
+            .toUpperCase()
             + "_2_"
-            + nodeGroupLink.getTargetNodeGroupId().toLowerCase();
+            + nodeGroupLink.getTargetNodeGroupId().toUpperCase();
         } else {
             throw new IllegalStateException("Need the nodeGroupLink to be set");
         }
     }
-
-    public boolean isUseSourceCatalogSchema() {
-        return useSourceCatalogSchema;
-    }
-
-    public void setUseSourceCatalogSchema(boolean useSourceCatalogSchema) {
-        this.useSourceCatalogSchema = useSourceCatalogSchema;
-    }   
-
+    
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Router && routerId != null) {
@@ -246,6 +236,6 @@ public class Router implements Serializable {
         } else {
             return super.toString();
         }
-    }
+    }   
 
 }

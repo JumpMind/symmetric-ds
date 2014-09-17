@@ -57,8 +57,6 @@ public class Trigger implements Serializable {
     private String sourceCatalogName;
 
     private String channelId = Constants.CHANNEL_DEFAULT;
-    
-    private String reloadChannelId = Constants.CHANNEL_RELOAD;
 
     private boolean syncOnUpdate = true;
 
@@ -87,8 +85,6 @@ public class Trigger implements Serializable {
     private String syncOnInsertCondition = DEFAULT_CONDITION;
 
     private String syncOnDeleteCondition = DEFAULT_CONDITION;
-    
-    private String channelExpression = null;
 
     private String customOnUpdateText;
 
@@ -256,23 +252,7 @@ public class Trigger implements Serializable {
     }
 
     public boolean isSourceTableNameWildCarded() {
-        return sourceTableName != null && (sourceTableName.contains(FormatUtils.WILDCARD) || sourceTableName.contains(","));
-    }
-    
-    public boolean isSourceCatalogNameWildCarded() {
-        return sourceCatalogName != null && (sourceCatalogName.contains(FormatUtils.WILDCARD) || sourceCatalogName.contains(","));
-    }
-
-    public boolean isSourceSchemaNameWildCarded() {
-        return sourceSchemaName != null && (sourceSchemaName.contains(FormatUtils.WILDCARD) || sourceSchemaName.contains(","));
-    }
-    
-    public String getChannelExpression() {
-        return channelExpression;
-    }
-    
-    public void setChannelExpression(String channelExpression) {
-        this.channelExpression = channelExpression;
+        return sourceTableName != null && sourceTableName.contains(FormatUtils.WILDCARD);
     }
 
     public void setSourceTableName(String sourceTableName) {
@@ -301,14 +281,6 @@ public class Trigger implements Serializable {
 
     public void setChannelId(String channelId) {
         this.channelId = channelId;
-    }
-    
-    public String getReloadChannelId() {
-        return reloadChannelId;
-    }
-    
-    public void setReloadChannelId(String reloadChannelId) {
-        this.reloadChannelId = reloadChannelId;
     }
 
     public boolean isSyncOnUpdate() {
@@ -603,30 +575,6 @@ public class Trigger implements Serializable {
 
         return hashedValue;
     }
-    
-    public boolean matchesCatalogName(String catalogName, boolean ignoreCase) {
-        return matches(sourceCatalogName, catalogName, ignoreCase);
-    }
-    
-    public boolean matchesSchemaName(String schemaName, boolean ignoreCase) {
-        return matches(sourceSchemaName, schemaName, ignoreCase);
-    }
-        
-    protected boolean matches(String match, String target, boolean ignoreCase) {
-        boolean matches = false;
-        String[] wildcardTokens = match.split(",");
-        for (String wildcardToken : wildcardTokens) {
-            if (FormatUtils.isWildCardMatch(target, wildcardToken, ignoreCase)) {
-                if (!wildcardToken.startsWith(FormatUtils.NEGATE_TOKEN)) {
-                    matches = true;
-                } else {
-                    matches = false;
-                    break;
-                }
-            }
-        }        
-        return matches;
-    }
 
     public boolean matches(Table table, String defaultCatalog, String defaultSchema,
             boolean ignoreCase) {
@@ -641,7 +589,16 @@ public class Trigger implements Serializable {
                 : table.getName().equals(sourceTableName);
 
         if (!tableMatches && isSourceTableNameWildCarded()) {
-            tableMatches = matches(sourceTableName, table.getName(), ignoreCase);
+            String[] wildcardTokens = sourceTableName.split(",");
+            for (String wildcardToken : wildcardTokens) {
+                if (FormatUtils.isWildCardMatch(table.getName(), wildcardToken, ignoreCase)) {
+                    if (!wildcardToken.startsWith(FormatUtils.NEGATE_TOKEN)) {
+                        tableMatches = true;
+                    } else {
+                        tableMatches = false;
+                    }
+                }
+            }
         }
         return schemaAndCatalogMatch && tableMatches;
     }

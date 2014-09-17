@@ -20,23 +20,22 @@
  */
 package org.jumpmind.symmetric.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
+
+import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.exception.InterruptedException;
 import org.jumpmind.properties.EnvironmentSpecificProperties;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.TestConstants;
+import org.jumpmind.exception.InterruptedException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
@@ -115,11 +114,9 @@ public abstract class AbstractIntegrationTest {
 
                 System.setProperty(SystemConstants.SYSPROP_ENGINES_DIR, engineDir.getAbsolutePath());
                 System.setProperty(SystemConstants.SYSPROP_WEB_DIR, "src/main/deploy/web");
-                String port = System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, "31415"); 
                 SymmetricWebServer server = new SymmetricWebServer();
-                server.setJmxEnabled(false);
                 server.setJoin(false);
-                server.start(Integer.parseInt(port));
+                server.start(51413);
 
                 server.waitForEnginesToComeOnline(240000);
 

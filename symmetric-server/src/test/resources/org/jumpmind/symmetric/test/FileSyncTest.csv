@@ -12,7 +12,7 @@ catalog,
 schema,
 table,SYM_FILE_TRIGGER
 keys,TRIGGER_ID
-columns,TRIGGER_ID,BASE_DIR,RECURSE,INCLUDES_FILES,EXCLUDES_FILES,SYNC_ON_CREATE,SYNC_ON_MODIFIED,SYNC_ON_DELETE,SYNC_ON_CTL_FILE,DELETE_AFTER_SYNC,BEFORE_COPY_SCRIPT,AFTER_COPY_SCRIPT,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME
+columns,TRIGGER_ID,BASE_DIR,RECURSE,INCLUDES_FILES,EXCLUDES_FILES,SYNC_ON_CREATE,SYNC_ON_MODIFIED,SYNC_ON_DELETE,BEFORE_COPY_SCRIPT,AFTER_COPY_SCRIPT,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME
 sql,delete from sym_file_trigger
 catalog,
 schema,
@@ -84,7 +84,7 @@ catalog,
 schema,
 table,SYM_CHANNEL
 keys,CHANNEL_ID
-columns,CHANNEL_ID,PROCESSING_ORDER,MAX_BATCH_SIZE,MAX_BATCH_TO_SEND,MAX_DATA_TO_ROUTE,EXTRACT_PERIOD_MILLIS,ENABLED,USE_OLD_DATA_TO_ROUTE,USE_ROW_DATA_TO_ROUTE,USE_PK_DATA_TO_ROUTE,RELOAD_FLAG,FILE_SYNC_FLAG,CONTAINS_BIG_LOB,BATCH_ALGORITHM,DATA_LOADER_TYPE,DESCRIPTION,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME
+columns,CHANNEL_ID,PROCESSING_ORDER,MAX_BATCH_SIZE,MAX_BATCH_TO_SEND,MAX_DATA_TO_ROUTE,EXTRACT_PERIOD_MILLIS,ENABLED,USE_OLD_DATA_TO_ROUTE,USE_ROW_DATA_TO_ROUTE,USE_PK_DATA_TO_ROUTE,CONTAINS_BIG_LOB,BATCH_ALGORITHM,DATA_LOADER_TYPE,DESCRIPTION,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME
 sql,delete from sym_channel
 catalog,
 schema,
@@ -114,13 +114,11 @@ insert,"server","client","W",,,
 catalog,
 schema,
 table,SYM_CHANNEL
-insert,"config","0","2000","100","10000","0","1","1","1","1","0","0","1","default","default",,"2014-03-21 13:07:51.515",,"2014-03-21 13:07:51.514"
-insert,"reload","1","1","1","10000","0","1","1","1","1","1","0","0","default","default",,"2014-03-21 13:07:51.516",,"2014-03-21 13:07:51.515"
-insert,"heartbeat","2","100","100","10000","0","1","1","1","1","0","0","0","default","default",,"2014-03-21 13:07:51.517",,"2014-03-21 13:07:51.516"
-insert,"default","99999","1000","100","10000","0","1","1","1","1","0","0","0","default","default",,"2014-03-21 13:07:51.517",,"2014-03-21 13:07:51.517"
-insert,"filesync","3","100","100","10000","0","1","1","1","1","0","1","0","nontransactional","default",,"2014-03-21 13:07:51.518",,"2014-03-21 13:07:51.518"
-insert,"dynamic","99999","1000","100","10000","0","1","1","1","1","0","0","0","default","default",,"2014-03-22 18:48:35.485",,"2014-03-22 18:48:35.482"
-insert,"filesync_reload","1","100","100","10000","0","1","1","1","1","1","1","0","nontransactional","default",,"2014-03-22 18:48:35.497",,"2014-03-22 18:48:35.497"
+insert,"config","0","2000","100","10000","0","1","1","1","1","1","default","default",,"2013-05-19 10:00:36.654",,"2013-05-19 10:00:36.648"
+insert,"reload","1","1","1","10000","0","1","1","1","1","0","default","default",,"2013-05-19 10:00:36.656",,"2013-05-19 10:00:36.656"
+insert,"heartbeat","2","100","100","10000","0","1","1","1","1","0","default","default",,"2013-05-19 10:00:36.657",,"2013-05-19 10:00:36.657"
+insert,"default","99999","1000","100","10000","0","1","1","1","1","0","default","default",,"2013-05-19 10:00:36.658",,"2013-05-19 10:00:36.658"
+insert,"filesync","3","100","100","10000","0","1","1","1","1","0","default","default",,"2013-05-19 10:00:36.659",,"2013-05-19 10:00:36.659"
 catalog,
 schema,
 table,SYM_ROUTER
@@ -129,11 +127,11 @@ insert,"client_2_server",,,,"client","server","default",,"1","1","1","2013-05-19
 catalog,
 schema,
 table,SYM_FILE_TRIGGER
-insert,"all","target/fs_svr/all","1",,,"1","1","1","0","0",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
-insert,"create_only","target/fs_svr/create_only","1",,,"1","0","0","0","0",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
-insert,"all_recursive","target/fs_svr/all_recursive","1",,,"1","1","1","0","0",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
-insert,"csv_only","target/fs_svr/csv_only","1","*.txt",,"1","1","1","0","0",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
-insert,"choose_target","target/fs_svr/choose_target","1",,,"1","1","1","0","0","
+insert,"all","target/fs_svr/all","1",,,"1","1","1",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
+insert,"create_only","target/fs_svr/create_only","1",,,"1","0","0",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
+insert,"all_recursive","target/fs_svr/all_recursive","1",,,"1","1","1",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
+insert,"csv_only","target/fs_svr/csv_only","1","*.txt",,"1","1","1",,,"2013-05-19 10:13:26.966","unit_test","2013-05-19 10:13:26.966"
+insert,"choose_target","target/fs_svr/choose_target","1",,,"1","1","1","
 a = new java.io.File(\"target/fs_clnt/choose_target/a\");
 b = new java.io.File(\"target/fs_clnt/choose_target/b\");
 if (org.apache.commons.io.FileUtils.sizeOfDirectory(a) > org.apache.commons.io.FileUtils.sizeOfDirectory(b)) {
@@ -142,10 +140,10 @@ if (org.apache.commons.io.FileUtils.sizeOfDirectory(a) > org.apache.commons.io.F
    targetBaseDir = a.getAbsolutePath();
 }
 ",,"2013-05-19 10:14:04.830","unit_test","2013-05-19 10:14:04.830"
-insert,"client_src","target/fs_clnt/client_src","1",,,"1","1","1","0","0",,,"2013-05-19 13:56:18.456","unit_test","2013-05-19 13:56:18.456"
-insert,"ping_back_clnt","target/fs_clnt/ping_back","1",,,"1","1","1","0","0",,,"2013-05-19 13:58:24.779","unit_test","2013-05-19 13:58:24.779"
-insert,"ping_back_svr","target/fs_svr/ping_back","1",,,"1","1","1","0","0",,,"2013-05-19 13:59:05.366","unit_test","2013-05-19 13:59:05.366"
-insert,"test_change_filename","target/fs_svr/change_name","0","source.txt",,"1","1","1","0","0","targetFileName = \"target.txt\";",,"2013-07-11 14:25:27.690","admin","2013-07-11 14:25:27.690"
+insert,"client_src","target/fs_clnt/client_src","1",,,"1","1","1",,,"2013-05-19 13:56:18.456","unit_test","2013-05-19 13:56:18.456"
+insert,"ping_back_clnt","target/fs_clnt/ping_back","1",,,"1","1","1",,,"2013-05-19 13:58:24.779","unit_test","2013-05-19 13:58:24.779"
+insert,"ping_back_svr","target/fs_svr/ping_back","1",,,"1","1","1",,,"2013-05-19 13:59:05.366","unit_test","2013-05-19 13:59:05.366"
+insert,"test_change_filename","target/fs_svr/change_name","0","source.txt",,"1","1","1","targetFileName = \"target.txt\";",,"2013-07-11 14:25:27.690","admin","2013-07-11 14:25:27.690"
 catalog,
 schema,
 table,SYM_FILE_TRIGGER_ROUTER

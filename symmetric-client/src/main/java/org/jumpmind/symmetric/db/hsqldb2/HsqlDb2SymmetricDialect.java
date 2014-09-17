@@ -176,7 +176,7 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
         platform.getSqlTemplate().update("delete from " + tableName);
     }
 
-    public void cleanDatabase() {
+    public void purgeRecycleBin() {
     }
 
     @Override

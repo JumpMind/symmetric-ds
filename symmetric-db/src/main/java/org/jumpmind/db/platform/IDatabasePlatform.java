@@ -88,8 +88,6 @@ public interface IDatabasePlatform {
     public Database readFromDatabase(Table... tables);
     
     public Table readTableFromDatabase(String catalogName, String schemaName, String tablename);
-    
-    public Table readTableFromDatabase(String catalogName, String schemaName, String tableName, boolean useDefaultSchema);
 
     public void resetCachedTableModel();
 
@@ -112,10 +110,10 @@ public interface IDatabasePlatform {
     
     public void dropTables(boolean continueOnError, Table...tables);
 
-    public DmlStatement createDmlStatement(DmlType dmlType, Table table, String textColumnExpression);
+    public DmlStatement createDmlStatement(DmlType dmlType, Table table);
 
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression);
+            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues);
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData);
@@ -124,10 +122,10 @@ public interface IDatabasePlatform {
             String[] values);
 
     public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
-            String[] values, boolean useVariableDates, boolean fitToColumn);
+            String[] values, boolean useVariableDates);
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
-            Column[] orderedMetaData, boolean useVariableDates, boolean fitToColumn);
+            Column[] orderedMetaData, boolean useVariableDates);
 
     public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates);
 

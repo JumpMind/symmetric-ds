@@ -80,7 +80,7 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         ddl.append("DROP TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(table));
+        printIdentifier(getTableName(table.getName()), ddl);
         ddl.append(" IF EXISTS");
         printEndOfStatement(ddl);
     }
@@ -149,7 +149,7 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             AddColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
@@ -167,7 +167,7 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemoveColumnChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP COLUMN ");
         printIdentifier(getColumnName(change.getColumn()), ddl);

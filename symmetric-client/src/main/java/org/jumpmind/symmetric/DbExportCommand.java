@@ -64,8 +64,6 @@ public class DbExportCommand extends AbstractCommandLauncher {
     private static final String OPTION_CATALOG = "catalog";
     
     private static final String OPTION_DIR = "dir";
-    
-    private static final String OPTION_WHERE = "where";
 
     public DbExportCommand() {
         super("dbexport", "[tablename...]", "DbExport.Option.");
@@ -109,7 +107,6 @@ public class DbExportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_USE_JDBC_TIMESTAMP_FORMAT, true);
         addOption(options, null, OPTION_NO_QUALIFIERS, false);
         addOption(options, null, OPTION_SQL, true);
-        addOption(options, null, OPTION_WHERE, true);
         addOption(options, "i", OPTION_COMMENTS, false);
     }
     
@@ -174,9 +171,6 @@ public class DbExportCommand extends AbstractCommandLauncher {
         }
         if (line.hasOption(OPTION_CATALOG)) {
             dbExport.setCatalog(line.getOptionValue(OPTION_CATALOG));
-        }        
-        if (line.hasOption(OPTION_WHERE)) {
-            dbExport.setWhereClause(line.getOptionValue(OPTION_WHERE));
         }        
  
         String[] args = line.getArgs();  

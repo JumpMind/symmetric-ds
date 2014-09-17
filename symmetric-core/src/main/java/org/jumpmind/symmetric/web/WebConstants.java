@@ -43,8 +43,6 @@ public class WebConstants {
     
     public static final String INIT_SINGLE_SERVER_PROPERTIES_FILE = "singleServerPropertiesFile";
     
-    public static final String INIT_SINGLE_USE_WEBAPP_CONTEXT = "useWebApplicationContext";
-    
     public static final String ATTR_ENGINE_HOLDER = "symmetricEngineHolder";
 
     public static final int REGISTRATION_NOT_OPEN = 656;

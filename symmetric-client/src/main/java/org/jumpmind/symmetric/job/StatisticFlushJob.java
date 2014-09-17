@@ -22,10 +22,7 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
-import org.jumpmind.util.LogSummaryAppender;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 
@@ -43,16 +40,6 @@ public class StatisticFlushJob extends AbstractJob {
     public void doJob(boolean force) throws Exception {
         engine.getStatisticManager().flush();
         engine.getPurgeService().purgeStats(force);
-        purgeLogSummaryAppender();
-    }
-    
-    protected void purgeLogSummaryAppender() {
-        LogSummaryAppender appender = LogSummaryAppenderUtils.getLogSummaryAppender();
-        if (appender != null) {
-            appender.purgeOlderThan(System.currentTimeMillis()
-                    - engine.getParameterService().getLong(ParameterConstants.PURGE_LOG_SUMMARY_MINUTES, 60)
-                    * 60000);
-        }        
     }
     
     public String getClusterLockName() {

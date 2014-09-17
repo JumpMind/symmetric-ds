@@ -55,12 +55,8 @@ final public class Version {
         return version.isOlderThanVersion(checkVersion, targetVersion);
     }
        
-    public static boolean isOlderMinorVersion(String version) {
-        return isOlderMinorVersion(version, version());
-    }
-
-    public static boolean isOlderMinorVersion(String checkVersion, String targetVersion) {
-        return version.isOlderMinorVersion(checkVersion, targetVersion);
+    public static boolean hasOlderMinorVersion(String version) {
+        return Version.version.isOlderMinorVersion(version);
     }
 
     public static int getBuildTime() {

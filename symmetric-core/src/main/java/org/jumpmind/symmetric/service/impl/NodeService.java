@@ -167,10 +167,6 @@ public class NodeService extends AbstractService implements INodeService {
         return sqlTemplate.query(getSql("selectNodeHostPrefixSql", "selectNodeHostByNodeIdSql"),
                 new NodeHostRowMapper(), nodeId);
     }
-    
-    public void deleteNodeHost(String nodeId) {
-        platform.getSqlTemplate().update(getSql("deleteNodeHostSql"), new Object[] { nodeId });
-    }
 
     public void updateNodeHost(NodeHost nodeHost) {
 
@@ -183,7 +179,6 @@ public class NodeService extends AbstractService implements INodeService {
             nodeHost.getTotalMemoryBytes(),
             nodeHost.getMaxMemoryBytes(),
             nodeHost.getJavaVersion(), nodeHost.getJavaVendor(),
-            nodeHost.getJdbcVersion(),
             nodeHost.getSymmetricVersion(),
             nodeHost.getTimezoneOffset(),
             nodeHost.getHeartbeatTime(),
@@ -200,7 +195,7 @@ public class NodeService extends AbstractService implements INodeService {
         if (nodeHostForCurrentNode == null) {
             nodeHostForCurrentNode = new NodeHost(findIdentityNodeId());
         }
-        nodeHostForCurrentNode.refresh(platform);
+        nodeHostForCurrentNode.refresh();
         updateNodeHost(nodeHostForCurrentNode);
     }
 
@@ -246,13 +241,6 @@ public class NodeService extends AbstractService implements INodeService {
                 transaction.prepareAndExecute(getSql("deleteNodeSecuritySql"), new Object[] { nodeId });
                 transaction.prepareAndExecute(getSql("deleteNodeHostSql"), new Object[] { nodeId });
                 transaction.prepareAndExecute(getSql("deleteNodeSql"), new Object[] { nodeId });
-                transaction.prepareAndExecute(getSql("deleteNodeChannelCtlSql"), new Object[] { nodeId });
-                transaction.prepareAndExecute(getSql("deleteIncomingErrorSql"), new Object[] { nodeId });
-                transaction.prepareAndExecute(getSql("deleteExtractRequestSql"), new Object[] { nodeId });
-                transaction.prepareAndExecute(getSql("deleteNodeCommunicationSql"), new Object[] { nodeId });
-                transaction.prepareAndExecute(getSql("deleteTableReloadRequestSql"), new Object[] { nodeId, nodeId });
-                transaction.prepareAndExecute(getSql("setOutgoingBatchOkSql"), new Object[] { nodeId });
-                transaction.prepareAndExecute(getSql("setIncomingBatchOkSql"), new Object[] { nodeId });
             }
         } catch (Error ex) {
             if (transaction != null) {
@@ -278,7 +266,7 @@ public class NodeService extends AbstractService implements INodeService {
         String password = nodeIdCreator.generatePassword(new Node(id, null, null));
         password = filterPasswordOnSaveIfNeeded(password);
         sqlTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, password,
-                null });
+                findIdentity().getNodeId() });
     }
 
     public void insertNodeIdentity(String nodeId) {
@@ -887,7 +875,6 @@ public class NodeService extends AbstractService implements INodeService {
             nodeHost.setMaxMemoryBytes(rs.getLong("max_memory_bytes"));
             nodeHost.setJavaVersion(rs.getString("java_version"));
             nodeHost.setJavaVendor(rs.getString("java_vendor"));
-            nodeHost.setJdbcVersion(rs.getString("jdbc_version"));
             nodeHost.setSymmetricVersion(rs.getString("symmetric_version"));
             nodeHost.setTimezoneOffset(rs.getString("timezone_offset"));
             nodeHost.setHeartbeatTime(rs.getDateTime("heartbeat_time"));

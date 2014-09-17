@@ -50,9 +50,9 @@ public interface IConfigurationService {
     
     public List<NodeGroupLink> getNodeGroupLinks(boolean refreshCache);
 
-    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId, boolean refreshCache);
+    public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId);
     
-    public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId, boolean refreshCache);
+    public NodeGroupLink getNodeGroupLinkFor(String sourceNodeGroupId, String targetNodeGroupId);
     
     /**
      * Check to see if the channel is currently being used in the system.
@@ -81,8 +81,6 @@ public interface IConfigurationService {
     
     public Channel getChannel (String channelId);
     
-    public List<Channel> getFileSyncChannels();
-    
     public Map<String, Channel> getChannels(boolean refreshCache);
 
     public NodeChannel getNodeChannel(String channelId, String nodeId, boolean refreshExtractMillis);
@@ -107,11 +105,5 @@ public interface IConfigurationService {
      * @return a map of nodes to redirect to that is keyed by a list of external_ids that should be redirected.
      */
     public Map<String,String> getRegistrationRedirectMap();
-    
-    /**
-     * Indicates that this node participates in a master to master link
-     * @return
-     */
-    public boolean isMasterToMaster();
 
 }

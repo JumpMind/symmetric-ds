@@ -24,7 +24,6 @@ import java.util.HashMap;
 
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.util.SymmetricUtils;
 
 public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 
@@ -56,7 +55,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(triggerHistoryId),                                                                                                                                             " +
 "                                      concat($(columns)                                                                                                                                                " +
 "                                       ),                                                                                                                                                              " +
-"                                      $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                        " +
+"                                      '$(channelName)', $(txIdExpression), @sync_node_disabled,                                                                                                        " +
 "                                      $(externalSelect),                                                                                                                                               " +
 "                                      CURRENT_TIMESTAMP                                                                                                                                                " +
 "                                    );                                                                                                                                                                 " +
@@ -82,7 +81,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "	                                       ),                                                                                                                                                             " +
 "	                                      var_row_data,                                                                                                                                                   " +
 "	                                      var_old_data,                                                                                                                                                   " +
-"	                                      $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                       " +
+"	                                      '$(channelName)', $(txIdExpression), @sync_node_disabled,                                                                                                       " +
 "	                                      $(externalSelect),                                                                                                                                              " +
 "	                                      CURRENT_TIMESTAMP                                                                                                                                               " +
 "	                                    );                                                                                                                                                                " +
@@ -104,7 +103,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                       ),                                                                                                                                                              " +
 "                                       concat($(oldColumns)                                                                                                                                            " +
 "                                       ),                                                                                                                                                              " +
-"                                      $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                        " +
+"                                      '$(channelName)', $(txIdExpression), @sync_node_disabled,                                                                                                        " +
 "                                      $(externalSelect),                                                                                                                                               " +
 "                                      CURRENT_TIMESTAMP                                                                                                                                                " +
 "                                    );                                                                                                                                                                 " +
@@ -114,11 +113,6 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select concat($(columns)) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                        " );
-    }
-    
-    @Override
-    protected String castDatetimeColumnToString(String columnName) {
-        return "cast(" + SymmetricUtils.quote(symmetricDialect, columnName) + " as char) as " + columnName;
     }
 
 }

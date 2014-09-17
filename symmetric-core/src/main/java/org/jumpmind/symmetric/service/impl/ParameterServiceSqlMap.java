@@ -40,13 +40,6 @@ public class ParameterServiceSqlMap extends AbstractSqlMap {
         putSql("selectParametersSql" ,"" + 
 "select param_key, param_value from $(parameter) where external_id=? and   " + 
 "  node_group_id=?                                                                    " );
-        
-        putSql("selectParametersByNodeGroupIdSql" ,"" + 
-"select param_key, param_value from $(parameter) where                                " + 
-"  node_group_id=?                                                                    " );
-        
-        putSql("selectParametersByExternalIdSql" ,"" + 
-"select param_key, param_value from $(parameter) where external_id=?                  " );
 
         putSql("selectParametersByKeySql" ,"" + 
 "select param_key, param_value, external_id, node_group_id from $(parameter) where param_key=?   " + 

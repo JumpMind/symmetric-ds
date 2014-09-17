@@ -44,9 +44,9 @@
                 <exclude>bin/dbexport</exclude>
                 <exclude>bin/dbimport</exclude>
                 <exclude>bin/dbfill</exclude>
-                <exclude>bin/jmx</exclude>
                 <exclude>bin/dbsql</exclude>
                 <exclude>bin/sym_service</exclude>
+                <exclude>bin/sym_service.initd</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -86,15 +86,15 @@
             <fileMode>755</fileMode>
         </file>
         <file>
-            <source>../symmetric-server/src/main/deploy/bin/jmx</source>
-            <outputDirectory>/bin</outputDirectory>
-            <fileMode>755</fileMode>
-        </file>        
-        <file>
             <source>../symmetric-server/src/main/deploy/bin/dbsql</source>
             <outputDirectory>/bin</outputDirectory>
             <fileMode>755</fileMode>
         </file>        
+        <file>
+            <source>../symmetric-server/src/main/deploy/bin/sym_service.initd</source>
+            <outputDirectory>/bin</outputDirectory>
+            <fileMode>755</fileMode>
+        </file>
         <file>
             <source>../symmetric-server/src/main/deploy/bin/sym_service</source>
             <outputDirectory>/bin</outputDirectory>
@@ -136,20 +136,8 @@
                         <useTransitiveFiltering>true</useTransitiveFiltering>
                         <excludes>
                             <exclude>junit:junit</exclude>
-                            <exclude>org.jumpmind.symmetric:symmetric-wrapper</exclude>
                         </excludes>                        
                     </dependencySet>
-                    <dependencySet>
-                        <outputDirectory>/lib</outputDirectory>
-                        <unpack>false</unpack>
-                        <scope>provided</scope>
-                        <outputFileNameMapping>symmetric-wrapper.jar</outputFileNameMapping>
-                        <useProjectArtifact>false</useProjectArtifact>
-                        <useTransitiveFiltering>true</useTransitiveFiltering>
-                        <includes>
-                            <include>org.jumpmind.symmetric:symmetric-wrapper</include>
-                        </includes>                        
-                    </dependencySet>                    
                 </dependencySets>
             </binaries>
         </moduleSet>

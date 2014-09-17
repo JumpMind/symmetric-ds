@@ -40,7 +40,6 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.junit.Test;
 
@@ -59,20 +58,20 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
 
     public final static String INSERT = "insert into "
             + TEST_TRIGGERS_TABLE
-            + " (string_one_value,string_two_value,long_string_value,time_value,date_value,boolean_value,bigint_value,decimal_value) "
+            + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
             + "values(?,?,?,?,?,?,?,?)"; // '\\\\','\"','\"1\"',null,null,1,1,1)";
 
     public final static int[] INSERT_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR,
-            Types.VARCHAR, Types.TIMESTAMP, Types.DATE, Types.SMALLINT, Types.INTEGER, Types.DECIMAL };
+            Types.VARCHAR, Types.TIMESTAMP, Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
 
     public final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null,
-            1, 1, 1 };
+            Boolean.TRUE, 1, 1 };
 
     public final static Object[] INSERT2_VALUES = new Object[] { "here", "here", "1", null, null,
-            1, 1, 1 };
+            Boolean.TRUE, 1, 1 };
 
     public final static Object[] INSERT3_VALUES = new Object[] { "inactive", "inactive", "0", null,
-            null, 1, 1, 1 };
+            null, Boolean.TRUE, 1, 1 };
 
     public final static String EXPECTED_INSERT1_CSV_ENDSWITH = "\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,\"1\",\"1\",\"1\"";
 
@@ -163,9 +162,6 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         // Informix captures decimal differently
         csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
-        // ASA captures decimal differently
-        csvString = csvString.replaceFirst("\"1.000000\"", "\"1\"");
-        
         boolean match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
         assertTrue(match, "The full string we pulled from the database was " + csvString
                 + " however, we expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
@@ -174,8 +170,6 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     @Test
     public void testInitialLoadSql() throws Exception {
         ITriggerRouterService triggerRouterService = getTriggerRouterService();
-        IParameterService parameterService = getParameterService();
-        parameterService.saveParameter(ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED, true, "unittest");
         TriggerRouter triggerRouter = triggerRouterService
                 .getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true)
                 .iterator().next();
@@ -198,9 +192,6 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         // Informix captures decimal differently
         csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
-        // ASA captures decimal differently
-        csvString = csvString.replaceFirst("\"1.000000\"", "\"1\"");
-        
         assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString
                 + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
@@ -210,17 +201,15 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
         boolean oldvalue = getParameterService().is(
                 ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY);
         try {
-            ISqlTemplate template = getSqlTemplate();
             getParameterService().saveParameter(
                     ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY, true, "test");
             if (!Constants.ALWAYS_TRUE_CONDITION.equals(getDbDialect().getDataHasChangedCondition(
                     getTriggerRouterService().getTriggers().get(0)))) {
                 forceRebuildOfTrigers();
-                insert(INSERT2_VALUES, template, getDbDialect());
-                Assert.assertTrue(template.queryForInt(
+                Assert.assertTrue(getSqlTemplate().queryForInt(
                         "select count(*) from " + TEST_TRIGGERS_TABLE) > 0);
                 int dataCount = countData();
-                template.update(
+                getSqlTemplate().update(
                         "update " + TEST_TRIGGERS_TABLE + " set string_one_value=string_one_value");
                 Assert.assertEquals(dataCount, countData());
             }
@@ -260,9 +249,6 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         // Informix captures decimal differently
         csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
-        // ASA captures decimal differently
-        csvString = csvString.replaceFirst("\"1.000000\"", "\"1\"");
-        
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
         assertTrue(match, "Received " + csvString + ", Expected the string to end with "
                 + EXPECTED_INSERT2_CSV_ENDSWITH);
@@ -284,9 +270,6 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
             csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
             // Informix captures decimal differently
             csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
-            // ASA captures decimal differently
-            csvString = csvString.replaceFirst("\"1.000000\"", "\"1\"");
-            
             boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
             assertTrue(match, "Received " + csvString + ", Expected the string to end with "
                     + EXPECTED_INSERT2_CSV_ENDSWITH);
@@ -408,9 +391,8 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     protected static boolean isBooleanSupported(ISymmetricDialect dbDialect) {
-        return !(DatabaseNamesConstants.ORACLE.equals(dbDialect.getPlatform().getName()) 
-                || DatabaseNamesConstants.DB2.equals(dbDialect.getPlatform().getName())
-                || DatabaseNamesConstants.SQLANYWHERE.equals(dbDialect.getPlatform().getName()));
+        return !(DatabaseNamesConstants.ORACLE.equals(dbDialect.getPlatform().getName()) || DatabaseNamesConstants.DB2
+                .equals(dbDialect.getPlatform().getName()));
     }
 
     protected static Object[] filterValues(Object[] values, ISymmetricDialect dbDialect) {

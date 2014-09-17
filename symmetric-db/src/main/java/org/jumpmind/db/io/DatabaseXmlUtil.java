@@ -36,7 +36,6 @@ import java.io.Writer;
 import java.util.Collection;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -142,14 +141,10 @@ public class DatabaseXmlUtil {
                                 String attributeValue = parser.getAttributeValue(i);
                                 if (attributeName.equalsIgnoreCase("name")) {
                                     database.setName(attributeValue);
-                                } else if (attributeName.equalsIgnoreCase("catalog")) {
-                                    database.setCatalog(attributeValue);
-                                } else if (attributeName.equalsIgnoreCase("schema")) {
-                                    database.setSchema(attributeValue);
                                 }
                             }
                         } else if (name.equalsIgnoreCase("table")) {
-                            Table table = nextTable(parser, database.getCatalog(), database.getSchema());
+                            Table table = nextTable(parser);
                             if (table != null) {
                                 database.addTable(table);
                             }
@@ -177,10 +172,6 @@ public class DatabaseXmlUtil {
     }
 
     public static Table nextTable(XmlPullParser parser) {
-        return nextTable(parser, null, null);
-    }
-    
-    public static Table nextTable(XmlPullParser parser, String catalog, String schema) {
         try {
             Table table = null;
             ForeignKey fk = null;
@@ -193,8 +184,6 @@ public class DatabaseXmlUtil {
                         String name = parser.getName();
                         if (name.equalsIgnoreCase("table")) {
                             table = new Table();
-                            table.setCatalog(catalog);
-                            table.setSchema(schema);
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
                                 String attributeName = parser.getAttributeName(i);
                                 String attributeValue = parser.getAttributeValue(i);
@@ -394,12 +383,6 @@ public class DatabaseXmlUtil {
             output.write("<?xml version=\"1.0\"?>\n<!DOCTYPE database SYSTEM \"" + DTD_PREFIX
                     + "\">\n");
             output.write("<database name=\"" + model.getName() + "\"");
-            if (model.getCatalog() != null) {
-                output.write(" catalog=\"" + model.getCatalog() + "\"");
-            }
-            if (model.getSchema() != null) {
-                output.write(" schema=\"" + model.getSchema() + "\"");
-            }
             if (model.getIdMethod() != null) {
                 output.write(" defaultIdMethod=\"" + model.getIdMethod() + "\"");
             }
@@ -420,19 +403,13 @@ public class DatabaseXmlUtil {
         return writer.toString();
     }
 
-    public static String toXml(Database db) {
-        StringWriter writer = new StringWriter();
-        write(db, writer);
-        return writer.toString();
-    }
-    
     public static void write(Table table, Writer output) {
 
         try {
-            output.write("\t<table name=\"" + StringEscapeUtils.escapeXml(table.getName()) + "\">\n");
+            output.write("\t<table name=\"" + table.getName() + "\">\n");
 
             for (Column column : table.getColumns()) {
-                output.write("\t\t<column name=\"" + StringEscapeUtils.escapeXml(column.getName()) + "\"");
+                output.write("\t\t<column name=\"" + column.getName() + "\"");
                 if (column.isPrimaryKey()) {
                     output.write(" primaryKey=\"" + column.isPrimaryKey() + "\"");
                 }
@@ -446,7 +423,7 @@ public class DatabaseXmlUtil {
                     output.write(" size=\"" + column.getSize() + "\"");
                 }
                 if (column.getDefaultValue() != null) {
-                    output.write(" default=\"" + StringEscapeUtils.escapeXml(column.getDefaultValue()) + "\"");
+                    output.write(" default=\"" + column.getDefaultValue() + "\"");
                 }
                 if (column.isAutoIncrement()) {
                     output.write(" autoIncrement=\"" + column.isAutoIncrement() + "\"");
@@ -479,26 +456,26 @@ public class DatabaseXmlUtil {
             }
 
             for (ForeignKey fk : table.getForeignKeys()) {
-                output.write("\t\t<foreign-key name=\"" + StringEscapeUtils.escapeXml(fk.getName()) + "\" foreignTable=\""
-                        + StringEscapeUtils.escapeXml(fk.getForeignTableName()) + "\">\n");
+                output.write("\t\t<foreign-key name=\"" + fk.getName() + "\" foreignTable=\""
+                        + fk.getForeignTableName() + "\">\n");
                 for (Reference ref : fk.getReferences()) {
-                    output.write("\t\t\t<reference local=\"" + StringEscapeUtils.escapeXml(ref.getLocalColumnName())
-                            + "\" foreign=\"" + StringEscapeUtils.escapeXml(ref.getForeignColumnName()) + "\"/>\n");
+                    output.write("\t\t\t<reference local=\"" + ref.getLocalColumnName()
+                            + "\" foreign=\"" + ref.getForeignColumnName() + "\"/>\n");
                 }
                 output.write("\t\t</foreign-key>\n");
             }
 
             for (IIndex index : table.getIndices()) {
                 if (index.isUnique()) {
-                    output.write("\t\t<unique name=\"" + StringEscapeUtils.escapeXml(index.getName()) + "\">\n");
+                    output.write("\t\t<unique name=\"" + index.getName() + "\">\n");
                     for (IndexColumn column : index.getColumns()) {
-                        output.write("\t\t\t<unique-column name=\"" + StringEscapeUtils.escapeXml(column.getName()) + "\"/>\n");
+                        output.write("\t\t\t<unique-column name=\"" + column.getName() + "\"/>\n");
                     }
                     output.write("\t\t</unique>\n");
                 } else {
-                    output.write("\t\t<index name=\"" + StringEscapeUtils.escapeXml(index.getName()) + "\">\n");
+                    output.write("\t\t<index name=\"" + index.getName() + "\">\n");
                     for (IndexColumn column : index.getColumns()) {
-                        output.write("\t\t\t<index-column name=\"" + StringEscapeUtils.escapeXml(column.getName()) + "\"");
+                        output.write("\t\t\t<index-column name=\"" + column.getName() + "\"");
                         if (column.getSize() != null) {
                             output.write(" size=\"" + column.getSize() + "\"");
                         }

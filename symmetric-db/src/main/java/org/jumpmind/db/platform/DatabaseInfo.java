@@ -180,10 +180,6 @@ public class DatabaseInfo {
      */
     private String valueQuoteToken = "'";
 
-    private String binaryQuoteStart = "'";
-    
-    private String binaryQuoteEnd = "'";
-
     /** The string that starts a comment. */
     private String commentPrefix = "--";
 
@@ -256,11 +252,6 @@ public class DatabaseInfo {
      * phantom reads from occurring. Default is TRANSACTION_READ_COMMITTED which covers most dbs 
      */
     private int minIsolationLevelToPreventPhantomReads = Connection.TRANSACTION_READ_COMMITTED;
-    
-    /**
-     * Specifies if an empty string entered into a required char column will be read out as null (Sql Anywhere).
-     */
-    private boolean requiredCharColumnEmptyStringSameAsNull;
     
 	/**
      * Creates a new platform info object.
@@ -1270,30 +1261,4 @@ public class DatabaseInfo {
 			int minIsolationLevelToPreventPhantomReads) {
 		this.minIsolationLevelToPreventPhantomReads = minIsolationLevelToPreventPhantomReads;
 	}
-
-    public boolean isRequiredCharColumnEmptyStringSameAsNull() {
-        return requiredCharColumnEmptyStringSameAsNull;
-    }
-
-    public void setRequiredCharColumnEmptyStringSameAsNull(
-            boolean requiredCharColumnEmptyStringSameAsNull) {
-        this.requiredCharColumnEmptyStringSameAsNull = requiredCharColumnEmptyStringSameAsNull;
-    }
-	
-    public String getBinaryQuoteStart() {
-        return binaryQuoteStart;
-    }
-
-    public void setBinaryQuoteStart(String binaryQuoteStart) {
-        this.binaryQuoteStart = binaryQuoteStart;
-    }
-
-    public String getBinaryQuoteEnd() {
-        return binaryQuoteEnd;
-    }
-
-    public void setBinaryQuoteEnd(String binaryQuoteEnd) {
-        this.binaryQuoteEnd = binaryQuoteEnd;
-    }
-	
 }

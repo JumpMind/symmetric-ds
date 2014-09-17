@@ -57,7 +57,7 @@
 		<column name="integer_value" type="INTEGER" />
 		<column name="decimal_value" type="DECIMAL" size="10,2" />
 		<column name="double_value" type="DOUBLE" />
-        <column name="img_value" type="BLOB" />
+		<column name="img_value" type="BLOB" />
 	</table>
 	
 

@@ -20,8 +20,6 @@
  */
 package org.jumpmind.symmetric.db;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 import java.sql.Types;
 import java.util.Map;
 
@@ -40,7 +38,6 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.FormatUtils;
 
@@ -48,6 +45,7 @@ import org.jumpmind.util.FormatUtils;
  * Responsible for generating dialect specific SQL such as trigger bodies and
  * functions
  */
+@SuppressWarnings("deprecation")
 abstract public class AbstractTriggerTemplate {
 
     protected static final String ORIG_TABLE_ALIAS = "orig";
@@ -106,6 +104,9 @@ abstract public class AbstractTriggerTemplate {
 
     protected ISymmetricDialect symmetricDialect;
 
+    protected AbstractTriggerTemplate() {
+    }
+
     protected AbstractTriggerTemplate(ISymmetricDialect symmetricDialect) {
         this.symmetricDialect = symmetricDialect;
     }
@@ -113,59 +114,37 @@ abstract public class AbstractTriggerTemplate {
     public String createInitalLoadSql(Node node, TriggerRouter triggerRouter, Table originalTable,
             TriggerHistory triggerHistory, Channel channel, String overrideSelectSql) {
 
-        IParameterService parameterService = symmetricDialect.getParameterService();
-        
         Table table = originalTable.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
                 triggerHistory.getParsedPkColumnNames(), true);
 
-        Column[] columns = table.getColumns();
-
-        String textColumnExpression = parameterService.getString(ParameterConstants.DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION);
-
         String sql = null;
 
-        if (parameterService.is(
+        Column[] columns = symmetricDialect.orderColumns(triggerHistory.getParsedColumnNames(),
+                table);
+
+        if (symmetricDialect.getParameterService().is(
                 ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
             sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
-            String columnsText = buildColumnsString(symmetricDialect.getInitialLoadTableAlias(),
+            String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
                     symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
                     false, channel, triggerRouter.getTrigger()).columnString;
-            if (isNotBlank(textColumnExpression)) {
-                columnsText = textColumnExpression.replace("$(columnName)", columnsText);
-            }            
             sql = FormatUtils.replace("columns", columnsText, sql);
-        } else {            
-            boolean dateTimeAsString = parameterService.is(
-                    ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR);
+        } else {
             sql = "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)";
             StringBuilder columnList = new StringBuilder();
             for (int i = 0; i < columns.length; i++) {
                 Column column = columns[i];
-                if (column != null) {
-                    boolean isLob = symmetricDialect.getPlatform()
-                            .isLob(column.getMappedTypeCode());
-                    if (!(isLob && triggerRouter.getTrigger().isUseStreamLobs())) {
-                        if (i > 0) {
-                            columnList.append(",");
-                        }
-
-                        String columnExpression = SymmetricUtils.quote(symmetricDialect,
-                                column.getName()); 
-                        
-                        if (dateTimeAsString && TypeMap.isDateTimeType(column.getMappedTypeCode())) {
-                            columnExpression = castDatetimeColumnToString(column.getName());
-                        } else if (isNotBlank(textColumnExpression) && TypeMap.isTextType(column.getMappedTypeCode())) {
-                            columnExpression = textColumnExpression.replace("$(columnName)", columnExpression) + " as " + column.getName();
-                        }
-                        
-                        columnList.append(columnExpression);
-                        
+                boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
+                if (!(isLob && triggerRouter.getTrigger().isUseStreamLobs())) {
+                    if (i > 0) {
+                        columnList.append(",");
                     }
+                    columnList.append(SymmetricUtils.quote(symmetricDialect, column.getName()));
                 }
             }
             sql = FormatUtils.replace("columns", columnList.toString(), sql);
         }
-
+        
         String initialLoadSelect = StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
                 : triggerRouter.getInitialLoadSelect();
         if (StringUtils.isNotBlank(overrideSelectSql)) {
@@ -177,7 +156,7 @@ abstract public class AbstractTriggerTemplate {
                         , sql);
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName",
-                triggerHistory == null ? getSourceTablePrefix(originalTable)
+                triggerHistory == null ? getSourceTablePrefix(triggerRouter.getTrigger())
                         : getSourceTablePrefix(triggerHistory), sql);
         sql = FormatUtils.replace(
                 "primaryKeyWhereString",
@@ -197,15 +176,12 @@ abstract public class AbstractTriggerTemplate {
 
         return sql;
     }
-    
-    protected String castDatetimeColumnToString(String columnName) {
-        return SymmetricUtils.quote(symmetricDialect, columnName);
-    }
 
-    protected String getSourceTablePrefix(Table table) {
-        String schemaPlus = (table.getSchema() != null ? table.getSchema()
+    protected String getSourceTablePrefix(Trigger trigger) {
+        String schemaPlus = (trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName()
                 + "." : "");
-        String catalogPlus = (table.getCatalog() != null ? table.getCatalog() + "." : "")
+        String catalogPlus = (trigger.getSourceCatalogName() != null ? trigger
+                .getSourceCatalogName() + "." : "")
                 + schemaPlus;
         return catalogPlus;
     }
@@ -236,7 +212,7 @@ abstract public class AbstractTriggerTemplate {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
         Column[] columns = table.getColumns();
-        String columnsText = buildColumnsString(symmetricDialect.getInitialLoadTableAlias(),
+        String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
                 symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
                 false, channel, trigger).columnString;
         sql = FormatUtils.replace("columns", columnsText, sql);
@@ -245,7 +221,7 @@ abstract public class AbstractTriggerTemplate {
 
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName",
-                triggerHistory == null ? getSourceTablePrefix(originalTable)
+                triggerHistory == null ? getSourceTablePrefix(trigger)
                         : getSourceTablePrefix(triggerHistory), sql);
 
         sql = FormatUtils.replace("whereClause", whereClause, sql);
@@ -265,7 +241,7 @@ abstract public class AbstractTriggerTemplate {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
         Column[] columns = table.getPrimaryKeyColumns();
-        String columnsText = buildColumnsString(symmetricDialect.getInitialLoadTableAlias(),
+        String columnsText = buildColumnString(symmetricDialect.getInitialLoadTableAlias(),
                 symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
                 false, channel, trigger).toString();
         sql = FormatUtils.replace("columns", columnsText, sql);
@@ -273,7 +249,7 @@ abstract public class AbstractTriggerTemplate {
                 trigger.isUseCaptureLobs() ? "to_clob('')||" : "", sql);
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName",
-                triggerHistory == null ? getSourceTablePrefix(table)
+                triggerHistory == null ? getSourceTablePrefix(trigger)
                         : getSourceTablePrefix(triggerHistory), sql);
         sql = FormatUtils.replace("whereClause", whereClause, sql);
         sql = FormatUtils.replace(
@@ -349,9 +325,6 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("txIdExpression",
                 symmetricDialect.preProcessTriggerSqlClause(triggerExpression), ddl);
 
-        ddl = FormatUtils.replace("channelExpression", symmetricDialect.preProcessTriggerSqlClause(getChannelExpression(trigger)),
-                ddl);
-        
         ddl = FormatUtils.replace("externalSelect", (trigger.getExternalSelect() == null ? "null"
                 : "(" + symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect())
                         + ")"), ddl);
@@ -389,7 +362,7 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 
         Column[] orderedColumns = table.getColumns();
-        ColumnString columnString = buildColumnsString(ORIG_TABLE_ALIAS, newTriggerValue,
+        ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue,
                 newColumnPrefix, orderedColumns, dml, false, channel, trigger);
         ddl = FormatUtils.replace("columns", columnString.toString(), ddl);
 
@@ -399,20 +372,20 @@ abstract public class AbstractTriggerTemplate {
                 buildVirtualTableSql(oldColumnPrefix, newColumnPrefix, originalTable.getColumns()), ddl);
         ddl = FormatUtils.replace(
                 "oldColumns",
-                trigger.isUseCaptureOldData() ? buildColumnsString(ORIG_TABLE_ALIAS,
+                trigger.isUseCaptureOldData() ? buildColumnString(ORIG_TABLE_ALIAS,
                         oldTriggerValue, oldColumnPrefix, orderedColumns, dml, true, channel,
                         trigger).toString() : "null", ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
         ddl = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), ddl);
-        ddl = FormatUtils.replace("schemaName", history == null ? getSourceTablePrefix(originalTable)
+        ddl = FormatUtils.replace("schemaName", history == null ? getSourceTablePrefix(trigger)
                 : getSourceTablePrefix(history), ddl);
 
         Column[] primaryKeyColumns = table.getPrimaryKeyColumns();
         ddl = FormatUtils.replace(
                 "oldKeys",
-                buildColumnsString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix,
+                buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix,
                         primaryKeyColumns, dml, true, channel, trigger).toString(), ddl);
         ddl = FormatUtils.replace(
                 "oldNewPrimaryKeyJoin",
@@ -479,18 +452,6 @@ abstract public class AbstractTriggerTemplate {
                 break;
         }
         return ddl;
-    }
-    
-    protected String getChannelExpression(Trigger trigger) {
-        if (trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC)) {
-            if (StringUtils.isNotBlank(trigger.getChannelExpression())) {
-                return trigger.getChannelExpression();
-            } else {
-                throw new IllegalStateException("When the channel is set to '" + Constants.CHANNEL_DYNAMIC + "', a channel expression must be provided.");
-            }
-        } else {
-            return "'" + trigger.getChannelId() + "'";
-        }
     }
 
     protected String buildVirtualTableSql(String oldTriggerValue, String newTriggerValue,
@@ -619,7 +580,7 @@ abstract public class AbstractTriggerTemplate {
         return columnsText.substring(0, columnsText.length() - 1);
     }
 
-    protected ColumnString buildColumnsString(String origTableAlias, String tableAlias,
+    protected ColumnString buildColumnString(String origTableAlias, String tableAlias,
             String columnPrefix, Column[] columns, DataEventType dml, boolean isOld,
             Channel channel, Trigger trigger) {
         String columnsText = "";
@@ -632,11 +593,150 @@ abstract public class AbstractTriggerTemplate {
         for (int i = 0; i < columns.length; i++) {
             Column column = columns[i];
             if (column != null) {
-                ColumnString columnString = fillOutColumnTemplate(origTableAlias, tableAlias,
-                        columnPrefix, column, dml, isOld, channel, trigger);
-                columnsText = columnsText + "\n          " + columnString.columnString
-                        + lastCommandToken;
-                containsLob |= columnString.isBlobClob;
+                boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
+                String templateToUse = null;
+                switch (column.getMappedTypeCode()) {
+                    case Types.TINYINT:
+                    case Types.SMALLINT:
+                    case Types.INTEGER:
+                    case Types.BIGINT:
+                    case Types.FLOAT:
+                    case Types.REAL:
+                    case Types.DOUBLE:
+                    case Types.NUMERIC:
+                    case Types.DECIMAL:
+                        templateToUse = numberColumnTemplate;
+                        break;
+                    case Types.CHAR:
+                    case Types.NCHAR:
+                    case Types.VARCHAR:
+                    case ColumnTypes.NVARCHAR:                        
+                        templateToUse = stringColumnTemplate;
+                        break;
+                    case ColumnTypes.SQLXML:
+                        templateToUse = xmlColumnTemplate;
+                        break;
+                    case Types.ARRAY:
+                        templateToUse = arrayColumnTemplate;
+                        break;
+                    case Types.LONGVARCHAR:
+                    case ColumnTypes.LONGNVARCHAR:
+                        if (!isLob) {
+                            templateToUse = stringColumnTemplate;
+                            break;
+                        }
+                    case Types.CLOB:
+                        if (isOld && symmetricDialect.needsToSelectLobData()) {
+                            templateToUse = emptyColumnTemplate;
+                        } else {
+                            templateToUse = clobColumnTemplate;
+                        }
+                        break;
+                    case Types.BLOB:
+                        if (requiresWrappedBlobTemplateForBlobType()) {
+                            templateToUse = wrappedBlobColumnTemplate;
+                            break;
+                        }
+                    case Types.BINARY:
+                    case Types.VARBINARY:
+                    case Types.LONGVARBINARY:
+                        // SQL-Server ntext binary type
+                    case -10:
+                        if (column.getJdbcTypeName()!=null && (column.getJdbcTypeName().toUpperCase()
+                                .contains(TypeMap.GEOMETRY))
+                                && StringUtils.isNotBlank(geometryColumnTemplate)) {
+                            templateToUse = geometryColumnTemplate;
+                        } else if (column.getJdbcTypeName()!=null && (column.getJdbcTypeName().toUpperCase()
+                                .contains(TypeMap.IMAGE))
+                                && StringUtils.isNotBlank(imageColumnTemplate)) {
+                            if (isOld) {
+                                templateToUse = emptyColumnTemplate;
+                            } else {
+                                templateToUse = imageColumnTemplate;
+                            }
+                        } else if (isOld && symmetricDialect.needsToSelectLobData()) {
+                            templateToUse = emptyColumnTemplate;
+                        } else {
+                            templateToUse = blobColumnTemplate;
+                        }
+                        break;
+                    case Types.DATE:
+                        if (noDateColumnTemplate()) {
+                            templateToUse = datetimeColumnTemplate;
+                            break;
+                        }
+                        templateToUse = dateColumnTemplate;
+                        break;
+                    case Types.TIME:
+                        if (noTimeColumnTemplate()) {
+                            templateToUse = datetimeColumnTemplate;
+                            break;
+                        }
+                        templateToUse = timeColumnTemplate;
+                        break;
+                    case Types.TIMESTAMP:
+                        templateToUse = datetimeColumnTemplate;
+                        break;
+                    case Types.BOOLEAN:
+                    case Types.BIT:
+                        templateToUse = booleanColumnTemplate;
+                        break;
+                    default:
+                        if (column.getJdbcTypeName() != null) {
+                            if (column.getJdbcTypeName().toUpperCase().equals(TypeMap.INTERVAL)) {
+                                templateToUse = numberColumnTemplate;
+                                break;
+                            } else if (column.getJdbcTypeName().toUpperCase()
+                                    .contains(TypeMap.GEOMETRY)
+                                    && StringUtils.isNotBlank(geometryColumnTemplate)) {
+                                templateToUse = geometryColumnTemplate;
+                                break;
+                            } else if (column.getMappedType().equals(TypeMap.TIMESTAMPTZ)
+                                    && StringUtils
+                                            .isNotBlank(this.dateTimeWithTimeZoneColumnTemplate)) {
+                                templateToUse = this.dateTimeWithTimeZoneColumnTemplate;
+                                break;
+                            }
+
+                        }
+
+                        if (StringUtils.isBlank(templateToUse)
+                                && StringUtils.isNotBlank(this.otherColumnTemplate)) {
+                            templateToUse = this.otherColumnTemplate;
+                            break;
+                        }
+
+                        throw new NotImplementedException(column.getName() + " is of type "
+                                + column.getMappedType() + " with JDBC type of "
+                                + column.getJdbcTypeName());
+                }
+
+                if (dml == DataEventType.DELETE && isLob && requiresEmptyLobTemplateForDeletes()) {
+                    templateToUse = emptyColumnTemplate;
+                } else if (isLob && trigger.isUseStreamLobs()) {
+                    templateToUse = emptyColumnTemplate;
+                }
+
+                if (templateToUse != null) {
+                    templateToUse = templateToUse.trim();
+                } else {
+                    throw new NotImplementedException();
+                }
+
+                String formattedColumnText = FormatUtils.replace("columnName",
+                        String.format("%s%s", columnPrefix, column.getName()), templateToUse);
+
+                formattedColumnText = FormatUtils.replace("masterCollation",
+                        symmetricDialect.getMasterCollation(), formattedColumnText);
+
+                if (isLob) {
+                    formattedColumnText = symmetricDialect.massageForLob(formattedColumnText,
+                            channel);
+                }
+
+                columnsText = columnsText + "\n          " + formattedColumnText + lastCommandToken;
+
+                containsLob |= isLob;
             }
 
         }
@@ -646,157 +746,11 @@ abstract public class AbstractTriggerTemplate {
                     .substring(0, columnsText.length() - lastCommandToken.length());
         }
 
+        columnsText = FormatUtils.replace("origTableAlias", origTableAlias, columnsText);
+        columnsText = FormatUtils.replace("tableAlias", tableAlias, columnsText);
+        columnsText = FormatUtils.replace("prefixName", symmetricDialect.getTablePrefix(),
+                columnsText);
         return new ColumnString(columnsText, containsLob);
-    }
-    
-    protected ColumnString fillOutColumnTemplate(String origTableAlias, String tableAlias,
-            String columnPrefix, Column column, DataEventType dml, boolean isOld, Channel channel,
-            Trigger trigger) {
-        boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
-        String templateToUse = null;
-        switch (column.getMappedTypeCode()) {
-            case Types.TINYINT:
-            case Types.SMALLINT:
-            case Types.INTEGER:
-            case Types.BIGINT:
-            case Types.FLOAT:
-            case Types.REAL:
-            case Types.DOUBLE:
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-                templateToUse = numberColumnTemplate;
-                break;
-            case Types.CHAR:
-            case Types.NCHAR:
-            case Types.VARCHAR:
-            case ColumnTypes.NVARCHAR:
-                templateToUse = stringColumnTemplate;
-                break;
-            case ColumnTypes.SQLXML:
-                templateToUse = xmlColumnTemplate;
-                break;
-            case Types.ARRAY:
-                templateToUse = arrayColumnTemplate;
-                break;
-            case Types.LONGVARCHAR:
-            case ColumnTypes.LONGNVARCHAR:
-                if (!isLob) {
-                    templateToUse = stringColumnTemplate;
-                    break;
-                }
-            case Types.CLOB:
-                if (isOld && symmetricDialect.needsToSelectLobData()) {
-                    templateToUse = emptyColumnTemplate;
-                } else {
-                    templateToUse = clobColumnTemplate;
-                }
-                break;
-            case Types.BLOB:
-                if (requiresWrappedBlobTemplateForBlobType()) {
-                    templateToUse = wrappedBlobColumnTemplate;
-                    break;
-                }
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-                // SQL-Server ntext binary type
-            case -10:
-                if (column.getJdbcTypeName() != null
-                        && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY))
-                        && StringUtils.isNotBlank(geometryColumnTemplate)) {
-                    templateToUse = geometryColumnTemplate;
-                } else if (column.getJdbcTypeName() != null
-                        && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.IMAGE))
-                        && StringUtils.isNotBlank(imageColumnTemplate)) {
-                    if (isOld) {
-                        templateToUse = emptyColumnTemplate;
-                    } else {
-                        templateToUse = imageColumnTemplate;
-                    }
-                } else if (isOld && symmetricDialect.needsToSelectLobData()) {
-                    templateToUse = emptyColumnTemplate;
-                } else {
-                    templateToUse = blobColumnTemplate;
-                }
-                break;
-            case Types.DATE:
-                if (noDateColumnTemplate()) {
-                    templateToUse = datetimeColumnTemplate;
-                    break;
-                }
-                templateToUse = dateColumnTemplate;
-                break;
-            case Types.TIME:
-                if (noTimeColumnTemplate()) {
-                    templateToUse = datetimeColumnTemplate;
-                    break;
-                }
-                templateToUse = timeColumnTemplate;
-                break;
-            case Types.TIMESTAMP:
-                templateToUse = datetimeColumnTemplate;
-                break;
-            case Types.BOOLEAN:
-            case Types.BIT:
-                templateToUse = booleanColumnTemplate;
-                break;
-            default:
-                if (column.getJdbcTypeName() != null) {
-                    if (column.getJdbcTypeName().toUpperCase().equals(TypeMap.INTERVAL)) {
-                        templateToUse = numberColumnTemplate;
-                        break;
-                    } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)
-                            && StringUtils.isNotBlank(geometryColumnTemplate)) {
-                        templateToUse = geometryColumnTemplate;
-                        break;
-                    } else if (column.getMappedType().equals(TypeMap.TIMESTAMPTZ)
-                            && StringUtils.isNotBlank(this.dateTimeWithTimeZoneColumnTemplate)) {
-                        templateToUse = this.dateTimeWithTimeZoneColumnTemplate;
-                        break;
-                    }
-
-                }
-
-                if (StringUtils.isBlank(templateToUse)
-                        && StringUtils.isNotBlank(this.otherColumnTemplate)) {
-                    templateToUse = this.otherColumnTemplate;
-                    break;
-                }
-
-                throw new NotImplementedException(column.getName() + " is of type "
-                        + column.getMappedType() + " with JDBC type of " + column.getJdbcTypeName());
-        }
-
-        if (dml == DataEventType.DELETE && isLob && requiresEmptyLobTemplateForDeletes()) {
-            templateToUse = emptyColumnTemplate;
-        } else if (isLob && trigger.isUseStreamLobs()) {
-            templateToUse = emptyColumnTemplate;
-        }
-
-        if (templateToUse != null) {
-            templateToUse = templateToUse.trim();
-        } else {
-            throw new NotImplementedException();
-        }
-
-        String formattedColumnText = FormatUtils.replace("columnName",
-                String.format("%s%s", columnPrefix, column.getName()), templateToUse);
-
-        formattedColumnText = FormatUtils.replace("masterCollation",
-                symmetricDialect.getMasterCollation(), formattedColumnText);
-
-        if (isLob) {
-            formattedColumnText = symmetricDialect.massageForLob(formattedColumnText, channel);
-        }
-
-        formattedColumnText = FormatUtils.replace("origTableAlias", origTableAlias,
-                formattedColumnText);
-        formattedColumnText = FormatUtils.replace("tableAlias", tableAlias, formattedColumnText);
-        formattedColumnText = FormatUtils.replace("prefixName", symmetricDialect.getTablePrefix(),
-                formattedColumnText);
-
-        return new ColumnString(formattedColumnText, isLob);
-
     }
 
     public String getOtherColumnTemplate() {
@@ -835,8 +789,6 @@ abstract public class AbstractTriggerTemplate {
                     break;
                 case Types.CHAR:
                 case Types.VARCHAR:
-                case ColumnTypes.NVARCHAR:
-                case ColumnTypes.LONGNVARCHAR:
                 case Types.LONGVARCHAR:
                     text += "varchar(1000)\n";
                     break;

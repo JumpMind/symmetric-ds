@@ -36,13 +36,13 @@ public class Channel implements Serializable {
 
     private int processingOrder;
 
-    private int maxBatchSize = 10000;
+    private int maxBatchSize;
 
-    private int maxBatchToSend = 100;
+    private int maxBatchToSend;
     
     private int maxDataToRoute = 10000;
 
-    private boolean enabled = true;
+    private boolean enabled;
     
     private boolean useOldDataToRoute = true;
     
@@ -63,10 +63,6 @@ public class Channel implements Serializable {
     private Date lastUpdateTime;
     
     private String lastUpdateBy;
-    
-    private boolean reloadFlag = false;
-    
-    private boolean fileSyncFlag = false;
 
     public Channel() {
     }
@@ -77,16 +73,9 @@ public class Channel implements Serializable {
     }
     
     public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled,
-            long extractPeriodMillis, boolean containsBigLobs, String batchAlgorithm, boolean reloadFlag, boolean filesyncFlag) {
-        this(id, processingOrder, maxBatchSize, maxBatchToSend, enabled, extractPeriodMillis, containsBigLobs, reloadFlag, filesyncFlag);
-        this.batchAlgorithm = batchAlgorithm;
-    }
-    
-    public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled,
-            long extractPeriodMillis, boolean containsBigLobs, boolean reloadFlag, boolean filesyncFlag) {
+            long extractPeriodMillis, boolean containsBigLobs, String batchAlgorithm) {
         this(id, processingOrder, maxBatchSize, maxBatchToSend, enabled, extractPeriodMillis, containsBigLobs);
-        this.reloadFlag = reloadFlag;
-        this.fileSyncFlag = filesyncFlag;
+        this.batchAlgorithm = batchAlgorithm;
     }
 
     public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled,
@@ -154,19 +143,14 @@ public class Channel implements Serializable {
      * @return true if a match is found
      */
     public boolean isInList(Collection<? extends NodeChannel> channels) {
-        return findInList(channels) != null;
-    }
-    
-    
-    public Channel findInList(Collection<? extends NodeChannel> channels) {
         if (channels != null) {
             for (NodeChannel channel : channels) {
                 if (channel.getChannelId().equals(channelId)) {
-                    return channel.getChannel();
+                    return true;
                 }
             }
         }
-        return null;
+        return false;
     }
 
     public void setBatchAlgorithm(String batchAlgorithm) {
@@ -247,22 +231,6 @@ public class Channel implements Serializable {
     
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
-    }
-    
-    public void setFileSyncFlag(boolean filesyncFlag) {
-        this.fileSyncFlag = filesyncFlag;
-    }
-    
-    public boolean isFileSyncFlag() {
-        return fileSyncFlag;
-    }
-    
-    public void setReloadFlag(boolean reloadFlag) {
-        this.reloadFlag = reloadFlag;
-    }
-    
-    public boolean isReloadFlag() {
-        return reloadFlag;
     }
     
     @Override

@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,8 +40,6 @@ public interface ITriggerRouterService {
     public boolean refreshFromDatabase();
     
     public List<TriggerHistory> getActiveTriggerHistories();
-    
-    public List<TriggerHistory> getActiveTriggerHistories(Trigger trigger);
     
     public List<TriggerHistory> getActiveTriggerHistories(String tableName);
 
@@ -96,8 +93,6 @@ public interface ITriggerRouterService {
      */
     public List<Router> getRoutersByGroupLink(NodeGroupLink link);
     
-    public boolean isRouterBeingUsed(String routerId);    
-    
     public void deleteRouter(Router router);
     
     public void saveRouter(Router router);
@@ -117,14 +112,10 @@ public interface ITriggerRouterService {
     
     public void dropTriggers(Set<String> tables);
     
+    public void createTriggersOnChannelForTables(String channelId, Set<Table> tables, String lastUpdateBy);
+    
     public void createTriggersOnChannelForTables(String channelId, String catalogName, String schemaName, List<String> tables, String lastUpdateBy);
-    
-    public boolean isTriggerBeingUsed(String triggerId);
-    
-    public boolean doesTriggerExist(String triggerId);
-    
-    public boolean doesTriggerExistForTable(String tableName);
-    
+       
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(String sourceNodeGroupId, String targetNodeGroupId);
 
     public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(NodeGroupLink link, String catalogName, String schemaName, String tableName, boolean refreshCache);
@@ -184,8 +175,5 @@ public interface ITriggerRouterService {
     public TriggerHistory findTriggerHistoryForGenericSync();
     
     public void clearCache();
-    
-    public Collection<Trigger> findMatchingTriggers(List<Trigger> triggers, String catalog, String schema,
-            String table);
 
 }

@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang.ArrayUtils;
-import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DbFill;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -45,15 +44,11 @@ public class DbFillCommand extends AbstractCommandLauncher {
 
     private static final String OPTION_IGNORE_TABLES = "ignore";
     
-    private static final String OPTION_PREFIXED_TABLES = "prefixed";
-    
     private static final String OPTION_INTERVAL = "interval";
     
     private static final String OPTION_WEIGHTS = "weights";
     
     private static final String OPTION_CONTINUE = "continue";
-    
-    private static final String OPTION_PRINT = "print";
 
     public DbFillCommand() {
         super("dbfill", "[tablename...]", "DbFill.Option.");
@@ -88,11 +83,9 @@ public class DbFillCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_COUNT, true);
         addOption(options, null, OPTION_CASCADE, false);
         addOption(options, null, OPTION_IGNORE_TABLES, true);
-        addOption(options, null, OPTION_PREFIXED_TABLES, true);
         addOption(options, null, OPTION_INTERVAL, true);
         addOption(options, null, OPTION_WEIGHTS, true);
         addOption(options, null, OPTION_CONTINUE, false);
-        addOption(options, null, OPTION_PRINT, false);
     }
 
     @Override
@@ -135,22 +128,14 @@ public class DbFillCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_IGNORE_TABLES)) {
             ignore = line.getOptionValue(OPTION_IGNORE_TABLES).split(",");
         }
-        String prefixed[] = null;
-        if (line.hasOption(OPTION_PREFIXED_TABLES)) {
-            prefixed = line.getOptionValue(OPTION_PREFIXED_TABLES).split(",");
-        }
         if (line.hasOption(OPTION_CONTINUE)) {
             dbFill.setContinueOnError(true);
-        }
-        if (line.hasOption(OPTION_PRINT)) {
-        	dbFill.setPrint(true);
         }
         // Ignore the Symmetric config tables.
         getSymmetricEngine();
         IParameterService parameterService = engine.getParameterService();
         String cfgPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX);
         dbFill.setIgnore((String[])ArrayUtils.add(ignore, cfgPrefix));
-        dbFill.setPrefixed(prefixed);
         
         Map<String,int[]> tableProperties = parseTableProperties();
         
@@ -161,31 +146,8 @@ public class DbFillCommand extends AbstractCommandLauncher {
         } else {
             tableNames = line.getArgs();
         }
-        
-        if (!dbFill.getPrint()) {
-        	dbFill.fillTables(tableNames, tableProperties);
-        } else {
-        	for (String tableName : tableNames) {
-                Table table = platform.readTableFromDatabase(dbFill.getCatalogToUse(), dbFill.getSchemaToUse(),
-                        tableName);
-                if (table != null) {
-                	for (int i = 0; i < dbFill.getRecordCount(); i++) {
-                		for (int j = 0; j < dbFill.getInsertWeight(); j++) {
-                            String sql = dbFill.createDynamicRandomInsertSql(table);
-                            System.out.println(sql);
-                        }
-                        for (int j = 0; j < dbFill.getUpdateWeight(); j++) {
-                            String sql = dbFill.createDynamicRandomUpdateSql(table);
-                            System.out.println(sql);
-                        }
-                        for (int j = 0; j < dbFill.getDeleteWeight(); j++) {
-                            String sql = dbFill.createDynamicRandomDeleteSql(table);
-                            System.out.println(sql);
-                        }        
-                	}
-                }
-        	}
-        }
+
+        dbFill.fillTables(tableNames, tableProperties);
 
         return true;
     }

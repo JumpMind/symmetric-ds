@@ -97,7 +97,7 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
             StringBuilder ddl) {
         if (primaryKeyColumns.length > 0 && shouldGeneratePrimaryKeys(primaryKeyColumns)) {
             ddl.append("ALTER TABLE ");
-            ddl.append(getFullyQualifiedTableNameShorten(table));
+            printlnIdentifier(getTableName(table.getName()), ddl);
             printIndent(ddl);
             ddl.append("ADD CONSTRAINT ");
             writePrimaryKeyStmt(table, primaryKeyColumns, ddl);
@@ -116,7 +116,7 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
             ddl.append("ADD CONSTRAINT FOREIGN KEY (");
             writeLocalReferences(key, ddl);
             ddl.append(") REFERENCES ");
-            ddl.append(getFullyQualifiedTableNameShorten(key.getForeignTable()));
+            printIdentifier(getTableName(key.getForeignTableName()), ddl);
             ddl.append(" (");
             writeForeignReferences(key, ddl);
             ddl.append(") CONSTRAINT ");
@@ -128,7 +128,7 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             RemovePrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP CONSTRAINT ");
         printIdentifier(getConstraintName(null, change.getChangedTable(), "PK", null), ddl);
@@ -139,7 +139,7 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
     protected void processChange(Database currentModel, Database desiredModel,
             PrimaryKeyChange change, StringBuilder ddl) {
         ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printlnIdentifier(getTableName(change.getChangedTable().getName()), ddl);
         printIndent(ddl);
         ddl.append("DROP CONSTRAINT ");
         printIdentifier(getConstraintName(null, change.getChangedTable(), "PK", null), ddl);

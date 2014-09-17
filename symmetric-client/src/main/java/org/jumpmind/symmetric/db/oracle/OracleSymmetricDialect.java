@@ -63,7 +63,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
             supportsTransactionViews = true;
         } catch (Exception ex) {
             if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW)) {
-                log.warn("Was not able to enable the use of transaction views.  You might not have access to select from gv$transaction", ex);
+                log.warn(ex.getMessage(),ex);
             }
         }
     }
@@ -72,7 +72,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     protected void buildSqlReplacementTokens() {
         super.buildSqlReplacementTokens();
         if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_HINTS,  true)) {
-            sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "/*+ index(d " + parameterService.getTablePrefix() + "_IDX_D_CHANNEL_ID) */");
+            sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "/*+ index(d SYM_IDX_D_CHANNEL_ID) */");
         }
     }
     
@@ -252,16 +252,16 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
         case REQUEST:
-            return "SEQ_" + parameterService.getTablePrefix() + "_EXTRACT_EST_REQUEST_ID";
+            return "SEQ_SYM_EXTRACT_EST_REQUEST_ID";
         case DATA:
-            return "SEQ_" + parameterService.getTablePrefix() + "_DATA_DATA_ID";
+            return "SEQ_SYM_DATA_DATA_ID";
         case TRIGGER_HIST:
-            return "SEQ_" + parameterService.getTablePrefix() + "_TRIGGER_RIGGER_HIST_ID";
+            return "SEQ_SYM_TRIGGER_RIGGER_HIST_ID";
         }
         return null;
     }
 
-    public void cleanDatabase() {
+    public void purgeRecycleBin() {
         platform.getSqlTemplate().update("purge recyclebin");
     }
 
@@ -314,11 +314,10 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     @Override
     public String massageDataExtractionSql(String sql, Channel channel) {
         if (channel != null && !channel.isContainsBigLob()) {
-            sql = StringUtils.replace(sql, "d.row_data", "dbms_lob.substr(d.row_data, 4000, 1 )");
-            sql = StringUtils.replace(sql, "d.old_data", "dbms_lob.substr(d.old_data, 4000, 1 )");
-            sql = StringUtils.replace(sql, "d.pk_data", "dbms_lob.substr(d.pk_data, 4000, 1 )");
+            sql = StringUtils.replace(sql, "d.row_data", "dbms_lob.substr(d.row_data, 4000, 1 ) as row_data");
+            sql = StringUtils.replace(sql, "d.old_data", "dbms_lob.substr(d.old_data, 4000, 1 ) as old_data");
+            sql = StringUtils.replace(sql, "d.pk_data", "dbms_lob.substr(d.pk_data, 4000, 1 ) as pk_data");
         }
-        sql = super.massageDataExtractionSql(sql, channel);
         return sql;
     }
 

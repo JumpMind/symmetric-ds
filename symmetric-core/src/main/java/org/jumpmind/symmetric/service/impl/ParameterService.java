@@ -105,28 +105,6 @@ public class ParameterService extends AbstractParameterService implements IParam
         sqlTemplate.update(sql.getSql("deleteParameterSql"), externalId, nodeGroupId, key);
         rereadParameters();
     }
-    
-    public void deleteParameterWithUpdate(String externalId, String nodeGroupId, String key) {
-    	String oldSql = sql.getSql("deleteParameterSql");
-    	String newSql = "";
-    	int j = 0;
-    	for (int i = 0; i < oldSql.length(); i++) {
-    		if (oldSql.charAt(i) == '?') {
-    			if (j == 0) {
-    				newSql += "'" + externalId + "'";;
-    			} else if (j == 1) {
-    				newSql += "'" + nodeGroupId + "'";
-    			} else {
-    				newSql += "'" + key + "'";
-    			}
-    			j++;
-    		} else {
-    			newSql += oldSql.charAt(i);
-    		}
-    	}
-    	sqlTemplate.update(newSql);
-    }
-    
 
     public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters, String lastUpdateBy) {
         Set<String> keys = parameters.keySet();
@@ -134,10 +112,10 @@ public class ParameterService extends AbstractParameterService implements IParam
             saveParameter(externalId, nodeGroupId, key, parameters.get(key), lastUpdateBy);
         }
     }
-    
-    protected TypedProperties readParametersFromDatabase(String sqlKey, Object... values) {
+
+    protected TypedProperties rereadDatabaseParameters(String externalId, String nodeGroupId) {
         final TypedProperties properties = new TypedProperties();
-        sqlTemplate.query(sql.getSql(sqlKey), new ISqlRowMapper<Object>() {
+        sqlTemplate.query(sql.getSql("selectParametersSql"), new ISqlRowMapper<Object>() {
             public Object mapRow(Row row) {
                 String value = row.getString("param_value");
                 if (value != null) {
@@ -145,7 +123,7 @@ public class ParameterService extends AbstractParameterService implements IParam
                 }
                 return row;
             }
-        }, values);
+        }, externalId, nodeGroupId);
         return properties;
     }
 
@@ -167,8 +145,8 @@ public class ParameterService extends AbstractParameterService implements IParam
                 new DatabaseParameterMapper(), paramKey);
     }
 
-    public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId) {
-        return readParametersFromDatabase("selectParametersSql", externalId, nodeGroupId);
+    public TypedProperties getDatabaseParametersByNodeGroupId(String nodeGroupId) {
+        return rereadDatabaseParameters(ParameterConstants.ALL, nodeGroupId);
     }
 
     class DatabaseParameterMapper implements ISqlRowMapper<DatabaseParameter> {

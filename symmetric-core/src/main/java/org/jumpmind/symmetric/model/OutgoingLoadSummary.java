@@ -33,6 +33,7 @@ public class OutgoingLoadSummary implements Serializable {
     private int finishedBatchCount;
     private int pendingBatchCount;
     private long currentBatchId;
+    private String currentTable;
     private long currentDataEventCount;
     private String createBy;
     private Date createTime;
@@ -89,6 +90,14 @@ public class OutgoingLoadSummary implements Serializable {
 
     public void setCurrentBatchId(long currentBatchId) {
         this.currentBatchId = currentBatchId;
+    }
+
+    public String getCurrentTable() {
+        return currentTable;
+    }
+
+    public void setCurrentTable(String currentTable) {
+        this.currentTable = currentTable;
     }
 
     public long getCurrentDataEventCount() {

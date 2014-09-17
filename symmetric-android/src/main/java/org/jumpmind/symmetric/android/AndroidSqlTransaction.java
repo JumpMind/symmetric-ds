@@ -35,15 +35,14 @@ public class AndroidSqlTransaction implements ISqlTransaction {
     protected AndroidSqlTemplate sqlTemplate;
 
     protected SQLiteDatabase database;
-    
-    protected boolean autoCommit = false;
+
+    protected boolean oldAutoCommitValue;
 
     protected String sql;
     
     protected boolean needsRolledback = false;
 
-    public AndroidSqlTransaction(AndroidSqlTemplate sqlTemplate, boolean autoCommit) {
-        this.autoCommit = autoCommit;
+    public AndroidSqlTransaction(AndroidSqlTemplate sqlTemplate) {
         this.sqlTemplate = sqlTemplate;
         this.database = sqlTemplate.getDatabaseHelper().getWritableDatabase();
         this.database.beginTransaction();

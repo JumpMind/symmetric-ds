@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.util;
 
 import java.io.File;
@@ -42,7 +22,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
@@ -65,7 +44,6 @@ import org.jumpmind.util.JarBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@IgnoreJRERequirement
 public class SnapshotUtil {
 
     protected static final Logger log = LoggerFactory.getLogger(SnapshotUtil.class);
@@ -266,7 +244,6 @@ public class SnapshotUtil {
 
         writeRuntimeStats(engine, tmpDir);
         writeJobsStats(engine, tmpDir);
-        writeDirectoryListing(engine, tmpDir);
 
         fos = null;
         try {
@@ -290,46 +267,6 @@ public class SnapshotUtil {
         } catch (IOException e) {
             throw new IoException("Failed to package snapshot files into archive", e);
         }
-    }
-    
-    protected static void writeDirectoryListing(ISymmetricEngine engine, File tmpDir) {
-        try {
-            File home = new File(System.getProperty("user.dir"));
-            if (home.getName().equalsIgnoreCase("bin")) {
-                home = home.getParentFile();
-            }
-            
-            StringBuilder output = new StringBuilder();
-            printDirectoryContents(home, output);
-            FileUtils.write(new File(tmpDir, "directory-listing.txt"), output);
-        } catch (Exception ex) {
-            log.warn("Failed to output the direcetory listing" , ex);
-        }
-    }
-    
-    protected static void printDirectoryContents(File dir, StringBuilder output) throws IOException {
-        output.append("\n");
-        output.append(dir.getCanonicalPath());
-        output.append("\n");
-
-        File[] files = dir.listFiles();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                printDirectoryContents(file, output);
-            } else {
-                output.append("  ");
-                output.append(file.canRead() ? "r" : "-");
-                output.append(file.canWrite() ? "w" : "-");
-                output.append(file.canExecute() ? "x" : "-");
-                output.append(StringUtils.leftPad(file.length() + "", 11));
-                output.append(" ");
-                output.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(file.lastModified())));
-                output.append(" ");
-                output.append(file.getName());
-                output.append("\n");
-            }
-        }
-
     }
     
     protected static void writeRuntimeStats(ISymmetricEngine engine, File tmpDir) {

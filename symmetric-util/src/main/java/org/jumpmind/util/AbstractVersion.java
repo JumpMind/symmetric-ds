@@ -29,8 +29,6 @@ import java.util.jar.Manifest;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Follow the Apache versioning scheme documented <a
@@ -38,7 +36,8 @@ import org.slf4j.LoggerFactory;
  */
 abstract public class AbstractVersion {
 
-    final Logger log = LoggerFactory.getLogger(getClass());
+    final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory
+            .getLog(getClass());
 
     public static final int MAJOR_INDEX = 0;
 
@@ -171,17 +170,13 @@ abstract public class AbstractVersion {
     }
 
     public boolean isOlderMinorVersion(String oldVersion) {
-        return isOlderMinorVersion(version, version());
-    }
-
-    public boolean isOlderMinorVersion(String checkVersion, String targetVersion) {
-
-        if (noVersion(targetVersion) || noVersion(checkVersion)) {
+        String currentVersion = version();
+        if (noVersion(currentVersion) || noVersion(oldVersion)) {
             return false;
         }
 
-        int[] checkVersions = parseVersion(checkVersion);
-        int[] targetVersions = parseVersion(targetVersion);
+        int[] checkVersions = parseVersion(oldVersion);
+        int[] targetVersions = parseVersion(currentVersion);
 
         if (checkVersions[MAJOR_INDEX] < targetVersions[MAJOR_INDEX]) {
             return true;
@@ -191,5 +186,4 @@ abstract public class AbstractVersion {
         }
         return false;
     }
-
 }

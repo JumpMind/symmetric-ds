@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -67,7 +66,6 @@ public class SymmetricServlet extends HttpServlet {
     protected void service(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         ServerSymmetricEngine engine = findEngine(req);
-        MDC.put("engineName", engine != null ? engine.getEngineName() : "?");
         if (engine == null) {
             boolean nodesBeingCreated = ServletUtils.getSymmetricEngineHolder(getServletContext())
                     .areEnginesStarting();
@@ -87,15 +85,12 @@ public class SymmetricServlet extends HttpServlet {
         } else if (engine.isStarted()) {
             IUriHandler handler = findMatchingHandler(engine, req);
             if (handler != null) {
-                List<IInterceptor> beforeInterceptors = handler.getInterceptors();
-                List<IInterceptor> afterInterceptors = null;
+                MDC.put("engineName", engine.getEngineName());
+                List<IInterceptor> interceptors = handler.getInterceptors();
                 try {
-                    if (beforeInterceptors != null) {
-                        afterInterceptors = new ArrayList<IInterceptor>(beforeInterceptors.size());
-                        for (IInterceptor interceptor : beforeInterceptors) {
-                            if (interceptor.before(req, res)) {
-                                afterInterceptors.add(interceptor);
-                            } else {
+                    if (interceptors != null) {
+                        for (IInterceptor interceptor : interceptors) {
+                            if (!interceptor.before(req, res)) {
                                 return;
                             }
                         }
@@ -108,8 +103,8 @@ public class SymmetricServlet extends HttpServlet {
                         ServletUtils.sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     }
                 } finally {
-                    if (afterInterceptors != null) {
-                        for (IInterceptor interceptor : afterInterceptors) {
+                    if (interceptors != null) {
+                        for (IInterceptor interceptor : interceptors) {
                             interceptor.after(req, res);
                         }
                     }

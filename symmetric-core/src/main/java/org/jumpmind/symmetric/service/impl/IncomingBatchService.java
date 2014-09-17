@@ -35,7 +35,6 @@ import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.DateMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -89,10 +88,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 deleteIncomingBatch(incomingBatch);
             }
         }
-    }
-
-    public void removingIncomingBatches(String nodeId) {
-        sqlTemplate.update(getSql("deleteIncomingBatchByNodeSql"), nodeId);
     }
 
     public List<IncomingBatch> listIncomingBatchesInErrorFor(String nodeId) {
@@ -194,14 +189,14 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                                 .is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED)) {
                     okayToProcess = true;
                     existingBatch.setStatus(Status.LD);
-                    log.info("Retrying batch {}", batch.getNodeBatchId());
+                    log.warn("Retrying batch {}", batch.getNodeBatchId());
                 } else if (existingBatch.getStatus() == Status.IG) {
                     okayToProcess = false;
                     batch.setStatus(Status.OK);
                     batch.incrementIgnoreCount();
                     existingBatch.setStatus(Status.OK);
                     existingBatch.incrementIgnoreCount();
-                    log.info("Ignoring batch {}", batch.getNodeBatchId());
+                    log.warn("Ignoring batch {}", batch.getNodeBatchId());
                 } else {
                     okayToProcess = false;
                     batch.setStatus(existingBatch.getStatus());
@@ -213,7 +208,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     batch.setStatementCount(existingBatch.getStatementCount());
 
                     existingBatch.setSkipCount(existingBatch.getSkipCount() + 1);
-                    log.info("Skipping batch {}", batch.getNodeBatchId());
+                    log.warn("Skipping batch {}", batch.getNodeBatchId());
                 }
                 updateIncomingBatch(existingBatch);
             }
@@ -325,29 +320,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             Types.VARCHAR, Types.TIMESTAMP, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
         }
         return count;
-    }
-    
-    public Map<String, BatchId> findMaxBatchIdsByChannel() {
-        Map<String, BatchId> ids = new HashMap<String, BatchId>();
-        sqlTemplate.query(getSql("maxBatchIdsSql"), new BatchIdMapper(ids),
-                IncomingBatch.Status.OK.name());
-        return ids;
-    }
-
-    class BatchIdMapper implements ISqlRowMapper<BatchId> {
-        Map<String, BatchId> ids;
-
-        public BatchIdMapper(Map<String, BatchId> ids) {
-            this.ids = ids;
-        }
-
-        public BatchId mapRow(Row rs) {
-            BatchId batch = new BatchId();
-            batch.setBatchId(rs.getLong("batch_id"));
-            batch.setNodeId(rs.getString("node_id"));
-            ids.put(rs.getString("channel_id"), batch);
-            return batch;
-        }
     }
 
     class IncomingBatchMapper implements ISqlRowMapper<IncomingBatch> {

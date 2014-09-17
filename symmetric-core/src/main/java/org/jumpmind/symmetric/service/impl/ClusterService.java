@@ -20,12 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PULL;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PUSH;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.HEARTBEAT;
-import static org.jumpmind.symmetric.service.ClusterConstants.INITIAL_LOAD_EXTRACT;
 import static org.jumpmind.symmetric.service.ClusterConstants.PULL;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_DATA_GAPS;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_INCOMING;
@@ -36,10 +31,11 @@ import static org.jumpmind.symmetric.service.ClusterConstants.ROUTE;
 import static org.jumpmind.symmetric.service.ClusterConstants.STAGE_MANAGEMENT;
 import static org.jumpmind.symmetric.service.ClusterConstants.STATISTICS;
 import static org.jumpmind.symmetric.service.ClusterConstants.SYNCTRIGGERS;
-import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_CLUSTER;
-import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_EXCLUSIVE;
-import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PULL;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PUSH;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
+import static org.jumpmind.symmetric.service.ClusterConstants.INITIAL_LOAD_EXTRACT;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -74,116 +70,58 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     public void init() {
-        sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
-
-        Map<String, Lock> allLocks = findLocks();
-        for (String action : new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING, PURGE_STATISTICS, SYNCTRIGGERS,
-                PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL, FILE_SYNC_PUSH, FILE_SYNC_TRACKER,
-                INITIAL_LOAD_EXTRACT }) {
-            if (allLocks.get(action) == null) {
-                initLockTable(action, TYPE_CLUSTER);
-            }
-        }
-
-        for (String action : new String[] { FILE_SYNC_SHARED }) {
-            if (allLocks.get(action) == null) {
-                initLockTable(action, TYPE_SHARED);
-            }
-        }
+        initLockTable(ROUTE);
+        initLockTable(PULL);
+        initLockTable(PUSH);
+        initLockTable(HEARTBEAT);
+        initLockTable(PURGE_INCOMING);
+        initLockTable(PURGE_OUTGOING);
+        initLockTable(PURGE_STATISTICS);
+        initLockTable(SYNCTRIGGERS);
+        initLockTable(PURGE_DATA_GAPS);
+        initLockTable(STAGE_MANAGEMENT);
+        initLockTable(WATCHDOG);
+        initLockTable(STATISTICS);
+        initLockTable(FILE_SYNC_PULL);
+        initLockTable(FILE_SYNC_PUSH);
+        initLockTable(FILE_SYNC_TRACKER);
+        initLockTable(INITIAL_LOAD_EXTRACT);
     }
 
     public void initLockTable(final String action) {
-        initLockTable(action, TYPE_CLUSTER);
-    }
-    
-    public void initLockTable(final String action, final String lockType) {
         try {
-            sqlTemplate.update(getSql("insertLockSql"), new Object[] { action, lockType });
-            log.debug("Inserted into the LOCK table for {}, {}", action, lockType);
+            sqlTemplate.update(getSql("insertLockSql"), new Object[] { action });
+            log.debug("Inserted into the NODE_LOCK table for {}", action);
         } catch (UniqueKeyException ex) {
-            log.debug("Failed to insert to the LOCK table for {}, {}.  Must be initialized already.",
-                    action, lockType);
+            log.debug(
+                    "Failed to insert to the NODE_LOCK table for {}.  Must be initialized already.",
+                    action);
         }
     }
 
     public void clearAllLocks() {
-        sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
-    }
-
-    public boolean lock(final String action, final String lockType) {
-        if (lockType.equals(TYPE_CLUSTER)) {
-            return lock(action);
-        } else if (lockType.equals(TYPE_SHARED)) {
-            return lockShared(action);
-        } else if (lockType.equals(TYPE_EXCLUSIVE)) {
-            return lockExclusive(action);
-        } else {
-            throw new UnsupportedOperationException("Lock type of " + lockType + " is not supported");
-        }
-    }
-
-    public boolean lock(final String action, final String lockType, long waitMillis) {
-        if (lockType.equals(TYPE_SHARED) || lockType.equals(TYPE_EXCLUSIVE)) {
-            return lockWait(action, lockType, waitMillis);
-        } else {
-            throw new UnsupportedOperationException("Lock type of " + lockType + " is not supported");
-        }
+        sqlTemplate.update(getSql("clearAllLocksSql"));
     }
 
     public boolean lock(final String action) {
         if (isClusteringEnabled()) {
             final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND,
                     (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
-            return lockCluster(action, timeout, new Date(), getServerId());
+            return lock(action, timeout, new Date(), getServerId());
         } else {
             return true;
         }
     }
 
-    protected boolean lockCluster(String action, Date timeToBreakLock, Date timeLockAcquired,
+    protected boolean lock(String action, Date timeToBreakLock, Date timeLockAquired,
             String serverId) {
         try {
-            return sqlTemplate.update(getSql("acquireClusterLockSql"), new Object[] { serverId,
-                    timeLockAcquired, action, TYPE_CLUSTER, timeToBreakLock, serverId }) == 1;
+            return sqlTemplate.update(getSql("aquireLockSql"), new Object[] { serverId,
+                    timeLockAquired, action, timeToBreakLock, serverId }) == 1;
         } catch (ConcurrencySqlException ex) {
             log.debug("Ignoring concurrency error and reporting that we failed to get the cluster lock: {}", ex.getMessage());
             return false;
         }
-    }
-
-    protected boolean lockShared(final String action) {
-        final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND,
-                (int) -parameterService.getLong(ParameterConstants.LOCK_TIMEOUT_MS));    
-        return sqlTemplate.update(getSql("acquireSharedLockSql"), new Object[] {
-                TYPE_SHARED, getServerId(), new Date(), action, TYPE_SHARED, timeout }) == 1;
-    }
-
-    protected boolean lockExclusive(final String action) {
-        final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND,
-                (int) -parameterService.getLong(ParameterConstants.LOCK_TIMEOUT_MS));    
-        return sqlTemplate.update(getSql("acquireExclusiveLockSql"), new Object[] {
-                TYPE_EXCLUSIVE, getServerId(), new Date(), action, TYPE_SHARED, timeout }) == 1;
-    }
-
-    protected boolean lockWait(final String action, final String lockType, long waitMillis) {
-        boolean isLocked = false;
-        long endTime = System.currentTimeMillis() + waitMillis;
-        long sleepMillis = parameterService.getLong(ParameterConstants.LOCK_WAIT_RETRY_MILLIS);
-        do {
-            if (lockType.equals(TYPE_SHARED)) {
-                isLocked = lockShared(action);
-            } else if (lockType.equals(TYPE_EXCLUSIVE)) {
-                isLocked = lockExclusive(action);
-                if (!isLocked) {
-                    sqlTemplate.update(getSql("disableSharedLockSql"), new Object[] { action, TYPE_SHARED });
-                }
-            }
-            if (isLocked) {
-                break;
-            }
-            AppUtils.sleep(sleepMillis);
-        } while (waitMillis == 0 || System.currentTimeMillis() < endTime);
-        return isLocked;
     }
 
     public Map<String, Lock> findLocks() {
@@ -193,11 +131,8 @@ public class ClusterService extends AbstractService implements IClusterService {
                 public Lock mapRow(Row rs) {
                     Lock lock = new Lock();
                     lock.setLockAction(rs.getString("lock_action"));
-                    lock.setLockType(rs.getString("lock_type"));
                     lock.setLockingServerId(rs.getString("locking_server_id"));
                     lock.setLockTime(rs.getDateTime("lock_time"));
-                    lock.setSharedCount(rs.getInt("shared_count"));
-                    lock.setSharedEnable(rs.getBoolean("shared_enable"));
                     lock.setLastLockingServerId(rs.getString("last_locking_server_id"));
                     lock.setLastLockTime(rs.getDateTime("last_lock_time"));
                     locks.put(lock.getLockAction(), lock);
@@ -244,40 +179,18 @@ public class ClusterService extends AbstractService implements IClusterService {
         return serverId;
     }
 
-    public void unlock(final String action, final String lockType) {
-        if (lockType.equals(TYPE_CLUSTER)) {
-            unlock(action);
-        } else if (lockType.equals(TYPE_SHARED)) {
-            unlockShared(action);
-        } else if (lockType.equals(TYPE_EXCLUSIVE)) {
-            unlockExclusive(action);
-        } else {
-            throw new UnsupportedOperationException("Lock type of " + lockType + " is not supported");
-        }
-    }
-
     public void unlock(final String action) {
         if (isClusteringEnabled()) {
-            if (!unlockCluster(action, getServerId())) {
+            if (!unlock(action, getServerId())) {
                 log.warn("Failed to release lock for action:{} server:{}", action, getServerId());
             }
         }
     }
 
-    protected boolean unlockCluster(String action, String serverId) {
+    protected boolean unlock(String action, String serverId) {
         String lastLockingServerId = serverId.equals(Lock.STOPPED) ? null : serverId;
-        return sqlTemplate.update(getSql("releaseClusterLockSql"), new Object[] { new Date(), lastLockingServerId, action,
-                TYPE_CLUSTER, serverId }) > 0;
-    }
-
-    protected boolean unlockShared(final String action) {
-        return sqlTemplate.update(getSql("releaseSharedLockSql"), new Object[] {
-                new Date(), getServerId(), action, TYPE_SHARED }) == 1;
-    }
-
-    protected boolean unlockExclusive(final String action) {
-        return sqlTemplate.update(getSql("releaseExclusiveLockSql"), new Object[] {
-                new Date(), getServerId(), action, TYPE_EXCLUSIVE }) == 1;
+        return sqlTemplate.update(getSql("releaseLockSql"), new Object[] { new Date(), lastLockingServerId, action,
+                serverId }) > 0;
     }
 
     public boolean isClusteringEnabled() {
@@ -300,7 +213,7 @@ public class ClusterService extends AbstractService implements IClusterService {
             int tries = 600;
             Date futureTime = DateUtils.add(new Date(), Calendar.YEAR, 100);
             while (tries > 0) {
-                if (!lockCluster(action, new Date(), futureTime, Lock.STOPPED)) {
+                if (!lock(action, new Date(), futureTime, Lock.STOPPED)) {
                     AppUtils.sleep(50);
                     tries--;
                 } else {
@@ -314,7 +227,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         Map<String, Lock> all = findLocks();
         Lock lock = all.get(action);
         if (lock != null && Lock.STOPPED.equals(lock.getLockingServerId())) {
-            unlockCluster(action, Lock.STOPPED);
+            unlock(action, Lock.STOPPED);
         }
     }
 

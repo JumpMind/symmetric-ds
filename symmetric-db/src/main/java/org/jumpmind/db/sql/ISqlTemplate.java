@@ -33,11 +33,8 @@ public interface ISqlTemplate {
     public byte[] queryForBlob(String sql, Object... args);
 
     public byte[] queryForBlob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... args);
-    
-    @Deprecated
-    public String queryForClob(final String sql, final Object... args);
 
-    public String queryForClob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... args);
+    public String queryForClob(String sql, Object... args);
 
     public <T> T queryForObject(String sql, Class<T> clazz, Object... params);
     
@@ -106,8 +103,6 @@ public interface ISqlTemplate {
     public boolean isForeignKeyViolation(Throwable ex);
 
     public ISqlTransaction startSqlTransaction();
-    
-    public ISqlTransaction startSqlTransaction(boolean autoCommit);
 
     public int getDatabaseMajorVersion();
 

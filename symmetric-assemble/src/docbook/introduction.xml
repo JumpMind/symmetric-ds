@@ -39,8 +39,8 @@
   <section id="requirements">
     <title>System Requirements</title>
 
-    <para>SymmetricDS is written in Java and requires a Java SE Runtime
-    Environment (JRE) or Java SE Development Kit (JDK) version 6.0 or
+    <para>SymmetricDS is written in Java 5 and requires a Java SE Runtime
+    Environment (JRE) or Java SE Development Kit (JDK) version 5.0 or
     above.</para>
 
     <para>Any database with trigger technology and a JDBC driver has the
@@ -120,17 +120,21 @@
   </section>
 
   <section id="definition">
-    <title>Concepts</title>
+    <title>Overview</title>
+
+    <para>The following is an overview of how SymmetricDS works.</para>
+
+    <?hard-pagebreak ?>
 
     <section>
-      <title>Nodes</title>
+      <title>A Node is Born</title>
 
       <para>SymmetricDS is a Java-based application that hosts a
       synchronization engine which acts as an agent for data synchronization
       between a single database instance and other synchronization engines in
       a network.</para>
 
-      <para>The SymmetricDS engine is referred to as a
+      <para>The SymmetricDS engine is also referred to as a
       <emphasis>node</emphasis>. SymmetricDS is designed to be able to scale
       out to many thousands of nodes. The database connection is configured by
       providing a database connection string, database user, and database
@@ -183,13 +187,13 @@
     </section>
 
     <section>
-      <title>Change Data Capture</title>
+      <title>Capturing Changes</title>
 
       <para>Changes are captured at a SymmetricDS enabled database by database
       triggers that are installed automatically by SymmetricDS based on
       configuration settings that you specify. The database triggers record
       data changes in the <xref linkend="table_data" xrefstyle="table"/>
-      table. The triggers are designed to be as noninvasive and as
+      table. The database triggers are designed to be as noninvasive and as
       lightweight as possible. After SymmetricDS triggers are installed,
       changes are captured for any Data Manipulation Language (DML) statements
       performed by external applications. Note that no additional libraries or
@@ -209,16 +213,16 @@
       before synchronization starts.</para>
 
       <para>SymmetricDS will install or update its database triggers at
-      start-up time and on a regular basis when a scheduled sync triggers
-      job runs (by default, each night at midnight). The sync triggers job
+      start-up time and on a regular basis when a scheduled "sync triggers"
+      job runs (by default, each night at midnight). The "sync triggers" job
       detects changes to your database structure or trigger configuration when
-      deciding whether a trigger needs to be rebuilt. Optionally, the sync
-      triggers job can be turned off and the database triggers DDL script can
+      deciding whether a trigger needs to be rebuilt. Optionally, the "sync
+      triggers" job can be turned off and the database triggers DDL script can
       be generated and run by a DBA.</para>
 
       <para>After changed data is inserted by the database trigger into the
       <xref linkend="table_data" xrefstyle="table"/> table, it is batched and
-      assigned to a node by the router job. Routing data refers to choosing
+      assigned to a node by the "router" job. Routing data refers to choosing
       the nodes in the SymmetricDS network to which the data should be sent.
       By default, data is routed to other nodes based on the node group.
       Optionally, characteristics of the data or of the target nodes can also
@@ -235,13 +239,13 @@
     </section>
 
     <section>
-      <title>Change Data Delivery</title>
+      <title>Change Delivery</title>
 
       <para>Data is delivered to remote nodes over HTTP or HTTPS. It can be
       delivered in one of two ways depending on the type of transport link
       that is configured between node groups. A node group can be configured
       to push changes to other nodes in a group or pull changes from other
-      nodes in a group. Pushing is initiated from the push job at the source
+      nodes in a group. Pushing is initiated from the "push" job at the source
       node. If there are batches that are waiting to be transported, the
       pushing node will reserve a connection to each target node using an HTTP
       HEAD request. If the reservation request is accepted, then the source
@@ -255,7 +259,7 @@
       no more batches available to send. After all the batches have been sent
       for one push, the target returns a list of the batch statuses.</para>
 
-      <para>Pull requests are initiated by the pull job from at the target
+      <para>Pull requests are initiated by the "pull" job from at the target
       node. A pull request uses an HTTP GET. The same extraction process that
       happens for a "push" also happens during a "pull."</para>
 
@@ -270,7 +274,7 @@
     </section>
 
     <section>
-      <title>Data Channels</title>
+      <title>Channeling Data</title>
 
       <para>Data is always delivered to a remote node in the order it was
       recorded for a specific channel. A channel is a user defined grouping of
@@ -358,7 +362,7 @@
 
        Channels are discussed in more detail in
 
-      <xref linkend="configuration-channels"/>
+      <xref linkend="choosing-channels"/>
 
        .
     </section>
@@ -406,7 +410,7 @@
           <listitem>
             <para>In addition to synchronization, SymmetricDS is also capable
             of performing fairly complex transformations (see <xref
-            linkend="configuration-transforms" xrefstyle="select: label"/> ) of data as
+            linkend="transform-data" xrefstyle="select: label"/> ) of data as
             the synchronization data is loaded into a target database. The
             transformations can be used to merge source data, make multiple
             copies of source data across multiple target tables, set defaults
@@ -417,7 +421,7 @@
           <listitem>
             <para>As data changes are loaded in the target database, data can
             be filtered, either by a simple bean shell load filter (see
-            <xref linkend="configuration-load-filters" xrefstyle="select: label"/>
+            <xref linkend="data-load-filter" xrefstyle="select: label"/>
             data-load-filter) or by a class implementing <xref
             linkend="extensions-data-loader-filter" xrefstyle="table"/>. You
             can change the data in a column, route it somewhere else, trigger
@@ -465,7 +469,49 @@
     </section>    
   </section>
 
-  
+  <section id="background">
+    <title>Origins</title>
+
+    <para>The idea of SymmetricDS was born from a real-world need. Several of
+    the original developers were, several years ago, implementing a commercial
+    Point of Sale (POS) system for a large retailer. The development team came
+    to the conclusion that the software available for trickling back
+    transactions to corporate headquarters (frequently known as the 'central
+    office' or 'general office') did not meet the project needs. The list of
+    project requirements made finding the ideal solution difficult:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Sending and receiving data with up to 2000 stores during peak
+        holiday loads.</para>
+      </listitem>
+
+      <listitem>
+        <para>Supporting one database platform at the store and a different
+        one at the central office.</para>
+      </listitem>
+
+      <listitem>
+        <para>Synchronizing some data in one direction, and other data in both
+        directions.</para>
+      </listitem>
+
+      <listitem>
+        <para>Filtering out sensitive data and re-routing it to a protected
+        database.</para>
+      </listitem>
+
+      <listitem>
+        <para>Preparing the store database with an initial load of data from
+        the central office.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The team ultimately created a custom solution that met the
+    requirements and led to a successful project. From this work came the
+    knowledge and experience that SymmetricDS benefits from today.</para>
+  </section>
+
   <section>
     <title>Why Database Triggers?</title>
 
@@ -493,12 +539,12 @@
 
     <para>All three of these techniques have advantages and disadvantages, and
     all three are on the road map for SymmetricDS. At present time,
-    SymmetricDS supports trigger-based data capture and partial lazy data
+    SymmetricDS supports trigger-based data capture and basic lazy data
     capture. These two techniques were implemented first for a variety of
     reasons, not the least of which is that the majority of use cases that
     SymmetricDS targets can be solved using trigger-based and conditional
     replication in a way that allows for more database platforms to be
-    supported using industry standard technologies. This fact allowed SymmetricDS
+    supported using industry standard technologies. This fact allowed our
     developers' valuable time and energy to be invested in designing a product
     that is easy to install, configure and manage versus spending time reverse
     engineering proprietary and not well documented database log files.</para>
@@ -519,5 +565,83 @@
     require deployment on the database server itself.</para>
   </section>
 
- 
+  <section>
+    <title>Support</title>
+
+    <para>SymmetricDS is backed by JumpMind, Inc.</para>
+
+    <para>SymmetricDS is, and always will be, open source, which means free
+    community support is available online, through the forums and the issue
+    tracker. In a production environment, we have found that clients demand
+    fast, more experienced help from the original architects and engineers —
+    people who have the knowledge and experience to design, tune,
+    troubleshoot, and shape future versions of the product.</para>
+
+    <para>To meet this demand, JumpMind provides Support Subscriptions
+    designed to provide your organization with expert, dependable support from
+    development to mission critical production support.</para>
+  </section>
+
+  <section>
+    <title>What's New in SymmetricDS 3</title>
+
+    <para>SymmetricDS 3 builds upon the existing SymmetricDS 2.x software base
+    and incorporates a number of architectural changes and performance
+    improvements. If you are brand new to SymmetricDS, you can safely skip
+    this section. If you have used SymmetricDS 2.x in the past, this section
+    summarizes the key differences you will encounter when moving to
+    SymmetricDS 3.</para>
+
+    <para>One optimization that effects both routing and data extraction is a
+    change to the routing process to reuse batches across nodes if all of the
+    data in the batches is going to be the same. SymmetricDS will
+    automatically reuse batches if the default router is being used and there
+    are NO inbound routers that have sync_on_incoming_batch turned on. If the
+    same data is being sent to all nodes then a great deal of processing,
+    during both routing and extraction, can be avoided. This is especially
+    useful when data is being delivered to thousands of nodes. As a result of
+    this change, the primary key of <xref linkend="table_outgoing_batch"
+    xrefstyle="table"/> has changed. This means that during an upgrade the
+    table will be rebuilt.</para>
+
+    <para>Another optimization that effects data transport is the change to
+    load batches as soon as they have been delivered to a target node. In 2.x
+    all batches for a synchronization run were delivered, and then data was
+    loaded. When errors occurred early on and there were several big batches
+    or hundreds of batches to deliver, this was inefficient because all the
+    batches were transported before the loading started.</para>
+
+    <para>Yet another optimization allows SymmetricDS to scale better when it
+    is initiating communication with nodes. The pulling and pushing of data
+    now happens from a configurable, but fixed size thread pool so that
+    multiple nodes can be pulled and pushed to concurrently. This means that
+    now, a centralized node can reach out to many child nodes in an efficient
+    manner where in the past, the child nodes were relied upon to initiate
+    communication.</para>
+
+    <para>The 2.x series allowed multiple nodes to be hosted in one standalone
+    SymmetricDS instance. This feature (called multiServerMode) was off by
+    default. In SymmetricDS 3 this feature is now the preferred mode of
+    operation. It formalizes where properties file are configured and allows
+    multiple nodes to be hosted on one JVM which saves on system
+    resources.</para>
+
+    <para>SymmetricDS 3 introduces a long anticipated feature: Conflict
+    Detection and Resolution. Please see <xref linkend="defining-conflicts"/>
+    for more information.</para>
+
+    <para>Transformations are now friendlier. They allow columns to be
+    implied. This means that when configuring transformations, not all of the
+    columns have to be specified which makes transformations much more
+    maintainable.</para>
+
+    <para>An architectural change to the data loader subsystem allows the data
+    loader to now be pluggable by channel. This will allow more efficient data
+    loaders to be built if necessary. It will also make it straight forward to
+    load data into non-relational data stores.</para>
+
+    <para>Several properties and extension points have been deprecated or
+    renamed. Please see <xref linkend="upgrading"/> for a list of deprecated
+    features.</para>
+  </section>
 </chapter>

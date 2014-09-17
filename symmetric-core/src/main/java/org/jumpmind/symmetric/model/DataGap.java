@@ -45,11 +45,6 @@ public class DataGap implements Serializable {
         this.createTime = createTime;
     }
 
-    @Override
-    public String toString() {
-        return "{ startId: " + startId + ", endId: " + endId + ", createTime: \"" + createTime.toString() + "\" }";
-    }
-
     public void setEndId(long endId) {
         this.endId = endId;
     }

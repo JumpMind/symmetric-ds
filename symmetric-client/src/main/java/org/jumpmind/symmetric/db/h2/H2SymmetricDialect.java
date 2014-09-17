@@ -51,10 +51,10 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
             String triggerName) {
         boolean exists = (platform.getSqlTemplate()
-                .queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ? and (TRIGGER_CATALOG=? or ? is null) and (TRIGGER_SCHEMA=? or ? is null)",
-                        new Object[] { triggerName, catalogName, catalogName, schemaName, schemaName }) > 0)
-                && (platform.getSqlTemplate().queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ? and (TABLE_CATALOG=? or ? is null) and (TABLE_SCHEMA=? or ? is null)",
-                        new Object[] { String.format("%s_CONFIG", triggerName), catalogName, catalogName, schemaName, schemaName }) > 0);
+                .queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
+                        new Object[] { triggerName }) > 0)
+                && (platform.getSqlTemplate().queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
+                        new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);
 
         if (!exists && !StringUtils.isBlank(triggerName)) {
             removeTrigger(new StringBuilder(), catalogName, schemaName, triggerName, tableName);

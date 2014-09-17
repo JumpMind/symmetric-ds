@@ -104,8 +104,6 @@ public class Column implements Cloneable, Serializable {
     private int precisionRadix;
     
     private Map<String, PlatformColumn> platformColumns;
-    
-    private String[] enumValues;
 
     public Column() {
     }
@@ -265,7 +263,7 @@ public class Column implements Cloneable, Serializable {
     public void setMappedTypeCode(int typeCode) {
         this.mappedType = TypeMap.getJdbcTypeName(typeCode);
         if (this.mappedType == null) {
-            throw new ModelException("Unknown JDBC type code " + typeCode + " for : " + toString());
+            throw new ModelException("Unknown JDBC type code " + typeCode);
         }
         this.mappedTypeCode = typeCode;
     }
@@ -289,7 +287,7 @@ public class Column implements Cloneable, Serializable {
         Integer typeCode = TypeMap.getJdbcTypeCode(type);
 
         if (typeCode == null) {
-            throw new ModelException("Unknown JDBC type " + type + " for : " + toString());
+            throw new ModelException("Unknown JDBC type " + type);
         } else {
             this.mappedTypeCode = typeCode.intValue();
             // we get the corresponding string value from the TypeMap in order
@@ -624,9 +622,7 @@ public class Column implements Cloneable, Serializable {
 
         result.append("Column [name=");
         result.append(getName());
-        result.append("; jdbcType=");
-        result.append(getJdbcTypeName());
-        result.append("; mappedType=");
+        result.append("; type=");
         result.append(getMappedType());
         result.append("]");
 
@@ -704,18 +700,6 @@ public class Column implements Cloneable, Serializable {
     
     public boolean containsJdbcTypes() {
         return jdbcTypeCode != Integer.MIN_VALUE && jdbcTypeName != null;
-    }
-    
-    public void setEnumValues(String[] enumValues) {
-        this.enumValues = enumValues;
-    }
-    
-    public String[] getEnumValues() {
-        return enumValues;
-    }
-    
-    public boolean isEnum() {
-        return enumValues != null && enumValues.length > 0;
     }
 
 }

@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -36,7 +35,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ClarionDateTimeColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.BshColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsKeyColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
@@ -44,13 +43,13 @@ import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.ISingleValueColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IgnoreColumnException;
 import org.jumpmind.symmetric.io.data.transform.IgnoreRowException;
-import org.jumpmind.symmetric.io.data.transform.JavaColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.LookupColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.MathColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.NewAndOldValue;
 import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
@@ -60,6 +59,7 @@ import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
 import org.jumpmind.symmetric.io.data.transform.ValueMapColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +75,6 @@ public class TransformWriter extends NestedDataWriter {
     protected List<TransformTable> activeTransforms;
     protected Batch batch;
     protected Map<String, IColumnTransform<?>> columnTransforms;
-    protected Table lastTransformedTable;
     
     public TransformWriter(IDatabasePlatform platform, TransformPoint transformPoint,
             IDataWriter targetWriter, Map<String, IColumnTransform<?>> columnTransforms, 
@@ -89,25 +88,22 @@ public class TransformWriter extends NestedDataWriter {
     
     public static Map<String, IColumnTransform<?>> buildDefaultColumnTransforms() {
         Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
-        addColumnTransform(columnTransforms, new AdditiveColumnTransform());
-        addColumnTransform(columnTransforms, new JavaColumnTransform());
-        addColumnTransform(columnTransforms, new ConstantColumnTransform());
-        addColumnTransform(columnTransforms, new CopyColumnTransform());
-        addColumnTransform(columnTransforms, new IdentityColumnTransform());
-        addColumnTransform(columnTransforms, new MultiplierColumnTransform());
-        addColumnTransform(columnTransforms, new SubstrColumnTransform());
-        addColumnTransform(columnTransforms, new RemoveColumnTransform());
-        addColumnTransform(columnTransforms, new MathColumnTransform());
-        addColumnTransform(columnTransforms, new ValueMapColumnTransform());
-        addColumnTransform(columnTransforms, new CopyIfChangedColumnTransform());
-        addColumnTransform(columnTransforms, new ColumnsToRowsKeyColumnTransform());
-        addColumnTransform(columnTransforms, new ColumnsToRowsValueColumnTransform());
-        addColumnTransform(columnTransforms, new ClarionDateTimeColumnTransform());
+        columnTransforms.put(AdditiveColumnTransform.NAME, new AdditiveColumnTransform());
+        columnTransforms.put(BshColumnTransform.NAME, new BshColumnTransform());
+        columnTransforms.put(ConstantColumnTransform.NAME, new ConstantColumnTransform());
+        columnTransforms.put(CopyColumnTransform.NAME, new CopyColumnTransform());
+        columnTransforms.put(IdentityColumnTransform.NAME, new IdentityColumnTransform());
+        columnTransforms.put(MultiplierColumnTransform.NAME, new MultiplierColumnTransform());
+        columnTransforms.put(SubstrColumnTransform.NAME, new SubstrColumnTransform());
+        columnTransforms.put(VariableColumnTransform.NAME, new VariableColumnTransform());
+        columnTransforms.put(LookupColumnTransform.NAME, new LookupColumnTransform());
+        columnTransforms.put(RemoveColumnTransform.NAME, new RemoveColumnTransform());
+        columnTransforms.put(MathColumnTransform.NAME, new MathColumnTransform());
+        columnTransforms.put(ValueMapColumnTransform.NAME, new ValueMapColumnTransform());
+        columnTransforms.put(CopyIfChangedColumnTransform.NAME, new CopyIfChangedColumnTransform());
+        columnTransforms.put(ColumnsToRowsKeyColumnTransform.NAME, new ColumnsToRowsKeyColumnTransform());
+        columnTransforms.put(ColumnsToRowsValueColumnTransform.NAME, new ColumnsToRowsValueColumnTransform());
         return columnTransforms;
-    }
-    
-    public static void addColumnTransform(Map<String, IColumnTransform<?>> columnTransforms, IColumnTransform<?> columnTransform) {
-        columnTransforms.put(columnTransform.getName(), columnTransform);
     }
 
     protected Map<String, List<TransformTable>> toMap(TransformTable[] transforms) {
@@ -192,11 +188,7 @@ public class TransformWriter extends NestedDataWriter {
             }
 
             List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
-            TransformTable[] transformTables = activeTransforms.toArray(new TransformTable[activeTransforms.size()]);
-            if (data.getDataEventType() == DataEventType.DELETE) {
-                CollectionUtils.reverseArray(transformTables);
-            }
-            for (TransformTable transformation : transformTables) {
+            for (TransformTable transformation : activeTransforms) {
                 transformation = transformation.enhanceWithImpliedColumns(sourceKeyValues,
                         oldSourceValues, sourceValues);
                 dataThatHasBeenTransformed.addAll(transform(eventType, context, transformation,
@@ -204,23 +196,12 @@ public class TransformWriter extends NestedDataWriter {
             }
 
             for (TransformedData transformedData : dataThatHasBeenTransformed) {
-                Table transformedTable = transformedData.buildTargetTable();
+                Table table = transformedData.buildTargetTable();
                 CsvData csvData = transformedData.buildTargetCsvData();
                 long transformTimeInMs = System.currentTimeMillis() - ts;
-                boolean processData = true;
-                if (lastTransformedTable == null || !lastTransformedTable.equals(transformedTable)) {
-                    if (lastTransformedTable != null) {
-                        this.nestedWriter.end(lastTransformedTable);
-                    }
-                    processData = this.nestedWriter.start(transformedTable);
-                    if (!processData) {
-                        lastTransformedTable = null;
-                    } else {
-                        lastTransformedTable = transformedTable;
-                    }
-                }
-                if (processData || !csvData.requiresTable()) {
+                if (this.nestedWriter.start(table) || !csvData.requiresTable()) {
                     this.nestedWriter.write(csvData);
+                    this.nestedWriter.end(table);
                 }
                 Statistics stats = this.nestedWriter.getStatistics().get(batch);
                 if (stats != null) {
@@ -301,29 +282,21 @@ public class TransformWriter extends NestedDataWriter {
                             || (includeOn == IncludeOnType.DELETE && eventType == DataEventType.DELETE)) {
                         if (StringUtils.isBlank(transformColumn.getSourceColumnName())
                                 || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
-                            try {
-                                Object value = transformColumn(context, data, transformColumn,
-                                        sourceValues, oldSourceValues);
-                                if (value instanceof NewAndOldValue) {
-                                    data.put(transformColumn,
-                                            ((NewAndOldValue) value).getNewValue(),
-                                            ((NewAndOldValue) value).getOldValue(), false);
-                                } else if (value == null || value instanceof String) {
-                                    data.put(transformColumn, (String) value, null, false);
-                                } else if (value instanceof List) {
-                                    throw new IllegalStateException(String.format("Column transform failed %s.%s. Transforms that multiply rows must be marked as part of the primary key", 
-                                            transformColumn.getTransformId(), transformColumn.getTargetColumnName()));                                    
-                                } else {                                    
-                                    throw new IllegalStateException(String.format("Column transform failed %s.%s. It returned an unexpected type of %s", 
-                                            transformColumn.getTransformId(), transformColumn.getTargetColumnName(), 
-                                            value.getClass().getSimpleName()));
-                                }
-                            } catch (IgnoreColumnException e) {
-                                // Do nothing. We are ignoring the column
-                                if (log.isDebugEnabled()) {
-                                    log.debug(
-                                            "A transform indicated we should ignore the target column {}",
-                                            transformColumn.getTargetColumnName());
+                            IColumnTransform<?> transform = columnTransforms != null ? columnTransforms
+                                    .get(transformColumn.getTransformType()) : null;
+                            if (transform == null
+                                    || transform instanceof ISingleValueColumnTransform) {
+                                try {
+                                    String value = (String) transformColumn(context, data,
+                                            transformColumn, sourceValues, oldSourceValues);
+                                    data.put(transformColumn, value, false);
+                                } catch (IgnoreColumnException e) {
+                                    // Do nothing. We are ignoring the column
+                                    if (log.isDebugEnabled()) {
+                                        log.debug(
+                                                "A transform indicated we should ignore the target column {}",
+                                                transformColumn.getTargetColumnName());
+                                    }
                                 }
                             }
                         } else {
@@ -407,25 +380,22 @@ public class TransformWriter extends NestedDataWriter {
                             @SuppressWarnings("unchecked")
                             List<String> values = (List<String>) columnValue;
                             if (values.size() > 0) {
-                                data.put(transformColumn, values.get(0), values.get(0), true);
+                                data.put(transformColumn, values.get(0), true);
                                 if (values.size() > 1) {
                                     if (newDatas == null) {
                                         newDatas = new ArrayList<TransformedData>(values.size() - 1);
                                     }
                                     for (int i = 1; i < values.size(); i++) {
                                         TransformedData newData = data.copy();
-                                        newData.put(transformColumn, values.get(i), null, true);
+                                        newData.put(transformColumn, values.get(i), true);
                                         newDatas.add(newData);
                                     }
                                 }
                             } else {
                                 throw new IgnoreRowException();
                             }
-                        } else if (columnValue instanceof NewAndOldValue) {
-                            data.put(transformColumn, ((NewAndOldValue) columnValue).getNewValue(),
-                                    ((NewAndOldValue) columnValue).getOldValue(), true);
                         } else {
-                            data.put(transformColumn, (String) columnValue, (String) columnValue, true);                            
+                            data.put(transformColumn, (String) columnValue, true);
                         }
                     } catch (IgnoreColumnException e) {
                         // Do nothing. We are suppose to ignore the column.
@@ -452,14 +422,9 @@ public class TransformWriter extends NestedDataWriter {
         IColumnTransform<?> transform = columnTransforms != null ? columnTransforms
                 .get(transformColumn.getTransformType()) : null;
         if (transform != null) {
-            try {
-                String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
-                returnValue = transform.transform(platform, context, transformColumn, data,
-                        sourceValues, value, oldValue);
-            } catch (RuntimeException ex) {
-                log.warn("Column transform failed {}.{} ({}) for source values of {}", new Object[] { transformColumn.getTransformId(), transformColumn.getTargetColumnName(), transformColumn.getIncludeOn().name(), sourceValues.toString() });
-                throw ex;
-            }
+            String oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
+            returnValue = transform.transform(platform, context, transformColumn, data,
+                    sourceValues, value, oldValue);
         } else {
             throw new TransformColumnException(String.format("Could not locate a column transform of type '%s'", transformColumn.getTransformType()));
         }
@@ -467,10 +432,6 @@ public class TransformWriter extends NestedDataWriter {
     }
 
     public void end(Table table) {
-        if (this.lastTransformedTable != null) {
-            this.nestedWriter.end(lastTransformedTable);
-            this.lastTransformedTable = null;
-        }
         if (activeTransforms != null && activeTransforms.size() > 0) {
             activeTransforms = null;
         } else {

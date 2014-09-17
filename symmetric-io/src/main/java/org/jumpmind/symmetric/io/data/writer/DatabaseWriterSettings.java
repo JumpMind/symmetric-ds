@@ -52,10 +52,6 @@ public class DatabaseWriterSettings {
     protected boolean ignoreMissingTables = true;
 
     protected boolean saveCurrentValueOnError = false;
-    
-    protected boolean fitToColumn = false;
-    
-    protected String textColumnExpression;
 
     protected Map<String, Conflict> conflictSettingsByChannel;
 
@@ -63,7 +59,7 @@ public class DatabaseWriterSettings {
 
     protected List<IDatabaseWriterFilter> databaseWriterFilters;
 
-    protected List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers;        
+    protected List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers;
 
     protected List<ResolvedData> resolvedData;
 
@@ -210,12 +206,12 @@ public class DatabaseWriterSettings {
 
     public Conflict pickConflict(Table table, Batch batch) {
         Conflict settings = null;
-        String fullyQualifiedName = table.getFullyQualifiedTableName().toLowerCase();
+        String fullyQualifiedName = table.getFullyQualifiedTableName();
         if (conflictSettingsByTable != null) {
             Conflict found = conflictSettingsByTable.get(fullyQualifiedName);
 
             if (found == null) {
-                found = conflictSettingsByTable.get(table.getName().toLowerCase());
+                found = conflictSettingsByTable.get(table.getName());
             }
 
             if (found != null
@@ -256,20 +252,5 @@ public class DatabaseWriterSettings {
     public void setSaveCurrentValueOnError(boolean saveCurrentValueOnError) {
         this.saveCurrentValueOnError = saveCurrentValueOnError;
     }
-    
-    public void setFitToColumn(boolean fitToColumn) {
-        this.fitToColumn = fitToColumn;
-    }
-    
-    public boolean isFitToColumn() {
-        return fitToColumn;
-    }
 
-    public void setTextColumnExpression(String textColumnExpression) {
-        this.textColumnExpression = textColumnExpression;
-    }
-    
-    public String getTextColumnExpression() {
-        return textColumnExpression;
-    }
 }

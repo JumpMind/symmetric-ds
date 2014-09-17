@@ -59,7 +59,5 @@ public interface ITransportManager {
      * @param url This is the url configured in sync_url of the node table
      */
     public String resolveURL(String url, String registrationUrl);
-    
-    public int sendCopyRequest(Node local) throws IOException;
 
 }

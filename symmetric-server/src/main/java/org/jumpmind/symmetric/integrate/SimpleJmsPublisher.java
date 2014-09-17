@@ -27,12 +27,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jmx.export.annotation.ManagedOperation;
-import org.springframework.jmx.export.annotation.ManagedOperationParameter;
-import org.springframework.jmx.export.annotation.ManagedOperationParameters;
-import org.springframework.jmx.export.annotation.ManagedResource;
 
-@ManagedResource(description = "The management interface for an jms publisher")
 public class SimpleJmsPublisher implements IPublisher, BeanFactoryAware {
 
     static final Logger log = LoggerFactory.getLogger(SimpleJmsPublisher.class);
@@ -44,29 +39,12 @@ public class SimpleJmsPublisher implements IPublisher, BeanFactoryAware {
     public boolean enabled = true;
 
     public void publish(Context context, String text) {
-        publish(text);
-    }
-    
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    @ManagedOperation(description = "Publishes the message text passed in as an argument")
-    @ManagedOperationParameters({ @ManagedOperationParameter(name = "text", description = "The message text that will be published") })
-    public boolean publish(String text) {
-        try {
-            log.debug("Publishing {}", text);
-            if (enabled) {
-                ((JmsTemplate) beanFactory.getBean(jmsTemplateBeanName)).convertAndSend(text);
-                return true;
-            } else {
-                log.info("Message was not published because the publisher is not enabled: \n"
-                        + text);
-                return false;
-            }
-        } catch (RuntimeException ex) {
-            log.error("Failed to publish message: \n" + text, ex);
-            throw ex;
+        log.debug("Publishing {}", text);
+        JmsTemplate jmsTemplate = (JmsTemplate) beanFactory.getBean(jmsTemplateBeanName);
+        if (enabled) {
+            jmsTemplate.convertAndSend(text);
+        } else {
+            log.warn("Message was not published because the publisher is not enabled.");
         }
     }
 

@@ -20,9 +20,8 @@
  */
 package org.jumpmind.symmetric.db;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -294,7 +294,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 table.getFullyQualifiedTableName());
 
         String previousCatalog = null;
-        String sourceCatalogName = table.getCatalog();
+        String sourceCatalogName = trigger.getSourceCatalogName();
         String defaultCatalog = platform.getDefaultCatalog();
         String defaultSchema = platform.getDefaultSchema();
 
@@ -307,8 +307,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             ISqlTransaction transaction = null;
             try {
-                transaction = this.platform.getSqlTemplate().startSqlTransaction(
-                        platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+                transaction = this.platform.getSqlTemplate().startSqlTransaction();
                 previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, transaction);
 
                 try {
@@ -367,6 +366,37 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         prefixConfigDatabase(database);
         IDdlBuilder builder = platform.getDdlBuilder();
         return builder.createTables(database, true);
+    }
+
+    private void setDatabaseName(TriggerRouter triggerRouter, Database db) {
+        db.setName(triggerRouter.getTargetSchema(platform.getDefaultSchema()));
+        if (db.getName() == null) {
+            db.setName(platform.getDefaultCatalog());
+        }
+        if (db.getName() == null) {
+            db.setName("DDL");
+        }
+    }
+
+    public String getCreateTableXML(TriggerHistory triggerHistory, TriggerRouter triggerRouter) {
+        Table table = getTable(triggerHistory, true);
+        String targetTableName = triggerRouter.getRouter().getTargetTableName();
+        if (StringUtils.isNotBlank(targetTableName)) {
+            table.setName(targetTableName);
+        }
+        Database db = new Database();
+        setDatabaseName(triggerRouter, db);
+        db.addTable(table);
+        StringWriter buffer = new StringWriter();
+        DatabaseXmlUtil.write(db, buffer);
+        // TODO: remove when these bugs are fixed in DdlUtils
+        String xml = buffer.toString().replaceAll("&apos;", "");
+        xml = xml.replaceAll("default=\"empty_blob\\(\\) *\"", "");
+        xml = xml.replaceAll("unique name=\"PRIMARY\"", "unique name=\"PRIMARYINDEX\"");
+        // on postgres, this is a "text" column
+        xml = xml.replaceAll("type=\"VARCHAR\" size=\"2147483647\"", "type=\"LONGVARCHAR\"");
+        xml = xml.replaceAll("type=\"BINARY\" size=\"2147483647\"", "type=\"LONGVARBINARY\"");
+        return xml;
     }
 
     protected void prefixConfigDatabase(Database targetTables) {
@@ -679,12 +709,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String massageDataExtractionSql(String sql, Channel channel) {
-        String textColumnExpression = parameterService.getString(ParameterConstants.DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION);
-        if (isNotBlank(textColumnExpression)) {
-            sql = sql.replace("d.old_data", textColumnExpression.replace("$(columnName)", "d.old_data"));
-            sql = sql.replace("d.row_data", textColumnExpression.replace("$(columnName)", "d.row_data"));
-            sql = sql.replace("d.pk_data", textColumnExpression.replace("$(columnName)", "d.pk_data"));
-        }
         return sql;
     }
 
@@ -745,7 +769,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return Types.NUMERIC;
     }
     
-    @Override
     public IParameterService getParameterService() {
         return parameterService;
     }

@@ -37,10 +37,10 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
         numberColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number("+symmetricDialect.getTemplateNumberPrecisionSpec()+"))||'\"')" ;
         datetimeColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF3')),'\"'))" ;
         dateTimeWithTimeZoneColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')),'\"'))" ;
-        timeColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS','NLS_CALENDAR=''GREGORIAN''')),'\"'))" ;
-        dateColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS','NLS_CALENDAR=''GREGORIAN''')),'\"'))" ;
+        timeColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS')),'\"'))" ;
+        dateColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS')),'\"'))" ;
         clobColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;
-        blobColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||$(prefixName)_blob2clob($(tableAlias).\"$(columnName)\")||'\"')" ;
+        blobColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||sym_blob2clob($(tableAlias).\"$(columnName)\")||'\"')" ;
         booleanColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number("+symmetricDialect.getTemplateNumberPrecisionSpec()+"))||'\"')" ;
         triggerConcatCharacter = "||" ;
         newTriggerValue = ":new" ;
@@ -62,9 +62,9 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                  'I',                                                                   \n" +
 "                  $(triggerHistoryId),                                                   \n" +
 "                  $(oracleToClob)$(columns),                                             \n" +
-"                  $(channelExpression),                                                      \n" +
+"                  '$(channelName)',                                                      \n" +
 "                  $(txIdExpression),                                                     \n" +
-"                  $(prefixName)_pkg.disable_node_id,                                     \n" +
+"                  sym_pkg.disable_node_id,                                               \n" +
 "                  $(externalSelect),                                                     \n" +
 "                  CURRENT_TIMESTAMP                                                      \n" +
 "                 );                                                                      \n" +
@@ -92,9 +92,9 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                          $(oldKeys),                                                                                                                                                    \n" +
 "                                          var_row_data,                                                                                                                                                  \n" +
 "                                          var_old_data,                                                                                                                                                  \n" +
-"                                          $(channelExpression),                                                                                                                                              \n" +
+"                                          '$(channelName)',                                                                                                                                              \n" +
 "                                          $(txIdExpression),                                                                                                                                             \n" +
-"                                          $(prefixName)_pkg.disable_node_id,                                                                                                                             \n" +
+"                                          sym_pkg.disable_node_id,                                                                                                                                       \n" +
 "                                          $(externalSelect),                                                                                                                                             \n" +
 "                                          CURRENT_TIMESTAMP                                                                                                                                              \n" +
 "                                        );                                                                                                                                                               \n" +
@@ -116,9 +116,9 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(triggerHistoryId),                                                                                                                                             \n" +
 "                                      $(oldKeys),                                                                                                                                                      \n" +
 "                                      $(oracleToClob)$(oldColumns),                                                                                                                                    \n" +
-"                                      $(channelExpression),                                                                                                                                                \n" +
+"                                      '$(channelName)',                                                                                                                                                \n" +
 "                                      $(txIdExpression),                                                                                                                                               \n" +
-"                                      $(prefixName)_pkg.disable_node_id,                                                                                                                               \n" +
+"                                      sym_pkg.disable_node_id,                                                                                                                                         \n" +
 "                                      $(externalSelect),                                                                                                                                               \n" +
 "                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
 "                                    );                                                                                                                                                                 \n" +

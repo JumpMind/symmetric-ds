@@ -25,7 +25,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.sql.SymmetricLobHandler;
+import org.springframework.jdbc.support.lob.OracleLobHandler;
 
 /*
  * Provides support for the Oracle platform.
@@ -62,13 +65,19 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected OracleDdlReader createDdlReader() {
         return new OracleDdlReader(this);
-    }
-
+    }    
+    
     @Override
     protected OracleJdbcSqlTemplate createSqlTemplate() {
-        return new OracleJdbcSqlTemplate(dataSource, settings, new OracleLobHandler(), getDatabaseInfo());
+        OracleLobHandler lobHandler = new OracleLobHandler();
+        lobHandler.setNativeJdbcExtractor(JdbcUtils.getNativeJdbcExtractory());
+        SymmetricLobHandler symmetricLobHandler = new SymmetricLobHandler(lobHandler);
+        return new OracleJdbcSqlTemplate(dataSource, settings, symmetricLobHandler, getDatabaseInfo());
     }
-
+    public static void main(String[] args) {
+        System.out.println(Integer.MAX_VALUE);
+    }
+    
     public String getName() {
         return DatabaseNamesConstants.ORACLE;
     }
@@ -84,7 +93,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return defaultSchema;
     }
-
+    
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
         String jdbcTypeName = column.getJdbcTypeName();

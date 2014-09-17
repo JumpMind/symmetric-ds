@@ -202,33 +202,5 @@ public class NodeChannel implements Serializable {
     public String getDataLoaderType() {
         return channel.getDataLoaderType();
     }
-    
-    public void setReloadFlag(boolean value) {
-        this.channel.setReloadFlag(value);
-    }
-    
-    public boolean isReloadFlag() {
-        return this.channel.isReloadFlag();
-    }
-    
-    public void setFileSyncFlag(boolean value) {
-        this.channel.setFileSyncFlag(value);
-    }
-    
-    public boolean isFileSyncFlag() {
-        return this.channel.isFileSyncFlag();
-    }
-    
-    public Date getCreateTime() {
-        return this.channel.getCreateTime();
-    }
-    
-    public String getLastUpdateBy() {
-        return this.channel.getLastUpdateBy();
-    }
-    
-    public Date getLastUpdateTime() {
-        return this.channel.getLastUpdateTime();
-    }
-    
+
 }

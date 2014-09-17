@@ -33,11 +33,7 @@ public class SequenceServiceSqlMap extends AbstractSqlMap {
         putSql("getSequenceSql",
           "select sequence_name,current_value,increment_by,min_value,max_value,                    " + 
           "cycle,create_time,last_update_by,last_update_time from $(sequence) where sequence_name=?");
-
-        putSql("getAllSequenceSql",
-                "select sequence_name,current_value,increment_by,min_value,max_value," + 
-                "cycle,create_time,last_update_by,last_update_time from $(sequence)");
-
+        
         putSql("getCurrentValueSql",
                 "select current_value from $(sequence) where sequence_name=?");     
         
@@ -52,11 +48,6 @@ public class SequenceServiceSqlMap extends AbstractSqlMap {
                 "   values(?,?,?,?,?,?,current_timestamp,?,current_timestamp)         ");     
         
         putSql("maxOutgoingBatchSql", "select max(batch_id)+1 from $(outgoing_batch)");
-        
-        putSql("maxTriggerHistSql", "select max(trigger_hist_id)+1 from $(trigger_hist)");
-        
-        putSql("maxExtractRequestSql", "select max(request_id)+1 from $(extract_request)");
-
                 
        // @formatter:on
     }

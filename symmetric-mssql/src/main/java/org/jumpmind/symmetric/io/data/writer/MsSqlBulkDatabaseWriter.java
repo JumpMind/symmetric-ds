@@ -1,23 +1,3 @@
-/**
- * Licensed to JumpMind Inc under one or more contributor
- * license agreements.  See the NOTICE file distributed
- * with this work for additional information regarding
- * copyright ownership.  JumpMind Inc licenses this file
- * to you under the GNU General Public License, version 3.0 (GPLv3)
- * (the "License"); you may not use this file except in compliance
- * with the License.
- *
- * You should have received a copy of the GNU General Public License,
- * version 3.0 (GPLv3) along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package org.jumpmind.symmetric.io.data.writer;
 
 import java.io.OutputStream;
@@ -40,7 +20,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class MsSqlBulkDatabaseWriter extends DatabaseWriter {
 
     protected static final byte[] DELIMITER = "||".getBytes();
     protected NativeJdbcExtractor jdbcExtractor;
@@ -54,7 +34,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected boolean needsColumnsReordered;
     protected Table table = null;
     protected Table databaseTable = null;
-
+    
 	public MsSqlBulkDatabaseWriter(IDatabasePlatform platform,
 			IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
 			int maxRowsBeforeFlush, boolean fireTriggers, String uncPath) {
@@ -71,12 +51,12 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
         if (super.start(table)) {
             needsBinaryConversion = false;
             if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
-                for (Column column : targetTable.getColumns()) {
-                    if (column.isOfBinaryType()) {
-                        needsBinaryConversion = true;
-                        break;
-                    }
-                }
+	            for (Column column : targetTable.getColumns()) {
+	                if (column.isOfBinaryType()) {
+	                    needsBinaryConversion = true;
+	                    break;
+	                }
+	            }
             }
             databaseTable = platform.getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
                     sourceTable.getName(), false);
@@ -125,9 +105,9 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                         Column[] columns = targetTable.getColumns();
                         for (int i = 0; i < columns.length; i++) {
                             if (columns[i].isOfBinaryType()) {
-                                if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64) && parsedData[i] != null) {
-                                    parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
-                                }
+                            	if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64) && parsedData[i] != null) {
+                            		parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
+                            	}
                             }
                         }
                     }
@@ -192,7 +172,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            String sql = String.format("BULK INSERT " + 
 	            		this.getTargetTable().getFullyQualifiedTableName() + 
 	            		" FROM '" + filename) + "'" +
-	            		" WITH ( FIELDTERMINATOR='||', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
+                        " WITH ( FIELDTERMINATOR='||', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
@@ -206,7 +186,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        }
 	        this.stagedInputFile.delete();
 	        createStagingFile();
-	        loadedRows = 0;
+            loadedRows = 0;
         }
     }
     

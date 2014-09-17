@@ -30,8 +30,6 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  */
 public class NonTransactionalBatchAlgorithm implements IBatchAlgorithm {
 
-    public static final String NAME = "nontransactional";
-    
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData, SimpleRouterContext routingContext) {
         return batch.getDataEventCount() >= dataMetaData.getNodeChannel().getMaxBatchSize();
     }

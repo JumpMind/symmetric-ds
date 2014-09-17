@@ -45,12 +45,10 @@ public class ModelComparator {
     private final Logger log = LoggerFactory.getLogger(ModelComparator.class);
 
     /** The platform information. */
-    protected DatabaseInfo platformInfo;
+    private DatabaseInfo platformInfo;
 
     /** Whether comparison is case sensitive. */
-    protected boolean caseSensitive;
-    
-    protected String databaseName;
+    private boolean caseSensitive;
 
     /**
      * Creates a new model comparator object.
@@ -60,8 +58,7 @@ public class ModelComparator {
      * @param caseSensitive
      *            Whether comparison is case sensitive
      */
-    public ModelComparator(String databaseName, DatabaseInfo platformInfo, boolean caseSensitive) {
-        this.databaseName = databaseName;
+    public ModelComparator(DatabaseInfo platformInfo, boolean caseSensitive) {
         this.platformInfo = platformInfo;
         this.caseSensitive = caseSensitive;
     }
@@ -175,32 +172,30 @@ public class ModelComparator {
                 }
             }
         }
-        if (platformInfo.isIndicesSupported()) {
-            for (int indexIdx = 0; indexIdx < sourceTable.getIndexCount(); indexIdx++) {
-                IIndex sourceIndex = sourceTable.getIndex(indexIdx);
-                IIndex targetIndex = findCorrespondingIndex(targetTable, sourceIndex);
-    
-                if (targetIndex == null) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Index " + sourceIndex.getName() + " needs to be removed from table "
-                                + sourceTable.getName());
-                    }
-                    changes.add(new RemoveIndexChange(sourceTable, sourceIndex));
+        for (int indexIdx = 0; indexIdx < sourceTable.getIndexCount(); indexIdx++) {
+            IIndex sourceIndex = sourceTable.getIndex(indexIdx);
+            IIndex targetIndex = findCorrespondingIndex(targetTable, sourceIndex);
+
+            if (targetIndex == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Index " + sourceIndex.getName() + " needs to be removed from table "
+                            + sourceTable.getName());
                 }
+                changes.add(new RemoveIndexChange(sourceTable, sourceIndex));
             }
-            for (int indexIdx = 0; indexIdx < targetTable.getIndexCount(); indexIdx++) {
-                IIndex targetIndex = targetTable.getIndex(indexIdx);
-                IIndex sourceIndex = findCorrespondingIndex(sourceTable, targetIndex);
-    
-                if (sourceIndex == null) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Index " + targetIndex.getName() + " needs to be created for table "
-                                + sourceTable.getName());
-                    }
-                    // we have to use the target table here because the index might
-                    // reference a new column
-                    changes.add(new AddIndexChange(targetTable, targetIndex));
+        }
+        for (int indexIdx = 0; indexIdx < targetTable.getIndexCount(); indexIdx++) {
+            IIndex targetIndex = targetTable.getIndex(indexIdx);
+            IIndex sourceIndex = findCorrespondingIndex(sourceTable, targetIndex);
+
+            if (sourceIndex == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Index " + targetIndex.getName() + " needs to be created for table "
+                            + sourceTable.getName());
                 }
+                // we have to use the target table here because the index might
+                // reference a new column
+                changes.add(new AddIndexChange(targetTable, targetIndex));
             }
         }
 
@@ -314,6 +309,7 @@ public class ModelComparator {
     public List<TableChange> compareColumns(Table sourceTable, Column sourceColumn,
             Table targetTable, Column targetColumn) {
         ArrayList<TableChange> changes = new ArrayList<TableChange>();
+
         if (targetColumn.getMappedTypeCode() != sourceColumn.getMappedTypeCode()
                 && platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()) != sourceColumn
                         .getMappedTypeCode()) {
