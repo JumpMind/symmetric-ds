@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.io.data.transform;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -262,8 +261,7 @@ public class TransformTable implements Cloneable {
         }
     }
 
-    public TransformTable enhanceWithImpliedColumns(Map<String, String> sourceKeyValues,
-            Map<String, String> oldSourceValues, Map<String, String> sourceValues) {
+    public TransformTable enhanceWithImpliedColumns(String[] keyNames, String[] columnNames) {
 
         TransformTable copiedVersion;
         try {
@@ -280,7 +278,7 @@ public class TransformTable implements Cloneable {
             }
 
             if (columnPolicy == ColumnPolicy.IMPLIED) {
-                for (String column : sourceKeyValues.keySet()) {
+                for (String column : keyNames) {
                     boolean hasInsert = false;
                     boolean hasUpdate = false;
                     boolean hasDelete = false;
@@ -327,7 +325,7 @@ public class TransformTable implements Cloneable {
 
                 }
 
-                for (String column : sourceValues.keySet()) {
+                for (String column : columnNames) {
                     boolean hasInsert = false;
                     boolean hasUpdate = false;
                     boolean hasDelete = false;

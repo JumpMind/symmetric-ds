@@ -319,9 +319,14 @@ public class TransformedData implements Cloneable {
     public CsvData buildTargetCsvData() {
 
         CsvData data = new CsvData(this.targetDmlType);
-        data.putParsedData(CsvData.OLD_DATA, getOldColumnValues());
-        data.putParsedData(CsvData.ROW_DATA, getColumnValues());
-        data.putParsedData(CsvData.PK_DATA, getKeyValues());
+        if (targetDmlType != DataEventType.DELETE) {
+            data.putParsedData(CsvData.ROW_DATA, getColumnValues());
+        }
+        
+        if (targetDmlType == DataEventType.UPDATE || targetDmlType == DataEventType.DELETE) {
+            data.putParsedData(CsvData.OLD_DATA, getOldColumnValues());
+            data.putParsedData(CsvData.PK_DATA, getKeyValues());
+        }
         data.putAttribute(getClass().getName(), this);
         return data;
     }
