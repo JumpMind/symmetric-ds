@@ -1,3 +1,20 @@
+SymmetricDS - 3.6.8 (Released 2014-09-17) 
+=========================================
+- 0001950: [Bug] Reinsert of sym_data_gap after it has been purged can fall outside of captured sym_data range (chenson) - closed.
+- 0001953: [Bug] Transform column value to NULL removes column (chenson) - closed.
+- 0001959: [Improvement] Add feature where character data can be modified by an property expression in order to support "weird" character issues (chenson) - closed.
+- 0001961: [Bug] Routing does not stop when sym_channel.max_data_to_route is reached and batch_algorithm is set to nontransactional (chenson) - closed.
+- 0001962: [Bug] Log the actual values that were passed to prepared statement in the default data loader (currently logs those passed in csv) (chenson) - closed.
+- 0001963: [Bug] Memory issue on nontransactional channel during routing (chenson) - closed.
+- 0001964: [Bug] Upgrade from 3.1.5 to 3.6 fails on MySQL (chenson) - closed.
+- 0001965: [Bug] Initial load uses wrong case on Oracle to PostgreSQL table creation. (chenson) - closed.
+- 0001966: [Improvement] Add better logging when a subselect router query fails. Log table and event for which the query failed. (chenson) - closed.
+- 0001968: [Bug] Oracle LONG types don't work when stream_to_lob is turned on (chenson) - closed.
+- 0001971: [Bug] Missing AWS java SDK needed for Redshift bulk load (elong) - closed.
+- 0001973: [Bug] Use LSB-compliant dependency in init script (elong) - closed.
+- 0001974: [Bug] fallback to update fails with implied load transform that adds to pk (chenson) - closed.
+- 0001975: [Bug] Push service continues to quickly attempt to push data on failure to read ack condition during initial load (chenson) - closed.
+
 SymmetricDS - 3.6.7 (Released 2014-09-02)
 =========================================
 - 0001940: [Bug] On MySQL sym_transaction_id_post_5_1_23 function should not be checking the autocommit session variable (chenson) - closed.
