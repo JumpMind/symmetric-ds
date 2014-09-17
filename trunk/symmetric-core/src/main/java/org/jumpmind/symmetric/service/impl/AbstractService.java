@@ -37,6 +37,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -308,7 +309,8 @@ abstract public class AbstractService implements IService {
         } while (line != null);
 
         if (StringUtils.isBlank(ackString)) {
-            log.error("Did not receive an acknowledgement for the batches sent");
+            throw new SymmetricException("Did not receive an acknowledgement for the batches sent.  "
+                    + "The 'ack string' was: '%s' and the 'extended ack string' was: '%s'", ackString, ackExtendedString);
         }
 
         List<BatchAck> batchAcks = transportManager.readAcknowledgement(ackString,
