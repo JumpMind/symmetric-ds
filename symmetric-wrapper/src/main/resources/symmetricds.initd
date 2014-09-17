@@ -7,8 +7,8 @@
 
 ### BEGIN INIT INFO
 # Provides:          ${wrapper.name}
-# Required-Start:    networking
-# Required-Stop:     networking
+# Required-Start:    $network
+# Required-Stop:     $network
 # Default-Start:     2 3 5
 # Default-Stop:      0 1 6
 # Short-Description: ${wrapper.displayname}
