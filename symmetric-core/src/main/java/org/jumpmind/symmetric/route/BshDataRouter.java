@@ -33,28 +33,33 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 
 import bsh.EvalError;
 import bsh.Interpreter;
+import bsh.TargetError;
 
 /**
- * This data router is invoked when the router_type is 'bsh'. The router_expression is always a bean shell expression.  See
- * <a href='http://www.beanshell.org'>the bean shell site</a> for information about the capabilities of the bean shell scripting
- * language.
+ * This data router is invoked when the router_type is 'bsh'. The
+ * router_expression is always a bean shell expression. See <a
+ * href='http://www.beanshell.org'>the bean shell site</a> for information about
+ * the capabilities of the bean shell scripting language.
  * <P/>
- * Bound to the interpreter are the names of both the current and old column values.  They can be used in the expression.  They should 
- * always be referenced using upper case.  Also bound to the interpreter is a {@link Collection} of targetNodes.  The script is expected
- * to add the the list of target nodes a list of the node_ids that should be routed to.
+ * Bound to the interpreter are the names of both the current and old column
+ * values. They can be used in the expression. They should always be referenced
+ * using upper case. Also bound to the interpreter is a {@link Collection} of
+ * targetNodes. The script is expected to add the the list of target nodes a
+ * list of the node_ids that should be routed to.
  */
 public class BshDataRouter extends AbstractDataRouter {
 
     protected ISymmetricEngine engine;
-    
+
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
-       
+
     public BshDataRouter(ISymmetricEngine engine) {
         this.engine = engine;
     }
 
-    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
-            boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
+    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
+            Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed,
+            TriggerRouter triggerRouter) {
         try {
             long ts = System.currentTimeMillis();
             Interpreter interpreter = getInterpreter(context);
@@ -67,11 +72,19 @@ public class BshDataRouter extends AbstractDataRouter {
             Object returnValue = interpreter.eval(dataMetaData.getRouter().getRouterExpression());
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.eval.ms");
             return eval(returnValue, nodes, targetNodes);
-        } catch (EvalError e) {
-            log.error("Error in data router: " + dataMetaData.getRouter() + ".  Routing to nobody.", e);
-            return Collections.emptySet();
+        } catch (EvalError e) {            
+            if (e instanceof TargetError) {
+                Throwable t = ((TargetError)e).getTarget();    
+                if (t instanceof RuntimeException) {
+                    throw (RuntimeException) t;
+                } else {
+                    throw new RuntimeException(t);
+                }
+            } else {
+                throw new RuntimeException(e);
+            }
         }
-    }    
+    }
 
     protected Interpreter getInterpreter(SimpleRouterContext context) {
         Interpreter interpreter = (Interpreter) context.getContextCache().get(INTERPRETER_KEY);
@@ -106,16 +119,17 @@ public class BshDataRouter extends AbstractDataRouter {
         }
     }
 
-    protected void bind(Interpreter interpreter, DataMetaData dataMetaData, Set<Node> nodes, Set<String> targetNodes, boolean initialLoad)
-            throws EvalError {
+    protected void bind(Interpreter interpreter, DataMetaData dataMetaData, Set<Node> nodes,
+            Set<String> targetNodes, boolean initialLoad) throws EvalError {
         interpreter.set("log", log);
-        interpreter.set("initialLoad", initialLoad);        
+        interpreter.set("initialLoad", initialLoad);
         interpreter.set("dataMetaData", dataMetaData);
         interpreter.set("nodes", nodes);
         interpreter.set("identityNodeId", engine.getNodeService().findIdentityNodeId());
         interpreter.set("targetNodes", targetNodes);
         interpreter.set("engine", engine);
-        Map<String, Object> params = getDataObjectMap(dataMetaData, engine.getSymmetricDialect(), true);
+        Map<String, Object> params = getDataObjectMap(dataMetaData, engine.getSymmetricDialect(),
+                true);
         if (params != null) {
             for (String param : params.keySet()) {
                 interpreter.set(param, params.get(param));

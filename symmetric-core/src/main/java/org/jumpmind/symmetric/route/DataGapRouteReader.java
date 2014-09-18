@@ -77,6 +77,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
     
     protected int takeTimeout;
     
+    protected ProcessInfo processInfo;
+    
     protected static Map<String, Boolean> lastSelectUsedGreaterThanQueryByEngineName = new HashMap<String, Boolean>(); 
 
     public DataGapRouteReader(ChannelRouterContext context, ISymmetricEngine engine) {
@@ -110,7 +112,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
     protected void execute() {
         ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
         ISqlReadCursor<Data> cursor = null;
-        ProcessInfo processInfo = engine.getStatisticManager().
+        processInfo = engine.getStatisticManager().
                 newProcessInfo(new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), null, ProcessType.ROUTER_READER));
         processInfo.setCurrentChannelId(context.getChannel().getChannelId());
         try {
@@ -388,6 +390,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     public void setReading(boolean reading) {
         this.reading = reading;
+        if (processInfo.getStatus() != Status.ERROR) {
+            processInfo.setStatus(Status.OK);
+        }
     }
 
     public BlockingQueue<Data> getDataQueue() {
