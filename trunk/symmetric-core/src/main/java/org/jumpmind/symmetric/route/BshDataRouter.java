@@ -78,7 +78,7 @@ public class BshDataRouter extends AbstractDataRouter {
                 if (t instanceof RuntimeException) {
                     throw (RuntimeException) t;
                 } else {
-                    throw new RuntimeException(t);
+                    throw new RuntimeException("Routing script failed at line " + ((TargetError)e).getErrorLineNumber(), t);
                 }
             } else {
                 throw new RuntimeException(e);
