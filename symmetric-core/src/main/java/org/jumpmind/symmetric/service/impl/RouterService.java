@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -66,6 +68,7 @@ import org.jumpmind.symmetric.route.DataGapDetector;
 import org.jumpmind.symmetric.route.DataGapRouteReader;
 import org.jumpmind.symmetric.route.DefaultBatchAlgorithm;
 import org.jumpmind.symmetric.route.DefaultDataRouter;
+import org.jumpmind.symmetric.route.DelayRoutingException;
 import org.jumpmind.symmetric.route.FileSyncDataRouter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
@@ -406,6 +409,12 @@ public class RouterService extends AbstractService implements IRouterService {
             context.setProduceCommonBatches(produceCommonBatches);
             dataCount = selectDataAndRoute(processInfo, context);
             return dataCount;
+        } catch (DelayRoutingException ex) {
+            log.info("The routing process for the {} channel is being delayed.  {}", nodeChannel.getChannelId(), isNotBlank(ex.getMessage()) ? ex.getMessage() : "");
+            if (context != null) {
+                context.rollback();
+            }
+            return 0;
         } catch (InterruptedException ex) {
             log.warn("The routing process was interrupted.  Rolling back changes");
             if (context != null) {
