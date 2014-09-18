@@ -129,24 +129,24 @@ public class PostgreSqlDmlStatement extends DmlStatement {
     }
     
     @Override
-    protected void appendColumnEquals(StringBuilder sql, Column column, String separator) {
+    protected void appendColumnEquals(StringBuilder sql, Column column) {
         if (column.isTimestampWithTimezone()) {
             sql.append(quote).append(column.getName()).append(quote)
-                    .append(" = cast(? as timestamp with time zone)").append(separator);
+                    .append(" = cast(? as timestamp with time zone)");
         } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
             sql.append(quote).append(column.getName()).append(quote)
-                    .append(" = cast(? as uuid)").append(separator);
+                    .append(" = cast(? as uuid)");
         } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
             sql.append(quote).append(column.getName()).append(quote)
-                    .append(" = cast(? as bit varying)").append(separator);
+                    .append(" = cast(? as bit varying)");
         } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
             sql.append(quote).append(column.getName()).append(quote)
-                  .append(" = cast(? as interval)").append(separator);
+                  .append(" = cast(? as interval)");
         } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
             sql.append(quote).append(column.getName()).append(quote)
-            .append(" = ST_GEOMFROMTEXT(?)").append(separator);
+            .append(" = ST_GEOMFROMTEXT(?)");
         } else {
-            super.appendColumnEquals(sql, column, separator);
+            super.appendColumnEquals(sql, column);
         }
     }
 
