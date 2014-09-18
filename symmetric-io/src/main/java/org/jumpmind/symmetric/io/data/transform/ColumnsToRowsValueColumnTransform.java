@@ -80,7 +80,7 @@ public class ColumnsToRowsValueColumnTransform implements ISingleValueColumnTran
             value = reverseMap.get(pkValue);
             if (value != null) {
                 String srcNewValue = data.getSourceValues().get(value);
-                String srcOldValue = data.getOldSourceValues().get(value);
+                String srcOldValue = data.getOldSourceValues() != null ? data.getOldSourceValues().get(value) : null;
                 if (isIgnoreNulls && DataEventType.INSERT.equals(data.getSourceDmlType()) && (StringUtils.trimToNull(srcNewValue) == null)) {
                     throw new IgnoreRowException();
                 } else if (DataEventType.UPDATE.equals(data.getSourceDmlType())) {
