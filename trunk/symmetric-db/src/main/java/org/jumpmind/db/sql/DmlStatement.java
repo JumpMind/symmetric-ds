@@ -251,7 +251,7 @@ public class DmlStatement {
                         sql.append(separator);
                     }
                     if (!nullColumns[i]) {
-                        appendColumnEquals(sql, columns[i], separator);                   
+                        appendColumnEquals(sql, columns[i]);                   
                     } else {
                         sql.append(quote).append(columns[i].getName()).append(quote)
                                 .append(" is NULL");
@@ -261,8 +261,7 @@ public class DmlStatement {
         }
     }
     
-    protected void appendColumnEquals(StringBuilder sql, Column column,
-            String separator) {
+    protected void appendColumnEquals(StringBuilder sql, Column column) {
         boolean textType = TypeMap.isTextType(column.getMappedTypeCode());
         if (textType && isNotBlank(textColumnExpression)) {
             sql.append(quote).append(column.getName()).append(quote).append(" = ").append(textColumnExpression.replace("$(columnName)", "?"));

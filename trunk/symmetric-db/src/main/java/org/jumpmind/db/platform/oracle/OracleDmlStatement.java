@@ -50,16 +50,15 @@ public class OracleDmlStatement extends DmlStatement {
     }
     
     @Override
-    protected void appendColumnEquals(StringBuilder sql, Column column, String separator) {
+    protected void appendColumnEquals(StringBuilder sql, Column column) {
         if (column.isTimestampWithTimezone()) {
             sql.append(quote).append(column.getName()).append(quote)
-                    .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
-                    .append(separator);
+                    .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')");
         } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
             sql.append(quote).append(column.getName()).append(quote).append(" = ")
-                    .append("SYM_WKT2GEOM(?)").append(separator);
+                    .append("SYM_WKT2GEOM(?)");
         } else {
-            super.appendColumnEquals(sql, column, separator);
+            super.appendColumnEquals(sql, column);
         }        
     }
 
