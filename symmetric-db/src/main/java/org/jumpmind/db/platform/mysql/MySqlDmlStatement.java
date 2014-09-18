@@ -44,12 +44,12 @@ public class MySqlDmlStatement extends DmlStatement {
     }
     
     @Override
-    protected void appendColumnEquals(StringBuilder sql, Column column, String separator) {
+    protected void appendColumnEquals(StringBuilder sql, Column column) {
         if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
             sql.append(quote).append(column.getName()).append(quote).append(" = ")
-                    .append("geomfromtext(?)").append(separator);
+                    .append("geomfromtext(?)");
         } else {
-            super.appendColumnEquals(sql, column, separator);
+            super.appendColumnEquals(sql, column);
         }
     }
     
