@@ -50,16 +50,7 @@ public class ConflictException extends RuntimeException {
     }
 
     protected static String message(CsvData data, Table table, boolean fallbackOperationFailed) {
-        Map<String, String> pks = data.toColumnNameValuePairs(table.getPrimaryKeyColumnNames(),
-                CsvData.PK_DATA);
-        if (pks == null || pks.size() == 0) {
-            pks = data.toColumnNameValuePairs(table.getPrimaryKeyColumnNames(), CsvData.OLD_DATA);
-        }
-
-        if (pks == null || pks.size() == 0) {
-            pks = data.toColumnNameValuePairs(table.getPrimaryKeyColumnNames(), CsvData.ROW_DATA);
-        }
-
+        Map<String, String> pks = data.toKeyColumnValuePairs(table);
         return String.format(
                 "Detected conflict while executing %s on %s.  The primary key data was: %s. %s",
                 data.getDataEventType().toString(), table.getFullyQualifiedTableName(), pks,

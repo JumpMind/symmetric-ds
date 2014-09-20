@@ -173,7 +173,7 @@ public class TransformWriter extends NestedDataWriter {
             
             Map<String, String> sourceKeyValues = null;
             if (data.contains(CsvData.PK_DATA)) {
-                sourceKeyValues = data.toColumnNameValuePairs(this.sourceTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+                sourceKeyValues = data.toKeyColumnValuePairs(this.sourceTable);
             }
 
             if (eventType == DataEventType.DELETE) {
