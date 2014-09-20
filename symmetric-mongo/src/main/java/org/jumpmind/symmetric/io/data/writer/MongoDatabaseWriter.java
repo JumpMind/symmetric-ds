@@ -100,8 +100,7 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
                     .toColumnNameValuePairs(columnNames, CsvData.ROW_DATA);
             Map<String, String> oldData = data
                     .toColumnNameValuePairs(columnNames, CsvData.OLD_DATA);
-            Map<String, String> pkData = data.toColumnNameValuePairs(
-                    sourceTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+            Map<String, String> pkData = data.toKeyColumnValuePairs(this.sourceTable);
             DBObject query = objectMapper
                     .mapToDBObject(sourceTable, newData, oldData, pkData, true);
             DBObject object = objectMapper.mapToDBObject(sourceTable, newData, oldData, pkData,
@@ -130,8 +129,7 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
                     .toColumnNameValuePairs(columnNames, CsvData.ROW_DATA);
             Map<String, String> oldData = data
                     .toColumnNameValuePairs(columnNames, CsvData.OLD_DATA);
-            Map<String, String> pkData = data.toColumnNameValuePairs(
-                    sourceTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+            Map<String, String> pkData = data.toKeyColumnValuePairs(this.sourceTable);
             DBObject query = objectMapper
                     .mapToDBObject(sourceTable, newData, oldData, pkData, true);
             WriteResult results = collection.remove(query, WriteConcern.ACKNOWLEDGED);

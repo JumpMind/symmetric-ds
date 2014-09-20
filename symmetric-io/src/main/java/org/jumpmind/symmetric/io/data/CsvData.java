@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io.data;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 
@@ -201,29 +202,27 @@ public class CsvData {
         return values;
     }
 
-    public String[] getPkData(Table table) {
-        String[] data = getPkData(table, CsvData.PK_DATA);
-        if (data == null || data.length == 0) {
-            data = getPkData(table, CsvData.OLD_DATA);
-            if (data == null || data.length == 0) {
-                data = getPkData(table, CsvData.ROW_DATA);
+    public Map<String, String> toKeyColumnValuePairs(Table table) {
+        Map<String, String> data = toColumnNameValuePairs(table.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+        if (data.size() == 0) {
+            data = toColumnNameValuePairs(table.getColumnNames(), CsvData.OLD_DATA);             
+            if (data.size() == 0) {
+                data = toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+            }
+            
+            Column[] columns = table.getColumns();
+            for (Column column : columns) {
+                if (!column.isPrimaryKey()) {
+                    data.remove(column.getName());
+                }
             }
         }
         return data;
     }
 
-    public String[] getPkData(Table table, String key) {
-        Map<String, String> data = toColumnNameValuePairs(table.getPrimaryKeyColumnNames(), key);
-        String[] keyNames = table.getPrimaryKeyColumnNames();
-        if (keyNames != null && data.size() > 0) {
-            String[] keyValues = new String[keyNames.length];
-            for (int i = 0; i < keyNames.length; i++) {
-                keyValues[i] = data.get(keyNames[i]);
-            }
-            return keyValues;
-        } else {
-            return null;
-        }
+    public String[] getPkData(Table table) {        
+        Map<String, String> data = toKeyColumnValuePairs(table);
+        return data.values().toArray(new String[data.size()]);
     }
 
     public Map<String, String> toColumnNameValuePairs(String[] keyNames, String key) {

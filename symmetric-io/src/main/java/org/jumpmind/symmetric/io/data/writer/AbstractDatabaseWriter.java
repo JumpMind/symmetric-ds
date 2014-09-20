@@ -426,16 +426,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
         if (data.getDataEventType() == DataEventType.INSERT) {
             keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(), CsvData.ROW_DATA);
         } else {
-            keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
-                    CsvData.OLD_DATA);
-            if (keyData == null || keyData.size() == 0) {
-                keyData = data.toColumnNameValuePairs(sourceTable.getPrimaryKeyColumnNames(),
-                        CsvData.PK_DATA);
-            }
-            if (keyData == null || keyData.size() == 0) {
-                keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
-                        CsvData.ROW_DATA);
-            }
+            keyData = data.toKeyColumnValuePairs(sourceTable);
         }
         return keyData;
     }
