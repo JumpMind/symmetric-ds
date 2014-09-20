@@ -344,16 +344,18 @@
 			or "reverse" direction, namely from a client node to the registration
 			node. To achieve this, set the parameter
 			<literal>auto.reload.reverse</literal>
-			to be true,
-			<emphasis>but only for the specific node group representing
-			the client nodes</emphasis>
-			. This will cause a onetime reverse load of data, for tables configured
+			to be true <emphasis>at the registration node</emphasis>. This will cause 
+            a onetime reverse load of data, for tables configured
 			with non-negative initial load orders, to be batched at the point when
 			registration of the client node is occurring. These batches are then
 			sent to the parent or registration node. This capability might be
 			needed, for example, if there is data already present in the client that
 			doesn't exist in the parent but needs to.
 			</para>
+            <para>
+            Reverse initial load can be invoked manually by setting reverse_initial_load_enabled=1 in
+            sym_node_security on the node that is supposed to send the load.          
+            </para>
 			</section>
 		</section>
 		<section id="resync-data">
