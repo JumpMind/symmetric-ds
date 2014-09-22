@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.symmetric.config.IParameterSaveFilter;
 import org.jumpmind.symmetric.model.DatabaseParameter;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -98,6 +99,10 @@ public class MockParameterService extends AbstractParameterService implements IP
 	@Override
 	public void deleteParameterWithUpdate(String externalId,
 			String nodeGroupId, String key) {		
+	}
+
+	@Override
+	public void setParameterSaveFilter(IParameterSaveFilter parameterSaveFilter) {
 	}
 
 }
