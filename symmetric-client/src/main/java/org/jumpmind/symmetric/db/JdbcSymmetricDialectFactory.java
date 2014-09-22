@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
+import org.jumpmind.db.platform.db2.Db2As400DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2zOsDatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
@@ -43,6 +44,7 @@ import org.jumpmind.db.platform.redshift.RedshiftDatabasePlatform;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.symmetric.db.ase.AseSymmetricDialect;
+import org.jumpmind.symmetric.db.db2.Db2As400SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2v9SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2zOsSymmetricDialect;
@@ -116,6 +118,10 @@ public class JdbcSymmetricDialectFactory {
             dialect = new HsqlDb2SymmetricDialect(parameterService, platform);
         } else if (platform instanceof InformixDatabasePlatform) {
             dialect = new InformixSymmetricDialect(parameterService, platform);
+        } else if (platform instanceof Db2zOsDatabasePlatform) {
+            dialect = new Db2zOsSymmetricDialect(parameterService, platform);
+        } else if (platform instanceof Db2As400DatabasePlatform) {
+            dialect = new Db2As400SymmetricDialect(parameterService, platform);
         } else if (platform instanceof Db2DatabasePlatform) {
             int dbMajorVersion = platform.getSqlTemplate().getDatabaseMajorVersion();
             int dbMinorVersion = platform.getSqlTemplate().getDatabaseMinorVersion();
@@ -124,8 +130,6 @@ public class JdbcSymmetricDialectFactory {
             } else {
                 dialect = new Db2v9SymmetricDialect(parameterService, platform);
             }
-        } else if (platform instanceof Db2zOsDatabasePlatform) {
-            dialect = new Db2zOsSymmetricDialect(parameterService, platform);
         } else if (platform instanceof FirebirdDatabasePlatform) {
             dialect = new FirebirdSymmetricDialect(parameterService, platform);
         } else if (platform instanceof AseDatabasePlatform) {
