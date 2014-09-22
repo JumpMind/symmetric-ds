@@ -1609,7 +1609,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if (index > 0) {
                                 concatedRow.append(",");
                             }
-                            String value = row.getString(column.getName());
+                            String value = row.getString(column.getName(), false);
                             concatedRow.append(value == null ? "" : value);
                             index++;
                         }
