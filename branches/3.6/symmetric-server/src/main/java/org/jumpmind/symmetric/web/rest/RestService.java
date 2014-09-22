@@ -1209,6 +1209,22 @@ public class RestService {
         return summary;
     }
 
+    @ApiOperation(value = "Read parameter value")
+    @RequestMapping(value = "engine/parameter/{name}", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final String getParameter(@PathVariable("name") String name) {
+        return getSymmetricEngine().getParameterService().getString(name.replace('_', '.'));
+    }
+
+    @ApiOperation(value = "Read paramater value for the specified engine")
+    @RequestMapping(value = "engine/{engine}/parameter/{name}", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public final String getParameter(@PathVariable("engine") String engineName, @PathVariable("name") String name) {
+        return getSymmetricEngine(engineName).getParameterService().getString(name.replace('_', '.'));
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public RestError handleError(Exception ex, HttpServletRequest req) {
