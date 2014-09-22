@@ -37,6 +37,7 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -1594,17 +1595,26 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     configurationService.getChannel(triggerRouter.getTrigger().getChannelId()),
                     overrideSelectSql);
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
-                public Data mapRow(Row rs) {
+                public Data mapRow(Row row) {
                     
                     String csvRow = null;
                     if (symmetricDialect.getParameterService().is(
                             ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
-                        csvRow = rs.stringValue();
+                        csvRow = row.stringValue();
                     } else {
-                        String[] rowData = platform.getStringValues(
-                                symmetricDialect.getBinaryEncoding(), sourceTable.getColumns(), rs,
-                                false);
-                        csvRow = CsvUtils.escapeCsvData(rowData, '\0', '"');
+                        StringBuilder concatedRow = new StringBuilder();
+                        Column[] columns = sourceTable.getColumns();
+                        int index = 0;
+                        for (Column column : columns) {
+                            if (index > 0) {
+                                concatedRow.append(",");
+                            }
+                            String value = row.getString(column.getName());
+                            concatedRow.append(value == null ? "" : value);
+                            index++;
+                        }
+                        csvRow = concatedRow.toString();
+                        
                     }
                     int commaCount = StringUtils.countMatches(csvRow, ",");
                     if (expectedCommaCount <= commaCount) {

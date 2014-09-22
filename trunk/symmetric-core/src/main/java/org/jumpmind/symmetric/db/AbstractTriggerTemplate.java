@@ -124,19 +124,18 @@ abstract public class AbstractTriggerTemplate {
 
         String sql = null;
 
+        String tableAlias = symmetricDialect.getInitialLoadTableAlias();
         if (parameterService.is(
                 ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
             sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
-            String columnsText = buildColumnsString(symmetricDialect.getInitialLoadTableAlias(),
-                    symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
+            String columnsText = buildColumnsString(tableAlias,
+                    tableAlias, "", columns, DataEventType.INSERT,
                     false, channel, triggerRouter.getTrigger()).columnString;
             if (isNotBlank(textColumnExpression)) {
                 columnsText = textColumnExpression.replace("$(columnName)", columnsText);
             }            
             sql = FormatUtils.replace("columns", columnsText, sql);
         } else {            
-            boolean dateTimeAsString = parameterService.is(
-                    ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR);
             sql = "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)";
             StringBuilder columnList = new StringBuilder();
             for (int i = 0; i < columns.length; i++) {
@@ -149,16 +148,14 @@ abstract public class AbstractTriggerTemplate {
                             columnList.append(",");
                         }
 
-                        String columnExpression = SymmetricUtils.quote(symmetricDialect,
-                                column.getName()); 
-                        
-                        if (dateTimeAsString && TypeMap.isDateTimeType(column.getMappedTypeCode())) {
-                            columnExpression = castDatetimeColumnToString(column.getName());
-                        } else if (isNotBlank(textColumnExpression) && TypeMap.isTextType(column.getMappedTypeCode())) {
-                            columnExpression = textColumnExpression.replace("$(columnName)", columnExpression) + " as " + column.getName();
+                        ColumnString columnString = fillOutColumnTemplate(tableAlias, tableAlias,
+                                "", column, DataEventType.INSERT, false, channel, triggerRouter.getTrigger());
+                        String columnExpression = columnString.columnString;
+                        if (isNotBlank(textColumnExpression) && TypeMap.isTextType(column.getMappedTypeCode())) {
+                            columnExpression = textColumnExpression.replace("$(columnName)", columnExpression);
                         }
                         
-                        columnList.append(columnExpression);
+                        columnList.append(columnExpression).append(" as ").append(column.getName());
                         
                     }
                 }
