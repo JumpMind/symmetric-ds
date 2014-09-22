@@ -54,7 +54,9 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
     private Pattern db2TimestampPattern = Pattern
             .compile("'(\\d{4}\\-\\d{2}\\-\\d{2})\\-(\\d{2}).(\\d{2}).(\\d{2})(\\.\\d{1,8})?'");
 
-    public Db2DdlReader(IDatabasePlatform platform) {
+    private String systemSchemaName = "SYSIBM";
+
+	public Db2DdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
@@ -76,7 +78,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
         if (table != null) {
             // DB2 does not return the auto-increment status via the database
             // metadata
-            String sql = "SELECT NAME FROM SYSIBM.SYSCOLUMNS WHERE TBNAME=? AND IDENTITY=?";
+            String sql = "SELECT NAME FROM " + systemSchemaName + ".SYSCOLUMNS WHERE TBNAME=? AND IDENTITY=?";
             if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
                 sql = sql + " AND TBCREATOR=?";
             }
@@ -214,4 +216,9 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             return pkNames.contains(index.getName());
         }
     }
+    
+    public void setSystemSchemaName(String systemSchemaName) {
+		this.systemSchemaName = systemSchemaName;
+	}
+
 }

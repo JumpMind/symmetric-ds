@@ -32,6 +32,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
+import org.jumpmind.db.platform.db2.Db2As400DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2zOsDatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
@@ -101,6 +102,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "SQL Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.DB2ZOS, Db2zOsDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.DB2AS400, Db2As400DatabasePlatform.class);
         addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.REDSHIFT, RedshiftDatabasePlatform.class);
 
@@ -222,10 +224,16 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
 
-            if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.DB2)) {
+            if (nameVersion[0].toUpperCase().indexOf(DatabaseNamesConstants.DB2) != -1) {
+            	nameVersion[0] = DatabaseNamesConstants.DB2;
                 if (nameVersion[0].toUpperCase().indexOf("Z") != -1) {
                     nameVersion[0] = DatabaseNamesConstants.DB2ZOS;
+                } else if (nameVersion[0].toUpperCase().indexOf("400") != -1) {
+                    nameVersion[0] = DatabaseNamesConstants.DB2AS400;
                 }
+            }
+            if (nameVersion[0].equalsIgnoreCase("AS") && nameVersion[2].equalsIgnoreCase("db2")) {
+            	nameVersion[0] = DatabaseNamesConstants.DB2AS400;
             }
 
             log.info("Detected database '" + nameVersion[0] + "', version '" + nameVersion[1] + "', protocol '" + nameVersion[2] + "'");
