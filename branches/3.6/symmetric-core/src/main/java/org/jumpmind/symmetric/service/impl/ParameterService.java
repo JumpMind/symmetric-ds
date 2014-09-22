@@ -33,6 +33,7 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.config.IParameterSaveFilter;
 import org.jumpmind.symmetric.model.DatabaseParameter;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -50,8 +51,10 @@ public class ParameterService extends AbstractParameterService implements IParam
     private ISqlTemplate sqlTemplate;
 
     private Date lastUpdateTime;
+    
+    private IParameterSaveFilter parameterSaveFilter;
 
-    public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory,
+	public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory,
             String tablePrefix) {
         this.tablePrefix = tablePrefix;
         this.factory = factory;
@@ -89,6 +92,9 @@ public class ParameterService extends AbstractParameterService implements IParam
 
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue, String lastUpdateBy) {
         paramValue = paramValue != null ? paramValue.toString() : null;
+        if (parameterSaveFilter != null) {
+        	paramValue = parameterSaveFilter.filterSaveParameter(key, (String) paramValue);
+        }
 
         int count = sqlTemplate.update(sql.getSql("updateParameterSql"), new Object[] { paramValue, lastUpdateBy,
                 externalId, nodeGroupId, key });
@@ -170,6 +176,10 @@ public class ParameterService extends AbstractParameterService implements IParam
     public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId) {
         return readParametersFromDatabase("selectParametersSql", externalId, nodeGroupId);
     }
+
+    public void setParameterSaveFilter(IParameterSaveFilter parameterSaveFilter) {
+		this.parameterSaveFilter = parameterSaveFilter;
+	}
 
     class DatabaseParameterMapper implements ISqlRowMapper<DatabaseParameter> {
         public DatabaseParameter mapRow(Row row) {

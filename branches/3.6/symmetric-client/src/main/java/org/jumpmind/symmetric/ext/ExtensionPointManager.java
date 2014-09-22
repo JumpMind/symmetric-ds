@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.config.IParameterFilter;
+import org.jumpmind.symmetric.config.IParameterSaveFilter;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.config.NodeIdCreatorAdaptor;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
@@ -287,6 +288,13 @@ public class ExtensionPointManager implements IExtensionPointManager {
                     IColumnTransform.class, true));
             IColumnTransform<?> t = (IColumnTransform<?>) ext;
             engine.getTransformService().addColumnTransform(t);
+        }
+
+        if (ext instanceof IParameterSaveFilter) {
+        	installed = true;
+            extensionPoints.add(new ExtensionPointMetaData(ext, beanName,
+            		IParameterSaveFilter.class, true));
+            engine.getParameterService().setParameterSaveFilter((IParameterSaveFilter) ext);
         }
 
         return installed;
