@@ -33,6 +33,7 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.config.IParameterSaveFilter;
 import org.jumpmind.symmetric.model.DatabaseParameter;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -143,11 +144,16 @@ public class ParameterService extends AbstractParameterService implements IParam
     
     protected TypedProperties readParametersFromDatabase(String sqlKey, Object... values) {
         final TypedProperties properties = new TypedProperties();
+        final IParameterFilter filter = this.parameterFilter;
         sqlTemplate.query(sql.getSql(sqlKey), new ISqlRowMapper<Object>() {
             public Object mapRow(Row row) {
+            	String key = row.getString("param_key");
                 String value = row.getString("param_value");
+                if (filter != null) {
+                    value = filter.filterParameter(key, value);
+                }
                 if (value != null) {
-                    properties.setProperty(row.getString("param_key"), row.getString("param_value"));
+                    properties.setProperty(key, value);
                 }
                 return row;
             }
