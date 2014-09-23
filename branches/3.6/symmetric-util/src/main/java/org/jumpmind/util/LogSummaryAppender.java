@@ -115,7 +115,12 @@ public class LogSummaryAppender extends AppenderSkeleton {
     }
     
     public void purgeOlderThan(long time) {
-        Collection<Map<String, LogSummary>> all = errorsByEngineByMessage.values();
+        purgeOlderThan(time, errorsByEngineByMessage);
+        purgeOlderThan(time, warningByEngineByMessage);
+    }
+    
+    protected void purgeOlderThan(long time, Map<String, Map<String, LogSummary>> logSummaryByEngineByMessage) {
+        Collection<Map<String, LogSummary>> all = logSummaryByEngineByMessage.values();
         for (Map<String, LogSummary> map : all) {
             Set<String> keys = map.keySet();
             for (String key : keys) {
