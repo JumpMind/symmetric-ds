@@ -225,11 +225,12 @@ public class JdbcDatabasePlatformFactory {
             }
 
             if (nameVersion[0].toLowerCase().indexOf(DatabaseNamesConstants.DB2) != -1) {
-            	nameVersion[0] = DatabaseNamesConstants.DB2;
                 if (nameVersion[0].toUpperCase().indexOf("Z") != -1) {
                     nameVersion[0] = DatabaseNamesConstants.DB2ZOS;
                 } else if (nameVersion[0].indexOf("400") != -1) {
                     nameVersion[0] = DatabaseNamesConstants.DB2AS400;
+                } else {
+                	nameVersion[0] = DatabaseNamesConstants.DB2;
                 }
             }
             if (nameVersion[0].equalsIgnoreCase("AS") && nameVersion[2].equalsIgnoreCase("db2")) {
