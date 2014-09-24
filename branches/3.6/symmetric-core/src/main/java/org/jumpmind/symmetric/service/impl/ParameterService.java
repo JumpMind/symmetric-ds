@@ -52,7 +52,9 @@ public class ParameterService extends AbstractParameterService implements IParam
     private ISqlTemplate sqlTemplate;
 
     private Date lastUpdateTime;
-    
+
+    private IParameterFilter parameterFilter;
+
     private IParameterSaveFilter parameterSaveFilter;
 
 	public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory,
@@ -183,14 +185,22 @@ public class ParameterService extends AbstractParameterService implements IParam
         return readParametersFromDatabase("selectParametersSql", externalId, nodeGroupId);
     }
 
+    public void setParameterFilter(IParameterFilter parameterFilter) {
+        this.parameterFilter = parameterFilter;
+    }
+
     public void setParameterSaveFilter(IParameterSaveFilter parameterSaveFilter) {
 		this.parameterSaveFilter = parameterSaveFilter;
 	}
 
     class DatabaseParameterMapper implements ISqlRowMapper<DatabaseParameter> {
         public DatabaseParameter mapRow(Row row) {
-            return new DatabaseParameter(row.getString("param_key"), row.getString("param_value"),
-                    row.getString("external_id"), row.getString("node_group_id"));
+        	String key = row.getString("param_key");
+        	String value = row.getString("param_value");
+            if (parameterFilter != null) {
+                value = parameterFilter.filterParameter(key, value);
+            }        	
+            return new DatabaseParameter(key, value, row.getString("external_id"), row.getString("node_group_id"));
         }
     }
 
