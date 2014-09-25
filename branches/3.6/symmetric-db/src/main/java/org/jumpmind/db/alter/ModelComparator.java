@@ -19,6 +19,7 @@ package org.jumpmind.db.alter;
  * under the License.
  */
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -314,7 +315,13 @@ public class ModelComparator {
     public List<TableChange> compareColumns(Table sourceTable, Column sourceColumn,
             Table targetTable, Column targetColumn) {
         ArrayList<TableChange> changes = new ArrayList<TableChange>();
-        if (targetColumn.getMappedTypeCode() != sourceColumn.getMappedTypeCode()
+        
+        int sourceTypeCode = sourceColumn.getMappedTypeCode();
+        int targetTypeCode = targetColumn.getMappedTypeCode();
+        boolean compatible = 
+                (sourceTypeCode == Types.NUMERIC || sourceTypeCode == Types.DECIMAL) && 
+                (targetTypeCode == Types.INTEGER || targetTypeCode == Types.BIGINT);
+        if (!compatible && targetColumn.getMappedTypeCode() != sourceColumn.getMappedTypeCode()
                 && platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()) != sourceColumn
                         .getMappedTypeCode()) {
             log.debug(
