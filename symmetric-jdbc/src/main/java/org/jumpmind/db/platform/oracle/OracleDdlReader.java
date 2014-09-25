@@ -149,20 +149,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             // We're back-mapping the NUMBER columns returned by Oracle
             // Note that the JDBC driver returns DECIMAL for these NUMBER
             // columns
-            if (column.getScale() == 0) {
-                if (column.getSizeAsInt() == 22) {
-                    // TODO: This is causing several Oracle unit tests to fail.
-//                    if (isColumnInteger((String) values.get("TABLE_NAME"),
-//                            (String) values.get("COLUMN_NAME"))) {
-//                        column.setMappedTypeCode(Types.INTEGER);
-//                    } else {
-//                        column.setMappedTypeCode(Types.REAL);
-//                    }
-                    column.setMappedTypeCode(Types.INTEGER);
-                } else if (column.getSizeAsInt() == 38){
-                    column.setMappedTypeCode(Types.BIGINT);
-                }
-            } else if (column.getScale() <= -127 || column.getScale() >= 127) {
+            if (column.getScale() <= -127 || column.getScale() >= 127) {
                 if (column.getSizeAsInt() == 0) {
                     /*
                      * Latest oracle jdbc drivers for 11g return (0,-127) for
@@ -173,7 +160,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                      */
                     if (isColumnInteger((String)values.get("TABLE_NAME"),
                             (String)values.get("COLUMN_NAME"))) {
-                        column.setMappedTypeCode(Types.INTEGER);
+                        column.setMappedTypeCode(Types.BIGINT);
                     }
                 } else if (column.getSizeAsInt() <= 63) {
                     column.setMappedTypeCode(Types.REAL);
