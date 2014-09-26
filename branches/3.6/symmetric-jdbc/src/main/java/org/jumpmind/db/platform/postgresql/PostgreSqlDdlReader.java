@@ -105,6 +105,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
+        Integer type = (Integer) values.get("DATA_TYPE");
         if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
             return Types.TIMESTAMP;
         } else if (typeName != null && typeName.equalsIgnoreCase("TIMESTAMPTZ")) {
@@ -112,6 +113,8 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             return MAPPED_TIMESTAMPTZ;            
         } else if (PostgreSqlDatabasePlatform.isBlobStoredByReference(typeName)) {
             return Types.BLOB;
+        } else if (type != null && type == Types.STRUCT) {
+            return Types.LONGVARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
