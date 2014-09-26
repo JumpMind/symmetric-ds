@@ -113,7 +113,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             return MAPPED_TIMESTAMPTZ;            
         } else if (PostgreSqlDatabasePlatform.isBlobStoredByReference(typeName)) {
             return Types.BLOB;
-        } else if (type != null && type == Types.STRUCT) {
+        } else if (type != null && (type == Types.STRUCT || type == Types.OTHER)) {
             return Types.LONGVARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
