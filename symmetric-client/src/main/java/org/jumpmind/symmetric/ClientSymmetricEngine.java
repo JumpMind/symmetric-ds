@@ -23,7 +23,6 @@ package org.jumpmind.symmetric;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -46,7 +45,6 @@ import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BasicDataSourceFactory;
-import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
@@ -62,14 +60,12 @@ import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.symmetric.util.SnapshotUtil;
+import org.jumpmind.symmetric.util.TypedPropertiesFactory;
 import org.jumpmind.util.AppUtils;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.jndi.JndiObjectFactoryBean;
 import org.xml.sax.InputSource;
 
@@ -80,6 +76,8 @@ import org.xml.sax.InputSource;
 public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static final String DEPLOYMENT_TYPE_CLIENT = "client";
+    
+    public static final String PROPERTIES_FACTORY_CLASS_NAME = "properties.factory.class.name";
 
     protected File propertiesFile;
 
@@ -344,69 +342,25 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected ITypedPropertiesFactory createTypedPropertiesFactory() {
-        return createTypedPropertiesFactory(propertiesFile, properties);
+    	return createTypedPropertiesFactory(propertiesFile, properties);
     }
 
-    protected static ITypedPropertiesFactory createTypedPropertiesFactory(
-            final File propertiesFile, final Properties properties) {
-        return new ITypedPropertiesFactory() {
-            public TypedProperties reload() {
-                PropertiesFactoryBean factoryBean = new PropertiesFactoryBean();
-                factoryBean.setIgnoreResourceNotFound(true);
-                factoryBean.setLocalOverride(true);
-                factoryBean.setSingleton(false);
-                factoryBean.setProperties(properties);
-                factoryBean.setLocations(buildLocations(propertiesFile));
-                try {
-                    return new TypedProperties(factoryBean.getObject());
-                } catch (IOException e) {
-                    throw new IoException(e);
-                }
-            }
-
-            protected Resource[] buildLocations(File propertiesFile) {
-                /*
-                 * System properties always override the properties found in
-                 * these files. System properties are merged in the parameter
-                 * service.
-                 */
-                List<Resource> resources = new ArrayList<Resource>();
-                resources.add(new ClassPathResource("/symmetric-default.properties"));
-                resources.add(new ClassPathResource("/symmetric-console-default.properties"));
-                resources.add(new FileSystemResource("../conf/symmetric.properties"));
-                resources.add(new ClassPathResource("/symmetric.properties"));
-                resources.add(new ClassPathResource("/symmetric-console-default.properties"));
-                resources.add(new ClassPathResource("/symmetric-override.properties"));
-                if (propertiesFile != null && propertiesFile.exists()) {
-                    resources.add(new FileSystemResource(propertiesFile.getAbsolutePath()));
-                }
-                return resources.toArray(new Resource[resources.size()]);
-
-            }
-        };
+    protected static ITypedPropertiesFactory createTypedPropertiesFactory(File propFile, Properties prop) {
+    	String propFactoryClassName = System.getProperties().getProperty(PROPERTIES_FACTORY_CLASS_NAME);
+    	ITypedPropertiesFactory factory = null;
+    	if (propFactoryClassName != null) {
+    		try {
+    			factory = (ITypedPropertiesFactory) Class.forName(propFactoryClassName).newInstance();
+    		} catch (Exception e) {
+    			throw new RuntimeException(e);
+    		}
+    	} else {
+    		factory = new TypedPropertiesFactory();
+    	}
+    	factory.init(propFile, prop);
+    	return factory;
     }
-
-    protected static class PropertiesFactoryBean extends
-            org.springframework.beans.factory.config.PropertiesFactoryBean {
-
-        private static Properties localProperties;
-
-        public PropertiesFactoryBean() {
-            this.setLocalOverride(true);
-            if (localProperties != null) {
-                this.setProperties(localProperties);
-            }
-        }
-
-        public static void setLocalProperties(Properties localProperties) {
-            PropertiesFactoryBean.localProperties = localProperties;
-        }
-
-        public static void clearLocalProperties() {
-            PropertiesFactoryBean.localProperties = null;
-        }
-    }
-
+    
     @Override
     public synchronized void destroy() {
         super.destroy();
