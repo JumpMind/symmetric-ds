@@ -1,3 +1,22 @@
+SymmetricDS - 3.6.9 (Released 2014-09-30) 
+=========================================
+- 0001942: [Bug] PostGIS initial load fails unless you set initial.load.concat.csv.in.sql.enabled=true (chenson) - closed.
+- 0001969: [Bug] Integer conversion between Oracle and PostgreSQL maps to wrong type (chenson) - closed.
+- 0001977: [Bug] The bean shell router swallows errors and does not route the data (chenson) - closed.
+- 0001978: [Bug] NullPointerException in ColumnsToRowsValueColumnTransform (chenson) - closed.
+- 0001979: [Bug] Broken replication on tables with uuid field (chenson) - closed.
+- 0001980: [Improvement] Report script line number for bsh transforms and bsh routers (chenson) - closed.
+- 0001983: [Improvement] Better document reverse initial load (chenson) - closed.
+- 0001984: [Bug] Wrong key values can be returned when load transforms don't put keys at beginning of transform list (chenson) - closed.
+- 0001986: [Improvement] REST call for reading parameters (elong) - closed.
+- 0001987: [Improvement] Add extension for filtering parameters as they are saved (elong) - closed.
+- 0001988: [Bug] Default values for ARRAY types on Postgres cause create tables to fail (chenson) - closed.
+- 0001989: [Bug] Switching cluster locks off causes initialization error (elong) - closed.
+- 0001993: [Improvement] Add support for composite data types in postgres (chenson) - closed.
+- 0001994: [Bug] Time columns in postgres should be captured as time only. Date is currently captured which breaks the postgres bulk loader (chenson) - closed.
+- 0001996: [Improvement] Support JSON data type. Map all Types.OTHER to LONGVARCHAR for Postgres. (chenson) - closed.
+- 0001991: [Improvement] Allow override of startup parameters (elong) - closed.
+
 SymmetricDS - 3.6.8 (Released 2014-09-17) 
 =========================================
 - 0001950: [Bug] Reinsert of sym_data_gap after it has been purged can fall outside of captured sym_data range (chenson) - closed.
