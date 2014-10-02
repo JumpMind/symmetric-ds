@@ -141,7 +141,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         if (typeName != null && typeName.toLowerCase().startsWith("text")) {
             return Types.LONGVARCHAR;
         } else if (typeName != null && typeName.toLowerCase().startsWith("ntext")) {
-            return Types.LONGNVARCHAR;
+            return Types.CLOB;
         } else if (typeName != null && typeName.toUpperCase().contains(TypeMap.GEOMETRY)) {
             return Types.VARCHAR;
         } else {
