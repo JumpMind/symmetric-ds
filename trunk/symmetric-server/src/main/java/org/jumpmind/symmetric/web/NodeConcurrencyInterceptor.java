@@ -33,12 +33,16 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An interceptor that controls access to this node for pushes and pulls. It is
  * configured within symmetric-web.xml
  */
 public class NodeConcurrencyInterceptor implements IInterceptor {
+    
+    private static Logger log = LoggerFactory.getLogger(NodeConcurrencyInterceptor.class);
 
     private IConcurrentConnectionManager concurrentConnectionManager;
 
@@ -71,13 +75,27 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                 statisticManager.incrementNodesRejected(1);
                 ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);
             } else {
-                buildSuspendIgnoreResponseHeaders(nodeId, resp);
+                try {
+                    buildSuspendIgnoreResponseHeaders(nodeId, resp);
+                } catch (Exception ex) {
+                    concurrentConnectionManager.releaseConnection(nodeId, poolId);
+                    log.error("Error building response headers", ex);
+                    ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);
+                }
             }
             return false;
         } else if (concurrentConnectionManager.reserveConnection(nodeId, poolId,
                 ReservationType.HARD)) {
+            try {
                 buildSuspendIgnoreResponseHeaders(nodeId, resp);
                 return true;
+            } catch (Exception ex) {
+                concurrentConnectionManager.releaseConnection(nodeId, poolId);
+                log.error("Error building response headers", ex);
+                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);
+                return false;
+            }
+
         } else {
             statisticManager.incrementNodesRejected(1);
             ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);

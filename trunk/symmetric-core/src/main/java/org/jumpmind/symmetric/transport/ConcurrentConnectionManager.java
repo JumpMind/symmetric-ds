@@ -41,8 +41,6 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
 
     protected IParameterService parameterService;
 
-    protected IStatisticManager statisticManager;
-
     protected Map<String, Map<String, Reservation>> activeReservationsByNodeByPool = new HashMap<String, Map<String, Reservation>>();
 
     protected Map<String, Map<String, NodeConnectionStatistics>> nodeConnectionStatistics = new HashMap<String, Map<String, NodeConnectionStatistics>>();
@@ -52,7 +50,6 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
     public ConcurrentConnectionManager(IParameterService parameterService,
             IStatisticManager statisticManager) {
         this.parameterService = parameterService;
-        this.statisticManager = statisticManager;
     }
 
     protected void logTooBusyRejection(String nodeId, String poolId) {
