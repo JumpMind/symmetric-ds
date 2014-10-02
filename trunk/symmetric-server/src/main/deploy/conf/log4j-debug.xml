@@ -65,7 +65,7 @@
     </category>
      
     <!-- Disable the not found override properties file warnings to avoid confusion -->
-    <category name="org.jumpmind.symmetric.ClientSymmetricEngine$PropertiesFactoryBean">
+    <category name="org.jumpmind.symmetric.util.PropertiesFactoryBean">
         <priority value="ERROR" />
     </category>    
 
