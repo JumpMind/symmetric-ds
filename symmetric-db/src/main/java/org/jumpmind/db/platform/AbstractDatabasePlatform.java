@@ -297,7 +297,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Table getTableFromCache(String tableName, boolean forceReread) {
-        return getTableFromCache(null, null, tableName, forceReread);
+        return getTableFromCache(getDefaultCatalog(), getDefaultSchema(), tableName, forceReread);
     }
 
     public Table getTableFromCache(String catalogName, String schemaName, String tableName,
