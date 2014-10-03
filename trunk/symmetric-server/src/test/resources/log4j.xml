@@ -55,7 +55,7 @@
         <priority value="INFO" />
     </category>    
     
-    <category name="org.jumpmind.symmetric.ClientSymmetricEngine$PropertiesFactoryBean">
+    <category name="org.jumpmind.symmetric.util.PropertiesFactoryBean">
         <priority value="ERROR" />
     </category>    
 
