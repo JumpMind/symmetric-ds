@@ -61,6 +61,7 @@ import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
+import org.jumpmind.symmetric.util.PropertiesFactoryBean;
 import org.jumpmind.symmetric.util.SnapshotUtil;
 import org.jumpmind.util.AppUtils;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -384,27 +385,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
             }
         };
-    }
-
-    protected static class PropertiesFactoryBean extends
-            org.springframework.beans.factory.config.PropertiesFactoryBean {
-
-        private static Properties localProperties;
-
-        public PropertiesFactoryBean() {
-            this.setLocalOverride(true);
-            if (localProperties != null) {
-                this.setProperties(localProperties);
-            }
-        }
-
-        public static void setLocalProperties(Properties localProperties) {
-            PropertiesFactoryBean.localProperties = localProperties;
-        }
-
-        public static void clearLocalProperties() {
-            PropertiesFactoryBean.localProperties = null;
-        }
     }
 
     @Override
