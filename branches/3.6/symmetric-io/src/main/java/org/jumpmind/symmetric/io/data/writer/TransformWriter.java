@@ -455,7 +455,7 @@ public class TransformWriter extends NestedDataWriter {
             try {
                 String oldValue = null;
                 if (oldSourceValues != null) {
-                    oldSourceValues.get(transformColumn.getSourceColumnName());
+                    oldValue = oldSourceValues.get(transformColumn.getSourceColumnName());
                 }
                 returnValue = transform.transform(platform, context, transformColumn, data,
                         sourceValues, value, oldValue);
