@@ -472,6 +472,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     }
                 }
             } else {
+                if (log.isDebugEnabled()) {
+                   log.debug("Not running update for table {} with pk of {}.  There was no change to apply", 
+                           targetTable.getFullyQualifiedTableName(), data.getCsvData(CsvData.PK_DATA));
+                }
                 // There was no change to apply
                 return LoadStatus.SUCCESS;
             }
