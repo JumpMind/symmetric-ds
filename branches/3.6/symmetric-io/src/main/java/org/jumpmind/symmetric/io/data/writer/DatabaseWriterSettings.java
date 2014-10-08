@@ -46,6 +46,8 @@ public class DatabaseWriterSettings {
     protected boolean alterTable = true;
 
     protected boolean createTableDropFirst = false;
+    
+    protected boolean applyChangesOnly = true;
 
     protected boolean createTableAlterCaseToMatchDatabaseDefault = false;
 
@@ -271,5 +273,13 @@ public class DatabaseWriterSettings {
     
     public String getTextColumnExpression() {
         return textColumnExpression;
+    }
+    
+    public void setApplyChangesOnly(boolean applyChangesOnly) {
+        this.applyChangesOnly = applyChangesOnly;
+    }
+    
+    public boolean isApplyChangesOnly() {
+        return applyChangesOnly;
     }
 }
