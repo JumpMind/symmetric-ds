@@ -148,7 +148,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                     LoadStatus loadStatus = LoadStatus.SUCCESS;
                     switch (data.getDataEventType()) {
                         case UPDATE:
-                            loadStatus = update(data, true, true);
+                            loadStatus = update(data, writerSettings.isApplyChangesOnly(), true);
                             break;
                         case INSERT:
                             loadStatus = insert(data);
