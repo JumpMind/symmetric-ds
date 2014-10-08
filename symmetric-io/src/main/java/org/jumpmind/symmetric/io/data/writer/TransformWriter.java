@@ -414,7 +414,7 @@ public class TransformWriter extends NestedDataWriter {
                                     }
                                     for (int i = 1; i < values.size(); i++) {
                                         TransformedData newData = data.copy();
-                                        newData.put(transformColumn, values.get(i), oldSourceValues != null ? values.get(0) : null, true);
+                                        newData.put(transformColumn, values.get(i), oldSourceValues != null ? values.get(i) : null, true);
                                         newDatas.add(newData);
                                     }
                                 }
