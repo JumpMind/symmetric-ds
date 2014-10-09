@@ -18,17 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric;
+package org.jumpmind.symmetric.db.db2;
 
-import java.io.File;
-import java.util.Properties;
+import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.service.IParameterService;
 
-import org.jumpmind.properties.TypedProperties;
+public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISymmetricDialect {
 
-public interface ITypedPropertiesFactory {
-    
-	public void init(File propertiesFile, Properties properties);
+    public Db2As400SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
+    }
 
-    public TypedProperties reload();
+    protected String getSystemSchemaName() {
+    	return "QSYS2";
+    }
 
 }
