@@ -3,13 +3,13 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-wrapper</artifactId>
     <packaging>jar</packaging>
-    <version>3.6.10-SNAPSHOT</version>
+    <version>3.6.10</version>
     <name>wrapper</name>
 
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.6.10-SNAPSHOT</version>
+        <version>3.6.10</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
 
