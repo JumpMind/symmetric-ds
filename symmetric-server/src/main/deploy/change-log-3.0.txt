@@ -1,3 +1,13 @@
+SymmetricDS - 3.6.10 (Released 2014-10-09) 
+==========================================
+- 0001997: [Bug] Excessive logging from PropertiesFactoryBean (elong) - closed.
+- 0001998: [Bug] Support ntext type on sql server with the JTDS driver (chenson) - closed.
+- 0001999: [Bug] Server can hang when database is unavailable while attempting to handle connection attempt from client (chenson) - closed.
+- 0002000: [Bug] SymmetricDS startup fails. Check for existence of sym tables isn't limited to the default catalog and schema at start up (chenson) - closed.
+- 0002002: [Bug] delete and update transforms are broken when dealing with compound primary keys (chenson) - closed.
+- 0002004: [Bug] Multiplier transforms don't use correct old data (chenson) - closed.
+- 0002006: [Improvement] Add dataloader.apply.changes.only property that control whether update statements will update all columns or only changed column (chenson) - closed.
+
 SymmetricDS - 3.6.9 (Released 2014-09-30) 
 =========================================
 - 0001942: [Bug] PostGIS initial load fails unless you set initial.load.concat.csv.in.sql.enabled=true (chenson) - closed.
