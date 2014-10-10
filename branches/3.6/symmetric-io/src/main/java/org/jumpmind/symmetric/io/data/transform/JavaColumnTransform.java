@@ -34,6 +34,7 @@ public class JavaColumnTransform implements ISingleValueColumnTransform, IBuiltI
     public final static String CODE_START = "import org.jumpmind.symmetric.io.data.transform.*;\n"
             + "import org.jumpmind.symmetric.io.data.*;\n"
             + "import org.jumpmind.db.platform.*;\n"
+            + "import org.jumpmind.db.sql.*;\n"
             + "import java.util.*;\n"
             + "public class " + SimpleClassCompiler.CLASSNAME_TOKEN + " extends JavaColumnTransform { \n"
             + "    public String transform(IDatabasePlatform platform, DataContext context, TransformColumn column, TransformedData data,\n"

@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
@@ -99,6 +100,10 @@ public class SimpleClassCompiler {
                 objectMap.put(id, javaObject);
             } else {
                 log.debug("Compilation failed:\n" + javaCode);
+                for (Diagnostic diagnostic : diag.getDiagnostics()) {
+                    log.error("At line " + diagnostic.getLineNumber() + ", column " + diagnostic.getColumnNumber() + ": " + 
+                            diagnostic.getMessage(null));
+                }
                 throw new SimpleClassCompilerException(diag.getDiagnostics());
             }
         }
@@ -144,7 +149,7 @@ public class SimpleClassCompiler {
     
     @IgnoreJRERequirement
     public class ClassFileManager extends ForwardingJavaFileManager {
-        private JavaClassObject jclassObject;
+        private HashMap<String, JavaClassObject> jclassObjects = new HashMap<String, JavaClassObject>();
 
         @SuppressWarnings("unchecked")
         public ClassFileManager(StandardJavaFileManager standardManager) {
@@ -156,6 +161,7 @@ public class SimpleClassCompiler {
             return new SecureClassLoader() {
                 @Override
                 protected Class<?> findClass(String name) throws ClassNotFoundException {
+                    JavaClassObject jclassObject = jclassObjects.get(name);
                     byte[] bytes = jclassObject.getBytes();
                     return super.defineClass(name, bytes, 0, bytes.length);
                 }
@@ -165,7 +171,8 @@ public class SimpleClassCompiler {
         @Override
         public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling) 
                 throws IOException {
-            jclassObject = new JavaClassObject(className, kind);
+            JavaClassObject jclassObject = new JavaClassObject(className, kind);
+            jclassObjects.put(className, jclassObject);
             return jclassObject;
         }
     }
