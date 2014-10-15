@@ -52,5 +52,5 @@ then
    SEP=";"
 fi
 
-CLASSPATH="${SYM_HOME}/patches${SEP}${SYM_HOME}/lib/*${SEP}${SYM_HOME}/web/WEB-INF/lib/*"
+CLASSPATH="${SYM_HOME}/patches${SEP}${SYM_HOME}/patches/*${SEP}${SYM_HOME}/lib/*${SEP}${SYM_HOME}/web/WEB-INF/lib/*"
 export CLASSPATH
