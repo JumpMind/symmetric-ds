@@ -151,12 +151,12 @@ abstract public class AbstractTriggerTemplate {
             for (int i = 0; i < columns.length; i++) {
                 Column column = columns[i];
                 if (column != null) {
+                    if (i > 0) {
+                        columnList.append(",");
+                    }
                     boolean isLob = symmetricDialect.getPlatform()
                             .isLob(column.getMappedTypeCode());
                     if (!(isLob && triggerRouter.getTrigger().isUseStreamLobs())) {
-                        if (i > 0) {
-                            columnList.append(",");
-                        }
 
                         String columnExpression = null;
                         if (requiresTriggerTemplatesToBeUsedDuringInitialLoad()) {
@@ -179,12 +179,14 @@ abstract public class AbstractTriggerTemplate {
                             } else if (isNotBlank(textColumnExpression)
                                     && TypeMap.isTextType(column.getMappedTypeCode())) {
                                 columnExpression = textColumnExpression.replace("$(columnName)",
-                                        columnExpression) + " as " + column.getName();
+                                        columnExpression);
                             }
                         }
                         
-                        columnList.append(columnExpression).append(" as ").append(column.getName());
+                        columnList.append(columnExpression).append(" as ").append("col").append(i);
                         
+                    } else {
+                        columnList.append(" null as ").append("col").append(i);
                     }
                 }
             }
