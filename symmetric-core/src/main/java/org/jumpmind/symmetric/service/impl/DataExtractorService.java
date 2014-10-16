@@ -37,7 +37,6 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
-import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -1589,32 +1588,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         protected void startNewCursor(final TriggerHistory triggerHistory,
                 final TriggerRouter triggerRouter, String overrideSelectSql) {
             final int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
-            String initialLoadSql = symmetricDialect.createInitialLoadSqlFor(
+            final String initialLoadSql = symmetricDialect.createInitialLoadSqlFor(
                     this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable,
                     triggerHistory,
                     configurationService.getChannel(triggerRouter.getTrigger().getChannelId()),
                     overrideSelectSql);
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row row) {
-                    
+
                     String csvRow = null;
                     if (symmetricDialect.getParameterService().is(
                             ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
                         csvRow = row.stringValue();
                     } else {
-                        StringBuilder concatedRow = new StringBuilder();
-                        Column[] columns = sourceTable.getColumns();
-                        int index = 0;
-                        for (Column column : columns) {
-                            if (index > 0) {
-                                concatedRow.append(",");
-                            }
-                            String value = row.getString(column.getName(), false);
-                            concatedRow.append(value == null ? "" : value);
-                            index++;
-                        }
-                        csvRow = concatedRow.toString();
-                        
+                        csvRow = row.csvValue();                        
                     }
                     int commaCount = StringUtils.countMatches(csvRow, ",");
                     if (expectedCommaCount <= commaCount) {
@@ -1626,8 +1613,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         return data;
                     } else {
                         throw new SymmetricException(
-                                "The extracted row data did not have the expected (%d) number of columns: %s",
-                                expectedCommaCount, csvRow);
+                                "The extracted row data did not have the expected (%d) number of columns: %s.  The initial load sql was: %s",
+                                expectedCommaCount, csvRow, initialLoadSql);
                     }
                 }
             });
