@@ -183,10 +183,10 @@ abstract public class AbstractTriggerTemplate {
                             }
                         }
                         
-                        columnList.append(columnExpression).append(" as ").append("col").append(i);
+                        columnList.append(columnExpression).append(" as ").append("x__").append(i);
                         
                     } else {
-                        columnList.append(" null as ").append("col").append(i);
+                        columnList.append(" null as ").append("x__").append(i);
                     }
                 }
             }
