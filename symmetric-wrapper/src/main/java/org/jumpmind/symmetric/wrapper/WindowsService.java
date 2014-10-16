@@ -123,6 +123,20 @@ public class WindowsService extends WrapperService {
                     if (status.dwCurrentState != Winsvc.SERVICE_STOPPED) {
                         throw new WrapperException(Constants.RC_FAIL_STOP_SERVER, status.dwWin32ExitCode, "Service did not stop");
                     }
+
+                    // Double check that the processes are really gone
+                    int wrapperPid = readPidFromFile(config.getWrapperPidFile());
+                    if (isPidRunning(wrapperPid)) {
+                        if (!stopProcess(wrapperPid, "wrapper")) {
+                            throw new WrapperException(Constants.RC_FAIL_STOP_SERVER, 0, "Wrapper did not stop");
+                        }                    	
+                    }
+                    int symPid = readPidFromFile(config.getServerPidFile());
+                    if (isPidRunning(symPid)) {
+                        if (!stopProcess(symPid, "symmetricds")) {
+                            throw new WrapperException(Constants.RC_FAIL_STOP_SERVER, 0, "Server did not stop");
+                        }
+                    }
                     System.out.println("Stopped");
                 } else {
                     throwException("OpenService");
