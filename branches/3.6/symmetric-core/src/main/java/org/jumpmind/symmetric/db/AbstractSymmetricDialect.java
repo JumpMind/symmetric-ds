@@ -166,6 +166,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     
     protected void install(String sql, String objectName) {
         sql = replaceTokens(sql, objectName);
+        log.info("Installing SymmetricDS database object:\n{}", sql);
         platform.getSqlTemplate().update(sql);
         log.info("Just installed {}", objectName);
     }

@@ -99,7 +99,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         } else {
             String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
             if (!installed(SQL_FUNCTION_INSTALLED, function)) {
-           String sql = "create function $(functionName)()                                                                                                                                                                      " + 
+           String sql = "create function $(functionName)()                                                                                               \n" + 
                         " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                           \n" + 
                         " begin                                                                                                                          \n" + 
                         "    declare comm_value varchar(50);                                                                                             \n" + 
