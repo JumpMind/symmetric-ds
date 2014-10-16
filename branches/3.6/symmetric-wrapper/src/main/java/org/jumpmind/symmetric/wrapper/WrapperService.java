@@ -224,16 +224,22 @@ public abstract class WrapperService {
     protected void shutdown() {
         if (keepRunning) {
             keepRunning = false;
-            logger.log(Level.INFO, "Stopping server");
-            child.destroy();
-            try {
-                childReader.close();
-            } catch (IOException e) {
-            }
-            logger.log(Level.INFO, "Stopping wrapper");
-            deletePidFile(config.getWrapperPidFile());
-            deletePidFile(config.getServerPidFile());
-            updateStatus(Status.STOPPED);
+            new Thread() {
+            	@Override
+            	public void run() {
+                    logger.log(Level.INFO, "Stopping server");
+                    child.destroy();
+                    try {
+                        childReader.close();
+                    } catch (IOException e) {
+                    }
+                    logger.log(Level.INFO, "Stopping wrapper");
+                    deletePidFile(config.getWrapperPidFile());
+                    deletePidFile(config.getServerPidFile());
+            		updateStatus(Status.STOPPED);
+            		System.exit(0);
+            	}
+            }.start();            
         }
     }
 
