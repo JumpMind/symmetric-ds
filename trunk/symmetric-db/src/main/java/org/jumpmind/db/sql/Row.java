@@ -26,6 +26,7 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Date;
 
 import org.apache.commons.io.IOUtils;
@@ -110,14 +111,28 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
             return null;
         }
     }
-
-    public String getString(String columnName) {
-        return getString(columnName, true);
+    
+    public String csvValue() {
+        StringBuilder concatenatedRow = new StringBuilder();
+        Collection<Object> objs = this.values();
+        int index = 0;
+        for (Object obj : objs) {
+            if (index > 0) {
+                concatenatedRow.append(",");
+            }
+            concatenatedRow.append(obj != null ? obj.toString() : "");
+            index++;            
+        }
+        return concatenatedRow.toString(); 
     }
 
     public byte[] getBytes(String columnName) {
         Object obj = get(columnName);
         return toBytes(obj);
+    }
+    
+    public String getString(String columnName) {
+        return getString(columnName, true);
     }
 
     public String getString(String columnName, boolean checkForColumn) {
