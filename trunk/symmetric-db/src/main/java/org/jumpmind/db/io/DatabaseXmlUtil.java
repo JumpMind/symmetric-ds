@@ -239,6 +239,8 @@ public class DatabaseXmlUtil {
                                     platformColumn.setName(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("type")) {
                                     platformColumn.setType(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("default")) {
+                                    platformColumn.setDefaultValue(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("size")) {
                                     if (isNotBlank(attributeValue)) {
                                         platformColumn.setSize(Integer.parseInt(attributeValue));
@@ -470,6 +472,11 @@ public class DatabaseXmlUtil {
                                 output.write(" decimalDigits=\""
                                         + platformColumn.getDecimalDigits() + "\"");
                             }
+                            
+                            if (platformColumn.getDefaultValue() != null) {
+                                output.write(" default=\"" + StringEscapeUtils.escapeXml(platformColumn.getDefaultValue()) + "\"");
+                            }
+
                             output.write("/>\n");
                         }
                         output.write("\t\t</column>\n");                    
