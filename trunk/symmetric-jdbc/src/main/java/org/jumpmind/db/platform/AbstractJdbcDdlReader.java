@@ -868,10 +868,24 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     columnNames.add(column.getName());
                     columns.add(column);
                 }
+                
+                generizizeDefaultValuesAndUpdatePlatformColumn(column);
             }
             return columns;
         } finally {
             close(columnData);
+        }
+    }
+    
+    protected void generizizeDefaultValuesAndUpdatePlatformColumn(Column column) {
+        PlatformColumn platformColumn = column.findPlatformColumn(platform.getName());
+        platformColumn.setDefaultValue(column.getDefaultValue());
+        
+        /*
+         * Translate from platform specific functions to ansi sql functions
+         */
+        if ("getdate()".equalsIgnoreCase(column.getDefaultValue())) {
+            column.setDefaultValue("CURRENT_TIMESTAMP");
         }
     }
 
@@ -902,15 +916,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
         if (defaultValue != null) {
             defaultValue = defaultValue.trim();
-            platformColumn.setDefaultValue(defaultValue);
-            
-            /*
-             * Translate from platform specific functions to ansi sql functions
-             */
-            if ("getdate()".equalsIgnoreCase(defaultValue)) {
-                defaultValue = "CURRENT_TIMESTAMP";
-            }
-            column.setDefaultValue(defaultValue.trim());
+            column.setDefaultValue(defaultValue);
         }
 
         String typeName = (String) values.get("TYPE_NAME");
