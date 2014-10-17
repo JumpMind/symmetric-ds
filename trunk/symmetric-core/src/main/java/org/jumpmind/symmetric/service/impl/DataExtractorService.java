@@ -1587,21 +1587,31 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         protected void startNewCursor(final TriggerHistory triggerHistory,
                 final TriggerRouter triggerRouter, String overrideSelectSql) {
-            final int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
             final String initialLoadSql = symmetricDialect.createInitialLoadSqlFor(
                     this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable,
                     triggerHistory,
                     configurationService.getChannel(triggerRouter.getTrigger().getChannelId()),
                     overrideSelectSql);
+
+            final int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
+            final boolean selectedAsCsv = symmetricDialect.getParameterService().is(
+                    ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED); 
+            final boolean objectValuesWillNeedEscaped = !symmetricDialect.getTriggerTemplate()
+                    .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
+            
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row row) {
-
-                    String csvRow = null;
-                    if (symmetricDialect.getParameterService().is(
-                            ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED)) {
+                    String csvRow = null;                    
+                    if (selectedAsCsv) {
                         csvRow = row.stringValue();
+                    } else if (objectValuesWillNeedEscaped) {
+                        String[] rowData = platform.getStringValues(
+                                symmetricDialect.getBinaryEncoding(), sourceTable.getColumns(),
+                                row, false);
+                        csvRow = CsvUtils.escapeCsvData(rowData, '\0', '"');
                     } else {
-                        csvRow = row.csvValue();                        
+                        csvRow = row.csvValue();
+
                     }
                     int commaCount = StringUtils.countMatches(csvRow, ",");
                     if (expectedCommaCount <= commaCount) {
