@@ -110,7 +110,14 @@ abstract public class AbstractTriggerTemplate {
         this.symmetricDialect = symmetricDialect;
     }
     
-    protected boolean requiresTriggerTemplatesToBeUsedDuringInitialLoad() {
+    /**
+     * When {@link ParameterConstants#INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED} is false 
+     * most dialects are going to want to still use the trigger templates because they
+     * have type translation details (like geometry templates).  However, some dialects
+     * cannot handle the complex SQL generated (Firebird).  We needed a way to tell
+     * the dialect that we want to select the columns straight up.
+     */
+    public boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad() {
         return true;
     }
 
@@ -159,7 +166,7 @@ abstract public class AbstractTriggerTemplate {
                     if (!(isLob && triggerRouter.getTrigger().isUseStreamLobs())) {
 
                         String columnExpression = null;
-                        if (requiresTriggerTemplatesToBeUsedDuringInitialLoad()) {
+                        if (useTriggerTemplateForColumnTemplatesDuringInitialLoad()) {
                             ColumnString columnString = fillOutColumnTemplate(tableAlias,
                                     tableAlias, "", column, DataEventType.INSERT, false, channel,
                                     triggerRouter.getTrigger());
