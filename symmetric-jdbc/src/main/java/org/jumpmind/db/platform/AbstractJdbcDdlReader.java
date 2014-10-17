@@ -901,6 +901,15 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             defaultValue = (String) values.get("COLUMN_DEFAULT");
         }
         if (defaultValue != null) {
+            defaultValue = defaultValue.trim();
+            platformColumn.setDefaultValue(defaultValue);
+            
+            /*
+             * Translate from platform specific functions to ansi sql functions
+             */
+            if ("getdate()".equalsIgnoreCase(defaultValue)) {
+                defaultValue = "CURRENT_TIMESTAMP";
+            }
             column.setDefaultValue(defaultValue.trim());
         }
 

@@ -34,14 +34,25 @@ public class PlatformColumn implements Serializable, Cloneable {
     
     private int decimalDigits = -1;
     
-    public PlatformColumn(String name, String type, int size, int decimalDigits) {
+    private String defaultValue;
+    
+    public PlatformColumn(String name, String type, int size, int decimalDigits, String defaultValue) {
         this.name = name;
         this.type = type;
         this.size = size;
         this.decimalDigits = decimalDigits;
+        this.defaultValue = defaultValue;
     }
     
     public PlatformColumn() {
+    }
+    
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+    
+    public String getDefaultValue() {
+        return defaultValue;
     }
     
     public void setName(String name) {
