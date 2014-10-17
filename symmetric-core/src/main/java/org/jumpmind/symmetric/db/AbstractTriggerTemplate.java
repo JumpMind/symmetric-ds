@@ -186,7 +186,7 @@ abstract public class AbstractTriggerTemplate {
                         columnList.append(columnExpression).append(" as ").append("x__").append(i);
                         
                     } else {
-                        columnList.append(" null as ").append("x__").append(i);
+                        columnList.append(" '' as ").append("x__").append(i);
                     }
                 }
             }
