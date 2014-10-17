@@ -49,7 +49,7 @@ public class AbstractDdlBuilderTest {
             Table currentTable = new Table("Test", new Column("ID", true, Types.INTEGER, 50, 0),
                     new Column("TXT", false, Types.VARCHAR, 50, 0));
             currentTable.getColumnWithName("TXT").addPlatformColumn(
-                    new PlatformColumn(DatabaseNamesConstants.H2, "VARCHAR2", 50, 0));
+                    new PlatformColumn(DatabaseNamesConstants.H2, "VARCHAR2", 50, 0, null));
 
             Table desiredTable = new Table("Test", new Column("ID", true, Types.INTEGER, 50, 0),
                     new Column("TXT", false, Types.VARCHAR, 255, 0));
