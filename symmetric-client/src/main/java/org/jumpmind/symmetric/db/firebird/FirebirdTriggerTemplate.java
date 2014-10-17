@@ -124,7 +124,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
     }
 
-    protected boolean requiresTriggerTemplatesToBeUsedDuringInitialLoad() {
+    public boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad() {
         return false;
     }
 
