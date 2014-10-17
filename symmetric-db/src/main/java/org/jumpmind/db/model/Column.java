@@ -28,6 +28,7 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -531,6 +532,12 @@ public class Column implements Cloneable, Serializable {
      */
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+        if (platformColumns != null) {
+            Collection<PlatformColumn> cols = platformColumns.values();
+            for (PlatformColumn platformColumn : cols) {
+                platformColumn.setDefaultValue(defaultValue);
+            }
+        }
     }
 
     /**
