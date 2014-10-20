@@ -43,6 +43,8 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.FormatUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Responsible for generating dialect specific SQL such as trigger bodies and
@@ -50,6 +52,8 @@ import org.jumpmind.util.FormatUtils;
  */
 abstract public class AbstractTriggerTemplate {
 
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+    
     protected static final String ORIG_TABLE_ALIAS = "orig";
 
     static final String INSERT_TRIGGER_TEMPLATE = "insertTriggerTemplate";
@@ -193,13 +197,13 @@ abstract public class AbstractTriggerTemplate {
                         columnList.append(columnExpression).append(" as ").append("x__").append(i);
                         
                     } else {
-                        columnList.append(" '' as ").append("x__").append(i);
+                        columnList.append(" ").append(emptyColumnTemplate).append(" as ").append("x__").append(i);
                     }
                 }
             }
             sql = FormatUtils.replace("columns", columnList.toString(), sql);
         }
-
+        
         String initialLoadSelect = StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
                 : triggerRouter.getInitialLoadSelect();
         if (StringUtils.isNotBlank(overrideSelectSql)) {

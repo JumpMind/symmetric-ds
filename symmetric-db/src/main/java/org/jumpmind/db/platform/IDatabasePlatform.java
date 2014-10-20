@@ -129,7 +129,7 @@ public interface IDatabasePlatform {
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData, boolean useVariableDates, boolean fitToColumn);
 
-    public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates);
+    public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates, boolean indexByPosition);
 
     public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase);
 

@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
@@ -470,13 +471,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     // TODO: this should be AbstractDdlBuilder.getInsertSql(Table table,
     // Map<String, Object> columnValues, boolean genPlaceholders)
     public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row,
-            boolean useVariableDates) {
+            boolean useVariableDates, boolean indexByPosition) {
         String[] values = new String[metaData.length];
-        for (int i = 0; i < metaData.length; i++) {
+        Set<String> keys = row.keySet();
+        int i = 0;
+        for (String key : keys) {            
             Column column = metaData[i];
-            String name = column.getName();
-            int type = column.getJdbcTypeCode();
-            
+            String name = indexByPosition ? key : column.getName();
+            int type = column.getJdbcTypeCode();            
             if (row.get(name) != null) {
                 if (type == Types.BOOLEAN || type == Types.BIT) {
                     values[i] = row.getBoolean(name) ? "1" : "0";
@@ -498,6 +500,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     values[i] = row.getString(name);
                 }
             }
+            
+            i++;
         }
         return values;
     }
