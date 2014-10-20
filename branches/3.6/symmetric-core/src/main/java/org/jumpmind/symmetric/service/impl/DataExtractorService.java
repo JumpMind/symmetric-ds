@@ -1607,7 +1607,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     } else if (objectValuesWillNeedEscaped) {
                         String[] rowData = platform.getStringValues(
                                 symmetricDialect.getBinaryEncoding(), sourceTable.getColumns(),
-                                row, false);
+                                row, false, true);
                         csvRow = CsvUtils.escapeCsvData(rowData, '\0', '"');
                     } else {
                         csvRow = row.csvValue();

@@ -869,7 +869,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     columns.add(column);
                 }
                 
-                generizizeDefaultValuesAndUpdatePlatformColumn(column);
+                genericizeDefaultValuesAndUpdatePlatformColumn(column);
             }
             return columns;
         } finally {
@@ -877,7 +877,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
     }
     
-    protected void generizizeDefaultValuesAndUpdatePlatformColumn(Column column) {
+    protected void genericizeDefaultValuesAndUpdatePlatformColumn(Column column) {
         PlatformColumn platformColumn = column.findPlatformColumn(platform.getName());
         platformColumn.setDefaultValue(column.getDefaultValue());
         

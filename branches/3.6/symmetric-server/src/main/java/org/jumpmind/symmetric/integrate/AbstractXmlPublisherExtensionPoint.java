@@ -200,7 +200,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                 @Override
                 public String[] mapRow(Row row) {
                     return platform.getStringValues(engine.getSymmetricDialect()
-                            .getBinaryEncoding(), table.getColumns(), row, false);
+                            .getBinaryEncoding(), table.getColumns(), row, false, false);
                 }
             }, argObjs);
         }
