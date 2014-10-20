@@ -1922,8 +1922,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The native default value
      */
     protected String getNativeDefaultValue(Column column) {
-        PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
         String defaultValue = column.getDefaultValue();
+        PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
         if (platformColumn != null) {
             defaultValue = platformColumn.getDefaultValue();
         }

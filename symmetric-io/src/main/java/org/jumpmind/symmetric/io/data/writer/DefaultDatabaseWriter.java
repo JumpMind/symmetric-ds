@@ -902,7 +902,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
             if (row != null) {
                 String[] existData = platform.getStringValues(context.getBatch().getBinaryEncoding(),
-                        columns, row, false);
+                        columns, row, false, false);
                 if (existData != null) {
                     curVal =  CsvUtils.escapeCsvData(existData);
                 }
