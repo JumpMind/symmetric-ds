@@ -508,7 +508,7 @@ public class DbExport {
         protected void writeRow(Row row) {
             Column[] columns = table.getColumns();
             String[] values = platform.getStringValues(BinaryEncoding.HEX, columns, row,
-                    useVariableDates);
+                    useVariableDates, false);
             try {
                 if (format == Format.CSV) {
                     csvWriter.writeRecord(values, true);
