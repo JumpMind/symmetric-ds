@@ -102,6 +102,10 @@
             <artifactId>log4j</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+        </dependency>        
         <!-- Spring Framework -->
         <dependency>
             <groupId>org.springframework</groupId>
