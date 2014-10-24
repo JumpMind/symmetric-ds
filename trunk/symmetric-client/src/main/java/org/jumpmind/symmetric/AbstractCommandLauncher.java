@@ -155,7 +155,8 @@ public abstract class AbstractCommandLauncher {
             CommandLine line = parser.parse(options, args);
 
             if (line.hasOption(HELP) || (line.getArgList().contains(HELP))
-                    || (line.getOptions().length == 0 && printHelpIfNoOptionsAreProvided())) {
+                    || ((args == null || args.length == 0) 
+                            && line.getOptions().length == 0 && printHelpIfNoOptionsAreProvided())) {
                 printHelp(line, options);
                 System.exit(2);
             }
