@@ -179,7 +179,7 @@ public class TransformWriter extends NestedDataWriter {
             if (eventType == DataEventType.DELETE) {
                 sourceValues = oldSourceValues;
 
-                if (sourceValues.size() == 0) {
+                if (sourceValues == null || sourceValues.size() == 0) {
                     sourceValues = sourceKeyValues;
                 }
             }
