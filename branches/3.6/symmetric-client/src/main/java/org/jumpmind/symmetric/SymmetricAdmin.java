@@ -129,7 +129,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     @Override
     protected boolean printHelpIfNoOptionsAreProvided() {
-        return false;
+        return true;
     }
 
     @Override
