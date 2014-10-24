@@ -58,9 +58,10 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory, ISymme
         String bucket = param.getString("redshift.bulk.load.s3.bucket");
         String accessKey = param.getString("redshift.bulk.load.s3.access.key");
         String secretKey = param.getString("redshift.bulk.load.s3.secret.key");
+        String appendToCopyCommand = param.getString("redshift.append.to.copy.command");
 
         return new RedshiftBulkDatabaseWriter(symmetricDialect.getPlatform(), engine.getStagingManager(), filters, errorHandlers,
-                maxRowsBeforeFlush, maxBytesBeforeFlush, bucket, accessKey, secretKey);
+                maxRowsBeforeFlush, maxBytesBeforeFlush, bucket, accessKey, secretKey, appendToCopyCommand);
     }
 
     public void setSymmetricEngine(ISymmetricEngine engine) {
