@@ -234,7 +234,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         String[] rowData = dataMetaData.getData().toParsedPkData();
         if (rowData != null) {
             Map<String, Object> data = new LinkedCaseInsensitiveMap<Object>(rowData.length);
-            String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
+            String[] columnNames = dataMetaData.getTriggerHistory().getParsedPkColumnNames();
             Object[] objects = symmetricDialect.getPlatform().getObjectValues(
                     symmetricDialect.getBinaryEncoding(), dataMetaData.getTable(), columnNames,
                     rowData);
