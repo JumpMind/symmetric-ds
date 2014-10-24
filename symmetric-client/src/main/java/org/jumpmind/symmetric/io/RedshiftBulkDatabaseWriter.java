@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.io;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -60,10 +62,11 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
     private String bucket;
     private String accessKey;
     private String secretKey;
+    private String appendToCopyCommand;
 
     public RedshiftBulkDatabaseWriter(IDatabasePlatform platform, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, int maxRowsBeforeFlush, long maxBytesBeforeFlush, String bucket,
-            String accessKey, String secretKey) {
+            String accessKey, String secretKey, String appendToCopyCommand) {
         super(platform);
         this.stagingManager = stagingManager;
         this.writerSettings.setDatabaseWriterFilters(filters);
@@ -73,6 +76,7 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
         this.bucket = bucket;
         this.accessKey = accessKey;
         this.secretKey = secretKey;
+        this.appendToCopyCommand = appendToCopyCommand;
     }
 
     public boolean start(Table table) {
@@ -169,7 +173,8 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
                         " (" + Table.getCommaDeliminatedColumns(table.getColumns()) +
                         ") FROM 's3://" + bucket + "/" + objectKey + 
                         "' CREDENTIALS 'aws_access_key_id=" + accessKey + ";aws_secret_access_key=" + secretKey + 
-                        "' CSV DATEFORMAT 'YYYY-MM-DD HH:MI:SS' " + (needsExplicitIds ? "EXPLICIT_IDS" : "");
+                        "' CSV DATEFORMAT 'YYYY-MM-DD HH:MI:SS' " + (needsExplicitIds ? "EXPLICIT_IDS" : "") + 
+                        (isNotBlank(appendToCopyCommand) ? (" " + appendToCopyCommand) : "");
                 Statement stmt = c.createStatement();
 
                 log.debug(sql);
