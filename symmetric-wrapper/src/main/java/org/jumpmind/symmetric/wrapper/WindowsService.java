@@ -75,7 +75,7 @@ public class WindowsService extends WrapperService {
 
     @Override
     public void start() {
-        if (!isPrivileged() || !isInstalled()) {
+        if (!isInstalled()) {
             super.start();
         } else if (isRunning()) {
             throw new WrapperException(Constants.RC_SERVER_ALREADY_RUNNING, 0, "Server is already running");
@@ -106,7 +106,7 @@ public class WindowsService extends WrapperService {
 
     @Override
     public void stop() {
-        if (!isPrivileged() || !isInstalled()) {
+        if (!isInstalled()) {
             super.stop();
         } else if (!isRunning()) {
             throw new WrapperException(Constants.RC_SERVER_NOT_RUNNING, 0, "Server is not running");
