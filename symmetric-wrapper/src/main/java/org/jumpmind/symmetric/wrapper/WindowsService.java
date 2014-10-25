@@ -43,6 +43,7 @@ import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.Winsvc;
 import com.sun.jna.platform.win32.Winsvc.SC_HANDLE;
 import com.sun.jna.platform.win32.Winsvc.SC_STATUS_TYPE;
+import com.sun.jna.platform.win32.Winsvc.SERVICE_STATUS_PROCESS;
 import com.sun.jna.ptr.IntByReference;
 
 @IgnoreJRERequirement
@@ -135,6 +136,30 @@ public class WindowsService extends WrapperService {
     }
 
     @Override
+    public boolean isRunning() {
+        Advapi32 advapi = Advapi32.INSTANCE;
+        SC_HANDLE manager = advapi.OpenSCManager(null, null, Winsvc.SC_MANAGER_ENUMERATE_SERVICE);
+        if (manager == null) {
+            throwException("OpenSCManager");
+        } else {
+            SC_HANDLE service = advapi.OpenService(manager, config.getName(), Winsvc.SERVICE_QUERY_STATUS);
+            if (service != null) {                
+                IntByReference bytesNeeded = new IntByReference();
+                advapi.QueryServiceStatusEx(service, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, null, 0, bytesNeeded);
+                SERVICE_STATUS_PROCESS status = new SERVICE_STATUS_PROCESS(bytesNeeded.getValue());
+                if (!advapi.QueryServiceStatusEx(service, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, status, status.size(), bytesNeeded)) {
+                    throwException("QueryServiceStatusEx");
+                }
+                closeServiceHandle(service);
+                closeServiceHandle(manager);
+                return (status.dwCurrentState == Winsvc.SERVICE_RUNNING);
+            }
+            closeServiceHandle(manager);
+        }
+        return super.isRunning();
+    }
+
+    @Override
     protected boolean isPidRunning(int pid) {
         boolean isRunning = false;
         if (pid != 0) {
@@ -169,9 +194,11 @@ public class WindowsService extends WrapperService {
         Advapi32 advapi = Advapi32.INSTANCE;
         boolean isInstalled = false;
 
-        SC_HANDLE manager = openServiceManager();
-        if (manager != null) {
-            SC_HANDLE service = advapi.OpenService(manager, config.getName(), Winsvc.SERVICE_ALL_ACCESS);
+        SC_HANDLE manager = advapi.OpenSCManager(null, null, Winsvc.SC_MANAGER_ENUMERATE_SERVICE);
+        if (manager == null) {
+            throwException("OpenSCManager");
+        } else {
+            SC_HANDLE service = advapi.OpenService(manager, config.getName(), Winsvc.SERVICE_QUERY_STATUS);
             isInstalled = (service != null);
             closeServiceHandle(service);
             closeServiceHandle(manager);
