@@ -250,6 +250,9 @@ public abstract class WrapperService {
         start();
     }
     
+    public void relaunchAsPrivileged(String cmd, String args) {
+    }
+
     public void status() {
         boolean isRunning = isRunning();
         System.out.println("Installed: " + isInstalled());
@@ -291,7 +294,14 @@ public abstract class WrapperService {
         cmd.add(quote + config.getConfigFile() + quote);
         return cmd;
     }
-    
+
+    protected ArrayList<String> getPrivilegedCommand() {
+        ArrayList<String> cmd = new ArrayList<String>();
+        String quote = getWrapperCommandQuote();
+        cmd.add(quote + config.getJavaCommand() + quote);
+        return cmd;
+    }
+
     protected String getWrapperCommandQuote() {
         return "";
     }

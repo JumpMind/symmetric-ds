@@ -30,11 +30,13 @@ import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex;
 import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex.HANDLER_FUNCTION;
 import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex.SERVICE_STATUS_HANDLE;
 import org.jumpmind.symmetric.wrapper.jna.Kernel32Ex;
+import org.jumpmind.symmetric.wrapper.jna.Shell32Ex;
 import org.jumpmind.symmetric.wrapper.jna.WinsvcEx;
 import org.jumpmind.symmetric.wrapper.jna.WinsvcEx.SERVICE_MAIN_FUNCTION;
 
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import com.sun.jna.WString;
 import com.sun.jna.platform.win32.Advapi32;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.Kernel32Util;
@@ -187,6 +189,22 @@ public class WindowsService extends WrapperService {
         } catch (WrapperException e) {
             return false;
         }
+    }
+
+    @Override
+    public void relaunchAsPrivileged(String cmd, String args) {
+        Shell32Ex.SHELLEXECUTEINFO execInfo = new Shell32Ex.SHELLEXECUTEINFO();
+        execInfo.lpFile = new WString(cmd);
+        if (args != null) {
+            execInfo.lpParameters = new WString(args);
+        }
+        execInfo.nShow = Shell32Ex.SW_SHOWDEFAULT;
+        execInfo.fMask = Shell32Ex.SEE_MASK_NOCLOSEPROCESS;
+        execInfo.lpVerb = new WString("runas");
+        if (!Shell32Ex.INSTANCE.ShellExecuteEx(execInfo)) {
+            throwException("ShellExecuteEx");
+        }
+        System.exit(0);
     }
 
     @Override
