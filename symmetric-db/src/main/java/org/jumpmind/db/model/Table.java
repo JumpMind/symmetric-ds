@@ -318,7 +318,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
             for (Column column : columns) {
                 boolean foundMatch = false;
                 for (String primaryKey : primaryKeys) {
-                    if (column.getName().equalsIgnoreCase(primaryKey)) {
+                    if (column.getName().equals(primaryKey)) {
                         column.setPrimaryKey(true);
                         foundMatch = true;
                     }
@@ -648,7 +648,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public int getColumnIndex(String columnName) {
         int idx = 0;
         for (Iterator<Column> it = columns.iterator(); it.hasNext(); idx++) {
-            if (columnName != null && columnName.equalsIgnoreCase(it.next().getName())) {
+            if (columnName != null && columnName.equals(it.next().getName())) {
                 return idx;
             }
         }
@@ -659,7 +659,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         int idx = 0;
         List<Column> primaryKeyColumns = getPrimaryKeyColumnsAsList();
         for (Iterator<Column> it = primaryKeyColumns.iterator(); it.hasNext(); idx++) {
-            if (columnName != null && columnName.equalsIgnoreCase(it.next().getName())) {
+            if (columnName != null && columnName.equals(it.next().getName())) {
                 return idx;
             }
         }
