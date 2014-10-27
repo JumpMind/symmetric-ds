@@ -526,6 +526,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             obj = rs.getTimestamp(index);
         } else if (className != null && "oracle.sql.TIMESTAMPTZ".equals(className)) {
             obj = rs.getString(index);
+        } else if (className != null && "oracle.sql.TIMESTAMPLTZ".equals(className)) {
+            obj = rs.getString(index);            
         } else if (className != null && className.startsWith("oracle.sql.DATE")) {
             String metaDataClassName = metaData.getColumnClassName(index);
             if ("java.sql.Timestamp".equals(metaDataClassName)
