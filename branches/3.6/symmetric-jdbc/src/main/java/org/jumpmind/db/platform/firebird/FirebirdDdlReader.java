@@ -23,7 +23,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -145,16 +144,17 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
      */
     protected void determineAutoIncrementColumns(Connection connection, Table table)
             throws SQLException {
-        // Since for long table and column names, the generator name will be
-        // shortened
-        // we have to determine for each column whether there is a generator for
-        // it
+        /*
+         * Since for long table and column names, the trigger name will be
+         * shortened we have to determine for each column whether there is a
+         * trigger on it
+         */
         Column[] columns = table.getColumns();
         HashMap<String, Column> names = new HashMap<String, Column>();
         String name;
 
         for (int idx = 0; idx < columns.length; idx++) {
-            name = ((FirebirdDdlBuilder) getPlatform().getDdlBuilder()).getGeneratorName(table,
+            name = ((FirebirdDdlBuilder) getPlatform().getDdlBuilder()).getTriggerName(table,
                     columns[idx]);
             if (!getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
                 name = name.toUpperCase();
@@ -162,21 +162,23 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             names.put(name, columns[idx]);
         }
 
-        Statement stmt = connection.createStatement();
-
+        PreparedStatement stmt = connection.prepareStatement("SELECT RDB$TRIGGER_NAME FROM RDB$TRIGGERS WHERE RDB$RELATION_NAME=?");
+        stmt.setString(1, table.getName());
+        ResultSet rs = null;
         try {
-            ResultSet rs = stmt.executeQuery("SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS");
-
+            rs = stmt.executeQuery();
             while (rs.next()) {
-                String generatorName = rs.getString(1).trim();
-                Column column = (Column) names.get(generatorName);
-
+                String triggerName = rs.getString(1).trim();
+                Column column = (Column) names.get(triggerName);
                 if (column != null) {
                     column.setAutoIncrement(true);
                 }
             }
-            rs.close();
+            
         } finally {
+            if (rs != null) {
+                rs.close();
+            }
             stmt.close();
         }
     }
