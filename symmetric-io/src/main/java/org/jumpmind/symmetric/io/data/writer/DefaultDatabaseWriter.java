@@ -761,7 +761,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
     }
 
-    protected boolean doesColumnNeedUpdated(int columnIndex, Column column, CsvData data, String[] rowData, String[] oldData,
+    protected boolean doesColumnNeedUpdated(int targetColumnIndex, Column column, CsvData data, String[] rowData, String[] oldData,
             boolean applyChangesOnly) {
         boolean needsUpdated = true;
         if (!platform.getDatabaseInfo().isAutoIncrementUpdateAllowed() && column.isAutoIncrement()) {
@@ -773,14 +773,13 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
              * lob field was previously null.
              */
             boolean containsEmptyLobColumn = platform.isLob(column.getMappedTypeCode())
-                    && StringUtils.isBlank(oldData[columnIndex]);
-            needsUpdated = !StringUtils.equals(rowData[columnIndex], oldData[columnIndex])
+                    && StringUtils.isBlank(oldData[targetColumnIndex]);
+            needsUpdated = !StringUtils.equals(rowData[targetColumnIndex], oldData[targetColumnIndex])
                     || data.getParsedData(CsvData.OLD_DATA) == null
                     || containsEmptyLobColumn;
             if (containsEmptyLobColumn) {
                 // indicate that we are considering the column to be changed
-                Column sourceColumn = sourceTable.findColumn(column.getName(), false);
-                data.getChangedDataIndicators()[sourceTable.getColumnIndex(sourceColumn.getName())] = true;
+                data.getChangedDataIndicators()[sourceTable.getColumnIndex(column.getName())] = true;
             }
         } else {
             /*
@@ -792,7 +791,12 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
              * not in exclusive mode, but lock contentions is possible.
              */
             needsUpdated = !column.isPrimaryKey()
-                    || !StringUtils.equals(rowData[columnIndex], getPkDataFor(data, column));
+                    || !StringUtils.equals(rowData[targetColumnIndex], getPkDataFor(data, column));
+            /*
+             * A primary key change isn't indicated in the change data indicators when there is no old
+             * data.  Need to update it manually in that case.
+             */
+            data.getChangedDataIndicators()[sourceTable.getColumnIndex(column.getName())] = needsUpdated;
         }
         return needsUpdated;
     }
