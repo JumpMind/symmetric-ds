@@ -83,6 +83,8 @@ abstract public class AbstractTriggerTemplate {
     protected String dateColumnTemplate;
 
     protected String dateTimeWithTimeZoneColumnTemplate;
+    
+    protected String dateTimeWithLocalTimeZoneColumnTemplate;
 
     protected String geometryColumnTemplate;
 
@@ -790,6 +792,10 @@ abstract public class AbstractTriggerTemplate {
                     } else if (column.getMappedType().equals(TypeMap.TIMESTAMPTZ)
                             && StringUtils.isNotBlank(this.dateTimeWithTimeZoneColumnTemplate)) {
                         templateToUse = this.dateTimeWithTimeZoneColumnTemplate;
+                        break;
+                    } else if (column.getMappedType().equals(TypeMap.TIMESTAMPLTZ)
+                            && StringUtils.isNotBlank(this.dateTimeWithLocalTimeZoneColumnTemplate)) {
+                        templateToUse = this.dateTimeWithLocalTimeZoneColumnTemplate;
                         break;
                     }
 

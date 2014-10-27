@@ -202,6 +202,8 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
             case Types.TIME:
             case OracleTypes.TIMESTAMPTZ:
                 return "timestamp with time zone";
+            case OracleTypes.TIMESTAMPLTZ:
+                return "timestamp with local time zone";                
             case Types.TIMESTAMP:
                 return "timestamp";
             case Types.NUMERIC:
@@ -227,6 +229,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
             case Types.DATE:
             case Types.TIME:
             case OracleTypes.TIMESTAMPTZ:
+            case OracleTypes.TIMESTAMPLTZ:
             case Types.TIMESTAMP:
                 return String.format("%s_%s_t", procedurePrefix, "timestamp").toUpperCase();
             case Types.NUMERIC:
