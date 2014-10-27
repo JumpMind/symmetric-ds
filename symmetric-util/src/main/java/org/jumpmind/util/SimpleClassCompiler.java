@@ -99,7 +99,7 @@ public class SimpleClassCompiler {
                 javaObject = fileManager.getClassLoader(null).loadClass(className).newInstance();
                 objectMap.put(id, javaObject);
             } else {
-                log.debug("Compilation failed:\n" + javaCode);
+                log.error("Compilation failed for:\n" + javaCode);
                 for (Diagnostic diagnostic : diag.getDiagnostics()) {
                     log.error("At line " + diagnostic.getLineNumber() + ", column " + diagnostic.getColumnNumber() + ": " + 
                             diagnostic.getMessage(null));
