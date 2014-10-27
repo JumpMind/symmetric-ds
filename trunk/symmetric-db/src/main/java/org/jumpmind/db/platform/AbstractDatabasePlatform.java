@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
@@ -564,7 +565,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         try {
                             return Timestamp.valueOf(value);
                         } catch (IllegalArgumentException ex) {
-                            return FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS);
+                            try {
+                                return FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS);
+                            } catch (Exception e) {
+                                int split = value.lastIndexOf(" ");
+                                return FormatUtils.parseDate(value.substring(0, split).trim(),
+                                FormatUtils.TIMESTAMP_PATTERNS,
+                                TimeZone.getTimeZone(value.substring(split).trim()));
+                            }
                         }
                     } else if (type == Types.TIME) {
                         if (value.indexOf(".") == 8) {

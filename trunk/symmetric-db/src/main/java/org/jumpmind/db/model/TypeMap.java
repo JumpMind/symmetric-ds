@@ -91,6 +91,8 @@ public abstract class TypeMap
     public static final String TIMESTAMP     = "TIMESTAMP";
 
     public static final String TIMESTAMPTZ     = "TIMESTAMPTZ";
+    
+    public static final String TIMESTAMPLTZ     = "TIMESTAMPLTZ";
 
     /** The string representation of the {@link java.sql.Types#TINYINT} constant. */
     public static final String TINYINT       = "TINYINT";
@@ -154,7 +156,7 @@ public abstract class TypeMap
         registerJdbcType(Types.VARBINARY,     VARBINARY,     JdbcTypeCategoryEnum.BINARY);
         registerJdbcType(Types.VARCHAR,       VARCHAR,       JdbcTypeCategoryEnum.TEXTUAL);
         registerJdbcType(ORACLE_TIMESTAMPTZ,  TIMESTAMPTZ,   JdbcTypeCategoryEnum.DATETIME);
-        registerJdbcType(ORACLE_TIMESTAMPLTZ, TIMESTAMPTZ,   JdbcTypeCategoryEnum.DATETIME);
+        registerJdbcType(ORACLE_TIMESTAMPLTZ, TIMESTAMPLTZ,   JdbcTypeCategoryEnum.DATETIME);
 
         // only available in JDK 1.4 and above:
         if (PlatformUtils.supportsJava14JdbcTypes())
