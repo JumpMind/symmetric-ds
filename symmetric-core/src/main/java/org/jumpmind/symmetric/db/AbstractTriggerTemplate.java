@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.db;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.sql.Types;
@@ -247,6 +248,9 @@ abstract public class AbstractTriggerTemplate {
                 + "." : "");
         String catalogPlus = (table.getCatalog() != null ? table.getCatalog() + "." : "")
                 + schemaPlus;
+        if (isBlank(catalogPlus)) {
+            catalogPlus = replaceDefaultSchemaAndCatalog(catalogPlus);
+        }
         return catalogPlus;
     }
 
@@ -256,6 +260,9 @@ abstract public class AbstractTriggerTemplate {
         String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? SymmetricUtils.quote(symmetricDialect, triggerHistory
                 .getSourceCatalogName()) + "." : "")
                 + schemaPlus;
+        if (isBlank(catalogPlus)) {
+            catalogPlus = replaceDefaultSchemaAndCatalog(catalogPlus);
+        }
         return catalogPlus;
     }
 
