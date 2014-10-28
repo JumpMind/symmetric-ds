@@ -244,30 +244,32 @@ abstract public class AbstractTriggerTemplate {
     }
 
     protected String getSourceTablePrefix(Table table) {
-        String prefix = (table.getSchema() != null ? table.getSchema()
-                + "." : "");
-        prefix = (table.getCatalog() != null ? table.getCatalog() + "." : "")
-                + prefix;
+        String prefix = (table.getSchema() != null ? table.getSchema() + "." : "");
+        prefix = (table.getCatalog() != null ? table.getCatalog() + "." : "") + prefix;
         if (isBlank(prefix)) {
-            prefix = (symmetricDialect.getPlatform().getDefaultSchema() != null ? symmetricDialect.getPlatform().getDefaultSchema()
+            prefix = (symmetricDialect.getPlatform().getDefaultSchema() != null ? SymmetricUtils
+                    .quote(symmetricDialect, symmetricDialect.getPlatform().getDefaultSchema())
                     + "." : "");
-            prefix = (symmetricDialect.getPlatform().getDefaultCatalog() != null ? symmetricDialect.getPlatform().getDefaultCatalog() + "." : "")
-                    + prefix;
+            prefix = (symmetricDialect.getPlatform().getDefaultCatalog() != null ? SymmetricUtils
+                    .quote(symmetricDialect, symmetricDialect.getPlatform().getDefaultCatalog())
+                    + "." : "") + prefix;
         }
         return prefix;
     }
 
     protected String getSourceTablePrefix(TriggerHistory triggerHistory) {
-        String prefix = (triggerHistory.getSourceSchemaName() != null ? SymmetricUtils.quote(symmetricDialect, triggerHistory
-                .getSourceSchemaName()) + "." : "");
-        prefix = (triggerHistory.getSourceCatalogName() != null ? SymmetricUtils.quote(symmetricDialect, triggerHistory
-                .getSourceCatalogName()) + "." : "")
+        String prefix = (triggerHistory.getSourceSchemaName() != null ? SymmetricUtils.quote(
+                symmetricDialect, triggerHistory.getSourceSchemaName()) + "." : "");
+        prefix = (triggerHistory.getSourceCatalogName() != null ? SymmetricUtils.quote(
+                symmetricDialect, triggerHistory.getSourceCatalogName()) + "." : "")
                 + prefix;
         if (isBlank(prefix)) {
-            prefix = (symmetricDialect.getPlatform().getDefaultSchema() != null ? symmetricDialect.getPlatform().getDefaultSchema()
+            prefix = (symmetricDialect.getPlatform().getDefaultSchema() != null ? SymmetricUtils
+                    .quote(symmetricDialect, symmetricDialect.getPlatform().getDefaultSchema())
                     + "." : "");
-            prefix = (symmetricDialect.getPlatform().getDefaultCatalog() != null ? symmetricDialect.getPlatform().getDefaultCatalog() + "." : "")
-                    + prefix;
+            prefix = (symmetricDialect.getPlatform().getDefaultCatalog() != null ? SymmetricUtils
+                    .quote(symmetricDialect, symmetricDialect.getPlatform().getDefaultCatalog())
+                    + "." : "") + prefix;
         }
         return prefix;
     }
