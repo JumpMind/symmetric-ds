@@ -40,7 +40,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("selectCountBatchesPrefixSql", "" + "select count(*) from $(outgoing_batch)   ");
 
         putSql("cancelLoadBatchesSql",
-                "update $(outgoing_batch) set ignore_count=1, status='OK' and error_flag=0 where load_id=?");
+                "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0 where load_id=?");
 
         putSql("insertOutgoingBatchSql",
                 ""
