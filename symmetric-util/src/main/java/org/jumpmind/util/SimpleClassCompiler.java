@@ -88,6 +88,10 @@ public class SimpleClassCompiler {
             }
             
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+            if (compiler == null) {
+                throw new IllegalStateException("Cannot find a Java compiler.  "
+                        + "Please check that you are running SymmetricDS under a JDK (versus a JRE)");
+            } 
             JavaFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null));
             DiagnosticCollector<JavaFileObject> diag = new DiagnosticCollector<JavaFileObject>();
             List<JavaFileObject> javaFiles = new ArrayList<JavaFileObject>();
