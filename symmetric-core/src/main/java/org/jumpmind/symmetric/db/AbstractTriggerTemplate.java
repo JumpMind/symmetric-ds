@@ -244,26 +244,32 @@ abstract public class AbstractTriggerTemplate {
     }
 
     protected String getSourceTablePrefix(Table table) {
-        String schemaPlus = (table.getSchema() != null ? table.getSchema()
+        String prefix = (table.getSchema() != null ? table.getSchema()
                 + "." : "");
-        String catalogPlus = (table.getCatalog() != null ? table.getCatalog() + "." : "")
-                + schemaPlus;
-        if (isBlank(catalogPlus)) {
-            catalogPlus = replaceDefaultSchemaAndCatalog(catalogPlus);
+        prefix = (table.getCatalog() != null ? table.getCatalog() + "." : "")
+                + prefix;
+        if (isBlank(prefix)) {
+            prefix = (symmetricDialect.getPlatform().getDefaultSchema() != null ? symmetricDialect.getPlatform().getDefaultSchema()
+                    + "." : "");
+            prefix = (symmetricDialect.getPlatform().getDefaultCatalog() != null ? symmetricDialect.getPlatform().getDefaultCatalog() + "." : "")
+                    + prefix;
         }
-        return catalogPlus;
+        return prefix;
     }
 
     protected String getSourceTablePrefix(TriggerHistory triggerHistory) {
-        String schemaPlus = (triggerHistory.getSourceSchemaName() != null ? SymmetricUtils.quote(symmetricDialect, triggerHistory
+        String prefix = (triggerHistory.getSourceSchemaName() != null ? SymmetricUtils.quote(symmetricDialect, triggerHistory
                 .getSourceSchemaName()) + "." : "");
-        String catalogPlus = (triggerHistory.getSourceCatalogName() != null ? SymmetricUtils.quote(symmetricDialect, triggerHistory
+        prefix = (triggerHistory.getSourceCatalogName() != null ? SymmetricUtils.quote(symmetricDialect, triggerHistory
                 .getSourceCatalogName()) + "." : "")
-                + schemaPlus;
-        if (isBlank(catalogPlus)) {
-            catalogPlus = replaceDefaultSchemaAndCatalog(catalogPlus);
+                + prefix;
+        if (isBlank(prefix)) {
+            prefix = (symmetricDialect.getPlatform().getDefaultSchema() != null ? symmetricDialect.getPlatform().getDefaultSchema()
+                    + "." : "");
+            prefix = (symmetricDialect.getPlatform().getDefaultCatalog() != null ? symmetricDialect.getPlatform().getDefaultCatalog() + "." : "")
+                    + prefix;
         }
-        return catalogPlus;
+        return prefix;
     }
 
     protected String replaceDefaultSchemaAndCatalog(String sql) {
