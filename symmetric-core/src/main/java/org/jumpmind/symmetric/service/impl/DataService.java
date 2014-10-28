@@ -687,11 +687,18 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertPurgeEvent(ISqlTransaction transaction, Node targetNode,
             TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad,
             String overrideDeleteStatement, long loadId, String createBy) {
+        Node sourceNode = engine.getNodeService().findIdentity();
         String sql = StringUtils.isNotBlank(overrideDeleteStatement) ? overrideDeleteStatement
                 : symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory);
         sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
         sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
         sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
+        sql = FormatUtils.replace("targetGroupId", targetNode.getNodeGroupId(), sql);
+        sql = FormatUtils.replace("targetExternalId", targetNode.getExternalId(), sql);
+        sql = FormatUtils.replace("targetNodeId", targetNode.getNodeId(), sql);
+        sql = FormatUtils.replace("sourceGroupId", sourceNode.getNodeGroupId(), sql);
+        sql = FormatUtils.replace("sourceExternalId", sourceNode.getExternalId(), sql);
+        sql = FormatUtils.replace("sourceNodeId", sourceNode.getNodeId(), sql);
         String channelId = getReloadChannelIdForTrigger(triggerRouter.getTrigger(), engine
                 .getConfigurationService().getChannels(false));
         Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.SQL,
