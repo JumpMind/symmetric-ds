@@ -94,7 +94,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     $(custom_on_insert_text)                                                                                                                                             \n" +
 "     if (@NCT = 0) set nocount off                                                                                                                                        \n" +
 "   end                                                                                                                                                                    \n" +
-"   go");
+"---- go");
 
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                \n" +
@@ -134,7 +134,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "       $(custom_on_update_text)                                                                                                                                             \n" +
 "     if (@NCT = 0) set nocount off                                                                                                                                        \n" +
 "   end                                                                                                                                                                    \n" +
-"   go");
+"---- go");
 
         sqlTemplates.put("updateHandleKeyUpdatesTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                                             \n" +
@@ -182,7 +182,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "       $(custom_on_update_text)                                                                                                                                             \n" +
 "     if (@NCT = 0) set nocount off                                                                                                                                        \n" +
 "   end                                                                                                                                                                    \n" +
-"   go");
+"---- go");
 
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after delete as                                                                                                                             \n" +
@@ -214,7 +214,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "    $(custom_on_delete_text)                                                                                                                                              \n" +
 "    if (@NCT = 0) set nocount off                                                                                                                                         \n" +
 "   end                                                                                                                                                                    \n" +
-"   go");
+"---- go");
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause) " );
