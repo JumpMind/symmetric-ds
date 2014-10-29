@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io.data;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
@@ -31,6 +32,8 @@ import org.jumpmind.util.LinkedCaseInsensitiveMap;
  * Holder for references to both parsed and unparsed CSV data.
  */
 public class CsvData {
+
+    public static final int MAX_DATA_SIZE_TO_PRINT_TO_LOG = 1024 * 1000;
 
     public static final String OLD_DATA = "oldData";
     public static final String ROW_DATA = "rowData";
@@ -255,5 +258,44 @@ public class CsvData {
         CsvData data = new CsvData(getDataEventType(), getParsedData(CsvData.ROW_DATA));
         data.attributes = attributes;
         return data;
+    }
+    
+    public void writeCsvDataDetails (StringBuilder message) {
+        String rowData = getCsvData(CsvData.PK_DATA);
+        if (StringUtils.isNotBlank(rowData)) {
+            message.append("Failed pk data was: ");
+            message.append(rowData);
+            message.append("\n");
+        }
+
+        rowData = getCsvData(CsvData.ROW_DATA);
+        if (StringUtils.isNotBlank(rowData)) {
+            if (rowData.length() < MAX_DATA_SIZE_TO_PRINT_TO_LOG) {
+                message.append("Failed row data was: ");
+                message.append(rowData);
+                message.append("\n");
+            } else {
+                message.append("Row data was bigger than ");
+                message.append(MAX_DATA_SIZE_TO_PRINT_TO_LOG);
+                message.append(" bytes (it was ");
+                message.append(rowData.length());
+                message.append(" bytes).  It will not be printed to the log file");
+            }
+        }
+
+        rowData = getCsvData(CsvData.OLD_DATA);
+        if (StringUtils.isNotBlank(rowData)) {
+            if (rowData.length() < MAX_DATA_SIZE_TO_PRINT_TO_LOG) {
+                message.append("Failed old data was: ");
+                message.append(rowData);
+                message.append("\n");
+            } else {
+                message.append("Old data was bigger than ");
+                message.append(MAX_DATA_SIZE_TO_PRINT_TO_LOG);
+                message.append(" bytes (it was ");
+                message.append(rowData.length());
+                message.append(" bytes).  It will not be printed to the log file");
+            }
+        }
     }
 }
