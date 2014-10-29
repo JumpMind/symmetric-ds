@@ -694,6 +694,7 @@ public class RouterService extends AbstractService implements IRouterService {
                             failureMessage.append(data.getDataId());
                             failureMessage.append(" for table: ");
                             failureMessage.append(data.getTableName());
+                            failureMessage.append(".\n");
                             data.writeCsvDataDetails(failureMessage);
                             log.error(failureMessage.toString());
                             throw ex;
