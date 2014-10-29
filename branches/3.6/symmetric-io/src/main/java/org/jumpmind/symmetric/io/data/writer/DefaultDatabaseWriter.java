@@ -58,8 +58,6 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     
-    protected static final int MAX_DATA_SIZE_TO_PRINT_TO_LOG = 1024 * 1000;
-
     protected final static Logger log = LoggerFactory.getLogger(DefaultDatabaseWriter.class);
     
     public static final String CUR_DATA = "DatabaseWriter.CurData";
@@ -652,41 +650,14 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         
         if (logLastDmlDetails && this.currentDmlValues != null) {
             failureMessage.append("Failed sql parameters: ");
-            failureMessage.append(StringUtils.abbreviate(Arrays.toString(currentDmlValues), MAX_DATA_SIZE_TO_PRINT_TO_LOG));
+            failureMessage.append(StringUtils.abbreviate(Arrays.toString(currentDmlValues), CsvData.MAX_DATA_SIZE_TO_PRINT_TO_LOG));
             failureMessage.append("\n");
             failureMessage.append("Failed sql parameters types: ");
             failureMessage.append(Arrays.toString(this.currentDmlStatement.getTypes()));
             failureMessage.append("\n");
         }
-        
-        String rowData = data.getCsvData(CsvData.PK_DATA);
-        if (StringUtils.isNotBlank(rowData)) {
-            failureMessage.append("Failed pk data was: ");
-            failureMessage.append(rowData);
-            failureMessage.append("\n");
-        }
 
-        rowData = data.getCsvData(CsvData.ROW_DATA);
-        if (StringUtils.isNotBlank(rowData)) {
-            if (rowData.length() < MAX_DATA_SIZE_TO_PRINT_TO_LOG) {
-                failureMessage.append("Failed row data was: ");
-                failureMessage.append(rowData);
-                failureMessage.append("\n");
-            } else {
-                failureMessage.append("Row data was bigger than ");
-                failureMessage.append(MAX_DATA_SIZE_TO_PRINT_TO_LOG);
-                failureMessage.append(" bytes (it was ");
-                failureMessage.append(rowData.length());
-                failureMessage.append(" bytes).  It will not be printed to the log file");
-            }
-        }
-
-        rowData = data.getCsvData(CsvData.OLD_DATA);
-        if (StringUtils.isNotBlank(rowData)) {
-            failureMessage.append("Failed old data was: ");
-            failureMessage.append(rowData);
-            failureMessage.append("\n");
-        }
+        data.writeCsvDataDetails(failureMessage);
 
         log.info(failureMessage.toString());
 
