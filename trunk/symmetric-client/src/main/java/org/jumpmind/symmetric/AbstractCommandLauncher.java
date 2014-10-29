@@ -54,6 +54,7 @@ import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
+import org.jumpmind.symmetric.transport.TransportManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,6 +108,7 @@ public abstract class AbstractCommandLauncher {
         this.app = app;
         this.argSyntax = argSyntax;
         this.messageKeyPrefix = messageKeyPrefix;
+        TransportManagerFactory.initHttps("all", true);
     }
     
     protected static void initFromServerProperties() {
