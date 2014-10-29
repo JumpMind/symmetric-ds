@@ -680,13 +680,24 @@ public class RouterService extends AbstractService implements IRouterService {
                                     targetNodeIds, data.getDataId());
                         }
                     } else {
-                        IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
-                        context.addUsedDataRouter(dataRouter);
-                        long ts = System.currentTimeMillis();
-                        nodeIds = dataRouter.routeToNodes(context, dataMetaData,
-                                findAvailableNodes(triggerRouter, context), false, false, triggerRouter);
-                        context.incrementStat(System.currentTimeMillis() - ts,
-                                ChannelRouterContext.STAT_DATA_ROUTER_MS);
+                        try {
+                            IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
+                            context.addUsedDataRouter(dataRouter);
+                            long ts = System.currentTimeMillis();
+                            nodeIds = dataRouter.routeToNodes(context, dataMetaData,
+                                    findAvailableNodes(triggerRouter, context), false, false,
+                                    triggerRouter);
+                            context.incrementStat(System.currentTimeMillis() - ts,
+                                    ChannelRouterContext.STAT_DATA_ROUTER_MS);
+                        } catch (RuntimeException ex) {
+                            StringBuilder failureMessage = new StringBuilder("Failed to route data: ");
+                            failureMessage.append(data.getDataId());
+                            failureMessage.append(" for table: ");
+                            failureMessage.append(data.getTableName());
+                            data.writeCsvDataDetails(failureMessage);
+                            log.error(failureMessage.toString());
+                            throw ex;
+                        }
                     }
 
                     if (nodeIds != null) {
