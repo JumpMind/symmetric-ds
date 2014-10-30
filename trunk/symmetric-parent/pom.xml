@@ -26,7 +26,7 @@
         <version.postgresql>9.2-1002-jdbc4</version.postgresql>
         <version.mysql>5.1.30</version.mysql>        
         <version.mariadb>1.1.7</version.mariadb>
-        <version.slf4j>1.6.4</version.slf4j>
+        <version.slf4j>1.7.7</version.slf4j>
         <version.powermock>1.5.3</version.powermock>
         <test.root>h2</test.root>
         <test.client>h2</test.client>

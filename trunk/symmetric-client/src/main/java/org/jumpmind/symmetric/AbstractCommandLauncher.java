@@ -57,6 +57,7 @@ import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public abstract class AbstractCommandLauncher {
 
@@ -207,11 +208,14 @@ public abstract class AbstractCommandLauncher {
 
     protected void configureLogging(CommandLine line) throws MalformedURLException {
         
-        java.util.logging.Logger globalLogger = java.util.logging.Logger.getLogger("");
-        Handler[] handlers = globalLogger.getHandlers();
-        for(Handler handler : handlers) {
-            globalLogger.removeHandler(handler);
-        }
+        /* Optionally remove existing handlers attached to j.u.l root logger */
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+
+        /*
+         * Add SLF4JBridgeHandler to j.u.l's root logger, should be done once
+         * during the initialization phase of your application
+         */
+        SLF4JBridgeHandler.install();
         
         URL log4jUrl = new URL(System.getProperty("log4j.configuration",
                 "file:../conf/log4j-blank.xml"));
