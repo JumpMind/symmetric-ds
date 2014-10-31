@@ -135,5 +135,10 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select sym_rtrim($(columns))||'' from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                 " );
     }
+    
+    @Override
+    public boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad() {
+        return false;
+    }
 
 }
