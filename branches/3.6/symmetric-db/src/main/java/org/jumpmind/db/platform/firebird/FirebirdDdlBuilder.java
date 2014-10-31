@@ -131,7 +131,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         printIdentifier(getTriggerName(table, column), ddl);
         ddl.append(" FOR ");
         ddl.append(getFullyQualifiedTableNameShorten(table));
-        println("ACTIVE BEFORE INSERT POSITION 0 AS", ddl);
+        println(" ACTIVE BEFORE INSERT POSITION 0 AS", ddl);
         ddl.append("BEGIN IF (NEW.");
         printIdentifier(getColumnName(column), ddl);
         ddl.append(" IS NULL) THEN NEW.");
