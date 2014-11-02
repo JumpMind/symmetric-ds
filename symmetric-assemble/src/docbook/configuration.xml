@@ -1374,6 +1374,16 @@ transformations are applied.</listitem>
 	16 ). Note that, in the case of deletes, the new column value is
 	considered 0 for the purposes of the calculation.</listitem>
 	
+    <listitem>
+    <emphasis role="bold">Left Transform ('left')</emphasis>: This transformation keeps the first N characters of
+    a column.  The transform_expression is the number of characters to keep.
+    </listitem>
+    
+    <listitem>
+    <emphasis role="bold">Binary Left Transform ('bleft')</emphasis>: This transformation keeps characters that are part of the first N bytes 
+    of a column.  The transform_expression is the number of bytes to keep.
+    </listitem> 
+    
 	<listitem>
 	<emphasis role="bold">Substring Transform ('substr')</emphasis>: This transformation computes a substring
 	of the source column data and uses the substring as the target column
