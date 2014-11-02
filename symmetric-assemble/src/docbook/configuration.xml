@@ -1361,6 +1361,16 @@ transformations are applied.</listitem>
 	will be to change the target column to a value of 16 ( 10+3*(4-2) =&gt;
 	16 ). Note that, in the case of deletes, the new column value is
 	considered 0 for the purposes of the calculation.</listitem>
+
+    <listitem>
+    Left Transform ('left'): This transformation keeps the first N characters of
+    a column.  The transform_expression is the number of characters to keep.
+    </listitem>
+    
+    <listitem>
+    Binary Left Transform ('bleft'): This transformation keeps characters that are part of the first N bytes 
+    of a column.  The transform_expression is the number of bytes to keep.
+    </listitem>    
 	
 	<listitem>
 	Substring Transform ('substr'): This transformation computes a substring
