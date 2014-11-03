@@ -52,7 +52,7 @@ public class LeftColumnTransform implements ISingleValueColumnTransform, IBuiltI
             if (StringUtils.isNotBlank(expression)) {
                 expression = expression.trim();
                 int index = Integer.parseInt(expression);
-                if (newValue.length() < index) {
+                if (newValue.length() > index) {
                     return newValue.substring(0, index);
                 }
             }
