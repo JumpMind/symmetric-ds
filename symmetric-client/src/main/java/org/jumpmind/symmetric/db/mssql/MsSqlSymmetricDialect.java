@@ -146,34 +146,34 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "create function dbo.$(functionName)(@data varbinary(max)) returns varchar(max)                                                                                                                         " + 
-                    "\n  with schemabinding, returns null on null input                                                                                                                       " + 
-                    "\n  begin                                                                                                                                                                " + 
-                    "\n    return ( select [text()] = @data for xml path('') )                                                                                                                " + 
-                    "\n  end                                                                                                                                                                  ";
+                    "  with schemabinding, returns null on null input                                                                                                                       " + 
+                    "  begin                                                                                                                                                                " + 
+                    "    return ( select [text()] = @data for xml path('') )                                                                                                                " + 
+                    "  end                                                                                                                                                                  ";
             install(sql, encode);
         }
 
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             String sql = "create function dbo.$(functionName)() returns smallint                                                                                                                                                 " + 
-                    "\n  begin                                                                                                                                                                  " + 
-                    "\n    declare @disabled varchar(1);                                                                                                                                        " + 
-                    "\n    set @disabled = coalesce(replace(substring(cast(context_info() as varchar), 1, 1), 0x0, ''), '');                                                                    " + 
-                    "\n    if @disabled is null or @disabled != '1'                                                                                                                             " + 
-                    "\n      return 0;                                                                                                                                                          " + 
-                    "\n    return 1;                                                                                                                                                            " + 
-                    "\n  end                                                                                                                                                                    ";
+                    "  begin                                                                                                                                                                  " + 
+                    "    declare @disabled varchar(1);                                                                                                                                        " + 
+                    "    set @disabled = coalesce(replace(substring(cast(context_info() as varchar), 1, 1), 0x0, ''), '');                                                                    " + 
+                    "    if @disabled is null or @disabled != '1'                                                                                                                             " + 
+                    "      return 0;                                                                                                                                                          " + 
+                    "    return 1;                                                                                                                                                            " + 
+                    "  end                                                                                                                                                                    ";
             install(sql, triggersDisabled);
         }
 
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
             String sql = "create function dbo.$(functionName)() returns varchar(50)                                                                                                                                              " + 
-                    "\n  begin                                                                                                                                                                  " + 
-                    "\n    declare @node varchar(50);                                                                                                                                           " + 
-                    "\n    set @node = coalesce(replace(substring(cast(context_info() as varchar) collate SQL_Latin1_General_CP1_CI_AS, 2, 50), 0x0, ''), '');                                  " + 
-                    "\n    return @node;                                                                                                                                                        " + 
-                    "\n  end                                                                                                                                                                    ";
+                    "  begin                                                                                                                                                                  " + 
+                    "    declare @node varchar(50);                                                                                                                                           " + 
+                    "    set @node = coalesce(replace(substring(cast(context_info() as varchar) collate SQL_Latin1_General_CP1_CI_AS, 2, 50), 0x0, ''), '');                                  " + 
+                    "    return @node;                                                                                                                                                        " + 
+                    "  end                                                                                                                                                                    ";
             install(sql, nodeDisabled);
         }
         

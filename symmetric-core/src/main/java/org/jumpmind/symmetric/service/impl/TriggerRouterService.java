@@ -200,14 +200,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void createTriggersOnChannelForTables(String channelId, String catalogName,
             String schemaName, List<String> tables, String lastUpdateBy) {
-        createTriggersOnChannelForTablesWithReturn(channelId, catalogName, schemaName, tables, lastUpdateBy);
-    }
-    
-    public List<Trigger> createTriggersOnChannelForTablesWithReturn(String channelId, String catalogName,
-            String schemaName, List<String> tables, String lastUpdateBy) {
-        
-        List<Trigger> createdTriggers = new ArrayList<Trigger>();
-        
         List<Trigger> existingTriggers = getTriggers();
         for (String table : tables) {
             Trigger trigger = new Trigger();
@@ -248,11 +240,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setLastUpdateTime(new Date());
             trigger.setCreateTime(new Date());
             saveTrigger(trigger);
-            createdTriggers.add(trigger);
         }
-        return createdTriggers;
-    
     }
+    
     public Collection<Trigger> findMatchingTriggers(List<Trigger> triggers, String catalog, String schema,
             String table) {
         Set<Trigger> matches = new HashSet<Trigger>();

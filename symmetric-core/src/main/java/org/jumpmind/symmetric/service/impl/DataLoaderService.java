@@ -912,6 +912,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 } else {
                     log.error(String.format("Failed to load batch %s because: %s", 
                             this.currentBatch.getNodeBatchId(), ex.getMessage()), ex);                    
+                    if (log.isDebugEnabled()) {
+                        log.debug(ex.getMessage(), ex);
+                    }
                     SQLException se = unwrapSqlException(ex);
                     if (ex instanceof ConflictException) {
                         String message = ex.getMessage();

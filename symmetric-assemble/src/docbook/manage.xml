@@ -411,19 +411,19 @@
 	        foreign key relationships (i.e., transaction tables which are "parents" have a lower initial load order than those of their
 	        "children").  An insert statement that would create the necessary "reload" events (three in this case, one for each table) would be as follows
 	        (where MISSING_ID is changed to the needed transaction id):
-	       <programlisting>	
-     insert into sym_data (source_node_id, table_name, event_type, row_data, 
-                           trigger_hist_id, channel_id, create_time) (
-        select '00001', t.source_table_name, 'R', 'tran_id=''MISSING-ID''', 
-                h.trigger_hist_id, t.channel_id, current_timestamp
-            from sym_trigger t inner join sym_trigger_router tr on
-                t.trigger_id=tr.trigger_id inner join sym_trigger_hist h on
-                h.trigger_hist_id=(select max(trigger_hist_id) from sym_trigger_hist
-                    where trigger_id=t.trigger_id)
-        where channel_id='sale_transaction' and
-            tr.router_id like 'store_corp_identity' and
-            (t.source_table_name like 'sale_%')
-        order by tr.initial_load_order asc);
+	       <programlisting>
+	
+	insert into sym_data (
+	    select null, t.source_table_name, 'R', 'tran_id=''MISSING-ID''', null, null,
+	            h.trigger_hist_id, t.channel_id, '1', null, null, current_timestamp
+	        from sym_trigger t inner join sym_trigger_router tr on
+	            t.trigger_id=tr.trigger_id inner join sym_trigger_hist h on
+	            h.trigger_hist_id=(select max(trigger_hist_id) from sym_trigger_hist
+	                where trigger_id=t.trigger_id)
+	    where channel_id='sale_transaction' and
+	        tr.router_id like 'store_corp_identity' and
+	        (t.source_table_name like 'sale_%')
+	    order by tr.initial_load_order asc);
 	    </programlisting>
 	
 	    This insert statement generates three rows, one for each configured sale table.  It uses the most recent

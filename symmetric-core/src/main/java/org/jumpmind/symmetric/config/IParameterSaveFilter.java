@@ -18,17 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric;
+package org.jumpmind.symmetric.config;
 
-import java.io.File;
-import java.util.Properties;
+import org.jumpmind.extension.IExtensionPoint;
 
-import org.jumpmind.properties.TypedProperties;
+public interface IParameterSaveFilter extends IExtensionPoint {
 
-public interface ITypedPropertiesFactory {
-    
-	public void init(File propertiesFile, Properties properties);
-
-    public TypedProperties reload();
-
+	public String filterSaveParameter(String key, String value);
+	
 }

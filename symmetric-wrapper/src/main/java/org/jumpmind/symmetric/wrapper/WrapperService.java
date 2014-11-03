@@ -225,8 +225,8 @@ public abstract class WrapperService {
         if (keepRunning) {
             keepRunning = false;
             new Thread() {
-                @Override
-                public void run() {
+            	@Override
+            	public void run() {
                     logger.log(Level.INFO, "Stopping server");
                     child.destroy();
                     try {
@@ -236,9 +236,9 @@ public abstract class WrapperService {
                     logger.log(Level.INFO, "Stopping wrapper");
                     deletePidFile(config.getWrapperPidFile());
                     deletePidFile(config.getServerPidFile());
-                    updateStatus(Status.STOPPED);
-                    System.exit(0);
-                }
+            		updateStatus(Status.STOPPED);
+            		System.exit(0);
+            	}
             }.start();            
         }
     }
@@ -250,9 +250,6 @@ public abstract class WrapperService {
         start();
     }
     
-    public void relaunchAsPrivileged(String cmd, String args) {
-    }
-
     public void status() {
         boolean isRunning = isRunning();
         System.out.println("Installed: " + isInstalled());
@@ -294,14 +291,7 @@ public abstract class WrapperService {
         cmd.add(quote + config.getConfigFile() + quote);
         return cmd;
     }
-
-    protected ArrayList<String> getPrivilegedCommand() {
-        ArrayList<String> cmd = new ArrayList<String>();
-        String quote = getWrapperCommandQuote();
-        cmd.add(quote + config.getJavaCommand() + quote);
-        return cmd;
-    }
-
+    
     protected String getWrapperCommandQuote() {
         return "";
     }

@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.config.IParameterFilter;
+import org.jumpmind.symmetric.config.IParameterSaveFilter;
 import org.jumpmind.symmetric.model.DatabaseParameter;
 
 /**
@@ -76,6 +77,8 @@ public interface IParameterService {
     public TypedProperties getAllParameters();
 
     public void setParameterFilter(IParameterFilter f);
+    
+    public void setParameterSaveFilter(IParameterSaveFilter parameterSaveFilter);
     
     public boolean isRegistrationServer();
     
