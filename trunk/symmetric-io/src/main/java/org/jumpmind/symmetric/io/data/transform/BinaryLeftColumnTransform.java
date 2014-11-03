@@ -51,10 +51,7 @@ public class BinaryLeftColumnTransform implements ISingleValueColumnTransform, I
             String expression = column.getTransformExpression();
             if (StringUtils.isNotBlank(expression)) {
                 expression = expression.trim();
-                int index = Integer.parseInt(expression);
-                if (newValue.length() < index) {
-                    return bleft(newValue, index);
-                }
+                return bleft(newValue, Integer.parseInt(expression));
             }
         }
         return newValue;
