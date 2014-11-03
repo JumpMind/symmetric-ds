@@ -100,6 +100,7 @@ import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -130,12 +131,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private IConfigurationService configurationService;
 
     private ITransportManager transportManager;
-    
-    private List<ILoadSyncLifecycleListener> syncLifecycleListeners;
-
-    private List<IDatabaseWriterFilter> filters;
-
-    private List<IDatabaseWriterErrorHandler> errorHandlers;
 
     private IStatisticManager statisticManager;
 
@@ -146,8 +141,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private ILoadFilterService loadFilterService;
 
     private IStagingManager stagingManager;
-
-    private Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
+    
+    private IExtensionService extensionService;
 
     private Map<NodeGroupLink, List<ConflictNodeGroupLink>> conflictSettingsCache = new HashMap<NodeGroupLink, List<ConflictNodeGroupLink>>();
 
@@ -166,17 +161,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.nodeService = engine.getNodeService();
         this.transformService = engine.getTransformService();
         this.loadFilterService = engine.getLoadFilterService();
-        this.stagingManager = engine.getStagingManager();
-        this.filters = new ArrayList<IDatabaseWriterFilter>();
-        this.syncLifecycleListeners = new ArrayList<ILoadSyncLifecycleListener>();
-        
-        ConfigurationChangedDatabaseWriterFilter configChangedFilter = new ConfigurationChangedDatabaseWriterFilter(engine);
-        this.filters.add(configChangedFilter);
-        this.syncLifecycleListeners.add(configChangedFilter);
-        
-        this.errorHandlers = new ArrayList<IDatabaseWriterErrorHandler>();
-        this.addDataLoaderFactory(new DefaultDataLoaderFactory(parameterService));
+        this.stagingManager = engine.getStagingManager();        
         this.setSqlMap(new DataLoaderServiceSqlMap(platform, createSqlReplacementTokens()));
+        extensionService = engine.getExtensionService();
+        extensionService.addExtensionPoint(new DefaultDataLoaderFactory(parameterService));
+        extensionService.addExtensionPoint(new ConfigurationChangedDatabaseWriterFilter(engine));
         this.engine = engine;
     }
     
@@ -195,14 +184,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return false;
     }
 
-    public void addDataLoaderFactory(IDataLoaderFactory factory) {
-        this.dataLoaderFactories.put(factory.getTypeName(), factory);
-    }
-
     public List<String> getAvailableDataLoaderFactories() {
-        return new ArrayList<String>(dataLoaderFactories.keySet());
+        return new ArrayList<String>(getDataLoaderFactories().keySet());
     }
 
+    protected Map<String, IDataLoaderFactory> getDataLoaderFactories() {
+        Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
+        for (IDataLoaderFactory factory : engine.getExtensionService().getExtensionPointList(IDataLoaderFactory.class)) {
+            dataLoaderFactories.put(factory.getTypeName(), factory);
+        }
+        return dataLoaderFactories;
+    }
+    
     public List<IncomingBatch> loadDataBatch(String batchData){
         String nodeId = nodeService.findIdentityNodeId();
         if (StringUtils.isNotBlank(nodeId)) {
@@ -362,30 +355,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    public void addDatabaseWriterFilter(IDatabaseWriterFilter filter) {
-        filters.add(filter);
-    }
-
-    public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter) {
-        filters.remove(filter);
-    }
-
-    public void addLoadSyncLifecycleListener(ILoadSyncLifecycleListener listener) {
-        syncLifecycleListeners.add(listener);
-    }
-    
-    public void removeLoadSyncLifecycleListener(ILoadSyncLifecycleListener listener) {
-        syncLifecycleListeners.remove(listener);
-    }
-        
-    public void addDatabaseWriterErrorHandler(IDatabaseWriterErrorHandler errorHandler) {
-        errorHandlers.add(errorHandler);
-    }
-
-    public void removeDatabaseWriterErrorHandler(IDatabaseWriterErrorHandler errorHandler) {
-        errorHandlers.remove(errorHandler);
-    }
-
     /**
      * Load database from input stream and return a list of batch statuses. This
      * is used for a pull request that responds with data, and the
@@ -413,7 +382,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID, sourceNode.getExternalId());
             }
             
-            for (ILoadSyncLifecycleListener l : syncLifecycleListeners) {
+            for (ILoadSyncLifecycleListener l : extensionService.getExtensionPointList(ILoadSyncLifecycleListener.class)) {
                 l.syncStarted(ctx);
             }
 
@@ -448,7 +417,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } finally {
             transport.close();
             
-            for (ILoadSyncLifecycleListener l : syncLifecycleListeners) {
+            for (ILoadSyncLifecycleListener l : extensionService.getExtensionPointList(ILoadSyncLifecycleListener.class)) {
                 l.syncEnded(ctx, listener.getBatchesProcessed(), error);
             }
         }
@@ -492,7 +461,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         TransformTable[] transforms = null;
         NodeGroupLink link = null;
         List<ResolvedData> resolvedDatas = new ArrayList<ResolvedData>();
+        List<IDatabaseWriterFilter> filters = extensionService.getExtensionPointList(IDatabaseWriterFilter.class);
         List<IDatabaseWriterFilter> dynamicFilters = filters;
+        List<IDatabaseWriterErrorHandler> errorHandlers = extensionService.getExtensionPointList(IDatabaseWriterErrorHandler.class);
         List<IDatabaseWriterErrorHandler> dynamicErrorHandlers = errorHandlers;
 
         if (sourceNodeId != null) {
@@ -551,6 +522,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             dataLoaderType = channel.getDataLoaderType();
         }
 
+        Map<String, IDataLoaderFactory> dataLoaderFactories = getDataLoaderFactories();
         factory = dataLoaderFactories.get(dataLoaderType);
 
         if (factory == null) {

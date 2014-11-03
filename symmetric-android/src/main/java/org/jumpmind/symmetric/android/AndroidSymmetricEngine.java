@@ -45,10 +45,12 @@ import org.jumpmind.symmetric.route.ChannelRouterContext;
 import org.jumpmind.symmetric.route.DataGapRouteReader;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.impl.ExtensionService;
 import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
 import org.jumpmind.symmetric.service.impl.RouterService;
 
@@ -127,6 +129,11 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     protected IJobManager createJobManager() {
         return new AndroidJobManager(this);
+    }
+
+    @Override
+    protected IExtensionService createExtensionService() {
+        return new ExtensionService(this);
     }
 
     @Override

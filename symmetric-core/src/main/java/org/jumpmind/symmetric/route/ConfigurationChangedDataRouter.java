@@ -75,6 +75,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     final String CTX_KEY_RESTART_JOBMANAGER_NEEDED = "RestartJobManager."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
+    final String CTX_KEY_REFRESH_EXTENSIONS_NEEDED = "RefreshExtensions."
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+
     public final static String KEY = "symconfig";
 
     protected ISymmetricEngine engine;
@@ -188,6 +191,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 if (tableMatches(dataMetaData, TableConstants.SYM_TRANSFORM_COLUMN)
                         || tableMatches(dataMetaData, TableConstants.SYM_TRANSFORM_TABLE)) {
                     routingContext.put(CTX_KEY_FLUSH_TRANSFORMS_NEEDED, Boolean.TRUE);
+                }
+                
+                if (tableMatches(dataMetaData, TableConstants.SYM_EXTENSION)) {
+                    routingContext.put(CTX_KEY_REFRESH_EXTENSIONS_NEEDED, Boolean.TRUE);
                 }
             }
         }
@@ -484,7 +491,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 engine.getTransformService().clearCache();
                 log.info("About to clear the staging area because new transform configuration came through the data router");
                 engine.getStagingManager().clean(0);
-
             }
 
             if (routingContext.get(CTX_KEY_FLUSH_CONFLICTS_NEEDED) != null) {
@@ -506,6 +512,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     jobManager.stopJobs();
                     jobManager.startJobs();
                 }
+            }
+            
+            if (routingContext.get(CTX_KEY_REFRESH_EXTENSIONS_NEEDED) != null) {
+                log.info("About to refresh the cache of extensions because new configuration came through the data router");
+                engine.getExtensionService().refresh();
             }
         }
     }

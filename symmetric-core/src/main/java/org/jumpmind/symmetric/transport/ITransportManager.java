@@ -50,8 +50,6 @@ public interface ITransportManager {
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException;
     
-    public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler);
-    
     /**
      * This is the proper way to determine the URL for a node.  It delegates to configured 
      * extension points when necessary to take in to account custom load balancing and

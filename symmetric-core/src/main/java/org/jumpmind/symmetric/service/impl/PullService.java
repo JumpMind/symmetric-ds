@@ -31,13 +31,14 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
-import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
+import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.INodeService;
@@ -69,8 +70,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     public PullService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             INodeService nodeService, IDataLoaderService dataLoaderService,
             IRegistrationService registrationService, IClusterService clusterService,
-            INodeCommunicationService nodeCommunicationService, IConfigurationService configurationService) {
-        super(parameterService, symmetricDialect);
+            INodeCommunicationService nodeCommunicationService, IConfigurationService configurationService,
+            IExtensionService extensionService) {
+        super(parameterService, symmetricDialect, extensionService);
         this.nodeService = nodeService;
         this.registrationService = registrationService;
         this.clusterService = clusterService;

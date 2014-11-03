@@ -39,6 +39,7 @@ import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -50,6 +51,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRegistrationService;
@@ -81,11 +83,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     private RandomTimeSlot randomTimeSlot;
 
-    private INodePasswordFilter nodePasswordFilter;
-
     private IStatisticManager statisticManager;
 
-    private IConfigurationService configurationService;    
+    private IConfigurationService configurationService;
+    
+    private IExtensionService extensionService;
 
     public RegistrationService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -97,6 +99,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         this.statisticManager = engine.getStatisticManager();
         this.configurationService = engine.getConfigurationService();
         this.outgoingBatchService = engine.getOutgoingBatchService();
+        this.extensionService = engine.getExtensionService();
         this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(), 30);
         setSqlMap(new RegistrationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -191,8 +194,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 return processedNode;
             }
 
-            String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? nodeService
-                    .getNodeIdCreator().selectNodeId(nodePriorToRegistration, remoteHost,
+            String nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.
+                    getExtensionPoint(INodeIdCreator.class).selectNodeId(nodePriorToRegistration, remoteHost,
                             remoteAddress) : nodePriorToRegistration.getNodeId();
             
             Node foundNode = nodeService.findNode(nodeId);
@@ -201,8 +204,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
             if ((foundNode == null || security == null || !security.isRegistrationEnabled())
                     && parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED)) {
                 openRegistration(nodePriorToRegistration, remoteHost, remoteAddress);
-                nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? nodeService
-                        .getNodeIdCreator().selectNodeId(nodePriorToRegistration, remoteHost,
+                nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.
+                        getExtensionPoint(INodeIdCreator.class).selectNodeId(nodePriorToRegistration, remoteHost,
                                 remoteAddress) : nodePriorToRegistration.getNodeId();
                 security = nodeService.findNodeSecurity(nodeId);
                 foundNode = nodeService.findNode(nodeId);
@@ -458,7 +461,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         if (security != null && parameterService.is(ParameterConstants.REGISTRATION_REOPEN_USE_SAME_PASSWORD, true)) {
             password = security.getNodePassword();
         } else {
-            password = nodeService.getNodeIdCreator().generatePassword(node);
+            password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(node);
             password = filterPasswordOnSaveIfNeeded(password);
         }
         if (node != null) {
@@ -506,7 +509,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     protected String openRegistration(Node node, String remoteHost, String remoteAddress) {
         Node me = nodeService.findIdentity();
         if (me != null) {
-            String nodeId = nodeService.getNodeIdCreator().generateNodeId(node, remoteHost, remoteAddress);
+            String nodeId = extensionService.getExtensionPoint(INodeIdCreator.class).generateNodeId(node, remoteHost, remoteAddress);
             Node existingNode = nodeService.findNode(nodeId);
             if (existingNode == null) {
                 node.setNodeId(nodeId);
@@ -519,7 +522,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 // make sure there isn't a node security row lying around w/out
                 // a node row
                 nodeService.deleteNodeSecurity(nodeId);
-                String password = nodeService.getNodeIdCreator().generatePassword(node);
+                String password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(node);
                 password = filterPasswordOnSaveIfNeeded(password);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, masterToMaster ? null : me.getNodeId() });
@@ -543,14 +546,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     private String filterPasswordOnSaveIfNeeded(String password) {
         String s = password;
+        INodePasswordFilter nodePasswordFilter = extensionService.getExtensionPoint(INodePasswordFilter.class);
         if (nodePasswordFilter != null) {
             s = nodePasswordFilter.onNodeSecuritySave(password);
         }
         return s;
-    }
-
-    public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
-        this.nodePasswordFilter = nodePasswordFilter;
     }
 
     public boolean isRegistrationOpen(String nodeGroupId, String externalId) {

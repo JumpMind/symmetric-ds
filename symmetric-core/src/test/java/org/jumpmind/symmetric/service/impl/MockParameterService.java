@@ -90,14 +90,14 @@ public class MockParameterService extends AbstractParameterService implements IP
         return new TypedProperties(properties);
     }
 
-    @Override
-    public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId) {
-        return new TypedProperties(properties);
-    }
-
 	@Override
 	public void deleteParameterWithUpdate(String externalId,
 			String nodeGroupId, String key) {		
 	}
+
+    @Override
+    public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId) {
+        return null;
+    }
 
 }

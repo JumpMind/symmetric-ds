@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.android;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -67,6 +68,11 @@ public class AndroidTypedPropertiesFactory implements ITypedPropertiesFactory {
 
     public TypedProperties reload() {
         return properties;
+    }
+
+
+    @Override
+    public void init(File propertiesFile, Properties properties) {
     }
 
 }

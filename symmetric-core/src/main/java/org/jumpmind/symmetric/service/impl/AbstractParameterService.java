@@ -31,7 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.config.IParameterFilter;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
@@ -41,13 +41,13 @@ abstract public class AbstractParameterService {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
+    protected IExtensionService extensionService;
+    
     protected TypedProperties parameters;
 
     private long cacheTimeoutInMs = 0;
 
     private long lastTimeParameterWereCached;
-
-    protected IParameterFilter parameterFilter;
 
     protected Properties systemProperties;
 
@@ -118,10 +118,6 @@ abstract public class AbstractParameterService {
             value = getParameters().get(key, defaultVal);
         }
 
-        if (this.parameterFilter != null) {
-            value = this.parameterFilter.filterParameter(key, value);
-        }
-
         return StringUtils.isBlank(value) ? defaultVal : value;
     }
 
@@ -174,10 +170,6 @@ abstract public class AbstractParameterService {
 
     public Date getLastTimeParameterWereCached() {
         return new Date(lastTimeParameterWereCached);
-    }
-
-    public void setParameterFilter(IParameterFilter parameterFilter) {
-        this.parameterFilter = parameterFilter;
     }
 
     public String getExternalId() {
@@ -251,6 +243,10 @@ abstract public class AbstractParameterService {
             }
         }
         return value;
+    }
+
+    public void setExtensionService(IExtensionService extensionService) {
+        this.extensionService = extensionService;
     }
 
 }

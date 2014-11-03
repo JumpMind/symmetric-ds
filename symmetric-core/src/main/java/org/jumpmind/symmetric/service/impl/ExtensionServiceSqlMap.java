@@ -18,17 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric;
+package org.jumpmind.symmetric.service.impl;
 
-import java.io.File;
-import java.util.Properties;
+import java.util.Map;
 
-import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.db.platform.IDatabasePlatform;
 
-public interface ITypedPropertiesFactory {
+public class ExtensionServiceSqlMap extends AbstractSqlMap {
 
-    public void init(File propertiesFile, Properties properties);
+    public ExtensionServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
+        super(platform, replacementTokens);
 
-    public TypedProperties reload();
+        putSql("selectAll", "select extension_id, extension_type, interface_name, node_group_id, enabled, extension_order, " +
+                "extension_text, create_time, last_update_by, last_update_time from $(extension) " +
+                "where enabled = 1 and node_group_id = ? order by extension_order");
+        
+    }
 
 }

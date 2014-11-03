@@ -29,7 +29,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.NodeStatus;
@@ -41,6 +40,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
@@ -281,7 +281,7 @@ public interface ISymmetricEngine {
     
     public Logger getLog();
     
-    public IExtensionPointManager getExtensionPointManager();
+    public IExtensionService getExtensionService();
     
     public IStagingManager getStagingManager();
     

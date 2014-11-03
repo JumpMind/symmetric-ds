@@ -26,17 +26,16 @@ import java.util.Set;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /*
@@ -199,10 +198,6 @@ public interface ISymmetricDialect {
 
     public void cleanupTriggers();
 
-    public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener);
-
-    public void addAlterDatabaseInterceptor(IAlterDatabaseInterceptor interceptor);
-
     public String getDriverName();
 
     public String getDriverVersion();
@@ -224,4 +219,7 @@ public interface ISymmetricDialect {
     public AbstractTriggerTemplate getTriggerTemplate();
     
     public IParameterService getParameterService();
+    
+    public void setExtensionService(IExtensionService extensionService);
+    
 }
