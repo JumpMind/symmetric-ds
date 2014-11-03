@@ -1,3 +1,14 @@
+SymmetricDS - 3.6.12 (Released 2014-11-03) 
+==========================================
+- 0002029: [Bug] When old data is off and a primary key is updated in the same batch where a primary key is not updated will result in a failure (chenson) - closed.
+- 0002030: [Improvement] For initial load deletes, provide BOTH source and target node replacement variables (chenson) - closed.
+- 0002032: [Improvement] Resolve table name in create trigger statement with default catalog and schema if source catalog and schema are not specified (chenson) - closed.
+- 0002036: [Improvement] When a router fails to route a data row, no information is logged about the failed data row (chenson) - closed.
+- 0002041: [Bug] Initial load failing on Interbase because of "Implementation limit exceeded. Block size exceeds implementation restricti (chenson) - closed.
+- 0002042: [Bug] Create of data_id trigger on sym_data fails on firebird and interbase if db.delimited.identifier.mode=false (chenson) - closed.
+- 0002043: [Bug] The "other" data type template for Postgres should escape string values just like the string template. (chenson) - closed.
+- 0002046: [Improvement] Add left and bleft column transforms (chenson) - closed.
+
 SymmetricDS - 3.6.11 (Released 2014-10-27) 
 ==========================================
 - 0002009: [Bug] Java column transform cannot compile inner classes (elong) - closed.
