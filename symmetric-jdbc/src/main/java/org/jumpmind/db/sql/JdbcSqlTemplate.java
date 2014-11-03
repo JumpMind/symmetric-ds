@@ -407,7 +407,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     throw ex;
                 } finally {
                     close(stmt);
-                    con.setAutoCommit(oldAutoCommitSetting);
+                    if (!con.isClosed()) {
+                       con.setAutoCommit(oldAutoCommitSetting);
+                    }
                 }
             }
         });
