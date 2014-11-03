@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,20 +47,14 @@ import org.slf4j.LoggerFactory;
 abstract public class AbstractTransportManager {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
-    protected Map<String, ISyncUrlExtension> extensionSyncUrlHandlers  = new HashMap<String, ISyncUrlExtension>();
+    
+    protected IExtensionService extensionService;
 
     public AbstractTransportManager() {
     }
-    
-    public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler) {
-        if (extensionSyncUrlHandlers == null) {
-            extensionSyncUrlHandlers = new HashMap<String, ISyncUrlExtension>();
-        }
-        if (extensionSyncUrlHandlers.containsKey(name)) {
-            log.warn("Overriding an existing '{}' extension sync url handler with a second one.", name);
-        }
-        extensionSyncUrlHandlers.put(name, handler);
+
+    public AbstractTransportManager(IExtensionService extensionService) {
+        this.extensionService = extensionService;
     }
 
     /**
@@ -73,7 +68,10 @@ abstract public class AbstractTransportManager {
         } else if (syncUrl.startsWith(Constants.PROTOCOL_EXT)) {
             try {
                 URI uri = new URI(syncUrl);
-                ISyncUrlExtension handler = extensionSyncUrlHandlers.get(uri.getHost());
+                ISyncUrlExtension handler = null;
+                if (extensionService != null) {
+                    handler = extensionService.getExtensionPointMap(ISyncUrlExtension.class).get(uri.getHost());
+                }
                 if (handler == null) {
                     log.error("Could not find a registered extension sync url handler with the name of {} using the url {}", uri.getHost(), syncUrl);
                     return syncUrl;

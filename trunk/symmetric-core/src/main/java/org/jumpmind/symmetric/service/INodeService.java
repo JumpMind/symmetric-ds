@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -36,7 +35,6 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
-import org.jumpmind.symmetric.security.INodePasswordFilter;
 
 /**
  * This service provides an API to access {@link Node}s and Node related
@@ -138,12 +136,6 @@ public interface INodeService {
 
     public boolean setReverseInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
 
-    public INodeIdCreator getNodeIdCreator();
-
-    public void setNodeIdCreator(INodeIdCreator nodeIdGenerator);
-
-    public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter);
-
     /**
      * @return true if a data load has occurred and has been completed.
      */
@@ -188,10 +180,6 @@ public interface INodeService {
     public Map<String, Date> findLastHeartbeats();
 
     public List<String> findOfflineNodeIds(long minutesOffline);
-
-    public void addOfflineServerListener(IOfflineServerListener listener);
-
-    public boolean removeOfflineServerListener(IOfflineServerListener listener);
 
     public NetworkedNode getRootNetworkedNode();
 }

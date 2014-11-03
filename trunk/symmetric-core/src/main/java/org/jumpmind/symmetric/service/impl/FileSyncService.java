@@ -99,7 +99,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     // TODO cache trigger routers
 
     public FileSyncService(ISymmetricEngine engine) {
-        super(engine.getParameterService(), engine.getSymmetricDialect());
+        super(engine.getParameterService(), engine.getSymmetricDialect(), engine.getExtensionService());
         this.engine = engine;
         setSqlMap(new FileSyncServiceSqlMap(platform, createSqlReplacementTokens()));
     }

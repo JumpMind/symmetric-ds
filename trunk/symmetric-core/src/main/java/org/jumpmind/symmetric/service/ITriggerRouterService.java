@@ -174,9 +174,7 @@ public interface ITriggerRouterService {
     public void syncTriggers();
 
     public void syncTriggers(StringBuilder sqlBuffer, boolean genAlways);
-    
-    public void addTriggerCreationListeners(ITriggerCreationListener l);
-    
+   
     public void addExtraConfigTable(String table);
 
     public Map<Trigger, Exception> getFailedTriggers();

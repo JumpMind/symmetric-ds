@@ -72,6 +72,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.AppUtils;
@@ -84,20 +85,16 @@ public class DataService extends AbstractService implements IDataService {
 
     private ISymmetricEngine engine;
 
-    private List<IReloadListener> reloadListeners;
-
-    private List<IHeartbeatListener> heartbeatListeners;
+    private IExtensionService extensionService;
 
     private DataMapper dataMapper;
 
-    public DataService(ISymmetricEngine engine) {
+    public DataService(ISymmetricEngine engine, IExtensionService extensionService) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.engine = engine;
-        this.reloadListeners = new ArrayList<IReloadListener>();
-        this.heartbeatListeners = new ArrayList<IHeartbeatListener>();
-        this.heartbeatListeners.add(new PushHeartbeatListener(engine));
         this.dataMapper = new DataMapper();
-
+        this.extensionService = extensionService;
+        extensionService.addExtensionPoint(new PushHeartbeatListener(engine));
         setSqlMap(new DataServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -428,17 +425,15 @@ public class DataService extends AbstractService implements IDataService {
 
     private void callReloadListeners(boolean before, Node targetNode, boolean transactional,
             ISqlTransaction transaction, long loadId) {
-        if (reloadListeners != null) {
-            for (IReloadListener listener : reloadListeners) {
-                if (before) {
-                    listener.beforeReload(transaction, targetNode, loadId);
-                } else {
-                    listener.afterReload(transaction, targetNode, loadId);
-                }
+        for (IReloadListener listener : extensionService.getExtensionPointList(IReloadListener.class)) {
+            if (before) {
+                listener.beforeReload(transaction, targetNode, loadId);
+            } else {
+                listener.afterReload(transaction, targetNode, loadId);
+            }
 
-                if (!transactional) {
-                    transaction.commit();
-                }
+            if (!transactional) {
+                transaction.commit();
             }
         }
     }
@@ -1429,12 +1424,12 @@ public class DataService extends AbstractService implements IDataService {
      */
     protected List<IHeartbeatListener> getHeartbeatListeners(boolean force) {
         if (force) {
-            return this.heartbeatListeners;
+            return extensionService.getExtensionPointList(IHeartbeatListener.class);
         } else {
             List<IHeartbeatListener> listeners = new ArrayList<IHeartbeatListener>();
             if (listeners != null) {
                 long ts = System.currentTimeMillis();
-                for (IHeartbeatListener iHeartbeatListener : this.heartbeatListeners) {
+                for (IHeartbeatListener iHeartbeatListener : extensionService.getExtensionPointList(IHeartbeatListener.class)) {
                     Long lastHeartbeatTimestamp = lastHeartbeatTimestamps.get(iHeartbeatListener);
                     if (lastHeartbeatTimestamp == null
                             || lastHeartbeatTimestamp <= ts
@@ -1471,44 +1466,6 @@ public class DataService extends AbstractService implements IDataService {
             } else {
                 log.debug("Did not run the heartbeat process because the node has not been configured");
             }
-        }
-    }
-
-    public void setReloadListeners(List<IReloadListener> listeners) {
-        this.reloadListeners = listeners;
-    }
-
-    public void addReloadListener(IReloadListener listener) {
-        if (reloadListeners == null) {
-            reloadListeners = new ArrayList<IReloadListener>();
-        }
-        reloadListeners.add(listener);
-    }
-
-    public boolean removeReloadListener(IReloadListener listener) {
-        if (reloadListeners != null) {
-            return reloadListeners.remove(listener);
-        } else {
-            return false;
-        }
-    }
-
-    public void setHeartbeatListeners(List<IHeartbeatListener> listeners) {
-        this.heartbeatListeners = listeners;
-    }
-
-    public void addHeartbeatListener(IHeartbeatListener listener) {
-        if (heartbeatListeners == null) {
-            heartbeatListeners = new ArrayList<IHeartbeatListener>();
-        }
-        heartbeatListeners.add(listener);
-    }
-
-    public boolean removeHeartbeatListener(IHeartbeatListener listener) {
-        if (heartbeatListeners != null) {
-            return heartbeatListeners.remove(listener);
-        } else {
-            return false;
         }
     }
 
@@ -1556,10 +1513,6 @@ public class DataService extends AbstractService implements IDataService {
 
     public long findMaxDataId() {
         return sqlTemplate.queryForLong(getSql("selectMaxDataIdSql"));
-    }
-
-    public List<IReloadListener> getReloadListeners() {
-        return reloadListeners;
     }
 
     public class DataMapper implements ISqlRowMapper<Data> {

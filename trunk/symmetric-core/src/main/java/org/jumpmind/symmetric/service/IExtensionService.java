@@ -18,17 +18,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric;
+package org.jumpmind.symmetric.service;
 
-import java.io.File;
-import java.util.Properties;
+import java.util.List;
+import java.util.Map;
 
-import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.ext.ExtensionPointMetaData;
 
-public interface ITypedPropertiesFactory {
+public interface IExtensionService {
+    
+    public void refresh();
+    
+    public List<ExtensionPointMetaData> getExtensionPointMetaData();
+        
+    public <T extends IExtensionPoint> T getExtensionPoint(Class<T> extensionClass);
+    
+    public <T extends IExtensionPoint> List<T> getExtensionPointList(Class<T> extensionClass);
 
-    public void init(File propertiesFile, Properties properties);
+    public <T extends IExtensionPoint> Map<String, T> getExtensionPointMap(Class<T> extensionClass);
+    
+    public void addExtensionPoint(IExtensionPoint extension);
 
-    public TypedProperties reload();
-
+    public void addExtensionPoint(String name, IExtensionPoint extension);
+    
+    public void removeExtensionPoint(IExtensionPoint extension);
+    
 }

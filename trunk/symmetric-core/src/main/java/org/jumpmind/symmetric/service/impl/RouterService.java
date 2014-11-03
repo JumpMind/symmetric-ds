@@ -81,6 +81,7 @@ import org.jumpmind.symmetric.route.SubSelectDataRouter;
 import org.jumpmind.symmetric.route.TransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
@@ -90,15 +91,13 @@ import org.jumpmind.symmetric.statistic.StatisticConstants;
  */
 public class RouterService extends AbstractService implements IRouterService {
 
-    protected  Map<String, IDataRouter> routers;
-
-    protected  Map<String, IBatchAlgorithm> batchAlgorithms;
-
     protected  Map<String, Boolean> defaultRouterOnlyLastState = new HashMap<String, Boolean>();
 
     protected transient ExecutorService readThread = null;
 
     protected ISymmetricEngine engine;
+    
+    protected IExtensionService extensionService;
     
     protected boolean syncTriggersBeforeInitialLoadAttempted = false;
 
@@ -106,23 +105,22 @@ public class RouterService extends AbstractService implements IRouterService {
         super(engine.getParameterService(), engine.getSymmetricDialect());
 
         this.engine = engine;
+        this.extensionService = engine.getExtensionService();
 
-        this.batchAlgorithms = new HashMap<String, IBatchAlgorithm>();
-        this.batchAlgorithms.put("default", new DefaultBatchAlgorithm());
-        this.batchAlgorithms.put("nontransactional", new NonTransactionalBatchAlgorithm());
-        this.batchAlgorithms.put("transactional", new TransactionalBatchAlgorithm());
+        extensionService.addExtensionPoint("default", new DefaultBatchAlgorithm());
+        extensionService.addExtensionPoint("nontransactional", new NonTransactionalBatchAlgorithm());
+        extensionService.addExtensionPoint("transactional", new TransactionalBatchAlgorithm());
 
-        this.routers = new HashMap<String, IDataRouter>();
-        this.routers.put(ConfigurationChangedDataRouter.ROUTER_TYPE, new ConfigurationChangedDataRouter(engine));
-        this.routers.put("bsh", new BshDataRouter(engine));
-        this.routers.put("java", new JavaDataRouter(engine));
-        this.routers.put("subselect", new SubSelectDataRouter(symmetricDialect));
-        this.routers.put("lookuptable", new LookupTableDataRouter(symmetricDialect));
-        this.routers.put("default", new DefaultDataRouter());
-        this.routers.put("audit", new AuditTableDataRouter(engine));
-        this.routers.put("column", new ColumnMatchDataRouter(engine.getConfigurationService(),
+        extensionService.addExtensionPoint(ConfigurationChangedDataRouter.ROUTER_TYPE, new ConfigurationChangedDataRouter(engine));
+        extensionService.addExtensionPoint("bsh", new BshDataRouter(engine));
+        extensionService.addExtensionPoint("java", new JavaDataRouter(engine));
+        extensionService.addExtensionPoint("subselect", new SubSelectDataRouter(symmetricDialect));
+        extensionService.addExtensionPoint("lookuptable", new LookupTableDataRouter(symmetricDialect));
+        extensionService.addExtensionPoint("default", new DefaultDataRouter());
+        extensionService.addExtensionPoint("audit", new AuditTableDataRouter(engine));
+        extensionService.addExtensionPoint("column", new ColumnMatchDataRouter(engine.getConfigurationService(),
                 engine.getSymmetricDialect()));
-        this.routers.put(FileSyncDataRouter.ROUTER_TYPE, new FileSyncDataRouter(engine));
+        extensionService.addExtensionPoint(FileSyncDataRouter.ROUTER_TYPE, new FileSyncDataRouter(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -681,14 +679,14 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     } else {
                         try {
-                            IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
-                            context.addUsedDataRouter(dataRouter);
-                            long ts = System.currentTimeMillis();
-                            nodeIds = dataRouter.routeToNodes(context, dataMetaData,
+                        IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
+                        context.addUsedDataRouter(dataRouter);
+                        long ts = System.currentTimeMillis();
+                        nodeIds = dataRouter.routeToNodes(context, dataMetaData,
                                     findAvailableNodes(triggerRouter, context), false, false,
                                     triggerRouter);
-                            context.incrementStat(System.currentTimeMillis() - ts,
-                                    ChannelRouterContext.STAT_DATA_ROUTER_MS);
+                        context.incrementStat(System.currentTimeMillis() - ts,
+                                ChannelRouterContext.STAT_DATA_ROUTER_MS);
                         } catch (RuntimeException ex) {
                             StringBuilder failureMessage = new StringBuilder("Failed to route data: ");
                             failureMessage.append(data.getDataId());
@@ -790,6 +788,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     numberOfDataEventsInserted++;
                     dataEventAdded = true;
                 }
+                Map<String, IBatchAlgorithm> batchAlgorithms = extensionService.getExtensionPointMap(IBatchAlgorithm.class);
                 if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
                         batch, dataMetaData, context)) {
                     context.setNeedsCommitted(true);
@@ -803,6 +802,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected IDataRouter getDataRouter(Router router) {
         IDataRouter dataRouter = null;
+        Map<String, IDataRouter> routers = getRouters();
         if (!StringUtils.isBlank(router.getRouterType())) {
             dataRouter = routers.get(router.getRouterType());
             if (dataRouter == null) {
@@ -813,7 +813,7 @@ public class RouterService extends AbstractService implements IRouterService {
         }
 
         if (dataRouter == null) {
-            return routers.get("default");
+            return getRouters().get("default");
         }
         return dataRouter;
     }
@@ -839,14 +839,6 @@ public class RouterService extends AbstractService implements IRouterService {
         return triggerRouters;
     }
 
-    public void addDataRouter(String name, IDataRouter dataRouter) {
-        routers.put(name, dataRouter);
-    }
-
-    public void addBatchAlgorithm(String name, IBatchAlgorithm algorithm) {
-        batchAlgorithms.put(name, algorithm);
-    }
-
     public long getUnroutedDataCount() {
         long maxDataIdAlreadyRouted = sqlTemplate
                 .queryForLong(getSql("selectLastDataIdRoutedUsingDataGapSql"));
@@ -864,11 +856,11 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     public List<String> getAvailableBatchAlgorithms() {
-        return new ArrayList<String>(batchAlgorithms.keySet());
+        return new ArrayList<String>(extensionService.getExtensionPointMap(IBatchAlgorithm.class).keySet());
     }
 
     public Map<String, IDataRouter> getRouters() {
-        return routers;
+        return extensionService.getExtensionPointMap(IDataRouter.class);
     }
 
 }

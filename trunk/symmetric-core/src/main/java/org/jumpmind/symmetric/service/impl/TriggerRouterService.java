@@ -63,6 +63,7 @@ import org.jumpmind.symmetric.route.FileSyncDataRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ISequenceService;
@@ -81,6 +82,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     
     private ISequenceService sequenceService;
 
+    private IExtensionService extensionService;
+    
     private Map<String, Router> routersCache;
 
     private long routersCacheTime;
@@ -96,8 +99,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private long triggerRouterPerNodeCacheTime;
 
     private long triggerRouterPerChannelCacheTime;
-
-    private List<ITriggerCreationListener> triggerCreationListeners;
 
     private TriggerFailureListener failureListener = new TriggerFailureListener();
 
@@ -127,7 +128,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         this.groupletService = engine.getGroupletService();
         this.nodeService = engine.getNodeService();
         this.sequenceService = engine.getSequenceService();
-        this.addTriggerCreationListeners(this.failureListener);
+        this.extensionService = engine.getExtensionService();
+        engine.getExtensionService().addExtensionPoint(failureListener);
         setSqlMap(new TriggerRouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -253,6 +255,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return createdTriggers;
     
     }
+    
     public Collection<Trigger> findMatchingTriggers(List<Trigger> triggers, String catalog, String schema,
             String table) {
         Set<Trigger> matches = new HashSet<Trigger>();
@@ -1228,10 +1231,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            if (this.triggerCreationListeners != null) {
-                for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                    l.triggerInactivated(null, history);
-                }
+            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                l.triggerInactivated(null, history);
             }
         }
 
@@ -1403,10 +1404,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     "Could not find any database tables matching '{}' in the datasource that is configured",
                     trigger.qualifiedSourceTableName());
 
-            if (this.triggerCreationListeners != null) {
-                for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                    l.tableDoesNotExist(trigger);
-                }
+            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                l.tableDoesNotExist(trigger);
             }
         }
     }
@@ -1427,7 +1426,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         try {
             if (listener != null) {
-                addTriggerCreationListeners(listener);
+                extensionService.addExtensionPoint(listener);
             }
 
             List<TriggerHistory> allHistories = getActiveTriggerHistories();
@@ -1448,7 +1447,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         } finally {
             if (listener != null) {
-                this.triggerCreationListeners.remove(listener);
+                extensionService.removeExtensionPoint(listener);
             }
         }
     }
@@ -1536,10 +1535,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 activeTriggerHistories.add(newestHistory);
                 newestHistory.setErrorMessage(errorMessage);
                 if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-                    if (this.triggerCreationListeners != null) {
-                        for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                            l.triggerCreated(trigger, newestHistory);
-                        }
+                    for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                        l.triggerCreated(trigger, newestHistory);
                     }
                 }
             }
@@ -1563,10 +1560,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.getSourceTableName());
             }
 
-            if (this.triggerCreationListeners != null) {
-                for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                    l.triggerFailed(trigger, ex);
-                }
+            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                l.triggerFailed(trigger, ex);
             }
         }
     }
@@ -1924,22 +1919,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
             return triggerRouter;
         }
-    }
-
-    public void setTriggerCreationListeners(
-            List<ITriggerCreationListener> autoTriggerCreationListeners) {
-        if (triggerCreationListeners != null) {
-            for (ITriggerCreationListener l : triggerCreationListeners) {
-                addTriggerCreationListeners(l);
-            }
-        }
-    }
-
-    public void addTriggerCreationListeners(ITriggerCreationListener l) {
-        if (this.triggerCreationListeners == null) {
-            this.triggerCreationListeners = new ArrayList<ITriggerCreationListener>();
-        }
-        this.triggerCreationListeners.add(l);
     }
 
     public void addExtraConfigTable(String table) {

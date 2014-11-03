@@ -41,7 +41,7 @@ public class JavaDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
             + "import org.jumpmind.symmetric.io.data.*;\n"
             + "import org.jumpmind.db.model.*;\n"
             + "import java.util.*;\n"
-            + "public class " + SimpleClassCompiler.CLASSNAME_TOKEN + " implements JavaDatabaseWriterFilter.JavaLoadFilter { \n"
+            + "public class JavaDatabaseWriterFilterExt implements JavaDatabaseWriterFilter.JavaLoadFilter { \n"
             + "    public boolean execute(DataContext context, Table table, CsvData data, Exception error) {\n\n";
 
     public final static String CODE_END = "\n\n   }\n}\n";

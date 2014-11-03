@@ -33,6 +33,8 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.config.IParameterFilter;
+import org.jumpmind.symmetric.config.IParameterSaveFilter;
 import org.jumpmind.symmetric.model.DatabaseParameter;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -51,8 +53,7 @@ public class ParameterService extends AbstractParameterService implements IParam
 
     private Date lastUpdateTime;
 
-    public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory,
-            String tablePrefix) {
+    public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory, String tablePrefix) {
         this.tablePrefix = tablePrefix;
         this.factory = factory;
         this.sql = new ParameterServiceSqlMap(platform, AbstractService.createSqlReplacementTokens(
@@ -89,6 +90,11 @@ public class ParameterService extends AbstractParameterService implements IParam
 
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue, String lastUpdateBy) {
         paramValue = paramValue != null ? paramValue.toString() : null;
+        if (extensionService != null) {
+            for (IParameterSaveFilter filter : extensionService.getExtensionPointList(IParameterSaveFilter.class)) {
+                paramValue = filter.filterSaveParameter(key, (String) paramValue);
+            }
+        }
 
         int count = sqlTemplate.update(sql.getSql("updateParameterSql"), new Object[] { paramValue, lastUpdateBy,
                 externalId, nodeGroupId, key });
@@ -134,14 +140,19 @@ public class ParameterService extends AbstractParameterService implements IParam
             saveParameter(externalId, nodeGroupId, key, parameters.get(key), lastUpdateBy);
         }
     }
-    
+
     protected TypedProperties readParametersFromDatabase(String sqlKey, Object... values) {
         final TypedProperties properties = new TypedProperties();
+        final IParameterFilter filter = extensionService != null ? extensionService.getExtensionPoint(IParameterFilter.class) : null;
         sqlTemplate.query(sql.getSql(sqlKey), new ISqlRowMapper<Object>() {
             public Object mapRow(Row row) {
+                String key = row.getString("param_key");
                 String value = row.getString("param_value");
+                if (filter != null) {
+                    value = filter.filterParameter(key, value);
+                }
                 if (value != null) {
-                    properties.setProperty(row.getString("param_key"), row.getString("param_value"));
+                    properties.setProperty(key, value);
                 }
                 return row;
             }
@@ -172,9 +183,14 @@ public class ParameterService extends AbstractParameterService implements IParam
     }
 
     class DatabaseParameterMapper implements ISqlRowMapper<DatabaseParameter> {
+        IParameterFilter filter = extensionService != null ? extensionService.getExtensionPoint(IParameterFilter.class) : null;
         public DatabaseParameter mapRow(Row row) {
-            return new DatabaseParameter(row.getString("param_key"), row.getString("param_value"),
-                    row.getString("external_id"), row.getString("node_group_id"));
+            String key = row.getString("param_key");
+            String value = row.getString("param_value");
+            if (filter != null) {
+                value = filter.filterParameter(key, value);
+            }           
+            return new DatabaseParameter(key, value, row.getString("external_id"), row.getString("node_group_id"));
         }
     }
 

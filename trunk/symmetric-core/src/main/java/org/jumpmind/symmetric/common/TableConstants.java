@@ -72,6 +72,7 @@ public class TableConstants {
     public static final String SYM_FILE_SNAPSHOT = "file_snapshot";
     public static final String SYM_FILE_INCOMING = "file_incoming";
     public static final String SYM_CONSOLE_USER = "console_user";
+    public static final String SYM_EXTENSION = "extension";
 
     private static List<String> tablesWithPrefix;
 
@@ -125,6 +126,7 @@ public class TableConstants {
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER_ROUTER));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_EXTENSION));
         return configTables;
     }
 
@@ -172,6 +174,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER_ROUTER));
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_INCOMING));
+        tables.add(getTableName(tablePrefix, SYM_EXTENSION));
         return tables;
     }
 

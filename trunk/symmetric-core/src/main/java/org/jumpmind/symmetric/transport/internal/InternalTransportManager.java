@@ -61,6 +61,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
     protected ISymmetricEngine symmetricEngine;
 
     public InternalTransportManager(ISymmetricEngine engine) {
+        super(engine.getExtensionService());
         this.symmetricEngine = engine;
     }
 

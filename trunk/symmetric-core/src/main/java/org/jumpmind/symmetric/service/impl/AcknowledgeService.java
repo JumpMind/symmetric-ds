@@ -45,8 +45,6 @@ import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
  */
 public class AcknowledgeService extends AbstractService implements IAcknowledgeService {
 
-    private List<IAcknowledgeEventListener> batchEventListeners;
-
     private ISymmetricEngine engine;
 
     public AcknowledgeService(ISymmetricEngine engine) {
@@ -64,10 +62,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         
     	BatchAckResult result = new BatchAckResult(batch);
     	
-        if (batchEventListeners != null) {
-            for (IAcknowledgeEventListener batchEventListener : batchEventListeners) {
-                batchEventListener.onAcknowledgeEvent(batch);
-            }
+        for (IAcknowledgeEventListener listener : engine.getExtensionService().getExtensionPointList(IAcknowledgeEventListener.class)) {
+            listener.onAcknowledgeEvent(batch);
         }
 
         if (batch.getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
@@ -149,15 +145,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
             }
         }
         return result;
-    }
-    
-
-    public void addAcknowledgeEventListener(IAcknowledgeEventListener statusChangeListner) {
-
-        if (batchEventListeners == null) {
-            batchEventListeners = new ArrayList<IAcknowledgeEventListener>();
-        }
-        batchEventListeners.add(statusChangeListner);
     }
 
 	public List<BatchAckResult> ack(List<BatchAck> batches) {
