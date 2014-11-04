@@ -262,11 +262,20 @@ public class WindowsService extends WrapperService {
                 throw new WrapperException(Constants.RC_ALREADY_INSTALLED, 0, "Service " + config.getName() + " is already installed");
             } else {
                 System.out.println("Installing " + config.getName() + " ...");
-    
+                
+                String dependencies = null;
+                if (config.getDependencies() != null && config.getDependencies().size() > 0) {
+                    StringBuffer sb = new StringBuffer();
+                    for (String dependency : config.getDependencies()) {
+                        sb.append(dependency).append("\0");
+                    }
+                    dependencies = sb.append("\0").toString();                    
+                }
+
                 service = advapi.CreateService(manager, config.getName(), config.getDisplayName(), Winsvc.SERVICE_ALL_ACCESS,
                         WinsvcEx.SERVICE_WIN32_OWN_PROCESS, config.isAutoStart() ? WinsvcEx.SERVICE_AUTO_START
                                 : WinsvcEx.SERVICE_DEMAND_START, WinsvcEx.SERVICE_ERROR_NORMAL,
-                        commandToString(getWrapperCommand("init")), null, null, null, null, null);
+                        commandToString(getWrapperCommand("init")), null, null, dependencies, null, null);
     
                 if (service != null) {
                     Advapi32Ex.SERVICE_DESCRIPTION desc = new Advapi32Ex.SERVICE_DESCRIPTION(config.getDescription());

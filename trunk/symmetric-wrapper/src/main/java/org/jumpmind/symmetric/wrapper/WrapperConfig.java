@@ -28,6 +28,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -141,6 +142,10 @@ public class WrapperConfig {
 
     public boolean isAutoStart() {
         return getProperty(prop, "wrapper.starttype", "auto").equalsIgnoreCase("auto");
+    }
+    
+    public List<String> getDependencies() {
+        return prop.get("wrapper.ntservice.dependency");
     }
     
     public String getJavaCommand() {
