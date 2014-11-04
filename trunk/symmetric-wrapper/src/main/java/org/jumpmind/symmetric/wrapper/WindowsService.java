@@ -273,13 +273,18 @@ public class WindowsService extends WrapperService {
                 }
 
                 service = advapi.CreateService(manager, config.getName(), config.getDisplayName(), Winsvc.SERVICE_ALL_ACCESS,
-                        WinsvcEx.SERVICE_WIN32_OWN_PROCESS, config.isAutoStart() ? WinsvcEx.SERVICE_AUTO_START
+                        WinsvcEx.SERVICE_WIN32_OWN_PROCESS, config.isAutoStart() || config.isDelayStart() ? WinsvcEx.SERVICE_AUTO_START
                                 : WinsvcEx.SERVICE_DEMAND_START, WinsvcEx.SERVICE_ERROR_NORMAL,
                         commandToString(getWrapperCommand("init")), null, null, dependencies, null, null);
     
                 if (service != null) {
                     Advapi32Ex.SERVICE_DESCRIPTION desc = new Advapi32Ex.SERVICE_DESCRIPTION(config.getDescription());
                     advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_DESCRIPTION, desc);
+
+                    if (config.isDelayStart()) {
+                        WinsvcEx.SERVICE_DELAYED_AUTO_START_INFO delayedInfo = new WinsvcEx.SERVICE_DELAYED_AUTO_START_INFO(true);
+                        advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_DELAYED_AUTO_START_INFO, delayedInfo);
+                    }
                 } else {
                     throwException("CreateService");
                 }

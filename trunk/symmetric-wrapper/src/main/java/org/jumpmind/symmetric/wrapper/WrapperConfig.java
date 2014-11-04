@@ -141,9 +141,13 @@ public class WrapperConfig {
     }
 
     public boolean isAutoStart() {
-        return getProperty(prop, "wrapper.starttype", "auto").equalsIgnoreCase("auto");
+        return getProperty(prop, "wrapper.ntservice.starttype", "auto").equalsIgnoreCase("auto");
     }
-    
+
+    public boolean isDelayStart() {
+        return getProperty(prop, "wrapper.ntservice.starttype", "auto").equalsIgnoreCase("delay");
+    }
+
     public List<String> getDependencies() {
         return prop.get("wrapper.ntservice.dependency");
     }
