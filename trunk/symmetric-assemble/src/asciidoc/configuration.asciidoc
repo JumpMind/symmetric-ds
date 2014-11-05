@@ -1,0 +1,6 @@
+
+== Configuration
+
+include::configuration/groups.asciidoc[]
+include::configuration/group-links.asciidoc[]
+include::configuration/channels.asciidoc[]
