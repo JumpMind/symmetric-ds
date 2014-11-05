@@ -120,9 +120,9 @@
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the extension is enabled." />
         <column name="extension_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to install extensions when multiple extensions implement the same interface."/>
         <column name="extension_text" type="LONGVARCHAR" description="The script or code of the extension." />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
     </table>
 
     <table name="extract_request" description="This table is used internally to request the extract of initial loads asynchronously when the initial load extract job is enabled.">
