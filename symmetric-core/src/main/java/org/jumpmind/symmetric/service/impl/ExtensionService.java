@@ -43,6 +43,9 @@ import org.jumpmind.util.SimpleClassCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bsh.EvalError;
+import bsh.Interpreter;
+
 /**
  * This service registers {@link IExtensionPoint}s defined both by SymmetricDS
  * and others found in the {@link ApplicationContext}.
@@ -93,16 +96,21 @@ public class ExtensionService extends AbstractService implements IExtensionServi
                 if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_JAVA)) {
                     try {
                         Object ext = SimpleClassCompiler.getInstance().getCompiledClass(extension.getExtensionText());
-                        if (ext instanceof IExtensionPoint) {
-                            registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
-                        } else {
-                            log.error("Missing IExtensionPoint interface for extension " + extension.getExtensionId());
-                        }
+                        registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
                     } catch (Exception e) {
-                        log.error("Error while compiling extension " + extension.getExtensionId(), e);
+                        log.error("Error while compiling Java extension " + extension.getExtensionId(), e);
                     }
                 } else if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_BSH)) {
-                    // TODO: implement BSH wrapper interface
+                    try {
+                        Interpreter interpreter = new Interpreter();
+                        interpreter.eval(extension.getExtensionText());
+                        Object ext = interpreter.getInterface(Class.forName(extension.getInterfaceName()));
+                        registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
+                    } catch (EvalError e) {
+                        log.error("Error while parsing BSH extension " + extension.getExtensionId(), e);
+                    } catch (ClassNotFoundException e) {
+                        log.error("Interface class not found for BSH extension " + extension.getExtensionId(), e);
+                    }
                 } else {
                     log.error("Skipping extension " + extension.getExtensionId() + ", unknown extension type " + extension.getExtensionType());
                 }
@@ -111,6 +119,9 @@ public class ExtensionService extends AbstractService implements IExtensionServi
     }
 
     protected boolean registerExtension(String name, IExtensionPoint ext) {
+        if (! (ext instanceof IExtensionPoint)) {
+            log.error("Missing IExtensionPoint interface for extension " + name);
+        }
         return registerExtension(name, ext, true);
     }
     

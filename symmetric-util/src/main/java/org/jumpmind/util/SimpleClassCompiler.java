@@ -96,6 +96,9 @@ public class SimpleClassCompiler {
             }
             
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+            if (compiler == null) {
+                throw new SimpleClassCompilerException("Missing Java compiler: the JDK is required for compiling classes.");
+            }
             JavaFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null));
             DiagnosticCollector<JavaFileObject> diag = new DiagnosticCollector<JavaFileObject>();
             List<JavaFileObject> javaFiles = new ArrayList<JavaFileObject>();
