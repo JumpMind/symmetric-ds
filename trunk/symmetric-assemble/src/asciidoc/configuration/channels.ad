@@ -14,11 +14,30 @@ ifdef::pro[]
 Channel ID:: Identifier used through the system to identify a given channel.
 endif::pro[]
 
+ifndef::pro[]
+Enabled [ENABLED]:: Indicator to determine if a channel is currently in use.
+endif::pro[]
+
+ifdef::pro[]
 Enabled:: Indicator to determine if a channel is currently in use.
+endif::pro[]
 
+ifndef::pro[]
+Processing Order [PROCESSING_ORDER]:: Numeric value to determine the order in which a channel will be used.
+endif::pro[]
+
+ifdef::pro[]
 Processing Order:: Numeric value to determine the order in which a channel will be used.
+endif::pro[]
 
+ifndef::pro[]
+Batch Algorithm [BATCH_ALGORITHM]:: Batching is the grouping of data, by channel, to be transferred and committed at the client together.  Possible values are: 'default', 'transactional', and 'nontransactional'
+endif::pro[]
+
+ifdef::pro[]
 Batch Algorithm:: Batching is the grouping of data, by channel, to be transferred and committed at the client together.
+endif::pro[]
+
 
 .Channel Batching Algorithms
 |===
@@ -31,25 +50,85 @@ Batch Algorithm:: Batching is the grouping of data, by channel, to be transferre
 
 |===
 
+ifndef::pro[]
+Reload Channel [RELOAD_FLAG]:: Indicator to determine if a channel is available for initial loads and reverse initial loads.
+endif::pro[]
+
+ifdef::pro[]
 Reload Channel:: Indicator to determine if a channel is available for initial loads and reverse initial loads.
+endif::pro[]
 
+ifndef::pro[]
+File Sync Channel [FILE_SYNC_FLAG]:: Indicator to determine if a channel is available for file synchronization.
+endif::pro[]
+
+ifdef::pro[]
 File Sync Channel:: Indicator to determine if a channel is available for file synchronization.
+endif::pro[]
 
+ifndef::pro[]
+Max Batch Size [MAX_BATCH_SIZE]:: Specifies the maximum number of data events to process within a batch for this channel.
+endif::pro[]
+
+ifdef::pro[]
 Max Batch Size:: Specifies the maximum number of data events to process within a batch for this channel.
+endif::pro[]
 
+ifndef::pro[]
+Max Batch To Send [MAX_BATCH_TO_SEND]:: Specifies the maximum number of batches to send for a given channel during a 'synchronization' between two nodes. A 'synchronization' is equivalent to a push or a pull. For example, if there are 12 batches ready to be sent for a channel and max_batch_to_send is equal to 10, then only the first 10 batches will be sent even though 12 batches are ready.
+endif::pro[]
+
+ifdef::pro[]
 Max Batch To Send:: Specifies the maximum number of batches to send for a given channel during a 'synchronization' between two nodes. A 'synchronization' is equivalent to a push or a pull. For example, if there are 12 batches ready to be sent for a channel and max_batch_to_send is equal to 10, then only the first 10 batches will be sent even though 12 batches are ready.
+endif::pro[]
 
+ifndef::pro[]
+Max Data To Route [MAX_DATA_TO_ROUTE]:: Specifies the maximum number of data rows to route for a channel at a time.
+endif::pro[]
+
+ifdef::pro[]
 Max Data To Route:: Specifies the maximum number of data rows to route for a channel at a time.
+endif::pro[]
 
-Use Old Data To Route:: Indicates if the old data will be included for routing.   Routing can then use this data for processing.
+ifndef::pro[]
+Use Old Data To Route [USE_OLD_DATA_TO_ROUTE]:: Indicates if the old data will be included for routing.   Routing can then use this data for processing.  Defaults to true.
+endif::pro[]
 
-Use Row Data To Route:: Indicates if the current data will be included for routing.   Routing can then use this data for processing.
+ifdef::pro[]
+Use Old Data To Route:: Indicates if the old data will be included for routing.   Routing can then use this data for processing.  Defaults to true.
+endif::pro[]
 
-Use Primary Key (PK) Data to Route:: Indicates if the primary key data will be include for routing.   For example maybe a store ID is needed to apply logic on before sending to the appropriate target nodes.
+ifndef::pro[]
+Use Row Data To Route [USE_ROW_DATA_TO_ROUTE]:: Indicates if the current data will be included for routing.   Routing can then use this data for processing.  Defaults to true.
+endif::pro[]
 
+ifdef::pro[]
+Use Row Data To Route:: Indicates if the current data will be included for routing.   Routing can then use this data for processing.  Defaults to true.
+endif::pro[]
+
+ifndef::pro[]
+Use Primary Key (PK) Data to Route [USE_PK_DATA_TO_ROUTE]:: Indicates if the primary key data will be include for routing.   For example maybe a store ID is needed to apply logic on before sending to the appropriate target nodes.  Defaults to true.
+endif::pro[]
+
+ifdef::pro[]
+Use Primary Key (PK) Data to Route:: Indicates if the primary key data will be include for routing.   For example maybe a store ID is needed to apply logic on before sending to the appropriate target nodes.  Defaults to true.
+endif::pro[]
+
+ifndef::pro[]
+Tables Contain Big Lobs [CONTAINS_BIG_LOB]:: Indicator to provide SymmetricDS the hint that the channel contains big lobs. Some databases have shortcuts that SymmetricDS can take advantage of if it knows that the lob columns in SYM_DATA aren't going to contain large lobs. The definition of how large a 'big' lob is varies from database to database.
+endif::pro[]
+
+ifdef::pro[]
 Tables Contain Big Lobs:: Indicator to provide SymmetricDS the hint that the channel contains big lobs. Some databases have shortcuts that SymmetricDS can take advantage of if it knows that the lob columns in SYM_DATA aren't going to contain large lobs. The definition of how large a 'big' lob is varies from database to database.
+endif::pro[]
 
+ifndef::pro[]
+Data Loader Types [DATA_LOADER_TYPE]:: Determines how data will be loaded into the target tables.   These are used during an initial load or a reverse initial load.
+endif::pro[]
+
+ifdef::pro[]
 Data Loader Types:: Determines how data will be loaded into the target tables.   These are used during an initial load or a reverse initial load.
+endif::pro[]
 
 |===
 
@@ -84,7 +163,12 @@ insert into SYM_CHANNEL (channel_id, processing_order, max_batch_size,
   	'transactional', 1, 'retail sale transactions from register');
 ----
 endif::pro[]
+ifdef::pro[]
+
+endif::pro[]
 =====
+
+
 
 .Channel Tips and Tricks
 

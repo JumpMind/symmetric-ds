@@ -1,0 +1,6 @@
+
+== Configuration
+
+include::configuration/groups.ad[]
+include::configuration/group-links.ad[]
+include::configuration/channels.ad[]

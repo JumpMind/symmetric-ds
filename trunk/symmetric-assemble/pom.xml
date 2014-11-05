@@ -431,7 +431,7 @@
 						      </goals>
 						      <configuration>
 						         <sourceDirectory>${basedir}/src/asciidoc</sourceDirectory> 
-						         <sourceDocumentName>user-guide.asciidoc</sourceDocumentName>
+						         <sourceDocumentName>user-guide.ad</sourceDocumentName>
 						         <outputDirectory>target/docs-asciidoc</outputDirectory>
 						         <backend>html5</backend>
 						         <doctype>book</doctype>

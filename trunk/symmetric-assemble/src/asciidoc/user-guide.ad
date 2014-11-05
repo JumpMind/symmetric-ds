@@ -21,8 +21,8 @@ intended for users who want to be quickly familiarized with the software, config
 and use its many features.  This version of the guide was generated on <?dbtimestamp format="Y-m-d"?> at <?dbtimestamp format="H:M:S"?>.
 :numbered:
 
-include::introduction.asciidoc[]
-include::setup.asciidoc[]
-include::configuration.asciidoc[]
-include::manage.asciidoc[]
-include::advanced-topics.asciidoc[]
+include::introduction.ad[]
+include::setup.ad[]
+include::configuration.ad[]
+include::manage.ad[]
+include::advanced-topics.ad[]

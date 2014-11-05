@@ -25,11 +25,20 @@ endif::pro[]
 .Options for Group Links
 |===
 
+ifndef::pro[]
+|Push [P]|Indicates that the source node will initiate communication over an HTTP PUT.
+
+|Wait for Pull [W]|Indicates that the source node will wait for a target node to connect via an HTTP GET to pull data.
+
+|Route-only [R]|Route-only indicates that the data isn't going to be transported via SymmetricDS.  This action type might be useful when using an XML publishing router or an audit table changes router.
+endif::pro[]
+ifdef::pro[]
 |Pushes To|Indicates that the source node will initiate communication over an HTTP PUT.
 
 |Wait for Pull From|Indicates that the source node will wait for a target node to connect via an HTTP GET to pull data.
 
 |Only Routes To|Route-only indicates that the data isn't going to be transported via SymmetricDS.  This action type might be useful when using an XML publishing router or an audit table changes router.
+endif::pro[]
 
 |===
 
@@ -82,7 +91,9 @@ image::group-link-config.png[]
 endif::pro[]
 ====
 
-
+ifdef::pro[]
+.Group Links Tips and Tricks
 NOTE: The link also defines if configuration data will be synchronized on the link.  For example, you might not want remote nodes to be able to change configuration and effect other nodes in the network.  In this case you would uncheck sync configuration.
 
 NOTE: Turn off sync configuration option where appropriate in non hierarchical setup so that configuration changes to not create a loop.  See "No Config" example above.
+endif::pro[]
