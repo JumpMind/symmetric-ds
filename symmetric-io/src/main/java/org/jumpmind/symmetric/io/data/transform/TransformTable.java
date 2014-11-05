@@ -284,7 +284,7 @@ public class TransformTable implements Cloneable {
                     boolean hasDelete = false;
 
                     if (primaryKeyColumns != null) {
-                        for (TransformColumn xCol : primaryKeyColumns) {
+                        for (TransformColumn xCol : transformColumns) {
                             if ((StringUtils.isNotBlank(xCol.getSourceColumnName()) && StringUtils.equalsIgnoreCase(xCol.getSourceColumnName(),column)) ||
                                     StringUtils.isNotBlank(xCol.getTargetColumnName()) && StringUtils.equalsIgnoreCase(xCol.getTargetColumnName(),column)) {
                                 if (xCol.includeOn == IncludeOnType.ALL) {
