@@ -197,12 +197,17 @@ public class TransformWriter extends NestedDataWriter {
 
             List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
             TransformTable[] transformTables = activeTransforms.toArray(new TransformTable[activeTransforms.size()]);
-            if (data.getDataEventType() == DataEventType.DELETE) {
+            if (eventType == DataEventType.DELETE) {
                 CollectionUtils.reverseArray(transformTables);
             }
+
             for (TransformTable transformation : transformTables) {
-                transformation = transformation.enhanceWithImpliedColumns(this.sourceTable.getPrimaryKeyColumnNames(), 
+                transformation = transformation.enhanceWithImpliedColumns(
+                        this.sourceTable.getPrimaryKeyColumnNames(),
                         this.sourceTable.getColumnNames());
+                if (eventType == DataEventType.INSERT && transformation.isUpdateFirst()) {
+                    eventType = DataEventType.UPDATE;
+                }
                 dataThatHasBeenTransformed.addAll(transform(eventType, context, transformation,
                         sourceKeyValues, oldSourceValues, sourceValues));
             }
@@ -344,10 +349,6 @@ public class TransformWriter extends NestedDataWriter {
             // transformation
             if (data.getColumnNames().length > 0) {
                 if (data.getTargetDmlType() != DataEventType.DELETE) {
-                    if (data.getTargetDmlType() == DataEventType.INSERT
-                            && transformation.isUpdateFirst()) {
-                        data.setTargetDmlType(DataEventType.UPDATE);
-                    }
                     persistData = true;
                 } else {
                     // handle the delete action

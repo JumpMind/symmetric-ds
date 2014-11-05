@@ -83,7 +83,7 @@ public class StagingManager implements IStagingManager {
      */
     public long clean(long ttlInMs) {
         synchronized (StagingManager.class) {
-            log.debug("Cleaning staging area");
+            log.trace("Cleaning staging area");
             Set<String> keys = new HashSet<String>(resourceList.keySet());
             long purgedFileCount = 0;
             long purgedFileSize = 0;
