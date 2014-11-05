@@ -21,6 +21,7 @@
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/doc</docbook.target>
         <docbook.build>${basedir}/target/docbook</docbook.build>
+        <asciidoctor.version>1.5.0</asciidoctor.version>
     </properties>
     <modules>
         <module>../symmetric-parent</module>
@@ -404,6 +405,40 @@
                             </dependency>
                         </dependencies>
                     </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>includeAsciiDocs</id>
+            <activation>
+                <property>
+                    <name>includeAsciiDocs</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+					    <groupId>org.asciidoctor</groupId>
+					    <artifactId>asciidoctor-maven-plugin</artifactId>
+					    <version>${asciidoctor.version}</version> 
+					    <executions>
+					        <execution>
+						      <id>user-guide</id> 
+						      <phase>generate-resources</phase> 
+						      <goals>
+						        <goal>process-asciidoc</goal> 
+						      </goals>
+						      <configuration>
+						         <sourceDirectory>${basedir}/src/asciidoc</sourceDirectory> 
+						         <sourceDocumentName>user-guide.asciidoc</sourceDocumentName>
+						         <outputDirectory>target/docs-asciidoc</outputDirectory>
+						         <backend>html5</backend>
+						         <doctype>book</doctype>
+						      </configuration>
+						    </execution>
+						  </executions>
+				  	</plugin>
                 </plugins>
             </build>
         </profile>
