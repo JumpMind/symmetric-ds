@@ -78,5 +78,5 @@ The acknowledgement of a batch happens the same way it is acknowledged in databa
 endif::pro[]
 
 
-
+include::file-triggers/linking.ad[]
 include::file-triggers/scripts.ad[]
