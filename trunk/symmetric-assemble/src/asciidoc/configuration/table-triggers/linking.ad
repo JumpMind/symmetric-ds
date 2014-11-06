@@ -1,5 +1,5 @@
 
-==== Linking Triggers
+==== Linking Table Triggers
 
 ifndef::pro[]
 The TRIGGER_ROUTER table is used to define which specific combinations of triggers and routers are needed for your configuration. 
@@ -11,16 +11,24 @@ The parameters for these can be found in the Trigger / Router mapping table, TRI
 endif::pro[]
 
 ifdef::pro[]
-SymmetricDS will not install triggers on the database until they are linked.   Linking triggers to a router tells SymmetricDS
+SymmetricDS will not install table triggers on the database until they are linked.   Linking triggers to a router tells SymmetricDS
 how the captured data will be sent to a target node.
+endif::pro[]
 
+See <<Linking Routers>> for additional information about linking to routers.
+
+ifdef::pro[]
 NOTE: The "Link" button will remain disabled for triggers that have already been linked.
 
 .Select triggers then hit the "Link" button.
+====
 image::triggers/triggers-link-select.png[align="center"]
+====
 
 .Select routers that will be used to send the captured data to a target.
+====
 image::triggers/triggers-link.png[align="center"]
+====
 
 Initial Load SQL:: SQL used as part of the WHERE clause on a SQL statement during the initial load process to extract data from the source node
 of the router.  If blank all rows will be selected.
@@ -35,7 +43,9 @@ initial.load.delete.first=true
 ----
 
 .View hidden columns avialable while linking triggers
+====
 image::triggers/triggers-link-hidden.png[align="center"]
+====
 endif::pro[]
 
 Enabled:: Each individual trigger-router combination can be disabled or enabled if needed. By default, a trigger router is enabled, 
