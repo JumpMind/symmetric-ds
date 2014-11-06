@@ -1,0 +1,66 @@
+
+==== Linking Triggers
+
+ifndef::pro[]
+The TRIGGER_ROUTER table is used to define which specific combinations of triggers and routers are needed for your configuration. 
+The relationship between triggers and routers is many-to-many, so this table serves as the join table to define which combinations 
+are valid, as well as to define settings available at the trigger-router level of granularity.
+
+Three important controls can be configured for a specific Trigger / Router combination: Enabled, Initial Loads and Ping Back. 
+The parameters for these can be found in the Trigger / Router mapping table, TRIGGER_ROUTER .
+endif::pro[]
+
+ifdef::pro[]
+SymmetricDS will not install triggers on the database until they are linked.   Linking triggers to a router tells SymmetricDS
+how the captured data will be sent to a target node.
+
+NOTE: The "Link" button will remain disabled for triggers that have already been linked.
+
+.Select triggers then hit the "Link" button.
+image::triggers/triggers-link-select.png[align="center"]
+
+.Select routers that will be used to send the captured data to a target.
+image::triggers/triggers-link.png[align="center"]
+
+Initial Load SQL:: SQL used as part of the WHERE clause on a SQL statement during the initial load process to extract data from the source node
+of the router.  If blank all rows will be selected.
+
+Initial Load Delete SQL:: SQL used as part of the WHERE clause on a SQL statement during the initial load process to delete data on the target node
+of the router.  
+
+IMPORTANT: Initial Load Delete SQL will only be used if the following parameter is true (default is false).     
+[source, SymmetricDS Parameter]
+----
+initial.load.delete.first=true
+----
+
+.View hidden columns avialable while linking triggers
+image::triggers/triggers-link-hidden.png[align="center"]
+endif::pro[]
+
+Enabled:: Each individual trigger-router combination can be disabled or enabled if needed. By default, a trigger router is enabled, 
+but if you have a reason you wish to define a trigger router combination prior to it being active, 
+ifndef::pro[you can set the enabled flag to 0.]
+ifdef::pro[you can uncheck the enabled box.]
+This will cause the trigger-router mapping to be sent to all nodes, but the trigger-router mapping will not be considered 
+active or enabled for the purposes of capturing data changes or routing.
+
+Ping Back Enabled:: SymmetricDS, by default, avoids circular data changes. When a trigger fires as a result of SymmetricDS itself 
+(such as the case when sync on incoming batch is set), it records the originating source node of the data change in source_node_id. 
+During routing, if routing results in sending the data back to the originating source node, the data is not routed by default. 
+If instead you wish to route the data back to the originating node, 
+ifndef::pro[you can set the ping_back_enabled column for the needed particular trigger / router combination.]
+ifdef::pro[you can check the ping back enabled column.]
+This will cause the router to "ping" the data back to the originating node when it usually would not.
+
+Initial Load Order:: Order sequence of this table when an initial load is sent to a node. If this value is the same for 
+multiple tables, then SymmetricDS will attempt to order the tables according to FK constraints.  If this value is set to 
+a negative number, then the table will be excluded from an initial load.
+
+Initial Load Batch Count:: Only applicable if the initial load extract job is enabled. The number of batches to split 
+an initial load of a table across.  If 0 then a select count(*) will be used to dynamically determine the number of 
+batches based on the max_batch_size of the reload channel.
+
+Group Link:: The group link represented by the router.
+
+
