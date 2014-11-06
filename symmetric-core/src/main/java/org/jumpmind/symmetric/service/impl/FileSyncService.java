@@ -637,13 +637,16 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
         Set<Long> batchIds = new TreeSet<Long>();
         String[] files = unzipDir.list(DirectoryFileFilter.INSTANCE);
-        for (int i = 0; i < files.length; i++) {
-            try {
-                batchIds.add(Long.parseLong(files[i]));
-            } catch (NumberFormatException e) {
-                log.error(
-                        "Unexpected directory name.  Expected a number representing a batch id.  Instead the directory was named '{}'",
-                        files[i]);
+        
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                try {
+                    batchIds.add(Long.parseLong(files[i]));
+                } catch (NumberFormatException e) {
+                    log.error(
+                            "Unexpected directory name.  Expected a number representing a batch id.  Instead the directory was named '{}'",
+                            files[i]);
+                }
             }
         }
 
