@@ -8,6 +8,11 @@ See <<Linking Table Triggers>> for additional information about linking to table
 
 See <<Linking File Triggers>> for additional information about linking to file triggers.
 
+ifndef::pro[]
+TODO
+endif::pro[]
+
+ifdef::pro[]
 Linking routers to triggers can also be done on the routers screen in the same manner as linking them from the triggers screen.
 
 .Select routers then hit the "Link Triggers" button.
@@ -21,5 +26,5 @@ You can also link routers to file triggers in a similar manner.
 ====
 image::routers/routers-link-files.png[align="center"]
 ====
-
+endif::pro[]
 
