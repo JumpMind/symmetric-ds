@@ -1,26 +1,9 @@
 
 === Group Links
-ifndef::pro[]
-*[SYM_NODE_GROUP_LINK]*
-endif::pro[]
-
 Group links define how a node that belongs to a group will communicate with nodes in other groups.
  
-ifndef::pro[]       
-Source Group ID [SOURCE_NODE_GROUP_ID]:: The source group of the communication link.
-endif::pro[]
-
-ifdef::pro[]       
 Source Group ID:: The source group of the communication link.
-endif::pro[]
-
-ifndef::pro[]
-Link [DATA_EVENT_ACTION]:: Defines how the source and target groups will communicate.
-endif::pro[]
-
-ifdef::pro[]
 Link:: Defines how the source and target groups will communicate.
-endif::pro[]
 
 .Options for Group Links
 |===
@@ -42,21 +25,8 @@ endif::pro[]
 
 |===
 
-ifndef::pro[]
-Target Group ID [TARGET_NODE_GROUP_ID]:: The target group of the communication link.
-endif::pro[]
-
-ifdef::pro[]
 Target Group ID:: The target group of the communication link.
-endif::pro[]
-
-ifndef::pro[]
-Sync Configuration [SYNC_CONFIG_ENABLED]:: Determines if configuration is also sent through this group link.  By default this is checked and configuration will communicate on this path.  There are configurations that might cause configuration to continuously loop through the network as a result this might need to be unchecked for some links.
-endif::pro[]
-
-ifdef::pro[]
 Sync Configuration:: Determines if configuration is also sent through this group link.  By default this is checked and configuration will communicate on this path.  There are configurations that might cause configuration to continuously loop through the network as a result this might need to be unchecked for some links.
-endif::pro[]
 
 
 .Sample Group Links
@@ -85,7 +55,7 @@ image::group-link-firewall.png[]
 Peer to Peer::  Allows a node to sync to all other nodes in the same group.
 image::group-link-same.png[]
 
-Loop:: Turn sync configuration off on group link c to a so that configuration does not loop. </para>
+Loop:: Turn sync configuration off on group link c to a so that configuration does not loop.
 image::group-link-config.png[]
 
 endif::pro[]

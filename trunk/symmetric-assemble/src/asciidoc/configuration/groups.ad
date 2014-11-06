@@ -1,27 +1,9 @@
 
 === Groups
-ifndef::pro[]
-*[SYM_NODE_GROUP]*
-endif::pro[]
-
 Groups allow you to organize nodes with a similar configuration. They are the building blocks for creating group links which define how information moves through your network.
 
-ifndef::pro[]
-Group ID [NODE_GROUP_ID]:: Unique identifier for the group.
-endif::pro[]
-
-ifdef::pro[]
 Group ID:: Unique identifier for the group.
-endif::pro[]
-
-ifndef::pro[]
-Description [DESCRIPTION]:: Description of the group that is available through the console.
-endif::pro[]
-
-ifdef::pro[]
 Description:: Description of the group that is available through the console.
-endif::pro[]
-
 
 .Sample Node Groups
 ====
@@ -50,9 +32,3 @@ ifdef::pro[]
 |===
 endif::pro[]
 ====
-
-ifdef::pro[]
-NOTE: The link also defines if configuration data will be synchronized on the link.  For example, you might not want remote nodes to be able to change configuration and effect other nodes in the network.  In this case you would uncheck sync configuration.
-
-NOTE: Turn off sync configuration option where appropriate in non hierarchical setup so that configuration changes to not create a loop.  See "No Config" example above.
-endif::pro[]
