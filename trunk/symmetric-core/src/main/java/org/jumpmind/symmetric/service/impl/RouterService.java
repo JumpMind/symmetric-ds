@@ -182,70 +182,71 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     /**
-     * If a load has been queued up by setting the initial load enabled or reverse initial load
-     * enabled flags, then the router service will insert the reload events.  This process will
-     * not run at the same time sync triggers is running.
+     * If a load has been queued up by setting the initial load enabled or
+     * reverse initial load enabled flags, then the router service will insert
+     * the reload events. This process will not run at the same time sync
+     * triggers is running.
      */
     protected void insertInitialLoadEvents() {
-        if (engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS)) {
-            try {
-                synchronized (engine.getTriggerRouterService()) {
-                    engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS);
-                    INodeService nodeService = engine.getNodeService();
-                    Node identity = nodeService.findIdentity();
-                    if (identity != null) {
-                        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity
-                                .getNodeId());
-                        if (engine.getParameterService().isRegistrationServer() || 
-                                (identitySecurity != null && !identitySecurity.isRegistrationEnabled()
-                                && identitySecurity.getRegistrationTime() != null)) {
-                            List<NodeSecurity> nodeSecurities = findNodesThatAreReadyForInitialLoad();
-                            if (nodeSecurities != null) {
-                                boolean reverseLoadFirst = parameterService
-                                        .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
-                                for (NodeSecurity security : nodeSecurities) {                                    
-                                    if (engine.getTriggerRouterService()
-                                            .getActiveTriggerHistories().size() > 0) {
-                                        boolean thisMySecurityRecord = security.getNodeId().equals(
-                                                identity.getNodeId());
-                                        boolean reverseLoadQueued = security
-                                                .isRevInitialLoadEnabled();
-                                        boolean initialLoadQueued = security.isInitialLoadEnabled();
-                                        boolean registered = security.getRegistrationTime() != null;
-                                        boolean parent = identity.getNodeId().equals(
-                                                security.getCreatedAtNodeId()) || 
-                                                engine.getConfigurationService().isMasterToMaster();
-                                        if (thisMySecurityRecord && reverseLoadQueued
-                                                && (reverseLoadFirst || !initialLoadQueued)) {
-                                            sendReverseInitialLoad();
-                                        } else if (!thisMySecurityRecord && registered 
-                                                && initialLoadQueued && parent
-                                                && (!reverseLoadFirst || !reverseLoadQueued)) {
-                                            long ts = System.currentTimeMillis();
-                                            engine.getDataService().insertReloadEvents(
-                                                    engine.getNodeService().findNode(
-                                                            security.getNodeId()), false);
-                                            ts = System.currentTimeMillis() - ts;
-                                            if (ts > Constants.LONG_OPERATION_THRESHOLD) {
-                                                log.warn(
-                                                        "Inserted reload events for node {} in {} ms",
-                                                        security.getNodeId(), ts);
-                                            } else {
-                                                log.info(
-                                                        "Inserted reload events for node {} in {} ms",
-                                                        security.getNodeId(), ts);
-                                            }
-                                        }
-                                    } else {
-                                        List<NodeGroupLink> links = engine.getConfigurationService().getNodeGroupLinksFor(parameterService.getNodeGroupId(), false);
-                                        if (links == null || links.size() == 0) {
-                                            log.warn("Could not queue up a load for {} because a node group link is NOT configured over which a load could be delivered", security.getNodeId());
+        try {
+            INodeService nodeService = engine.getNodeService();
+            Node identity = nodeService.findIdentity();
+            if (identity != null) {
+                NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
+                if (engine.getParameterService().isRegistrationServer()
+                        || (identitySecurity != null && !identitySecurity.isRegistrationEnabled() && identitySecurity
+                                .getRegistrationTime() != null)) {
+                    if (engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS)) {
+
+                        List<NodeSecurity> nodeSecurities = findNodesThatAreReadyForInitialLoad();
+                        if (nodeSecurities != null) {
+                            boolean reverseLoadFirst = parameterService
+                                    .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
+                            for (NodeSecurity security : nodeSecurities) {
+                                if (engine.getTriggerRouterService().getActiveTriggerHistories()
+                                        .size() > 0) {
+                                    boolean thisMySecurityRecord = security.getNodeId().equals(
+                                            identity.getNodeId());
+                                    boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
+                                    boolean initialLoadQueued = security.isInitialLoadEnabled();
+                                    boolean registered = security.getRegistrationTime() != null;
+                                    boolean parent = identity.getNodeId().equals(
+                                            security.getCreatedAtNodeId())
+                                            || engine.getConfigurationService().isMasterToMaster();
+                                    if (thisMySecurityRecord && reverseLoadQueued
+                                            && (reverseLoadFirst || !initialLoadQueued)) {
+                                        sendReverseInitialLoad();
+                                    } else if (!thisMySecurityRecord && registered
+                                            && initialLoadQueued && parent
+                                            && (!reverseLoadFirst || !reverseLoadQueued)) {
+                                        long ts = System.currentTimeMillis();
+                                        engine.getDataService().insertReloadEvents(
+                                                engine.getNodeService().findNode(
+                                                        security.getNodeId()), false);
+                                        ts = System.currentTimeMillis() - ts;
+                                        if (ts > Constants.LONG_OPERATION_THRESHOLD) {
+                                            log.warn("Inserted reload events for node {} in {} ms",
+                                                    security.getNodeId(), ts);
                                         } else {
-                                            log.warn("Could not queue up a load for {} because sync triggers has not yet run", security.getNodeId());                                            
-                                            if (!syncTriggersBeforeInitialLoadAttempted) {
-                                                syncTriggersBeforeInitialLoadAttempted = true;
-                                                engine.getTriggerRouterService().syncTriggers();
-                                            }
+                                            log.info("Inserted reload events for node {} in {} ms",
+                                                    security.getNodeId(), ts);
+                                        }
+                                    }
+                                } else {
+                                    List<NodeGroupLink> links = engine.getConfigurationService()
+                                            .getNodeGroupLinksFor(
+                                                    parameterService.getNodeGroupId(), false);
+                                    if (links == null || links.size() == 0) {
+                                        log.warn(
+                                                "Could not queue up a load for {} because a node group link is NOT configured over which a load could be delivered",
+                                                security.getNodeId());
+                                    } else {
+                                        log.warn(
+                                                "Could not queue up a load for {} because sync triggers has not yet run",
+                                                security.getNodeId());
+                                        if (!syncTriggersBeforeInitialLoadAttempted) {
+                                            syncTriggersBeforeInitialLoadAttempted = true;
+                                            engine.getTriggerRouterService().syncTriggers();
                                         }
                                     }
                                 }
@@ -253,14 +254,12 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     }
                 }
-            } catch (Exception ex) {
-                log.error(ex.getMessage(), ex);
-            } finally {
-                engine.getClusterService().unlock(ClusterConstants.SYNCTRIGGERS);
             }
-        } else {
-            log.info("Not attempting to insert reload events because sync trigger is currently running");
+
+        } catch (Exception ex) {
+            log.error(ex.getMessage(), ex);
         }
+
     }
     
     public List<NodeSecurity> findNodesThatAreReadyForInitialLoad() {

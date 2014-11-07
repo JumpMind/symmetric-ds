@@ -71,6 +71,7 @@ import org.jumpmind.symmetric.model.TableReloadRequestKey;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -322,103 +323,124 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertReloadEvents(Node targetNode, boolean reverse) {
 
-        /*
-         * Outgoing data events are pointless because we are reloading all data
-         */
-        engine.getOutgoingBatchService().markAllAsSentForNode(targetNode.getNodeId(), false);
+        if (engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS)) {
+            try {
+                synchronized (engine.getTriggerRouterService()) {
+                    engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS);
 
-        INodeService nodeService = engine.getNodeService();
-        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+                    /*
+                     * Outgoing data events are pointless because we are
+                     * reloading all data
+                     */
+                    engine.getOutgoingBatchService().markAllAsSentForNode(targetNode.getNodeId(),
+                            false);
 
-        Node sourceNode = nodeService.findIdentity();
+                    INodeService nodeService = engine.getNodeService();
+                    ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
 
-        boolean transactional = parameterService
-                .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
+                    Node sourceNode = nodeService.findIdentity();
 
-        String nodeIdRecord = reverse ? nodeService.findIdentityNodeId() : targetNode.getNodeId();
-        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeIdRecord);
+                    boolean transactional = parameterService
+                            .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
 
-        ISqlTransaction transaction = null;
+                    String nodeIdRecord = reverse ? nodeService.findIdentityNodeId() : targetNode
+                            .getNodeId();
+                    NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeIdRecord);
 
-        try {
+                    ISqlTransaction transaction = null;
 
-            transaction = platform.getSqlTemplate().startSqlTransaction();
+                    try {
 
-            long loadId = engine.getSequenceService().nextVal(transaction,
-                    Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
-            String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy() : nodeSecurity
-                    .getInitialLoadCreateBy();
+                        transaction = platform.getSqlTemplate().startSqlTransaction();
 
-            List<TriggerHistory> triggerHistories = triggerRouterService
-                    .getActiveTriggerHistories();
+                        long loadId = engine.getSequenceService().nextVal(transaction,
+                                Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                        String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy()
+                                : nodeSecurity.getInitialLoadCreateBy();
 
-            Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
-                    .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
-                            targetNode.getNodeGroupId(), triggerHistories);
+                        List<TriggerHistory> triggerHistories = triggerRouterService
+                                .getActiveTriggerHistories();
 
-            callReloadListeners(true, targetNode, transactional, transaction, loadId);
-            
-            insertCreateSchemaScriptPriorToReload(targetNode, nodeIdRecord, loadId, createBy, transactional, 
-                    transaction);
+                        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
+                                .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
+                                        targetNode.getNodeGroupId(), triggerHistories);
 
-            insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy, transactional,
-                    transaction, reverse);
+                        callReloadListeners(true, targetNode, transactional, transaction, loadId);
 
-            insertCreateBatchesForReload(targetNode, loadId, createBy, triggerHistories,
-                    triggerRoutersByHistoryId, transactional, transaction);
+                        insertCreateSchemaScriptPriorToReload(targetNode, nodeIdRecord, loadId,
+                                createBy, transactional, transaction);
 
-            insertDeleteBatchesForReload(targetNode, loadId, createBy, triggerHistories,
-                    triggerRoutersByHistoryId, transactional, transaction);
+                        insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,
+                                transactional, transaction, reverse);
 
-            insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
-                    triggerRoutersByHistoryId, transactional, transaction);
+                        insertCreateBatchesForReload(targetNode, loadId, createBy,
+                                triggerHistories, triggerRoutersByHistoryId, transactional,
+                                transaction);
 
-            String afterSql = parameterService.getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_AFTER_SQL
-                    : ParameterConstants.INITIAL_LOAD_AFTER_SQL);
-            if (isNotBlank(afterSql)) {
-                insertSqlEvent(transaction, targetNode, afterSql, true, loadId, createBy);
+                        insertDeleteBatchesForReload(targetNode, loadId, createBy,
+                                triggerHistories, triggerRoutersByHistoryId, transactional,
+                                transaction);
+
+                        insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
+                                triggerRoutersByHistoryId, transactional, transaction);
+
+                        String afterSql = parameterService
+                                .getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_AFTER_SQL
+                                        : ParameterConstants.INITIAL_LOAD_AFTER_SQL);
+                        if (isNotBlank(afterSql)) {
+                            insertSqlEvent(transaction, targetNode, afterSql, true, loadId,
+                                    createBy);
+                        }
+
+                        insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
+                                transaction);
+
+                        callReloadListeners(false, targetNode, transactional, transaction, loadId);
+
+                        if (!reverse) {
+                            nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false,
+                                    false, loadId, createBy);
+                        } else {
+                            nodeService.setReverseInitialLoadEnabled(transaction, nodeIdRecord,
+                                    false, false, loadId, createBy);
+                        }
+
+                        if (!Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
+                            insertNodeSecurityUpdate(transaction, nodeIdRecord,
+                                    targetNode.getNodeId(), true, loadId, createBy);
+                        }
+
+                        engine.getStatisticManager().incrementNodesLoaded(1);
+
+                        transaction.commit();
+                    } catch (Error ex) {
+                        if (transaction != null) {
+                            transaction.rollback();
+                        }
+                        throw ex;
+                    } catch (RuntimeException ex) {
+                        if (transaction != null) {
+                            transaction.rollback();
+                        }
+                        throw ex;
+                    } finally {
+                        close(transaction);
+                    }
+
+                    if (!reverse) {
+                        /*
+                         * Remove all incoming events for the node that we are
+                         * starting a reload for
+                         */
+                        engine.getPurgeService().purgeAllIncomingEventsForNode(
+                                targetNode.getNodeId());
+                    }
+                }
+            } finally {
+                engine.getClusterService().unlock(ClusterConstants.SYNCTRIGGERS);
             }
-
-            insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional, transaction);
-            
-            callReloadListeners(false, targetNode, transactional, transaction, loadId);
-
-            if (!reverse) {
-                nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false, false, loadId,
-                        createBy);
-            } else {
-                nodeService.setReverseInitialLoadEnabled(transaction, nodeIdRecord, false, false,
-                        loadId, createBy);
-            }
-
-            if (!Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
-                insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(), true,
-                        loadId, createBy);
-            }
-
-            engine.getStatisticManager().incrementNodesLoaded(1);
-
-            transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
-        }
-
-        if (!reverse) {
-            /*
-             * Remove all incoming events for the node that we are starting a
-             * reload for
-             */
-            engine.getPurgeService().purgeAllIncomingEventsForNode(targetNode.getNodeId());
+        } else {
+            log.info("Not attempting to insert reload events because sync trigger is currently running");
         }
 
     }
