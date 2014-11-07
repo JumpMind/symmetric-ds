@@ -1,5 +1,5 @@
 
-==== File Trigger Beanshell Scripts
+==== BeanShell Scripts
 
 There are two types of Bean Shell scripts that can be leveraged to customize file synchronization behavior: 
 
