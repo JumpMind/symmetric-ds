@@ -1179,6 +1179,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         if (triggerRouters == null || triggerRouters.size() == 0) {
             trigger = new TriggerRouter();
             trigger.getTrigger().setSourceTableName(tableName);
+            trigger.getTrigger().setTriggerId(tableName);
             trigger.getRouter().setNodeGroupLink(
                     new NodeGroupLink(TestConstants.TEST_ROOT_NODE_GROUP,
                             TestConstants.TEST_CLIENT_NODE_GROUP));
