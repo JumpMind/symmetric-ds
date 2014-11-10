@@ -390,7 +390,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 purgedCount += sqlTemplate.update(getSql("purgeNodeHostJobStatsSql"),
                         retentionCutoff.getTime());
                 if (purgedCount > 0) {
-                    log.info("{} stats rows were purged", purgedCount);
+                    log.debug("{} stats rows were purged", purgedCount);
                 }
             } finally {
                 if (!force) {
