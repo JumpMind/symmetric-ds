@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -30,9 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
-import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
@@ -117,10 +114,8 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                     ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
                             nodeService.findIdentityNodeId(), nodeId, ProcessType.PULL_HANDLER));
                     try {
-                        Node targetNode = nodeService.findNode(nodeId);
-                        List<OutgoingBatch> batchList = dataExtractorService.extract(processInfo, targetNode,
+                        dataExtractorService.extract(processInfo, nodeService.findNode(nodeId),
                                 outgoingTransport);
-                        logDataReceivedFromPush(targetNode, batchList);
                         if (processInfo.getStatus() != Status.ERROR) {
                             processInfo.setStatus(Status.OK);
                         }
@@ -138,20 +133,6 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
             statisticManager.incrementNodesPulled(1);
             statisticManager.incrementTotalNodesPulledTime(System.currentTimeMillis() - ts);
         }
-    }
-    
-    private void logDataReceivedFromPush(Node targetNode, List<OutgoingBatch> batchList) {
-        int batchesCount = 0;
-        int dataCount = 0;
-        for (OutgoingBatch outgoingBatch : batchList) {
-            if (outgoingBatch.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.OK) {
-                batchesCount++;
-                dataCount += outgoingBatch.getDataEventCount();
-            } 
-        }
-        log.info(
-                "{} data and {} batches sent during pull request from {}",
-                new Object[] { dataCount, batchesCount, targetNode.toString() });
     }
 
 }

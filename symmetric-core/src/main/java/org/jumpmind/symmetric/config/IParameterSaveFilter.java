@@ -24,6 +24,6 @@ import org.jumpmind.extension.IExtensionPoint;
 
 public interface IParameterSaveFilter extends IExtensionPoint {
 
-    public String filterSaveParameter(String key, String value);
-    
+	public String filterSaveParameter(String key, String value);
+	
 }

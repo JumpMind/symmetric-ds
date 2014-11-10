@@ -50,7 +50,6 @@ import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.DefaultNodeIdCreator;
@@ -61,23 +60,23 @@ import org.jumpmind.util.AppUtils;
  */
 public class NodeService extends AbstractService implements INodeService {
 
-    private IExtensionService extensionService;
-
     private Node cachedNodeIdentity;
 
     private Map<String, NodeSecurity> securityCache;
 
     private long securityCacheTime;
 
+    private INodeIdCreator nodeIdCreator;
+
     private INodePasswordFilter nodePasswordFilter;
 
     private NodeHost nodeHostForCurrentNode = null;
 
-    public NodeService(IParameterService parameterService, ISymmetricDialect dialect, ISecurityService securityService,
-            IExtensionService extensionService) {
+    private List<IOfflineServerListener> offlineServerListeners;
+
+    public NodeService(IParameterService parameterService, ISymmetricDialect dialect, ISecurityService securityService) {
         super(parameterService, dialect);
-        this.extensionService = extensionService;
-        extensionService.addExtensionPoint(new DefaultNodeIdCreator(parameterService, this, securityService));
+        nodeIdCreator = new DefaultNodeIdCreator(parameterService, this, securityService);
         setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -276,7 +275,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void insertNodeSecurity(String id) {
         flushNodeAuthorizedCache();
-        String password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(new Node(id, null, null));
+        String password = nodeIdCreator.generatePassword(new Node(id, null, null));
         password = filterPasswordOnSaveIfNeeded(password);
         sqlTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, password,
                 null });
@@ -629,6 +628,14 @@ public class NodeService extends AbstractService implements INodeService {
                 externalId }) > 0;
     }
 
+    public INodeIdCreator getNodeIdCreator() {
+        return nodeIdCreator;
+    }
+
+    public void setNodeIdCreator(INodeIdCreator nodeIdGenerator) {
+        this.nodeIdCreator = nodeIdGenerator;
+    }
+
     public boolean isDataLoadCompleted() {
         return getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED;
     }
@@ -698,7 +705,6 @@ public class NodeService extends AbstractService implements INodeService {
     public void checkForOfflineNodes() {
         long offlineNodeDetectionMinutes = parameterService
                 .getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES);
-        List<IOfflineServerListener> offlineServerListeners = extensionService.getExtensionPointList(IOfflineServerListener.class);
         // Only check for offline nodes if there is a listener and the
         // offline detection period is a positive value. The default value
         // of -1 disables the feature.
@@ -795,10 +801,31 @@ public class NodeService extends AbstractService implements INodeService {
         return offlineNodeList;
     }
 
+    public void setOfflineServerListeners(List<IOfflineServerListener> listeners) {
+        this.offlineServerListeners = listeners;
+    }
+
+    public void addOfflineServerListener(IOfflineServerListener listener) {
+        if (offlineServerListeners == null) {
+            offlineServerListeners = new ArrayList<IOfflineServerListener>();
+        }
+        offlineServerListeners.add(listener);
+    }
+
+    public boolean removeOfflineServerListener(IOfflineServerListener listener) {
+        if (offlineServerListeners != null) {
+            return offlineServerListeners.remove(listener);
+        } else {
+            return false;
+        }
+    }
+
     protected void fireOffline(List<Node> offlineClientNodeList) {
-        for (IOfflineServerListener listener : extensionService.getExtensionPointList(IOfflineServerListener.class)) {
-            for (Node node : offlineClientNodeList) {
-                listener.clientNodeOffline(node);
+        if (offlineServerListeners != null) {
+            for (IOfflineServerListener listener : offlineServerListeners) {
+                for (Node node : offlineClientNodeList) {
+                    listener.clientNodeOffline(node);
+                }
             }
         }
     }

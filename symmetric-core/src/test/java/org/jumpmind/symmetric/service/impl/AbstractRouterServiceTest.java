@@ -1179,7 +1179,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         if (triggerRouters == null || triggerRouters.size() == 0) {
             trigger = new TriggerRouter();
             trigger.getTrigger().setSourceTableName(tableName);
-            trigger.getTrigger().setTriggerId(tableName);
             trigger.getRouter().setNodeGroupLink(
                     new NodeGroupLink(TestConstants.TEST_ROOT_NODE_GROUP,
                             TestConstants.TEST_CLIENT_NODE_GROUP));
@@ -1251,7 +1250,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         String columnName = platform.alterCaseToMatchDatabaseDefaultCase("ROUTING_VARCHAR");
         ISqlTransaction transaction = null;
         try {
-            transaction = platform.getSqlTemplate().startSqlTransaction();
+            transaction = platform.getSqlTemplate().startSqlTransaction(!transactional);
             if (node2disable != null) {
                 dialect.disableSyncTriggers(transaction, node2disable);
             }
@@ -1260,11 +1259,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             for (int i = 0; i < count; i++) {
                 transaction.addRow(i, new Object[] { routingVarcharFieldValue },
                         new int[] { Types.VARCHAR });
-                if (!transactional) {
-                    transaction.commit();
-                }
             }
-            
             if (node2disable != null) {
                 dialect.enableSyncTriggers(transaction);
             }

@@ -18,21 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.service.impl;
-
-import java.util.Map;
+package org.jumpmind.symmetric.db.db2;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.service.IParameterService;
 
-public class ExtensionServiceSqlMap extends AbstractSqlMap {
+public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISymmetricDialect {
 
-    public ExtensionServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
-        super(platform, replacementTokens);
+    public Db2As400SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
+    }
 
-        putSql("selectAll", "select extension_id, extension_type, interface_name, node_group_id, enabled, extension_order, " +
-                "extension_text, create_time, last_update_by, last_update_time from $(extension) " +
-                "where enabled = 1 and node_group_id = ? order by extension_order");
-        
+    protected String getSystemSchemaName() {
+    	return "QSYS2";
     }
 
 }

@@ -65,9 +65,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public HttpTransportManager(ISymmetricEngine engine) {
-        super(engine.getExtensionService());
         this.engine = engine;
-        engine.getExtensionService().addExtensionPoint("httpBandwidthUrlSelector", new HttpBandwidthUrlSelector(
+        this.addExtensionSyncUrlHandler("httpBandwidthUrlSelector", new HttpBandwidthUrlSelector(
                 engine.getNodeService(), engine.getBandwidthService()));
     }
 

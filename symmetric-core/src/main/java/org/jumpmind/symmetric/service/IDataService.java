@@ -28,6 +28,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
@@ -127,6 +128,14 @@ public interface IDataService {
     
     public Data createData(ISqlTransaction transaction, String catalogName, String schemaName, String tableName, String whereClause);
 
+    public void addReloadListener(IReloadListener listener);
+    
+    public void addHeartbeatListener(IHeartbeatListener listener);
+
+    public void setReloadListeners(List<IReloadListener> listeners);
+
+    public boolean removeReloadListener(IReloadListener listener);
+
     public Data mapData(Row row);
     
     public List<Number> listDataIds(long batchId, String nodeId);
@@ -144,5 +153,7 @@ public interface IDataService {
     public ISqlReadCursor<Data> selectDataFor(Batch batch);
     
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String channelId);
-
+    
+    public List<IReloadListener> getReloadListeners();
+        
 }

@@ -79,9 +79,8 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                     }
                 }
             }
-            
-            setPrimaryKeyConstraintName(connection, table);
         }
+        setPrimaryKeyConstraintName(connection, table);
         return table;
     }
     

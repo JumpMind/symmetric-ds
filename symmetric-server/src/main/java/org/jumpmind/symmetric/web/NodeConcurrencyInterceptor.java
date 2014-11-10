@@ -80,7 +80,6 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                 } catch (Exception ex) {
                     concurrentConnectionManager.releaseConnection(nodeId, poolId);
                     log.error("Error building response headers", ex);
-                    ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);
                 }
             }
             return false;
@@ -92,7 +91,6 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             } catch (Exception ex) {
                 concurrentConnectionManager.releaseConnection(nodeId, poolId);
                 log.error("Error building response headers", ex);
-                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);
                 return false;
             }
 

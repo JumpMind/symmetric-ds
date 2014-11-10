@@ -46,7 +46,6 @@ import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITransformService;
 
@@ -57,37 +56,32 @@ public class TransformService extends AbstractService implements ITransformServi
     private long lastCacheTimeInMs;
 
     private IConfigurationService configurationService;
-    
-    private IExtensionService extensionService;
 
     private Date lastUpdateTime;
+    
+    private Map<String, IColumnTransform<?>> columnTransforms;
 
     public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            IConfigurationService configurationService, IExtensionService extensionService) {
+            IConfigurationService configurationService) {
         super(parameterService, symmetricDialect);
         this.configurationService = configurationService;
-        this.extensionService = extensionService;
         
-        Map<String, IColumnTransform<?>> columnTransforms = TransformWriter.buildDefaultColumnTransforms();
-        addColumnTransform(columnTransforms, new ParameterColumnTransform(parameterService));
-        addColumnTransform(columnTransforms, new VariableColumnTransform());
-        addColumnTransform(columnTransforms, new LookupColumnTransform());
-        addColumnTransform(columnTransforms, new BshColumnTransform(parameterService));
-        for (IColumnTransform<?> columnTransform : columnTransforms.values()) {
-            extensionService.addExtensionPoint(columnTransform.getName(), columnTransform);
-        }
+        columnTransforms = TransformWriter.buildDefaultColumnTransforms();
+        addColumnTransform(new ParameterColumnTransform(parameterService));
+        addColumnTransform(new VariableColumnTransform());
+        addColumnTransform(new LookupColumnTransform());
+        addColumnTransform(new BshColumnTransform(parameterService));
         
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }    
     
-    private void addColumnTransform(Map<String, IColumnTransform<?>> columnTransforms, IColumnTransform<?> columnTransform) {
+    public void addColumnTransform(IColumnTransform<?> columnTransform) {
         columnTransforms.put(columnTransform.getName(), columnTransform);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Map<String, IColumnTransform<?>> getColumnTransforms() {
-        return (Map) extensionService.getExtensionPointMap(IColumnTransform.class);
+        return columnTransforms;
     }
 
     public boolean refreshFromDatabase() {

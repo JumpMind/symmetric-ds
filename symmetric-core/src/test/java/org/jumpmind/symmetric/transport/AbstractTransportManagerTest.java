@@ -18,25 +18,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.util;
+package org.jumpmind.symmetric.transport;
 
-import java.util.List;
+import java.net.URI;
 
-import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
+import static org.junit.Assert.*;
 
-public class SimpleClassCompilerException extends RuntimeException {
+import org.junit.Test;
 
-    private static final long serialVersionUID = 1L;
-    
-    List<Diagnostic<? extends JavaFileObject>> diagnostics;
-    
-    public SimpleClassCompilerException(List<Diagnostic<? extends JavaFileObject>> diagnostics) {
-        this.diagnostics = diagnostics;
+public class AbstractTransportManagerTest {
+
+    @Test
+    public void testChooseURL() {
+        AbstractTransportManager tm = getMockTransportManager();
+        assertEquals("test",tm.resolveURL("ext://me/", null));
     }
     
-    public List<Diagnostic<? extends JavaFileObject>> getDiagnostics() {
-        return diagnostics;
+    @Test
+    public void testChooseBadURL() {
+        AbstractTransportManager tm = getMockTransportManager();
+        String notFound = "ext://notfound/";
+        assertEquals(notFound,tm.resolveURL(notFound, null));
     }
     
+    protected AbstractTransportManager getMockTransportManager() {
+        AbstractTransportManager tm = new AbstractTransportManager() {};
+       
+        tm.addExtensionSyncUrlHandler("me", new ISyncUrlExtension() {
+            public String resolveUrl(URI url) {
+                return "test";
+            }
+        });
+        return tm;
+    }
 }

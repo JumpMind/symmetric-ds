@@ -28,7 +28,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -141,15 +140,7 @@ public class WrapperConfig {
     }
 
     public boolean isAutoStart() {
-        return getProperty(prop, "wrapper.ntservice.starttype", "auto").equalsIgnoreCase("auto");
-    }
-
-    public boolean isDelayStart() {
-        return getProperty(prop, "wrapper.ntservice.starttype", "auto").equalsIgnoreCase("delay");
-    }
-
-    public List<String> getDependencies() {
-        return prop.get("wrapper.ntservice.dependency");
+        return getProperty(prop, "wrapper.starttype", "auto").equalsIgnoreCase("auto");
     }
     
     public String getJavaCommand() {

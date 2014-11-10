@@ -119,9 +119,6 @@ public interface ITriggerRouterService {
     
     public void createTriggersOnChannelForTables(String channelId, String catalogName, String schemaName, List<String> tables, String lastUpdateBy);
     
-    public List<Trigger> createTriggersOnChannelForTablesWithReturn(String channelId, String catalogName,
-            String schemaName, List<String> tables, String lastUpdateBy);
-            
     public boolean isTriggerBeingUsed(String triggerId);
     
     public boolean doesTriggerExist(String triggerId);
@@ -174,7 +171,9 @@ public interface ITriggerRouterService {
     public void syncTriggers();
 
     public void syncTriggers(StringBuilder sqlBuffer, boolean genAlways);
-   
+    
+    public void addTriggerCreationListeners(ITriggerCreationListener l);
+    
     public void addExtraConfigTable(String table);
 
     public Map<Trigger, Exception> getFailedTriggers();

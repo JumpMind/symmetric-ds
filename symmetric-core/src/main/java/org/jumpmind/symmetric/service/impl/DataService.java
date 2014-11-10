@@ -71,9 +71,7 @@ import org.jumpmind.symmetric.model.TableReloadRequestKey;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.AppUtils;
@@ -86,16 +84,20 @@ public class DataService extends AbstractService implements IDataService {
 
     private ISymmetricEngine engine;
 
-    private IExtensionService extensionService;
+    private List<IReloadListener> reloadListeners;
+
+    private List<IHeartbeatListener> heartbeatListeners;
 
     private DataMapper dataMapper;
 
-    public DataService(ISymmetricEngine engine, IExtensionService extensionService) {
+    public DataService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.engine = engine;
+        this.reloadListeners = new ArrayList<IReloadListener>();
+        this.heartbeatListeners = new ArrayList<IHeartbeatListener>();
+        this.heartbeatListeners.add(new PushHeartbeatListener(engine));
         this.dataMapper = new DataMapper();
-        this.extensionService = extensionService;
-        extensionService.addExtensionPoint(new PushHeartbeatListener(engine));
+
         setSqlMap(new DataServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -323,139 +325,120 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertReloadEvents(Node targetNode, boolean reverse) {
 
-        if (engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS)) {
-            try {
-                synchronized (engine.getTriggerRouterService()) {
-                    engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS);
+        /*
+         * Outgoing data events are pointless because we are reloading all data
+         */
+        engine.getOutgoingBatchService().markAllAsSentForNode(targetNode.getNodeId(), false);
 
-                    /*
-                     * Outgoing data events are pointless because we are
-                     * reloading all data
-                     */
-                    engine.getOutgoingBatchService().markAllAsSentForNode(targetNode.getNodeId(),
-                            false);
+        INodeService nodeService = engine.getNodeService();
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
 
-                    INodeService nodeService = engine.getNodeService();
-                    ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+        Node sourceNode = nodeService.findIdentity();
 
-                    Node sourceNode = nodeService.findIdentity();
+        boolean transactional = parameterService
+                .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
 
-                    boolean transactional = parameterService
-                            .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
+        String nodeIdRecord = reverse ? nodeService.findIdentityNodeId() : targetNode.getNodeId();
+        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeIdRecord);
 
-                    String nodeIdRecord = reverse ? nodeService.findIdentityNodeId() : targetNode
-                            .getNodeId();
-                    NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeIdRecord);
+        ISqlTransaction transaction = null;
 
-                    ISqlTransaction transaction = null;
+        try {
 
-                    try {
+            transaction = platform.getSqlTemplate().startSqlTransaction();
 
-                        transaction = platform.getSqlTemplate().startSqlTransaction();
+            long loadId = engine.getSequenceService().nextVal(transaction,
+                    Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+            String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy() : nodeSecurity
+                    .getInitialLoadCreateBy();
 
-                        long loadId = engine.getSequenceService().nextVal(transaction,
-                                Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
-                        String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy()
-                                : nodeSecurity.getInitialLoadCreateBy();
+            List<TriggerHistory> triggerHistories = triggerRouterService
+                    .getActiveTriggerHistories();
 
-                        List<TriggerHistory> triggerHistories = triggerRouterService
-                                .getActiveTriggerHistories();
+            Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
+                    .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
+                            targetNode.getNodeGroupId(), triggerHistories);
 
-                        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
-                                .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
-                                        targetNode.getNodeGroupId(), triggerHistories);
+            callReloadListeners(true, targetNode, transactional, transaction, loadId);
+            
+            insertCreateSchemaScriptPriorToReload(targetNode, nodeIdRecord, loadId, createBy, transactional, 
+                    transaction);
 
-                        callReloadListeners(true, targetNode, transactional, transaction, loadId);
+            insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy, transactional,
+                    transaction, reverse);
 
-                        insertCreateSchemaScriptPriorToReload(targetNode, nodeIdRecord, loadId,
-                                createBy, transactional, transaction);
+            insertCreateBatchesForReload(targetNode, loadId, createBy, triggerHistories,
+                    triggerRoutersByHistoryId, transactional, transaction);
 
-                        insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,
-                                transactional, transaction, reverse);
+            insertDeleteBatchesForReload(targetNode, loadId, createBy, triggerHistories,
+                    triggerRoutersByHistoryId, transactional, transaction);
 
-                        insertCreateBatchesForReload(targetNode, loadId, createBy,
-                                triggerHistories, triggerRoutersByHistoryId, transactional,
-                                transaction);
+            insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
+                    triggerRoutersByHistoryId, transactional, transaction);
 
-                        insertDeleteBatchesForReload(targetNode, loadId, createBy,
-                                triggerHistories, triggerRoutersByHistoryId, transactional,
-                                transaction);
-
-                        insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
-                                triggerRoutersByHistoryId, transactional, transaction);
-
-                        String afterSql = parameterService
-                                .getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_AFTER_SQL
-                                        : ParameterConstants.INITIAL_LOAD_AFTER_SQL);
-                        if (isNotBlank(afterSql)) {
-                            insertSqlEvent(transaction, targetNode, afterSql, true, loadId,
-                                    createBy);
-                        }
-
-                        insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
-                                transaction);
-
-                        callReloadListeners(false, targetNode, transactional, transaction, loadId);
-
-                        if (!reverse) {
-                            nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false,
-                                    false, loadId, createBy);
-                        } else {
-                            nodeService.setReverseInitialLoadEnabled(transaction, nodeIdRecord,
-                                    false, false, loadId, createBy);
-                        }
-
-                        if (!Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
-                            insertNodeSecurityUpdate(transaction, nodeIdRecord,
-                                    targetNode.getNodeId(), true, loadId, createBy);
-                        }
-
-                        engine.getStatisticManager().incrementNodesLoaded(1);
-
-                        transaction.commit();
-                    } catch (Error ex) {
-                        if (transaction != null) {
-                            transaction.rollback();
-                        }
-                        throw ex;
-                    } catch (RuntimeException ex) {
-                        if (transaction != null) {
-                            transaction.rollback();
-                        }
-                        throw ex;
-                    } finally {
-                        close(transaction);
-                    }
-
-                    if (!reverse) {
-                        /*
-                         * Remove all incoming events for the node that we are
-                         * starting a reload for
-                         */
-                        engine.getPurgeService().purgeAllIncomingEventsForNode(
-                                targetNode.getNodeId());
-                    }
-                }
-            } finally {
-                engine.getClusterService().unlock(ClusterConstants.SYNCTRIGGERS);
+            String afterSql = parameterService.getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_AFTER_SQL
+                    : ParameterConstants.INITIAL_LOAD_AFTER_SQL);
+            if (isNotBlank(afterSql)) {
+                insertSqlEvent(transaction, targetNode, afterSql, true, loadId, createBy);
             }
-        } else {
-            log.info("Not attempting to insert reload events because sync trigger is currently running");
+
+            insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional, transaction);
+            
+            callReloadListeners(false, targetNode, transactional, transaction, loadId);
+
+            if (!reverse) {
+                nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false, false, loadId,
+                        createBy);
+            } else {
+                nodeService.setReverseInitialLoadEnabled(transaction, nodeIdRecord, false, false,
+                        loadId, createBy);
+            }
+
+            if (!Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
+                insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(), true,
+                        loadId, createBy);
+            }
+
+            engine.getStatisticManager().incrementNodesLoaded(1);
+
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
+
+        if (!reverse) {
+            /*
+             * Remove all incoming events for the node that we are starting a
+             * reload for
+             */
+            engine.getPurgeService().purgeAllIncomingEventsForNode(targetNode.getNodeId());
         }
 
     }
 
     private void callReloadListeners(boolean before, Node targetNode, boolean transactional,
             ISqlTransaction transaction, long loadId) {
-        for (IReloadListener listener : extensionService.getExtensionPointList(IReloadListener.class)) {
-            if (before) {
-                listener.beforeReload(transaction, targetNode, loadId);
-            } else {
-                listener.afterReload(transaction, targetNode, loadId);
-            }
+        if (reloadListeners != null) {
+            for (IReloadListener listener : reloadListeners) {
+                if (before) {
+                    listener.beforeReload(transaction, targetNode, loadId);
+                } else {
+                    listener.afterReload(transaction, targetNode, loadId);
+                }
 
-            if (!transactional) {
-                transaction.commit();
+                if (!transactional) {
+                    transaction.commit();
+                }
             }
         }
     }
@@ -1446,12 +1429,12 @@ public class DataService extends AbstractService implements IDataService {
      */
     protected List<IHeartbeatListener> getHeartbeatListeners(boolean force) {
         if (force) {
-            return extensionService.getExtensionPointList(IHeartbeatListener.class);
+            return this.heartbeatListeners;
         } else {
             List<IHeartbeatListener> listeners = new ArrayList<IHeartbeatListener>();
             if (listeners != null) {
                 long ts = System.currentTimeMillis();
-                for (IHeartbeatListener iHeartbeatListener : extensionService.getExtensionPointList(IHeartbeatListener.class)) {
+                for (IHeartbeatListener iHeartbeatListener : this.heartbeatListeners) {
                     Long lastHeartbeatTimestamp = lastHeartbeatTimestamps.get(iHeartbeatListener);
                     if (lastHeartbeatTimestamp == null
                             || lastHeartbeatTimestamp <= ts
@@ -1488,6 +1471,44 @@ public class DataService extends AbstractService implements IDataService {
             } else {
                 log.debug("Did not run the heartbeat process because the node has not been configured");
             }
+        }
+    }
+
+    public void setReloadListeners(List<IReloadListener> listeners) {
+        this.reloadListeners = listeners;
+    }
+
+    public void addReloadListener(IReloadListener listener) {
+        if (reloadListeners == null) {
+            reloadListeners = new ArrayList<IReloadListener>();
+        }
+        reloadListeners.add(listener);
+    }
+
+    public boolean removeReloadListener(IReloadListener listener) {
+        if (reloadListeners != null) {
+            return reloadListeners.remove(listener);
+        } else {
+            return false;
+        }
+    }
+
+    public void setHeartbeatListeners(List<IHeartbeatListener> listeners) {
+        this.heartbeatListeners = listeners;
+    }
+
+    public void addHeartbeatListener(IHeartbeatListener listener) {
+        if (heartbeatListeners == null) {
+            heartbeatListeners = new ArrayList<IHeartbeatListener>();
+        }
+        heartbeatListeners.add(listener);
+    }
+
+    public boolean removeHeartbeatListener(IHeartbeatListener listener) {
+        if (heartbeatListeners != null) {
+            return heartbeatListeners.remove(listener);
+        } else {
+            return false;
         }
     }
 
@@ -1535,6 +1556,10 @@ public class DataService extends AbstractService implements IDataService {
 
     public long findMaxDataId() {
         return sqlTemplate.queryForLong(getSql("selectMaxDataIdSql"));
+    }
+
+    public List<IReloadListener> getReloadListeners() {
+        return reloadListeners;
     }
 
     public class DataMapper implements ISqlRowMapper<Data> {
