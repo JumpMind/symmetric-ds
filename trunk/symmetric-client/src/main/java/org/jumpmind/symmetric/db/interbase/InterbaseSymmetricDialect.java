@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.interbase;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.StringMapper;
@@ -29,6 +30,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.UncategorizedSQLException;
@@ -211,5 +213,15 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
             platform.getSqlTemplate().update("drop trigger " + name);
             log.info("Dropped trigger {}", name);
         }
+    }
+    
+    @Override
+    public String massageDataExtractionSql(String sql, Channel channel) {
+        if (channel != null && !channel.isContainsBigLob()) {
+            sql = StringUtils.replace(sql, "d.row_data", "cast(d.row_data as varchar(10000))");
+            sql = StringUtils.replace(sql, "d.old_data", "cast(d.old_data as varchar(10000))");
+            sql = StringUtils.replace(sql, "d.pk_data", "cast(d.pk_data as varchar(500))");
+        }
+        return sql;
     }
 }
