@@ -1,3 +1,10 @@
+SymmetricDS - 3.6.13 (Released 2014-11-10) 
+==========================================
+- 0002052: [Bug] Remove transform when used on a primary key without the pk column checked fails (chenson) - closed.
+- 0002053: [Bug] Fallback to insert fails when transform is configured as update first on the LOAD side. Data is retransformed as an update. (chenson) - closed.
+- 0002054: [Bug] NullPointerException happens during file sync pull (chenson) - closed.
+- 0002059: [Improvement] Do not blindly update outgoing batch where status = RT at start of routing. Select first to see if the update is needed. (chenson) - closed.
+
 SymmetricDS - 3.6.12 (Released 2014-11-03) 
 ==========================================
 - 0002029: [Bug] When old data is off and a primary key is updated in the same batch where a primary key is not updated will result in a failure (chenson) - closed.
