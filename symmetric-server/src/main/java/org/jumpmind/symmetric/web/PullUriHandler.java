@@ -149,9 +149,12 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                 dataCount += outgoingBatch.getDataEventCount();
             } 
         }
-        log.info(
+        
+        if (batchesCount > 0) {
+            log.info(
                 "{} data and {} batches sent during pull request from {}",
                 new Object[] { dataCount, batchesCount, targetNode.toString() });
+        }
     }
 
 }

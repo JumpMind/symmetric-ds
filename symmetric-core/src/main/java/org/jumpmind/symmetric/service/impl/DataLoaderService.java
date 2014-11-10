@@ -372,9 +372,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 errorBatchesCount++;
             }
         }
-        log.info(
-                "{} data and {} batches loaded during push request from {}.  There were {} batches in error",
-                new Object[] { okDataCount, okBatchesCount, sourceNode.toString(), errorBatchesCount });
+        
+        if (okBatchesCount > 0) {
+            log.info(
+                    "{} data and {} batches loaded during push request from {}.  There were {} batches in error",
+                    new Object[] { okDataCount, okBatchesCount, sourceNode.toString(),
+                            errorBatchesCount });
+        } 
     }
 
     /**
