@@ -107,9 +107,9 @@ public class RouterService extends AbstractService implements IRouterService {
         this.engine = engine;
         this.extensionService = engine.getExtensionService();
 
-        extensionService.addExtensionPoint("default", new DefaultBatchAlgorithm());
-        extensionService.addExtensionPoint("nontransactional", new NonTransactionalBatchAlgorithm());
-        extensionService.addExtensionPoint("transactional", new TransactionalBatchAlgorithm());
+        extensionService.addExtensionPoint(DefaultBatchAlgorithm.NAME, new DefaultBatchAlgorithm());
+        extensionService.addExtensionPoint(NonTransactionalBatchAlgorithm.NAME, new NonTransactionalBatchAlgorithm());
+        extensionService.addExtensionPoint(TransactionalBatchAlgorithm.NAME, new TransactionalBatchAlgorithm());
 
         extensionService.addExtensionPoint(ConfigurationChangedDataRouter.ROUTER_TYPE, new ConfigurationChangedDataRouter(engine));
         extensionService.addExtensionPoint("bsh", new BshDataRouter(engine));

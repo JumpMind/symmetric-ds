@@ -35,33 +35,17 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.BinaryLeftColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ClarionDateTimeColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsKeyColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IgnoreColumnException;
 import org.jumpmind.symmetric.io.data.transform.IgnoreRowException;
-import org.jumpmind.symmetric.io.data.transform.JavaColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.LeftColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.MathColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.NewAndOldValue;
-import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformColumnException;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
-import org.jumpmind.symmetric.io.data.transform.ValueMapColumnTransform;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,31 +73,6 @@ public class TransformWriter extends NestedDataWriter {
         this.transformsBySourceTable = toMap(transforms);
     }
     
-    public static Map<String, IColumnTransform<?>> buildDefaultColumnTransforms() {
-        Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
-        addColumnTransform(columnTransforms, new AdditiveColumnTransform());
-        addColumnTransform(columnTransforms, new JavaColumnTransform());
-        addColumnTransform(columnTransforms, new ConstantColumnTransform());
-        addColumnTransform(columnTransforms, new CopyColumnTransform());
-        addColumnTransform(columnTransforms, new IdentityColumnTransform());
-        addColumnTransform(columnTransforms, new MultiplierColumnTransform());
-        addColumnTransform(columnTransforms, new SubstrColumnTransform());
-        addColumnTransform(columnTransforms, new LeftColumnTransform());
-        addColumnTransform(columnTransforms, new BinaryLeftColumnTransform());
-        addColumnTransform(columnTransforms, new RemoveColumnTransform());
-        addColumnTransform(columnTransforms, new MathColumnTransform());
-        addColumnTransform(columnTransforms, new ValueMapColumnTransform());
-        addColumnTransform(columnTransforms, new CopyIfChangedColumnTransform());
-        addColumnTransform(columnTransforms, new ColumnsToRowsKeyColumnTransform());
-        addColumnTransform(columnTransforms, new ColumnsToRowsValueColumnTransform());
-        addColumnTransform(columnTransforms, new ClarionDateTimeColumnTransform());
-        return columnTransforms;
-    }
-    
-    public static void addColumnTransform(Map<String, IColumnTransform<?>> columnTransforms, IColumnTransform<?> columnTransform) {
-        columnTransforms.put(columnTransform.getName(), columnTransform);
-    }
-
     protected Map<String, List<TransformTable>> toMap(TransformTable[] transforms) {
         Map<String, List<TransformTable>> transformsByTable = new HashMap<String, List<TransformTable>>();
         if (transforms != null) {
