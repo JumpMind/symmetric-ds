@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -47,7 +48,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 
-public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter {
+public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
 
     public static final String ROUTER_TYPE = "configurationChanged";
 

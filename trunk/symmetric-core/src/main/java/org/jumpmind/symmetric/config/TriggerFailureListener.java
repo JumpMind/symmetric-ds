@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
@@ -31,7 +32,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
  *
  * 
  */
-public class TriggerFailureListener extends TriggerCreationAdapter {
+public class TriggerFailureListener extends TriggerCreationAdapter implements IBuiltInExtensionPoint {
 
     private Map<Trigger, Exception> failures;
 
