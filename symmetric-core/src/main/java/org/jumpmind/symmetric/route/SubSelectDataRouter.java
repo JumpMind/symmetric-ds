@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.InvalidSqlException;
 import org.jumpmind.db.sql.mapper.StringMapper;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
@@ -59,7 +60,7 @@ import org.jumpmind.util.FormatUtils;
  * c.external_id in (select home_store from employee where employee_id in (:EMPLOYEE_ID, :OLD_EMPLOYEE_ID))
  * </code>
  */
-public class SubSelectDataRouter extends AbstractDataRouter {
+public class SubSelectDataRouter extends AbstractDataRouter implements IBuiltInExtensionPoint {
 
     private static final String SQL = "select c.node_id from $(prefixName)_node c where c.node_group_id=:NODE_GROUP_ID and c.sync_enabled=1 and ";
 

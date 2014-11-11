@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
@@ -35,7 +36,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IRouterService;
 
-public class FileSyncDataRouter extends AbstractDataRouter {
+public class FileSyncDataRouter extends AbstractDataRouter implements IBuiltInExtensionPoint {
 
     public static final String ROUTER_TYPE = "filesync";
 

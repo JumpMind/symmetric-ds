@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.util;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
@@ -35,7 +36,7 @@ import bsh.EvalError;
 import bsh.Interpreter;
 import bsh.TargetError;
 
-public class DefaultNodeIdCreator implements INodeIdCreator {
+public class DefaultNodeIdCreator implements INodeIdCreator, IBuiltInExtensionPoint {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 

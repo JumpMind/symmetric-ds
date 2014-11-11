@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.job;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -34,7 +35,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PushHeartbeatListener implements IHeartbeatListener {
+public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtensionPoint {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 

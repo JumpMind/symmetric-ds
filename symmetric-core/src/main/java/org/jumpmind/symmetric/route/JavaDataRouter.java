@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.route;
 import java.util.Collections;
 import java.util.Set;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
@@ -36,7 +37,7 @@ import org.jumpmind.util.SimpleClassCompiler;
  * and the classloader.  For a new batch, if the router_expression is the same, the same class is used, otherwise the class is renamed,
  * compiled, and loaded again.
  */
-public class JavaDataRouter extends AbstractDataRouter {
+public class JavaDataRouter extends AbstractDataRouter implements IBuiltInExtensionPoint {
 
     public final static String CODE_START = "import org.jumpmind.symmetric.route.*;\n"
             + "import org.jumpmind.symmetric.model.*;\n"

@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.route;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
@@ -28,7 +29,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  * if there is more than the max batch size of data to batch.  Breaks transactional
  * boundaries.
  */
-public class NonTransactionalBatchAlgorithm implements IBatchAlgorithm {
+public class NonTransactionalBatchAlgorithm implements IBatchAlgorithm, IBuiltInExtensionPoint {
 
     public static final String NAME = "nontransactional";
     

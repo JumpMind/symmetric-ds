@@ -37,6 +37,7 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.ext.ExtensionPointMetaData;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
+import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.model.Extension;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.util.SimpleClassCompiler;
@@ -83,7 +84,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
             for (String name : byNameMap.keySet()) {
                 IExtensionPoint ext = byNameMap.get(name);
                 getExtensionsByNameMap(extensionClass).put(name, ext);
-                extensionMetaData.add(new ExtensionPointMetaData(ext, name, extensionClass, true));        
+                addExtensionPointMetaData(ext, name, extensionClass, true);
             }
         }
 
@@ -135,12 +136,12 @@ public class ExtensionService extends AbstractService implements IExtensionServi
                     log.info("Registering extension named '{}' of type '{}'", name, extensionClass.getSimpleName());
                 }
                 installed = true;
-                extensionMetaData.add(new ExtensionPointMetaData(ext, name, extensionClass, true));
+                addExtensionPointMetaData(ext, name, extensionClass, true);
                 getExtensionsByNameMap(extensionClass).put(name, ext);
             }
     
             if (!installed) {
-                extensionMetaData.add(new ExtensionPointMetaData(ext, name, null, false));
+                addExtensionPointMetaData(ext, name, null, false);
             }
         }
         return installed;
@@ -199,6 +200,13 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         return new ArrayList<ExtensionPointMetaData>(extensionMetaData);
     }
 
+    protected void addExtensionPointMetaData(IExtensionPoint extensionPoint, String name,
+            Class<? extends IExtensionPoint> extensionClass, boolean installed) {
+        if (!installed || (!extensionClass.equals(IBuiltInExtensionPoint.class) && !extensionClass.equals(IColumnTransform.class))) {
+            extensionMetaData.add(new ExtensionPointMetaData(extensionPoint, name, extensionClass, installed));
+        }
+    }
+    
     public <T extends IExtensionPoint> T getExtensionPoint(Class<T> extensionClass) {
         for (T extension : getExtensionPointList(extensionClass)) {
             return extension;

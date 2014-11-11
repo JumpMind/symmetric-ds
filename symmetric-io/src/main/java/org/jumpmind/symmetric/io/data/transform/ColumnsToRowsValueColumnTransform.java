@@ -24,10 +24,11 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
-public class ColumnsToRowsValueColumnTransform implements ISingleValueColumnTransform {
+public class ColumnsToRowsValueColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
     public final static String NAME = "columnsToRowsValue";
     
