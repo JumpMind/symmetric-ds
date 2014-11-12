@@ -345,12 +345,12 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
             result = (Float) cursor.getFloat(columnIndex);
         } else if (clazz.equals(Long.class)) {
             result = (Long) cursor.getLong(columnIndex);
-        } else if (clazz.equals(Date.class)) {
+        } else if (clazz.equals(Date.class) || clazz.equals(Timestamp.class)) {
             String dateString = cursor.getString(columnIndex);
             if (dateString.contains("-")) {
                 result = Timestamp.valueOf(dateString);
             } else {
-                result = new Date(Long.parseLong(dateString));
+                result = new Timestamp(Long.parseLong(dateString));
             }
         } else if (clazz.equals(Short.class)) {
             result = (Short) cursor.getShort(columnIndex);
