@@ -41,7 +41,7 @@ public class Extension implements Serializable {
     
     private boolean enabled;
     
-    private int extensionOrder;
+    private int extensionOrder = 1;
     
     private String extensionText;
     
