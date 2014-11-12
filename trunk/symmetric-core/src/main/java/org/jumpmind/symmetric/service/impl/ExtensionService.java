@@ -75,7 +75,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         setSqlMap(new ExtensionServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
 
-    public void refresh() {
+    public synchronized void refresh() {
         extensionsByClassByName = new HashMap<Class, Map<String, IExtensionPoint>>();
         extensionMetaData = new ArrayList<ExtensionPointMetaData>();
 
@@ -90,35 +90,39 @@ public class ExtensionService extends AbstractService implements IExtensionServi
 
         String prefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX);
         if (platform.getTableFromCache(TableConstants.getTableName(prefix, TableConstants.SYM_EXTENSION), false) != null) {
-            List<Extension> extensionList = sqlTemplate.query(getSql("selectAll"), new ExtensionRowMapper(), parameterService.getNodeGroupId());
+            List<Extension> extensionList = sqlTemplate.query(getSql("selectEnabled"), new ExtensionRowMapper(), parameterService.getNodeGroupId());
             log.info("Found {} extension points from the database that will be registered", extensionList.size());
     
             for (Extension extension : extensionList) {
-                if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_JAVA)) {
-                    try {
-                        Object ext = SimpleClassCompiler.getInstance().getCompiledClass(extension.getExtensionText());
-                        registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
-                    } catch (Exception e) {
-                        log.error("Error while compiling Java extension " + extension.getExtensionId(), e);
-                    }
-                } else if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_BSH)) {
-                    try {
-                        Interpreter interpreter = new Interpreter();
-                        interpreter.eval(extension.getExtensionText());
-                        Object ext = interpreter.getInterface(Class.forName(extension.getInterfaceName()));
-                        registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
-                    } catch (EvalError e) {
-                        log.error("Error while parsing BSH extension " + extension.getExtensionId(), e);
-                    } catch (ClassNotFoundException e) {
-                        log.error("Interface class not found for BSH extension " + extension.getExtensionId(), e);
-                    }
-                } else {
-                    log.error("Skipping extension " + extension.getExtensionId() + ", unknown extension type " + extension.getExtensionType());
-                }
+                registerExtension(extension);
             }
         }
     }
 
+    protected void registerExtension(Extension extension) {
+        if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_JAVA)) {
+            try {
+                Object ext = SimpleClassCompiler.getInstance().getCompiledClass(extension.getExtensionText());
+                registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
+            } catch (Exception e) {
+                log.error("Error while compiling Java extension " + extension.getExtensionId(), e);
+            }
+        } else if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_BSH)) {
+            try {
+                Interpreter interpreter = new Interpreter();
+                interpreter.eval(extension.getExtensionText());
+                Object ext = interpreter.getInterface(Class.forName(extension.getInterfaceName()));
+                registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
+            } catch (EvalError e) {
+                log.error("Error while parsing BSH extension " + extension.getExtensionId(), e);
+            } catch (ClassNotFoundException e) {
+                log.error("Interface class not found for BSH extension " + extension.getExtensionId(), e);
+            }
+        } else {
+            log.error("Skipping extension " + extension.getExtensionId() + ", unknown extension type " + extension.getExtensionType());
+        }
+    }
+    
     protected boolean registerExtension(String name, IExtensionPoint ext) {
         if (! (ext instanceof IExtensionPoint)) {
             log.error("Missing IExtensionPoint interface for extension " + name);
@@ -196,7 +200,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         return classList;
     }
 
-    public List<ExtensionPointMetaData> getExtensionPointMetaData() {
+    public synchronized List<ExtensionPointMetaData> getExtensionPointMetaData() {
         return new ArrayList<ExtensionPointMetaData>(extensionMetaData);
     }
 
@@ -207,36 +211,36 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         }
     }
     
-    public <T extends IExtensionPoint> T getExtensionPoint(Class<T> extensionClass) {
+    public synchronized <T extends IExtensionPoint> T getExtensionPoint(Class<T> extensionClass) {
         for (T extension : getExtensionPointList(extensionClass)) {
             return extension;
         }
         return null;
     }
 
-    public <T extends IExtensionPoint> List<T> getExtensionPointList(Class<T> extensionClass) {
+    public synchronized <T extends IExtensionPoint> List<T> getExtensionPointList(Class<T> extensionClass) {
         return new ArrayList<T>(getExtensionPointMap(extensionClass).values());
     }
 
-    public <T extends IExtensionPoint> Map<String, T> getExtensionPointMap(Class<T> extensionClass) {
+    public synchronized <T extends IExtensionPoint> Map<String, T> getExtensionPointMap(Class<T> extensionClass) {
         return (Map<String, T>) getExtensionsByNameMap(extensionClass);
     }
 
-    public void addExtensionPoint(IExtensionPoint extension) {
+    public synchronized void addExtensionPoint(IExtensionPoint extension) {
         for (Class extensionClass : getExtensionClassList(extension)) {
             getStaticExtensionsByNameMap(extensionClass).put(extension.getClass().getCanonicalName(), extension);
         }
         registerExtension(extension.getClass().getCanonicalName(), extension, false);
     }
 
-    public void addExtensionPoint(String name, IExtensionPoint extension) {
+    public synchronized void addExtensionPoint(String name, IExtensionPoint extension) {
         for (Class extensionClass : getExtensionClassList(extension)) {
             getStaticExtensionsByNameMap(extensionClass).put(name, extension);
         }
         registerExtension(name, extension, false);
     }
 
-    public void removeExtensionPoint(IExtensionPoint extension) {
+    public synchronized void removeExtensionPoint(IExtensionPoint extension) {
         for (Class extensionClass : getExtensionClassList(extension)) {
             getStaticExtensionsByNameMap(extensionClass).remove(extension.getClass().getCanonicalName());
         }
@@ -259,6 +263,29 @@ public class ExtensionService extends AbstractService implements IExtensionServi
             byClassByNameMap.put(extensionClass, byNameMap);
         }
         return byNameMap;
+    }
+
+    public List<Extension> getExtensions() {
+        return sqlTemplate.query(getSql("selectAll"), new ExtensionRowMapper());
+    }
+
+    public void saveExtension(Extension extension) {
+        Object[] args = { extension.getExtensionType(), extension.getInterfaceName(), extension.getNodeGroupId(),
+                extension.isEnabled() ? 1 : 0, extension.getExtensionOrder(), extension.getExtensionText(), extension.getLastUpdateBy(),
+                extension.getExtensionId() };
+        if (sqlTemplate.update(getSql("updateExtensionSql"), args) == 0) {
+            sqlTemplate.update(getSql("insertExtensionSql"), args);
+            if (extension.isEnabled()) {
+                registerExtension(extension);
+            }
+        } else {
+            refresh();
+        }
+    }
+
+    public void deleteExtension(String extensionId) {
+        sqlTemplate.update(getSql("deleteExtensionSql"), extensionId);
+        refresh();
     }
 
     class ExtensionRowMapper implements ISqlRowMapper<Extension> {

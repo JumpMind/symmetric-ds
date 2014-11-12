@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.ext.ExtensionPointMetaData;
+import org.jumpmind.symmetric.model.Extension;
 
 public interface IExtensionService {
     
@@ -43,5 +44,11 @@ public interface IExtensionService {
     public void addExtensionPoint(String name, IExtensionPoint extension);
     
     public void removeExtensionPoint(IExtensionPoint extension);
+    
+    public List<Extension> getExtensions();
+    
+    public void saveExtension(Extension extension);
+    
+    public void deleteExtension(String extensionId);
     
 }
