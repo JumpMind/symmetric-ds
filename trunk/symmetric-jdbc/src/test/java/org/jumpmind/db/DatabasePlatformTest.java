@@ -27,6 +27,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -34,7 +35,9 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
+
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -280,6 +283,15 @@ public class DatabasePlatformTest {
         assertNotNull("Could not find " + UPPERCASE_TABLE, table);
         assertEquals("The id column was not read in as an autoincrement column", true, table
                 .getColumnWithName("id").isAutoIncrement());
+    }
+    
+    
+    @Test
+    public void testNvarcharType() {
+        Table table = new Table("test_nvarchar");
+        table.addColumn(new Column("id", true, Types.NUMERIC, 20, 0));
+        table.addColumn(new Column("note", false, ColumnTypes.NVARCHAR, 100, 0));
+        platform.createTables(true, false, table);
     }
 
 }
