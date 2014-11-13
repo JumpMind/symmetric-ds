@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jumpmind.db.model.ColumnTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -279,6 +280,8 @@ public class DatabaseInfo {
         this.typesWithSize.add(new Integer(Types.VARCHAR));
         this.typesWithSize.add(new Integer(Types.BINARY));
         this.typesWithSize.add(new Integer(Types.VARBINARY));
+        this.typesWithSize.add(new Integer(ColumnTypes.NCHAR));
+        this.typesWithSize.add(new Integer(ColumnTypes.NVARCHAR));
 
         this.typesWithPrecisionAndScale.add(new Integer(Types.DECIMAL));
         this.typesWithPrecisionAndScale.add(new Integer(Types.NUMERIC));
