@@ -1,5 +1,5 @@
 
-==== Beanshell Router
+===== Beanshell Router
 
 When more flexibility is needed in the logic to choose the nodes to route to, then the a scripted router may be used. 
 The currently available scripting language is Bean Shell. Bean Shell is a Java-like scripting language. Documentation 

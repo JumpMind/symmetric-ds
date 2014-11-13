@@ -1,5 +1,5 @@
 
-==== Default Router
+===== Default Router
 
 The simplest router is a router that sends all the data that is captured by its associated triggers 
 to all the nodes that belong to the target node group defined in the router. 
