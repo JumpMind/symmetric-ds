@@ -37,6 +37,7 @@ import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.RemovePrimaryKeyChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
@@ -86,9 +87,10 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)", Types.DECIMAL);
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "RAW");
         databaseInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR2");
-
         databaseInfo.addNativeTypeMapping("BOOLEAN", "NUMBER(1)", "BIT");
         databaseInfo.addNativeTypeMapping("DATALINK", "BLOB", "BLOB");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "NVARCHAR2", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "NVARCHAR2", Types.VARCHAR);
 
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);

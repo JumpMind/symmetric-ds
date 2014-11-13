@@ -26,6 +26,7 @@ import java.util.List;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
@@ -59,6 +60,9 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "VARCHAR {0} FOR BIT DATA");
         databaseInfo.addNativeTypeMapping("BOOLEAN", "SMALLINT", "SMALLINT");
         databaseInfo.addNativeTypeMapping("DATALINK", "LONG VARCHAR FOR BIT DATA", "LONGVARBINARY");
+        databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "CHAR", Types.CHAR);
 
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.CHAR, 254);
