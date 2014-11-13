@@ -34,6 +34,7 @@ import org.jumpmind.db.alter.PrimaryKeyChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
@@ -76,7 +77,10 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "BYTEA", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping("BOOLEAN", "BOOLEAN", "BIT");
         databaseInfo.addNativeTypeMapping("DATALINK", "BYTEA", "LONGVARBINARY");
-
+        databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "CHAR", Types.CHAR);
+        
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
 
