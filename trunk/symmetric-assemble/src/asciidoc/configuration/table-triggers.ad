@@ -17,6 +17,8 @@ ifdef::pro[]
 The starting point for all data capture through SymmetricDS is through the use of triggers.   Triggers are created and removed by 
 SymmetricDS to capture changes for inserts, updates, and deletes so that they can be synchronized to a target node.
 
+image::trigger.png[]
+
 IMPORTANT: Triggers also need to be linked to a router in order for synchronization to occur.
 endif::pro[]
 

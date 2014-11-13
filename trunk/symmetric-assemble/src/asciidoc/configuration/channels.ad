@@ -3,6 +3,10 @@
 
 Channels group the data to be synchronized.   Channels can be disabled, suspended, or scheduled as needed.  
 
+ifdef::pro[]
+image::channel.png[]
+endif::pro[]
+
 WARNING:  Transactions will NOT be preserved across channels so its important to setup channels to contain all tables that participate in a given transaction.
 
 Channel ID:: Identifier used through the system to identify a given channel.

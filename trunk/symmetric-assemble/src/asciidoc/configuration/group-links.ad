@@ -2,6 +2,10 @@
 === Group Links
 Group links define how a node that belongs to a group will communicate with nodes in other groups.
  
+ifdef::pro[]
+image::group-link.png[]
+endif::pro[]
+
 Source Group ID:: The source group of the communication link.
 Link:: Defines how the source and target groups will communicate.
 
