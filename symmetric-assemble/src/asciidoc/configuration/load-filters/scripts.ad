@@ -1,7 +1,19 @@
 
 ==== Load Filter Scripts
 
+Load filters are based on the execution of a script.  You have the ability to set the 
+execution point of the script at 6 different points.   A script can be provided for one 
+or more of these execution points.
+
+[IMPORTANT] 
+.Return Values
+====
+* Return true to load the row of data.
+* Return false to not load the row of data.
+====
+
 ifdef::pro[]
+.Edit load filter scripts by selecting the load filter and clicking the Edit Scripts button.
 image::load-filters/load-filter-edit-scripts.png[]
 endif::pro[]
 
@@ -12,17 +24,155 @@ After Write Script:: The script to execute after the database write occurs.
 Batch Complete Script:: The script to execute after the entire batch completes.
 Batch Commit Script:: The script to execute after the entire batch is committed.
 Batch Rollback Script:: The script to execute if the batch rolls back.
-Handle Error Script::A script to execute if data cannot be processed.
+Handle Error Script:: A script to execute if data cannot be processed.
 
-.Available Variables
+.Variables available within scripts
+[cols="3,^1,^1,5"]
 |===
-|Variable|Loader Type|Description
+|Variable|BSH|JAVA|Description
 
-|ENGINE|BSH|The Symmetric engine object.
-|'<COLUMN_NAME>'|BSH|The source values for the row being inserted, updated or deleted.
-|'OLD_<COLUMN_NAME>'|BSH|The old values for the row being inserted, updated or deleted.
-|CONTEXT|JAVA, BSH|The data context object for the data being inserted, updated or deleted. .
-|TABLE|JAVA, BSH|The table object for the table being inserted, updated or deleted.
-|DATA|JAVA, BSH|The CvsData object for the data change.
+|engine|X||The Symmetric engine object.
+|'<COLUMN_NAME>'|X||The source values for the row being inserted, updated or deleted.
+|'OLD_<COLUMN_NAME>'|X||The old values for the row being inserted, updated or deleted.
+|context|X|X|The data context object for the data being inserted, updated or deleted. .
+|table|X|X|The table object for the table being inserted, updated or deleted.
+|data|X|X|The CvsData object for the data change.
+|error|X|X|java.lang.Exception
 
 |===
+
+.Example of simple load filter
+====
+ifndef::pro[]
+[source, SQL]
+----
+insert into sym_load_filter
+	(LOAD_FILTER_ID, LOAD_FILTER_TYPE, SOURCE_NODE_GROUP_ID,
+	TARGET_NODE_GROUP_ID, TARGET_CATALOG_NAME, TARGET_SCHEMA_NAME,
+	TARGET_TABLE_NAME, FILTER_ON_UPDATE, FILTER_ON_INSERT, FILTER_ON_DELETE,
+	BEFORE_WRITE_SCRIPT, AFTER_WRITE_SCRIPT, BATCH_COMPLETE_SCRIPT,
+	BATCH_COMMIT_SCRIPT, BATCH_ROLLBACK_SCRIPT, HANDLE_ERROR_SCRIPT,
+	CREATE_TIME, LAST_UPDATE_BY, LAST_UPDATE_TIME, LOAD_FILTER_ORDER,
+	FAIL_ON_ERROR) values
+	('SampleFilter','BSH','Client','Server',NULL,NULL,
+	'ITEM_SELLING_PRICE',1,1,1,'
+	if (OLD_COST > COST) {
+		// row will not be loaded
+		return false  
+	}
+		// row will be loaded
+		return true   
+	}
+	',
+	null,null,null,null,null,
+	sysdate,'Documentaion',sysdate,1,1); 
+----
+endif::pro[]
+ifdef::pro[]
+.Create new load filter
+image::load-filters/load-filter-example-1.png[]
+
+.Provide a "Before Write" bsh script.
+image::load-filters/load-filter-example-1-bsh.png[]
+
+endif::pro[]
+====
+
+
+.Example load filter to send email on error
+====
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into sym_load_filter
+	(LOAD_FILTER_ID, LOAD_FILTER_TYPE, SOURCE_NODE_GROUP_ID,
+	TARGET_NODE_GROUP_ID, TARGET_CATALOG_NAME, TARGET_SCHEMA_NAME,
+	TARGET_TABLE_NAME, FILTER_ON_UPDATE, FILTER_ON_INSERT, FILTER_ON_DELETE,
+	BEFORE_WRITE_SCRIPT, AFTER_WRITE_SCRIPT, BATCH_COMPLETE_SCRIPT,
+	BATCH_COMMIT_SCRIPT, BATCH_ROLLBACK_SCRIPT, HANDLE_ERROR_SCRIPT,
+	CREATE_TIME, LAST_UPDATE_BY, LAST_UPDATE_TIME, LOAD_FILTER_ORDER,
+	FAIL_ON_ERROR) values
+	('EmailErrorFilter','BSH','Client','Server',NULL,NULL,
+	'*',1,1,1,null,
+	null,null,null,null,'
+	authListener = new javax.mail.Authenticator() {
+	protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+	    return new javax.mail.PasswordAuthentication(engine.getParameterService().getString("mail.smtp.username"), 
+	       engine.getParameterService().getString("mail.smtp.password"));
+	  }
+	};
+
+	if (bsh.shared.mailMap == void) {
+	  bsh.shared.mailMap = new HashMap();
+	}
+	
+	String batchId = context.getBatch().getSourceNodeBatchId();
+	String targetNodeId = context.getBatch().getTargetNodeId();
+	if (!bsh.shared.mailMap.containsKey(batchId)) {
+	  bsh.shared.mailMap.put(batchId, Boolean.TRUE);
+	  javax.mail.Session session = javax.mail.Session.getInstance
+	    (engine.getParameterService().getAllParameters(), authListener);
+	  javax.mail.internet.MimeMessage msg = new 
+	    javax.mail.internet.MimeMessage(session);
+	  msg.setFrom(new javax.mail.internet.InternetAddress
+	    (engine.getParameterService().getString("mail.smtp.from")));
+	  msg.setRecipients(javax.mail.Message.RecipientType.TO, 
+	    engine.getParameterService().getString("mail.smtp.to"));
+	  msg.setSubject("SymmetricDS - batch " + batchId + " is in error at node " + targetNodeId);
+	  msg.setSentDate(new java.util.Date());
+	  msg.setText(org.apache.commons.lang.exception.ExceptionUtils.
+	    getFullStackTrace(error));
+	  javax.mail.Transport.send(msg);
+	
+	}',
+	sysdate,'Documentation',sysdate,1,1); 
+----
+endif::pro[]
+
+ifdef::pro[]
+.Create new load filter
+image::load-filters/load-filter-example.png[]
+
+.Select filter and hit "Edit Scripts" button, then select "Handle Error Script" and enter the bsh script below.
+image::load-filters/load-filter-example-bsh.png[]
+
+.Beanshell Expression
+[source, BSH]
+----
+authListener = new javax.mail.Authenticator() {
+  protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
+    return new javax.mail.PasswordAuthentication(engine.getParameterService().getString("mail.smtp.username"), 
+       engine.getParameterService().getString("mail.smtp.password"));
+  }
+};
+
+if (bsh.shared.mailMap == void) {
+  bsh.shared.mailMap = new HashMap();
+}
+
+String batchId = context.getBatch().getSourceNodeBatchId();
+String targetNodeId = context.getBatch().getTargetNodeId();
+if (!bsh.shared.mailMap.containsKey(batchId)) {
+  bsh.shared.mailMap.put(batchId, Boolean.TRUE);
+  javax.mail.Session session = javax.mail.Session.getInstance
+    (engine.getParameterService().getAllParameters(), authListener);
+  javax.mail.internet.MimeMessage msg = new 
+    javax.mail.internet.MimeMessage(session);
+  msg.setFrom(new javax.mail.internet.InternetAddress
+    (engine.getParameterService().getString("mail.smtp.from")));
+  msg.setRecipients(javax.mail.Message.RecipientType.TO, 
+    engine.getParameterService().getString("mail.smtp.to"));
+  msg.setSubject("SymmetricDS - batch " + batchId + " is in error at node " + targetNodeId);
+  msg.setSentDate(new java.util.Date());
+  msg.setText(org.apache.commons.lang.exception.ExceptionUtils.
+    getFullStackTrace(error));
+  javax.mail.Transport.send(msg);
+
+}
+----
+endif::pro[]
+
+====
+
+

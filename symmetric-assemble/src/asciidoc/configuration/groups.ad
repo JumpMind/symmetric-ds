@@ -2,6 +2,10 @@
 === Groups
 Groups allow you to organize nodes with a similar configuration. They are the building blocks for creating group links which define how information moves through your network.
 
+ifdef::pro[]
+image::group.png[]
+endif::pro[]
+
 Group ID:: Unique identifier for the group.
 Description:: Description of the group that is available through the console.
 

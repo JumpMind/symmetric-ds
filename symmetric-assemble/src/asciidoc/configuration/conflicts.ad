@@ -4,6 +4,10 @@
 Conflict detection is the act of determining if an insert, update or delete is in "conflict" due to the target data row not 
 being consistent with the data at the source prior to the insert/update/delete. 
 
+ifdef::pro[]
+image::conflict.png[]
+endif::pro[]
+
 .Conflicts are broken into 3 key components in SymmetricDS:
 
 . Detection

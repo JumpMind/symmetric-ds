@@ -3,6 +3,10 @@
 
 SymmetricDS not only supports the synchronization of database tables, but it also supports the synchronization of files and folders from one node to another.
 
+ifdef::pro[]
+image::file-trigger.png[]
+endif::pro[]
+
 ifndef::pro[]
 .File synchronization features include:
 * Monitoring one or more file system directory locations for file and folder changes

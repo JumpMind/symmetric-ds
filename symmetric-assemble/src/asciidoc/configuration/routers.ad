@@ -5,6 +5,8 @@ Routers are used to determine which targets will receive the captured data. The 
 This means that one trigger can capture changes and route to multiple locations. It also means that one router can be defined an associated with many different triggers.
 
 ifdef::pro[]
+image::router.png[]
+
 .Required Fields
 endif::pro[]
 

@@ -474,7 +474,7 @@ TODO Need SQL for this scenario
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-valueMap.png[]
+image::transforms/transform-type-column-to-rows.png[]
 endif::pro[]
 
 .Example 
