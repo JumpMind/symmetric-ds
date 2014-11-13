@@ -1,0 +1,90 @@
+
+=== Load Filters
+
+Load filters execute while data is being loaded and then takes action based on the load of that data.
+
+ifdef::pro[]
+image::load-filters/load-filter.png[]
+
+.Required Fields
+endif::pro[]
+
+Filter Id:: The unique identifier for the load filter
+Group Link:: The group link for with the load filter will be applied.
+Type:: The type of load filter. Today only Bean Shell and Java are supported ('BSH', 'Java'), but SQL scripts may be added in a future release.
+Target Table:: The table on the target which the load filter will execute when changes occur on it.
+Filter Order:: The order in which load filters should execute if there are multiple scripts pertaining to the same source and target data.
+
+ifdef::pro[]
+.Advanced Options
+endif::pro[]
+
+Filter On Update:: Determines whether the load filter takes action (executes) on a database update statement.
+Filter On Insert:: Determines whether the load filter takes action (executes) on a database insert statement.
+Filter On Delete:: Determines whether the load filter takes action (executes) on a database delete statement.
+Fail On Error:: Whether we should fail the batch if the filter fails.
+Target Catalog:: The name of the target catalog for which you would like to watch for changes.
+Target Schema:: The name of the target schema for which you would like to watch for changes.
+
+include::load-filters/scripts.ad[]
+
+
+
+
+
+
+
+
+New as of SymmetricDS 3.1, SymmetricDS is now capable of taking actions upon the load of 
+certain data via configurable load filters. This new configurable option is in additon 
+to the already existing option of writing a class that implements IDatabaseWriterFilter . 
+A configurable load filter watches for specific data that is being loaded and then takes action based on the load of that data.
+
+Specifying which data to action is done by specifying a souce and target node group (data extracted from this node group, and loaded into that node group), and a target catalog, schema and table name. You can decide to take action on rows that are inserted, updated and/or deleted, and can also further delineate which rows of the target table to take action on by specifying additional criteria in the bean shell script that is executed in response to the loaded data. As an example, old and new values for the row of data being loaded are available in the bean shell script, so you can action rows with a certain column value in old or new data.
+
+The action taken is based on a bean shell script that you can provide as part of the configuration. Actions can be taken at different points in the load process including before write, after write, at batch complete, at batch commit and/or at batch rollback.
+
+3.9.1. Load Filter Configuration Table
+SymmetricDS stores its load filter configuration in a single table called LOAD_FILTER . The load filter table allows you to specify the following:
+
+Load Filter Type ('load_filter_type'): The type of load filter. Today only Bean Shell is supported ('BSH'), but SQL scripts may be added in a future release.
+Source Node Group ('source_node_group_id'): The source node group for which you would like to watch for changes.
+Target Node Group ('target_node_group_id'): The target node group for which you would like to watch for changes. The source and target not groups are used together to identify the node group link for which you would like to watch for changes (i.e. When the Server node group sends data to a Client node group).
+Target Catalog ('target_catalog_name'): The name of the target catalog for which you would like to watch for changes.
+Target Schema ('target_schema_name'): The name of the target schema for which you would like to watch for changes.
+Target Table ('target_table_name'): The name of the target table for which you would like to watch for changes. The target catalog, target schema and target table name are used together to fully qualify the table for which you would like to watch for changes.
+Filter on Update ('filter_on_update'): Determines whether the load filter takes action (executes) on a database update statement.
+Filter on Insert ('filter_on_insert'): Determines whether the load filter takes action (executes) on a database insert statement.
+Filter on Delete ('filter_on_delete'): Determines whether the load filter takes action (executes) on a database delete statement.
+Before Write Script ('before_write_script'): The script to execute before the database write occurs.
+After Write Script ('after_write_script'): The script to execute after the database write occurs.
+Batch Complete Script ('batch_complete_script'): The script to execute after the entire batch completes.
+Batch Commit Script ('batch_commit_script'): The script to execute after the entire batch is committed.
+Batch Rollback Script ('batch_rollback_script'): The script to execute if the batch rolls back.
+Handle Error Script ('handle_error_script'): A script to execute if data cannot be processed.
+Load Filter Order ('load_filter_order'): The order in which load filters should execute if there are multiple scripts pertaining to the same source and target data.
+3.9.2. Variables available to Data Load Filters
+As part of the bean shell load filters, SymmetricDS provides certain variables for use in the bean shell script. Those variables include:
+
+Symmetric Engine ('ENGINE'): The Symmetric engine object.
+Source Values ('<COLUMN_NAME>'): The source values for the row being inserted, updated or deleted.
+Old Values ('OLD_<COLUMN_NAME>'): The old values for the row being inserted, updated or deleted.
+Data Context ('CONTEXT'): The data context object for the data being inserted, updated or deleted. .
+Table Data ('TABLE'): The table object for the table being inserted, updated or deleted.
+3.9.3. Data Load Filter Example
+The following is an example of a load filter that watches a table named TABLE_TO_WATCH being loaded from the Server Node Group to the Client Node Group for inserts or updates, and performs an initial load on a table named "TABLE_TO_RELOAD" for KEY_FIELD on the reload table equal to a column named KEY_FIELD on the TABLE_TO_WATCH table.
+
+ insert into sym_load_filter
+		(LOAD_FILTER_ID, LOAD_FILTER_TYPE, SOURCE_NODE_GROUP_ID,
+		TARGET_NODE_GROUP_ID, TARGET_CATALOG_NAME, TARGET_SCHEMA_NAME,
+		TARGET_TABLE_NAME, FILTER_ON_UPDATE, FILTER_ON_INSERT, FILTER_ON_DELETE,
+		BEFORE_WRITE_SCRIPT, AFTER_WRITE_SCRIPT, BATCH_COMPLETE_SCRIPT,
+		BATCH_COMMIT_SCRIPT, BATCH_ROLLBACK_SCRIPT, HANDLE_ERROR_SCRIPT,
+		CREATE_TIME, LAST_UPDATE_BY, LAST_UPDATE_TIME, LOAD_FILTER_ORDER,
+		FAIL_ON_ERROR) values
+		('TABLE_TO_RELOAD','BSH','Client','Server',NULL,NULL,
+		'TABLE_TO_WATCH',1,1,0,null,
+		'engine.getDataService().reloadTable(context.getBatch().getSourceNodeId(),
+		table.getCatalog(), table.getSchema(), "TABLE_TO_RELOAD","KEY_FIELD=''"
+		+ KEY_FIELD + "''");'
+		,null,null,null,null,sysdate,'userid',sysdate,1,1); 
