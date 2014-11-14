@@ -289,7 +289,7 @@ public class DatabasePlatformTest {
     @Test
     public void testNvarcharType() {
         Table table = new Table("test_nvarchar");
-        table.addColumn(new Column("id", true, Types.NUMERIC, 20, 0));
+        table.addColumn(new Column("id", true, Types.INTEGER, 0, 0));
         table.addColumn(new Column("note", false, ColumnTypes.NVARCHAR, 100, 0));
         platform.createTables(true, false, table);
     }
