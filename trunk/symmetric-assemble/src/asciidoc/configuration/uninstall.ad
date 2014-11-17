@@ -1,0 +1,20 @@
+
+=== Uninstall 
+
+Uninstalling a node will remove it from the synchronization setup.   If this is the master node it will
+also remove all SYM_* tables as well.
+
+WARNING: This can not be undone so be sure to uninstall with caution.
+
+.Uninstall single node
+image::uninstall-single.png[]
+
+If the node has child nodes you will have the option to also uninstall all the child nodes.
+
+.Uninstall current node and all children
+image::uninstall-with-children.png[]
+
+You can also uninstall a specific node through the manage nodes screen by selecting the node and right clicking on it.
+
+.Uninstall a node through the manage nodes screen
+image::uninstall-manage-node.png[]

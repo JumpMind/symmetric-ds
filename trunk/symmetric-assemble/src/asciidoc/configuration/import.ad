@@ -1,0 +1,16 @@
+
+=== Import
+
+There are two ways a SymmetricDS configuration can be imported.
+
+. During the creation of the master node, while selecting a profile
+
+.Import Existing configuration during the node creation
+image::import-wizard-profile.png[]
+
+. Import a configuration through the web console
+
+.Import a configuration file through the import screen
+image::import-with-existing.png[]
+
+WARNING: This will wipe out all existing configuration settings and replace with the newly imported ones.

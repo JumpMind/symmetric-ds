@@ -1,0 +1,8 @@
+
+=== Export
+
+Export your configuration at any time through the web console.   
+This might be useful in order to save a configuration in source control or used as an import on another node.
+
+.Export currently selected node configuration
+image::export.png[]
