@@ -316,11 +316,25 @@ public class ModelComparator {
             Table targetTable, Column targetColumn) {
         ArrayList<TableChange> changes = new ArrayList<TableChange>();
         
-        int sourceTypeCode = sourceColumn.getMappedTypeCode();
-        int targetTypeCode = targetColumn.getMappedTypeCode();
+        int actualTypeCode = sourceColumn.getMappedTypeCode();
+        int desiredTypeCode = targetColumn.getMappedTypeCode();
+        boolean sizeMatters = platformInfo.hasSize(targetColumn.getMappedTypeCode());
+        boolean scaleMatters = platformInfo.hasPrecisionAndScale(targetColumn.getMappedTypeCode());
+
         boolean compatible = 
-                (sourceTypeCode == Types.NUMERIC || sourceTypeCode == Types.DECIMAL) && 
-                (targetTypeCode == Types.INTEGER || targetTypeCode == Types.BIGINT);
+                (actualTypeCode == Types.NUMERIC || actualTypeCode == Types.DECIMAL) && 
+                (desiredTypeCode == Types.INTEGER || desiredTypeCode == Types.BIGINT);
+        
+        if (sourceColumn.isAutoIncrement() && targetColumn.isAutoIncrement() &&
+                (desiredTypeCode == Types.NUMERIC || desiredTypeCode == Types.DECIMAL) && 
+                (actualTypeCode == Types.INTEGER || actualTypeCode == Types.BIGINT)) {
+            compatible = true;
+            
+            // This is the rare case where size doesnt matter!
+            sizeMatters = false;
+            scaleMatters = false;
+        }
+        
         if (!compatible && targetColumn.getMappedTypeCode() != sourceColumn.getMappedTypeCode()
                 && platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()) != sourceColumn
                         .getMappedTypeCode()) {
@@ -331,9 +345,6 @@ public class ModelComparator {
             changes.add(new ColumnDataTypeChange(sourceTable, sourceColumn, targetColumn
                     .getMappedTypeCode()));
         }
-
-        boolean sizeMatters = platformInfo.hasSize(targetColumn.getMappedTypeCode());
-        boolean scaleMatters = platformInfo.hasPrecisionAndScale(targetColumn.getMappedTypeCode());
 
         String targetSize = targetColumn.getSize();
         if (targetSize == null) {

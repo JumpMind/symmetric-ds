@@ -311,5 +311,15 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         writeColumn(targetTable, targetColumn, ddl);
         printEndOfStatement(ddl);
     }
+    
+    @Override
+    protected String getSqlType(Column column) {
+        String sqlType = super.getSqlType(column);
+        
+        if (column.isAutoIncrement() && column.getMappedTypeCode() == Types.DECIMAL) {
+            sqlType = "BIGINT";
+        }
+        return sqlType;
+    }
 
 }
