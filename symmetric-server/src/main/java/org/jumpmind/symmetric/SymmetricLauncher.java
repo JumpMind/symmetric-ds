@@ -20,13 +20,13 @@
  */
 package org.jumpmind.symmetric;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-
-import com.mysql.jdbc.StringUtils;
 
 /**
  * Launch the SymmetricDS engine as a stand alone client or server.
@@ -199,7 +199,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             SymmetricWebServer webServer = new SymmetricWebServer(chooseWebDir(line, webDir),
                     maxIdleTime, propertiesFile != null ? propertiesFile.getCanonicalPath() : null,
                     true, noNio, noDirectBuffer);
-            if (!StringUtils.isNullOrEmpty(host)) {
+            if (!isNotBlank(host)) {
             	webServer.setHost(host);
             }
             webServer.setBasicAuthUsername(httpBasicAuthUser);
