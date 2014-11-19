@@ -183,7 +183,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            String sql = String.format("LOAD DATA " + (isLocal ? "LOCAL " : "") + 
 	            		"INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
 	            		(isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
-	            		this.getTargetTable().getFullyQualifiedTableName() +
+	            		this.getTargetTable().getFullyQualifiedTableName(platform.getDatabaseInfo().getDelimiterToken()) +
                                 " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY ''" +
                                 " (" + Table.getCommaDeliminatedColumns(table.getColumns()) + ")";
 	            Statement stmt = c.createStatement();
