@@ -190,7 +190,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
 	            Connection c = jdbcTransaction.getConnection();
 	            String sql = String.format("BULK INSERT " + 
-	            		this.getTargetTable().getFullyQualifiedTableName() + 
+	            		this.getTargetTable().getFullyQualifiedTableName(platform.getDatabaseInfo().getDelimiterToken()) + 
 	            		" FROM '" + filename) + "'" +
 	            		" WITH ( FIELDTERMINATOR='||', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
 	            Statement stmt = c.createStatement();
