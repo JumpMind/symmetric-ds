@@ -315,8 +315,9 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected String getSqlType(Column column) {
         String sqlType = super.getSqlType(column);
-        
-        if (column.isAutoIncrement() && column.getMappedTypeCode() == Types.DECIMAL) {
+
+        if (column.isAutoIncrement()
+                && (column.getMappedTypeCode() == Types.DECIMAL || column.getMappedTypeCode() == Types.NUMERIC)) {
             sqlType = "BIGINT";
         }
         return sqlType;
