@@ -98,7 +98,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             }
         }
 
-        return existingTs == null || loadingTs.after(existingTs);
+        return existingTs == null || loadingTs.compareTo(existingTs) > 0;
     }
 
     protected boolean isVersionNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
