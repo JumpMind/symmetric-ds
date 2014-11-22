@@ -9,8 +9,13 @@ endif::pro[]
 
 WARNING:  Transactions will NOT be preserved across channels so its important to setup channels to contain all tables that participate in a given transaction.
 
+ifdef::pro[]
+.Required Fields
+endif::pro[]
+
 Channel ID:: Identifier used through the system to identify a given channel.
 Processing Order:: Numeric value to determine the order in which a channel will be used.
+Batch Algorithm:: Batching is the grouping of data, by channel, to be transferred and committed at the client together.
 .Channel Batching Algorithms
 |===
 
@@ -41,8 +46,11 @@ Data Loader Types:: Determines how data will be loaded into the target tables.  
 
 |===
 
+ifdef::pro[]
+.Advanced Options
+endif::pro[]
+
 Enabled:: Indicator to determine if a channel is currently in use.
-Batch Algorithm:: Batching is the grouping of data, by channel, to be transferred and committed at the client together.
 Reload Channel:: Indicator to determine if a channel is available for initial loads and reverse initial loads.
 File Sync Channel:: Indicator to determine if a channel is available for file synchronization.
 Use Old Data To Route:: Indicates if the old data will be included for routing.   Routing can then use this data for processing.  Defaults to true.
