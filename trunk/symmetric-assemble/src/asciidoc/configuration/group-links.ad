@@ -6,6 +6,10 @@ ifdef::pro[]
 image::group-link.png[]
 endif::pro[]
 
+ifdef::pro[]
+.Required Fields
+endif::pro[]
+
 Source Group ID:: The source group of the communication link.
 Link:: Defines how the source and target groups will communicate.
 
@@ -30,6 +34,11 @@ endif::pro[]
 |===
 
 Target Group ID:: The target group of the communication link.
+
+ifdef::pro[]
+.Advanced Options
+endif::pro[]
+
 Sync Configuration:: Determines if configuration is also sent through this group link.  By default this is checked and configuration will communicate on this path.  There are configurations that might cause configuration to continuously loop through the network as a result this might need to be unchecked for some links.
 
 
