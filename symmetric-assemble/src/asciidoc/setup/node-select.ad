@@ -1,0 +1,21 @@
+
+=== Node Selection
+
+[.float-group]
+--
+[.left.text-left]
+.Node selection.
+image::wizard-node-setup.png[]
+
+[horizontal]
+Master Node:: The *first* node to be created.  Identical to all other nodes with with a few additional features.
+. Registers all other nodes for synchronization.
+. Source for initial loads.
+Node:: Configuration point for synchronization.  All nodes must be attached to a database.
+Demo:: Installs a sample SymmetricDS configuration with preloaded tables to observe a fully functional synchronization.
+
+--
+
+To setup the first node in a synchronization scenario see <<Master Node>>.
+
+To connect a new node to an existing synchronization scenario see <<Wizard: Connect a Node>>.
