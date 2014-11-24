@@ -1,0 +1,54 @@
+
+=== Master Node
+
+==== Connect to the database.
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-database.png[]
+
+Provide database credentials to connect the node to a database.
+
+After selecting a database type the jdbc url will be populated for you based on the driver.  Be sure to replace
+host name, port, and database name if necessary (varies by type).
+--
+
+==== Select a profile
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-profile.png[]
+
+Profiles create groups and group links to simply setup.  
+
+If you are unsure of your scenario or would 
+like to customize groups and group names select "I'll configure things myself".  
+--
+
+==== Communication Settings
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-host.png[]
+
+If your network will be accessing the web console through a proxy or a different host 
+name that the one shown in the first bullet you can override the hostname to be used.
+
+You can also select HTTPS or HTTP to be used for transferring data.
+
+--
+
+==== Console User
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-user.png[]
+
+The admin user is the user and password required to access the SymmetricDS web console.  
+
+Additional users can be setup in the web console after the wizard completes.
+--

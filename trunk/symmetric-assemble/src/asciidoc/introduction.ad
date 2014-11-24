@@ -312,7 +312,7 @@ the same synchronization mechanism that is used to send data. The data
 payload can be any SQL statement. The event is processed and
 acknowledged just like any other event type.
 
-==== File Synchronization</title>
+==== File Synchronization
 Quite a few users of SymmetricDS have found that they have a need to not only synchronize database tables to remote locations, but they also have a set of files that should be synchronized.  As of version 3.5 SymmetricDS now support file synchronization.
 Please see <xref linkend="file-sync"/>
 for more information.
