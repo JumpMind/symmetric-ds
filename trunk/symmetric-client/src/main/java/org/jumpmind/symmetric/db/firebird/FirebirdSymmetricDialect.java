@@ -97,23 +97,13 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
-                + "',1) from rdb$database");
-        if (nodeId != null) {
-            transaction.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE
-                    + "','" + nodeId + "') from rdb$database");
-        }
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
-                + "',null) from rdb$database");
-        transaction.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE
-                + "',null) from rdb$database");
     }
 
     public String getSyncTriggersExpression() {
-        return "rdb$get_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
+        return "1=1";
     }
 
     @Override
