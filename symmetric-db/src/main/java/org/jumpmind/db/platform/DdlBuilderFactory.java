@@ -24,6 +24,7 @@ import org.jumpmind.db.platform.ase.AseDdlBuilder;
 import org.jumpmind.db.platform.db2.Db2DdlBuilder;
 import org.jumpmind.db.platform.derby.DerbyDdlBuilder;
 import org.jumpmind.db.platform.firebird.FirebirdDdlBuilder;
+import org.jumpmind.db.platform.firebird.FirebirdDialect1DdlBuilder;
 import org.jumpmind.db.platform.greenplum.GreenplumDdlBuilder;
 import org.jumpmind.db.platform.h2.H2DdlBuilder;
 import org.jumpmind.db.platform.hsqldb.HsqlDbDdlBuilder;
@@ -58,6 +59,8 @@ final public class DdlBuilderFactory {
             return new DerbyDdlBuilder();
         } else if (DatabaseNamesConstants.FIREBIRD.equalsIgnoreCase(databaseName)) {
             return new FirebirdDdlBuilder();
+        } else if (DatabaseNamesConstants.FIREBIRD_DIALECT1.equalsIgnoreCase(databaseName)) {
+            return new FirebirdDialect1DdlBuilder();
         } else if (DatabaseNamesConstants.GREENPLUM.equalsIgnoreCase(databaseName)) {
             return new GreenplumDdlBuilder();
         } else if (DatabaseNamesConstants.H2.equalsIgnoreCase(databaseName)) {
