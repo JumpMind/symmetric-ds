@@ -26,4 +26,20 @@ The following table shows the source of parameters and the hierarchy of preceden
 |IParameterFilter              |N   |An extension point which allows parameters to be sourced from another location or customized. These settings will take precedence over all of the above.
 |===
 
-include::generated/parameters.ad[]
+=== Startup Parameters
+
+Startup parameters are read once from properties files and apply only during start up. The following properties are used:
+
+include::generated/startup-parameters.ad[]
+
+=== Runtime Parameters
+
+Runtime parameters are read periodically from properties files or the database. The following properties are used:
+
+include::generated/runtime-parameters.ad[]
+
+=== Server Configuration
+
+Server configuration is read from conf/symmetric-server.conf for settings needed by the server before the parameter system has been initialized.
+
+include::generated/server-parameters.ad[]

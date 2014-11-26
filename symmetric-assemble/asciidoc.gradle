@@ -1,0 +1,52 @@
+apply plugin: 'org.asciidoctor.gradle.asciidoctor'
+
+configurations{ generateAppendixesDependencies }
+
+dependencies { generateAppendixesDependencies project(":symmetric-util") }
+
+task generateAppendixes {
+    doLast{
+        javaexec {
+            main = 'org.jumpmind.properties.DefaultParameterParser'
+            classpath = configurations.generateAppendixesDependencies
+            args = [
+                '../symmetric-server/src/main/deploy/conf/symmetric-server.properties',
+                'src/asciidoc/generated/server-parameters.ad',
+                'false',
+                'asciidoc'
+            ]
+        }
+
+        javaexec {
+            main = 'org.jumpmind.properties.DefaultParameterParser'
+            classpath = configurations.generateAppendixesDependencies
+            args = [
+                '../symmetric-core/src/main/resources/symmetric-default.properties',
+                'src/asciidoc/generated/startup-parameters.ad',
+                'false',
+                'asciidoc'
+            ]
+        }
+
+        javaexec {
+            main = 'org.jumpmind.properties.DefaultParameterParser'
+            classpath = configurations.generateAppendixesDependencies
+            args = [
+                '../symmetric-core/src/main/resources/symmetric-default.properties',
+                'src/asciidoc/generated/runtime-parameters.ad',
+                'true',
+                'asciidoc'
+            ]
+        }
+    }
+}
+
+asciidoctor {
+    (1)
+    outputDir = new File("$buildDir/src/asciidoc")
+    options = [
+        doctype: 'book',
+        sourceDocumentNames: ['user-guide.ad']]
+}
+
+asciidoctor.dependsOn { tasks.generateAppendixes }

@@ -3,61 +3,39 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript {
     repositories {
-        jcenter() 
-        maven { url 'http://repo.spring.io/plugins-release' } 
+        jcenter()
+        maven { url 'http://repo.spring.io/plugins-release' }
     }
 
     dependencies {
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.0'
-        classpath "org.springframework.build.gradle:propdeps-plugin:0.0.7" 
+        classpath "org.springframework.build.gradle:propdeps-plugin:0.0.7"
     }
 }
 
-apply plugin: 'org.asciidoctor.gradle.asciidoctor'
-
-configurations{ generateAppendixesDependencies }
-
-dependencies { generateAppendixesDependencies project(":symmetric-util") }
-
-task generateAppendixes(type:JavaExec) {
-   main = 'org.jumpmind.properties.DefaultParameterParser'
-   classpath = configurations.generateAppendixesDependencies
-   args = [ '../symmetric-server/src/main/deploy/conf/symmetric-server.properties', 'src/asciidoc/generated/parameters.ad', 'false', 'asciidoc' ]
-}
-
-asciidoctor { (1)
-    outputDir = new File("$buildDir/src/asciidoc")
-    options = [
-        doctype: 'book',
-        sourceDocumentNames: ['user-guide.ad']        
-    ]
-}
-
-asciidoctor.dependsOn {
-    tasks.generateAppendixes
-}
+apply from: 'asciidoc.gradle'
 
 allprojects {
-    
+
     apply plugin: 'eclipse-wtp'
-        
+
     group = 'org.jumpmind.symmetric'
 
     repositories {
-        mavenCentral()        
+        mavenCentral()
         maven { url "http://repository.codehaus.org" }
     }
-    
+
     eclipse {
         classpath {
             downloadSources = true
             downloadJavadoc = false
         }
-    }        
+    }
 }
 
 subprojects { subproject ->
-    
+
     apply plugin: 'java'
     apply plugin: 'propdeps'
     apply plugin: 'propdeps-maven'
@@ -72,6 +50,7 @@ subprojects { subproject ->
         commonsLangVersion = '2.6'
         commonsNetVersion = '3.3'
         commonsCodecVersion = '1.3'
+        commonsCollectionVersion = '3.2'
         cglibVersion = '2.2'
         hamcrestVersion = '1.3'
         h2Version = '1.3.176'
@@ -88,11 +67,10 @@ subprojects { subproject ->
         jtdsVersion = '1.3.1'
         bouncyCastleVersion = '140'
         animalSnifferVersion = '1.10'
-        
+
         env = System.getenv()
-        
     }
-            
+
     dependencies {
         compile "org.slf4j:slf4j-api:$slf4jVersion"
         compile "org.slf4j:jul-to-slf4j:$slf4jVersion"
@@ -106,26 +84,35 @@ subprojects { subproject ->
         testCompile "org.powermock:powermock-api-mockito:$powerMockVersion"
         testCompile "org.powermock:powermock-module-junit4:$powerMockVersion"
     }
-    
+
     task develop {
         dependsOn tasks.cleanEclipse, tasks.cleanEclipseWtp, tasks.eclipse, tasks.eclipseWtp
     }
 }
 
 project('symmetric-util') {
-    description = 'Utility classes that are used by several Symmetric libraries'   
-    
+    description = 'Utility classes that are used by several Symmetric libraries'
+
     dependencies {
         compile "commons-lang:commons-lang:$commonsLangVersion"
         compile "commons-io:commons-io:$commonsIoVersion"
         compile "commons-codec:commons-codec:$commonsCodecVersion"
-        compile "commons-codec:commons-codec:$commonsCodecVersion"
         compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
     }
-    
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.2.1'
+project('symmetric-db') {
+    description = 'Database classes that are used by several Symmetric libraries'
+
+    dependencies {
+        compile project(":symmetric-util")
+        compile "commons-lang:commons-lang:$commonsLangVersion"
+        compile "commons-io:commons-io:$commonsIoVersion"
+        compile "commons-codec:commons-codec:$commonsCodecVersion"
+        compile "commons-collections:commons-collections:$commonsCollectionVersion"
+        provided "net.sf.kxml:kxml2:2.3.0"
+    }
 }
+
+task wrapper(type: Wrapper) { gradleVersion = '2.2.1' }
