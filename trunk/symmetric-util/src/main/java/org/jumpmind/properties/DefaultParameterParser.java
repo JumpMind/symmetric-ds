@@ -20,6 +20,8 @@
  */
 package org.jumpmind.properties;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -62,7 +64,7 @@ public class DefaultParameterParser {
     public Map<String, ParameterMetaData> parse() {
         return parse(propertiesFilePath);
     }
-    
+
     public Map<String, ParameterMetaData> parse(String fileName) {
         Map<String, ParameterMetaData> metaData = new TreeMap<String, DefaultParameterParser.ParameterMetaData>();
         try {
@@ -78,12 +80,12 @@ public class DefaultParameterParser {
                     if (currentMetaData != null) {
                         if (line.endsWith("\\")) {
                             extraLine = true;
-                            line = line.substring(0, line.length() - 1);                            
+                            line = line.substring(0, line.length() - 1);
                         }
                         line = StringEscapeUtils.unescapeJava(line);
-                        currentMetaData.setDefaultValue(currentMetaData.getDefaultValue() + line);                        
+                        currentMetaData.setDefaultValue(currentMetaData.getDefaultValue() + line);
                     }
-                    
+
                     if (!extraLine) {
                         currentMetaData = new ParameterMetaData();
                     }
@@ -105,13 +107,13 @@ public class DefaultParameterParser {
                     } else {
                         currentMetaData.appendDescription(line);
                     }
-                } else if (!line.trim().startsWith(COMMENT) && line.contains("=")) {
+                } else if (!line.trim().startsWith(COMMENT.trim()) && line.contains("=")) {
                     String key = line.substring(0, line.indexOf("="));
                     String defaultValue = line.substring(line.indexOf("=") + 1);
                     currentMetaData.setKey(key);
                     if (defaultValue.endsWith("\\")) {
                         extraLine = true;
-                        defaultValue = defaultValue.substring(0, defaultValue.length()-1);
+                        defaultValue = defaultValue.substring(0, defaultValue.length() - 1);
                     }
                     defaultValue = StringEscapeUtils.unescapeJava(defaultValue);
                     currentMetaData.setDefaultValue(defaultValue);
@@ -142,19 +144,39 @@ public class DefaultParameterParser {
         }
         FileWriter writer = new FileWriter(args[1]);
         boolean isDatabaseOverridable = Boolean.parseBoolean(args[2]);
+        boolean isAsciiDocFormat = args.length > 3 && "asciidoc".equals(args[3]);
+
         Map<String, ParameterMetaData> map = parmParser.parse();
-        writer.write("<variablelist>\n");
+        if (!isAsciiDocFormat) {
+            writer.write("<variablelist>\n");
+        }
 
         for (ParameterMetaData parm : map.values()) {
-            if ((isDatabaseOverridable && parm.isDatabaseOverridable()) || (!isDatabaseOverridable && !parm.isDatabaseOverridable())) {
-                writer.write("<varlistentry>\n<term><command>" + parm.getKey() + "</command></term>\n");
-                writer.write("<listitem><para>" + parm.getDescription()
-                        + " [ Default: " 
-                        + (parm.isXmlType() ? StringEscapeUtils.escapeXml(parm.getDefaultValue()) : parm.getDefaultValue()) 
-                        + " ]</para></listitem>\n</varlistentry>\n");
+            if ((isDatabaseOverridable && parm.isDatabaseOverridable())
+                    || (!isDatabaseOverridable && !parm.isDatabaseOverridable())) {
+                if (!isAsciiDocFormat) {
+                    writer.write("<varlistentry>\n<term><command>" + parm.getKey()
+                            + "</command></term>\n");
+                    writer.write("<listitem><para>"
+                            + parm.getDescription()
+                            + " [ Default: "
+                            + (parm.isXmlType() ? StringEscapeUtils.escapeXml(parm
+                                    .getDefaultValue()) : parm.getDefaultValue())
+                            + " ]</para></listitem>\n</varlistentry>\n");
+                } else {
+                    writer.write(parm.getKey()
+                            + ":: "
+                            + parm.getDescription()
+                            + "\n\n_Default:_ "
+                            + (parm.isXmlType() ? "\n\n[source, xml]\n----\n" + parm
+                                    .getDefaultValue() + "\n----\n\n" : (isBlank(parm.getDefaultValue()) ? "" : "_" +parm.getDefaultValue() + "_") + "\n\n"));
+                }
             }
         }
-        writer.write("</variablelist>\n");
+
+        if (!isAsciiDocFormat) {
+            writer.write("</variablelist>\n");
+        }
         writer.close();
     }
 
@@ -230,7 +252,7 @@ public class DefaultParameterParser {
                 description = description + value;
             }
         }
-        
+
         public boolean isXmlType() {
             return type != null && type.equals(TYPE_XML);
         }
@@ -238,11 +260,11 @@ public class DefaultParameterParser {
         public boolean isSqlType() {
             return type != null && type.equals(TYPE_SQL);
         }
-        
+
         public boolean isCodeType() {
             return type != null && type.equals(TYPE_CODE);
         }
-        
+
         public boolean isBooleanType() {
             return type != null && type.equals(TYPE_BOOLEAN);
         }
