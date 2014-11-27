@@ -97,6 +97,7 @@ project('symmetric-util') {
         compile "commons-lang:commons-lang:$commonsLangVersion"
         compile "commons-io:commons-io:$commonsIoVersion"
         compile "commons-codec:commons-codec:$commonsCodecVersion"
+        compile "commons-collections:commons-collections:$commonsCollectionVersion"        
         compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
     }
@@ -107,11 +108,7 @@ project('symmetric-db') {
 
     dependencies {
         compile project(":symmetric-util")
-        compile "commons-lang:commons-lang:$commonsLangVersion"
-        compile "commons-io:commons-io:$commonsIoVersion"
-        compile "commons-codec:commons-codec:$commonsCodecVersion"
-        compile "commons-collections:commons-collections:$commonsCollectionVersion"
-        provided "net.sf.kxml:kxml2:2.3.0"
+        compile "net.sf.kxml:kxml2:2.3.0"
     }
 }
 

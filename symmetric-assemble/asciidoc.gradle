@@ -2,7 +2,10 @@ apply plugin: 'org.asciidoctor.gradle.asciidoctor'
 
 configurations{ generateAppendixesDependencies }
 
-dependencies { generateAppendixesDependencies project(":symmetric-util") }
+dependencies {
+    generateAppendixesDependencies project(":symmetric-util")
+    generateAppendixesDependencies project(":symmetric-db")
+}
 
 task generateAppendixes {
     doLast{
@@ -36,6 +39,15 @@ task generateAppendixes {
                 'src/asciidoc/generated/runtime-parameters.ad',
                 'true',
                 'asciidoc'
+            ]
+        }
+        
+        javaexec {
+            main = 'org.jumpmind.db.io.DatabaseXmlAsciiDocBuilder'
+            classpath = configurations.generateAppendixesDependencies
+            args = [
+                '../symmetric-core/src/main/resources/symmetric-schema.xml',
+                'src/asciidoc/generated/schema.ad'
             ]
         }
     }

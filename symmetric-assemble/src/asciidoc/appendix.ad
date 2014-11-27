@@ -2,6 +2,24 @@
 [appendix]
 == Data Model
 
+What follows is the complete SymmetricDS data model. Note that all tables are prepended with a configurable prefix 
+so that multiple instances of SymmetricDS may coexist in the same database. The default prefix is sym_.
+
+SymmetricDS configuration is entered by the user into the data model to control the behavior of what data is 
+synchronized to which nodes.
+
+.Configuration Data Model
+image::data-model-config.gif[]
+
+At runtime, the configuration is used to capture data changes and route them to nodes. The data changes are placed 
+together in a single unit called a batch that can be loaded by another node. Outgoing batches are delivered to nodes 
+and acknowledged. Incoming batches are received and loaded. History is recorded for batch status changes and statistics.
+
+.Runtime Data Model
+image::data-model-runtime.gif[]
+
+include::generated/schema.ad[]
+
 [appendix]
 == Parameters
 
@@ -10,7 +28,6 @@ Startup Parameters are required to be in a system property or a property file, w
 table from the database. Parameters are re-queried from their source at a configured interval and can also be refreshed on demand by using the JMX API. 
 
 The following table shows the source of parameters and the hierarchy of precedence.
-
 
 .Parameter Discovery Precedence
 [cols="5,^1,3"]
