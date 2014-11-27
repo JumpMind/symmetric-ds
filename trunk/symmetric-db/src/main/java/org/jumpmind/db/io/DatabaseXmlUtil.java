@@ -200,6 +200,8 @@ public class DatabaseXmlUtil {
                                 String attributeValue = parser.getAttributeValue(i);
                                 if (attributeName.equalsIgnoreCase("name")) {
                                     table.setName(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("description")) {
+                                    table.setDescription(attributeValue);
                                 }
                             }
                         } else if (name.equalsIgnoreCase("column")) {
@@ -225,6 +227,8 @@ public class DatabaseXmlUtil {
                                     column.setAutoIncrement(FormatUtils.toBoolean(attributeValue));
                                 } else if (attributeName.equalsIgnoreCase("javaName")) {
                                     column.setJavaName(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("description")) {
+                                    column.setDescription(attributeValue);
                                 }
                             }
                             if (table != null) {
