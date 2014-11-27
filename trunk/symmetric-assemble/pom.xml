@@ -435,6 +435,29 @@
 						         <outputDirectory>target/docs-asciidoc</outputDirectory>
 						         <backend>html5</backend>
 						         <doctype>book</doctype>
+						         <!-- <sourceHighlighter>coderay</sourceHighlighter> -->
+						      </configuration>
+						    </execution>
+						  </executions>
+				  	</plugin>
+				  	<plugin>
+					    <groupId>org.asciidoctor</groupId>
+					    <artifactId>asciidoctor-maven-plugin</artifactId>
+					    <version>${asciidoctor.version}</version> 
+					    <executions>
+					        <execution>
+						      <id>tutorials</id> 
+						      <phase>generate-resources</phase> 
+						      <goals>
+						        <goal>process-asciidoc</goal> 
+						      </goals>
+						      <configuration>
+						         <sourceDirectory>${basedir}/src/asciidoc</sourceDirectory> 
+						         <sourceDocumentName>tutorials/tutorials.ad</sourceDocumentName>
+						         <outputDirectory>target/docs-asciidoc</outputDirectory>
+						         <backend>html5</backend>
+						         <doctype>book</doctype>
+						         <!-- <sourceHighlighter>coderay</sourceHighlighter> -->
 						      </configuration>
 						    </execution>
 						  </executions>
