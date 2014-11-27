@@ -138,7 +138,7 @@ public abstract class WrapperService {
 
         long startTime = 0;
         int startCount = 0;
-        boolean startProcess = true;
+        boolean startProcess = true, restartDetected = false;
         int serverPid = 0;
 
         while (keepRunning) {
@@ -189,12 +189,18 @@ public abstract class WrapperService {
                             stopProcess(serverPid, "symmetricds");
                             break;
                         }
+                        if (line.equalsIgnoreCase("Restarting")) {
+                            restartDetected = true;
+                        }
                     }
                 } catch (IOException e) {
                     logger.log(Level.SEVERE, "Error while reading from process");
                 }
-                
-                if (keepRunning) {
+
+                if (restartDetected) {
+                    restartDetected = false;
+                    startProcess = true;
+                } else if (keepRunning) {
                     logger.log(Level.SEVERE, "Unexpected exit from server: " + child.exitValue());
                     long runTime = System.currentTimeMillis() - startTime;
                     if (System.currentTimeMillis() - startTime < 5000) {
