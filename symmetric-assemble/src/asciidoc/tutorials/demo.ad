@@ -1,0 +1,112 @@
+
+== Demo
+
+=== Setup
+The Demo quick start will automatically install `3 nodes` with synchronization configured.  This will allow
+you to see a working model of SymmetricDS.
+
+.Open the web console and select Demo.
+image::wizard-node-setup.png[]
+
+What's created ...
+
+image::tutorials/quickstart-two-tier.png[]
+
+=== Pulling Data
+
+==== Create Data
+
+====
+Create data in corp for all stores to pull.  Navigate to the SQL Explore for the corp node and execute (image:explore-execute-all.png[title="Run As Script"]) the following scripts.
+
+[source, SQL]
+----
+insert into item (item_id, name) values (110000055, 'Soft Drink');
+insert into item_selling_price (item_id, store_id, price) 
+	values (110000055, '001', 0.65);
+insert into item_selling_price (item_id, store_id, price) 
+	values (110000055, '002', 1.00);
+----
+
+image::tutorials/demo-pull-sql.png[]
+====
+
+==== Verify Outgoing Batches
+
+.Verify the outgoing batches were created and sent (status of `OK`).
+====
+image::tutorials/demo-pull-verify-batch.png[]
+====
+
+==== Verify SQL
+
+.Verify the change directly in a store database.  
+====
+[source, SQL]
+----
+select * from item_selling_price
+----
+
+IMPORTANT:  Make sure you have selected either store-001 or store-002 to run your query against.
+
+.Verify the new price for store 002 is 1.00
+image::tutorials/demo-pull-verify-explore.png[]
+====
+
+=== Pushing Data
+
+==== Create Data
+
+====
+Create data in a store to be pushed to corp.  Navigate to the SQL Explore for the corp node 
+and execute (image:explore-execute-all.png[title="Run As Script"]) the following scripts.
+
+[source, SQL]
+----
+insert into sale_transaction (tran_id, store_id, workstation, day, seq) 
+	values (1000, '001', '3', '2014-03-21', 100);
+	
+insert into sale_return_line_item (tran_id, item_id, price, quantity) 
+	values (1000, 110000055, 0.65, 1);
+----
+
+image::tutorials/demo-push-sql.png[]
+====
+
+==== Verify Outgoing Batches
+
+.Verify the outgoing batches were created and sent (status of `OK`).
+====
+image::tutorials/demo-push-verify-batch.png[]
+====
+
+==== Verify SQL
+
+.Verify the change directly in the corp database.  
+====
+[source, SQL]
+----
+select * from sale_transaction;
+----
+
+IMPORTANT:  Make sure you have selected corp-000 to run your query against.
+
+.Verify the sale transaction from store 001 is present
+image::tutorials/demo-push-verify-explore-1.png[]
+
+[source, SQL]
+----
+select * from sale_return_line_item;
+----
+
+.Verify the sale return line item from store 001 is present
+image::tutorials/demo-push-verify-explore-2.png[]
+====
+
+
+
+[horizontal]
+icon:graduation-cap[role="green" size="2x"]:: [big]#*Congratulations! You have completed the Demo.*#  
+
+[small]#Continue to browse through the demo configuration to see how basic triggers, routers, group 
+links and more are setup. When you are ready proceed to uninstall the demo and begin your own configuration.#

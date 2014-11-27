@@ -1,2 +1,52 @@
 
-=== Config Wizard
+=== Wizard: Quick Config
+
+The configuration wizard is responsible for setting up the necessary SymmetricDS components with their 
+`default settings` to configure synchronization.   Behind the scenes it will create the appropriate 
+triggers and link them based on the selections.
+
+NOTE: The quick config wizard will show a screen for each router that is in place.  The below example
+shows the profile "Standard 2 Tier" with a client and server.
+
+==== Router 1: Client to Server
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-config/wizard-config-client-server.png[]
+
+Select all tables that should be synchronized in the direction
+stated in the header, in this case its `CLIENT` to the `SERVER`
+
+--
+
+==== Router 2: Server to Client
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-config/wizard-config-server-client.png[]
+
+Next we will select tables to sync from the `SERVER` to the `CLIENT`. 
+
+NOTE: The `item_selling_price` table was selected on both wizard screens so this table
+will be configured for `bi-directional` sync.
+
+
+--
+
+
+==== Verify Configuration
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-config/wizard-config-verify.png[]
+
+Verify the configuration that will be created.
+
+--
+
+TIP: Once the quick config wizard has completed your setup you can still navigate
+to the specific components created to provide customizations beyond the default 
+settings.  

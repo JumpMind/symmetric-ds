@@ -2,6 +2,7 @@
 :toclevels: 4
 :imagesdir: ./images
 :icons: font
+:source-highlighter: coderay
 
 = SymmetricDS User Guide
 v3.7
