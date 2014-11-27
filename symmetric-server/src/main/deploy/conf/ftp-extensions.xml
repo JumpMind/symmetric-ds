@@ -34,7 +34,7 @@
         <!-- FTP or SFTP -->
         <property name="protocol" value="FTP" />
         <property name="server" value="localhost" />
-        <property name="stagingDir" value="../tmp/ftp" />
+        <property name="stagingDir" value="tmp/ftp" />
         <property name="username" value="anonymous" />
         <property name="password" value="anonymous" />
         <property name="remoteDir" value="" />

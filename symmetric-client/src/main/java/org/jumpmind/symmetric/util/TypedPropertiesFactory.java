@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
+import org.jumpmind.util.AppUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -70,7 +71,7 @@ public class TypedPropertiesFactory implements ITypedPropertiesFactory {
         List<Resource> resources = new ArrayList<Resource>();
         resources.add(new ClassPathResource("/symmetric-default.properties"));
         resources.add(new ClassPathResource("/symmetric-console-default.properties"));
-        resources.add(new FileSystemResource("../conf/symmetric.properties"));
+        resources.add(new FileSystemResource(AppUtils.getSymHome() + "/conf/symmetric.properties"));
         resources.add(new ClassPathResource("/symmetric.properties"));
         resources.add(new ClassPathResource("/symmetric-console-default.properties"));
         resources.add(new ClassPathResource("/symmetric-override.properties"));

@@ -21,9 +21,10 @@
 
 @echo off
 
+set OLDCD=%CD%
 cd /D %~dp0..
 set SYM_HOME=%CD%
-cd bin
+cd "%OLDCD%"
 
 set SYM_OPTIONS=-Dfile.encoding=utf-8 ^
 -Duser.language=en ^

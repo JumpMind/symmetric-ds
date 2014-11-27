@@ -70,11 +70,14 @@ public abstract class WrapperService {
         }
 
         System.out.println("Waiting for server to start");
+        ArrayList<String> cmdLine = getWrapperCommand("exec");
+        Process process = null;
         boolean success = false;
         int rc = 0;
         try {
-            ProcessBuilder pb = new ProcessBuilder(getWrapperCommand("exec"));
-            Process process = pb.start();
+            ProcessBuilder pb = new ProcessBuilder(cmdLine);
+            pb.redirectErrorStream(true);
+            process = pb.start();
             if (!(success = waitForPid(getProcessPid(process)))) {
                 rc = process.exitValue();
             }
@@ -86,6 +89,16 @@ public abstract class WrapperService {
         if (success) {
             System.out.println("Started");
         } else {
+            System.err.println(commandToString(cmdLine));
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    System.err.println(line);
+                }
+                reader.close();
+            } catch (Exception e) {
+            }            
             throw new WrapperException(Constants.RC_FAIL_EXECUTION, rc, "Failed second stage");
         }
     }
