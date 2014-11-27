@@ -54,6 +54,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.JarBuilder;
 
 /**
@@ -432,10 +433,10 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void generateWar(CommandLine line, List<String> args) throws Exception {
         String warFileName = popArg(args, "Filename");
-        final File workingDirectory = new File("../.war");
+        final File workingDirectory = new File(AppUtils.getSymHome() + "/.war");
         FileUtils.deleteDirectory(workingDirectory);
-        FileUtils.copyDirectory(new File("../web"), workingDirectory);
-        FileUtils.copyDirectory(new File("../conf"), new File(workingDirectory, "WEB-INF/classes"));
+        FileUtils.copyDirectory(new File(AppUtils.getSymHome() + "/web"), workingDirectory);
+        FileUtils.copyDirectory(new File(AppUtils.getSymHome() + "/conf"), new File(workingDirectory, "WEB-INF/classes"));
         if (propertiesFile != null && propertiesFile.exists()) {
             FileUtils.copyFile(propertiesFile, new File(workingDirectory,
                     "WEB-INF/classes/symmetric.properties"));

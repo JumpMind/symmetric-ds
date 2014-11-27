@@ -20,10 +20,9 @@
 # under the License.
 #
 
-cd "`dirname "$0"`/.."
-SYM_HOME=`pwd`
+dp0="`dirname "$0"`/.."
+SYM_HOME="`cd "$dp0" && pwd`"
 export SYM_HOME
-cd bin
 
 SYM_OPTIONS="-Dfile.encoding=utf-8 \
 -Duser.language=en \

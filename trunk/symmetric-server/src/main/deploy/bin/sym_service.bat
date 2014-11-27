@@ -22,5 +22,5 @@
 @echo off
 setlocal
 call "%~dp0\setenv.bat"
-"%SYM_JAVA%" -cp "%CLASSPATH%" org.jumpmind.symmetric.wrapper.Wrapper %*
+"%SYM_JAVA%" -cp "%CLASSPATH%" %SYM_OPTIONS% org.jumpmind.symmetric.wrapper.Wrapper %*
 endlocal

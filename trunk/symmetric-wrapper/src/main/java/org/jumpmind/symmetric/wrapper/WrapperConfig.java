@@ -45,18 +45,23 @@ public class WrapperConfig {
     public WrapperConfig(String configFile) throws IOException {
         prop = getProperties(configFile);
         this.configFile = new File(configFile).getAbsolutePath();
-        int index = configFile.lastIndexOf(File.separator);
-        if (index == -1) {
-            workingDirectory = new File(".." + File.separator + "bin");
+        String symHome = System.getenv("SYM_HOME");
+        if (symHome != null) {
+            workingDirectory = new File(symHome);
         } else {
-            workingDirectory = new File(configFile.substring(0, index + 1) + ".." + File.separator + "bin");
+            int index = configFile.lastIndexOf(File.separator);
+            if (index == -1) {
+                workingDirectory = new File(".");
+            } else {
+                workingDirectory = new File(configFile.substring(0, index + 1) + "..");
+            }
         }
         loadServerPropertiesFile();
     }
     
     protected void loadServerPropertiesFile() throws IOException {
         serverProperties = new Properties();
-        File serverPropertiesFile = new File(workingDirectory.getParent() + "/conf", "symmetric-server.properties");
+        File serverPropertiesFile = new File(workingDirectory.getCanonicalPath() + "/conf", "symmetric-server.properties");
         if (serverPropertiesFile.exists()) {
             FileInputStream fis = null;
             try {
@@ -77,7 +82,7 @@ public class WrapperConfig {
 
     public String getWrapperJarPath()  {
         try {
-            File libDir = new File(workingDirectory.getCanonicalPath() + File.separator + ".." + File.separator + "lib");
+            File libDir = new File(workingDirectory.getCanonicalPath() + File.separator + "lib");
             for (String filename : libDir.list()) {
                 if (filename.startsWith("symmetric-wrapper")) {
                     return new File(libDir.getCanonicalPath() + File.separator + filename).getCanonicalPath();
@@ -98,15 +103,15 @@ public class WrapperConfig {
     }
 
     public String getLogFile() {
-        return getProperty(prop, "wrapper.logfile", "../logs/wrapper.log");
+        return getProperty(prop, "wrapper.logfile", "logs/wrapper.log");
     }
 
     public String getWrapperPidFile() {
-        return getProperty(prop, "wrapper.pidfile", "../tmp/wrapper.pid");
+        return getProperty(prop, "wrapper.pidfile", "tmp/wrapper.pid");
     }
 
     public String getServerPidFile() {
-        return getProperty(prop, "wrapper.server.pidfile", "../tmp/server.pid");
+        return getProperty(prop, "wrapper.server.pidfile", "tmp/server.pid");
     }
 
     public long getLogFileMaxSize() {
