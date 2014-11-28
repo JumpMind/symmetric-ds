@@ -97,7 +97,6 @@ endif::pro[]
 When determining whether a data change has occurred or not, by defalt the triggers will record a change even if the data was 
 updated to the same value(s) they were originally. For example, a data change will be captured if an update of one column 
 in a row updated the value to the same value it already was. There is a global property that allows you to override this behavior (defaults to false).
-[source, SymmetricDS Parameter] 
 ----
 trigger.update.capture.changed.data.only.enabled=false
 ----

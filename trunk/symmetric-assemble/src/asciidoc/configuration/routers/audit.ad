@@ -6,7 +6,6 @@ creates a table named the same as the table for which data was captured with the
 table with the same data types only each column is nullable with no default values.
 
 IMPORTANT: The following parameter must be set to true so that the audit table can be created.   
-[source, SymmetricDS Parameter]
 ----
 auto.config.database=true
 ----

@@ -56,7 +56,7 @@ endif::pro[]
 ifdef::pro[]
 
 .Router Expression
-[source, Router Expression]
+
 ----
 c.external_id in (select STORE_ID from order where order_id=:ORDER_ID)
 ----
