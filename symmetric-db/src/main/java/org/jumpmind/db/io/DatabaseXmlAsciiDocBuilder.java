@@ -43,9 +43,9 @@ public class DatabaseXmlAsciiDocBuilder {
                 out.print("|");
                 out.print(column.getMappedType());
                 out.print("|");
-                out.print(column.getSize());
+                out.print(isNotBlank(column.getSize()) ? column.getSize() : " ");
                 out.print("|");
-                out.print(column.getDefaultValue());
+                out.print(isNotBlank(column.getDefaultValue()) ? column.getDefaultValue() : " ");
                 out.print("|");
                 if (column.isPrimaryKey()) {
                     out.print("PK ");
