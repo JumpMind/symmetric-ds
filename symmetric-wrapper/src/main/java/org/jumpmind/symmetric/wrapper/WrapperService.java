@@ -175,11 +175,8 @@ public abstract class WrapperService {
                     String line = null;
 
                     while ((line = childReader.readLine()) != null) {
-                        if (isConsole) {
-                            System.out.println(line);
-                        } else {
-                            logger.log(Level.INFO, line, "java");
-                        }
+                        System.out.println(line);
+                        logger.log(Level.INFO, line, "java");
                         if ((usingHeapDump && line.matches("Heap dump file created.*")) || 
                                 (!usingHeapDump && line.matches("java.lang.OutOfMemoryError.*")) ||
                                 line.matches(".*java.net.BindException.*")) {
@@ -203,7 +200,7 @@ public abstract class WrapperService {
                 } else if (keepRunning) {
                     logger.log(Level.SEVERE, "Unexpected exit from server: " + child.exitValue());
                     long runTime = System.currentTimeMillis() - startTime;
-                    if (System.currentTimeMillis() - startTime < 5000) {
+                    if (System.currentTimeMillis() - startTime < 7000) {
                         logger.log(Level.SEVERE, "Stopping because server exited too quickly after only " + runTime + " milliseconds");
                         updateStatus(Status.STOPPED);
                         throw new WrapperException(Constants.RC_SERVER_EXITED, child.exitValue(), "Unexpected exit from server");
