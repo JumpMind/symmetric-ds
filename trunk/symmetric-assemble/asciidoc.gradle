@@ -41,7 +41,7 @@ task generateAppendixes {
                 'asciidoc'
             ]
         }
-        
+
         javaexec {
             main = 'org.jumpmind.db.io.DatabaseXmlAsciiDocBuilder'
             classpath = configurations.generateAppendixesDependencies
@@ -55,10 +55,16 @@ task generateAppendixes {
 
 asciidoctor {
     (1)
+    sourceDir = new File('src/asciidoc')
     outputDir = new File("$buildDir/src/asciidoc")
     options = [
         doctype: 'book',
-        sourceDocumentNames: ['user-guide.ad', 'tutorials/tutorials.ad']]
+        sourceDocumentNames: [
+            'user-guide.ad',
+            'tutorials/tutorials.ad']
+    ]
+    attributes 'source-highlighter':'coderay' 
+
 }
 
 asciidoctor.dependsOn { tasks.generateAppendixes }
