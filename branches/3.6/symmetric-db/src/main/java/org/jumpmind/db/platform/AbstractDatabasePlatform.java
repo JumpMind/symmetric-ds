@@ -445,7 +445,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             value = cleanNumber(value);
             return new Long(value.trim());
         } catch (NumberFormatException ex) {            
-            return new BigInteger(value);        
+            return new BigDecimal(value.replace(',', '.')).toBigInteger();        
         }
     }    
         

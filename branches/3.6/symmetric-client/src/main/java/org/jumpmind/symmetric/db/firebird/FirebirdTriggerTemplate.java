@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.firebird;
 
 import java.util.HashMap;
 
+import org.jumpmind.db.platform.firebird.FirebirdDialect1DatabasePlatform;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
@@ -30,13 +31,28 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
     public FirebirdTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
 
+        String quo = "";
+        boolean isDialect1 = symmetricDialect.getPlatform() instanceof FirebirdDialect1DatabasePlatform;
+        
+        if (symmetricDialect.getPlatform().getDatabaseInfo().isDelimitedIdentifiersSupported()) {
+        	quo = symmetricDialect.getPlatform().getDatabaseInfo().getDelimiterToken();
+        }
+
         // @formatter:off
         emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || REPLACE(REPLACE($(tableAlias).\"$(columnName)\", '\\', '\\\\'), '\"', '\\\"') || '\"' end";
+        
+        stringColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || REPLACE(REPLACE($(tableAlias)." + quo + "$(columnName)" + quo + ", '\\', '\\\\'), '\"', '\\\"') || '\"' end";
         clobColumnTemplate = stringColumnTemplate;
-        numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || $(tableAlias).\"$(columnName)\" || '\"' end" ;
-        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || $(tableAlias).\"$(columnName)\" || '\"' end" ;
-        blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || sym_hex($(tableAlias).\"$(columnName)\") || '\"' end" ;
+
+        numberColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || $(tableAlias)." + quo + "$(columnName)" + quo + " || '\"' end" ;
+        datetimeColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || $(tableAlias)." + quo + "$(columnName)" + quo + " || '\"' end" ;
+        blobColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || sym_hex($(tableAlias)." + quo + "$(columnName)" + quo + ") || '\"' end" ;
+
+        if (isDialect1) {
+        	numberColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || trim(trailing '.000000' from trim(trailing '.0' from $(tableAlias)." + quo + "$(columnName)" + quo + ")) || '\"' end" ;
+        	datetimeColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || extract(year from $(tableAlias)." + quo + "$(columnName)" + quo + ") || '-'|| extract(month from $(tableAlias)." + quo + "$(columnName)" + quo + ") || '-' || extract(day from $(tableAlias)." + quo + "$(columnName)" + quo + ") || case when position(' ', $(tableAlias)." + quo + "$(columnName)" + quo + ") > 0 then substring($(tableAlias)." + quo + "$(columnName)" + quo + " from position(' ', $(tableAlias)." + quo + "$(columnName)" + quo + ")) else ' 00:00:00' end || '\"' end" ;
+        } 
+
         triggerConcatCharacter = "||" ;
         newTriggerValue = "new" ;
         oldTriggerValue = "old" ;
@@ -46,15 +62,13 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
 "create trigger $(triggerName) for $(schemaName)$(tableName) after insert position 5 as                                                                                                                            \n" +
-"   declare variable id bigint;                                                                                                                                            \n" +
 "   begin                                                                                                                                                                  \n" +
 "     if ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
 "     begin                                                                                                                                                                \n" +
-"       id = gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1);                                                                                                   \n" +
 "       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
 "       (data_id, table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               \n" +
 "       values(                                                                                                                                                            \n" +
-"         :id,                                                                                                                                                             \n" +
+"         gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1),                                                                                                                                                             \n" +
 "         '$(targetTableName)',                                                                                                                                            \n" +
 "         'I',                                                                                                                                                             \n" +
 "         $(triggerHistoryId),                                                                                                                                             \n" +
@@ -70,15 +84,12 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "   end                                                                                                                                                                    \n" );
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) for $(schemaName)$(tableName) after update position 5 as                                                                                                                            \n" +
-"   declare variable id bigint;                                                                                                                                            \n" +
 "   begin                                                                                                                                                                  \n" +
-"     if ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
 "     begin                                                                                                                                                                \n" +
-"       id = gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1);                                                                                                   \n" +
 "       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
 "       (data_id, table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)            \n" +
 "       values(                                                                                                                                                            \n" +
-"         :id,                                                                                                                                                             \n" +
+"         gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1),                                                                                                                                                             \n" +
 "         '$(targetTableName)',                                                                                                                                            \n" +
 "         'U',                                                                                                                                                             \n" +
 "         $(triggerHistoryId),                                                                                                                                             \n" +
@@ -96,15 +107,13 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "   end                                                                                                                                                                    \n" );
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger  $(triggerName) for $(schemaName)$(tableName) after delete position 5 as                                                                                                                           \n" +
-"   declare variable id bigint;                                                                                                                                            \n" +
 "   begin                                                                                                                                                                  \n" +
 "     if ($(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
 "     begin                                                                                                                                                                \n" +
-"       id = gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1);                                                                                                   \n" +
 "       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
 "       (data_id, table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                      \n" +
 "       values(                                                                                                                                                            \n" +
-"         :id,                                                                                                                                                             \n" +
+"         gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1),                                                                                                                                                             \n" +
 "         '$(targetTableName)',                                                                                                                                            \n" +
 "         'D',                                                                                                                                                             \n" +
 "         $(triggerHistoryId),                                                                                                                                             \n" +
