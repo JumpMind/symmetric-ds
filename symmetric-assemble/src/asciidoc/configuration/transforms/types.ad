@@ -239,7 +239,6 @@ This transformation allows you to provide a Bean Shell script in transform expre
 
 .Tranform Expression Example
 ====
-[source, Transform Expression]
 ----
 if (currentValue > oldValue) { 
 	return currentValue * .9 
@@ -310,7 +309,6 @@ are provided to the script:
 
 .Tranform Expression Example
 ====
-[source, Transform Expression]
 ----
 #{currentValue} - #{oldValue} * #{PRICE}
 ----
@@ -451,7 +449,6 @@ needed to complete the work:
 [horizontal]
 columnsToRowsKey:: Maps which source column is used
 .Sample Target Expression
-[source, Target Expression]
 ----
 column1=key1,column2=key2
 ----

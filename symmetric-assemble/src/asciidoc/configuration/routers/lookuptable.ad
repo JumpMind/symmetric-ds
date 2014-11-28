@@ -35,7 +35,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Router Expression
-[source, Router Expression]
+
 LOOKUP_TABLE=STORE KEY_COLUMN=BRAND_ID LOOKUP_KEY_COLUMN=BRAND_ID EXTERNAL_ID_COLUMN=STORE_ID
 endif::pro[]
  

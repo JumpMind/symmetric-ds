@@ -109,7 +109,6 @@ mechanism is use_timestamp or use_version then this expression will be the name 
 
 TIP: The detect_expression can be used to exclude certain column names from being used. In order to exclude column1 and column2, 
 the expression would be:
-[source, Detection Expression] 
 ----
 excluded_column_names=column1,column2
 ----

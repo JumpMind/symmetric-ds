@@ -37,7 +37,6 @@ Initial Load Delete SQL:: SQL used as part of the WHERE clause on a SQL statemen
 of the router.  
 
 IMPORTANT: Initial Load Delete SQL will only be used if the following parameter is true (default is false).     
-[source, SymmetricDS Parameter]
 ----
 initial.load.delete.first=true
 ----

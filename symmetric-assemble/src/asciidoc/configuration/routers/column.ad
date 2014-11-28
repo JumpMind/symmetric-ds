@@ -18,7 +18,7 @@ represents some other SymmetricDS concept. Token values always begin with a colo
 
 ifdef::pro[]
 .Router Expression
-[source, Router Expression]
+
 ----
 STATUS=READY TO SEND
 ----
@@ -43,7 +43,7 @@ NOTE: The use of OLD_STATUS, where the OLD_ prefix gives access to the old colum
  
 ifdef::pro[]
 .Router Expression
-[source, Router Expression]
+
 ----
 STATUS!=:OLD_STATUS
 ----
@@ -73,7 +73,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Router Expression
-[source, Router Expression]
+
 ----
 STORE_ID=:EXTERNAL_ID
 ----
@@ -95,7 +95,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Router Expression
-[source, Router Expression]
+
 ----
 STORE_ID=:REDIRECT_NODE
 ----
@@ -119,7 +119,7 @@ constant of ALL which indicates that all nodes should receive the update.
 
 ifdef::pro[]
 .Router Expression
-[source, Router Expression]
+
 ----
 STORE_ID=ALL or STORE_ID=:EXTERNAL_ID
 ----
@@ -144,7 +144,7 @@ route to a set of nodes who have a STORE_ID equal to their EXTERNAL_ID, or to al
 
 ifdef::pro[]
 .Router Expression
-[source, Router Expression]
+
 ----
 STORE_ID=NULL or STORE_ID=:EXTERNAL_ID
 ----
@@ -168,7 +168,7 @@ in the router expression as well.
 
 ifdef::pro[]
 .Router Expression
-[source, Router Expression]
+
 ----
 EXTERNAL_DATA=:EXTERNAL_ID
 ----

@@ -58,7 +58,7 @@ asciidoctor {
     outputDir = new File("$buildDir/src/asciidoc")
     options = [
         doctype: 'book',
-        sourceDocumentNames: ['user-guide.ad']]
+        sourceDocumentNames: ['user-guide.ad', 'tutorials/tutorials.ad']]
 }
 
 asciidoctor.dependsOn { tasks.generateAppendixes }
