@@ -1,1 +1,1 @@
-includeFlat 'symmetric-util','symmetric-db'
+includeFlat 'symmetric-wrapper','symmetric-util','symmetric-db','symmetric-csv','symmetric-jdbc'
