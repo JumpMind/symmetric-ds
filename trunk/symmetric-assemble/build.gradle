@@ -45,6 +45,7 @@ subprojects { subproject ->
     targetCompatibility=1.6
 
     ext {
+        commonsBeanUtilsVersion = '1.9.2'
         commonsDbcpVersion = '1.3'
         commonsIoVersion = '2.4'
         commonsLangVersion = '2.6'
@@ -67,6 +68,7 @@ subprojects { subproject ->
         jtdsVersion = '1.3.1'
         bouncyCastleVersion = '140'
         animalSnifferVersion = '1.10'
+        jnaVersion = "4.1.0"
 
         env = System.getenv()
     }
@@ -88,6 +90,45 @@ subprojects { subproject ->
     task develop {
         dependsOn tasks.cleanEclipse, tasks.cleanEclipseWtp, tasks.eclipse, tasks.eclipseWtp
     }
+}
+
+project("symmetric-csv") {
+    description = 'General purpose csv parser'
+}
+
+project("symmetric-wrapper") {
+    description = 'General purpose cross platform service wrapper'
+    
+    dependencies {
+        compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
+        compile "net.java.dev.jna:jna:$jnaVersion"
+        compile "net.java.dev.jna:jna-platform:$jnaVersion"
+        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
+    }
+
+}
+
+project("symmetric-jdbc") {
+    description = 'Library that contains the jdbc implementation for symmetric-db'
+    
+    dependencies {
+        compile project(":symmetric-db")
+        compile "commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion"
+        compile "commons-dbcp:commons-dbcp:$commonsDbcpVersion"
+        compile "org.springframework:spring-jdbc:$springVersion"
+        optional "org.apache.derby:derby:10.10.2.0"
+        optional "org.apache.derby:derbytools:10.10.2.0"
+        optional "mysql:mysql-connector-java:$mysqlVersion"
+        optional "org.mariadb.jdbc:mariadb-java-client:1.1.7"
+        optional "org.jumpmind.symmetric.jdbc:postgresql:9.2-1002-jdbc4"
+        optional "net.sourceforge.jtds:jtds:$jtdsVersion"
+        optional "org.hsqldb:hsqldb:2.3.2:jdk5"
+        optional "com.h2database:h2:$h2Version"
+        optional "org.xerial:sqlite-jdbc:3.7.15-M1"
+        optional "org.firebirdsql.jdbc:jaybird:2.1.6"
+        provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
+    }
+
 }
 
 project('symmetric-util') {
