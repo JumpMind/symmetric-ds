@@ -31,11 +31,6 @@
         <module>../symmetric-jdbc</module>
         <module>../symmetric-io</module>
         <module>../symmetric-core</module>
-        <module>../symmetric-ftp</module>
-        <module>../symmetric-oracle</module>
-        <module>../symmetric-postgres</module>
-        <module>../symmetric-mssql</module>  
-        <module>../symmetric-mongo</module>        
         <module>../symmetric-client</module>
         <module>../symmetric-server</module>
         <module>../symmetric-android</module>

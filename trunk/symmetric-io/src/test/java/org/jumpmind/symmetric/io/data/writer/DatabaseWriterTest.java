@@ -42,6 +42,7 @@ import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
+import org.jumpmind.symmetric.io.AbstractWriterTest;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
