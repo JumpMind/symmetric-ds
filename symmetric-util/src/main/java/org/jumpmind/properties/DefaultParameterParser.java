@@ -142,6 +142,8 @@ public class DefaultParameterParser {
         } else {
             parmParser = new DefaultParameterParser(FileUtils.openInputStream(new File(args[0])));
         }
+        new File(args[1]).getParentFile().mkdirs();
+        
         FileWriter writer = new FileWriter(args[1]);
         boolean isDatabaseOverridable = Boolean.parseBoolean(args[2]);
         boolean isAsciiDocFormat = args.length > 3 && "asciidoc".equals(args[3]);
