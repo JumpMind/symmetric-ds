@@ -66,10 +66,14 @@ abstract public class AbstractTest {
     private Map<String, SymmetricWebServer> webServers = new HashMap<String, SymmetricWebServer>();
 
     private static final String DEFAULT_PORT = "9995";
-    
+
     private int registrationPort;
 
     private int port;
+
+    static {
+        System.setProperty("h2.baseDir", "./");
+    }
 
     /**
      * The registration server should always be the first group in the list
@@ -99,11 +103,12 @@ abstract public class AbstractTest {
                 + registrationPort + "/sync/" + getGroupNames()[0]);
         return properties;
     }
-    
+
     @Before
     public void setup() {
         port = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, DEFAULT_PORT));
-        registrationPort = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, DEFAULT_PORT));
+        registrationPort = Integer.parseInt(System.getProperty(AppUtils.SYSPROP_PORT_NUMBER,
+                DEFAULT_PORT));
         log.info("Running " + getClass().getSimpleName() + " test on port " + port);
         TestSetupUtil.removeEmbededdedDatabases();
         String[] groups = getGroupNames();
@@ -119,7 +124,8 @@ abstract public class AbstractTest {
         test(rootServer, clientServer);
     }
 
-    protected abstract void test(ISymmetricEngine rootServer, ISymmetricEngine clientServer) throws Exception;
+    protected abstract void test(ISymmetricEngine rootServer, ISymmetricEngine clientServer)
+            throws Exception;
 
     @After
     public void teardown() {
@@ -163,7 +169,7 @@ abstract public class AbstractTest {
                 ISymmetricEngine engine = new ClientSymmetricEngine(properties);
                 IDatabasePlatform platform = engine.getDatabasePlatform();
                 engine.getStagingManager().clean(0);
-                engine.uninstall();                
+                engine.uninstall();
 
                 Database database = platform.getDdlReader().readTables(
                         platform.getDefaultCatalog(), platform.getDefaultSchema(),
@@ -205,7 +211,8 @@ abstract public class AbstractTest {
     }
 
     /**
-     * Loads configuration in the format of classname.csv at the registration server
+     * Loads configuration in the format of classname.csv at the registration
+     * server
      */
     protected void loadConfigAtRegistrationServer() throws Exception {
         ISymmetricEngine regEngine = getRegServer().getEngine();
@@ -265,14 +272,15 @@ abstract public class AbstractTest {
         }
         return push;
     }
-    
+
     protected boolean pullFiles(String name) {
         int tries = 0;
         boolean pulled = false;
         boolean lastPull = false;
         boolean errorOccurred = false;
         while (!errorOccurred && (lastPull || (!pulled && tries < 10))) {
-            RemoteNodeStatuses statuses = getWebServer(name).getEngine().getFileSyncService().pullFilesFromNodes(true);
+            RemoteNodeStatuses statuses = getWebServer(name).getEngine().getFileSyncService()
+                    .pullFilesFromNodes(true);
             try {
                 statuses.waitForComplete(60000);
             } catch (InterruptedException ex) {
@@ -291,7 +299,8 @@ abstract public class AbstractTest {
         int tries = 0;
         boolean pulled = false;
         while (!pulled && tries < 10) {
-            RemoteNodeStatuses statuses = getWebServer(name).getEngine().getFileSyncService().pushFilesToNodes(true);
+            RemoteNodeStatuses statuses = getWebServer(name).getEngine().getFileSyncService()
+                    .pushFilesToNodes(true);
             try {
                 statuses.waitForComplete(60000);
             } catch (InterruptedException ex) {
@@ -304,8 +313,8 @@ abstract public class AbstractTest {
         return pulled;
     }
 
-
-    protected void loadConfigAndRegisterNode(String clientGroup, String serverGroup) throws Exception {
+    protected void loadConfigAndRegisterNode(String clientGroup, String serverGroup)
+            throws Exception {
         loadConfigAtRegistrationServer();
         getWebServer(serverGroup).getEngine().getFileSyncService().trackChanges(true);
         getWebServer(serverGroup).getEngine().route();

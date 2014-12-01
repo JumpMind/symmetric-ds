@@ -19,4 +19,4 @@
     under the License.
 ====
 
-mvn deploy:deploy-file -f pom.xml -DrepositoryId=dav.codehaus.org -Durl=dav:https://dav.codehaus.org/repository/symmetricds/ -Dpackaging=jar -DgeneratePom=true -Dversion=3.7.15.SNAPSHOT.2 -DgroupId=org.jumpmind.symmetric.jdbc -DartifactId=xerial-sqlite -Dfile=/opt/sdk/jdbc/sqlite-jdbc-3.7.15-SNAPSHOT-2.jar
+mvn deploy:deploy-file -f pom.xml -DrepositoryId=dav.codehaus.org -Durl=dav:https://dav.codehaus.org/repository/symmetricds/ -Dpackaging=jar -DgeneratePom=true -Dversion=11.2.0.3 -DgroupId=org.jumpmind.symmetric.jdbc -DartifactId=ojdbc -Dfile=/Users/cshenso/Documents/workspace/symmetric-assemble/lib/ojdbc-11.2.0.3.jar

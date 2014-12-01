@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -107,7 +109,9 @@ public abstract class AbstractCommandLauncher {
             symHome = ".";
         }
         System.setProperty("log4j.sym.home", symHome);
-        System.setProperty("h2.baseDir", symHome + "/tmp/h2");
+        if (isBlank(System.getProperty("h2.baseDir"))) {
+           System.setProperty("h2.baseDir", symHome + "/tmp/h2");
+        }
         DEFAULT_SERVER_PROPERTIES = System.getProperty(SystemConstants.SYSPROP_SERVER_PROPERTIES_PATH, symHome + "/conf/symmetric-server.properties");
         log = LoggerFactory.getLogger(AbstractCommandLauncher.class);
         initFromServerProperties();

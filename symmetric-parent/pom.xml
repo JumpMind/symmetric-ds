@@ -929,6 +929,11 @@
                 <version>${version.postgresql}</version>
             </dependency>
             <dependency>
+                <groupId>org.jumpmind.symmetric.jdbc</groupId>
+                <artifactId>ojdbc</artifactId>
+                <version>11.2.0.3</version>
+            </dependency>                    
+            <dependency>
                 <groupId>net.sourceforge.jtds</groupId>
                 <artifactId>jtds</artifactId>
                 <version>1.2.4</version>

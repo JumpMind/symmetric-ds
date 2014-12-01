@@ -69,26 +69,6 @@
         </dependency>
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
-            <artifactId>symmetric-oracle</artifactId>
-        </dependency>        
-        <dependency>
-            <groupId>org.jumpmind.symmetric</groupId>
-            <artifactId>symmetric-postgres</artifactId>
-        </dependency>        
-        <dependency>
-            <groupId>org.jumpmind.symmetric</groupId>
-            <artifactId>symmetric-mssql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jumpmind.symmetric</groupId>
-            <artifactId>symmetric-mongo</artifactId>              
-        </dependency>        
-        <dependency>
-            <groupId>org.jumpmind.symmetric</groupId>
-            <artifactId>symmetric-ftp</artifactId>
-        </dependency>        
-        <dependency>
-            <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-wrapper</artifactId>
             <scope>provided</scope>
         </dependency>        
