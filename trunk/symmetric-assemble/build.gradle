@@ -23,6 +23,7 @@ allprojects {
 
     repositories {
         mavenCentral()
+        maven { url "http://repository.codehaus.org" }
     }
 
     eclipse {
@@ -100,7 +101,7 @@ subprojects { subproject ->
         provided "org.apache.derby:derby:$derbyVersion"
         provided "org.apache.derby:derbytools:$derbyVersion"
         provided "mysql:mysql-connector-java:$mysqlVersion"
-        provided "org.mariadb.jdbc:mariadb-java-client:$mariaDbVersion"
+        provided ("org.mariadb.jdbc:mariadb-java-client:$mariaDbVersion") { exclude group: 'net.java.dev.jna' }
         provided "org.jumpmind.symmetric.jdbc:postgresql:$postgresqlVersion"
         provided "org.jumpmind.symmetric.jdbc:ojdbc:11.2.0.3"
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
@@ -126,16 +127,16 @@ subprojects { subproject ->
 
 project("symmetric-csv") { description = 'General purpose csv parser' }
 
-//project("symmetric-wrapper") {
-//    description = 'General purpose cross platform service wrapper'
-//
-//    dependencies {
-//        compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
-//        compile "net.java.dev.jna:jna:$jnaVersion"
-//        compile "net.java.dev.jna:jna-platform:$jnaVersion"
-//        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
-//    }
-//}
+project("symmetric-wrapper") {
+    description = 'General purpose cross platform service wrapper'
+
+    dependencies {
+        compile "net.java.dev.jna:jna:$jnaVersion"
+        compile "net.java.dev.jna:jna-platform:$jnaVersion"
+        compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
+        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
+    }
+}
 
 project('symmetric-util') {
     description = 'Utility classes that are used by several Symmetric libraries'
@@ -193,6 +194,20 @@ project('symmetric-core') {
     }
 }
 
+project('symmetric-android') {
+    description = 'SymmetricDS Client library for Android clients'
+
+    dependencies {
+        compile (project(":symmetric-core")) {
+            exclude group:'org.slf4j'
+            exclude group:'log4j'
+            exclude group:'net.sf.kxml'
+        }
+        compile "org.slf4j:slf4j-android:1.6.1-RC1"
+        provided "com.google.android:android:2.1.2"
+    }
+}
+
 project('symmetric-client') {
     description = 'SymmetricDS Client library for JDBC clients'
 
@@ -242,7 +257,7 @@ project('symmetric-server') {
         testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-core', configuration: 'testArtifacts')
-        //testCompile project(path: ':symmetric-client', configuration: 'testArtifacts')
+        testCompile project(path: ':symmetric-client', configuration: 'testArtifacts')
     }
 }
 
