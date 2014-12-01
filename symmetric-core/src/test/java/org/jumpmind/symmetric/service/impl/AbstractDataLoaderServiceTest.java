@@ -45,7 +45,6 @@ import org.jumpmind.symmetric.ext.NodeGroupTestDataWriterFilter;
 import org.jumpmind.symmetric.ext.TestDataWriterFilter;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
-import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -563,12 +562,12 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
 
     @Test
     public void testRegisteredDataWriterFilter() {
-        TestDataWriterFilter registeredFilter = (TestDataWriterFilter) getSymmetricEngine().getExtensionService()
-                .getExtensionPointMap(IDatabaseWriterFilter.class).get("registeredDataFilter");
+        TestDataWriterFilter registeredFilter = getSymmetricEngine().getExtensionPointManager()
+                .getExtensionPoint("registeredDataFilter");
         assertTrue(registeredFilter.getNumberOfTimesCalled() > 0);
 
-        NodeGroupTestDataWriterFilter registeredNodeGroupFilter = (NodeGroupTestDataWriterFilter) getSymmetricEngine()
-                .getExtensionService().getExtensionPointMap(IDatabaseWriterFilter.class).get("registeredNodeGroupTestDataFilter");
+        NodeGroupTestDataWriterFilter registeredNodeGroupFilter = getSymmetricEngine()
+                .getExtensionPointManager().getExtensionPoint("registeredNodeGroupTestDataFilter");
         assertTrue(registeredNodeGroupFilter.getNumberOfTimesCalled() > 0);
     }
 

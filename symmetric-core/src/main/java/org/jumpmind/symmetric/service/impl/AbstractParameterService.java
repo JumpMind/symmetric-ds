@@ -31,7 +31,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
@@ -41,8 +40,6 @@ abstract public class AbstractParameterService {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    protected IExtensionService extensionService;
-    
     protected TypedProperties parameters;
 
     private long cacheTimeoutInMs = 0;
@@ -243,10 +240,6 @@ abstract public class AbstractParameterService {
             }
         }
         return value;
-    }
-
-    public void setExtensionService(IExtensionService extensionService) {
-        this.extensionService = extensionService;
     }
 
 }

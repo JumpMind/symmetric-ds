@@ -29,7 +29,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -42,7 +41,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A data router that uses a lookup table to map data to nodes
  */
-public class LookupTableDataRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
+public class LookupTableDataRouter extends AbstractDataRouter implements IDataRouter {
 
     final static Logger log = LoggerFactory.getLogger(LookupTableDataRouter.class);
 

@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.TokenConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -76,7 +75,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
  * table and the router_expression for trigger entry for the 'price' table would
  * be 'store_id=:REDIRECT_NODE' and the router_type would be 'column'.
  */
-public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
+public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter {
 
     private static final String NULL_VALUE = "NULL";
 

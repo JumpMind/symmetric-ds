@@ -53,7 +53,12 @@ public class ParameterService extends AbstractParameterService implements IParam
 
     private Date lastUpdateTime;
 
-    public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory, String tablePrefix) {
+    private IParameterFilter parameterFilter;
+
+    private IParameterSaveFilter parameterSaveFilter;
+
+	public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory,
+            String tablePrefix) {
         this.tablePrefix = tablePrefix;
         this.factory = factory;
         this.sql = new ParameterServiceSqlMap(platform, AbstractService.createSqlReplacementTokens(
@@ -90,10 +95,8 @@ public class ParameterService extends AbstractParameterService implements IParam
 
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue, String lastUpdateBy) {
         paramValue = paramValue != null ? paramValue.toString() : null;
-        if (extensionService != null) {
-            for (IParameterSaveFilter filter : extensionService.getExtensionPointList(IParameterSaveFilter.class)) {
-                paramValue = filter.filterSaveParameter(key, (String) paramValue);
-            }
+        if (parameterSaveFilter != null) {
+        	paramValue = parameterSaveFilter.filterSaveParameter(key, (String) paramValue);
         }
 
         int count = sqlTemplate.update(sql.getSql("updateParameterSql"), new Object[] { paramValue, lastUpdateBy,
@@ -140,13 +143,13 @@ public class ParameterService extends AbstractParameterService implements IParam
             saveParameter(externalId, nodeGroupId, key, parameters.get(key), lastUpdateBy);
         }
     }
-
+    
     protected TypedProperties readParametersFromDatabase(String sqlKey, Object... values) {
         final TypedProperties properties = new TypedProperties();
-        final IParameterFilter filter = extensionService != null ? extensionService.getExtensionPoint(IParameterFilter.class) : null;
+        final IParameterFilter filter = this.parameterFilter;
         sqlTemplate.query(sql.getSql(sqlKey), new ISqlRowMapper<Object>() {
             public Object mapRow(Row row) {
-                String key = row.getString("param_key");
+            	String key = row.getString("param_key");
                 String value = row.getString("param_value");
                 if (filter != null) {
                     value = filter.filterParameter(key, value);
@@ -182,14 +185,21 @@ public class ParameterService extends AbstractParameterService implements IParam
         return readParametersFromDatabase("selectParametersSql", externalId, nodeGroupId);
     }
 
+    public void setParameterFilter(IParameterFilter parameterFilter) {
+        this.parameterFilter = parameterFilter;
+    }
+
+    public void setParameterSaveFilter(IParameterSaveFilter parameterSaveFilter) {
+		this.parameterSaveFilter = parameterSaveFilter;
+	}
+
     class DatabaseParameterMapper implements ISqlRowMapper<DatabaseParameter> {
-        IParameterFilter filter = extensionService != null ? extensionService.getExtensionPoint(IParameterFilter.class) : null;
         public DatabaseParameter mapRow(Row row) {
-            String key = row.getString("param_key");
-            String value = row.getString("param_value");
-            if (filter != null) {
-                value = filter.filterParameter(key, value);
-            }           
+        	String key = row.getString("param_key");
+        	String value = row.getString("param_value");
+            if (parameterFilter != null) {
+                value = parameterFilter.filterParameter(key, value);
+            }        	
             return new DatabaseParameter(key, value, row.getString("external_id"), row.getString("node_group_id"));
         }
     }

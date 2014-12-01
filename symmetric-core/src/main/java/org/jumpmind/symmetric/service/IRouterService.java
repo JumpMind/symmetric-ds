@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 
@@ -47,6 +48,10 @@ public interface IRouterService extends IService {
     
     public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,
             Node node, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter);
+ 
+    public void addDataRouter(String name, IDataRouter dataRouter);
+    
+    public void addBatchAlgorithm(String name, IBatchAlgorithm algorithm);
     
     /**
      * Get a list of available batch algorithms that can be used for the different channels

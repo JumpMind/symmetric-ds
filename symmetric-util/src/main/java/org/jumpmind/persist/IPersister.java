@@ -18,14 +18,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.service;
+package org.jumpmind.persist;
 
-import org.jumpmind.symmetric.io.IOfflineClientListener;
+public interface IPersister<T, K> {
 
-public interface IOfflineDetectorService {
-
-    public void addOfflineListener(IOfflineClientListener listener);
-
-    public boolean removeOfflineListener(IOfflineClientListener listener);
-
+    public void save(T object, K key);
+    
+    public T get(Class<T> clazz, K key);
 }

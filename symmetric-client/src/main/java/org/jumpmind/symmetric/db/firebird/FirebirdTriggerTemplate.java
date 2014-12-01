@@ -28,23 +28,31 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 
-    String quo = "";
-    boolean isDialect1;
-
     public FirebirdTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
+
+        String quo = "";
+        boolean isDialect1 = symmetricDialect.getPlatform() instanceof FirebirdDialect1DatabasePlatform;
+        
         if (symmetricDialect.getPlatform().getDatabaseInfo().isDelimitedIdentifiersSupported()) {
-            quo = symmetricDialect.getPlatform().getDatabaseInfo().getDelimiterToken();
+        	quo = symmetricDialect.getPlatform().getDatabaseInfo().getDelimiterToken();
         }
-        isDialect1 = symmetricDialect.getPlatform() instanceof FirebirdDialect1DatabasePlatform;
-                
+
         // @formatter:off
         emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || sym_escape(substring($(tableAlias)." + quo + "$(columnName)" + quo + " from 1)) || '\"' end" ;
+        
+        stringColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || REPLACE(REPLACE($(tableAlias)." + quo + "$(columnName)" + quo + ", '\\', '\\\\'), '\"', '\\\"') || '\"' end";
         clobColumnTemplate = stringColumnTemplate;
+
         numberColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || $(tableAlias)." + quo + "$(columnName)" + quo + " || '\"' end" ;
         datetimeColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || $(tableAlias)." + quo + "$(columnName)" + quo + " || '\"' end" ;
         blobColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || sym_hex($(tableAlias)." + quo + "$(columnName)" + quo + ") || '\"' end" ;
+
+        if (isDialect1) {
+        	numberColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || trim(trailing '.000000' from trim(trailing '.0' from $(tableAlias)." + quo + "$(columnName)" + quo + ")) || '\"' end" ;
+        	datetimeColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || extract(year from $(tableAlias)." + quo + "$(columnName)" + quo + ") || '-'|| extract(month from $(tableAlias)." + quo + "$(columnName)" + quo + ") || '-' || extract(day from $(tableAlias)." + quo + "$(columnName)" + quo + ") || case when position(' ', $(tableAlias)." + quo + "$(columnName)" + quo + ") > 0 then substring($(tableAlias)." + quo + "$(columnName)" + quo + " from position(' ', $(tableAlias)." + quo + "$(columnName)" + quo + ")) else ' 00:00:00' end || '\"' end" ;
+        } 
+
         triggerConcatCharacter = "||" ;
         newTriggerValue = "new" ;
         oldTriggerValue = "old" ;
@@ -77,7 +85,6 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) for $(schemaName)$(tableName) after update position 5 as                                                                                                                            \n" +
 "   begin                                                                                                                                                                  \n" +
-"     if ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
 "     begin                                                                                                                                                                \n" +
 "       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
 "       (data_id, table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)            \n" +

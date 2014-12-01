@@ -18,14 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.service;
+package org.jumpmind.symmetric.db.db2;
 
-import org.jumpmind.symmetric.io.IOfflineClientListener;
+import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.service.IParameterService;
 
-public interface IOfflineDetectorService {
+public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISymmetricDialect {
 
-    public void addOfflineListener(IOfflineClientListener listener);
+    public Db2As400SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
+        super(parameterService, platform);
+    }
 
-    public boolean removeOfflineListener(IOfflineClientListener listener);
+    protected String getSystemSchemaName() {
+    	return "QSYS2";
+    }
 
 }

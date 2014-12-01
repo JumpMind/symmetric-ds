@@ -37,7 +37,6 @@ public interface WinsvcEx extends Winsvc {
     int SERVICE_DEMAND_START = 0x00000003;
     int SERVICE_ERROR_NORMAL = 0x00000001;
     int SERVICE_CONFIG_DESCRIPTION = 1;
-    int SERVICE_CONFIG_DELAYED_AUTO_START_INFO = 3;
 
     public interface SERVICE_MAIN_FUNCTION extends StdCallCallback {
         void serviceMain(int argc, Pointer argv);
@@ -58,22 +57,6 @@ public interface WinsvcEx extends Winsvc {
         @Override
         protected List<String> getFieldOrder() {
             return Arrays.asList(new String[] { "serviceName", "serviceCallback" });
-        }
-    }
-    
-    public static class SERVICE_DELAYED_AUTO_START_INFO extends Structure {
-        public int fDelayedAutostart;
-
-        public SERVICE_DELAYED_AUTO_START_INFO() {
-        }
-        
-        public SERVICE_DELAYED_AUTO_START_INFO(boolean fDelayedAutostart) {
-            this.fDelayedAutostart = fDelayedAutostart ? 1 : 0;
-        }
-        
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList(new String[] { "fDelayedAutostart" });
         }
     }
 }

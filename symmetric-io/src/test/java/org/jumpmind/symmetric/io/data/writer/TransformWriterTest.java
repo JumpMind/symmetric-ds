@@ -20,35 +20,16 @@
  */
 package org.jumpmind.symmetric.io.data.writer;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.BinaryLeftColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ClarionDateTimeColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsKeyColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.JavaColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.LeftColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.MathColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
-import org.jumpmind.symmetric.io.data.transform.ValueMapColumnTransform;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -124,36 +105,11 @@ public class TransformWriterTest extends AbstractWriterTest {
     }
 
     protected TransformWriter getTransformWriter() {
-        return new TransformWriter(platform, TransformPoint.LOAD, mockWriter, buildDefaultColumnTransforms(), new TransformTable[] {
+        return new TransformWriter(platform, TransformPoint.LOAD, mockWriter, TransformWriter.buildDefaultColumnTransforms(), new TransformTable[] {
                 new TransformTable("s1", "t1", TransformPoint.LOAD, new TransformColumn("id", "id",
                         true)),
                 new TransformTable("s2", "t2", TransformPoint.LOAD, new TransformColumn("id", "id",
                         true), new TransformColumn(null, "col2", false, "const", "added")) });
-    }
-    
-    public static Map<String, IColumnTransform<?>> buildDefaultColumnTransforms() {
-        Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
-        addColumnTransform(AdditiveColumnTransform.NAME, columnTransforms, new AdditiveColumnTransform());
-        addColumnTransform(JavaColumnTransform.NAME, columnTransforms, new JavaColumnTransform());
-        addColumnTransform(ConstantColumnTransform.NAME, columnTransforms, new ConstantColumnTransform());
-        addColumnTransform(CopyColumnTransform.NAME, columnTransforms, new CopyColumnTransform());
-        addColumnTransform(IdentityColumnTransform.NAME, columnTransforms, new IdentityColumnTransform());
-        addColumnTransform(MultiplierColumnTransform.NAME, columnTransforms, new MultiplierColumnTransform());
-        addColumnTransform(SubstrColumnTransform.NAME, columnTransforms, new SubstrColumnTransform());
-        addColumnTransform(LeftColumnTransform.NAME, columnTransforms, new LeftColumnTransform());
-        addColumnTransform(BinaryLeftColumnTransform.NAME, columnTransforms, new BinaryLeftColumnTransform());
-        addColumnTransform(RemoveColumnTransform.NAME, columnTransforms, new RemoveColumnTransform());
-        addColumnTransform(MathColumnTransform.NAME, columnTransforms, new MathColumnTransform());
-        addColumnTransform(ValueMapColumnTransform.NAME, columnTransforms, new ValueMapColumnTransform());
-        addColumnTransform(CopyIfChangedColumnTransform.NAME, columnTransforms, new CopyIfChangedColumnTransform());
-        addColumnTransform(ColumnsToRowsKeyColumnTransform.NAME, columnTransforms, new ColumnsToRowsKeyColumnTransform());
-        addColumnTransform(ColumnsToRowsValueColumnTransform.NAME, columnTransforms, new ColumnsToRowsValueColumnTransform());
-        addColumnTransform(ClarionDateTimeColumnTransform.NAME, columnTransforms, new ClarionDateTimeColumnTransform());
-        return columnTransforms;
-    }
-    
-    public static void addColumnTransform(String name, Map<String, IColumnTransform<?>> columnTransforms, IColumnTransform<?> columnTransform) {
-        columnTransforms.put(name, columnTransform);
     }
 
 }
