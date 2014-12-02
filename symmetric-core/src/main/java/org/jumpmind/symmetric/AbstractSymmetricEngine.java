@@ -719,12 +719,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public synchronized void destroy() {
+        removeMeFromMap(registeredEnginesByName);        
+        removeMeFromMap(registeredEnginesByUrl);
+        registeredEnginesByName.remove(getEngineName());
+        registeredEnginesByUrl.remove(getSyncUrl());
         stop();
         if (jobManager != null) {
             jobManager.destroy();
         }
-        removeMeFromMap(registeredEnginesByName);
-        removeMeFromMap(registeredEnginesByUrl);
     }
 
     public String reloadNode(String nodeId, String createBy) {

@@ -31,8 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
-import junit.framework.Assert;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
@@ -53,8 +51,13 @@ import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLi
 import org.jumpmind.symmetric.transport.MockTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.junit.After;
+import org.junit.Assert;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
+
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest {
 
     protected final static String TEST_TABLE = "test_dataloader_table";
@@ -91,7 +94,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testIncomingBatch() throws Exception {
+    public void test01IncomingBatch() throws Exception {
         String[] insertValues = new String[TEST_COLUMNS.length];
         insertValues[2] = insertValues[4] = "incoming test";
 
@@ -120,7 +123,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testStatistics() throws Exception {
+    public void test02Statistics() throws Exception {
         Level old = setLoggingLevelForTest(Level.FATAL);
         String[] updateValues = new String[TEST_COLUMNS.length + 1];
         updateValues[0] = updateValues[updateValues.length - 1] = getNextId();
@@ -187,7 +190,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testUpdateCollision() throws Exception {
+    public void test03UpdateCollision() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] insertValues = new String[TEST_COLUMNS.length];
         insertValues[0] = getNextId();
@@ -238,7 +241,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testSqlStatistics() throws Exception {
+    public void test04SqlStatistics() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] insertValues = new String[TEST_COLUMNS.length];
         insertValues[2] = insertValues[4] = "sql stat test";
@@ -296,7 +299,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testSkippingResentBatch() throws Exception {
+    public void test05SkippingResentBatch() throws Exception {
         String[] values = { getNextId(), "resend string", "resend string not null", "resend char",
                 "resend char not null", "2007-01-25 00:00:00.000", "2007-01-25 01:01:01.000", "0", "7",
                 "10.10", "0.474" };
@@ -322,7 +325,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testErrorWhileSkip() throws Exception {
+    public void test06ErrorWhileSkip() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2",
                 "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "0.474" };
@@ -357,7 +360,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testDataIntregrityError() throws Exception {
+    public void test07DataIntregrityError() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string3", "string not null3", "char3", "char not null3",
                 "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "0.474" };
@@ -408,7 +411,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testErrorWhileParsing() throws Exception {
+    public void test08ErrorWhileParsing() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "should not reach database", "string not null", "char",
                 "char not null", "2007-01-02", "2007-02-03 04:05:06.000", "0", "47", "67.89", "0.474" };
@@ -438,7 +441,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testErrorThenSuccessBatch() throws Exception {
+    public void test09ErrorThenSuccessBatch() throws Exception {
         Logger.getLogger(AbstractDataLoaderServiceTest.class).warn("testErrorThenSuccessBatch");
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(),
@@ -482,7 +485,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testMultipleBatch() throws Exception {
+    public void test10MultipleBatch() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string", "string not null2", "char2", "char not null2",
                 "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "0.474" };
@@ -527,7 +530,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         setLoggingLevelForTest(old);
     }
 
-    public void testSimple(String dmlType, String[] values, String[] expectedValues)
+    protected void testSimple(String dmlType, String[] values, String[] expectedValues)
             throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -562,7 +565,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     @Test
-    public void testRegisteredDataWriterFilter() {
+    public void test12RegisteredDataWriterFilter() {
         TestDataWriterFilter registeredFilter = (TestDataWriterFilter) getSymmetricEngine().getExtensionService()
                 .getExtensionPointMap(IDatabaseWriterFilter.class).get("registeredDataFilter");
         assertTrue(registeredFilter.getNumberOfTimesCalled() > 0);

@@ -31,6 +31,15 @@
         </layout>
     </appender>
     
+    <appender name="ROLLING" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="target/junit.log" />
+        <param name="MaxFileSize" value="100MB" />
+        <param name="Append" value="false" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
+        </layout>
+    </appender>    
+    
     <category name="org.jumpmind">
         <priority value="INFO" />
     </category>
@@ -62,6 +71,7 @@
     <root>
         <priority value="WARN" />
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ROLLING" />
     </root>
 
 </log4j:configuration>
