@@ -40,6 +40,9 @@ subprojects { subproject ->
     apply plugin: 'propdeps'
     apply plugin: 'propdeps-maven'
     apply plugin: 'propdeps-eclipse'
+    
+    configurations.provided.transitive = true
+    configurations.optional.transitive = false
 
     sourceCompatibility=1.6
     targetCompatibility=1.6
@@ -95,9 +98,10 @@ subprojects { subproject ->
     dependencies {
         compile "org.slf4j:slf4j-api:$slf4jVersion"
         compile "org.slf4j:jul-to-slf4j:$slf4jVersion"
-        compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
         compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
+        provided "org.slf4j:slf4j-log4j12:$slf4jVersion"      
+        provided "log4j:log4j:$log4jVersion"
         provided "org.apache.derby:derby:$derbyVersion"
         provided "org.apache.derby:derbytools:$derbyVersion"
         provided "mysql:mysql-connector-java:$mysqlVersion"
@@ -108,12 +112,11 @@ subprojects { subproject ->
         provided "org.hsqldb:hsqldb:$hsqldbVersion:jdk5"
         provided "com.h2database:h2:$h2Version"
         provided "org.xerial:sqlite-jdbc:$sqliteVersion"
-        provided "org.firebirdsql.jdbc:jaybird:$firebirdVersion"
+        provided ("org.firebirdsql.jdbc:jaybird:$firebirdVersion") { exclude group: 'geronimo-spec' }
         // javax.resource needed by jaybird
         provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
 
-        testCompile "junit:junit:$junitVersion"
-        testCompile "log4j:log4j:$log4jVersion"
+        testCompile "junit:junit:$junitVersion"        
         testCompile "org.hamcrest:hamcrest-all:$hamcrestVersion"
         testCompile "org.mockito:mockito-all:$mockitoVersion"
         testCompile "org.powermock:powermock-api-mockito:$powerMockVersion"
@@ -206,6 +209,24 @@ project('symmetric-android') {
         compile "org.slf4j:slf4j-android:1.6.1-RC1"
         provided "com.google.android:android:2.1.2"
     }
+    
+    apply plugin: 'distribution'
+    
+    distributions {
+        android {
+            baseName = 'android'
+            contents {
+                from { 'COPYING' }
+                from { 'CREDITS' }
+                from { 'NOTICE' }
+                into('libs') {
+                    from configurations.runtime - configurations.provided
+                    from jar
+                }
+            }
+        }
+    }
+
 }
 
 project('symmetric-client') {
@@ -233,8 +254,7 @@ project('symmetric-server') {
     description = 'SymmetricDS Server library for JDBC client'
 
     dependencies {
-        compile project(":symmetric-client")
-        //compile project(":symmetric-wrapper")
+        compile project(":symmetric-client")        
         compile "javax.mail:mail:1.4.5"
         compile "org.springframework:spring-jms:$springVersion"
         compile "org.springframework:spring-web:$springVersion"
@@ -243,6 +263,7 @@ project('symmetric-server') {
         compile "org.jdom:jdom:1.1"
         compile "com.mangofactory:swagger-springmvc:0.6.5"
 
+        provided project(":symmetric-wrapper")
         provided "javax.jms:jms-api:1.1-rev-1"
         provided "org.mongodb:mongo-java-driver:2.12.3"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
@@ -259,6 +280,55 @@ project('symmetric-server') {
         testCompile project(path: ':symmetric-core', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-client', configuration: 'testArtifacts')
     }
+    
+    apply plugin: 'distribution'
+    
+    distributions {
+        server {
+            baseName = 'server'
+            contents {
+                from { 'COPYING' }
+                from { 'CREDITS' }
+                from { 'NOTICE' }
+                from ('src/main/deploy') {
+                    exclude 'bin/sym'
+                    exclude 'bin/symadmin'
+                    exclude 'bin/dbexport'
+                    exclude 'bin/dbimport'
+                    exclude 'bin/dbfill'
+                    exclude 'bin/jmx'
+                    exclude 'bin/dbsql'
+                    exclude 'bin/sym_service'
+                    exclude 'bin/setenv'
+                }
+                from ('src/main/deploy') {
+                    include 'bin/sym'
+                    include 'bin/symadmin'
+                    include 'bin/dbexport'
+                    include 'bin/dbimport'
+                    include 'bin/dbfill'
+                    include 'bin/jmx'
+                    include 'bin/dbsql'
+                    include 'bin/sym_service'
+                    include 'bin/setenv'
+                    fileMode 755
+                }
+                from('../symmetric-core/src/main/resources/symmetric-default.properties') {
+                    rename 'symmetric-default.properties', 'conf/symmetric.properties'
+                    fileMode 664
+                }
+                into('lib') {
+                    from configurations.provided
+                    rename 'symmetric-wrapper(.*).jar', 'symmetric-wrapper.jar'
+                }
+                into('web/WEB-INF/lib') {
+                    from configurations.runtime - configurations.provided
+                    from jar
+                }
+            }
+        }
+    }
+    
 }
 
 
