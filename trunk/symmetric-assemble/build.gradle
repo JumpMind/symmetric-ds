@@ -1,6 +1,3 @@
-import org.apache.tools.ant.filters.FixCrLfFilter
-import org.apache.tools.ant.filters.ReplaceTokens
-
 buildscript {
     repositories {
         jcenter()
@@ -13,124 +10,16 @@ buildscript {
     }
 }
 
-apply from: 'asciidoc.gradle'
+apply from: ossDir + '/common.gradle'
 
-allprojects {
-
-    apply plugin: 'eclipse-wtp'
-
-    group = 'org.jumpmind.symmetric'
-
-    repositories {
-        mavenCentral()
-        maven { url "http://repository.codehaus.org" }
-    }
-
-    eclipse {
-        classpath {
-            downloadSources = true
-            downloadJavadoc = false
-        }
-    }
-}
-
-subprojects { subproject ->
-
-    apply plugin: 'java'
-    apply plugin: 'propdeps'
-    apply plugin: 'propdeps-maven'
-    apply plugin: 'propdeps-eclipse'
-    
-    configurations.provided.transitive = true
-    configurations.optional.transitive = false
-
-    sourceCompatibility=1.6
-    targetCompatibility=1.6
-
-    configurations { testArtifacts.extendsFrom testRuntime }
-
-    task testJar(type: Jar) {
-        classifier "test"
-        from sourceSets.test.output
-    }
-
-    artifacts { testArtifacts testJar }
-
-    ext {
-        bshVersion = '2.0b5'
-        commonsBeanUtilsVersion = '1.9.2'
-        commonsCliVersion = '1.2'
-        commonsDbcpVersion = '1.3'
-        commonsFileuploadVersion = '1.3'
-        commonsIoVersion = '2.4'
-        commonsLangVersion = '2.6'
-        commonsNetVersion = '3.3'
-        commonsCodecVersion = '1.3'
-        commonsCollectionVersion = '3.2'
-        cglibVersion = '2.2'
-        hamcrestVersion = '1.3'
-        h2Version = '1.3.176'
-        derbyVersion = '10.10.2.0'
-        mariaDbVersion = '1.1.7'
-        postgresqlVersion = '9.2-1002-jdbc4'
-        hsqldbVersion = '2.3.2'
-        sqliteVersion = '3.7.15-M1'
-        firebirdVersion = '2.1.6'
-        javaMailVersion = '1.4.7'
-        jdomVersion = '2.0.5'
-        junitVersion = '4.11'
-        log4jVersion = '1.2.17'
-        slf4jVersion = '1.7.7'
-        mockitoVersion = '1.9.5'
-        powerMockVersion = '1.5.3'
-        mysqlVersion = '5.1.30'
-        servletVersion = '3.0.1'
-        springVersion = '4.0.5.RELEASE'
-        jtdsVersion = '1.3.1'
-        bouncyCastleVersion = '140'
-        animalSnifferVersion = '1.10'
-        jnaVersion = "4.1.0"
-        jettyVersion = "7.6.3.v20120416"
-
-        env = System.getenv()
-    }
-
+project(":symmetric-csv") {
+    description = 'General purpose csv parser'
     dependencies {
-        compile "org.slf4j:slf4j-api:$slf4jVersion"
-        compile "org.slf4j:jul-to-slf4j:$slf4jVersion"
-        compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
-
-        provided "org.slf4j:slf4j-log4j12:$slf4jVersion"      
-        provided "log4j:log4j:$log4jVersion"
-        provided "org.apache.derby:derby:$derbyVersion"
-        provided "org.apache.derby:derbytools:$derbyVersion"
-        provided "mysql:mysql-connector-java:$mysqlVersion"
-        provided ("org.mariadb.jdbc:mariadb-java-client:$mariaDbVersion") { exclude group: 'net.java.dev.jna' }
-        provided "org.jumpmind.symmetric.jdbc:postgresql:$postgresqlVersion"
-        provided "org.jumpmind.symmetric.jdbc:ojdbc:11.2.0.3"
-        provided "net.sourceforge.jtds:jtds:$jtdsVersion"
-        provided "org.hsqldb:hsqldb:$hsqldbVersion:jdk5"
-        provided "com.h2database:h2:$h2Version"
-        provided "org.xerial:sqlite-jdbc:$sqliteVersion"
-        provided ("org.firebirdsql.jdbc:jaybird:$firebirdVersion") { exclude group: 'geronimo-spec' }
-        // javax.resource needed by jaybird
-        provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
-
-        testCompile "junit:junit:$junitVersion"        
-        testCompile "org.hamcrest:hamcrest-all:$hamcrestVersion"
-        testCompile "org.mockito:mockito-all:$mockitoVersion"
-        testCompile "org.powermock:powermock-api-mockito:$powerMockVersion"
-        testCompile "org.powermock:powermock-module-junit4:$powerMockVersion"
-    }
-
-    task develop {
-        dependsOn tasks.cleanEclipse, tasks.cleanEclipseWtp, tasks.eclipse, tasks.eclipseWtp
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }
 }
 
-project("symmetric-csv") { description = 'General purpose csv parser' }
-
-project("symmetric-wrapper") {
+project(":symmetric-wrapper") {
     description = 'General purpose cross platform service wrapper'
 
     dependencies {
@@ -138,10 +27,11 @@ project("symmetric-wrapper") {
         compile "net.java.dev.jna:jna-platform:$jnaVersion"
         compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }
 }
 
-project('symmetric-util') {
+project(':symmetric-util') {
     description = 'Utility classes that are used by several Symmetric libraries'
 
     dependencies {
@@ -154,16 +44,17 @@ project('symmetric-util') {
     }
 }
 
-project('symmetric-db') {
+project(':symmetric-db') {
     description = 'Database classes that are used by several Symmetric libraries'
 
     dependencies {
         compile project(":symmetric-util")
         compile "net.sf.kxml:kxml2:2.3.0"
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }
 }
 
-project("symmetric-jdbc") {
+project(":symmetric-jdbc") {
     description = 'Library that contains the jdbc implementation for symmetric-db'
 
     dependencies {
@@ -171,10 +62,11 @@ project("symmetric-jdbc") {
         compile "commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion"
         compile "commons-dbcp:commons-dbcp:$commonsDbcpVersion"
         compile "org.springframework:spring-jdbc:$springVersion"
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }
 }
 
-project('symmetric-io') {
+project(':symmetric-io') {
     description = 'Data input/output libraries'
 
     dependencies {
@@ -182,22 +74,34 @@ project('symmetric-io') {
         compile project(":symmetric-db")
         compile "org.beanshell:bsh:$bshVersion"
         compile "net.sourceforge.jeval:jeval:0.9.4"
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(":symmetric-jdbc")
         testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
     }
 }
 
-project('symmetric-core') {
+project(':symmetric-core') {
     description = 'Central SymmetricDS library.  Excludes direct dependencies on JDBC.'
 
     dependencies {
         compile project(":symmetric-io")
         compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
+    }
+
+    jar {
+        filesMatching("**/*.properties") {
+            filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+                'appVersion': version,
+                'buildTime': new java.text.SimpleDateFormat('yyyy-MM-dd HH:mm:ss').format(new java.util.Date()),
+                'scmVersion' : scmVersion
+            ])
+        }
     }
 }
 
-project('symmetric-android') {
+project(':symmetric-android') {
     description = 'SymmetricDS Client library for Android clients'
 
     dependencies {
@@ -209,9 +113,9 @@ project('symmetric-android') {
         compile "org.slf4j:slf4j-android:1.6.1-RC1"
         provided "com.google.android:android:2.1.2"
     }
-    
+
     apply plugin: 'distribution'
-    
+
     distributions {
         android {
             baseName = 'android'
@@ -226,10 +130,9 @@ project('symmetric-android') {
             }
         }
     }
-
 }
 
-project('symmetric-client') {
+project(':symmetric-client') {
     description = 'SymmetricDS Client library for JDBC clients'
 
     dependencies {
@@ -244,17 +147,18 @@ project('symmetric-client') {
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
         provided "com.amazonaws:aws-java-sdk:1.8.9.1"
 
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-core', configuration: 'testArtifacts')
     }
 }
 
-project('symmetric-server') {
+project(':symmetric-server') {
     description = 'SymmetricDS Server library for JDBC client'
 
     dependencies {
-        compile project(":symmetric-client")        
+        compile project(":symmetric-client")
         compile "javax.mail:mail:1.4.5"
         compile "org.springframework:spring-jms:$springVersion"
         compile "org.springframework:spring-web:$springVersion"
@@ -275,14 +179,15 @@ project('symmetric-server') {
         provided "org.eclipse.jetty:jetty-jmx:$jettyVersion"
         provided "mx4j:mx4j-tools:3.0.1"
 
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-core', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-client', configuration: 'testArtifacts')
     }
-    
+
     apply plugin: 'distribution'
-    
+
     distributions {
         server {
             baseName = 'server'
@@ -328,7 +233,6 @@ project('symmetric-server') {
             }
         }
     }
-    
 }
 
 

@@ -25,8 +25,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -42,9 +40,13 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.junit.Assert;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
-abstract    public class AbstractTriggerRouterServiceTest extends AbstractServiceTest {
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTest {
 
     public static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
 
@@ -86,7 +88,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     public static final String insertSyncIncomingBatchSql = "insert into test_sync_incoming_batch (id, data) values (?, ?)";
 
     @Test
-    public void testReplaceCharactersForTriggerName() {
+    public void test01ReplaceCharactersForTriggerName() {
         Assert.assertEquals("123456_54321",
                 TriggerRouterService.replaceCharsToShortenName("123456_54321"));
         Assert.assertEquals("tst_1234_rght_n",
@@ -94,7 +96,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     @Test
-    public void testSchemaSync() throws Exception {
+    public void test02SchemaSync() throws Exception {
         ITriggerRouterService service = getTriggerRouterService();
 
         // baseline
@@ -121,7 +123,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     @Test
-    public void testSchemaSyncNoChanges() throws Exception {
+    public void test03SchemaSyncNoChanges() throws Exception {
         ITriggerRouterService service = getTriggerRouterService();
 
         service.syncTriggers();
@@ -142,7 +144,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     @Test
-    public void testGetRouterById() throws Exception {
+    public void test04GetRouterById() throws Exception {
         Router router = getTriggerRouterService().getRouterById("3000");
         Assert.assertNotNull(router);
         Assert.assertEquals("3000", router.getRouterId());
@@ -154,7 +156,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     @Test
-    public void validateTestTableTriggers() throws Exception {
+    public void test05ValidateTestTableTriggers() throws Exception {
         ISqlTemplate jdbcTemplate = getSqlTemplate();
         int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect());
         assertTrue(count == 1);
@@ -172,7 +174,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     @Test
-    public void testInitialLoadSql() throws Exception {
+    public void test06InitialLoadSql() throws Exception {
         ITriggerRouterService triggerRouterService = getTriggerRouterService();
         IParameterService parameterService = getParameterService();
         parameterService.saveParameter(ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED, true, "unittest");
@@ -206,7 +208,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     @Test
-    public void testCaptureOnlyChangedData() throws Exception {
+    public void test07CaptureOnlyChangedData() throws Exception {
         boolean oldvalue = getParameterService().is(
                 ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY);
         try {
@@ -232,7 +234,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     @Test
-    public void testExcludedColumnsFunctionality() throws Exception {
+    public void test09ExcludedColumnsFunctionality() throws Exception {
         ITriggerRouterService service = getTriggerRouterService();
         ISqlTemplate jdbcTemplate = getSqlTemplate();
         assertEquals(1, jdbcTemplate.update(
@@ -269,7 +271,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     @Test
-    public void testDisableTriggers() throws Exception {
+    public void test10DisableTriggers() throws Exception {
         ISymmetricDialect dbDialect = getDbDialect();
         ISqlTemplate jdbcTemplate = getSqlTemplate();
         ISqlTransaction transaction = jdbcTemplate.startSqlTransaction();
@@ -296,7 +298,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     @Test
-    public void testBinaryColumnTypesForOracle() {
+    public void test11BinaryColumnTypesForOracle() {
         ISymmetricDialect dialect = getDbDialect();
         if (DatabaseNamesConstants.ORACLE.equals(dialect.getName())) {
             getSqlTemplate().update(CREATE_ORACLE_BINARY_TYPE);
@@ -320,7 +322,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     @Test
-    public void testBinaryColumnTypesForPostgres() {
+    public void test12BinaryColumnTypesForPostgres() {
         ISymmetricDialect dialect = getDbDialect();
         if (DatabaseNamesConstants.POSTGRESQL.equals(dialect.getName())) {
             getSqlTemplate().update(DROP_POSTGRES_BINARY_TYPE);
@@ -353,7 +355,7 @@ abstract    public class AbstractTriggerRouterServiceTest extends AbstractServic
     }
 
     @Test
-    public void testBinaryColumnTypesForDerby() {
+    public void test13BinaryColumnTypesForDerby() {
         ISymmetricDialect dialect = getDbDialect();
         if (DatabaseNamesConstants.DERBY.equals(dialect.getName())) {
             try {
