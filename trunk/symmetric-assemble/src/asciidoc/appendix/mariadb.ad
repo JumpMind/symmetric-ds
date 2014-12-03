@@ -1,0 +1,4 @@
+
+=== MariaDB
+
+See MySQL notes. In addition, you will need to use a MySQL driver for this dialect.

@@ -1,0 +1,4 @@
+
+=== Sybase SQL Anywhere
+
+SQL Anywhere was tested using the jConnect JDBC driver. The jConnect JDBC driver should be placed in the "lib" folder.

@@ -60,3 +60,23 @@ include::generated/runtime-parameters.ad[]
 Server configuration is read from conf/symmetric-server.conf for settings needed by the server before the parameter system has been initialized.
 
 include::generated/server-parameters.ad[]
+
+
+[appendix]
+== Database Notes
+
+Each database management system has its own characteristics that results in
+feature coverage in SymmetricDS.  The following table shows which features are available
+by database.
+
+include::appendix/databases.ad[]
+
+
+[appendix]
+== Data Format
+
+include::appendix/dataformat.ad[]
+
+[appendix]
+== Version Numbering
+include::appendix/versioning.ad[]

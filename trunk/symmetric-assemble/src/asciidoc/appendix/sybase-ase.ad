@@ -1,0 +1,15 @@
+
+=== Sybase Active Server Enterprise
+
+Active Server Enterprise (ASE) was tested using the jConnect JDBC driver. The jConnect JDBC driver should be placed in the "lib" folder.
+
+Columns of type DATETIME are accurate to 1/300th of a second, which means that the last digit of the milliseconds portion will end with 
+0, 3, or 6. An incoming DATETIME synced from another database will also have its millisconds rounded to one of these digits (0 and 1 become 
+0; 2, 3, and 4 become 3; 5, 6, 7, and 8 become 6; 9 becomes 10). If DATETIME is used as the primary key or as one of the columns to detect 
+a conflict, then conflict resolution could fail unless the milliseconds are rounded in the same fashion on the source system.
+
+On ASE, each new trigger in a table for the same operation (insert, update, or delete) overwrites the previous one. No warning message 
+displays before the overwrite occurs. When SymmetricDS is installed and configured to synchronize a table, it will install triggers 
+that could overwrite already existing triggers on the database. New triggers created after SymmetricDS is installed will overwrite the 
+SymmetricDS triggers. Custom trigger text can be added to the SymmetricDS triggers by modifying CUSTOM_ON_INSERT_TEXT, CUSTOM_ON_UPDATE_TEXT, 
+and CUSTOM_ON_DELETE_TEXT on the TRIGGER table.
