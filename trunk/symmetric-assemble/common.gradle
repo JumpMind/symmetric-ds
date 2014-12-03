@@ -14,6 +14,7 @@ allprojects {
     repositories {
         mavenCentral()
         maven { url "http://repository.codehaus.org" }
+        maven { url "http://maven.jumpmind.com/repo" }
     }
 
     eclipse {
@@ -124,7 +125,11 @@ subprojects { subproject ->
         provided "org.hsqldb:hsqldb:$hsqldbVersion:jdk5"
         provided "com.h2database:h2:$h2Version"
         provided "org.xerial:sqlite-jdbc:$sqliteVersion"
-        provided ("org.firebirdsql.jdbc:jaybird:$firebirdVersion") { exclude group: 'geronimo-spec' }
+        provided ("org.firebirdsql.jdbc:jaybird:$firebirdVersion") { 
+            exclude group: 'geronimo-spec'
+            exclude group: 'log4j'
+            exclude group: 'junit'
+        }
         // javax.resource needed by jaybird
         provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
 
