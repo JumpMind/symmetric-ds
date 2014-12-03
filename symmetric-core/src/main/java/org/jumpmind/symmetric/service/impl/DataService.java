@@ -606,10 +606,9 @@ public class DataService extends AbstractService implements IDataService {
                         Channel channel = channels.get(reloadChannel);
                         // calculate the number of batches needed for table.
                         int numberOfBatches = triggerRouter.getInitialLoadBatchCount();
-                        if (numberOfBatches <= 0) {
-
+                        if (numberOfBatches <= 0) {                            
                             Table table = platform.getTableFromCache(
-                                    trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                                    triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
                                     trigger.getSourceTableName(), false);
                             String sql = String.format("select count(*) from %s ", table
                                     .getFullyQualifiedTableName(platform.getDatabaseInfo()
