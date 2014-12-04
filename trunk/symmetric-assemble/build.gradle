@@ -30,6 +30,16 @@ project(":symmetric-wrapper") {
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }
+
+    jar {
+        manifest {
+            attributes(
+                "Main-Class": "org.jumpmind.symmetric.wrapper.Wrapper",
+                "Class-Path": configurations.compile.collect {
+                it.getName()
+            }.join(' '))
+        }
+    }
 }
 
 project(':symmetric-util') {
@@ -90,16 +100,6 @@ project(':symmetric-core') {
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
     }
-
-    jar {
-        filesMatching("**/*.properties") {
-            filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
-                'appVersion': version,
-                'buildTime': new java.text.SimpleDateFormat('yyyy-MM-dd HH:mm:ss').format(new java.util.Date()),
-                'scmVersion' : scmVersion
-            ])
-        }
-    }
 }
 
 project(':symmetric-android') {
@@ -121,9 +121,15 @@ project(':symmetric-android') {
         android {
             baseName = 'android'
             contents {
-                from { 'COPYING' }
-                from { 'CREDITS' }
-                from { 'NOTICE' }
+                from {
+                    'COPYING'
+                }
+                from {
+                    'CREDITS'
+                }
+                from {
+                    'NOTICE'
+                }
                 into('libs') {
                     from configurations.runtime - configurations.provided
                     from jar
@@ -156,7 +162,10 @@ project(':symmetric-client') {
 }
 
 project(':symmetric-server') {
+
     description = 'SymmetricDS Server library for JDBC client'
+
+    apply plugin: 'distribution'
 
     dependencies {
         compile project(":symmetric-client")
@@ -187,15 +196,19 @@ project(':symmetric-server') {
         testCompile project(path: ':symmetric-client', configuration: 'testArtifacts')
     }
 
-    apply plugin: 'distribution'
-
     distributions {
         server {
             baseName = 'symmetric-server'
             contents {
-                from { 'COPYING' }
-                from { 'CREDITS' }
-                from { 'NOTICE' }
+                from {
+                    'COPYING'
+                }
+                from {
+                    'CREDITS'
+                }
+                from {
+                    'NOTICE'
+                }
                 from ('src/main/deploy') {
                     exclude 'bin/sym'
                     exclude 'bin/symadmin'
@@ -239,5 +252,11 @@ project(':symmetric-server') {
     }
 }
 
+task buildOSS {
+    dependsOn 'jar','asciidocter', ':symmetric-android:androidDistZip', ':symmetric-server:serverDistZip'
+}
 
-task wrapper(type: Wrapper) { gradleVersion = '2.2.1' }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.2.1'
+}

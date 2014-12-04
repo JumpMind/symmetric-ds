@@ -1,3 +1,7 @@
+SymmetricDS - 3.6.15 (Released 2014-12-04) 
+==========================================
+- 0002087: [Bug] Extract initial load in background doesn't work with wildcard catalogs and schemas (chenson) - closed.
+
 SymmetricDS - 3.6.14 (Released 2014-12-01) 
 ==========================================
 - 0001310: [Improvement] Support sql dialect 1 for firebird (elong) - closed.
