@@ -609,7 +609,7 @@ public class DataService extends AbstractService implements IDataService {
                         if (numberOfBatches <= 0) {                            
                             Table table = platform.getTableFromCache(
                                     triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
-                                    trigger.getSourceTableName(), false);
+                                    triggerHistory.getSourceTableName(), false);
                             String sql = String.format("select count(*) from %s ", table
                                     .getFullyQualifiedTableName(platform.getDatabaseInfo()
                                             .getDelimiterToken()));
