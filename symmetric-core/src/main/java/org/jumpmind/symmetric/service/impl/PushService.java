@@ -45,7 +45,6 @@ import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.INodeService;
@@ -82,9 +81,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
             ITransportManager transportManager, INodeService nodeService,
-            IClusterService clusterService, INodeCommunicationService nodeCommunicationService, IStatisticManager statisticManager, 
-            IConfigurationService configrationService, IExtensionService extensionService) {
-        super(parameterService, symmetricDialect, extensionService);
+            IClusterService clusterService, INodeCommunicationService nodeCommunicationService, IStatisticManager statisticManager, IConfigurationService configrationService) {
+        super(parameterService, symmetricDialect);
         this.dataExtractorService = dataExtractorService;
         this.acknowledgeService = acknowledgeService;
         this.transportManager = transportManager;

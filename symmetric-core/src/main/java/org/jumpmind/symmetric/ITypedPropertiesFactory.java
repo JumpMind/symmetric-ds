@@ -26,8 +26,8 @@ import java.util.Properties;
 import org.jumpmind.properties.TypedProperties;
 
 public interface ITypedPropertiesFactory {
-
-    public void init(File propertiesFile, Properties properties);
+    
+	public void init(File propertiesFile, Properties properties);
 
     public TypedProperties reload();
 

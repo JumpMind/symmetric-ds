@@ -144,7 +144,7 @@
      
      <!-- This example shows how to create a node id generator 
     <lang:bsh id="nodeIdGeneratorScript" refresh-check-delay="10000"
-              script-source="file:samples/node-id-generator.bsh"
+              script-source="file:../samples/node-id-generator.bsh"
               script-interfaces="org.jumpmind.symmetric.config.INodeIdGenerator">
     </lang:bsh>     
     -->

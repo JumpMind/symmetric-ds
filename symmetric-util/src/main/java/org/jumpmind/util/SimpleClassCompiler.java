@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -58,8 +56,10 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({ "rawtypes" })
 public class SimpleClassCompiler {
 
-    protected final static String REGEX_CLASS = "public\\s*class\\s*(\\w*)";
-        
+    public static final String CLASSNAME_TOKEN = "$(CLASSNAME)";
+    
+    protected static final String CLASSNAME_TOKEN_REGEX = "\\$\\(CLASSNAME\\)";
+
     protected static SimpleClassCompiler instance;
     
     protected Map<Integer, Object> objectMap = new HashMap<Integer, Object>();
@@ -67,7 +67,7 @@ public class SimpleClassCompiler {
     protected int classSuffix;
     
     private static Logger log = LoggerFactory.getLogger(SimpleClassCompiler.class);
-
+    
     public static SimpleClassCompiler getInstance() {
         if (instance == null) {
             instance = new SimpleClassCompiler();
@@ -82,23 +82,16 @@ public class SimpleClassCompiler {
         
         if (javaObject == null ) {
             String className = getNextClassName();
-            String origClassName = null;
-            Pattern pattern = Pattern.compile(REGEX_CLASS);
-            Matcher matcher = pattern.matcher(javaCode);
-            if (matcher.find()) {
-                origClassName = matcher.group(1);
-            }
-            javaCode = javaCode.replaceAll(REGEX_CLASS, "public class " + className);
-
-            log.info("Compiling class '" + origClassName + "'");
+            javaCode = javaCode.replaceAll(CLASSNAME_TOKEN_REGEX, className);
             if (log.isDebugEnabled()) {
                 log.debug("Compiling code: \n" + javaCode);
             }
             
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null) {
-                throw new SimpleClassCompilerException("Missing Java compiler: the JDK is required for compiling classes.");
-            }
+                throw new IllegalStateException("Cannot find a Java compiler.  "
+                        + "Please check that you are running SymmetricDS under a JDK (versus a JRE)");
+            } 
             JavaFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null));
             DiagnosticCollector<JavaFileObject> diag = new DiagnosticCollector<JavaFileObject>();
             List<JavaFileObject> javaFiles = new ArrayList<JavaFileObject>();
@@ -110,9 +103,9 @@ public class SimpleClassCompiler {
                 javaObject = fileManager.getClassLoader(null).loadClass(className).newInstance();
                 objectMap.put(id, javaObject);
             } else {
-                log.error("Compilation of '" + origClassName + "' failed");
+                log.error("Compilation failed for:\n" + javaCode);
                 for (Diagnostic diagnostic : diag.getDiagnostics()) {
-                    log.error(origClassName + " at line " + diagnostic.getLineNumber() + ", column " + diagnostic.getColumnNumber() + ": " + 
+                    log.error("At line " + diagnostic.getLineNumber() + ", column " + diagnostic.getColumnNumber() + ": " + 
                             diagnostic.getMessage(null));
                 }
                 throw new SimpleClassCompilerException(diag.getDiagnostics());

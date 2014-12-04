@@ -71,8 +71,8 @@ public class AndroidTypedPropertiesFactory implements ITypedPropertiesFactory {
     }
 
 
-    @Override
-    public void init(File propertiesFile, Properties properties) {
-    }
+	@Override
+	public void init(File propertiesFile, Properties properties) {
+	}
 
 }

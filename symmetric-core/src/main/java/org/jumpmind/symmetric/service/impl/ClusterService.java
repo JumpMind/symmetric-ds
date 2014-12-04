@@ -78,13 +78,13 @@ public class ClusterService extends AbstractService implements IClusterService {
 
         Map<String, Lock> allLocks = findLocks();
         if (isClusteringEnabled()) {
-            for (String action : new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING, PURGE_STATISTICS, SYNCTRIGGERS,
-                    PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL, FILE_SYNC_PUSH, FILE_SYNC_TRACKER,
-                    INITIAL_LOAD_EXTRACT }) {
-                if (allLocks.get(action) == null) {
-                    initLockTable(action, TYPE_CLUSTER);
-                }
-            }
+	        for (String action : new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING, PURGE_STATISTICS, SYNCTRIGGERS,
+	                PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL, FILE_SYNC_PUSH, FILE_SYNC_TRACKER,
+	                INITIAL_LOAD_EXTRACT }) {
+	            if (allLocks.get(action) == null) {
+	                initLockTable(action, TYPE_CLUSTER);
+	            }
+	        }
         }
 
         for (String action : new String[] { FILE_SYNC_SHARED }) {

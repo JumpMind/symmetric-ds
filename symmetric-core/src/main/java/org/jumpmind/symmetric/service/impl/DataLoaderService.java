@@ -100,7 +100,6 @@ import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -131,6 +130,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private IConfigurationService configurationService;
 
     private ITransportManager transportManager;
+    
+    private List<ILoadSyncLifecycleListener> syncLifecycleListeners;
+
+    private List<IDatabaseWriterFilter> filters;
+
+    private List<IDatabaseWriterErrorHandler> errorHandlers;
 
     private IStatisticManager statisticManager;
 
@@ -142,14 +147,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private IStagingManager stagingManager;
 
-    private IExtensionService extensionService;
+    private Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
 
     private Map<NodeGroupLink, List<ConflictNodeGroupLink>> conflictSettingsCache = new HashMap<NodeGroupLink, List<ConflictNodeGroupLink>>();
 
     private long lastConflictCacheResetTimeInMs = 0;
 
     private ISymmetricEngine engine = null;
-
+    
     private Date lastUpdateTime;
 
     public DataLoaderService(ISymmetricEngine engine) {
@@ -162,19 +167,25 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.transformService = engine.getTransformService();
         this.loadFilterService = engine.getLoadFilterService();
         this.stagingManager = engine.getStagingManager();
+        this.filters = new ArrayList<IDatabaseWriterFilter>();
+        this.syncLifecycleListeners = new ArrayList<ILoadSyncLifecycleListener>();
+        
+        ConfigurationChangedDatabaseWriterFilter configChangedFilter = new ConfigurationChangedDatabaseWriterFilter(engine);
+        this.filters.add(configChangedFilter);
+        this.syncLifecycleListeners.add(configChangedFilter);
+        
+        this.errorHandlers = new ArrayList<IDatabaseWriterErrorHandler>();
+        this.addDataLoaderFactory(new DefaultDataLoaderFactory(parameterService));
         this.setSqlMap(new DataLoaderServiceSqlMap(platform, createSqlReplacementTokens()));
-        extensionService = engine.getExtensionService();
-        extensionService.addExtensionPoint(new DefaultDataLoaderFactory(parameterService));
-        extensionService.addExtensionPoint(new ConfigurationChangedDatabaseWriterFilter(engine));
         this.engine = engine;
     }
-
+    
     public boolean refreshFromDatabase() {
         Date date = sqlTemplate.queryForObject(getSql("selectMaxLastUpdateTime"), Date.class);
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
                 if (lastUpdateTime != null) {
-                    log.info("Newer conflict settings were detected");
+                   log.info("Newer conflict settings were detected");
                 }
                 lastUpdateTime = date;
                 clearCache();
@@ -184,20 +195,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return false;
     }
 
+    public void addDataLoaderFactory(IDataLoaderFactory factory) {
+        this.dataLoaderFactories.put(factory.getTypeName(), factory);
+    }
+
     public List<String> getAvailableDataLoaderFactories() {
-        return new ArrayList<String>(getDataLoaderFactories().keySet());
+        return new ArrayList<String>(dataLoaderFactories.keySet());
     }
 
-    protected Map<String, IDataLoaderFactory> getDataLoaderFactories() {
-        Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
-        for (IDataLoaderFactory factory : engine.getExtensionService().getExtensionPointList(
-                IDataLoaderFactory.class)) {
-            dataLoaderFactories.put(factory.getTypeName(), factory);
-        }
-        return dataLoaderFactories;
-    }
-
-    public List<IncomingBatch> loadDataBatch(String batchData) {
+    public List<IncomingBatch> loadDataBatch(String batchData){
         String nodeId = nodeService.findIdentityNodeId();
         if (StringUtils.isNotBlank(nodeId)) {
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(nodeId,
@@ -225,9 +231,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * Connect to the remote node and pull data. The acknowledgment of
      * commit/error status is sent separately after the data is processed.
      */
-    public RemoteNodeStatus loadDataFromPull(Node remote) throws IOException {
-        RemoteNodeStatus status = new RemoteNodeStatus(remote != null ? remote.getNodeId() : null,
-                configurationService.getChannels(false));
+    public RemoteNodeStatus loadDataFromPull(Node remote) throws IOException {        
+        RemoteNodeStatus status = new RemoteNodeStatus(remote != null ? remote.getNodeId() : null, configurationService.getChannels(false));
         loadDataFromPull(remote, status);
         return status;
     }
@@ -259,8 +264,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 remote.setSyncUrl(parameterService.getRegistrationUrl());
             }
 
-            ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
-                    .getNodeId(), local.getNodeId(), ProcessType.PULL_JOB));
+            ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote.getNodeId(), local.getNodeId(), ProcessType.PULL_JOB));
             try {
                 List<IncomingBatch> list = loadDataFromTransport(processInfo, remote, transport);
                 if (list.size() > 0) {
@@ -282,23 +286,22 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         sendAck(remote, local, localSecurity, list, transportManager);
                     }
                 }
-
+                
                 if (containsError(list)) {
-                    processInfo.setStatus(ProcessInfo.Status.ERROR);
+                    processInfo.setStatus(ProcessInfo.Status.ERROR);                    
                 } else {
-                    processInfo.setStatus(ProcessInfo.Status.OK);
+                    processInfo.setStatus(ProcessInfo.Status.OK);    
                 }
             } catch (RuntimeException e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
                 throw e;
             } catch (IOException e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
-                throw e;
+                throw e;                
             }
 
         } catch (RegistrationRequiredException e) {
-            if (StringUtils.isBlank(remote.getSyncUrl())
-                    || remote.getSyncUrl().equals(parameterService.getRegistrationUrl())) {
+            if (StringUtils.isBlank(remote.getSyncUrl()) || remote.getSyncUrl().equals(parameterService.getRegistrationUrl())) {
                 log.warn("Node information missing on the server.  Attempting to re-register");
                 loadDataFromPull(null, status);
                 nodeService.findIdentity(false);
@@ -339,15 +342,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(sourceNode
                     .getNodeId(), local.getNodeId(), ProcessInfoKey.ProcessType.PUSH_HANDLER));
             try {
-                List<IncomingBatch> batchList = loadDataFromTransport(processInfo, sourceNode,
+                List<IncomingBatch> list = loadDataFromTransport(processInfo, sourceNode,
                         new InternalIncomingTransport(in));
-                logDataReceivedFromPush(sourceNode, batchList);
                 NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
                 processInfo.setStatus(ProcessInfo.Status.ACKING);
-                transportManager.writeAcknowledgement(out, sourceNode, batchList, local,
+                transportManager.writeAcknowledgement(out, sourceNode, list, local,
                         security != null ? security.getNodePassword() : null);
-                if (containsError(batchList)) {
-                    processInfo.setStatus(ProcessInfo.Status.ERROR);
+                if (containsError(list)) {
+                    processInfo.setStatus(ProcessInfo.Status.ERROR);                    
                 } else {
                     processInfo.setStatus(ProcessInfo.Status.OK);
                 }
@@ -360,25 +362,28 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    private void logDataReceivedFromPush(Node sourceNode, List<IncomingBatch> batchList) {
-        int okBatchesCount = 0;
-        int errorBatchesCount = 0;
-        int okDataCount = 0;
-        for (IncomingBatch incomingBatch : batchList) {
-            if (incomingBatch.getStatus() == Status.OK) {
-                okBatchesCount++;
-                okDataCount += incomingBatch.getStatementCount();
-            } else if (incomingBatch.getStatus() == Status.ER) {
-                errorBatchesCount++;
-            }
-        }
+    public void addDatabaseWriterFilter(IDatabaseWriterFilter filter) {
+        filters.add(filter);
+    }
+
+    public void removeDatabaseWriterFilter(IDatabaseWriterFilter filter) {
+        filters.remove(filter);
+    }
+
+    public void addLoadSyncLifecycleListener(ILoadSyncLifecycleListener listener) {
+        syncLifecycleListeners.add(listener);
+    }
+    
+    public void removeLoadSyncLifecycleListener(ILoadSyncLifecycleListener listener) {
+        syncLifecycleListeners.remove(listener);
+    }
         
-        if (okBatchesCount > 0) {
-            log.info(
-                    "{} data and {} batches loaded during push request from {}.  There were {} batches in error",
-                    new Object[] { okDataCount, okBatchesCount, sourceNode.toString(),
-                            errorBatchesCount });
-        } 
+    public void addDatabaseWriterErrorHandler(IDatabaseWriterErrorHandler errorHandler) {
+        errorHandlers.add(errorHandler);
+    }
+
+    public void removeDatabaseWriterErrorHandler(IDatabaseWriterErrorHandler errorHandler) {
+        errorHandlers.remove(errorHandler);
     }
 
     /**
@@ -386,10 +391,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * is used for a pull request that responds with data, and the
      * acknowledgment is sent later.
      */
-    protected List<IncomingBatch> loadDataFromTransport(final ProcessInfo processInfo,
-            final Node sourceNode, IIncomingTransport transport) throws IOException {
+    protected List<IncomingBatch> loadDataFromTransport(final ProcessInfo processInfo, final Node sourceNode,
+            IIncomingTransport transport) throws IOException {
         final ManageIncomingBatchListener listener = new ManageIncomingBatchListener();
-        final DataContext ctx = new DataContext();
+        final DataContext ctx = new DataContext();        
         Throwable error = null;
         try {
             Node targetNode = nodeService.findIdentity();
@@ -407,9 +412,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_GROUP_ID, sourceNode.getNodeGroupId());
                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID, sourceNode.getExternalId());
             }
-
-            for (ILoadSyncLifecycleListener l : extensionService
-                    .getExtensionPointList(ILoadSyncLifecycleListener.class)) {
+            
+            for (ILoadSyncLifecycleListener l : syncLifecycleListeners) {
                 l.syncStarted(ctx);
             }
 
@@ -421,10 +425,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
                 IDataReader dataReader = new ProtocolDataReader(BatchType.LOAD, targetNodeId,
                         transport.openReader());
-                IDataWriter dataWriter = new StagingDataWriter(memoryThresholdInBytes,
-                        sourceNode.getNodeId(), Constants.STAGING_CATEGORY_INCOMING,
-                        stagingManager, new LoadIntoDatabaseOnArrivalListener(processInfo,
-                                sourceNode.getNodeId(), listener));
+                IDataWriter dataWriter = new StagingDataWriter(memoryThresholdInBytes, sourceNode.getNodeId(),
+                        Constants.STAGING_CATEGORY_INCOMING, stagingManager,
+                        new LoadIntoDatabaseOnArrivalListener(processInfo, sourceNode.getNodeId(), listener));
                 new DataProcessor(dataReader, dataWriter, "transfer to stage").process(ctx);
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             } else {
@@ -432,8 +435,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         targetNodeId, transport.openReader()), null, listener, "data load") {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
-                        return buildDataWriter(processInfo, sourceNode.getNodeId(),
-                                batch.getChannelId(), batch.getBatchId());
+                        return buildDataWriter(processInfo, sourceNode.getNodeId(), batch.getChannelId(),
+                                batch.getBatchId());
                     }
                 };
                 processor.process(ctx);
@@ -444,9 +447,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             logAndRethrow(sourceNode, ex);
         } finally {
             transport.close();
-
-            for (ILoadSyncLifecycleListener l : extensionService
-                    .getExtensionPointList(ILoadSyncLifecycleListener.class)) {
+            
+            for (ILoadSyncLifecycleListener l : syncLifecycleListeners) {
                 l.syncEnded(ctx, listener.getBatchesProcessed(), error);
             }
         }
@@ -467,9 +469,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } else if (ex instanceof ConnectionRejectedException) {
             throw (ConnectionRejectedException) ex;
         } else if (ex instanceof AuthenticationException) {
-            log.warn("Could not authenticate with node '{}'",
-                    remoteNode != null ? remoteNode.getNodeId() : "?");
-            throw (AuthenticationException) ex;
+            log.warn("Could not authenticate with node '{}'", remoteNode != null ? remoteNode.getNodeId() : "?");
+            throw (AuthenticationException)ex;
         } else if (ex instanceof SyncDisabledException) {
             log.warn("Synchronization is disabled on the server node");
             throw (SyncDisabledException) ex;
@@ -487,16 +488,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    protected IDataWriter buildDataWriter(ProcessInfo processInfo, String sourceNodeId,
-            String channelId, long batchId) {
+    protected IDataWriter buildDataWriter(ProcessInfo processInfo, String sourceNodeId, String channelId, long batchId) {
         TransformTable[] transforms = null;
         NodeGroupLink link = null;
         List<ResolvedData> resolvedDatas = new ArrayList<ResolvedData>();
-        List<IDatabaseWriterFilter> filters = extensionService
-                .getExtensionPointList(IDatabaseWriterFilter.class);
         List<IDatabaseWriterFilter> dynamicFilters = filters;
-        List<IDatabaseWriterErrorHandler> errorHandlers = extensionService
-                .getExtensionPointList(IDatabaseWriterErrorHandler.class);
         List<IDatabaseWriterErrorHandler> dynamicErrorHandlers = errorHandlers;
 
         if (sourceNodeId != null) {
@@ -506,18 +502,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         parameterService.getNodeGroupId());
             }
 
-            Map<LoadFilterType, Map<String, List<LoadFilter>>> loadFilters = loadFilterService
-                    .findLoadFiltersFor(link, true);
-            List<DynamicDatabaseWriterFilter> databaseWriterFilters = DynamicDatabaseWriterFilter
-                    .getDatabaseWriterFilters(engine, loadFilters);
+            Map<LoadFilterType, Map<String, List<LoadFilter>>> loadFilters = loadFilterService.findLoadFiltersFor(link, true);
+            List<DynamicDatabaseWriterFilter> databaseWriterFilters = DynamicDatabaseWriterFilter.getDatabaseWriterFilters(
+                    engine, loadFilters);
 
             if (loadFilters != null && loadFilters.size() > 0) {
                 dynamicFilters = new ArrayList<IDatabaseWriterFilter>(filters.size() + 1);
                 dynamicFilters.addAll(filters);
                 dynamicFilters.addAll(databaseWriterFilters);
-
-                dynamicErrorHandlers = new ArrayList<IDatabaseWriterErrorHandler>(
-                        errorHandlers.size() + 1);
+                
+                dynamicErrorHandlers = new ArrayList<IDatabaseWriterErrorHandler>(errorHandlers.size() + 1);
                 dynamicErrorHandlers.addAll(errorHandlers);
                 dynamicErrorHandlers.addAll(databaseWriterFilters);
             }
@@ -538,8 +532,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         }
 
-        TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null,
-                transformService.getColumnTransforms(), transforms);
+        TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null, 
+                transformService.getColumnTransforms(), 
+                transforms);
 
         IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId,
                 symmetricDialect, transformWriter, dynamicFilters, dynamicErrorHandlers,
@@ -556,7 +551,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             dataLoaderType = channel.getDataLoaderType();
         }
 
-        Map<String, IDataLoaderFactory> dataLoaderFactories = getDataLoaderFactories();
         factory = dataLoaderFactories.get(dataLoaderType);
 
         if (factory == null) {
@@ -663,7 +657,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return sqlTemplate.queryForObject(getSql("selectCurrentIncomingErrorSql"),
                 new IncomingErrorMapper(), batchId, nodeId);
     }
-
+    
     public void insertIncomingError(IncomingError incomingError) {
         ISqlTransaction transaction = null;
         try {
@@ -679,7 +673,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw ex;
+            throw ex;              
         } finally {
             close(transaction);
         }
@@ -687,17 +681,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void insertIncomingError(ISqlTransaction transaction, IncomingError incomingError) {
         if (StringUtils.isNotBlank(incomingError.getNodeId()) && incomingError.getBatchId() >= 0) {
-            transaction.prepareAndExecute(getSql("insertIncomingErrorSql"),
-                    incomingError.getBatchId(), incomingError.getNodeId(),
-                    incomingError.getFailedRowNumber(), incomingError.getFailedLineNumber(),
-                    incomingError.getTargetCatalogName(), incomingError.getTargetSchemaName(),
-                    incomingError.getTargetTableName(), incomingError.getEventType().getCode(),
-                    incomingError.getBinaryEncoding().name(), incomingError.getColumnNames(),
-                    incomingError.getPrimaryKeyColumnNames(), incomingError.getRowData(),
-                    incomingError.getOldData(), incomingError.getCurData(),
-                    incomingError.getResolveData(), incomingError.getResolveData(),
-                    incomingError.getConflictId(), incomingError.getCreateTime(),
-                    incomingError.getLastUpdateBy(), incomingError.getLastUpdateTime());
+            transaction.prepareAndExecute(getSql("insertIncomingErrorSql"), incomingError.getBatchId(),
+                    incomingError.getNodeId(), incomingError.getFailedRowNumber(), incomingError
+                            .getFailedLineNumber(), incomingError.getTargetCatalogName(),
+                    incomingError.getTargetSchemaName(), incomingError.getTargetTableName(),
+                    incomingError.getEventType().getCode(), incomingError.getBinaryEncoding()
+                            .name(), incomingError.getColumnNames(), incomingError
+                            .getPrimaryKeyColumnNames(), incomingError.getRowData(), incomingError
+                            .getOldData(), incomingError.getCurData(), 
+                            incomingError.getResolveData(), incomingError
+                            .getResolveData(), incomingError.getConflictId(), 
+                            incomingError.getCreateTime(), incomingError
+                            .getLastUpdateBy(), incomingError.getLastUpdateTime());
         }
     }
 
@@ -718,8 +713,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public ConflictNodeGroupLink mapRow(Row rs) {
             ConflictNodeGroupLink setting = new ConflictNodeGroupLink();
             setting.setNodeGroupLink(configurationService.getNodeGroupLinkFor(
-                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id"),
-                    false));
+                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id"), false));
             setting.setTargetChannelId(rs.getString("target_channel_id"));
             setting.setTargetCatalogName(rs.getString("target_catalog_name"));
             setting.setTargetSchemaName(rs.getString("target_schema_name"));
@@ -774,7 +768,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         private long batchStartsToArriveTimeInMs;
 
         private String sourceNodeId;
-
+        
         private ProcessInfo processInfo;
 
         public LoadIntoDatabaseOnArrivalListener(ProcessInfo processInfo, String sourceNodeId,
@@ -790,10 +784,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
 
         public void end(DataContext ctx, Batch batch, IStagedResource resource) {
+            
+            long networkMillis = System.currentTimeMillis()
+                    - batchStartsToArriveTimeInMs;
 
-            long networkMillis = System.currentTimeMillis() - batchStartsToArriveTimeInMs;
-
-            try {
+            try {                
                 processInfo.setStatus(ProcessInfo.Status.LOADING);
                 DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
                         batch.getTargetNodeId(), resource), null, listener, "data load from stage") {
@@ -887,16 +882,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public void batchInError(DataContext context, Throwable ex) {
             try {
                 if (this.currentBatch == null) {
-                    /*
-                     * if the current batch is null, there isn't anything we can
-                     * do other than log the error
+                    /* if the current batch is null, there isn't  
+                     * anything we can do other than log the error
                      */
                     throw ex;
                 }
-                Batch batch = context.getBatch();
-                if (context.getWriter() != null
-                        && context.getReader().getStatistics().get(batch) != null
-                        && context.getWriter().getStatistics().get(batch) != null) {
+                Batch batch = context.getBatch();                
+                if (context.getWriter() != null && 
+                        context.getReader().getStatistics().get(batch) != null &&
+                        context.getWriter().getStatistics().get(batch) != null) {
                     this.currentBatch.setValues(context.getReader().getStatistics().get(batch),
                             context.getWriter().getStatistics().get(batch), false);
                     statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
@@ -916,9 +910,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             this.currentBatch.getNodeBatchId(), ex.getMessage());
                     this.currentBatch.setSqlMessage(ex.getMessage());
                 } else {
-                    log.error(
-                            String.format("Failed to load batch %s because: %s",
-                                    this.currentBatch.getNodeBatchId(), ex.getMessage()), ex);
+                    log.error(String.format("Failed to load batch %s because: %s", 
+                            this.currentBatch.getNodeBatchId(), ex.getMessage()), ex);                    
+                    if (log.isDebugEnabled()) {
+                        log.debug(ex.getMessage(), ex);
+                    }
                     SQLException se = unwrapSqlException(ex);
                     if (ex instanceof ConflictException) {
                         String message = ex.getMessage();
@@ -937,14 +933,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     }
 
                 }
-
+                
                 ISqlTransaction transaction = context.findTransaction();
 
                 // If we were in the process of skipping a batch
                 // then its status would have been OK. We should not
                 // set the status to ER.
                 if (this.currentBatch.getStatus() != Status.OK) {
-
+                    
                     this.currentBatch.setStatus(IncomingBatch.Status.ER);
                     if (context.getTable() != null && context.getData() != null) {
                         try {
@@ -953,13 +949,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             error.setNodeId(this.currentBatch.getNodeId());
                             error.setTargetCatalogName(context.getTable().getCatalog());
                             error.setTargetSchemaName(context.getTable().getSchema());
-                            error.setTargetTableName(context.getTable().getName());
+                            error.setTargetTableName(context.getTable().getName());                            
                             error.setColumnNames(Table.getCommaDeliminatedColumns(context
                                     .getTable().getColumns()));
                             error.setPrimaryKeyColumnNames(Table.getCommaDeliminatedColumns(context
                                     .getTable().getPrimaryKeyColumns()));
                             error.setCsvData(context.getData());
-                            error.setCurData((String) context.get(DefaultDatabaseWriter.CUR_DATA));
+                            error.setCurData((String)context.get(DefaultDatabaseWriter.CUR_DATA));
                             error.setBinaryEncoding(context.getBatch().getBinaryEncoding());
                             error.setEventType(context.getData().getDataEventType());
                             error.setFailedLineNumber(this.currentBatch.getFailedLineNumber());
@@ -984,17 +980,17 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         }
                     }
                 }
-
+                
                 if (transaction != null) {
-                    if (incomingBatchService.isRecordOkBatchesEnabled()
-                            || this.currentBatch.isRetry()) {
-                        incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);
+                    if (incomingBatchService.isRecordOkBatchesEnabled() || 
+                            this.currentBatch.isRetry()) {
+                        incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);      
                     } else {
                         incomingBatchService.insertIncomingBatch(transaction, this.currentBatch);
                     }
                 } else {
-                    if (incomingBatchService.isRecordOkBatchesEnabled()
-                            || this.currentBatch.isRetry()) {
+                    if (incomingBatchService.isRecordOkBatchesEnabled() || 
+                            this.currentBatch.isRetry()) {
                         incomingBatchService.updateIncomingBatch(this.currentBatch);
                     } else {
                         incomingBatchService.insertIncomingBatch(this.currentBatch);
@@ -1006,6 +1002,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 .getBatch().getNodeBatchId(), e);
             }
         }
+        
 
         public List<IncomingBatch> getBatchesProcessed() {
             return batchesProcessed;

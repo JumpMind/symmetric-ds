@@ -27,7 +27,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.IDataWriter;
@@ -44,7 +43,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExtensionPoint {
+public class DefaultDataLoaderFactory implements IDataLoaderFactory {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultDataLoaderFactory.class);
 

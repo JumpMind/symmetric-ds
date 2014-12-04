@@ -24,6 +24,7 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -32,7 +33,6 @@ import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IOfflineDetectorService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
@@ -44,13 +44,31 @@ import org.jumpmind.symmetric.transport.SyncDisabledException;
  * Abstract service that provides help methods for detecting offline status.
  */
 public abstract class AbstractOfflineDetectorService extends AbstractService implements IOfflineDetectorService {
-    
-    protected IExtensionService extensionService;
 
+    private List<IOfflineClientListener> offlineListeners;
+    
     public AbstractOfflineDetectorService(IParameterService parameterService,
-            ISymmetricDialect symmetricDialect, IExtensionService extensionService) {
+            ISymmetricDialect symmetricDialect) {
         super(parameterService, symmetricDialect);
-        this.extensionService = extensionService;
+    }
+
+    public void setOfflineListeners(List<IOfflineClientListener> listeners) {
+        this.offlineListeners = listeners;
+    }
+
+    public void addOfflineListener(IOfflineClientListener listener) {
+        if (offlineListeners == null) {
+            offlineListeners = new ArrayList<IOfflineClientListener>();
+        }
+        offlineListeners.add(listener);
+    }
+
+    public boolean removeOfflineListener(IOfflineClientListener listener) {
+        if (offlineListeners != null) {
+            return offlineListeners.remove(listener);
+        } else {
+            return false;
+        }
     }
 
     protected void fireOffline(Exception error, Node remoteNode, RemoteNodeStatus status) {
@@ -80,7 +98,6 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             status.setStatus(Status.UNKNOWN_ERROR);
         }
 
-        List<IOfflineClientListener> offlineListeners = extensionService.getExtensionPointList(IOfflineClientListener.class);
         if (offlineListeners != null) {
             for (IOfflineClientListener listener : offlineListeners) {
                 if (isOffline(error)) {

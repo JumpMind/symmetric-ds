@@ -24,6 +24,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.IOException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +56,6 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
@@ -77,8 +77,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected IParameterService parameterService;
 
-    protected IExtensionService extensionService;
-
     protected Boolean supportsGetGeneratedKeys;
 
     protected String databaseName;
@@ -96,6 +94,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected Set<String> sqlKeywords;
 
     protected boolean supportsTransactionViews = false;
+    
+    protected List<IDatabaseUpgradeListener> databaseUpgradeListeners = new ArrayList<IDatabaseUpgradeListener>();
+    
+    protected List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = new ArrayList<IAlterDatabaseInterceptor>();
     
     protected Map<String,String> sqlReplacementTokens = new HashMap<String, String>();
 
@@ -400,15 +402,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
             IDdlBuilder builder = platform.getDdlBuilder();
             
-            List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = extensionService.getExtensionPointList(IAlterDatabaseInterceptor.class);
             IAlterDatabaseInterceptor[] interceptors = alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]);
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml, interceptors)) {
                 log.info("There are SymmetricDS tables that needed altered");
                 String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
                 
                 ISqlResultsListener resultsListener = new LogSqlResultsListener(log);
-                List<IDatabaseUpgradeListener> databaseUpgradeListeners = extensionService.getExtensionPointList(IDatabaseUpgradeListener.class);
-                        
+
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
                     String sql = listener
                             .beforeUpgrade(this, this.parameterService.getTablePrefix(),
@@ -715,6 +715,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public void cleanupTriggers() {
     }
+    
+    public void addAlterDatabaseInterceptor(IAlterDatabaseInterceptor interceptor) {
+        alterDatabaseInterceptors.add(interceptor);
+    }
+
+    public void addDatabaseUpgradeListener(IDatabaseUpgradeListener listener) {
+        databaseUpgradeListeners.add(listener);
+    }
 
     public AbstractTriggerTemplate getTriggerTemplate() {
         return triggerTemplate;
@@ -741,9 +749,5 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     @Override
     public IParameterService getParameterService() {
         return parameterService;
-    }
-    
-    public void setExtensionService(IExtensionService extensionService) {
-        this.extensionService = extensionService;
     }
 }

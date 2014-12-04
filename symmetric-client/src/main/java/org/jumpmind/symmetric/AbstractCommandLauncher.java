@@ -20,8 +20,6 @@
  */
 package org.jumpmind.symmetric;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,6 +32,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Handler;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -56,16 +55,15 @@ import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
-import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public abstract class AbstractCommandLauncher {
 
-    protected static final Logger log;
+    protected static final Logger log = LoggerFactory.getLogger(AbstractCommandLauncher.class);
     
-    public static final String DEFAULT_SERVER_PROPERTIES;
+    public static final String DEFAULT_SERVER_PROPERTIES = System.getProperty(
+            SystemConstants.SYSPROP_SERVER_PROPERTIES_PATH, "../conf/symmetric-server.properties");
 
     protected static final String HELP = "help";
 
@@ -102,18 +100,7 @@ public abstract class AbstractCommandLauncher {
     protected IDatabasePlatform platform;
     
     private static boolean serverPropertiesInitialized = false;
-
     static {
-        String symHome = System.getenv("SYM_HOME");
-        if (symHome == null) {
-            symHome = ".";
-        }
-        System.setProperty("log4j.sym.home", symHome);
-        if (isBlank(System.getProperty("h2.baseDir"))) {
-           System.setProperty("h2.baseDir", symHome + "/tmp/h2");
-        }
-        DEFAULT_SERVER_PROPERTIES = System.getProperty(SystemConstants.SYSPROP_SERVER_PROPERTIES_PATH, symHome + "/conf/symmetric-server.properties");
-        log = LoggerFactory.getLogger(AbstractCommandLauncher.class);
         initFromServerProperties();
     }
 
@@ -220,17 +207,14 @@ public abstract class AbstractCommandLauncher {
 
     protected void configureLogging(CommandLine line) throws MalformedURLException {
         
-        /* Optionally remove existing handlers attached to j.u.l root logger */
-        SLF4JBridgeHandler.removeHandlersForRootLogger();
-
-        /*
-         * Add SLF4JBridgeHandler to j.u.l's root logger, should be done once
-         * during the initialization phase of your application
-         */
-        SLF4JBridgeHandler.install();
-
+        java.util.logging.Logger globalLogger = java.util.logging.Logger.getLogger("");
+        Handler[] handlers = globalLogger.getHandlers();
+        for(Handler handler : handlers) {
+            globalLogger.removeHandler(handler);
+        }
+        
         URL log4jUrl = new URL(System.getProperty("log4j.configuration",
-                "file:" + AppUtils.getSymHome() + "/conf/log4j-blank.xml"));
+                "file:../conf/log4j-blank.xml"));
         File log4jFile = new File(new File(log4jUrl.getFile()).getParent(), "log4j.xml");
 
         if (line.hasOption(OPTION_DEBUG)) {
@@ -307,7 +291,7 @@ public abstract class AbstractCommandLauncher {
     }
 
     public static String getEnginesDir() {
-        String enginesDir = System.getProperty(SystemConstants.SYSPROP_ENGINES_DIR, AppUtils.getSymHome() + "/engines");
+        String enginesDir = System.getProperty(SystemConstants.SYSPROP_ENGINES_DIR, "../engines");
         new File(enginesDir).mkdirs();
         return enginesDir;
     }

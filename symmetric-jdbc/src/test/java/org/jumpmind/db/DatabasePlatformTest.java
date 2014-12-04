@@ -27,7 +27,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
-import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -35,9 +34,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
-
 import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,10 +52,6 @@ public class DatabasePlatformTest {
     @BeforeClass
     public static void setup() throws Exception {
         platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
-        platform.createDatabase(DatabaseXmlUtil.read(new InputStreamReader(
-                DatabasePlatformTest.class.getResourceAsStream("/testCreateDatabase.xml"))), true,
-                true);
-
     }
 
     @Before
@@ -195,11 +188,7 @@ public class DatabasePlatformTest {
         tableFromDatabase = platform.getTableFromCache(table.getName(), true);
         
         assertFalse(tableFromDatabase.getColumnWithName("ID").isAutoIncrement());
-        
-        /* sqlite character fields do not limit based on size */
-        if (!platform.getName().equals(DatabaseNamesConstants.SQLITE)) {
-            assertEquals(1000, tableFromDatabase.getColumnWithName("COL1").getSizeAsInt());
-        }
+        assertEquals(1000, tableFromDatabase.getColumnWithName("COL1").getSizeAsInt());
         
     }
 
@@ -272,6 +261,9 @@ public class DatabasePlatformTest {
 
     @Test
     public void testCreateAndReadTestSimpleTable() throws Exception {
+        platform.createDatabase(DatabaseXmlUtil.read(new InputStreamReader(
+                DatabasePlatformTest.class.getResourceAsStream("/testCreateDatabase.xml"))), true,
+                true);
         Table table = platform.getTableFromCache(SIMPLE_TABLE, true);
         assertNotNull("Could not find " + SIMPLE_TABLE, table);
         assertEquals("The id column was not read in as an autoincrement column", true, table
@@ -284,15 +276,6 @@ public class DatabasePlatformTest {
         assertNotNull("Could not find " + UPPERCASE_TABLE, table);
         assertEquals("The id column was not read in as an autoincrement column", true, table
                 .getColumnWithName("id").isAutoIncrement());
-    }
-    
-    
-    @Test
-    public void testNvarcharType() {
-        Table table = new Table("test_nvarchar");
-        table.addColumn(new Column("id", true, Types.INTEGER, 0, 0));
-        table.addColumn(new Column("note", false, ColumnTypes.NVARCHAR, 100, 0));
-        platform.createTables(true, false, table);
     }
 
 }

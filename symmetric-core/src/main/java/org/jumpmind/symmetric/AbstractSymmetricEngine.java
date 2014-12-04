@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.io.DefaultOfflineClientListener;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -72,7 +73,6 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
@@ -199,7 +199,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected ISequenceService sequenceService;
 
-    protected IExtensionService extensionService;
+    protected IExtensionPointManager extensionPointManger;
     
     protected IGroupletService groupletService;
 
@@ -264,10 +264,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         MDC.put("engineName", properties.get(ParameterConstants.ENGINE_NAME));
         
         this.platform = createDatabasePlatform(properties);
+        
 
-        this.parameterService = new ParameterService(platform, propertiesFactory,
-                properties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
-
+        this.parameterService = new ParameterService(platform, propertiesFactory, properties.get(
+                ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
+        
         boolean parameterTableExists = this.platform.getTableFromCache(TableConstants.getTableName(properties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX), TableConstants.SYM_PARAMETER), false) != null;
         if (parameterTableExists) {
             this.parameterService.setDatabaseHasBeenInitialized(true);
@@ -279,17 +280,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.platform.setClearCacheModelTimeoutInMs(parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TABLES_IN_MS));
 
-
-        this.symmetricDialect = createSymmetricDialect();
-        this.extensionService = createExtensionService();
-        this.extensionService.refresh();
-        this.symmetricDialect.setExtensionService(extensionService);
-        this.parameterService.setExtensionService(extensionService);
-
         this.bandwidthService = new BandwidthService(parameterService);
+        this.symmetricDialect = createSymmetricDialect();
         this.sequenceService = new SequenceService(parameterService, symmetricDialect);
         this.stagingManager = createStagingManager();
-        this.nodeService = new NodeService(parameterService, symmetricDialect, securityService, extensionService);
+        this.nodeService = new NodeService(parameterService, symmetricDialect, securityService);
         this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
                 nodeService);
         this.clusterService = new ClusterService(parameterService, symmetricDialect);
@@ -301,14 +296,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
                 statisticManager);
         this.transformService = new TransformService(parameterService, symmetricDialect,
-                configurationService, extensionService);
+                configurationService);
         this.loadFilterService = new LoadFilterService(parameterService, symmetricDialect,
                 configurationService);
         this.groupletService = new GroupletService(this);
         this.triggerRouterService = new TriggerRouterService(this);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
                 nodeService, configurationService, sequenceService, clusterService);
-        this.dataService = new DataService(this, extensionService);
+        this.dataService = new DataService(this);
         this.routerService = buildRouterService();
         this.nodeCommunicationService = buildNodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
         this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect, clusterService);
@@ -319,20 +314,19 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.acknowledgeService = new AcknowledgeService(this);
         this.pushService = new PushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, transportManager, nodeService,
-                clusterService, nodeCommunicationService, statisticManager, configurationService, extensionService);
-        this.pullService = new PullService(parameterService, symmetricDialect, 
-                nodeService, dataLoaderService, registrationService, clusterService, nodeCommunicationService, 
-                configurationService, extensionService);
+                clusterService, nodeCommunicationService, statisticManager, configurationService);
+        this.pullService = new PullService(parameterService, symmetricDialect, nodeService,
+                dataLoaderService, registrationService, clusterService, nodeCommunicationService, configurationService);
         this.fileSyncService = new FileSyncService(this);
         this.jobManager = createJobManager();
 
-        extensionService.addExtensionPoint(new DefaultOfflineServerListener(
+        this.nodeService.addOfflineServerListener(new DefaultOfflineServerListener(
                 statisticManager, nodeService, outgoingBatchService));
 
         IOfflineClientListener defaultlistener = new DefaultOfflineClientListener(parameterService,
                 nodeService);
-        extensionService.addExtensionPoint(defaultlistener);
-        extensionService.addExtensionPoint(defaultlistener);
+        this.pullService.addOfflineListener(defaultlistener);
+        this.pushService.addOfflineListener(defaultlistener);
 
         if (registerEngine) {
             registerHandleToEngine();
@@ -351,8 +345,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     abstract protected IStagingManager createStagingManager();
 
     abstract protected ISymmetricDialect createSymmetricDialect();
-
-    abstract protected IExtensionService createExtensionService();
 
     abstract protected IJobManager createJobManager();
 
@@ -719,14 +711,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public synchronized void destroy() {
-        removeMeFromMap(registeredEnginesByName);        
-        removeMeFromMap(registeredEnginesByUrl);
-        registeredEnginesByName.remove(getEngineName());
-        registeredEnginesByUrl.remove(getSyncUrl());
         stop();
         if (jobManager != null) {
             jobManager.destroy();
         }
+        removeMeFromMap(registeredEnginesByName);
+        removeMeFromMap(registeredEnginesByUrl);
     }
 
     public String reloadNode(String nodeId, String createBy) {
@@ -988,8 +978,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return transportManager;
     }
 
-    public IExtensionService getExtensionService() {
-        return extensionService;
+    public IExtensionPointManager getExtensionPointManager() {
+        return extensionPointManger;
     }
 
     public IStagingManager getStagingManager() {

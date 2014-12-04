@@ -99,7 +99,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     // TODO cache trigger routers
 
     public FileSyncService(ISymmetricEngine engine) {
-        super(engine.getParameterService(), engine.getSymmetricDialect(), engine.getExtensionService());
+        super(engine.getParameterService(), engine.getSymmetricDialect());
         this.engine = engine;
         setSqlMap(new FileSyncServiceSqlMap(platform, createSqlReplacementTokens()));
     }
@@ -637,7 +637,6 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
         Set<Long> batchIds = new TreeSet<Long>();
         String[] files = unzipDir.list(DirectoryFileFilter.INSTANCE);
-        
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
                 try {

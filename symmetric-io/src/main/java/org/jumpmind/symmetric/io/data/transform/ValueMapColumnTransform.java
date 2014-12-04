@@ -62,12 +62,7 @@ public class ValueMapColumnTransform implements ISingleValueColumnTransform, IBu
 				if (keyValue.substring(0, equalIndex).equals(value)) {
 					return keyValue.substring(equalIndex+1);
 				} else if (keyValue.substring(0, equalIndex).equals("*")) {
-				    String targetValue = keyValue.substring(equalIndex+1);
-				    if (targetValue.equals("*")) {
-				        defaultValue = value;
-				    } else {
-				        defaultValue = targetValue;
-				    }
+					defaultValue = keyValue.substring(equalIndex+1);
 				}
 			}
 		}

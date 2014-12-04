@@ -22,6 +22,5 @@
 @echo off
 setlocal
 call "%~dp0\setenv.bat"
-cd /d "%SYM_HOME%"
 "%SYM_JAVA%" -cp "%CLASSPATH%" %SYM_OPTIONS% org.jumpmind.symmetric.SymmetricLauncher %*
 endlocal
