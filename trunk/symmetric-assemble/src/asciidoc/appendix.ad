@@ -80,3 +80,6 @@ include::appendix/dataformat.ad[]
 [appendix]
 == Version Numbering
 include::appendix/versioning.ad[]
+
+[appendix]
+== Upgrading
