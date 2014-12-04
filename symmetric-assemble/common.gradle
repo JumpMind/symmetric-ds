@@ -66,6 +66,21 @@ subprojects { subproject ->
         classifier "test"
         from sourceSets.test.output
     }
+    
+    jar {
+        filesMatching("**/*.properties") {
+            filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+                'appVersion': version,
+                'buildTime': new java.text.SimpleDateFormat('yyyy-MM-dd HH:mm:ss').format(new java.util.Date()),
+                'scmVersion' : scmVersion
+            ])
+        }                
+        manifest {
+            attributes("Implementation-Title": project.name,
+                       "Implementation-Version": version)
+        }    
+    }
+
 
     artifacts { testArtifacts testJar }
 
