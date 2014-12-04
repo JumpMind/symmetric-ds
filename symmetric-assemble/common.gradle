@@ -135,7 +135,7 @@ subprojects { subproject ->
         provided "mysql:mysql-connector-java:$mysqlVersion"
         provided ("org.mariadb.jdbc:mariadb-java-client:$mariaDbVersion") { exclude group: 'net.java.dev.jna' }
         provided "org.jumpmind.symmetric.jdbc:postgresql:$postgresqlVersion"
-        provided "org.jumpmind.symmetric.jdbc:ojdbc:11.2.0.3"
+        provided "jdbc:ojdbc:11.2.0.3"
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
         provided "org.hsqldb:hsqldb:$hsqldbVersion:jdk5"
         provided "com.h2database:h2:$h2Version"
