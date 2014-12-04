@@ -10,6 +10,7 @@ buildscript {
     }
 }
 
+project.buildDir='target'
 apply from: ossDir + '/common.gradle'
 
 project(":symmetric-csv") {
@@ -190,7 +191,7 @@ project(':symmetric-server') {
 
     distributions {
         server {
-            baseName = 'server'
+            baseName = 'symmetric-server'
             contents {
                 from { 'COPYING' }
                 from { 'CREDITS' }
@@ -221,6 +222,9 @@ project(':symmetric-server') {
                 from('../symmetric-core/src/main/resources/symmetric-default.properties') {
                     rename 'symmetric-default.properties', 'conf/symmetric.properties'
                     fileMode 664
+                }
+                into('doc') {
+                    from ("$ossDir/target/src/asciidoc")
                 }
                 into('lib') {
                     from configurations.provided

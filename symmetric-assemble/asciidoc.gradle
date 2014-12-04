@@ -54,8 +54,11 @@ task generateAppendixes {
 }
 
 asciidoctor { (1)
-    sourceDir = new File(ossDir + '/src/asciidoc')
-    outputDir = new File("target/src/asciidoc")
+    sourceDir = file(ossDir + '/src/asciidoc')
+    outputDir = file("$buildDir/src/asciidoc")
+    if (project.properties.containsKey('pro')) {
+        outputDir = file(ossDir + "/../symmetric-pro/src/main/webapp/doc")
+    }
     options = [
         doctype: 'book',
         sourceDocumentNames: [
