@@ -109,7 +109,7 @@ public interface IRegistrationService {
     
     public boolean deleteRegistrationRequest(RegistrationRequest request);
     
-    public void saveRegisgtrationRequest(RegistrationRequest request);
+    public void saveRegistrationRequest(RegistrationRequest request);
 
     public boolean isRegisteredWithServer();
     

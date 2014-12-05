@@ -145,7 +145,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                     RegistrationStatus.ER, remoteHost, remoteAddress);
             req.setErrorMessage("Cannot register a client node until this node is registered");
-            saveRegisgtrationRequest(req);
+            saveRegistrationRequest(req);
             log.warn(req.getErrorMessage());
             return processedNode;
         }
@@ -161,7 +161,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                             RegistrationStatus.ER, remoteHost, remoteAddress);
                     req.setErrorMessage("Cannot register a client node until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
-                    saveRegisgtrationRequest(req);
+                    saveRegistrationRequest(req);
                     log.warn(req.getErrorMessage());
                     return processedNode;
                 }
@@ -171,7 +171,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             if (redirectUrl != null) {
                 log.info("Redirecting {} to {} for registration.",
                         nodePriorToRegistration.getExternalId(), redirectUrl);
-                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
+                saveRegistrationRequest(new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.RR, remoteHost, remoteAddress));
                 throw new RegistrationRedirectException(redirectUrl);
             }
@@ -189,7 +189,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         RegistrationStatus.ER, remoteHost, remoteAddress);
                 req.setErrorMessage(String.format("Cannot register a client node unless a node group link exists so the registering node can receive configuration updates.  Please add a group link where the source group id is %s and the target group id is %s",
                         identity.getNodeGroupId(), nodePriorToRegistration.getNodeGroupId()));
-                saveRegisgtrationRequest(req);
+                saveRegistrationRequest(req);
                 log.warn(req.getErrorMessage());
                 return processedNode;
             }
@@ -211,7 +211,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 foundNode = nodeService.findNode(nodeId);
             } else if (foundNode == null || security == null
                     || !security.isRegistrationEnabled()) {
-                saveRegisgtrationRequest(new RegistrationRequest(nodePriorToRegistration,
+                saveRegistrationRequest(new RegistrationRequest(nodePriorToRegistration,
                         RegistrationStatus.RQ, remoteHost, remoteAddress));
                 return processedNode;
             }
@@ -242,7 +242,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 }
             }
             
-            saveRegisgtrationRequest(new RegistrationRequest(foundNode, RegistrationStatus.OK,
+            saveRegistrationRequest(new RegistrationRequest(foundNode, RegistrationStatus.OK,
                     remoteHost, remoteAddress));
 
             statisticManager.incrementNodesRegistered(1);
@@ -308,7 +308,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 RegistrationStatus.RQ.name() });
     }
 
-    public void saveRegisgtrationRequest(RegistrationRequest request) {
+    public void saveRegistrationRequest(RegistrationRequest request) {
         String externalId = request.getExternalId() == null ? "" : request.getExternalId();
         String nodeGroupId = request.getNodeGroupId() == null ? "" : request.getNodeGroupId();
         int count = sqlTemplate.update(
