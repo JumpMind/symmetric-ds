@@ -247,10 +247,15 @@ project(':symmetric-server') {
             }
         }
     }
+    
+    task('symmetric-server:serverDistZip').dependsOn { ':symmetric-server:jar' }
 }
 
 task buildOSS {
-    dependsOn 'jar','asciidocter', ':symmetric-android:androidDistZip', ':symmetric-server:serverDistZip'
+    asciidoctor.dependsOn(project(':symmetric-server').jar)    
+    project(':symmetric-server').serverDistZip.dependsOn(project(':symmetric-server').jar)
+    project(':symmetric-server').serverDistZip.dependsOn(asciidoctor)
+    dependsOn ':symmetric-android:androidDistZip', ':symmetric-server:serverDistZip'
 }
 
 
