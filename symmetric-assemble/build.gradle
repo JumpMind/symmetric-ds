@@ -34,10 +34,8 @@ project(":symmetric-wrapper") {
     jar {
         manifest {
             attributes(
-                "Main-Class": "org.jumpmind.symmetric.wrapper.Wrapper",
-                "Class-Path": configurations.compile.collect {
-                it.getName()
-            }.join(' '))
+                    "Main-Class": "org.jumpmind.symmetric.wrapper.Wrapper",
+                    "Class-Path": configurations.compile.collect { it.getName() }.join(' '))
         }
     }
 }
@@ -121,15 +119,9 @@ project(':symmetric-android') {
         android {
             baseName = 'android'
             contents {
-                from {
-                    'COPYING'
-                }
-                from {
-                    'CREDITS'
-                }
-                from {
-                    'NOTICE'
-                }
+                from { 'COPYING' }
+                from { 'CREDITS' }
+                from { 'NOTICE' }
                 into('libs') {
                     from configurations.runtime - configurations.provided
                     from jar
@@ -176,12 +168,16 @@ project(':symmetric-server') {
         compile "org.codehaus.jackson:jackson-mapper-asl:1.9.9"
         compile "org.jdom:jdom:1.1"
         compile "com.mangofactory:swagger-springmvc:0.6.5"
+        compile project(":symmetric-wrapper")
 
-        provided project(":symmetric-wrapper")
         provided "javax.jms:jms-api:1.1-rev-1"
         provided "org.mongodb:mongo-java-driver:2.12.3"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
-        provided "com.amazonaws:aws-java-sdk:1.8.9.1"
+        provided ("com.amazonaws:aws-java-sdk:1.8.9.1") {
+            exclude group: 'commons-logging'
+            exclude group: 'com.fasterxml.jackson.core'
+            exclude group: 'commons-codec'
+        }
         provided "javax.servlet:servlet-api:2.5"
         provided "org.eclipse.jetty:jetty-server:$jettyVersion"
         provided "org.eclipse.jetty:jetty-servlets:$jettyVersion"
@@ -200,15 +196,9 @@ project(':symmetric-server') {
         server {
             baseName = 'symmetric-server'
             contents {
-                from {
-                    'COPYING'
-                }
-                from {
-                    'CREDITS'
-                }
-                from {
-                    'NOTICE'
-                }
+                from { 'COPYING' }
+                from { 'CREDITS' }
+                from { 'NOTICE' }
                 from ('src/main/deploy') {
                     exclude 'bin/sym'
                     exclude 'bin/symadmin'
@@ -236,16 +226,23 @@ project(':symmetric-server') {
                     rename 'symmetric-default.properties', 'conf/symmetric.properties'
                     fileMode 664
                 }
-                into('doc') {
-                    from ("$ossDir/target/src/asciidoc")
+                into('doc') { from ("$ossDir/target/src/asciidoc") }
+                into('lib') {
+                    from project(":symmetric-wrapper").configurations.compile {
+                        include "*jna*"
+                    }
                 }
                 into('lib') {
-                    from configurations.provided
+                    from configurations.provided { exclude "*animal-sniffer*" }
+                    from project(":symmetric-wrapper").jar
                     rename 'symmetric-wrapper(.*).jar', 'symmetric-wrapper.jar'
                 }
                 into('web/WEB-INF/lib') {
-                    from configurations.runtime - configurations.provided
-                    from jar
+                    from configurations.compile.filter {  a ->
+                        !a.path.contains("symmetric-wrapper") &&
+                                !configurations.provided.contains(a) &&
+                                !project(':symmetric-server').configurations.provided.contains(a)
+                    }
                 }
             }
         }
@@ -257,6 +254,4 @@ task buildOSS {
 }
 
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.2.1'
-}
+task wrapper(type: Wrapper) { gradleVersion = '2.2.1' }
