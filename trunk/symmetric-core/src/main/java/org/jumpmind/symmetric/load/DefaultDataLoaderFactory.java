@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExtensionPoint {
 
-    private static final Logger log = LoggerFactory.getLogger(DefaultDataLoaderFactory.class);
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected IParameterService parameterService;
 

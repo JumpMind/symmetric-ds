@@ -27,6 +27,17 @@
                         http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.0.xsd" default-lazy-init="true">
 
     <!-- 
+    Example of how to setup your own mongo data loader.  If you want to provide your own mapping, then 
+    implement an IDBObjectMapper and wire it in as the objectMapper
+    <bean id="myMongoLoaderFactory" class="org.jumpmind.symmetric.io.MongoDataLoaderFactory" >
+        <property name="typeName" value="mongodb" />
+        <property name="objectMapper" >
+            <bean class="org.jumpmind.symmetric.io.SimpleDBObjectMapper" />
+        </property>
+    </bean>
+     -->
+     
+    <!-- 
       This example shows how to publish XML messages to MqSeries.  The following properties
       would need to be added to symmetric.properties or another property file specified by the
       sym launcher command.

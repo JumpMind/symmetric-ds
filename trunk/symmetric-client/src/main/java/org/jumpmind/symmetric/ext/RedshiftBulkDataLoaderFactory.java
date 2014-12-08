@@ -20,25 +20,29 @@
  */
 package org.jumpmind.symmetric.ext;
 
+import java.lang.reflect.Constructor;
 import java.util.List;
 
-import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.io.RedshiftBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware, IBuiltInExtensionPoint {
 
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+    
     private ISymmetricEngine engine;
 
     public RedshiftBulkDataLoaderFactory() {
@@ -60,8 +64,24 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory, ISymme
         String secretKey = param.getString("redshift.bulk.load.s3.secret.key");
         String appendToCopyCommand = param.getString("redshift.append.to.copy.command");
 
-        return new RedshiftBulkDatabaseWriter(symmetricDialect.getPlatform(), engine.getStagingManager(), filters, errorHandlers,
-                maxRowsBeforeFlush, maxBytesBeforeFlush, bucket, accessKey, secretKey, appendToCopyCommand);
+        try {
+            Class<?> dbWriterClass = Class.forName("org.jumpmind.symmetric.io.RedshiftBulkDatabaseWriter");
+            Constructor<?> dbWriterConstructor = dbWriterClass.getConstructor(new Class<?>[] {
+                    IDatabasePlatform.class, IStagingManager.class, List.class,
+                    List.class, Integer.TYPE, Long.TYPE, String.class,
+                    String.class, String.class, String.class });
+            return (IDataWriter) dbWriterConstructor.newInstance(
+                    symmetricDialect.getPlatform(), engine.getStagingManager(), filters, errorHandlers,
+                    maxRowsBeforeFlush, maxBytesBeforeFlush, bucket, accessKey, secretKey, appendToCopyCommand);
+
+        } catch (Exception e) {
+            log.warn("Failed to create the mongo database writer.  Check to see if all of the required jars have been added");
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException)e;
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public void setSymmetricEngine(ISymmetricEngine engine) {
@@ -69,7 +89,7 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory, ISymme
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
-        return DatabaseNamesConstants.REDSHIFT.equals(platform.getName());
+        return true;//DatabaseNamesConstants.REDSHIFT.equals(platform.getName());
     }
 
 }
