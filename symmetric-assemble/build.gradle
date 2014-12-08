@@ -11,7 +11,7 @@ buildscript {
 }
 
 project.buildDir='target'
-apply from: ossDir + '/common.gradle'
+apply from: symAssembleDir + '/common.gradle'
 
 project(":symmetric-csv") {
     description = 'General purpose csv parser'
@@ -226,7 +226,7 @@ project(':symmetric-server') {
                     rename 'symmetric-default.properties', 'conf/symmetric.properties'
                     fileMode 664
                 }
-                into('doc') { from ("$ossDir/target/src/asciidoc") }
+                into('doc') { from ("$symAssembleDir/target/src/asciidoc") }
                 into('lib') {
                     from project(":symmetric-wrapper").configurations.compile {
                         include "*jna*"
@@ -251,7 +251,7 @@ project(':symmetric-server') {
     task('symmetric-server:serverDistZip').dependsOn { ':symmetric-server:jar' }
 }
 
-task buildOSS {
+task buildSymmetric {
     asciidoctor.dependsOn(project(':symmetric-server').jar)    
     project(':symmetric-server').serverDistZip.dependsOn(project(':symmetric-server').jar)
     project(':symmetric-server').serverDistZip.dependsOn(asciidoctor)

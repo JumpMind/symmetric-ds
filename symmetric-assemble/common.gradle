@@ -1,7 +1,7 @@
 import org.apache.tools.ant.filters.FixCrLfFilter
 import org.apache.tools.ant.filters.ReplaceTokens
 
-apply from: ossDir + '/asciidoc.gradle'
+apply from: symAssembleDir + '/asciidoc.gradle'
 
 allprojects {
 
@@ -12,6 +12,7 @@ allprojects {
     project.buildDir='target'
     
     repositories {
+        mavenLocal()
         mavenCentral()
         maven { url "http://repository.codehaus.org" }
         maven { url "http://maven.jumpmind.com/repo" }
@@ -56,6 +57,7 @@ subprojects { subproject ->
         classifier = 'sources'
         from sourceSets.main.allSource
     }
+    
     artifacts { archives sourcesJar }
 
     task deploy {
