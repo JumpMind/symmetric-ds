@@ -24,9 +24,6 @@
 
     <bean id="mongoLoaderFactory" class="org.jumpmind.symmetric.io.MongoDataLoaderFactory">
         <property name="typeName" value="mongodb" />
-        <property name="objectMapper">
-            <bean class="org.jumpmind.symmetric.io.SimpleDBObjectMapper" />
-        </property>
     </bean>
 
 
