@@ -13,8 +13,8 @@ task generateAppendixes {
             main = 'org.jumpmind.properties.DefaultParameterParser'
             classpath = configurations.generateAppendixesDependencies
             args = [
-                ossDir + '/../symmetric-server/src/main/deploy/conf/symmetric-server.properties',
-                ossDir + '/src/asciidoc/generated/server-parameters.ad',
+                symAssembleDir + '/../symmetric-server/src/main/deploy/conf/symmetric-server.properties',
+                symAssembleDir + '/src/asciidoc/generated/server-parameters.ad',
                 'false',
                 'asciidoc'
             ]
@@ -24,8 +24,8 @@ task generateAppendixes {
             main = 'org.jumpmind.properties.DefaultParameterParser'
             classpath = configurations.generateAppendixesDependencies
             args = [
-                ossDir + '/../symmetric-core/src/main/resources/symmetric-default.properties',
-                ossDir + '/src/asciidoc/generated/startup-parameters.ad',
+                symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-default.properties',
+                symAssembleDir + '/src/asciidoc/generated/startup-parameters.ad',
                 'false',
                 'asciidoc'
             ]
@@ -35,8 +35,8 @@ task generateAppendixes {
             main = 'org.jumpmind.properties.DefaultParameterParser'
             classpath = configurations.generateAppendixesDependencies
             args = [
-                ossDir + '/../symmetric-core/src/main/resources/symmetric-default.properties',
-                ossDir + '/src/asciidoc/generated/runtime-parameters.ad',
+                symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-default.properties',
+                symAssembleDir + '/src/asciidoc/generated/runtime-parameters.ad',
                 'true',
                 'asciidoc'
             ]
@@ -46,24 +46,24 @@ task generateAppendixes {
             main = 'org.jumpmind.db.io.DatabaseXmlAsciiDocBuilder'
             classpath = configurations.generateAppendixesDependencies
             args = [
-                ossDir + '/../symmetric-core/src/main/resources/symmetric-schema.xml',
-                ossDir + '/src/asciidoc/generated/schema.ad'
+                symAssembleDir + '/../symmetric-core/src/main/resources/symmetric-schema.xml',
+                symAssembleDir + '/src/asciidoc/generated/schema.ad'
             ]
         }
     }
 }
 
 asciidoctor { (1)
-    sourceDir = file(ossDir + '/src/asciidoc')
+    sourceDir = file(symAssembleDir + '/src/asciidoc')
     outputDir = file("$buildDir/src/asciidoc")
     if (project.properties.containsKey('pro')) {
-        outputDir = file(ossDir + "/../symmetric-pro/src/main/webapp/doc")
+        outputDir = file(symAssembleDir + "/../symmetric-pro/src/main/webapp/doc")
     }
     options = [
         doctype: 'book',
         sourceDocumentNames: [
-            ossDir + 'user-guide.ad',
-            ossDir + 'tutorials/tutorials.ad']
+            symAssembleDir + 'user-guide.ad',
+            symAssembleDir + 'tutorials/tutorials.ad']
     ]    
     attributes 'source-highlighter':'coderay'
     if (project.properties.containsKey('pro')) {
