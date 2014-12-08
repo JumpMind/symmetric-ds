@@ -23,6 +23,7 @@ allprojects {
             downloadJavadoc = false
         }
     }
+    
 }
 
 subprojects { subproject ->
@@ -153,6 +154,9 @@ subprojects { subproject ->
         testCompile "org.mockito:mockito-all:$mockitoVersion"
         testCompile "org.powermock:powermock-api-mockito:$powerMockVersion"
         testCompile "org.powermock:powermock-module-junit4:$powerMockVersion"
+        
+        deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
+        
     }
 
     task develop {
