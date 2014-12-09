@@ -1,19 +1,23 @@
 
 === PostgreSQL
 
-SymmetricDS has bulk loading capability available for Postgres. SymmetricDS specifies data loader types on a channel by channel basis. To utilize Postgres Bulk loading versus straight JDBC insert, specify the Postgres Bulk Loader ("postgres_bulk") in the data_loader_type column of sym_channel.
+SymmetricDS has bulk loading capability available for Postgres. SymmetricDS specifies data loader types on a channel by channel basis.
+To utilize Postgres Bulk loading versus straight JDBC insert, specify the Postgres Bulk Loader ("postgres_bulk") in the data_loader_type column of sym_channel.
 
-Starting with PostgreSQL 8.3, SymmetricDS supports the transaction identifier. Binary Large Object (BLOB) replication is supported for both byte array (BYTEA) and object ID (OID) data types.
+Starting with PostgreSQL 8.3, SymmetricDS supports the transaction identifier.
+Binary Large Object (BLOB) replication is supported for both byte array (BYTEA) and object ID (OID) data types.
 
-In order to function properly, SymmetricDS needs to use session variables. On PostgreSQL, session variables are enabled using a custom variable class. Add the following line to the postgresql.conf file of PostgreSQL server:
+In order to function properly, SymmetricDS needs to use session variables.
+On PostgreSQL, session variables are enabled using a custom variable class. Add the following line to the postgresql.conf file of PostgreSQL server:
 
 ----
 custom_variable_classes = 'symmetric'
 ----
 
-This setting is required, and SymmetricDS will log an error and exit if it is not present.
+This setting is required, and SymmetricDS will log an error and exit if it cannot set session variables.
 
-Before database triggers can be created by in PostgreSQL, the plpgsql language handler must be installed on the database. The following statements should be run by the administrator on the database:
+Before database triggers can be created by in PostgreSQL, the plpgsql language handler must be installed on the database. 
+If plpgsql is not already installed, the following statements can be run by the administrator on the database:
 
 [source, SQL]
 ----
@@ -28,14 +32,14 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
     VALIDATOR plpgsql_validator;
 ----
 
-If you want SymmetricDS to install into a schema other than public you should alter the database user to set the default schema.
+If you want SymmetricDS to install into a schema other than public you can alter the database user to set the default schema.
 
 [source, SQL]
 ----        
 alter user {user name} set search_path to {schema name};
 ----
 
-In addition, you will likely need the follow privelegdes as well:
+When multiple users are involved, the SymmetricDS user will need the following privileges:
 
 [source, SQL]
 ----  
