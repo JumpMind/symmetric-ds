@@ -5,7 +5,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.1'
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.2'
+        classpath 'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.6'
         classpath "org.springframework.build.gradle:propdeps-plugin:0.0.7"
     }
 }
@@ -253,9 +254,9 @@ project(':symmetric-server') {
 }
 
 task buildSymmetric {
-    asciidoctor.dependsOn(project(':symmetric-server').jar)    
+    generateDocs.dependsOn(project(':symmetric-server').jar)    
     project(':symmetric-server').serverDistZip.dependsOn(project(':symmetric-server').jar)
-    project(':symmetric-server').serverDistZip.dependsOn(asciidoctor)
+    project(':symmetric-server').serverDistZip.dependsOn(generateDocs)
     dependsOn ':symmetric-android:androidDistZip', ':symmetric-server:serverDistZip'
 }
 

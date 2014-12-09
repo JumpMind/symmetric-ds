@@ -53,12 +53,34 @@ task generateAppendixes {
     }
 }
 
+task generateDocs(type: Copy) {
+    
+    dependsOn asciidoctor
+    
+    destinationDir = file("$buildDir/src/asciidoc")
+    if (project.properties.containsKey('pro')) {
+        destinationDir = file(symAssembleDir + "/../symmetric-pro/src/main/webapp/doc")
+    }
+
+    into('html') {
+        from "$buildDir/src/asciidoc/html5"
+    }
+
+    into('pdf') {
+        from ("$buildDir/src/asciidoc/pdf") { include "user-guide.pdf" }
+    }
+
+    into('pdf') {
+        from ("$buildDir/src/asciidoc/pdf/tutorials") { include "tutorials.pdf" }
+    }
+
+}
+
 asciidoctor { (1)
+    //separateOutputDirs=false
+    backends = ['html5', 'pdf']
     sourceDir = file(symAssembleDir + '/src/asciidoc')
     outputDir = file("$buildDir/src/asciidoc")
-    if (project.properties.containsKey('pro')) {
-        outputDir = file(symAssembleDir + "/../symmetric-pro/src/main/webapp/doc")
-    }
     options = [
         doctype: 'book',
         sourceDocumentNames: [
@@ -68,9 +90,7 @@ asciidoctor { (1)
     attributes 'source-highlighter':'coderay'
     if (project.properties.containsKey('pro')) {
        attributes['pro'] = 'true'  
-    } 
-
-    
+    }     
 }
 
 asciidoctor.dependsOn { tasks.generateAppendixes }
