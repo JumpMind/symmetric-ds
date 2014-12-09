@@ -16,6 +16,8 @@ and CUSTOM_ON_DELETE_TEXT on the TRIGGER table.
 
 SymmetricDS expects a row count to be returned for data manipulation statements, which is the default setting for most server.
 However, if the NOCOUNT option is ON or the "send doneinproc tokens" setting is 0 for Sybase, SymmetricDS will not behave correctly.
+The NOCOUNT setting can be checked with "select case when (512 & @@OPTIONS) = 512 then 'on' else 'off' end".
+The DONEINPROC setting can be checked with "sp_configure 'send doneinproc tokens'".
 The commands "sp_configure 'send doneinproc tokens', 1" and "SET NOCOUNT OFF" will enable row counts. 
 If you're unable to change NOCOUNT for the server, the "db.init.sql" parameter can be set to "SET NOCOUNT OFF" in the engine properties file.
 

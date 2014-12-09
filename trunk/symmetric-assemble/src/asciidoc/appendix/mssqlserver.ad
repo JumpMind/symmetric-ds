@@ -9,5 +9,6 @@ updating of the primary key field(s) for a table, and you want those updates syn
 
 SymmetricDS expects a row count to be returned for data manipulation statements, which is the default setting for most server.
 However, if the NOCOUNT option is ON for SQL-Server, SymmetricDS will not behave correctly.  
+The NOCOUNT setting can be checked with "select case when (512 & @@OPTIONS) = 512 then 'on' else 'off' end".
 If you're unable to change NOCOUNT for the server, the "db.init.sql" parameter can be set to "SET NOCOUNT OFF" in the engine properties file.
 
