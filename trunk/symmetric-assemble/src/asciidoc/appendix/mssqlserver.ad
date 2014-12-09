@@ -1,7 +1,7 @@
 
-=== MS SQL Server
+=== SQL Server
 
-SQL Server was tested using the http://jtds.sourceforge.net/[jTDS JDBC driver].
+Microsoft SQL Server was tested using the http://jtds.sourceforge.net/[jTDS JDBC driver].
 
 SQL Server allows the update of primary key fields via the SQL update statement. If your application allows 
 updating of the primary key field(s) for a table, and you want those updates synchronized, you will need to set the 

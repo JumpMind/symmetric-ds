@@ -1,7 +1,7 @@
 
-=== Sybase Active Server Enterprise
+=== Sybase ASE
 
-Active Server Enterprise (ASE) was tested using the jConnect JDBC driver. The jConnect JDBC driver should be placed in the "lib" folder.
+Sybase Adaptive Server Enterprise (ASE) was tested using the jConnect JDBC driver. The jConnect JDBC driver should be placed in the "lib" folder.
 
 Columns of type DATETIME are accurate to 1/300th of a second, which means that the last digit of the milliseconds portion will end with 
 0, 3, or 6. An incoming DATETIME synced from another database will also have its millisconds rounded to one of these digits (0 and 1 become 
