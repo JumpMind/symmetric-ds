@@ -64,11 +64,6 @@ include::generated/server-parameters.ad[]
 
 [appendix]
 == Database Notes
-
-Each database management system has its own characteristics that results in
-feature coverage in SymmetricDS.  The following table shows which features are available
-by database.
-
 include::appendix/databases.ad[]
 
 

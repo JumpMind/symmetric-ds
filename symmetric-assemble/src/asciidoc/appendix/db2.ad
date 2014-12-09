@@ -1,6 +1,6 @@
 
-=== IBM DB2
-The DB2 Dialect uses global variables to enable and disable node and trigger synchronization. 
+=== DB2
+The IBM DB2 Dialect uses global variables to enable and disable node and trigger synchronization. 
 These variables are created automatically during the first startup. The DB2 JDBC driver should be placed in the "lib" folder.
 
 Currently, the DB2 Dialect for SymmetricDS does not provide support for transactional synchronization. 
