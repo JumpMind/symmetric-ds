@@ -29,22 +29,31 @@ Batch Algorithm:: Batching is the grouping of data, by channel, to be transferre
 Max Batch Size:: Specifies the maximum number of data events to process within a batch for this channel.
 Max Batch To Send:: Specifies the maximum number of batches to send for a given channel during a 'synchronization' between two nodes. A 'synchronization' is equivalent to a push or a pull. For example, if there are 12 batches ready to be sent for a channel and max_batch_to_send is equal to 10, then only the first 10 batches will be sent even though 12 batches are ready.
 Max Data To Route:: Specifies the maximum number of data rows to route for a channel at a time.
-Data Loader Types:: Determines how data will be loaded into the target tables.   These are used during an initial load or a reverse initial load.
+Data Loader Types:: Determines how data will be loaded into the target tables.   These are used during an initial load or a reverse initial load.  Data loaders do not always 
+have to load into the target relational database.  They can write to a file, a web service, or any other type of non-relational data source.  
+Data loaders can also use other techniques to increase performance of data loads into the target relation database. 
+
 |===
 
 |default|Performs an insert first and if this fails will fall back to an update to load the data.
 
 |ftp_localhost|Sends the data in CSV format to a configured ftp location.  These locations are setup in the TODO {SYM_HOME}/conf/ftp-extensions.xml
 
-|mysql_bulk|MySQL bulk loader.  See TODO <xref linkend="dataloaders"/> for more info.
+|mysql_bulk|MySQL bulk loader.  
 
-|mssql_bulk|Microsoft SQL Server bulk loader.  TODO See <xref linkend="dataloaders"/> for more info.
+|mssql_bulk|Microsoft SQL Server bulk loader.  
 
-|postgres_bulk|PostgreSQL bulk loader.  TODO See <xref linkend="dataloaders"/> for more info.
+|postgres_bulk|PostgreSQL bulk loader.  
 
-|oracle_bulk|Oracle bulk loader.  TODO See <xref linkend="dataloaders"/> for more info.
+|oracle_bulk|Oracle bulk loader. 
+
+|mongodb|MongoDB data loader.  See <<MongoDB>> for more details
 
 |===
+
+TIP: Tables that should be data loaded should be configured to use this channel.  Many times, a reload channel will 
+be set to bulk load to increase the performance of an initial load.  
+            
 
 ifdef::pro[]
 .Advanced Options
