@@ -1097,7 +1097,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
                         inactivateTriggers(triggersForCurrentNode, sqlBuffer, activeTriggerHistories);
                         updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, force,
-                                true, activeTriggerHistories);
+                                true, activeTriggerHistories, true);
                         resetTriggerRouterCacheByNodeGroupId();
                     } finally {
                         clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
@@ -1147,7 +1147,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             Set<Table> tables = tablesByTriggerId.get(history.getTriggerId());
             Trigger trigger = getTriggerFromList(history.getTriggerId(), triggersThatShouldBeActive);
             if (tables == null && trigger != null) {
-                tables = getTablesForTrigger(trigger, triggersThatShouldBeActive);
+                tables = getTablesForTrigger(trigger, triggersThatShouldBeActive, true);
                 tablesByTriggerId.put(trigger.getTriggerId(), tables);
             }
 
@@ -1258,7 +1258,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 .select();
     }
 
-    protected Set<Table> getTablesForTrigger(Trigger trigger, List<Trigger> triggers) {
+    protected Set<Table> getTablesForTrigger(Trigger trigger, List<Trigger> triggers, boolean useTableCache) {
         Set<Table> tables = new HashSet<Table>();
         try {
             boolean ignoreCase = this.parameterService
@@ -1322,7 +1322,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     } else {
                         Table table = symmetricDialect.getPlatform().getTableFromCache(
                                 catalogName, schemaName,
-                                trigger.getSourceTableName(), false);
+                                trigger.getSourceTableName(), !useTableCache);
                         if (table != null) {
                             tables.add(table);
                         }
@@ -1374,15 +1374,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected void updateOrCreateDatabaseTriggers(List<Trigger> triggers, StringBuilder sqlBuffer,
-            boolean force, boolean verifyInDatabase, List<TriggerHistory> activeTriggerHistories) {
+            boolean force, boolean verifyInDatabase, List<TriggerHistory> activeTriggerHistories, boolean useTableCache) {
         for (Trigger trigger : triggers) {
-            updateOrCreateDatabaseTrigger(trigger, triggers, sqlBuffer, force, verifyInDatabase, activeTriggerHistories);
+            updateOrCreateDatabaseTrigger(trigger, triggers, sqlBuffer, force, verifyInDatabase, activeTriggerHistories, useTableCache);
         }
     }
 
     protected void updateOrCreateDatabaseTrigger(Trigger trigger, List<Trigger> triggers,
-            StringBuilder sqlBuffer, boolean force, boolean verifyInDatabase, List<TriggerHistory> activeTriggerHistories) {
-        Set<Table> tables = getTablesForTrigger(trigger, triggers);
+            StringBuilder sqlBuffer, boolean force, boolean verifyInDatabase, List<TriggerHistory> activeTriggerHistories, boolean useTableCache) {
+        Set<Table> tables = getTablesForTrigger(trigger, triggers, useTableCache);
 
         if (tables != null && tables.size() > 0) {
             for (Table table : tables) {
@@ -1430,7 +1430,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
                 updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
-                    force, verifyInDatabase, allHistories);
+                    force, verifyInDatabase, allHistories, false);
             } else {                
                 for (TriggerHistory triggerHistory : getActiveTriggerHistories(trigger)) {
                     dropTriggers(triggerHistory, sqlBuffer);
