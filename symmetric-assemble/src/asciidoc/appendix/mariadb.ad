@@ -1,4 +1,4 @@
 
 === MariaDB
 
-See MySQL notes. In addition, you will need to use a MySQL driver for this dialect.
+See MySQL notes.  You can use either the MySQL or MariaDB driver for this dialect.
