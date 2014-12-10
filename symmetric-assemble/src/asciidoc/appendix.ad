@@ -78,3 +78,36 @@ include::appendix/versioning.ad[]
 
 [appendix]
 == Upgrading
+
+The upgrade process can either be a full upgrade of a new installation that copies in existing settings
+or an incremental upgrade of an existing installation that copies in new library files.
+A full upgrade is the cleanest method that ensures all new files are updated, while an incremental upgrade
+changes a minimal number of files.
+An incremental upgrade works best for patch releases and most minor releases.
+When SymmetricDS is started after a major or minor software update, it will alter its database tables with any changes needed
+for that release. 
+
+=== Full Upgrade
+
+For major releases and clean upgrades, copy old settings into a new installation using the following steps:
+
+. Stop the old SymmetricDS.
+. Backup the old SymmetricDS folder by renaming it.
+. Unzip the SymmetricDS distribution. 
+. Copy old files from "engines" folder.  (These files contain database connection information and engine settings.)
+. Copy old files from "conf" folder.  (These files contain settings for ports, wrapper, and logging.)  Check to see if any new changes need merged.
+. Copy old files from "security" folder.  (These files contain keys for encryption.)
+. Restart SymmetricDS.
+  
+=== Incremental Upgrade 
+ 
+For patch and minor releases, copy and replace the library folders of the installation using the following steps:
+
+. Stop the old SymmetricDS.
+. Backup the old "lib" and "web/WEB-INF/lib" folders by renaming them.
+. Unzip the SymmetricDS distribution to a temporary folder.
+. Copy the new "lib" and "web/WEB-INF/lib" folders into the old installation. 
+. Restart SymmetricDS.
+
+Most patch releases only change the JAR files named with "symmetric" in the "web/WEB-INF/lib" folder.
+ 
