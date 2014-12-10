@@ -18,13 +18,15 @@ across low-bandwidth connections, and withstand periods of network outages.
         
 This User Guide introduces SymmetricDS and its uses for data synchronization. It is
 intended for users who want to be quickly familiarized with the software, configure it,
-and use its many features.  This version of the guide was generated on {localdate}.
+and use its many features.  This version of the guide was generated on {docdate}.
 
 :numbered:
 
 include::introduction.ad[]
+include::installation.ad[]
 include::setup.ad[]
 include::configuration.ad[]
 include::manage.ad[]
 include::advanced-topics.ad[]
+include::developer.ad[]
 include::appendix.ad[]

@@ -1,0 +1,31 @@
+
+=== MongoDB
+           
+The MongoDB data loader maps relational database rows to MongoDB documents in collections.  To use the preconfigured MongoDB data loader,
+you set the <ns:literal>data_loader_type</ns:literal> to <ns:emphasis>MongoDB</ns:emphasis> on a channel.  
+Tables that should be synchronized to MongoDB should be configured to use this channel.  
+In order to point it to a MongoDB instance
+set the following properties in the engines properties file.
+
+[source,properties]   
+----       
+mongodb.username=xxxx
+mongodb.password=xxxx
+mongodb.host=xxxx
+mongodb.port=xxxx
+mongodb.default.databasename=default
+----
+      
+By default, the catalog or schema passed by SymmetricDS will be used for the MongoDB database name. The table passed by SymmetricDS 
+will be used as the MongoDB collection name.  If the catalog or schema are not set, the default database name property is used as the 
+database name. 
+           
+The _id of the MongoDB document will be the primary key of the database record. If the table has a composite primary key, then the 
+_id will be an embedded document that has name value pairs of the composite key. The body of the document will be name value pairs 
+of the table column name and table row value.
+           
+SymmetricDS uses the MongoDB Java Driver to upsert documents.
+           
+SymmetricDS transforms can be used to transform the data.  If a complex mapping is required that is not supported by transforms, then
+the <ns:literal>IDBObjectMapper</ns:literal> can be implemented and a new <ns:literal>MongoDataLoaderFactory</ns:literal> can be wired up
+as an extension point.
