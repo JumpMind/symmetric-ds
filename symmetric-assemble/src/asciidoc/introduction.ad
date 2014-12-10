@@ -373,6 +373,6 @@ endif::pro[]
 ifdef::pro[]
 SymmetricDS Pro is commercial software that is licensed, not sold.  
 It is subject to the terms of the End User License Agreement (EULA) and any accompanying JumpMind Support Contract.
-See http://www.jumpmind.com/products/symmetricds/download?agreement=1&tmpl=component&format=raw
-for the standard SymmetricDS Pro license text, but your agreement with JumpMind may be different.
+See the http://www.jumpmind.com/products/symmetricds/download?agreement=1&tmpl=component&format=raw[standard SymmetricDS Pro license]
+for reference, but your agreement with JumpMind may be different.
 endif::pro[]
