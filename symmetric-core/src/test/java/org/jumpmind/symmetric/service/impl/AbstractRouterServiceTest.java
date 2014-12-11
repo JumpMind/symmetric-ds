@@ -1122,9 +1122,10 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         // delete
         deleteAll(TEST_TABLE_1);
 
+        ISqlTransaction transaction = getSqlTemplate()
+        .startSqlTransaction();
         ChannelRouterContext context = new ChannelRouterContext(
-                TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getSqlTemplate()
-                        .startSqlTransaction());
+                TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, transaction);
         DataGapRouteReader reader = new DataGapRouteReader(context, engine);
         reader.run();
 
@@ -1137,6 +1138,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                 break;
             }
         } while (true);
+        
+        transaction.close();
 
         Assert.assertEquals(100, list.size());
         for (Data data : list) {
