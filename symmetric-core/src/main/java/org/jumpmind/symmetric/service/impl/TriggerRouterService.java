@@ -1945,7 +1945,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     
     public TriggerHistory findTriggerHistoryForGenericSync() {
         String triggerTableName = TableConstants.getTableName(tablePrefix,
-                TableConstants.SYM_TRIGGER);
+                TableConstants.SYM_NODE);
         TriggerHistory history = findTriggerHistory(null, null, triggerTableName
                 .toUpperCase());
         if (history == null) {
