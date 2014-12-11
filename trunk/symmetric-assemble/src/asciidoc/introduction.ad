@@ -6,35 +6,19 @@ This User Guide will introduce both basic and advanced concepts in the configura
 === System Requirements
 
 SymmetricDS is written in Java and requires a Java SE Runtime Environment (JRE) or Java SE Development Kit (JDK) version 6.0 or above.
-
-Any database with trigger technology and a JDBC driver has the potential to run SymmetricDS. The database is abstracted through a _Database Dialect_ in order to support specific features of each database. The following Database Dialects have been included with this release:
-
-* MySQL version 5.0.2 and above
-* MariaDB version 5.1 and above
-* Oracle version 10g and above
-* PostgreSQL version 8.2.5 and above
-* Sql Server 2005 and above
-* Sql Server Azure
-* HSQLDB 2.x
-* H2 1.x
-* Apache Derby 10.3.2.1 and above
-* IBM DB2 9.5
-* Firebird 2.0 and above
-* Interbase 2009 and above
-* Greenplum 8.2.15 and above
-* SQLite 3 and above
-* Sybase Adaptive Server Enterprise 12.5 and above
-* Sybase SQL Anywhere 9 and above
-
-See <xref linkend="databases"/>, for compatibility notes and other details for your specific database.
+Most major databases are supported.  See the list of supported databases in the <<databases-compatibility>> section. 
 
 === Concepts
 
 ==== Nodes
 
-SymmetricDS is a Java-based application that hosts a synchronization engine which acts as an agent for data synchronization between a single database instance and other synchronization engines in a network.
+SymmetricDS is a Java-based application that hosts a synchronization engine which acts as an agent for data synchronization between a single database
+ instance and other synchronization engines in a network.
 
-The SymmetricDS engine is referred to as a _node_. SymmetricDS is designed to be able to scale out to many thousands of nodes. The database connection is configured by providing a database connection string, database user, and database password in a properties file. SymmetricDS can synchronize any table that is accessible by the database connection, given that the database user has been assigned the appropriate database permissions.
+The SymmetricDS engine is referred to as a _node_. SymmetricDS is designed to be able to scale out to many thousands of nodes. 
+The database connection is configured by providing a database connection string, database user, and database password in a properties file. 
+SymmetricDS can synchronize any table that is accessible by the database connection, given that the database user has been assigned the
+appropriate database permissions.
 
 .Simple Configuration
 image::overview-1.gif[]
@@ -254,7 +238,7 @@ By default, SymmetricDS uses web-based HTTP or HTTPS in a style
 called Representation State Transfer (REST). It is lightweight and easy
 to manage. A series of filters are also provided to enforce
 authentication and to restrict the number of simultaneous
-synchronization streams. The <literal>ITransportManager</literal>
+synchronization streams. The `ITransportManager`
 interface allows other transports to be implemented.
 
 ==== Data Filtering and Rerouting
@@ -266,7 +250,7 @@ extracted, and loaded.
 <xref linkend="table_router" xrefstyle="table"/> configuration.
 Routers are responsible for identifying what target nodes captured
 changes should be delivered to. Custom routers are possible by
-providing a class implementing <literal>IDataRouter</literal>
+providing a class implementing `IDataRouter`
 
 * In addition to synchronization, SymmetricDS is also capable
 of performing fairly complex transformations (see <xref

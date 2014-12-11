@@ -4,20 +4,20 @@
 
 Each node requires properties that allow it to connect to a database and
 register with a parent node. Properties are configured in a file named
-<code>xxxxx.properties</code>
+`xxxxx.properties`
 that is placed in the engines directory of the SymmetricDS install. The
 file is usually named according to the engine.name, but it is not a
 requirement.
 		
 To give a node its identity, the following properties are required. Any
 other properties found in
-<code>conf/symmetric.properties</code>
+`conf/symmetric.properties`
 can be overridden for a specific engine in an engine's properties file.
 If the properties are changed in
-<code>conf/symmetric.properties</code>
+`conf/symmetric.properties`
 they will take effect across all engines deployed to the server. Note
 that you can use the variable
-<literal>$(hostName)</literal>
+`$(hostName)`
 to represent the host name of the machine when defining these properties
 (for example, external.id=$(hostName) ).
 		
@@ -42,7 +42,7 @@ external.id:: The external id for this node has meaning to the user and
 sync.url:: The URL where this node can be contacted for synchronization. At startup
 		and during each heartbeat, the node updates its entry in the database
 		with this URL. The sync url is of the format:
-		<code>http://{hostname}:{port}/{webcontext}/sync/{engine.name}</code>
+		`http://{hostname}:{port}/{webcontext}/sync/{engine.name}`
 		
 		The {webcontext} is blank for a standalone deployment. It
 		will typically be the name of the war file for an application server
@@ -66,9 +66,9 @@ registration.url:: The URL where this node can connect for registration to
 		Note that a
 		<emphasis>registration server node</emphasis>
 		is defined as one whose
-		<literal>registration.url</literal>
+		`registration.url`
 		is either (a) blank, or (b) identical to its
-		<literal>sync.url</literal>
+		`sync.url`
 		
 		For a deployment where the database connection pool should
 		be created using a JDBC driver, set the following properties:

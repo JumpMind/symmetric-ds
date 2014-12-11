@@ -10,11 +10,11 @@ and configuration of SymmetricDS.
        
 SymmetricDS allows tables to be synchronized bi-directionally.  Note that an outgoing
 synchronization does not process changes during an incoming synchronization on the same node unless the trigger
-was created with the <literal>sync_on_incoming_batch</literal> flag set.  If the <literal>sync_on_incoming_batch</literal> flag
+was created with the `sync_on_incoming_batch` flag set.  If the `sync_on_incoming_batch` flag
 is set, then update loops are prevented by a feature that is available in most database dialects.
-More specifically, during an incoming synchronization the source <literal>node_id</literal> is put into a database session variable that is
-available to the database trigger.  Data events are not generated if the target <literal>node_id</literal>
-on an outgoing synchronization is equal to the source <literal>node_id</literal>.
+More specifically, during an incoming synchronization the source `node_id` is put into a database session variable that is
+available to the database trigger.  Data events are not generated if the target `node_id`
+on an outgoing synchronization is equal to the source `node_id`.
      
 By default, only the columns that changed will be updated in the target system.
 
@@ -31,14 +31,14 @@ Each tier is typically represented by a node group.  Each node in
 the tier would belong to the node group representing that tier.
     
 A node can only pull and push data to other nodes that are represented in the node's <xref linkend="table_node" xrefstyle="table"/>
-table and in cases where that node's <literal>sync_enabled</literal> column is set to 1.
+table and in cases where that node's `sync_enabled` column is set to 1.
 Because of this, a tree-like
 hierarchy of nodes can be created by having only a subset of nodes belonging to the same node group represented at the different branches of the tree.
    
 If auto registration is turned _off_, then this setup must occur manually by opening registration
-for the desired nodes at the desired parent node and by configuring each node's <literal>registration.url</literal>
+for the desired nodes at the desired parent node and by configuring each node's `registration.url`
 to be the parent node's URL.
-The parent node is always tracked by the setting of the parent's <literal>node_id</literal> in the <literal>created_at_node_id</literal> column of the new node.
+The parent node is always tracked by the setting of the parent's `node_id` in the `created_at_node_id` column of the new node.
 When a node registers and downloads its configuration it is always provided the configuration for nodes
 that might register with the node itself based on the Node Group Links defined in the parent node.
 
@@ -47,13 +47,13 @@ that might register with the node itself based on the Node Group Links defined i
 When deploying a multi-tiered system it may be advantageous to have only one registration server, even though the parent node of a registering node
 could be any of a number of nodes in the system.  In SymmetricDS the parent node is always the node that a child registers with.  The
 <xref linkend="table_registration_redirect" xrefstyle="table"/> table allows a single node, usually the root server in the network, to
-redirect registering nodes to their true parents.  It does so based on a mapping found in the table of the external id (<literal>registrant_external_id</literal>) to the parent's node
-id (<literal>registration_node_id</literal>).
+redirect registering nodes to their true parents.  It does so based on a mapping found in the table of the external id (`registrant_external_id`) to the parent's node
+id (`registration_node_id`).
         
-For example, if it is desired to have a series of regional servers that workstations at retail stores get assigned to based on their <literal>external_id</literal>, the store number, then
-you might insert into <xref linkend="table_registration_redirect" xrefstyle="table"/> the store number as the <literal>registrant_external_id</literal> and the <literal>node_id</literal> of
-the assigned region as the <literal>registration_node_id</literal>.  When a workstation at the store registers, the root server sends an HTTP redirect to the <literal>sync_url</literal> of the node
-that matches the <literal>registration_node_id</literal>.
+For example, if it is desired to have a series of regional servers that workstations at retail stores get assigned to based on their `external_id`, the store number, then
+you might insert into <xref linkend="table_registration_redirect" xrefstyle="table"/> the store number as the `registrant_external_id` and the `node_id` of
+the assigned region as the `registration_node_id`.  When a workstation at the store registers, the root server sends an HTTP redirect to the `sync_url` of the node
+that matches the `registration_node_id`.
  
 IMPORTANT: Please see <xref linkend="manage-node-initial-load" /> for important details around initial loads
 and registration when using registration redirect.
@@ -61,8 +61,8 @@ and registration when using registration redirect.
 
 === Encrypted Passwords
        
-The <literal>db.user</literal> and <literal>db.password</literal> properties will accept encrypted text, which protects
-against casual observation.  The text is prefixed with <literal>enc:</literal> to indicate
+The `db.user` and `db.password` properties will accept encrypted text, which protects
+against casual observation.  The text is prefixed with `enc:` to indicate
 that it is encrypted.  To encrypt text, use the following command:
 
 [source, cli]
@@ -75,11 +75,11 @@ or
 symadmin -p {properties file} encrypt-text text-to-encrypt
 ----
 The text is encrypted using a secret key named "sym.secret" that is retrieved from a keystore file.
-By default, the keystore is located in <filename class="filename">security/keystore</filename>.
+By default, the keystore is located in `security/keystore`.
 The location and filename of the keystore can be overridden by setting the "sym.keystore.file" system property.
 If the secret key is not found, the system will generate and install a secret key for use with Triple DES cipher.
        
-Generate a new secret key for encryption using the <literal>keytool</literal>
+Generate a new secret key for encryption using the `keytool`
 command that comes with the JRE.  If there is an existing key in the keystore, first remove it:
 
 [source, cli]
@@ -97,12 +97,12 @@ keytool -keystore keystore -storepass changeit -storetype jceks \
    -alias sym.secret -genseckey -keyalg aes -keysize 128</programlisting>
 ----
 
-If using an alternative provider, place the provider JAR file in the SymmetricDS <filename class="directory">lib</filename> folder.
+If using an alternative provider, place the provider JAR file in the SymmetricDS `lib` folder.
 The provider class name should be installed in the JRE security properties or specified on the command line.
-To install in the JRE, edit the JRE <filename class="filename">lib/security/java.security</filename> file
-and set a <literal>security.provider.i</literal> property for the provider class name.
+To install in the JRE, edit the JRE `lib/security/java.security` file
+and set a `security.provider.i` property for the provider class name.
 Or, the provider can be specified on the command line instead.
-Both <literal>keytool</literal> and <literal>sym</literal> accept command line arguments for the provider class name.
+Both `keytool` and `sym` accept command line arguments for the provider class name.
 For example, using the Bouncy Castle provider, the command line options would look like:
 
 [source, cli]
@@ -119,9 +119,9 @@ symadmin -providerClass org.bouncycastle.jce.provider.BouncyCastleProvider -e se
 ----
 
 To customize the encryption, write a Java class that implements the ISecurityService or extends the default SecurityService, and place
-the class on the classpath in either <filename class="directory">lib</filename> or
-<filename class="directory">web/WEB-INF/lib</filename> folders.
-Then, in the <filename class="filename">symmetric.properties</filename> specify your class name for the security service.
+the class on the classpath in either `lib` or
+`web/WEB-INF/lib` folders.
+Then, in the `symmetric.properties` specify your class name for the security service.
 
 [source, cli]
 ----
@@ -177,7 +177,7 @@ sym --port 8080 --secure-port 8443 --mixed-server
 ==== Tomcat
            
 If you deploy SymmetricDS to Apache Tomcat, it can be secured by editing the
-<filename class="filename">TOMCAT_HOME/conf/server.xml</filename>
+`TOMCAT_HOME/conf/server.xml`
 configuration file.  There is already a line that can be uncommented
 and changed to the following:
 
@@ -193,19 +193,19 @@ and changed to the following:
            
 When SymmetricDS connects to a URL with HTTPS, Java checks the validity of the
 certificate using the built-in trusted keystore located at
-<filename class="filename">JRE_HOME/lib/security/cacerts</filename>.
+`JRE_HOME/lib/security/cacerts`.
 The "sym" launcher command overrides the trusted keystore to use its own
 trusted keystore instead, which is located at
-<filename class="filename">security/cacerts</filename>.
+`security/cacerts`.
 This keystore contains the certificate aliased as "sym" for use in testing
 and easing deployments.
 The trusted keystore can be overridden
-by specifying the <literal>javax.net.ssl.trustStore</literal> system property.
+by specifying the `javax.net.ssl.trustStore` system property.
    
 When SymmetricDS is run as a secure server with the "sym" launcher,
 it accepts incoming requests using the key installed in the keystore
 located at
-<filename class="filename">security/keystore</filename>.
+`security/keystore`.
 The default key is provided for convenience of testing, but should be
 re-generated for security.
             
@@ -215,7 +215,7 @@ To generate new keys and install a server certificate, use the
 following steps:
             
 * Open a command prompt and navigate to the
-<filename class="directory">security</filename>
+`security`
 subdirectory of your SymmetricDS installation on the server to which
 communication will be secured (typically the "root" or "central office" server).
                     
@@ -281,7 +281,7 @@ keytool -keystore cacerts -import -alias sym -file sym.cer
 ----
 
 * Copy the cacerts file that is generated by this process to
-the <filename class="directory">security</filename> directory of each client's SymmetricDS installation.
+the `security` directory of each client's SymmetricDS installation.
 
 === Basic Authentication
 
@@ -335,7 +335,7 @@ parameters.
 More details about enabling JMX for JConsole can be found <ulink url="http://docs.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html">here</ulink>.
          
 Using the Java jconsole command, SymmetricDS is listed as a local process named SymmetricLauncher.
-In jconsole, SymmetricDS appears under the MBeans tab under the name defined by the <literal>engine.name</literal>
+In jconsole, SymmetricDS appears under the MBeans tab under the name defined by the `engine.name`
 property.  The default value is SymmetricDS.
      
 The management interfaces under SymmetricDS are organized as follows:
@@ -457,6 +457,6 @@ The above configuration will publish XML similar to the following:
 
 To publish JMS messages during routing
 the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router
-would be configured by setting the <literal>router_type</literal> of a <xref linkend="table_router" xrefstyle="table"/> to the Spring bean
+would be configured by setting the `router_type` of a <xref linkend="table_router" xrefstyle="table"/> to the Spring bean
 name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="table"/>s
 to each <xref linkend="table_trigger" xrefstyle="table"/>  table that needs published.
