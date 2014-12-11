@@ -715,7 +715,7 @@ public class RestService {
     @ApiOperation(value = "Obtain the channel status of the single engine")
     @RequestMapping(value = "/engine/channelstatus", method = RequestMethod.GET)
     @ResponseBody
-    public final Set<ChannelStatus> getChannelStatus(@PathVariable("engine") String engineName) {
+    public final Set<ChannelStatus> getChannelStatus() {
         return channelStatusImpl(getSymmetricEngine());
     }
 
@@ -1591,6 +1591,7 @@ public class RestService {
             status.setEnabled(nodeChannel.isEnabled());
             status.setIgnoreEnabled(nodeChannel.isIgnoreEnabled());
             status.setSuspendEnabled(nodeChannel.isSuspendEnabled());
+            channelStatus.add(status);
         }
         return channelStatus;
     }
