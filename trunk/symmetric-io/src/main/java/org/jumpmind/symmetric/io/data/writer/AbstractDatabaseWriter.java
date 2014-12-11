@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -421,11 +422,16 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
         return true;
     }
 
-    protected Map<String, String> getLookupDataMap(CsvData data) {
+    protected Map<String, String> getLookupDataMap(CsvData data, Conflict conflict) {
         Map<String, String> keyData = null;
+        
         if (data.getDataEventType() == DataEventType.INSERT) {
             keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(), CsvData.ROW_DATA);
-        } else {
+        } else if (conflict.getDetectType() != DetectConflict.USE_PK_DATA) {
+            keyData = data.toColumnNameValuePairs(sourceTable.getColumnNames(), CsvData.OLD_DATA);
+        } 
+        
+        if (keyData == null || keyData.size() == 0) {
             keyData = data.toKeyColumnValuePairs(sourceTable);
         }
         return keyData;
