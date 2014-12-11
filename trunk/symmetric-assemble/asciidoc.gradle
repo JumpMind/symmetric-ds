@@ -77,8 +77,7 @@ task generateDocs(type: Copy) {
 }
 
 asciidoctor { (1)
-    //separateOutputDirs=false
-    backends = ['html5', 'pdf']
+    backends = docFormat.split ","
     sourceDir = file(symAssembleDir + '/src/asciidoc')
     outputDir = file("$buildDir/src/asciidoc")
     options = [
