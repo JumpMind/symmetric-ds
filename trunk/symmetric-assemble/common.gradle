@@ -69,6 +69,10 @@ subprojects { subproject ->
         from sourceSets.test.output
     }
     
+    test {
+        ignoreFailures true
+    }
+    
     jar {
         filesMatching("**/*.properties") {
             filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
