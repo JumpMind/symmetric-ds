@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.RegistrationRequest;
+import org.jumpmind.symmetric.security.INodePasswordFilter;
 
 /**
  * This service provides an API that deals with {@link Node} registration
@@ -109,9 +110,11 @@ public interface IRegistrationService {
     
     public boolean deleteRegistrationRequest(RegistrationRequest request);
     
-    public void saveRegistrationRequest(RegistrationRequest request);
+    public void saveRegisgtrationRequest(RegistrationRequest request);
 
     public boolean isRegisteredWithServer();
+    
+    public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter);
     
     /**
      * Add an entry to the registation_redirect table so that if a node tries to register here.  It will be redirected to the correct node.

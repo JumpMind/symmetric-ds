@@ -20,14 +20,13 @@
  */
 package org.jumpmind.symmetric.route;
 
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 /**
  * Only put individual transactions in a batch.
  */
-public class TransactionalBatchAlgorithm implements IBatchAlgorithm, IBuiltInExtensionPoint {
+public class TransactionalBatchAlgorithm implements IBatchAlgorithm {
 
     public static final String NAME = "transactional";
     

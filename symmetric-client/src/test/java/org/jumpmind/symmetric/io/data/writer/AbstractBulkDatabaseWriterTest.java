@@ -32,7 +32,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.symmetric.io.AbstractWriterTest;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.junit.Test;

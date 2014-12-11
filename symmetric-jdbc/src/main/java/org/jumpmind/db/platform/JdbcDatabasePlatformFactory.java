@@ -33,6 +33,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.h2.util.JdbcUtils;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
+import org.jumpmind.db.platform.db2.Db2As400DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2zOsDatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
@@ -85,8 +86,8 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "Informix Dynamic Server", InformixDatabasePlatform.class);
         addPlatform(platforms, "Apache Derby", DerbyDatabasePlatform.class);
         addPlatform(platforms, "Firebird", FirebirdDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.GREENPLUM, GreenplumPlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.FIREBIRD_DIALECT1, FirebirdDialect1DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.GREENPLUM, GreenplumPlatform.class);
         addPlatform(platforms, "HsqlDb", HsqlDbDatabasePlatform.class);
         addPlatform(platforms, "HSQL Database Engine2", HsqlDb2DatabasePlatform.class);
         addPlatform(platforms, "Interbase", InterbaseDatabasePlatform.class);
@@ -104,6 +105,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "SQL Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "DB2", Db2DatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.DB2ZOS, Db2zOsDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.DB2AS400, Db2As400DatabasePlatform.class);
         addPlatform(platforms, "SQLite", SqliteDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.REDSHIFT, RedshiftDatabasePlatform.class);
 
@@ -226,18 +228,24 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
 
-            if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.DB2)) {
+            if (nameVersion[0].toLowerCase().indexOf(DatabaseNamesConstants.DB2) != -1) {
                 if (nameVersion[0].toUpperCase().indexOf("Z") != -1) {
                     nameVersion[0] = DatabaseNamesConstants.DB2ZOS;
+                } else if (nameVersion[0].indexOf("400") != -1) {
+                    nameVersion[0] = DatabaseNamesConstants.DB2AS400;
+                } else {
+                	nameVersion[0] = DatabaseNamesConstants.DB2;
                 }
+            }
+            if (nameVersion[0].equalsIgnoreCase("AS") && nameVersion[2].equalsIgnoreCase("db2")) {
+            	nameVersion[0] = DatabaseNamesConstants.DB2AS400;
             }
 
             if (nameVersion[0].toLowerCase().startsWith(DatabaseNamesConstants.FIREBIRD)) {
-                if (isFirebirdDialect1(connection)) {
-                    nameVersion[0] = DatabaseNamesConstants.FIREBIRD_DIALECT1;
-                }
+            	if (isFirebirdDialect1(connection)) {
+            		nameVersion[0] = DatabaseNamesConstants.FIREBIRD_DIALECT1;
+            	}
             }
-            
             log.info("Detected database '" + nameVersion[0] + "', version '" + nameVersion[1] + "', protocol '" + nameVersion[2] + "'");
 
             return nameVersion;
@@ -298,30 +306,6 @@ public class JdbcDatabasePlatformFactory {
             }
         }
         return isRedshift;
-    }
-
-    private static boolean isFirebirdDialect1(Connection connection) {
-        boolean isDialect1 = false;
-        Statement stmt = null;
-        ResultSet rs = null;
-        try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery("select current_time from rdb$database");
-            rs.next();
-        } catch (SQLException ex) {
-            isDialect1 = true;
-            try {
-                JdbcUtils.closeSilently(rs);
-                rs = stmt.executeQuery("select cast(1 as numeric(10,0)) from rdb$database");
-                rs.next();
-            } catch (SQLException e) {
-                log.error("The client sql dialect does not match the database, which is not a supported mode.  You must add ?sql_dialect=1 to the end of the JDBC URL.");
-            }
-        } finally {
-            JdbcUtils.closeSilently(rs);
-            JdbcUtils.closeSilently(stmt);
-        }        
-        return isDialect1;
     }
 
     private static boolean isMariaDBDatabase(Connection connection) {
@@ -387,6 +371,30 @@ public class JdbcDatabasePlatformFactory {
             }
         }
         return productVersion;
+    }
+
+    private static boolean isFirebirdDialect1(Connection connection) {
+        boolean isDialect1 = false;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery("select current_time from rdb$database");
+            rs.next();
+        } catch (SQLException ex) {
+            isDialect1 = true;
+            try {
+                JdbcUtils.closeSilently(rs);
+                rs = stmt.executeQuery("select cast(1 as numeric(10,0)) from rdb$database");
+                rs.next();
+            } catch (SQLException e) {
+                log.error("The client sql dialect does not match the database, which is not a supported mode.  You must add ?sql_dialect=1 to the end of the JDBC URL.");
+            }
+        } finally {
+            JdbcUtils.closeSilently(rs);
+            JdbcUtils.closeSilently(stmt);
+        }        
+        return isDialect1;
     }
 
     public static String getDatabaseProductVersion(DataSource dataSource) {

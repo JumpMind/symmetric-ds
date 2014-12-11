@@ -1,3 +1,0 @@
-includeFlat 'symmetric-util','symmetric-db',
-        'symmetric-csv','symmetric-jdbc','symmetric-io', 'symmetric-core',
-        'symmetric-client','symmetric-server','symmetric-wrapper','symmetric-android'

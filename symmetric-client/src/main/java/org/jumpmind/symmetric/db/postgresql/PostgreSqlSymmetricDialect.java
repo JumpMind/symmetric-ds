@@ -161,35 +161,28 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     }
     
     @Override
-    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
-            String triggerName, String tableName) {
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
+            String tableName) {
         Table table = platform.getTableFromCache(catalogName, schemaName, tableName, false);
-        if (table != null) {
-            String quoteChar = platform.getDatabaseInfo().getDelimiterToken();
-            schemaName = table.getSchema() == null ? "" : (quoteChar + table.getSchema()
-                    + quoteChar + ".");
-            final String dropSql = "drop trigger " + triggerName + " on " + schemaName + quoteChar
-                    + table.getName() + quoteChar;
-            logSql(dropSql, sqlBuffer);
-            final String dropFunction = "drop function " + schemaName + "f" + triggerName
-                    + "() cascade";
-            logSql(dropFunction, sqlBuffer);
-            if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-                String sql = null;
-                try {
-                    sql = dropSql;
-                    platform.getSqlTemplate().update(dropSql);
-                } catch (Exception e) {
-                    log.warn("Tried to remove trigger using: {} and failed because: {}", sql,
-                            e.getMessage());
-                }
-                try {
-                    sql = dropFunction;
-                    platform.getSqlTemplate().update(dropFunction);
-                } catch (Exception e) {
-                    log.warn("Tried to remove function using: {} and failed because: {}", sql,
-                            e.getMessage());
-                }
+        String quoteChar = platform.getDatabaseInfo().getDelimiterToken();
+        schemaName = table.getSchema() == null ? "" : (quoteChar + table.getSchema() + quoteChar + ".");
+        final String dropSql = "drop trigger " + triggerName + " on " + schemaName + quoteChar + table.getName() + quoteChar;
+        logSql(dropSql, sqlBuffer);
+        final String dropFunction = "drop function " + schemaName + "f" + triggerName + "() cascade";
+        logSql(dropFunction, sqlBuffer);
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            String sql = null;
+            try {
+                sql = dropSql;
+                platform.getSqlTemplate().update(dropSql);
+            } catch (Exception e) {
+                log.warn("Tried to remove trigger using: {} and failed because: {}", sql, e.getMessage());
+            }
+            try {                
+                sql = dropFunction;
+                platform.getSqlTemplate().update(dropFunction);
+            } catch (Exception e) {
+                log.warn("Tried to remove function using: {} and failed because: {}", sql, e.getMessage());
             }
         }
     }

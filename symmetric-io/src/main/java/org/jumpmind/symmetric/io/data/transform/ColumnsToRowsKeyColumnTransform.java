@@ -28,10 +28,9 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 
-public class ColumnsToRowsKeyColumnTransform implements IMultipleValueColumnTransform, IBuiltInExtensionPoint {
+public class ColumnsToRowsKeyColumnTransform implements IMultipleValueColumnTransform {
 
     public final static String NAME = "columnsToRowsKey";
 

@@ -75,7 +75,7 @@ public class SymmetricWebServer {
     protected static final Logger log = LoggerFactory.getLogger(SymmetricWebServer.class);
 
     protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(
-            SystemConstants.SYSPROP_WEB_DIR, AppUtils.getSymHome() + "/web");
+            SystemConstants.SYSPROP_WEB_DIR, "../web");
 
     public static final String DEFAULT_HTTP_PORT = System.getProperty(
             SystemConstants.SYSPROP_DEFAULT_HTTP_PORT, "31415");
@@ -379,7 +379,6 @@ public class SymmetricWebServer {
             SslContextFactory sslConnectorFactory = ((SslSocketConnector) connector).getSslContextFactory();
             sslConnectorFactory.setKeyStorePath(keyStoreFile);
             sslConnectorFactory.setKeyManagerPassword(keyStorePassword);
-            /* Prevent POODLE attack */
             sslConnectorFactory.addExcludeProtocols("SSLv3");
             sslConnectorFactory.setCertAlias(System.getProperty(SystemConstants.SYSPROP_KEYSTORE_CERT_ALIAS, SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
             sslConnectorFactory.setKeyStoreType(keyStoreType);

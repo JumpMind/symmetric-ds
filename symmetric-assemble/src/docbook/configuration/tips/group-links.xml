@@ -1,5 +1,0 @@
-<tip xmlns:ns="http://docbook.org/ns/docbook">
-	<para>The link also defines if configuration data will be synchronized on the link.  For example, you might not want remote nodes to be able to change
-      configuration and effect other nodes in the network.  In this case you would set <ns:literal>sync_config_enabled</ns:literal> to 0 on the appropriate link.</para>
-</tip>
-	        

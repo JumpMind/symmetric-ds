@@ -21,10 +21,9 @@
 
 @echo off
 
-set OLDCD=%CD%
 cd /D %~dp0..
 set SYM_HOME=%CD%
-cd "%OLDCD%"
+cd bin
 
 set SYM_OPTIONS=-Dfile.encoding=utf-8 ^
 -Duser.language=en ^
@@ -42,4 +41,4 @@ set SYM_OPTIONS=-Dfile.encoding=utf-8 ^
 set SYM_JAVA=java
 if /i NOT "%JAVA_HOME%" == "" set SYM_JAVA=%JAVA_HOME%\bin\java
 
-set CLASSPATH=%SYM_HOME%\patches;%SYM_HOME%\patches\*;%SYM_HOME%\lib\*;%SYM_HOME%\web\WEB-INF\lib\*
+set CLASSPATH=%SYM_HOME%\patches;%SYM_HOME%\lib\*;%SYM_HOME%\web\WEB-INF\lib\*

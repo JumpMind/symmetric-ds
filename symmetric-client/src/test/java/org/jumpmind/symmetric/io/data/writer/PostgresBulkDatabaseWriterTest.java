@@ -27,7 +27,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
-import org.jumpmind.symmetric.io.PostgresBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.junit.Before;
 import org.junit.BeforeClass;

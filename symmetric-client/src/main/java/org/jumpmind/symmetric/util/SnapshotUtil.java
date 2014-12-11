@@ -61,7 +61,6 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.JarBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +82,7 @@ public class SnapshotUtil {
 
         File snapshotsDir = getSnapshotDirectory(engine);
 
-        File logfile = new File(AppUtils.getCanonicalSymHome(engine.getParameterService().getString(ParameterConstants.SERVER_LOG_FILE)));
+        File logfile = new File(engine.getParameterService().getString(ParameterConstants.SERVER_LOG_FILE));
 
         File tmpDir = new File(engine.getParameterService().getTempDirectory(), dirName);
         tmpDir.mkdirs();
@@ -99,7 +98,7 @@ public class SnapshotUtil {
                     logfile.getAbsolutePath());
         }
 
-        File serviceWrapperLogFile = new File(AppUtils.getSymHome() + "/logs/wrapper.log");
+        File serviceWrapperLogFile = new File("../logs/wrapper.log");
         if (serviceWrapperLogFile.exists() && serviceWrapperLogFile.isFile()) {
             try {
                 FileUtils.copyFileToDirectory(serviceWrapperLogFile, tmpDir);

@@ -1,3 +1,9 @@
+SymmetricDS - 3.6.16 (Released 2014-12-11) 
+==========================================
+- 0002093: [Bug] Table structure changes, sym_trigger is updated and old table structure is used for new trigger (chenson) - closed.
+- 0002090: [Bug] Informix installations fail when existing SymmetricDS tables exist due to case sensitive comparisons (josh-a-hicks) - closed.
+- 0002097: [Bug] sync triggers gets called during and initial load (chenson) - closed.
+
 SymmetricDS - 3.6.15 (Released 2014-12-04) 
 ==========================================
 - 0002087: [Bug] Extract initial load in background doesn't work with wildcard catalogs and schemas (chenson) - closed.
