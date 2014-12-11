@@ -1943,7 +1943,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return history;
     }
 
-
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
             String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories) {
 
