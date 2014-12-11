@@ -1,0 +1,18 @@
+
+=== License Key
+
+The web console requires a valid license key before it will allow access to screens.
+The user is prompted automatically to enter a valid license if one is missing, or it can updated from the configuration screen.
+The license key contains a group of fields to define how the software is licensed for use.
+
+License Info:: A description of the license type.
+Holder:: The company name of the license holder.
+Effective Date:: Date and time when the license will become valid.
+Expiration Date:: Date and time when the license will no longer be valid.
+Max Nodes:: The maximum number of nodes that can be created for synchronization.
+Max Maintenance:: The end date and time for maintenance and support. 
+
+The license key is a block of encoded text that is sent to the user over email, or it can be retrieved from the
+http://support.jumpmind.com/[Support Center].  When an installed license key expires, the web console
+will require a new valid key before allowing access, but data synchronization and command line access
+will continue to function normally.
