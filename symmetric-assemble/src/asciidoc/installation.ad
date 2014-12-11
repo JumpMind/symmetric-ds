@@ -36,15 +36,15 @@ Next, we will go into a little more detail on the first three deployment options
 ==== Web Archive (WAR)
            
 As a web application archive, a WAR is deployed to an application server,
-such as Tomcat, Jetty, or JBoss.  The structure of the archive will have a <literal>web.xml</literal>
-file in the <literal>WEB-INF</literal> folder, an appropriately configured <filename>symmetric.properties</filename> file in the <literal>WEB-INF/classes</literal> folder,
-and the required JAR files in the <literal>WEB-INF/lib</literal> folder.
+such as Tomcat, Jetty, or JBoss.  The structure of the archive will have a `web.xml`
+file in the `WEB-INF` folder, an appropriately configured `symmetric.properties` file in the `WEB-INF/classes` folder,
+and the required JAR files in the `WEB-INF/lib` folder.
 
 .War
 image::symmetric_war.gif[]
 
-A war file can be generated using the standalone installation's <literal>symadmin</literal> utility and the
-<literal>create-war</literal> subcommand.  The command requires the name of the war file to generate.  It
+A war file can be generated using the standalone installation's `symadmin` utility and the
+`create-war` subcommand.  The command requires the name of the war file to generate.  It
 essentially packages up the web directory, the conf directory and includes an optional
 properties file.  Note that if a properties file is included, it will be copied to
 WEB-INF/classes/symmetric.properties.  This is the same location conf/symmetric.properties
@@ -59,7 +59,7 @@ deployment.
 ==== Embedded
            
 A Java application with the SymmetricDS Java Archive (JAR) library on its
-classpath can use the <literal>SymmetricWebServer</literal> to start the server.
+classpath can use the `SymmetricWebServer` to start the server.
             
 [source, java]
 ----
@@ -81,22 +81,22 @@ public class StartSymmetricEngine {
 ----
            
 This example starts the SymmetricDS server on port 8080.
-The configuration properties file, <filename>my-application.properties</filename>,
+The configuration properties file, `my-application.properties`,
 is packaged in the application to provide properties that override the SymmetricDS
 default values.  The second parameter to the constructor points to the web directory.
-The default location is <code>../web</code>.  In this example the web directory is located
-at <code>conf/web_dir</code>.  The web.xml is expected to be found at <code>conf/web_dir/WEB-INF/web.xml</code>.
+The default location is `../web`.  In this example the web directory is located
+at `conf/web_dir`.  The web.xml is expected to be found at `conf/web_dir/WEB-INF/web.xml`.
             
 ==== Standalone
            
-The <literal>sym</literal> command line utility starts a standalone web server with
+The `sym` command line utility starts a standalone web server with
 SymmetricDS pre-deployed.  The standalone server uses an embedded instance of the
 Jetty application server to handle web requests.  The web server can be configured
 using command line options or the web server can be configured by changing properties in the
-<code>conf/symmetric-server.properties</code> file.
+`conf/symmetric-server.properties` file.
            
 The following example starts the SymmetricDS server on port 8080 with the startup
-properties found in the <filename>root.properties</filename> file.
+properties found in the `root.properties` file.
             
 [source, cli]
 ----
@@ -104,8 +104,8 @@ properties found in the <filename>root.properties</filename> file.
 ----
 
 Even though the port and properties settings can be passed in on the command line, the preferred
-configuration approach is to put each hosted node's properties file in the <code>engines</code> directory
-and to modify port settings and enable secure mode using the <code>conf/symmetric-server.properties</code>.
+configuration approach is to put each hosted node's properties file in the `engines` directory
+and to modify port settings and enable secure mode using the `conf/symmetric-server.properties`.
            
 It is also suggested that SymmetricDS be configured to run as a service according to the instructions for your platform as documented in the following section.
 
@@ -113,7 +113,7 @@ It is also suggested that SymmetricDS be configured to run as a service accordin
    
 SymmetricDS can be configured to start automatically when the system boots, running as a Windows service or Linux/Unix daemon.
 A wrapper process starts SymmetricDS and monitors it, so it can be restarted if it runs out of memory or exits unexpectedly.
-The wrapper writes standard output and standard error to the <filename class="filename">logs/wrapper.log</filename> file.
+The wrapper writes standard output and standard error to the `logs/wrapper.log` file.
     
 ==== Running as a Windows Service
        
@@ -141,7 +141,7 @@ bin\sym_service.bat stop
 
 ==== Running as a Linux/Unix daemon
        
-An init script is written to the system <filename class="directory">/etc/init.d</filename> directory.
+An init script is written to the system `/etc/init.d` directory.
 Symbolic links are created for starting on run levels 2, 3, and 5 and stopping on run levels 0, 1, and 6.
 To install the script, running the following command as root:
 [source, cli]
@@ -169,18 +169,18 @@ A single SymmetricDS node may be clustered across a series of instances, creatin
 
 When clustered, a hardware load balancer is typically used
 to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.
-Also, the <literal>sync.url</literal> (discussed in <xref linkend="setup-engine-files"/>)
+Also, the `sync.url` (discussed in <xref linkend="setup-engine-files"/>)
 SymmetricDS property should be set to the URL of the load balancer.
    
-If the cluster will be running any of the SymmetricDS jobs, then the <literal>cluster.lock.enabled</literal> property should be set to <literal>true</literal>.
+If the cluster will be running any of the SymmetricDS jobs, then the `cluster.lock.enabled` property should be set to `true`.
 By setting this property to true, SymmetricDS will use a row in the <xref linkend="table_lock" xrefstyle="table"/> table as a semaphore to make sure that only one instance at a time
 runs a job.  When a lock is acquired, a row is updated in the lock table with the time of the lock and the server id of the locking job.  The lock time is set back to null
 when the job is finished running.  Another instance of SymmetricDS cannot aquire a lock until the locking instance (according to the server id) releases the lock.  If an
 instance is terminated while the lock is still held, an instance with the same server id is allowed to reaquire the lock.  If the locking instance remains down, the lock can be
-broken after a period of time, specified by the <literal>cluster.lock.timeout.ms</literal> property, has expired.  Note that if the job is still running and the lock
+broken after a period of time, specified by the `cluster.lock.timeout.ms` property, has expired.  Note that if the job is still running and the lock
 expires, two jobs could be running at the same time which could cause database deadlocks.
    
-By default, the locking server id is the hostname of the server.  If two clustered instances are running on the same server, then the <literal>cluster.server.id</literal> property
+By default, the locking server id is the hostname of the server.  If two clustered instances are running on the same server, then the `cluster.server.id` property
 may be set to indicate the name that the instance should use for its server id.
    
 When deploying SymmetricDS to an application server like Tomcat or JBoss, no special session clustering needs to be configured for the application server.

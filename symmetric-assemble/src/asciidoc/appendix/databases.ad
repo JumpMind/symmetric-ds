@@ -1,6 +1,7 @@
 
 This section describes specific settings and notes for using each supported database platform.
 
+[id="databases-compatibility",reftext="Database Compatibility"]
 === Compatibility
 
 Each database management system has its own characteristics that results in
