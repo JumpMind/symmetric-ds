@@ -167,8 +167,9 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
             try {
+                Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
                 String[] values = (String[]) ArrayUtils.addAll(getRowData(data, CsvData.ROW_DATA),
-                        this.currentDmlStatement.getLookupKeyData(getLookupDataMap(data)));
+                        this.currentDmlStatement.getLookupKeyData(getLookupDataMap(data, conflict)));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 if (count > 0) {
@@ -270,7 +271,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     throw new IllegalStateException(msg);                        
                 }
 
-                lookupDataMap = getLookupDataMap(data);
+                lookupDataMap = getLookupDataMap(data, conflict);
 
                 boolean[] nullKeyValues = new boolean[lookupKeys.size()];
                 for (int i = 0; i < lookupKeys.size(); i++) {
@@ -288,7 +289,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 transaction.prepare(this.currentDmlStatement.getSql());
             }
             try {
-                lookupDataMap = lookupDataMap == null ? getLookupDataMap(data) : lookupDataMap;
+                lookupDataMap = lookupDataMap == null ? getLookupDataMap(data, conflict) : lookupDataMap;
                 long count = execute(data, this.currentDmlStatement.getLookupKeyData(lookupDataMap));
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
                 if (count > 0) {
@@ -418,7 +419,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         throw new IllegalStateException(msg);                        
                     }
 
-                    lookupDataMap = getLookupDataMap(data);
+                    lookupDataMap = getLookupDataMap(data, conflict);
 
                     boolean[] nullKeyValues = new boolean[lookupKeys.size()];
                     for (int i = 0; i < lookupKeys.size(); i++) {
@@ -446,7 +447,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
                 rowData = (String[]) changedColumnValueList
                         .toArray(new String[changedColumnValueList.size()]);
-                lookupDataMap = lookupDataMap == null ? getLookupDataMap(data) : lookupDataMap;
+                lookupDataMap = lookupDataMap == null ? getLookupDataMap(data, conflict) : lookupDataMap;
                 String[] values = (String[]) ArrayUtils.addAll(rowData,
                         this.currentDmlStatement.getLookupKeyData(lookupDataMap));
 
