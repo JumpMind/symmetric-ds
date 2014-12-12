@@ -36,6 +36,7 @@ import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
@@ -890,8 +891,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     
     @Override
     protected void allowInsertIntoAutoIncrementColumns(boolean value, Table table) {
-        String quote = platform.getDatabaseInfo().getDelimiterToken();
-        transaction.allowInsertIntoAutoIncrementColumns(value, table, quote);
+        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        String quote = dbInfo.getDelimiterToken();
+        String catalogSeparator = dbInfo.getCatalogSeparator();
+        String schemaSeparator = dbInfo.getSchemaSeparator();
+        transaction.allowInsertIntoAutoIncrementColumns(value, table, quote, catalogSeparator, schemaSeparator);
     }
     
 }

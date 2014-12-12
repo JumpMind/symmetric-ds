@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
@@ -78,8 +79,9 @@ public class AuditTableDataRouter extends AbstractDataRouter {
                     platform.alterTables(true, auditTable);
                 }
             }
-            String auditTableName = auditTable.getFullyQualifiedTableName(platform
-                    .getDatabaseInfo().getDelimiterToken());
+            DatabaseInfo dbInfo = platform.getDatabaseInfo();
+            String auditTableName = auditTable.getQualifiedTableName(dbInfo.getDelimiterToken(), 
+                    dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator());
 
             ISqlTemplate template = platform.getSqlTemplate();
             

@@ -30,6 +30,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -204,15 +205,16 @@ public class ExtractDataReader implements IDataReader {
 
     protected String buildSelect(Table table, Column lobColumn, Column[] pkColumns) {
         StringBuilder sql = new StringBuilder("select ");
-        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
-                .getDatabaseInfo().getDelimiterToken() : "";
+        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
         sql.append(quote);
         sql.append(lobColumn.getName());
         sql.append(quote);
         sql.append(",");
         sql.delete(sql.length() - 1, sql.length());
         sql.append(" from ");
-        sql.append(table.getFullyQualifiedTableName(quote));
+        sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), 
+                dbInfo.getSchemaSeparator()));
         sql.append(" where ");
         for (Column col : pkColumns) {
             sql.append(quote);
