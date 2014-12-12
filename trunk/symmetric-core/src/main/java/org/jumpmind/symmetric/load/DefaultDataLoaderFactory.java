@@ -121,6 +121,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
         settings.setTextColumnExpression(parameterService.getString(
                 ParameterConstants.DATA_LOADER_TEXT_COLUMN_EXPRESSION));
         settings.setApplyChangesOnly(parameterService.is(ParameterConstants.DATA_LOADER_APPLY_CHANGES_ONLY, true));
+        settings.setUsePrimaryKeysFromSource(parameterService.is(ParameterConstants.DATA_LOADER_USE_PRIMARY_KEYS_FROM_SOURCE));
 
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
