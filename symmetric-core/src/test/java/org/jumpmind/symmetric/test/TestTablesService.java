@@ -24,15 +24,15 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.impl.AbstractService;
+import org.junit.Assert;
 import org.junit.Ignore;
 
 @Ignore
@@ -195,14 +195,18 @@ public class TestTablesService extends AbstractService {
     public void insertIntoTestTriggerTable(Object[] values) {
         Table testTriggerTable = platform
                 .getTableFromCache(null, null, "test_triggers_table", true);
-        String quote = getSymmetricDialect().getPlatform().getDatabaseInfo().getDelimiterToken();
+        DatabaseInfo dbInfo = getSymmetricDialect().getPlatform().getDatabaseInfo();
+        String quote = dbInfo.getDelimiterToken();
+        String catalogSeparator = dbInfo.getCatalogSeparator();
+        String schemaSeparator = dbInfo.getSchemaSeparator();
+
         ISqlTransaction transaction = sqlTemplate.startSqlTransaction();
         try {
-            transaction.allowInsertIntoAutoIncrementColumns(true, testTriggerTable, quote);
+            transaction.allowInsertIntoAutoIncrementColumns(true, testTriggerTable, quote, catalogSeparator, schemaSeparator);
             transaction.prepareAndExecute(getSql("insertIntoTestTriggersTableSql"), values);
             transaction.commit();
         } finally {
-            transaction.allowInsertIntoAutoIncrementColumns(false, testTriggerTable, quote);
+            transaction.allowInsertIntoAutoIncrementColumns(false, testTriggerTable, quote, catalogSeparator, schemaSeparator);
             transaction.close();
         }
     }

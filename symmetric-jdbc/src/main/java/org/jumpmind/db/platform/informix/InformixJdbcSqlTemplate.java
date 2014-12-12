@@ -40,9 +40,4 @@ public class InformixJdbcSqlTemplate extends JdbcSqlTemplate {
         return false;
     }
     
-    @Override
-    public boolean isStoresUpperCaseIdentifiers() {
-        return true;
-    }
-    
 }

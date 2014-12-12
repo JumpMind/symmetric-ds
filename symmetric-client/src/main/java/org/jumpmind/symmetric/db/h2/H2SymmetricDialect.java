@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.StringMapper;
@@ -65,7 +66,9 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName) {
-        String prefix = Table.getQualifiedTablePrefix(catalogName, schemaName, getPlatform().getDatabaseInfo().getDelimiterToken());
+        DatabaseInfo dbInfo = getPlatform().getDatabaseInfo();
+        String prefix = Table.getFullyQualifiedTablePrefix(catalogName, schemaName, dbInfo.getDelimiterToken(),
+                dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator());
         final String dropSql = String.format("DROP TRIGGER IF EXISTS %s%s", prefix, triggerName);
         logSql(dropSql, sqlBuffer);
 

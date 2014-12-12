@@ -458,7 +458,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 .execute(new IConnectionCallback<Database>() {
                     public Database execute(Connection connection) throws SQLException {
                         Database db = new Database();
-                        db.setName(Table.getQualifiedTablePrefix(catalog, schema));
+                        db.setName(Table.getFullyQualifiedTablePrefix(catalog, schema));
                         db.setCatalog(catalog);
                         db.setSchema(schema);
                         db.addTables(readTables(connection, catalog, schema, tableTypes));

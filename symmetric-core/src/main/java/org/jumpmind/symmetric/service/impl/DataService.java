@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -594,6 +595,10 @@ public class DataService extends AbstractService implements IDataService {
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
             ISqlTransaction transaction) {
         Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
+        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        String quote = dbInfo.getDelimiterToken();
+        String catalogSeparator = dbInfo.getCatalogSeparator();
+        String schemaSeparator = dbInfo.getSchemaSeparator();
         for (TriggerHistory triggerHistory : triggerHistories) {
             List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                     .getTriggerHistoryId());
@@ -609,10 +614,9 @@ public class DataService extends AbstractService implements IDataService {
                         if (numberOfBatches <= 0) {                            
                             Table table = platform.getTableFromCache(
                                     triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
-                                    triggerHistory.getSourceTableName(), false);
+                                    triggerHistory.getSourceTableName(), false);                            
                             String sql = String.format("select count(*) from %s ", table
-                                    .getFullyQualifiedTableName(platform.getDatabaseInfo()
-                                            .getDelimiterToken()));
+                                    .getQualifiedTableName(quote, catalogSeparator, schemaSeparator));
                             sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
                             sql = FormatUtils
                                     .replace("externalId", targetNode.getExternalId(), sql);

@@ -264,8 +264,9 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
 
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
-        String prefix = Table.getQualifiedTablePrefix(table.getCatalog(), table.getSchema(), 
-                delimitedIdentifierModeOn? databaseInfo.getDelimiterToken() : "");
+        String prefix = Table.getFullyQualifiedTablePrefix(table.getCatalog(), table.getSchema(), 
+                delimitedIdentifierModeOn? databaseInfo.getDelimiterToken() : "", databaseInfo.getCatalogSeparator(), 
+                        databaseInfo.getSchemaSeparator());
         ddl.append(prefix);
         ddl.append("sp_executesql N'DROP INDEX ");
         printIdentifier(getIndexName(index), ddl);

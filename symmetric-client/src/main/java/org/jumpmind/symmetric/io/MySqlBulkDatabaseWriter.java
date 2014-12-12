@@ -32,6 +32,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -178,12 +179,16 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                 this.stagedInputFile.close();
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
 	        try {
+	            DatabaseInfo dbInfo = platform.getDatabaseInfo();
+	            String quote = dbInfo.getDelimiterToken();
+	            String catalogSeparator = dbInfo.getCatalogSeparator();
+	            String schemaSeparator = dbInfo.getSchemaSeparator();
 	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
 	            Connection c = jdbcTransaction.getConnection();
 	            String sql = String.format("LOAD DATA " + (isLocal ? "LOCAL " : "") + 
 	            		"INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
 	            		(isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
-	            		this.getTargetTable().getFullyQualifiedTableName(platform.getDatabaseInfo().getDelimiterToken()) +
+	            		this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) +
                                 " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY ''" +
                                 " (" + Table.getCommaDeliminatedColumns(table.getColumns()) + ")";
 	            Statement stmt = c.createStatement();
