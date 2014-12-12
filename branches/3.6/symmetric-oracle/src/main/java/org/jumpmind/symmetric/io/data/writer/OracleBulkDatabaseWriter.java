@@ -297,7 +297,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
             ddl.append(String.format("begin                                                                       \n"));
             ddl.append(String.format("  o_errors := %s_integer_t();                                                  \n", procedurePrefix));
             ddl.append(String.format("  forall i in 1 .. %s.last save exceptions                                  \n", firstVariable));
-            ddl.append(String.format("  insert into %s (\n", table.getFullyQualifiedTableName("\"")));
+            ddl.append(String.format("  insert into %s (\n", table.getQualifiedTableName("\"", ",",",")));
             for (Column column : columns) {
                 ddl.append(String.format("\"%s\", \n", column.getName()));
             }
