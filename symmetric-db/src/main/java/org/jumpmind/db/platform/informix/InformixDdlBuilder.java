@@ -55,7 +55,8 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
 
         databaseInfo.setAlterTableForDropUsed(true);
         databaseInfo.setSystemIndicesReturned(true);
-        
+
+        databaseInfo.setCatalogSeparator(":");
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
@@ -116,7 +117,7 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
             ddl.append("ADD CONSTRAINT FOREIGN KEY (");
             writeLocalReferences(key, ddl);
             ddl.append(") REFERENCES ");
-            ddl.append(getFullyQualifiedTableNameShorten(key.getForeignTable()));
+            printIdentifier(getTableName(key.getForeignTableName()), ddl);
             ddl.append(" (");
             writeForeignReferences(key, ddl);
             ddl.append(") CONSTRAINT ");

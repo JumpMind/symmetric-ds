@@ -31,14 +31,14 @@ public class MsSqlJdbcSqlTransaction extends JdbcSqlTransaction {
     }
 
     @Override
-    public void allowInsertIntoAutoIncrementColumns(boolean allow, Table table, String quote) {
+    public void allowInsertIntoAutoIncrementColumns(boolean allow, Table table, String quote, String catalogSeparator, String schemaSeparator) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {
             if (allow) {
                 execute(String.format("SET IDENTITY_INSERT %s ON",
-                        table.getFullyQualifiedTableName(quote)));
+                        table.getQualifiedTableName(quote, catalogSeparator, schemaSeparator)));
             } else {
                 execute(String.format("SET IDENTITY_INSERT %s OFF",
-                        table.getFullyQualifiedTableName(quote)));
+                        table.getQualifiedTableName(quote, catalogSeparator, schemaSeparator)));
             }
         }
     }

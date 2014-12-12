@@ -518,7 +518,7 @@ public class Trigger implements Serializable {
     }
 
     public String getFullyQualifiedSourceTableName() {
-        return Table.getFullyQualifiedTableName(sourceCatalogName, sourceSchemaName, sourceTableName, null);
+        return Table.getFullyQualifiedTableName(sourceCatalogName, sourceSchemaName, sourceTableName);
     }
 
     public long toHashedValue() {

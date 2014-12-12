@@ -961,52 +961,52 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     public String getFullyQualifiedTableName() {
-        return getFullyQualifiedTableName(catalog, schema, name, null);
+        return getFullyQualifiedTableName(catalog, schema, name, null, ".", ".");
     }
 
     public static String getFullyQualifiedTableName(String catalogName, String schemaName,
             String tableName) {
-        return getFullyQualifiedTableName(catalogName, schemaName, tableName, null);
+        return getFullyQualifiedTableName(catalogName, schemaName, tableName, null, ".", ".");
     }
 
     public String getQualifiedColumnName(Column column) {
         return getFullyQualifiedTableName() + "." + column.getName();
     }
 
-    public static String getQualifiedTablePrefix(String catalogName, String schemaName) {
-        return getQualifiedTablePrefix(catalogName, schemaName, null);
+    public static String getFullyQualifiedTablePrefix(String catalogName, String schemaName) {
+        return getFullyQualifiedTablePrefix(catalogName, schemaName, null, ".", ".");
     }
 
-    public String getFullyQualifiedTableName(String quoteString) {
-        return getFullyQualifiedTableName(catalog, schema, name, quoteString);
+    public String getQualifiedTableName(String quoteString, String catalogSeparator, String schemaSeparator) {
+        return getFullyQualifiedTableName(catalog, schema, name, quoteString, catalogSeparator, schemaSeparator);
     }
 
     public static String getFullyQualifiedTableName(String catalogName, String schemaName,
-            String tableName, String quoteString) {
+            String tableName, String quoteString, String catalogSeparator, String schemaSeparator) {
         if (quoteString == null) {
             quoteString = "";
         }
-        return getQualifiedTablePrefix(catalogName, schemaName, quoteString) + quoteString
+        return getFullyQualifiedTablePrefix(catalogName, schemaName, quoteString, catalogSeparator, schemaSeparator) + quoteString
                 + tableName + quoteString;
     }
 
-    public static String getQualifiedTablePrefix(String catalogName, String schemaName,
-            String quoteString) {
+    public static String getFullyQualifiedTablePrefix(String catalogName, String schemaName,
+            String quoteString, String catalogSeparator, String schemaSeparator) {
         if (quoteString == null) {
             quoteString = "";
         }
         String fullyQualified = "";
         if (!StringUtils.isBlank(schemaName)) {
-            fullyQualified = quoteString + schemaName + quoteString + "." + fullyQualified;
+            fullyQualified = quoteString + schemaName + quoteString + schemaSeparator + fullyQualified;
         }
         if (!StringUtils.isBlank(catalogName)) {
-            fullyQualified = quoteString + catalogName + quoteString + "." + fullyQualified;
+            fullyQualified = quoteString + catalogName + quoteString + catalogSeparator + fullyQualified;
         }
         return fullyQualified;
     }
 
-    public String getQualifiedTablePrefix(String quoteString) {
-        return getQualifiedTablePrefix(catalog, schema, quoteString);
+    public String getQualifiedTablePrefix(String quoteString, String catalogSeparator, String schemaSeparator) {
+        return getFullyQualifiedTablePrefix(catalog, schema, quoteString, catalogSeparator, schemaSeparator);
     }
 
     public Column getColumnWithName(String name) {

@@ -24,6 +24,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -93,8 +94,9 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
     }
 
     protected void startNewCursor() {
-        String sql = String.format("select * from %s %s", table.getFullyQualifiedTableName(platform
-                .getDatabaseInfo().getDelimiterToken()),
+        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        String sql = String.format("select * from %s %s", table.getQualifiedTableName(dbInfo.getDelimiterToken(), 
+                dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator()),
                 StringUtils.isNotBlank(whereClause) ? " where " + whereClause : "");
         this.cursor = platform.getSqlTemplate().queryForCursor(sql, new ISqlRowMapper<CsvData>() {
             public CsvData mapRow(Row row) {
