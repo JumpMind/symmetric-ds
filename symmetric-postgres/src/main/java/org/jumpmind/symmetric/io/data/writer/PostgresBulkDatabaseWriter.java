@@ -28,6 +28,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -211,8 +212,11 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
 
     private String createCopyMgrSql() {
         StringBuilder sql = new StringBuilder("COPY ");
-        String quote = platform.getDatabaseInfo().getDelimiterToken();
-        sql.append(targetTable.getFullyQualifiedTableName(quote));
+        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        String quote = dbInfo.getDelimiterToken();
+        String catalogSeparator = dbInfo.getCatalogSeparator();
+        String schemaSeparator = dbInfo.getSchemaSeparator();
+        sql.append(targetTable.getQualifiedTableName(quote, catalogSeparator, schemaSeparator));
         sql.append("(");
         Column[] columns = targetTable.getColumns();
 

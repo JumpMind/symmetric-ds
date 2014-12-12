@@ -31,6 +31,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -189,8 +190,12 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        try {
 	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
 	            Connection c = jdbcTransaction.getConnection();
+	            DatabaseInfo dbInfo = platform.getDatabaseInfo();
+	            String quote = dbInfo.getDelimiterToken();
+	            String catalogSeparator = dbInfo.getCatalogSeparator();
+	            String schemaSeparator = dbInfo.getSchemaSeparator();
 	            String sql = String.format("BULK INSERT " + 
-	            		this.getTargetTable().getFullyQualifiedTableName(platform.getDatabaseInfo().getDelimiterToken()) + 
+	            		this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) + 
 	            		" FROM '" + filename) + "'" +
 	            		" WITH ( FIELDTERMINATOR='||', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
 	            Statement stmt = c.createStatement();
