@@ -28,6 +28,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -145,6 +146,10 @@ public class WrapperConfig {
     
     public String getJavaCommand() {
         return getProperty(prop, "wrapper.java.command", "java");
+    }
+
+    public List<String> getOptions() {
+        return prop.get("wrapper.java.additional");
     }
 
     public ArrayList<String> getCommand(boolean isConsole) {
