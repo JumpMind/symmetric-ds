@@ -65,7 +65,7 @@ public class AuthenticationInterceptor implements IInterceptor {
             log.debug("Node '{}' successfully authenticated", nodeId);
             return true;
         } else if (AuthenticationStatus.REGISTRATION_REQUIRED.equals(status)) {
-            log.debug("Node '{}' failed to authenticate.  It was not regsitered", nodeId);
+            log.debug("Node '{}' failed to authenticate.  It was not registered", nodeId);
             ServletUtils.sendError(resp, WebConstants.REGISTRATION_REQUIRED);
             return false;
         } else if (AuthenticationStatus.SYNC_DISABLED.equals(status)) {
