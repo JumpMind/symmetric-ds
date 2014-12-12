@@ -127,7 +127,8 @@ public class AndroidSqlTransaction implements ISqlTransaction {
         return new ArrayList<Object>(0);
     }
 
-    public void allowInsertIntoAutoIncrementColumns(boolean value, Table table, String quote) {
+    public void allowInsertIntoAutoIncrementColumns(boolean value, Table table, String quote, 
+            String catalogSeparator, String schemaSeparator) {
     }
 
     public long insertWithGeneratedKey(String sql, String column, String sequenceName,

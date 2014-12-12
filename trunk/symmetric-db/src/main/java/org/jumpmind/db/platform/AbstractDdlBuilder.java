@@ -909,10 +909,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected String getFullyQualifiedTableNameShorten(Table table) {
     	String result="";
         if (StringUtils.isNotBlank(table.getCatalog())) {
-            result+=getDelimitedIdentifier(table.getCatalog()).concat(".");
+            result+=getDelimitedIdentifier(table.getCatalog()).concat(databaseInfo.getCatalogSeparator());
         }
         if (StringUtils.isNotBlank(table.getSchema())) {
-        	result+=getDelimitedIdentifier(table.getSchema()).concat(".");
+        	result+=getDelimitedIdentifier(table.getSchema()).concat(databaseInfo.getSchemaSeparator());
         }
         result+=getDelimitedIdentifier(getTableName(table.getName()));
         return result;

@@ -218,6 +218,10 @@ public class DatabaseInfo {
     private boolean requiresAutoCommitForDdl = false;
     
     private boolean requiresSavePointsInTransaction = false;
+    
+    private String catalogSeparator = ".";
+    
+    private String schemaSeparator = ".";
 
     /** Contains non-default mappings from jdbc to native types. */
     private Map<Integer, String> nativeTypes = new HashMap<Integer, String>();
@@ -1298,5 +1302,20 @@ public class DatabaseInfo {
     public void setBinaryQuoteEnd(String binaryQuoteEnd) {
         this.binaryQuoteEnd = binaryQuoteEnd;
     }
-	
+
+    public void setCatalogSeparator(String catalogSeparator) {
+        this.catalogSeparator = catalogSeparator;
+    }
+    
+    public String getCatalogSeparator() {
+        return catalogSeparator;
+    }
+    
+    public void setSchemaSeparator(String schemaSeparator) {
+        this.schemaSeparator = schemaSeparator;
+    }
+    
+    public String getSchemaSeparator() {
+        return schemaSeparator;
+    }
 }

@@ -128,7 +128,7 @@ public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilt
             if (isIgnoreCase()) {
                 tableName = Table.getFullyQualifiedTableName(
                         table.getCatalog(), table.getSchema(), table.getName()
-                                .toUpperCase(), "");
+                                .toUpperCase());
             }
             List<LoadFilter> tableSpecificLoadFilters = loadFilters
                     .get(tableName);

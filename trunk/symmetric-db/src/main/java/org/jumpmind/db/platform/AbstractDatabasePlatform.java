@@ -224,6 +224,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 fromDb.addTable(tableFromDatabase);
             }
         }
+        fromDb.initialize();
         return fromDb;
     }
 

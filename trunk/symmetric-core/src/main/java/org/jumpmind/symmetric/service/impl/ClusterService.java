@@ -22,8 +22,8 @@ package org.jumpmind.symmetric.service.impl;
 
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PULL;
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PUSH;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_SHARED;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
 import static org.jumpmind.symmetric.service.ClusterConstants.HEARTBEAT;
 import static org.jumpmind.symmetric.service.ClusterConstants.INITIAL_LOAD_EXTRACT;
 import static org.jumpmind.symmetric.service.ClusterConstants.PULL;
@@ -41,7 +41,6 @@ import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_EXCLUSIVE;
 import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -134,7 +133,7 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     public boolean lock(final String action) {
         if (isClusteringEnabled()) {
-            final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND,
+            final Date timeout = DateUtils.addMilliseconds(new Date(), 
                     (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
             return lockCluster(action, timeout, new Date(), getServerId());
         } else {
@@ -154,14 +153,14 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     protected boolean lockShared(final String action) {
-        final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND,
+        final Date timeout = DateUtils.addMilliseconds(new Date(),
                 (int) -parameterService.getLong(ParameterConstants.LOCK_TIMEOUT_MS));    
         return sqlTemplate.update(getSql("acquireSharedLockSql"), new Object[] {
                 TYPE_SHARED, getServerId(), new Date(), action, TYPE_SHARED, timeout }) == 1;
     }
 
     protected boolean lockExclusive(final String action) {
-        final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND,
+        final Date timeout = DateUtils.addMilliseconds(new Date(),
                 (int) -parameterService.getLong(ParameterConstants.LOCK_TIMEOUT_MS));    
         return sqlTemplate.update(getSql("acquireExclusiveLockSql"), new Object[] {
                 TYPE_EXCLUSIVE, getServerId(), new Date(), action, TYPE_SHARED, timeout }) == 1;
@@ -298,7 +297,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void aquireInfiniteLock(String action) {
         if (isClusteringEnabled()) {
             int tries = 600;
-            Date futureTime = DateUtils.add(new Date(), Calendar.YEAR, 100);
+            Date futureTime = DateUtils.addYears(new Date(), 100);
             while (tries > 0) {
                 if (!lockCluster(action, new Date(), futureTime, Lock.STOPPED)) {
                     AppUtils.sleep(50);

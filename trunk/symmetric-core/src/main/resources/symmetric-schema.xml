@@ -115,7 +115,7 @@
     <table name="extension" description="Dynamic extensions stored in the database that plug-in to the running engine and receive callbacks according to their interface.">
         <column name="extension_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The unique id of the extension." />
         <column name="extension_type" type="VARCHAR" size="10" required="true" description="The type of the extension.  Types are 'java' and 'bsh'" />
-        <column name="interface_name" type="VARCHAR" size="300" required="false" description="Name of interface, required for 'bsh' only." />
+        <column name="interface_name" type="VARCHAR" size="255" required="false" description="Name of interface, required for 'bsh' only." />
         <column name="node_group_id" type="VARCHAR" size="50" required="true" description="Target the extension at a specific node group id. To target all groups, use the value of 'ALL'." />
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the extension is enabled." />
         <column name="extension_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to install extensions when multiple extensions implement the same interface."/>
