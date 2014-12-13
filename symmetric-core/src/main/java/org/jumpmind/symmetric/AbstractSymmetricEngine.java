@@ -721,8 +721,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public synchronized void destroy() {
         removeMeFromMap(registeredEnginesByName);        
         removeMeFromMap(registeredEnginesByUrl);
-        registeredEnginesByName.remove(getEngineName());
-        registeredEnginesByUrl.remove(getSyncUrl());
+        if (parameterService != null) {
+            registeredEnginesByName.remove(getEngineName());
+            registeredEnginesByUrl.remove(getSyncUrl());
+        }
         stop();
         if (jobManager != null) {
             jobManager.destroy();
