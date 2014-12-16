@@ -831,4 +831,17 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return true;
     }
 
+    @Override
+    public void makePlatformSpecific(Database database) {
+    	Table[] tables = database.getTables();
+        for (Table table : tables) {
+        	for (Column autoIncrementColumn : table.getAutoIncrementColumns()) {
+	    		if (!autoIncrementColumn.isPrimaryKey() && !getDatabaseInfo().isNonPKIdentityColumnsSupported()) {
+	    			log.info("Removing auto increment from table " + table.getName() + " for column " + autoIncrementColumn.getName() + 
+	    				" since it was not part of primary key and not supported on this database based on nonPKIdentityColumnsSupported.");
+	    			autoIncrementColumn.setAutoIncrement(false);
+	    		}
+	    	}
+        }
+    }
 }

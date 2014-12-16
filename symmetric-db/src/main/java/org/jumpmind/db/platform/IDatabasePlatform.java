@@ -177,4 +177,5 @@ public interface IDatabasePlatform {
     
     public boolean canColumnBeUsedInWhereClause(Column column);
     
+    public void makePlatformSpecific(Database database);
 }
