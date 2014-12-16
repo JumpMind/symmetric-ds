@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,7 +38,9 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DdlBuilderFactory;
@@ -1424,6 +1427,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     routerId, triggerHistory, true, true);
                             Database db = new Database();
                             db.setName("dataextractor");
+                            
+                            boolean excludeDefaults = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_DEFAULTS, false);
+                            
                             /*
                              * Force a reread of table so new columns are picked up.  A create
                              * event is usually sent after there is a change to the table so 
@@ -1434,6 +1440,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             db.setCatalog(targetTable.getCatalog());
                             db.setSchema(targetTable.getSchema());
                             db.addTable(table != null ? table : targetTable);
+                            if (excludeDefaults) {
+                                Column[] columns = table.getColumns();
+                                for (Column column : columns) {
+                                    column.setDefaultValue(null);
+                                    Map<String, PlatformColumn> platformColumns = column.getPlatformColumns();
+                                    if (platformColumns != null) {
+                                        Collection<PlatformColumn> cols = platformColumns.values();
+                                        for (PlatformColumn platformColumn : cols) {
+                                            platformColumn.setDefaultValue(null);
+                                        }
+                                    }
+                                }
+                            }
                             data.setRowData(CsvUtils.escapeCsvData(DatabaseXmlUtil.toXml(db)));
                         }
                     }
