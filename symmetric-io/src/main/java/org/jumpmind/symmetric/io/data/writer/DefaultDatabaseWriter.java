@@ -501,7 +501,9 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
                 platform.alterCaseToMatchDatabaseDefaultCase(db);
             }
-
+            
+            platform.makePlatformSpecific(db);
+           
             if (writerSettings.isAlterTable()) {
                 platform.alterDatabase(db, !writerSettings.isCreateTableFailOnError());
             } else {
