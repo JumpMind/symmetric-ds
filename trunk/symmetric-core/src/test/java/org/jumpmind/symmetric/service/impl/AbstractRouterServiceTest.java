@@ -944,7 +944,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                 Assert.assertEquals(0, gap.getEndId() - gap.getStartId());
             }
         } catch (Exception ex) {
-            logger.error(ex.getMessage(), ex);
+            logger.error("", ex);
             throw ex;
         }
     }

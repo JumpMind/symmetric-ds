@@ -126,7 +126,7 @@ public class AndroidJobManager implements IJobManager {
                         try {
                             engine.route();
                         } catch (Throwable ex) {
-                            log.error(ex.getMessage(), ex);
+                            log.error("", ex);
                         } finally {
                             lastRouteTime = System.currentTimeMillis();
                         }
@@ -139,7 +139,7 @@ public class AndroidJobManager implements IJobManager {
                             didWork = true;
                             engine.push();
                         } catch (Throwable ex) {
-                            log.error(ex.getMessage(), ex);
+                            log.error("", ex);
                         } finally {
                             lastPushTime = System.currentTimeMillis();
                         }
@@ -152,7 +152,7 @@ public class AndroidJobManager implements IJobManager {
                             didWork = true;
                             engine.pull();
                         } catch (Throwable ex) {
-                            log.error(ex.getMessage(), ex);
+                            log.error("", ex);
                         } finally {
                             lastPullTime = System.currentTimeMillis();
                         }
@@ -165,7 +165,7 @@ public class AndroidJobManager implements IJobManager {
                             didWork = true;
                             engine.heartbeat(false);
                         } catch (Throwable ex) {
-                            log.error(ex.getMessage(), ex);
+                            log.error("", ex);
                         } finally {
                             lastHeartbeatTime = System.currentTimeMillis();
                         }
@@ -178,7 +178,7 @@ public class AndroidJobManager implements IJobManager {
                             didWork = true;
                             engine.purge();
                         } catch (Throwable ex) {
-                            log.error(ex.getMessage(), ex);
+                            log.error("", ex);
                         } finally {
                             lastPurgeTime = System.currentTimeMillis();
                         }

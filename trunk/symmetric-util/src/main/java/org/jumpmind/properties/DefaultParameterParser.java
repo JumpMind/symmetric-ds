@@ -127,7 +127,7 @@ public class DefaultParameterParser {
                 }
             }
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
+            log.error("", e);
         }
         return metaData;
     }

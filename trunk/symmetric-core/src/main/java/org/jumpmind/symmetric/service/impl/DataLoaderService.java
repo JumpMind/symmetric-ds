@@ -312,7 +312,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 log.error("Could not connect to the {} node's transport because of a bad URL: {}",
                         remote.getNodeId(), remote.getSyncUrl());
             } else {
-                log.error(e.getMessage(), e);
+                log.error("", e);
             }
             throw e;
         }
@@ -880,7 +880,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     symmetricDialect.enableSyncTriggers(transaction);
                 }
             } catch (Exception ex) {
-                log.error(ex.getMessage(), ex);
+                log.error("", ex);
             }
         }
 

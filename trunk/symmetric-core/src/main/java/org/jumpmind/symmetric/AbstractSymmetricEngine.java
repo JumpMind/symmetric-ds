@@ -449,7 +449,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     platform.createDatabase(database, true, true);
                     loaded = true;
                 } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+                    log.error("", e);
                 }
             }
         }

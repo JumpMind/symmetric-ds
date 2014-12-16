@@ -458,7 +458,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 try {
                     database = merge(database, readDatabaseFromXml(extraTablesXml));
                 } catch (Exception ex) {
-                    log.error(ex.getMessage(), ex);
+                    log.error("", ex);
                 }
             }
             
@@ -626,7 +626,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                             tableName));
                 }
             } catch (SqlException ex) {
-                log.warn(ex.getMessage(), ex);
+                log.warn("", ex);
                 AppUtils.sleep(5000);
                 tryCount--;
             }
@@ -650,7 +650,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 return System.currentTimeMillis();
             }
         } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
+            log.error("", ex);
             return System.currentTimeMillis();
         }
     }

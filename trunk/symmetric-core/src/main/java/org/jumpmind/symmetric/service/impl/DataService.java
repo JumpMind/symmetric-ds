@@ -927,7 +927,7 @@ public class DataService extends AbstractService implements IDataService {
         } catch (RuntimeException ex) {
             log.error("Could not insert a data event: data_id={} batch_id={} router_id={}",
                     new Object[] { dataId, batchId, routerId });
-            log.error(ex.getMessage(), ex);
+            log.error("", ex);
             throw ex;
         }
     }

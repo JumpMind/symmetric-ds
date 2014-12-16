@@ -105,7 +105,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         try {
             execute();
         } catch (Throwable ex) {
-            log.error(ex.getMessage(), ex);
+            log.error("", ex);
         }
     }
 
@@ -176,7 +176,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             processInfo.setStatus(Status.OK);
         } catch (Throwable ex) {
             processInfo.setStatus(Status.ERROR);
-            log.error(ex.getMessage(), ex);
+            log.error("", ex);
         } finally {
             if (cursor != null) {
                 cursor.close();

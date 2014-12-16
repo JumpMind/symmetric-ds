@@ -193,7 +193,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                     processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
                     changeIt.remove();
                 } catch (CloneNotSupportedException e) {
-                    log.error(e.getMessage(), e);
+                    log.error("", e);
                 }
             }
         }
