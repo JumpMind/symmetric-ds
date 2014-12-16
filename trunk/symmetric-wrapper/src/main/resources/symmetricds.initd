@@ -17,8 +17,8 @@
 
 JAVA="${wrapper.java.command}"
 JARFILE="${wrapper.jarfile}"
-PROP="${wrapper.propfile}"
 SYM_HOME="${wrapper.home}"
+export SYM_HOME
 RUN_AS_USER=""
 
 if [ "$RUN_AS_USER" != "" ]
@@ -41,16 +41,16 @@ cd "$SYM_HOME"
 
 case "$1" in
    start)
-      "$JAVA" -jar "$JARFILE" start "$PROP"
+      "$JAVA" -jar "$JARFILE" start
       ;;
    stop)
-      "$JAVA" -jar "$JARFILE" stop "$PROP"
+      "$JAVA" -jar "$JARFILE" stop
       ;;
    restart)
-      "$JAVA" -jar "$JARFILE" restart "$PROP"
+      "$JAVA" -jar "$JARFILE" restart
       ;;
    status)
-      "$JAVA" -jar "$JARFILE" status "$PROP"
+      "$JAVA" -jar "$JARFILE" status
       ;;
    *)
       echo "Usage: `basename $0` {start|stop|restart|status}"

@@ -72,7 +72,6 @@ public class UnixService extends WrapperService {
                 line = line.replaceAll("\\$\\{wrapper.home}", config.getWorkingDirectory().getAbsolutePath());
                 line = line.replaceAll("\\$\\{wrapper.java.command}", config.getJavaCommand());                
                 line = line.replaceAll("\\$\\{wrapper.jarfile}", config.getWrapperJarPath());
-                line = line.replaceAll("\\$\\{wrapper.propfile}", config.getConfigFile());
                 writer.write(line + "\n");
             }
             reader.close();
