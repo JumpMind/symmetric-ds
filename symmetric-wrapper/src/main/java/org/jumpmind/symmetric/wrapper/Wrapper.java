@@ -35,14 +35,20 @@ public class Wrapper {
         String configFile = null;
         if (args.length > 1) {
             configFile = args[1];
-        } else {
-            String dir = System.getenv("SYM_HOME");
-            if (dir == null || dir.equals("")) {
-                System.out.println("Missing config file.  Either specify config file or define SYM_HOME environment variable.");
-                System.exit(Constants.RC_MISSING_CONFIG_FILE);    
+            int index = configFile.lastIndexOf(File.separator);
+            if (index == -1) {
+            	System.setProperty(Constants.SYSPROP_TMPDIR, ".." + File.separator + "tmp");
             } else {
-                configFile = dir + File.separator + "conf" + File.separator + "sym_service.conf";
+            	System.setProperty(Constants.SYSPROP_TMPDIR, configFile.substring(0, index + 1) + ".." + File.separator + "tmp");
             }
+        } else {
+            String dir = System.getenv(Constants.ENV_SYM_HOME);
+            if (dir == null || dir.equals("")) {
+                System.out.println("Missing config file.  Either specify config file or define " + Constants.ENV_SYM_HOME + " environment variable.");
+                System.exit(Constants.RC_MISSING_CONFIG_FILE);    
+            }
+            configFile = dir + File.separator + "conf" + File.separator + "sym_service.conf";
+            System.setProperty(Constants.SYSPROP_TMPDIR, dir + File.separator + "tmp");
         }
 
         WrapperService service = WrapperService.getInstance();
