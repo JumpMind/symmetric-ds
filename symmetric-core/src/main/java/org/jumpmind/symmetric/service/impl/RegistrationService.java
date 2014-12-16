@@ -407,7 +407,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             } catch (ConnectionRejectedException ex) {
                 log.warn("The request to register was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
             } catch (Exception e) {
-                log.error(e.getMessage(), e);
+                log.error("", e);
             }
 
             maxNumberOfAttempts--;
@@ -585,7 +585,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             } catch (ConnectionRejectedException ex) {
                 log.warn("The request to copy was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
             } catch (Exception e) {
-                log.error(e.getMessage(), e);
+                log.error("", e);
             }
 
             maxNumberOfAttempts--;

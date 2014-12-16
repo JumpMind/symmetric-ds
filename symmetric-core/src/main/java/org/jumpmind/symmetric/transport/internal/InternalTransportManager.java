@@ -192,7 +192,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
             }
             return HttpURLConnection.HTTP_OK;
         } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
+            log.error("", ex);
             return -1;
         }
     }
@@ -212,7 +212,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                     ISymmetricEngine engine = getTargetEngine(url);
                     runnable.run(engine, is, os);
                 } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+                    log.error("", e);
                 } finally {
                     IOUtils.closeQuietly(is);
                     IOUtils.closeQuietly(os);

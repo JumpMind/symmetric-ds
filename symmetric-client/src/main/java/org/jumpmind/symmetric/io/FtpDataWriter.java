@@ -193,7 +193,7 @@ public class FtpDataWriter implements IDataWriter {
                 fileInfo.outputFileWriter.flush();
                 fileInfo.outputFileWriter.close();
             } catch (IOException e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn("", e);
             }
         }
     }
@@ -204,7 +204,7 @@ public class FtpDataWriter implements IDataWriter {
             try {
                 fileInfo.outputFileWriter.close();
             } catch (IOException e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn("", e);
             } finally {
                 FileUtils.deleteQuietly(fileInfo.outputFile);
             }

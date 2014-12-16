@@ -102,7 +102,7 @@ public class AppUtils {
                 }
 
             } catch (Exception ex) {
-                log.warn(ex.getMessage(), ex);
+                log.warn("", ex);
             }
         }
         return hostName;
@@ -115,7 +115,7 @@ public class AppUtils {
             try {
                 portNumber = "31415";
             } catch (Exception ex) {
-                log.warn(ex.getMessage(), ex);
+                log.warn("", ex);
             }
         }
         return portNumber;
@@ -137,7 +137,7 @@ public class AppUtils {
                     }
                 }
             } catch (Exception ex) {
-                log.warn(ex.getMessage(), ex);
+                log.warn("", ex);
             } finally {
             }
         }
@@ -146,7 +146,7 @@ public class AppUtils {
             try {
                 ipAddress = InetAddress.getLocalHost().getHostAddress();
             } catch (UnknownHostException ex) {
-                log.warn(ex.getMessage(), ex);
+                log.warn("", ex);
                 ipAddress = "127.0.0.1";
             }
         }

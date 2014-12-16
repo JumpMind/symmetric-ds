@@ -119,7 +119,7 @@ abstract public class TestSetupUtil {
                 logger.info("Removing client database files and creating directory.");
                 FileUtils.deleteDirectory(clientDbDir);
             } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+                logger.error("", e);
             }
         }
         clientDbDir.mkdir();
@@ -129,7 +129,7 @@ abstract public class TestSetupUtil {
                 logger.info("Removing root database files and creating directory.");
                 FileUtils.deleteDirectory(rootDbDir);
             } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+                logger.error("", e);
             }
         }
         rootDbDir.mkdir();

@@ -136,7 +136,7 @@ abstract public class AbstractTest {
                 try {
                     webServer.stop();
                 } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+                    log.error("", e);
                 }
             }
         }

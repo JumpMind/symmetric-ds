@@ -296,7 +296,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                 date = DateUtils.parseDate(returnValue, new String[] { "MM/dd/yy HH:mm:ss" });
                 return date.getTime() < time;
             } catch (ParseException e) {
-                log.error(e.getMessage(),e);
+                log.error("", e);
                 return true;
             }
         } else {

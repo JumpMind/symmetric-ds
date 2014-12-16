@@ -238,7 +238,7 @@ public class DataProcessor {
                 dataResource.close();
             }
         } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
+            log.error("", ex);
         }
     }
 

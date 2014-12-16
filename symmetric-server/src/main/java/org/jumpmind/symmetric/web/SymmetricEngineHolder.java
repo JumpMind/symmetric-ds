@@ -231,7 +231,7 @@ public class SymmetricEngineHolder {
             }
             return engine;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error("", e);
             return null;
         }
     }
@@ -255,7 +255,7 @@ public class SymmetricEngineHolder {
             try {
                 engines.get(engineName).stop();
             } catch (Exception e) {
-                log.error(e.getMessage(), e);
+                log.error("", e);
             }
             engines.remove(engineName);
         }

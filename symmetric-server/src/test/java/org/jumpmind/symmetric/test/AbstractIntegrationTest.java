@@ -132,7 +132,7 @@ public abstract class AbstractIntegrationTest {
                 AbstractIntegrationTest.server = server;
             }
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("", e);
             fail(e.getMessage());
         }
 

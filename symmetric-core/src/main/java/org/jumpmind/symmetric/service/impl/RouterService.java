@@ -146,7 +146,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 readThread.shutdown();
                 readThread = null;
             } catch (Exception ex) {
-                log.error(ex.getMessage(), ex);
+                log.error("", ex);
             }
         }
     }
@@ -257,7 +257,7 @@ public class RouterService extends AbstractService implements IRouterService {
             }
 
         } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
+            log.error("", ex);
         }
 
     }
@@ -464,7 +464,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (context != null) {
                     context.rollback();
                 }
-                log.error(e.getMessage(), e);
+                log.error("", e);
             } finally {
                 long totalTime = System.currentTimeMillis() - ts;
                 context.incrementStat(totalTime, ChannelRouterContext.STAT_ROUTE_TOTAL_TIME);

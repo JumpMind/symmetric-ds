@@ -127,7 +127,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
             }
         } catch (Exception e) {            
             log.warn("Failed to disable lock escalation");
-            log.debug(e.getMessage(), e);
+            log.debug("", e);
         }
         return altered;
     }
