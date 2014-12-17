@@ -1413,11 +1413,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                             triggerHistory.getTriggerHistoryId() });
                         }
                         if (data.getDataEventType() == DataEventType.CREATE && StringUtils.isBlank(data.getCsvData(CsvData.ROW_DATA))) {
-                            this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
-                                    routerId, triggerHistory, true, true);
-                            Database db = new Database();
-                            db.setName("dataextractor");
-                            
                             boolean excludeDefaults = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_DEFAULTS, false);
                             
                             /*
@@ -1425,13 +1420,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                              * event is usually sent after there is a change to the table so 
                              * we want to make sure that the cache is updated
                              */
-                            Table table = platform.getTableFromCache(targetTable.getCatalog(), 
-                                    targetTable.getSchema(), targetTable.getName(), true);
+                            this.sourceTable = platform.getTableFromCache(sourceTable.getCatalog(), 
+                                    sourceTable.getSchema(), sourceTable.getName(), true);
+                            
+                            this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
+                                    routerId, triggerHistory, true, true);
+
+                            Database db = new Database();
+                            db.setName("dataextractor");                           
                             db.setCatalog(targetTable.getCatalog());
                             db.setSchema(targetTable.getSchema());
-                            db.addTable(table != null ? table : targetTable);
+                            db.addTable(targetTable);
                             if (excludeDefaults) {
-                                Column[] columns = table.getColumns();
+                                Column[] columns = targetTable.getColumns();
                                 for (Column column : columns) {
                                     column.setDefaultValue(null);
                                     Map<String, PlatformColumn> platformColumns = column.getPlatformColumns();
