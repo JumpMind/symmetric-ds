@@ -63,7 +63,15 @@ task generateDocs(type: Copy) {
     }
 
     into('html') {
-        from "$buildDir/src/asciidoc/html5"
+        from ("$buildDir/src/asciidoc/html5") { include "user-guide.html" }
+    }
+    
+    into('html') {
+        from ("$buildDir/src/asciidoc/html5/tutorials") { include "tutorials.html" }
+    }
+    
+    into('html/images') {
+        from ("$buildDir/src/asciidoc/html5/images") 
     }
 
     into('pdf') {
