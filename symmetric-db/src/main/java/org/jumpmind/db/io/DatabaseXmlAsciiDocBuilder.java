@@ -36,7 +36,7 @@ public class DatabaseXmlAsciiDocBuilder {
             out.println("[cols=\"3,^1,^1,^1,^1,^1,5\"]");
             out.println("|===");
             out.println();
-            out.println("|Name|Type|Size|Default|Constraint|Not Null|Description");
+            out.println("|Name|Type|Size|Default|Keys|Not Null|Description");
             for (Column column : table.getColumns()) {
                 out.print("|");
                 out.print(column.getName().toUpperCase());
