@@ -1656,7 +1656,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         } catch (RuntimeException ex) {
             if (hist != null) {
-                log.warn(
+                log.info(
                         "Cleaning up trigger hist row of {} after failing to create the associated trigger",
                         hist.getTriggerHistoryId());
                 hist.setErrorMessage(ex.getMessage());
