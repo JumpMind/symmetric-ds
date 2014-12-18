@@ -314,7 +314,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     log.debug("Running: {}", triggerSql);
                     transaction.execute(triggerSql);
                 } catch (SqlException ex) {
-                    log.error("Failed to create trigger: {}", triggerSql);
+                    log.info("Failed to create trigger: {}", triggerSql);
                     throw ex;
                 }
 
@@ -322,7 +322,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     try {
                         transaction.execute(postTriggerDml);
                     } catch (SqlException ex) {
-                        log.error("Failed to create post trigger: {}", postTriggerDml);
+                        log.info("Failed to create post trigger: {}", postTriggerDml);
                         throw ex;
                     }
                 }
