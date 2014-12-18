@@ -526,19 +526,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerRouter;
     }
 
-    private String getTriggerRouterSql() {
-        return getTriggerRouterSql(null);
-    }
-
-    private String getTriggerRouterSql(String sql) {
-        return getSql("select ", "selectTriggersColumnList", ",", "selectRoutersColumnList", ",",
-                "selectTriggerRoutersColumnList", "selectTriggerRoutersSql", sql);
-    }
-
-    public List<TriggerRouter> getTriggerRouters() {
-        return sqlTemplate.query(getTriggerRouterSql(), new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)));
-    }
-
     public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(String catalogName,
             String schemaName, String tableName, boolean refreshCache) {
         return getTriggerRouterForTableForCurrentNode(null, catalogName, schemaName, tableName,
@@ -796,31 +783,58 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return sqlTemplate.query(getSql("select ", "selectRoutersColumnList", "selectRoutersSql"),
                 new RouterMapper(configurationService.getNodeGroupLinks(false)));
     }
+    
+    private String getTriggerRouterSql(String sql) {
+        return getSql("select ", "selectTriggerRoutersColumnList", "selectTriggerRoutersSql", sql);
+    }
+
+    public List<TriggerRouter> getTriggerRouters() {
+        return enhanceTriggerRouters(sqlTemplate.query(getTriggerRouterSql(null), new TriggerRouterMapper()));
+    }
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId) {
-        List<TriggerRouter> triggerRouters = (List<TriggerRouter>) sqlTemplate.query(
+        List<TriggerRouter> triggerRouters = enhanceTriggerRouters(sqlTemplate.query(
                 getTriggerRouterSql("activeTriggersForSourceNodeGroupSql"),
-                new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)), sourceNodeGroupId);
+                new TriggerRouterMapper(), sourceNodeGroupId));
         mergeInConfigurationTablesTriggerRoutersForCurrentNode(sourceNodeGroupId, triggerRouters);
         return triggerRouters;
     }
 
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(
             String sourceNodeGroupId, String targetNodeGroupId) {
-        return sqlTemplate.query(
-                getTriggerRouterSql("activeTriggersForReloadSql"), new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)),
-                sourceNodeGroupId, targetNodeGroupId, Constants.CHANNEL_CONFIG);
+        return enhanceTriggerRouters(sqlTemplate.query(
+                getTriggerRouterSql("activeTriggersForReloadSql"), new TriggerRouterMapper(),
+                sourceNodeGroupId, targetNodeGroupId, Constants.CHANNEL_CONFIG));
     }
 
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId) {
         List<TriggerRouter> configs = (List<TriggerRouter>) sqlTemplate.query(
-                getTriggerRouterSql("selectTriggerRouterSql"), new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)),
+                getTriggerRouterSql("selectTriggerRouterSql"), new TriggerRouterMapper(),
                 triggerId, routerId);
         if (configs.size() > 0) {
-            return configs.get(0);
+            TriggerRouter triggerRouter = configs.get(0);
+            triggerRouter.setRouter(getRouterById(triggerRouter.getRouter().getRouterId()));
+            triggerRouter.setTrigger(getTriggerById(triggerRouter.getTrigger().getTriggerId()));
+            return triggerRouter;
         } else {
             return null;
         }
+    }
+    
+    private List<TriggerRouter> enhanceTriggerRouters(List<TriggerRouter> triggerRouters) {
+    	HashMap<String, Router> routersById = new HashMap<String, Router>();
+    	for (Router router : getRouters()) {
+    		routersById.put(router.getRouterId(), router);
+    	}
+    	HashMap<String, Trigger> triggersById = new HashMap<String, Trigger>();
+    	for (Trigger trigger : getTriggers()) {
+    		triggersById.put(trigger.getTriggerId(), trigger);
+    	}
+    	for (TriggerRouter triggerRouter : triggerRouters) {
+    		triggerRouter.setTrigger(triggersById.get(triggerRouter.getTrigger().getTriggerId()));
+    		triggerRouter.setRouter(routersById.get(triggerRouter.getRouter().getRouterId()));    		
+    	}
+    	return triggerRouters;
     }
 
     public List<TriggerRouter> getTriggerRoutersFor(String tableName, String sourceNodeGroupId) {
@@ -853,22 +867,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         || System.currentTimeMillis() - this.triggerRouterPerChannelCacheTime > triggerRouterCacheTimeoutInMs) {
                     final  Map<String, List<TriggerRouter>> newValue = new HashMap<String, List<TriggerRouter>>();
                     this.triggerRouterPerChannelCacheTime = System.currentTimeMillis();
-                    sqlTemplate.query(getTriggerRouterSql("selectGroupTriggersSql"),
-                            new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)) {
-                                @Override
-                                public TriggerRouter mapRow(Row rs) {
-                                    TriggerRouter tr = super.mapRow(rs);
-                                    List<TriggerRouter> list = newValue.get(tr
-                                            .getTrigger().getChannelId());
-                                    if (list == null) {
-                                        list = new ArrayList<TriggerRouter>();
-                                        newValue.put(tr.getTrigger()
-                                                .getChannelId(), list);
-                                    }
-                                    list.add(tr);
-                                    return tr;
-                                };
-                            }, nodeGroupId, nodeGroupId);
+                    List<TriggerRouter> triggerRouters = enhanceTriggerRouters(sqlTemplate.query(
+                    		getTriggerRouterSql("selectGroupTriggersSql"), new TriggerRouterMapper(), nodeGroupId, nodeGroupId));
+                    for (TriggerRouter triggerRouter : triggerRouters) {
+                        List<TriggerRouter> list = newValue.get(triggerRouter.getTrigger().getChannelId());
+                        if (list == null) {
+                            list = new ArrayList<TriggerRouter>();
+                            newValue.put(triggerRouter.getTrigger().getChannelId(), list);
+                        }
+                        list.add(triggerRouter);                    	
+                    }
                     triggerRouterCacheByChannel = newValue;
                     testValue = newValue;
                 }
@@ -1892,20 +1900,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     class TriggerRouterMapper implements ISqlRowMapper<TriggerRouter> {
 
-        private TriggerMapper triggerMapper;
-        private RouterMapper routerMapper;
-        
-        public TriggerRouterMapper(List<NodeGroupLink> nodeGroupLinks) {
-            routerMapper = new RouterMapper(nodeGroupLinks);
-            triggerMapper = new TriggerMapper();
+        public TriggerRouterMapper() {
         }
 
         public TriggerRouter mapRow(Row rs) {
             TriggerRouter triggerRouter = new TriggerRouter();
 
-            triggerRouter.setTrigger(triggerMapper.mapRow(rs));
-            triggerRouter.setRouter(routerMapper.mapRow(rs));
-
+            Trigger trigger = new Trigger();
+            trigger.setTriggerId(rs.getString("trigger_id"));
+            triggerRouter.setTrigger(trigger);
+            Router router = new Router();
+            router.setRouterId(rs.getString("router_id"));
+            triggerRouter.setRouter(router);
             triggerRouter.setCreateTime(rs.getDateTime("create_time"));
             triggerRouter.setLastUpdateTime(rs.getDateTime("last_update_time"));
             triggerRouter.setLastUpdateBy(rs.getString("last_update_by"));
