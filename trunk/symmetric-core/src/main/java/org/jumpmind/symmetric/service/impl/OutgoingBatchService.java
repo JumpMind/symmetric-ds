@@ -313,11 +313,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 where = " where 1=1 ";
             }
             params.put("BATCH_ID", startAtBatchId);
-            if (ascending) {
-                startAtBatchIdSql = " and batch_id > :BATCH_ID ";
-            } else {
-                startAtBatchIdSql = " and batch_id < :BATCH_ID ";
-            }
+            startAtBatchIdSql = " and batch_id = :BATCH_ID ";
         }
 
         String sql = getSql("selectOutgoingBatchPrefixSql", where, startAtBatchIdSql,
