@@ -156,11 +156,14 @@ public class RouterService extends AbstractService implements IRouterService {
      */
     synchronized public long routeData(boolean force) {
         long dataCount = -1l;
-        if (engine.getNodeService().findIdentity() != null) {
+        Node identity = engine.getNodeService().findIdentity();
+        if (identity != null) {
             if (force || engine.getClusterService().lock(ClusterConstants.ROUTE)) {
                 try {
                     engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
+                    
                     insertInitialLoadEvents();
+                    
                     long ts = System.currentTimeMillis();
                     DataGapDetector gapDetector = new DataGapDetector(
                             engine.getDataService(), parameterService, symmetricDialect, 
@@ -188,7 +191,13 @@ public class RouterService extends AbstractService implements IRouterService {
      * triggers is running.
      */
     protected void insertInitialLoadEvents() {
+        
+        ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
+                new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), null, ProcessType.INSERT_LOAD_EVENTS));
+        processInfo.setStatus(ProcessInfo.Status.PROCESSING);
+        
         try {
+            
             INodeService nodeService = engine.getNodeService();
             Node identity = nodeService.findIdentity();
             if (identity != null) {
@@ -256,7 +265,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 }
             }
 
+            processInfo.setStatus(ProcessInfo.Status.OK);
         } catch (Exception ex) {
+            processInfo.setStatus(ProcessInfo.Status.ERROR);
             log.error("", ex);
         }
 
