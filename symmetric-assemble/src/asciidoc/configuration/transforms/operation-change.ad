@@ -6,7 +6,7 @@ the transform execution will be the same operation applied to the target.  There
 
 .Operation Changes
 |===
-|Source Operation|Target Opertation|Setting
+|Source Operation|Target Operation|Setting
 
 |INSERT|UPDATE followed by INSERT if update was unsuccessful|Update First
 
@@ -38,7 +38,7 @@ endif::pro[]
 
 ===== Delete Action
 ifdef::pro[]
-.Select "UPDATE_COL" for the delete action to initiate updates on the target based on the transform columns configuration, see << Columns >>.
+.Select "UPDATE_COL" for the delete action to initiate updates on the target based on the transform columns configuration, see <<Columns>>.
 image::transforms/transform-update-col.png[]
 endif::pro[]
 

@@ -4,7 +4,7 @@
 Parameters can be used to help tune and configure your SymmetricDS configuration. 
 Parameters can be set for an individual node or for all nodes in your network.
 
-See << Appendix B >>, Parameters, for a complete list of parameters.
+See <<Parameter List>> for a complete list of parameters.
 
 
 ifdef::pro[]

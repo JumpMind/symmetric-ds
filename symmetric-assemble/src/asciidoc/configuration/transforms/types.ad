@@ -137,7 +137,7 @@ transform expression (default is 1 if not specified).
 If the source column changed from a 2 to a 4, the target column is currently 10, and the multiplier is 3, 
 the effect of the transform will be to change the target column to a value of 16 ( 10+3*(4-2) => 16 ). 
 
-NOTE: That, in the case of deletes, the new column value is considered 0 for the purposes of the calculation.
+NOTE: In the case of deletes, the new column value is considered 0 for the purposes of the calculation.
 ====
 
 ifndef::pro[]
@@ -396,7 +396,7 @@ endif::pro[]
 ===== Value Map Transform
 
 This transformation allows for simple value substitutions through use of the transform expression. The transform 
-expresion should consist of a space separated list of value pairs of the format sourceValue=TargetValue. The column 
+expression should consist of a space separated list of value pairs of the format sourceValue=TargetValue. The column 
 value is used to locate the correct sourceValue, and the transform will change the value into the corresponding 
 targetValue. A sourceValue of * can be used to represent a default target value in the event that the sourceValue 
 is not found. Otherwise, if no default value is found, the result will be null. 
@@ -473,7 +473,7 @@ TODO Need SQL for this scenario
 endif::pro[]
 
 ifdef::pro[]
-image::transforms/transform-type-column-to-rows.png[]
+TODO add image
 endif::pro[]
 
 .Example 

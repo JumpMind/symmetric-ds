@@ -47,7 +47,7 @@ Data loaders can also use other techniques to increase performance of data loads
 
 |oracle_bulk|Oracle bulk loader. 
 
-|mongodb|MongoDB data loader.  See <<MongoDB>> for more details
+|mongodb|MongoDB data loader.
 
 |===
 

@@ -6,7 +6,7 @@ SymmetricDS captures synchronization data using database triggers. SymmetricDS' 
 Each record is used by SymmetricDS when generating database triggers. Database triggers are only generated when a trigger 
 is associated with a ROUTER whose source_node_group_id matches the node group id of the current node.
 
-When determining whether a data change has occurred or not, by defalt the triggers will record a change even if the data was 
+When determining whether a data change has occurred or not, by default the triggers will record a change even if the data was 
 updated to the same value(s) they were originally. For example, a data change will be captured if an update of one column 
 in a row updated the value to the same value it already was. There is a global property, 
 trigger.update.capture.changed.data.only.enabled (false by default), that allows you to override this behavior. 
@@ -32,7 +32,7 @@ to specify multiple source tables.
 Channel:: The channel_id of the channel that data changes will flow through.
 Sync On Insert:: Determines if changes will be captured for inserts.
 Sync On Update:: Determines if changes will be captured for updates.
-Sync On Delete:: Determines if changes will be captured for delets.
+Sync On Delete:: Determines if changes will be captured for deletes.
 
 ifdef::pro[]
 .Advanced Options
@@ -46,9 +46,9 @@ Reload Channel Id:: The channel_id of the channel that will be used for initial 
 Sync On Insert Condition:: Specify a condition for the insert trigger firing using an expression specific to the database.   This will be appended to the "WHERE" clause in a SQL expression.  
 Sync On Update Condition:: Specify a condition for the update trigger firing using an expression specific to the database.   This will be appended to the "WHERE" clause in a SQL expression.  
 Sync On Delete Condition:: Specify a condition for the delete trigger firing using an expression specific to the database.   This will be appended to the "WHERE" clause in a SQL expression.  
-Custom Insert Trigger Text:: Specify insert trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apachy Derby.
-Custom Update Trigger Text:: Specify update trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apachy Derby.
-Custom Delete Trigger Text:: Specify delete trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apachy Derby.
+Custom Insert Trigger Text:: Specify insert trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apache Derby.
+Custom Update Trigger Text:: Specify update trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apache Derby.
+Custom Delete Trigger Text:: Specify delete trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apache Derby.
 Sync On Incoming:: Whether or not an incoming batch that loads data into this table should cause the triggers to capture data_events. Be careful turning this on, because an update loop is possible.
 Stream Lobs:: Specifies whether to capture lob data as the trigger is firing or to stream lob columns from the source tables using callbacks during extraction. A value of 1 indicates 
 to stream from the source via callback; a value of 0, lob data is captured by the trigger.
@@ -94,7 +94,7 @@ endif::pro[]
 [TIP]
 .Capture Changed Data
 ====
-When determining whether a data change has occurred or not, by defalt the triggers will record a change even if the data was 
+When determining whether a data change has occurred or not, by default the triggers will record a change even if the data was 
 updated to the same value(s) they were originally. For example, a data change will be captured if an update of one column 
 in a row updated the value to the same value it already was. There is a global property that allows you to override this behavior (defaults to false).
 ----
