@@ -20,7 +20,7 @@ image::data-model-runtime.gif[]
 include::generated/schema.ad[]
 
 [appendix]
-== Parameters
+== Parameter List
 
 There are two kinds of parameters that can be used to configure the behavior of SymmetricDS: Startup Parameters and Runtime Parameters . 
 Startup Parameters are required to be in a system property or a property file, while Runtime Parameters can also be found in the Parameter 

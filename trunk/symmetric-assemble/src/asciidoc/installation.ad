@@ -88,7 +88,7 @@ The default location is `../web`.  In this example the web directory is located
 at `conf/web_dir`.  The web.xml is expected to be found at `conf/web_dir/WEB-INF/web.xml`.
             
 ==== Standalone
-           
+ifndef::pro[]
 The `sym` command line utility starts a standalone web server with
 SymmetricDS pre-deployed.  The standalone server uses an embedded instance of the
 Jetty application server to handle web requests.  The web server can be configured
@@ -106,8 +106,115 @@ properties found in the `root.properties` file.
 Even though the port and properties settings can be passed in on the command line, the preferred
 configuration approach is to put each hosted node's properties file in the `engines` directory
 and to modify port settings and enable secure mode using the `conf/symmetric-server.properties`.
-           
+
 It is also suggested that SymmetricDS be configured to run as a service according to the instructions for your platform as documented in the following section.
+
+endif::pro[]
+
+ifdef::pro[]
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install-first.png[]
+
+Open up the install .jar file and press Next.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install-second.png[]
+
+Select _Install new software_ and press Next.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install-third.png[]
+
+Carefully read the SymmetricDS Pro License Agreement.  If you accept, select _I accept the terms of this license agreement._ and press Next.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install-fourth.png[]
+
+Choose where you want to install SymmetricDS and press Next.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install-fifth.png[]
+
+Select the packs you want to install.  By default, all packs are selected.  If you are unsure, it is recommended to install all packs.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install-sixth.png[]
+
+It is suggested that SymmetricDS be configured to run as a service.  For more information, or to learn how to install SymmetricDS as a service
+later if you choose not to now, refer to <<Running SymmetricDS as a Service>>.  Select your choice and press Next.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install-seventh.png[]
+
+Enter the ports for SymmetricDS to listen to and press Next.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install-eigth.png[]
+
+Confirm your installation settings and press Next to begin the installation.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install-ninth.png[]
+
+Once SymmetricDS finishes installing, press Next.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install-tenth.png[]
+
+If you chose the option for the SymmetricDS Server to start after installation, wait for it to start and then press Next.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install-eleventh.png[]
+
+The installation is now complete.  Choose if you want to open the SymmetricDS Pro control center and press Done.
+
+--
+
+endif::pro[]
+
 
 === Running SymmetricDS as a Service
    
@@ -125,7 +232,7 @@ bin\sym_service.bat install
 ----
 
 Most configuration changes do not require the service to be re-installed.
-To un-install the service, run the following command as Administrator:
+To uninstall the service, run the following command as Administrator:
 
 [source, cli]
 ----
@@ -150,7 +257,7 @@ bin/sym_service install
 ----
    
 Most configuration changes do not require the service to be re-installed.
-To un-install the service, run the following command as root:
+To uninstall the service, run the following command as root:
 [source, cli]
 ----
 bin/sym_service uninstall
@@ -169,14 +276,20 @@ A single SymmetricDS node may be clustered across a series of instances, creatin
 
 When clustered, a hardware load balancer is typically used
 to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.
-Also, the `sync.url` (discussed in <xref linkend="setup-engine-files"/>)
-SymmetricDS property should be set to the URL of the load balancer.
+
+ifndef::pro[]
+Also, the `sync.url` (discussed in <<Engine Files>>) SymmetricDS property should be set to the URL of the load balancer.
+endif::pro[]
+
+ifdef::pro[]
+Also, the `sync.url` (discussed in <<Registration URL>>) SymmetricDS property should be set to the URL of the load balancer.
+endif::pro[]
    
 If the cluster will be running any of the SymmetricDS jobs, then the `cluster.lock.enabled` property should be set to `true`.
-By setting this property to true, SymmetricDS will use a row in the <xref linkend="table_lock" xrefstyle="table"/> table as a semaphore to make sure that only one instance at a time
+By setting this property to true, SymmetricDS will use a row in the <<LOCK>> table as a semaphore to make sure that only one instance at a time
 runs a job.  When a lock is acquired, a row is updated in the lock table with the time of the lock and the server id of the locking job.  The lock time is set back to null
-when the job is finished running.  Another instance of SymmetricDS cannot aquire a lock until the locking instance (according to the server id) releases the lock.  If an
-instance is terminated while the lock is still held, an instance with the same server id is allowed to reaquire the lock.  If the locking instance remains down, the lock can be
+when the job is finished running.  Another instance of SymmetricDS cannot acquire a lock until the locking instance (according to the server id) releases the lock.  If an
+instance is terminated while the lock is still held, an instance with the same server id is allowed to reacquire the lock.  If the locking instance remains down, the lock can be
 broken after a period of time, specified by the `cluster.lock.timeout.ms` property, has expired.  Note that if the job is still running and the lock
 expires, two jobs could be running at the same time which could cause database deadlocks.
    
