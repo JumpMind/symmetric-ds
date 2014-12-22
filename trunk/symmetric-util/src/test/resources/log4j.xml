@@ -40,6 +40,8 @@
         </layout>
     </appender>    
     
+     <appender name="BUFFERED" class="org.jumpmind.util.BufferedLogAppender"/>    
+    
     <category name="org.jumpmind">
         <priority value="INFO" />
     </category>
