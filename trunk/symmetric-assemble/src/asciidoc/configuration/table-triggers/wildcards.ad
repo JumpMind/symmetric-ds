@@ -8,7 +8,7 @@ for many tables.
 * If multiple wildcard tokens are are supplied they should be deliminated with a comma.
 * Tokens are always evaluated from left to right. 
 * When a table match is made, the table is either added to or removed from the list of 
-tables. If another trigger already exists for a table, then that table is not included in the wildcard match (the explictly defined 
+tables. If another trigger already exists for a table, then that table is not included in the wildcard match (the explicitly defined 
 trigger entry take precendence).
 * System tables and any tables that start with the SymmetricDS table prefix will be excluded.
 * A wildcard token can also start with an exclamation ('!') to indicate an exclusive match.

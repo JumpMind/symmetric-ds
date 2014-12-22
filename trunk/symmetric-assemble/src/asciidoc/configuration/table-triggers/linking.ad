@@ -41,7 +41,7 @@ IMPORTANT: Initial Load Delete SQL will only be used if the following parameter 
 initial.load.delete.first=true
 ----
 
-.View hidden columns avialable while linking triggers
+.View hidden columns available while linking triggers
 ====
 image::triggers/triggers-link-hidden.png[align="center"]
 ====

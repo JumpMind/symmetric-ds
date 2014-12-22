@@ -51,7 +51,7 @@ Delete Action:: An action to take upon delete of a row.
 
 |DEL_ROW|The delete results in a delete of the row as specified by the pk columns defined in the transformation configuration.
 
-|UPDATE_COL|The delete results in an update operation (see << Operation Change >>) on the target which updates the specific rows and columns based 
+|UPDATE_COL|The delete results in an update operation (see <<Operation Change>>) on the target which updates the specific rows and columns based 
 on the defined transformation.
 
 |NONE|The delete results in no target changes.
