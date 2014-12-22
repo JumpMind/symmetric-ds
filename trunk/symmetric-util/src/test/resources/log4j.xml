@@ -61,6 +61,10 @@
     <category name="org.jumpmind.db.alter">
         <priority value="DEBUG" />
     </category>    
+    
+    <category name="com.mangofactory.swagger.filters.AnnotatedParameterFilter">
+        <priority value="ERROR" />
+    </category>    
      
     <category name="org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriterConflictResolver">
         <priority value="DEBUG" />
