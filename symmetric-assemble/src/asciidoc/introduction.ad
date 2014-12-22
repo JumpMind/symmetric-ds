@@ -61,7 +61,7 @@ applications.
 Changes are captured at a SymmetricDS enabled database by database
 triggers that are installed automatically by SymmetricDS based on
 configuration settings that you specify. The database triggers record
-data changes in the <xref linkend="table_data" xrefstyle="table"/>
+data changes in the <<DATA>>
 table. The triggers are designed to be as noninvasive and as
 lightweight as possible. After SymmetricDS triggers are installed,
 changes are captured for any Data Manipulation Language (DML) statements
@@ -90,20 +90,16 @@ triggers job can be turned off and the database triggers DDL script can
 be generated and run by a DBA.
 
 After changed data is inserted by the database trigger into the
-<xref linkend="table_data" xrefstyle="table"/> table, it is batched and
+<<DATA>> table, it is batched and
 assigned to a node by the router job. Routing data refers to choosing
 the nodes in the SymmetricDS network to which the data should be sent.
 By default, data is routed to other nodes based on the node group.
 Optionally, characteristics of the data or of the target nodes can also
 be used for routing. A batch of data is a group of data changes that are
 transported and loaded together at the target node in a single database
-transaction. Batches are recorded in the <xref
-linkend="table_outgoing_batch" xrefstyle="table"/> . Batches are node
-specific. <xref linkend="table_data" xrefstyle="table"/> and <xref
-linkend="table_outgoing_batch" xrefstyle="table"/> are linked by <xref
-linkend="table_data_event" xrefstyle="table"/> . The delivery status of
-a batch is maintained in <xref linkend="table_outgoing_batch"
-xrefstyle="table"/> . After the data has been delivered to a remote node
+transaction. Batches are recorded in the <<OUTGOING_BATCH>> . Batches are node
+specific. <<DATA>> and <<OUTGOING_BATCH>> are linked by <<DATA_EVENT>> . The delivery status of
+a batch is maintained in <<OUTGOING_BATCH>> . After the data has been delivered to a remote node
 the batch status is changed to 'OK.'
 
 ==== Change Data Delivery
@@ -215,9 +211,7 @@ changes to an _inventory_ channel, the changes are
 processed independently so inventory can get through despite the large
 amount of item data.
 
-Channels are discussed in more detail in
-
-<xref linkend="configuration-channels"/>
+Channels are discussed in more detail in <<Channels>>.
 
 ==== Change Notification
 
@@ -247,14 +241,13 @@ Using SymmetricDS, data can be filtered as it is recorded,
 extracted, and loaded. 
   
 * Data routing is accomplished by assigning a router type to a
-<xref linkend="table_router" xrefstyle="table"/> configuration.
+<<ROUTER>> configuration.
 Routers are responsible for identifying what target nodes captured
 changes should be delivered to. Custom routers are possible by
 providing a class implementing `IDataRouter`
 
 * In addition to synchronization, SymmetricDS is also capable
-of performing fairly complex transformations (see <xref
-linkend="configuration-transforms" xrefstyle="select: label"/> ) of data as
+of performing fairly complex transformations (see <<Transforms>> ) of data as
 the synchronization data is loaded into a target database. The
 transformations can be used to merge source data, make multiple
 copies of source data across multiple target tables, set defaults
@@ -263,9 +256,7 @@ extended to create even more custom transformations.
 
 * As data changes are loaded in the target database, data can
 be filtered, either by a simple bean shell load filter (see
-<xref linkend="configuration-load-filters" xrefstyle="select: label"/>
-data-load-filter) or by a class implementing <xref
-linkend="extensions-data-loader-filter" xrefstyle="table"/>. You
+<<Load Filters>>) or by a class implementing <<IDatabaseWriterFilter>>. You
 can change the data in a column, route it somewhere else, trigger
 initial loads, or many other possibilities. One possible use might
 be to route credit card data to a secure database and blank it out
@@ -297,9 +288,9 @@ payload can be any SQL statement. The event is processed and
 acknowledged just like any other event type.
 
 ==== File Synchronization
-Quite a few users of SymmetricDS have found that they have a need to not only synchronize database tables to remote locations, but they also have a set of files that should be synchronized.  As of version 3.5 SymmetricDS now support file synchronization.
-Please see <xref linkend="file-sync"/>
-for more information.
+Quite a few users of SymmetricDS have found that they have a need to not only synchronize database tables to remote locations
+, but they also have a set of files that should be synchronized.  As of version 3.5 SymmetricDS now support file synchronization.
+Please see <<File Synchronization>> for more information.
 
 === Why Database Triggers?
 

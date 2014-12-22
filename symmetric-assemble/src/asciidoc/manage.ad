@@ -8,10 +8,10 @@ _node_
 is a single instance of SymmetricDS. It can be thought of as a proxy for a database which manages the
 synchronization of data to and/or from its database. For our example retail application, the following would be
 SymmetricDS nodes:
-<itemizedlist>
-    <listitem>Each point-of-sale workstation.</listitem>
-    <listitem>The central office database server.</listitem>
-</itemizedlist>
+
+* Each point-of-sale workstation.
+* The central office database server.
+
 Each node of SymmetricDS can be either embedded in another application, run stand-alone, or even run in the
 background as a service. If desired, nodes can be clustered to help disperse load if they send and/or receive
 large volumes of data to or from a large number of nodes.
@@ -23,10 +23,10 @@ for managing the synchronization for that database.
 === Creating Nodes
 
 Nodes are defined in the
-<xref linkend="table_node" xrefstyle="table" />
+<<NODE>>
 table. Two other tables play a direct role in defining a node, as well
 The first is
-<xref linkend="table_node_identity" xrefstyle="table" />
+<<NODE_IDENTITY>>
 . The
 _only_
 row in this table is inserted in the database when the node first
@@ -37,19 +37,21 @@ identity.
 		
 The following SQL statements set up a top-level registration server as a
 node identified as "00000" in the "corp" node group.
-<programlisting> insert into SYM_NODE (node_id,
-node_group_id, external_id, sync_enabled) values ('00000', 'corp',
-'00000', 1); insert into SYM_NODE_IDENTITY values ('00000');</programlisting>
+
+[source,sql]
+----
+insert into SYM_NODE (node_id, node_group_id, external_id, sync_enabled) values ('00000', 'corp', '00000', 1); insert into SYM_NODE_IDENTITY values ('00000');
+----
 
 The second table,
-<xref linkend="table_node_security" xrefstyle="table" />
+<<NODE_SECURITY>>
 has rows created for each
 _child_
 node that registers with the node, assuming auto-registration is
 enabled. If auto registration is not enabled, you must create a row in
-<xref linkend="table_node" xrefstyle="table" />
+<<NODE>>
 and
-<xref linkend="table_node_security" xrefstyle="table" />
+<<NODE_SECURITY>>
 for the node to be able to register. You can also, with this table,
 manually cause a node to re-register or do a re-initial load by setting
 the corresponding columns in the table itself. 
@@ -57,9 +59,9 @@ the corresponding columns in the table itself.
 === Registration
 			
 Node registration is the act of setting up a new
-<xref linkend="table_node" xrefstyle="table" />
+<<NODE>>
 and
-<xref linkend="table_node_security" xrefstyle="table" />
+<<NODE_SECURITY>>
 so that when the new node is brought online it is allowed to join the
 system. Nodes are only allowed to register if rows exist for the node
 and the
@@ -102,7 +104,7 @@ An initial load cannot occur until after a node is registered. An
 initial load is requested by setting the
 `initial_load_enabled`
 column on
-<xref linkend="table_node_security" xrefstyle="table" />
+<<NODE_SECURITY>>
 to
 _1_
 on the row for the target node in the parent node's database. You can
@@ -118,7 +120,7 @@ IMPORTANT: Note that if the parent node that a node is registering with is
 _not_
 a registration server node (as can happen with a registration redirect
 or certain non-tree structure node configurations) the parent node's
-<xref linkend="table_node_security" xrefstyle="table" />
+<<NODE_SECURITY>>
 entry must exist at the parent node and have a non-null value for column
 `initial_load_time`
 . Nodes can't be registered to non-registration-server nodes without
@@ -133,7 +135,7 @@ An initial load is accomplished by inserting reload batches in a defined
 order according to the
 `initial_load_order`
 column on
-<xref linkend="table_trigger_router" xrefstyle="table" />
+<<TRIGGER_ROUTER>>
 . If the
 `initial_load_order`
 column contains a negative value the associated table will
@@ -171,7 +173,7 @@ the desired behavior for all tables in the initial load, not just one.
 			are created, in the correct order, to achieve the delete.
 			
 * initial.load.create.first:: By default, an initial load will not create the table on the target if
-			it doesn't alleady exist. If the desired behavior is to create the table
+			it doesn't already exist. If the desired behavior is to create the table
 			on the target if it is not present, set the parameter
 			`intial.load.create.first`
 			to true. SymmetricDS will attempt to create the table and indexes on the
@@ -184,7 +186,7 @@ An efficient way to select a subset of data from a table for an initial
 load is to provide an
 `initial_load_select`
 clause on
-<xref linkend="table_trigger_router" xrefstyle="table" />
+<<TRIGGER_ROUTER>>
 . This clause, if present, is applied as a
 `where`
 clause to the SQL used to select the data to be loaded. The clause may
@@ -193,7 +195,7 @@ use "t" as an alias for the table being loaded, if needed. The
 token can be used for subsetting the data in the where clause.
 			
 In cases where routing is done using a feature like
-<xref linkend="configuration-subselect-router">Subselect Router</xref>
+<<Subselect Router>>
 , an
 `initial_load_select`
 clause matching the subselect's criteria would be a more efficient
@@ -237,11 +239,11 @@ SymmetricDS to pre-extract initial load batches versus having them extracted whe
 the batch is pulled or pushed.  When using this parameter, there are two ways to tell
 SymmetricDS the number of batches to create for a given table.  The first is to specify
 a positive integer in the initial_load_batch_count column on
-<xref linkend="table_trigger_router" xrefstyle="table" />.  This
+<<TRIGGER_ROUTER>>.  This
 number will dictate the number of batches created for the initial load of the given table.
 The second way is to specify 0 for initial_load_batch_count on
-<xref linkend="table_trigger_router" xrefstyle="table" /> and
-specify a max_batch_size on the reload channel in <xref linkend="table_channel" xrefstyle="table" />.
+<<TRIGGER_ROUTER>> and
+specify a max_batch_size on the reload channel in <<CHANNEL>>.
 When 0 is specified for
 initial_load_batch_count, SymmetricDS will execute a count(*) query on the table during
 the extract process and create N batches based on the total number of records found
@@ -251,20 +253,23 @@ in the table divided by the max_batch_size on the reload channel.
 
 The default behavior for initial loads is to load data from the
 registration server or parent node, to a client node. Occasionally,
-there may be need to do a one-time intial load of data in the opposite
+there may be need to do a one-time initial load of data in the opposite
 or "reverse" direction, namely from a client node to the registration
 node. To achieve this, set the parameter
 `auto.reload.reverse`
 to be true _at the registration node_. This will cause 
-a onetime reverse load of data, for tables configured
+a one-time reverse load of data, for tables configured
 with non-negative initial load orders, to be batched at the point when
 registration of the client node is occurring. These batches are then
 sent to the parent or registration node. This capability might be
 needed, for example, if there is data already present in the client that
 doesn't exist in the parent but needs to.
 			
-Reverse initial load can be invoked manually by setting reverse_initial_load_enabled=1 in
-sym_node_security on the node that is supposed to send the load.          
+Reverse initial load can be invoked manually by setting 
+`reverse_initial_load_enabled=1`
+in
+<<NODE_SECURITY>> 
+on the node that is supposed to send the load.          
 
 ==== Data Reloads
 	       
@@ -281,14 +286,14 @@ a non-existent row in the destination!
 One possible approach would be to "touch" the rows in individual tables that need re-sent.  By "touch", we mean to alter the row data in such a way
 that SymmetricDS detects a data change and therefore includes the data change in the batching and synchronizing steps.  Note that you have to
 change the data in some meaningful way (e.g., update a time stamp); setting a column to its current value is not sufficient (by default, if there's not an actual data
-value change SymmetricDS won't treat the change as something which needs synched.
+value change, SymmetricDS won't treat the change as something that needs to sync).
 
 A second approach would be to take advantage of SymmetricDS built-in functionality by simulating a partial "initial load" of the data.  The approach
-is to manually create "reload" events in <xref linkend="table_data" xrefstyle="table"/> for the necessary tables, thereby resending the desired rows for the given tables.
+is to manually create "reload" events in <<DATA>> for the necessary tables, thereby resending the desired rows for the given tables.
 Again, foreign key constraints must be kept in mind when creating these reload events.  These reload events are created in the source database itself, and
 the necessary table, trigger-router combination, and channel are included to indicate the direction of synchronization.
    
-To create a reload event, you create a <xref linkend="table_data" xrefstyle="table"/> row, using:
+To create a reload event, you create a <<DATA>> row, using:
 	       
 [horizontal]
 data_id::  null
@@ -297,7 +302,7 @@ event_type:: 'R', for reload
 row_data::  a "where" clause (minus the word 'where') which defines the subset of rows from the table to be sent.  To send all rows, one can use 1=1 for this value.
 pk_data::  null
 old_data:: null
-trigger_hist_id::  use the id of the most recent entry (i.e., max(trigger_hist_id) ) in <xref linkend="table_trigger_hist" xrefstyle="table"/>
+trigger_hist_id::  use the id of the most recent entry (i.e., max(trigger_hist_id) ) in <<TRIGGER_HIST>>
 	        for the trigger-router combination for your table and router.
 channel_id::  the channel in which the table is routed
 transaction_id::  pick a value, for example '1'
@@ -306,8 +311,12 @@ external_data:: null
 create_time::  current_timestamp
 	       
 Let's say we need to re-send a particular sales transaction from the store to corp over again because we lost the data in corp due to
-an overzealous delete.  For the tutorial, all transaction-related tables start with <ns:literal>sale_</ns:literal>,
-use the <ns:literal>sale_transaction</ns:literal> channel, and are routed using the <ns:literal>store_corp_identity</ns:literal>
+an overzealous delete.  For the tutorial, all transaction-related tables start with 
+_sale__
+, use the 
+_sale_transaction_
+channel, and are routed using the 
+_store_corp_identity_
 router.  In addition, the trigger-routers have been set up with an initial load order based on the necessary
 foreign key relationships (i.e., transaction tables which are "parents" have a lower initial load order than those of their
 "children").  An insert statement that would create the necessary "reload" events (three in this case, one for each table) would be as follows
@@ -350,9 +359,9 @@ the period.time.ms property.
 
 The frequency of jobs can be configured in either the engines properties
 file or in
-<xref linkend="table_parameter" xrefstyle="table" />
+<<PARAMETER>>
 . When managed in
-<xref linkend="table_parameter" xrefstyle="table" />
+<<PARAMETER>>
 the frequency properties can be changed in the registration server and
 when the updated settings sync to the nodes in the system the job
 manager will restart the jobs at the new frequency settings.
@@ -364,21 +373,20 @@ implementation, where the first parameter is usually minutes. For
 example,
 `*/15 * * * * *`
 means every 15 seconds, not every 15 minutes. See
-<ulink
-	url="http://static.springsource.org/spring/docs/3.0.x/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html">Spring's
-documentation</ulink>
+http://static.springsource.org/spring/docs/3.0.x/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html"[Spring's
+documentation]
 for more details.
 
 
 Some jobs cannot be run in parallel against a single node. When running
 on a cluster these jobs use the
-<xref linkend="table_lock" xrefstyle="table" />
+<<LOCK>>
 table to get an exclusive semaphore to run the job. In order to use this
 table the
-<ns:literal>cluster.lock.enabled</ns:literal>
+`cluster.lock.enabled`
 must be set to true.
 
- The three main jobs in SymmetricDS are the route, push and
+The three main jobs in SymmetricDS are the route, push and
 pull jobs. The route job decides what captured data changes should be
 sent to which nodes. It also decides what captured data changes should
 be transported and loaded together in a batch. The push and pull jobs
@@ -388,56 +396,56 @@ push or pull data changes that have been routed.
 ==== Route Job
 
 After data is captured in the
-<xref linkend="table_data" xrefstyle="table" />
+<<DATA>>
 table, it is routed to specific nodes in batches by the
 _Route Job_
 . It is a single background task that inserts into
-<xref linkend="table_data_event" xrefstyle="table" />
+<<DATA_EVENT>>
 and
-<xref linkend="table_outgoing_batch" xrefstyle="table" />
+<<OUTGOING_BATCH>>
 .
 
 
 The job processes each enabled channel, one at a time, collecting a list
 of data ids from
-<xref linkend="table_data" xrefstyle="table" />
+<<DATA>>
 which have not been routed (see
-<xref linkend="data-gaps" />
+<<Data Gaps>>
 for much more detail about this step), up to a limit specified by the
 channel configuration (
 `max_data_to_route`
 , on
-<xref linkend="table_channel" xrefstyle="table" />
+<<CHANNEL>>
 ). The data is then batched based on the
 `batch_algorithm`
 defined for the channel. Note that, for the
-<ns:literal>default</ns:literal>
+_default_
 and
-<ns:literal>transactional</ns:literal>
+_transactional_
 algorithm, there may actually be more than
 `max_data_to_route`
 included depending on the transaction boundaries. The mapping of data to
 specific nodes, organized into batches, is then recorded in
-<xref linkend="table_outgoing_batch" xrefstyle="table" />
+<<OUTGOING_BATCH>>
 with a status of "RT" in each case (representing the fact that the Route
 Job is still running). Once the routing algorithms and batching are
 completed, the batches are organized with their corresponding data ids
 and saved in
-<xref linkend="table_data_event" xrefstyle="table" />
+<<DATA_EVENT>>
 . Once
-<xref linkend="table_data_event" xrefstyle="table" />
+<<DATA_EVENT>>
 is updated, the rows in
-<xref linkend="table_outgoing_batch" xrefstyle="table" />
+<<OUTGOING_BATCH>>
 are updated to a status of New "NE".
 
 
 The route job will respect the
 `max_batch_size`
 on
-<xref linkend="table_outgoing_batch" xrefstyle="table" />
+<<OUTGOING_BATCH>>
 . If the max batch size is reached before the end of a database
-tranaction and the batch algorithm is set to something other than
-<ns:literal>nontransactional</ns:literal>
+transaction and the batch algorithm is set to something other than
+_nontransactional_
 the batch may exceed the specified max size.
 
 
@@ -446,16 +454,16 @@ The route job delegates to a router defined by the
 and configured by the
 `router_expression`
 in the
-<xref linkend="table_router" xrefstyle="table" />
+<<ROUTER>>
 table. Each router that has a
-<ns:literal>source_node_group_id</ns:literal>
+_source_node_group_id_
 that matches the current node's source node group id and is linked to
 the
-<xref linkend="table_trigger" xrefstyle="table" />
+<<TRIGGER>>
 that captured the data gets an opportunity to choose a list of nodes the
 data should be sent to. Data can only be routed to nodes that belong to
 the router's
-<ns:literal>target_node_group_id</ns:literal>
+_target_node_group_id_
 		
 ==== Data Gaps
 
@@ -464,9 +472,9 @@ seems simple: assign sequential data ids for each data row as it's
 inserted and keep track of which data id was last routed and start from
 there. The difficulty arises, however, due to the fact that there can be
 multiple transactions inserting into
-<xref linkend="table_data" xrefstyle="table" />
+<<DATA>>
 simultaneously. As such, a given section of rows in the
-<xref linkend="table_data" xrefstyle="table" />
+<<DATA>>
 table may actually contain "gaps" in the data ids when the Route Job is
 executing. Most of these gaps are only temporarily and fill in at some
 point after routing and need to be picked up with the next run of the
@@ -481,9 +489,9 @@ efficient as possible.
 
 
 SymmetricDS handles the issue of data gaps by making use of a table,
-<xref linkend="table_data_gap" xrefstyle="table" />
+<<DATA_GAP>>
 , to record gaps found in the data ids. In fact, this table completely
-defines the entire range of data tha can be routed at any point in time.
+defines the entire range of data that can be routed at any point in time.
 For a brand new instance of SymmetricDS, this table is empty and
 SymmetricDS creates a gap starting from data id of zero and ending with
 a very large number (defined by
@@ -495,10 +503,10 @@ sufficiently old (as defined by
 , the gap is marked as skipped (status of 'SK') and will no longer be
 evaluated in future Route Jobs (note that the 'last' gap (the one with
 the highest starting data id) is never skipped). If not skipped, then
-<xref linkend="table_data_event" xrefstyle="table" />
+<<DATA_EVENT>>
 is searched for data ids present in the gap. If one or more data ids is
 found in
-<xref linkend="table_data_event" xrefstyle="table" />
+<<DATA_EVENT>>
 , then the current gap is marked with a status of OK, and new gap(s) are
 created to represent the data ids still missing in the gap's range. This
 process is done for all gaps. If the very last gap contained data, a new
@@ -531,15 +539,15 @@ SymmetricDS property is set to
 
 
 Data is extracted by channel from the source database's
-<xref linkend="table_data" xrefstyle="table" />
+<<DATA>>
 table at an interval controlled by the
 `extract_period_millis`
 column on the
-<xref linkend="table_channel" xrefstyle="table" />
+<<CHANNEL>>
 table. The
 `last_extract_time`
 is always recorded, by channel, on the
-<xref linkend="table_node_channel_ctl" xrefstyle="table" />
+<<NODE_CHANNEL_CTL>>
 table for the host node's id. When the Pull and Push Job run, if the
 extract period has not passed according to the last extract time, then
 the channel will be skipped for this run. If the
@@ -549,15 +557,15 @@ is set to zero, data extraction will happen every time the jobs run.
 
 The maximum number of batches to extract per synchronization is
 controlled by
-<ns:literal>max_batch_to_send</ns:literal>
+_max_batch_to_send_
 on the
-<xref linkend="table_channel" xrefstyle="table" />
+<<CHANNEL>>
 table. There is also a setting that controls the max number of bytes to
 send in one synchronization. If SymmetricDS has extracted the more than
 the number of bytes configured by the
-<ns:literal>transport.max.bytes.to.sync</ns:literal>
+`transport.max.bytes.to.sync`
 parameter, then it will finish extracting the current batch and finish
-synchronization so the client has a chance to process and acknowlege the
+synchronization so the client has a chance to process and acknowledge the
 "big" batch. This may happen before the configured max number of batches
 has been reached.
 
@@ -570,14 +578,14 @@ or
 should be adjusted (from their default value of 10) to the number to the
 number of concurrent push/pulls you want to occur per period on each
 SymmetricDS instance. Push and pull activity is recorded in the
-<xref linkend="table_node_communication" xrefstyle="table" />
+<<NODE_COMMUNICATION>>
 table. This table is also used to lock push and pull activity across
 multiple servers in a cluster.
 
 
 SymmetricDS also provides the ability to configure windows of time when
 synchronization is allowed. This is done using the
-<xref linkend="table_node_group_channel_wnd" xrefstyle="table" />
+<<NODE_GROUP_CHANNEL_WND>>
 table. A list of allowed time windows can be specified for a node group
 and a channel. If one or more windows exist, then data will only be
 extracted and transported if the time of day falls within the window of
@@ -597,11 +605,11 @@ extractions may be disabled by setting the
 `dataextractor.enable`
 property to false. These properties can be controlled by inserting into
 the root server's
-<xref linkend="table_parameter" xrefstyle="table" />
+<<PARAMETER>>
 table. These properties affect every channel with the exception of the
 'config' channel.
 
- Node communication over HTTP is represented in the
+Node communication over HTTP is represented in the
 following figure. 
 
 
@@ -615,23 +623,23 @@ These jobs work with batches on the `filesync` channel and create ZIP files of c
 to be sent and applied on other nodes.
 The parameters `job.file.sync.push.period.time.ms` and `job.file.sync.pull.period.time.ms`
 control how often the jobs runs, which default to every 60 seconds.
-See also <xref linkend="manage-jobs" /> and <xref linkend="filesync-operation" />.
+See also <<Jobs>> and <<File Synchronization>>.
 		
 ==== File System Tracker Job
 		
 The File System Tracker job (introduced in version 3.5) is responsible for monitoring and
 recording the events of files being created, modified, or deleted.
-It records the current state of files to the <xref linkend="table_file_snapshot" xrefstyle="table" /> table.
+It records the current state of files to the <<FILE_SNAPSHOT>> table.
 The parameter `job.file.sync.tracker.cron` controls how often the job runs,
 which defaults to every 5 minutes.
-See also <xref linkend="manage-jobs" /> and <xref linkend="file-sync" />.
+See also <<Jobs>> and <<File Synchronization>>.
 		
 ==== Sync Triggers Job
 		
 SymmetricDS examines the current configuration, corresponding database
 triggers, and the underlying tables to determine if database triggers
 need created or updated. The change activity is recorded on the
-<xref linkend="table_trigger_hist" xrefstyle="table" />
+<<TRIGGER_HIST>>
 table with a reason for the change. The following reasons for a change
 are possible:
 		
@@ -665,32 +673,14 @@ _Purge Job_
 . Only data that has been successfully synchronized will be purged.
 Purged tables include:
 
-		<itemizedlist>
-		<listitem>
-		<xref linkend="table_data" xrefstyle="table" />
-		</listitem>
-		<listitem>
-		<xref linkend="table_data_event" xrefstyle="table" />
-		</listitem>
-		<listitem>
-		<xref linkend="table_outgoing_batch" xrefstyle="table" />
-		</listitem>
-		<listitem>
-		<xref linkend="table_incoming_batch" xrefstyle="table" />
-		</listitem>
-		<listitem>
-		<xref linkend="table_data_gap" xrefstyle="table" />
-		</listitem>
-		<listitem>
-		<xref linkend="table_node_host_stats" xrefstyle="table" />
-		</listitem>
-		<listitem>
-		<xref linkend="table_node_host_channel_stats" xrefstyle="table" />
-		</listitem>
-		<listitem>
-		<xref linkend="table_node_host_job_stats" xrefstyle="table" />
-		</listitem>
-		</itemizedlist>
+* <<DATA>>
+* <<DATA_EVENT>>
+* <<OUTGOING_BATCH>>
+* <<INCOMING_BATCH>>
+* <<DATA_GAP>>
+* <<NODE_HOST_STATS>>
+* <<NODE_HOST_CHANNEL_STATS>>
+* <<NODE_HOST_JOB_STATS>>
 		
 		
 The purge job is enabled by the
@@ -716,13 +706,13 @@ tables. The default value is 5 days. The
 property indicates the period of history to keep for statistics. The
 default value is also 5 days.
 
- The purge properties should be adjusted according to how
+The purge properties should be adjusted according to how
 much data is flowing through the system and the amount of storage space
 the database has. For an initial deployment it is recommended that the
 purge properties be kept at the defaults, since it is often helpful to
 be able to look at the captured data in order to triage problems and
 profile the synchronization patterns. When scaling up to more nodes, it
-is recomended that the purge parameters be scaled back to 24 hours or
+is recommended that the purge parameters be scaled back to 24 hours or
 less. 
 
 === Pull Threads
@@ -753,8 +743,8 @@ the database.  On the incoming node, however, all that is available is the incom
 ==== Analyzing the Issue
 
 The first step in analyzing the cause of a failed batch is to locate information about the data in the batch, starting with
-   <xref linkend="table_outgoing_batch" xrefstyle="table"/>
-   To locate batches in error, use:
+<<OUTGOING_BATCH>>
+.  To locate batches in error, use:
    
 [source, sql]
 ----
@@ -776,11 +766,11 @@ NOTE: Using the `error_flag` on the batch table, as shown above, is more reliabl
    the batch is retried.
 	       
 NOTE: The query above will also show you any recent batches that
-   were originally in error and were changed to be manually skipped.  See the end of  <xref linkend="manage-outgoing-batches-solving-issues" /> for more details.
+   were originally in error and were changed to be manually skipped.  See the end of <<Outgoing Batches>> for more details.
 
-   To get a full picture of the batch, you can query for information representing the complete
-   list of all data changes associated with the failed batch by joining
-   <xref linkend="table_data" xrefstyle="table"/> and  <xref linkend="table_data_event" xrefstyle="table"/>, such as:
+To get a full picture of the batch, you can query for information representing the complete
+list of all data changes associated with the failed batch by joining
+<<DATA>> and <<DATA_EVENT>>, such as:
    
 [source, sql]
 ----
@@ -790,7 +780,8 @@ select * from sym_data where data_id in
 where XXXXXX is the batch id of the failing batch.
 	      
 This query returns a wealth of information about each data change in a batch, including:
-* The table involved in each data change, available in column `TABLE_NAME`,</listitem>
+
+* The table involved in each data change, available in column `TABLE_NAME`,
 * The event type (Update [U], Insert [I], or Delete [D]), available in column `EVENT_TYPE`,
 * A comma separated list of the new data and (optionally) the old data, available in columns `ROW_DATA` and
 	       `OLD_DATA`, respectively.
@@ -846,7 +837,7 @@ it now thinks the batch has already been synchronized.  Note that you can still 
 batches and ones that you've artificially marked as 'OK', since the `error_flag` column on
 the failed batch will still be set to '1' (in error).
 
-* Removing the failing data id from the batch by deleting the corresponding row in <xref linkend="table_data_event" xrefstyle="table"/>.
+* Removing the failing data id from the batch by deleting the corresponding row in <<DATA_EVENT>>.
 Eliminating the data id from the list of data ids in the batch will cause future synchronization attempts
 of the batch to no longer include that particular data change as part of the batch.  For example:
                   
@@ -859,11 +850,11 @@ where XXXXXX is the failing batch and YYYYYY is the data id to longer be include
 ==== Analyzing the Issue
 	      
 Analysis using an incoming batch is different than that of outgoing batches.  For incoming batches, you will rely on two tables,
-<xref linkend="table_incoming_batch" xrefstyle="table"/> and  <xref linkend="table_incoming_error" xrefstyle="table"/>.
+<<INCOMING_BATCH>> and <<INCOMING_ERROR>>.
 
 The first step in analyzing the cause of an incoming failed batch is to locate information about the batch, starting with
-<xref linkend="table_incoming_batch" xrefstyle="table"/>
-To locate batches in error, use:
+<<INCOMING_BATCH>>
+.  To locate batches in error, use:
 
 [source, sql]
 ----
@@ -882,12 +873,12 @@ All subsequent batches on this channel from this node will be held until the err
 `SQL_STATE`, and `SQL_CODE`, respectively.
 
 For incoming batches, we do not have data and data event entries in the database we can query.
-We do, however, have a table,  <xref linkend="table_incoming_error" xrefstyle="table"/>, which provides some information about the batch.
+We do, however, have a table, <<INCOMING_ERROR>>, which provides some information about the batch.
 
 [source, sql]
 ----
 select * from sym_incoming_error
-where batch_id='XXXXXX' and node_id='YYYYY';</programlisting>
+where batch_id='XXXXXX' and node_id='YYYYY';
 ----
 where XXXXXX is the batch id and YYYYY is the node id of the failing batch.
 
@@ -896,17 +887,17 @@ This query returns a wealth of information about each data change in a batch, in
 * The table involved in each data change, available in column `TARGET_TABLE_NAME`,
 * The event type (Update [U], Insert [I], or Delete [D]), available in column `EVENT_TYPE`,
 * A comma separated list of the new data and (optionally) the old data, available in columns `ROW_DATA` and
-`OLD_DATA`, respectively,</listitem>
+`OLD_DATA`, respectively,
 * The column names of the table, available in column `COLUMN_NAMES`,
-* The primary key column names of the table, available in column `PK_COLUMN_NAMES`,</listitem>
+* The primary key column names of the table, available in column `PK_COLUMN_NAMES`,
 	       
 ==== Resolving the Issue
            
 For batches in error, from the incoming side you'll also have to decide the best course of action to fix the issue.
-Incoming batch errors _that are in conflict_ can by fixed by taking advantage of two columns in <xref linkend="table_incoming_error" xrefstyle="table"/> which are examined each time
+Incoming batch errors _that are in conflict_ can by fixed by taking advantage of two columns in <<INCOMING_ERROR>> which are examined each time
 batches are processed.  The first column, `resolve_data` if filled in will be used in place of `row_data`.
 The second column, `resolve_ignore` if set will cause this particular data item to be ignored and batch processing to continue.  This is the same
-two columns used when a manual conflict resolution strategy is chosen, as discussed in <xref linkend="conflicts"/>.
+two columns used when a manual conflict resolution strategy is chosen, as discussed in <<Conflicts>>.
  
 === Staging Area
 		
@@ -925,10 +916,31 @@ The location of the temporary directory may be changed by setting the Java Syste
 
 === Logging
 	   
-The standalone SymmetricDS installation uses <ulink url="http://logging.apache.org/log4j/1.2/index.html">Log4J</ulink> for logging.  The configuration file is  `conf/log4j.xml`.
+The standalone SymmetricDS installation uses http://logging.apache.org/log4j/1.2/index.html[Log4J] for logging.  The configuration file is `conf/log4j.xml`.
 The `log4j.xml` file has hints as to what logging can be enabled for useful, finer-grained logging.
 
 There is a command line option to turn on preconfigured debugging levels.  When the `--debug` option is used the `conf/debug-log4j.xml` is used instead of log4j.xml.
 
-SymmetricDS proxies all of its logging through <ulink url="http://www.slf4j.org/">SLF4J</ulink>.  When deploying to an application server or if Log4J is not
+SymmetricDS proxies all of its logging through http://www.slf4j.org/[SLF4J].  When deploying to an application server or if Log4J is not
 being leveraged, then the general rules for for SLF4J logging apply.
+
+ifdef::pro[]
+=== Uninstall 
+
+Uninstalling a node will remove it from the synchronization setup.   If this is the master node it will
+also remove all SYM_* tables as well.
+
+WARNING: This can not be undone so be sure to uninstall with caution.
+
+To uninstall a node, click on the node and select the Control button and choose Uninstall.
+.Uninstall
+image::uninstall.png[]
+
+.Uninstall single node
+image::uninstall-single.png[]
+
+If the node has child nodes you will be told that uninstalling the parent node will uninstall all of the child nodes.
+
+.Uninstall current node and all children
+image::uninstall-with-children.png[]
+endif::pro[]

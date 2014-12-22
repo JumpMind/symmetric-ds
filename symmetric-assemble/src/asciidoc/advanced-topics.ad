@@ -30,7 +30,7 @@ a corporate server for example.  In this case, the three tiers would be device, 
 Each tier is typically represented by a node group.  Each node in
 the tier would belong to the node group representing that tier.
     
-A node can only pull and push data to other nodes that are represented in the node's <xref linkend="table_node" xrefstyle="table"/>
+A node can only pull and push data to other nodes that are represented in the node's <<NODE>>
 table and in cases where that node's `sync_enabled` column is set to 1.
 Because of this, a tree-like
 hierarchy of nodes can be created by having only a subset of nodes belonging to the same node group represented at the different branches of the tree.
@@ -46,16 +46,16 @@ that might register with the node itself based on the Node Group Links defined i
        
 When deploying a multi-tiered system it may be advantageous to have only one registration server, even though the parent node of a registering node
 could be any of a number of nodes in the system.  In SymmetricDS the parent node is always the node that a child registers with.  The
-<xref linkend="table_registration_redirect" xrefstyle="table"/> table allows a single node, usually the root server in the network, to
+<<REGISTRATION_REDIRECT>> table allows a single node, usually the root server in the network, to
 redirect registering nodes to their true parents.  It does so based on a mapping found in the table of the external id (`registrant_external_id`) to the parent's node
 id (`registration_node_id`).
         
 For example, if it is desired to have a series of regional servers that workstations at retail stores get assigned to based on their `external_id`, the store number, then
-you might insert into <xref linkend="table_registration_redirect" xrefstyle="table"/> the store number as the `registrant_external_id` and the `node_id` of
+you might insert into <<REGISTRATION_REDIRECT>> the store number as the `registrant_external_id` and the `node_id` of
 the assigned region as the `registration_node_id`.  When a workstation at the store registers, the root server sends an HTTP redirect to the `sync_url` of the node
 that matches the `registration_node_id`.
  
-IMPORTANT: Please see <xref linkend="manage-node-initial-load" /> for important details around initial loads
+IMPORTANT: Please see <<Initial Loads>> for important details around initial loads
 and registration when using registration redirect.
 
 
@@ -351,9 +351,9 @@ JMS during routing or transactionally while data loading synchronized data into 
 The following explains how to publish to JMS during synchronization to the target database.
        
 The XmlPublisherDatabaseWriterFilter is a
-<xref linkend="extensions-data-loader-filter" xrefstyle="table"/> that may be configured to
+<<IDatabaseWriterFilter>> that may be configured to
 publish specific tables as an XML message to a JMS provider.
-See <xref linkend="extensions"/> for information on how
+See <<Extensions>> for information on how
 to configure an extension point.  If the publish to JMS fails, the batch will be marked in error,
 the loaded data for the batch will be rolled back
 and the batch will be retried during the next synchronization run.
@@ -457,6 +457,6 @@ The above configuration will publish XML similar to the following:
 
 To publish JMS messages during routing
 the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router
-would be configured by setting the `router_type` of a <xref linkend="table_router" xrefstyle="table"/> to the Spring bean
-name of the registered extension point.  Of course, the router would need to be linked through <xref linkend="table_trigger_router" xrefstyle="table"/>s
-to each <xref linkend="table_trigger" xrefstyle="table"/>  table that needs published.
+would be configured by setting the `router_type` of a <<ROUTER>> to the Spring bean
+name of the registered extension point.  Of course, the router would need to be linked through <<TRIGGER_ROUTER>>s
+to each <<TRIGGER>> table that needs published.
