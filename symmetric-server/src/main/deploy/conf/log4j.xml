@@ -42,6 +42,8 @@
         </layout>
     </appender>
 
+    <appender name="BUFFERED" class="org.jumpmind.util.BufferedLogAppender"/>
+
     <!-- Uncomment to send errors over email.  (1/2) -->
     <!-- 
 	<appender name="EMAIL" class="org.apache.log4j.net.SMTPAppender">
