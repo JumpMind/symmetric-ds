@@ -233,17 +233,17 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
                     text += "bit\n";
                     break;
                 case Types.CLOB:
-                    text += "varchar(max)\n";
+                    text += "varchar(32767)\n";
                     break;
                 case Types.BLOB:
                 case Types.BINARY:
                 case Types.VARBINARY:
                 case Types.LONGVARBINARY:
                 case -10: // SQL-Server ntext binary type
-                    text += "varbinary(max)\n";
+                    text += "varbinary(32767)\n";
                     break;
                 case Types.OTHER:
-                    text += "varbinary(max)\n";
+                    text += "varbinary(32767)\n";
                     break;
                 default:
                     if (columns[i].getJdbcTypeName() != null
