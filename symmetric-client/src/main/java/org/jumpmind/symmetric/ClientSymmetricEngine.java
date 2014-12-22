@@ -221,6 +221,21 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             throw ex;
         }
     }
+    
+    @Override
+    public synchronized boolean start() {
+        if (this.springContext instanceof AbstractApplicationContext) {
+            AbstractApplicationContext ctx = (AbstractApplicationContext) this.springContext;
+            try {
+                if (!ctx.isActive()) {
+                    ctx.start();
+                }
+            } catch (Exception ex) {
+            }
+        }
+
+        return super.start();
+    }
 
     @Override
     public synchronized void stop() {
@@ -231,8 +246,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                     ctx.stop();
                 }
             } catch (Exception ex) {
-            } finally {
-                this.springContext = null;
             }
         }
         super.stop();
@@ -365,6 +378,13 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     public synchronized void destroy() {
         super.destroy();
+        if (springContext instanceof AbstractApplicationContext) {
+            try {
+            ((AbstractApplicationContext)springContext).destroy();
+            } catch (Exception ex) {                
+            }
+        }
+        springContext = null;
         if (dataSource != null && dataSource instanceof BasicDataSource) {
             try {
                 ((BasicDataSource)dataSource).close();
