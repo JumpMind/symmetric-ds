@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -297,5 +298,18 @@ public class CsvData {
                 message.append(" bytes).  It will not be printed to the log file");
             }
         }
+    }
+    
+    public long getSizeInBytes() {
+        long size = 0;
+        if (csvData != null) {
+            Collection<String> values = csvData.values();
+            for (String string : values) {
+                if (string != null) {
+                    size += string.length();
+                }
+            }
+        }
+        return size;
     }
 }
