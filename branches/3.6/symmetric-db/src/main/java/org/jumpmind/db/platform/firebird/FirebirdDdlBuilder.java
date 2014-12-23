@@ -347,9 +347,9 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
             ColumnRequiredChange change, StringBuilder ddl) {
         boolean required = !change.getChangedColumn().isRequired();
         ddl.append("update RDB$RELATION_FIELDS set RDB$NULL_FLAG = " + (required ? "1" : "0")
-                + " where (RDB$FIELD_NAME = '" + change.getChangedColumn().getName()
-                + "') and (RDB$RELATION_NAME = '"
-                + getFullyQualifiedTableNameShorten(change.getChangedTable()) + "')");
+                + " where RDB$FIELD_NAME = '" + change.getChangedColumn().getName()
+                + "' and RDB$RELATION_NAME = '"
+                + change.getChangedTable().getName() + "'");
         printEndOfStatement(ddl);
     }
 
