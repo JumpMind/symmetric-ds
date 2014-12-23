@@ -1,7 +1,7 @@
 
 == Manage
 
-=== Identifying Nodes
+=== Nodes
 
 A
 _node_
@@ -20,7 +20,7 @@ Individual nodes are easy to identify when planning your implementation. If a da
 that needs to send or receive data, there needs to be a corresponding SymmetricDS instance (a node) responsible
 for managing the synchronization for that database.
         
-=== Creating Nodes
+==== Creating Nodes
 
 Nodes are defined in the
 <<NODE>>
@@ -56,7 +56,7 @@ for the node to be able to register. You can also, with this table,
 manually cause a node to re-register or do a re-initial load by setting
 the corresponding columns in the table itself. 
 		
-=== Registration
+==== Registration
 			
 Node registration is the act of setting up a new
 <<NODE>>
@@ -87,7 +87,7 @@ JMX method which takes a
 `node_id`
 as an argument.
 			
-=== Initial Loads
+==== Initial Loads
 
 An initial load is the process of seeding tables at a
 target node with data from its parent node. When a node connects and
@@ -152,7 +152,7 @@ Initial load data is always queried from the source
 database table. All data is passed through the configured router to
 filter out data that might not be targeted at a node.
 			
-==== Target table prep for initial load
+===== Target table prep for initial load
 
 There are several parameters that can be used to specify
 what, if anything, should be done to the table on the target database
@@ -180,7 +180,7 @@ the desired behavior for all tables in the initial load, not just one.
 			target database before doing the initial load. (Additional batches are
 			created to represent the table schema).
 			
-==== Loading subsets of data
+===== Loading subsets of data
 
 An efficient way to select a subset of data from a table for an initial
 load is to provide an
@@ -225,7 +225,7 @@ IMPORTANT: When providing an
 			be sure to test out the criteria against production data in a query
 			browser. Do an explain plan to make sure you are properly using indexes.
 
-==== Splitting an Initial Load for a Table Across Multiple Batches
+===== Splitting an Initial Load for a Table Across Multiple Batches
 			
 By default, all data for a given table will be initial loaded in a single batch, regardless
 of the max batch size parameter on the reload channel.  That is, for a table with one million
@@ -249,7 +249,7 @@ initial_load_batch_count, SymmetricDS will execute a count(*) query on the table
 the extract process and create N batches based on the total number of records found
 in the table divided by the max_batch_size on the reload channel.
 
-==== Reverse Initial Loads
+===== Reverse Initial Loads
 
 The default behavior for initial loads is to load data from the
 registration server or parent node, to a client node. Occasionally,
@@ -271,7 +271,7 @@ in
 <<NODE_SECURITY>> 
 on the node that is supposed to send the load.          
 
-==== Data Reloads
+===== Data Reloads
 	       
 There may be times where you find you need to re-send or re-synchronize data when the change itself was not captured.  This could be needed, for example,
 if the data changes occurred prior to SymmetricDS placing triggers on the data tables themselves, or if the data at the destination was accidentally deleted, or for
@@ -341,6 +341,30 @@ foreign key relationships (i.e., transaction tables which are "parents" have a l
 This insert statement generates three rows, one for each configured sale table.  It uses the most recent
 trigger history id for the corresponding table.  It takes advantage of the initial load order for each trigger-router to
 create the three rows in the correct order (the order corresponding to the order in which the tables would have been initial loaded).
+
+ifdef::pro[]
+==== Uninstall 
+
+Uninstalling a node will remove it from the synchronization setup.   If this is the master node it will
+also remove all SYM_* tables as well.
+
+WARNING: This can not be undone so be sure to uninstall with caution.
+
+To uninstall a node, click on the node and select the Control button and choose Uninstall.
+
+.Control->Uninstall
+image::uninstall.png[]
+
+If the node has no children, you will be prompted by a confirm dialog to make sure you want to uninstall the node.
+
+.Uninstall single node
+image::uninstall-single.png[]
+
+If the node has child nodes you will be told that uninstalling the parent node will uninstall all of the child nodes.
+
+.Uninstall current node and all children
+image::uninstall-with-children.png[]
+endif::pro[]
 	
 === Jobs
 
@@ -715,19 +739,13 @@ profile the synchronization patterns. When scaling up to more nodes, it
 is recommended that the purge parameters be scaled back to 24 hours or
 less. 
 
-=== Pull Threads
-
-TODO 
-
-=== Push Threads
-
-TODO
-
 === Installed Triggers
 
 TODO 
 
 === Outgoing Loads
+
+TODO
 
 === Outgoing Batches
 		
@@ -898,7 +916,8 @@ Incoming batch errors _that are in conflict_ can by fixed by taking advantage of
 batches are processed.  The first column, `resolve_data` if filled in will be used in place of `row_data`.
 The second column, `resolve_ignore` if set will cause this particular data item to be ignored and batch processing to continue.  This is the same
 two columns used when a manual conflict resolution strategy is chosen, as discussed in <<Conflicts>>.
- 
+      
+      
 === Staging Area
 		
 SymmetricDS creates temporary extraction and data load files with the CSV payload of a synchronization when
@@ -912,7 +931,27 @@ The location of the temporary directory may be changed by setting the Java Syste
 [source, cli]
 ----
 -Djava.io.tmpdir=/home/.symmetricds/tmp
-----        
+----   
+
+=== Processes
+
+TODO
+
+=== Pull Threads
+
+TODO 
+
+=== Push Threads
+
+TODO
+
+=== JVM Properties
+
+TODO
+
+=== JVM Threads
+
+TODO
 
 === Logging
 	   
@@ -923,24 +962,3 @@ There is a command line option to turn on preconfigured debugging levels.  When 
 
 SymmetricDS proxies all of its logging through http://www.slf4j.org/[SLF4J].  When deploying to an application server or if Log4J is not
 being leveraged, then the general rules for for SLF4J logging apply.
-
-ifdef::pro[]
-=== Uninstall 
-
-Uninstalling a node will remove it from the synchronization setup.   If this is the master node it will
-also remove all SYM_* tables as well.
-
-WARNING: This can not be undone so be sure to uninstall with caution.
-
-To uninstall a node, click on the node and select the Control button and choose Uninstall.
-.Uninstall
-image::uninstall.png[]
-
-.Uninstall single node
-image::uninstall-single.png[]
-
-If the node has child nodes you will be told that uninstalling the parent node will uninstall all of the child nodes.
-
-.Uninstall current node and all children
-image::uninstall-with-children.png[]
-endif::pro[]
