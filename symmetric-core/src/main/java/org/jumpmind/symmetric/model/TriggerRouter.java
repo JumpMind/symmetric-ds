@@ -63,6 +63,8 @@ public class TriggerRouter implements Serializable {
     
     private boolean pingBackEnabled = false;
 
+    private String triggerId;
+    
     public TriggerRouter() {
         this(new Trigger(), new Router());
     }
@@ -232,4 +234,32 @@ public class TriggerRouter implements Serializable {
         return (trigger != null ? trigger.toString() : "") + ":"
                 + (router != null ? router.toString() : "");
     }
+    
+    public String getIdentifier() {
+        return getTrigger().getTriggerId() + getRouter().getRouterId();
+    }
+
+    
+    public String getTriggerId() {
+        return this.trigger != null ? this.trigger.getTriggerId() : null;
+    }
+    
+    public String getRouterId() {
+        return this.router != null ? this.router.getRouterId() : null;
+    }
+    
+    public void setTriggerId(String triggerId) {
+        if (this.trigger == null) {
+            this.trigger = new Trigger();
+        }
+        this.trigger.setTriggerId(triggerId);
+    }
+    
+    public void setRouterId(String routerId) {
+        if (this.router == null) {
+            this.router = new Router();
+        }
+        this.router.setRouterId(routerId);
+    }
+   
 }
