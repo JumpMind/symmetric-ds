@@ -6,5 +6,5 @@
 
 = SymmetricDS Tutorials
 
-include::tutorials/demo.ad[]
-include::tutorials/quick-start.ad[]
+include::demo.ad[]
+include::quick-start.ad[]
