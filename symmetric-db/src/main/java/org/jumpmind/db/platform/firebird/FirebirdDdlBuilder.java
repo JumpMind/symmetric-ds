@@ -27,6 +27,7 @@ import java.util.List;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
+import org.jumpmind.db.alter.ColumnRequiredChange;
 import org.jumpmind.db.alter.CopyColumnValueChange;
 import org.jumpmind.db.alter.RemoveColumnChange;
 import org.jumpmind.db.alter.TableChange;
@@ -292,6 +293,9 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
                 CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
                 processChange(currentModel, desiredModel, copyColumnChange, ddl);
                 changeIt.remove();
+            } else if (change instanceof ColumnRequiredChange) {
+                processChange(currentModel, desiredModel, (ColumnRequiredChange) change, ddl);
+                changeIt.remove();
             }
         }
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
@@ -338,6 +342,16 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         
         return true;
     }    
+    
+    protected void processChange(Database currentModel, Database desiredModel,
+            ColumnRequiredChange change, StringBuilder ddl) {
+        boolean required = !change.getChangedColumn().isRequired();
+        ddl.append("update RDB$RELATION_FIELDS set RDB$NULL_FLAG = " + (required ? "1" : "0")
+                + " where (RDB$FIELD_NAME = '" + change.getChangedColumn().getName()
+                + "') and (RDB$RELATION_NAME = '"
+                + getFullyQualifiedTableNameShorten(change.getChangedTable()) + "')");
+        printEndOfStatement(ddl);
+    }
 
     /*
      * Processes the addition of a column to a table.
