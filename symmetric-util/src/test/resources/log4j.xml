@@ -74,6 +74,14 @@
         <priority value="ERROR" />
     </category>    
 
+    <category name="org.springframework">
+        <priority value="ERROR" />
+    </category>
+    
+    <category name="com.vaadin.server.DefaultDeploymentConfiguration">
+        <priority value="ERROR" />
+    </category>
+    
     <root>
         <priority value="WARN" />
         <appender-ref ref="CONSOLE" />
