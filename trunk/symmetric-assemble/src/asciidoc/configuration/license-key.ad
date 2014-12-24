@@ -10,7 +10,7 @@ Holder:: The company name of the license holder.
 Effective Date:: Date and time when the license will become valid.
 Expiration Date:: Date and time when the license will no longer be valid.
 Max Nodes:: The maximum number of nodes that can be created for synchronization.
-Max Maintenance:: The end date and time for maintenance and support. 
+Max Maintenance:: The end date and time for maintenance and support.  Defaults to expiration date if not present. 
 
 The license key is a block of encoded text that is sent to the user over email, or it can be retrieved from the
 http://support.jumpmind.com/[Support Center].  When an installed license key expires, the web console
