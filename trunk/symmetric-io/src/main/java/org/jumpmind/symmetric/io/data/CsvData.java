@@ -306,7 +306,7 @@ public class CsvData {
             Collection<String> values = csvData.values();
             for (String string : values) {
                 if (string != null) {
-                    size += string.length();
+                    size += string.getBytes().length;
                 }
             }
         }
