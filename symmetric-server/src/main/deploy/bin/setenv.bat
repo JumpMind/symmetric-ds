@@ -36,6 +36,7 @@ set SYM_OPTIONS=-Dfile.encoding=utf-8 ^
 -Dlog4j.configuration="file:%SYM_HOME%\conf\log4j.xml" ^
 -Dsun.net.client.defaultReadTimeout=1800000 ^
 -Dsun.net.client.defaultConnectTimeout=1800000 ^
+-Djava.net.preferIPv4Stack=true ^
 -XX:+HeapDumpOnOutOfMemoryError ^
 -XX:HeapDumpPath="%SYM_HOME%\tmp" 
 
