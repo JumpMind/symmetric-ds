@@ -112,7 +112,7 @@ subprojects { subproject ->
         mariaDbVersion = '1.1.7'
         postgresqlVersion = '9.2-1002-jdbc4'
         hsqldbVersion = '2.3.2'
-        sqliteVersion = '3.7.15-M1'
+        sqliteVersion = '3.8.7'
         firebirdVersion = '2.1.6'
         javaMailVersion = '1.4.7'
         jdomVersion = '2.0.5'
