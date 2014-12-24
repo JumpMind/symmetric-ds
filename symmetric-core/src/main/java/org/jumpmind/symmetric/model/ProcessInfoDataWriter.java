@@ -60,7 +60,7 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
 
     public void write(CsvData data) {
         if (data != null) {
-            processInfo.incrementCurrentDataCount();
+            processInfo.incrementDataCount();
         }
         super.write(data);        
     }
