@@ -147,7 +147,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         this.batchCount = batchCount;
     }
 
-    public void incrementCurrentDataCount() {
+    public void incrementBatchDataCount() {
         this.currentBatchDataCount++;
     }
 
@@ -219,6 +219,10 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     
     public long getDataCount() {
         return dataCount;
+    }
+    
+    public void incrementDataCount() {
+        dataCount++;
     }
     
     public Date getCurrentBatchStartTime() {

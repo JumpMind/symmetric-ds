@@ -79,13 +79,13 @@ public class DataGapRouteReader implements IDataToRouteReader {
     
     protected ProcessInfo processInfo;
     
-    private double percentOfHeapToUse = .5;
+    protected double percentOfHeapToUse = .5;
     
-    private long peekAheadSizeInBytes = 0;
+    protected long peekAheadSizeInBytes = 0;
     
-    private boolean finishTransactionMode = false;
+    protected boolean finishTransactionMode = false;
     
-    private String lastTransactionId = null;
+    protected String lastTransactionId = null;
     
     protected static Map<String, Boolean> lastSelectUsedGreaterThanQueryByEngineName = new HashMap<String, Boolean>(); 
 
@@ -120,7 +120,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     protected void execute() {
         
-        long maxPeekAheadSize = (long)(Runtime.getRuntime().maxMemory() * percentOfHeapToUse);
+        long maxPeekAheadSizeInBytes = (long)(Runtime.getRuntime().maxMemory() * percentOfHeapToUse);
         ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
         ISqlReadCursor<Data> cursor = null;
         processInfo = engine.getStatisticManager().newProcessInfo(
@@ -128,6 +128,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                         ProcessType.ROUTER_READER));
         processInfo.setCurrentChannelId(context.getChannel().getChannelId());
         try {
+            int lastPeekAheadIndex = 0;
             int dataCount = 0;
             long maxDataToRoute = context.getChannel().getMaxDataToRoute();
             List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
@@ -140,40 +141,47 @@ public class DataGapRouteReader implements IDataToRouteReader {
             processInfo.setStatus(Status.EXTRACTING);
             boolean moreData = true;
             while (dataCount < maxDataToRoute || (lastTransactionId != null && transactional)) {
-                if (moreData  && (lastTransactionId != null || peekAheadQueue.size() == 0)) {
+                if (moreData && (lastTransactionId != null || peekAheadQueue.size() == 0)) {
                     moreData = fillPeekAheadQueue(peekAheadQueue, peekAheadCount, cursor);
                 }
 
+                int dataWithSameTransactionIdCount = 0;
+                
                 while (peekAheadQueue.size() > 0 && lastTransactionId == null &&
                         dataCount < maxDataToRoute) {
                     Data data = peekAheadQueue.remove(0);
                     copyToQueue(data);
                     dataCount++;
-                    processInfo.incrementCurrentDataCount();
+                    processInfo.incrementDataCount();
                     processInfo.setCurrentTableName(data.getTableName());
                     lastTransactionId = data.getTransactionId();
                     context.addTransaction(lastTransactionId);
+                    dataWithSameTransactionIdCount++;
                 }
 
                 if (lastTransactionId != null && peekAheadQueue.size() > 0) {
                     Iterator<Data> datas = peekAheadQueue.iterator();
-                    int dataWithSameTransactionIdCount = 0;
+                    int index = 0;
                     while (datas.hasNext() && (dataCount < maxDataToRoute || transactional)) {
-                        Data data = datas.next();
+                        Data data = datas.next();                        
                         if (lastTransactionId.equals(data.getTransactionId())) {
                             dataWithSameTransactionIdCount++;
                             datas.remove();
                             copyToQueue(data);
                             dataCount++;
-                            processInfo.incrementCurrentDataCount();
+                            processInfo.incrementDataCount();
                             processInfo.setCurrentTableName(data.getTableName());
+                            lastPeekAheadIndex = index;
                         } else {
                             context.addTransaction(data.getTransactionId());
+                            index++;
                         }
+                        
                     }
 
-                    if (dataWithSameTransactionIdCount == 0) {
+                    if (dataWithSameTransactionIdCount == 0 || peekAheadQueue.size()-lastPeekAheadIndex > peekAheadCount) {
                         lastTransactionId = null;
+                        lastPeekAheadIndex = 0;
                     }
 
                 } 
@@ -181,7 +189,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 if (!moreData && peekAheadQueue.size() == 0) {
                     // we've reached the end of the result set
                     break;
-                } else if (peekAheadSizeInBytes >= maxPeekAheadSize) {
+                } else if (peekAheadSizeInBytes >= maxPeekAheadSizeInBytes) {
                     log.info("The peek ahead queue has reached its max size of {} bytes.  Finishing reading the current transaction", peekAheadSizeInBytes);
                     finishTransactionMode = true;
                     peekAheadQueue.clear();                    
@@ -306,9 +314,10 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 args[i * 2 + 1] = gap.getStartId();
                 types[i * 2 + 1] = dataIdSqlType;
                 if ((i + 1) == numberOfGapsToQualify && (i + 1) < dataGaps.size()) {
-                    // there were more gaps than we are going to use in the SQL.
-                    // use
-                    // the last gap as the end data id for the last range
+                    /*
+                     * there were more gaps than we are going to use in the SQL.
+                     * use the last gap as the end data id for the last range
+                     */
                     args[i * 2 + 2] = dataGaps.get(dataGaps.size() - 1).getEndId();
                 } else {
                     args[i * 2 + 2] = gap.getEndId();
@@ -391,6 +400,10 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
         context.incrementDataReadCount(dataCount);
         context.incrementPeekAheadFillCount(1);
+        int size = peekAheadQueue.size();
+        if (context.getMaxPeekAheadQueueSize() < size) {
+            context.setMaxPeekAheadQueueSize(size);
+        }
         return moreData;
     }
 
