@@ -31,24 +31,25 @@ public class Wrapper {
             printUsage();
             System.exit(Constants.RC_BAD_USAGE);
         }
-       
-        String dir = System.getenv(Constants.ENV_SYM_HOME);
-        if (dir == null || dir.equals("")) {
-            // Backwards compatible with 3.6 by allowing config file argument to determine home
-            if (args.length > 1) {
-                int index = args[1].lastIndexOf(File.separator);
-                if (index == -1) {
-                    dir = "..";
-                } else {
-                    dir = args[1].substring(0, index + 1) + "..";
-                }
+
+        String configFile = null;
+        if (args.length > 1) {
+            configFile = args[1];
+            int index = configFile.lastIndexOf(File.separator);
+            if (index == -1) {
+            	System.setProperty(Constants.SYSPROP_TMPDIR, ".." + File.separator + "tmp");
             } else {
-                System.out.println("Missing " + Constants.ENV_SYM_HOME + " environment variable.");
-                System.exit(Constants.RC_MISSING_SYM_HOME);
+            	System.setProperty(Constants.SYSPROP_TMPDIR, configFile.substring(0, index + 1) + ".." + File.separator + "tmp");
             }
+        } else {
+            String dir = System.getenv(Constants.ENV_SYM_HOME);
+            if (dir == null || dir.equals("")) {
+                System.out.println("Missing config file.  Either specify config file or define " + Constants.ENV_SYM_HOME + " environment variable.");
+                System.exit(Constants.RC_MISSING_CONFIG_FILE);    
+            }
+            configFile = dir + File.separator + "conf" + File.separator + "sym_service.conf";
+            System.setProperty(Constants.SYSPROP_TMPDIR, dir + File.separator + "tmp");
         }
-        System.setProperty("java.io.tmpdir", dir + File.separator + "tmp");
-        String configFile = dir + File.separator + "conf" + File.separator + "sym_service.conf";
 
         WrapperService service = WrapperService.getInstance();
         try {
@@ -101,7 +102,7 @@ public class Wrapper {
     }
 
     private static void printUsage() {
-        System.out.println("Usage: <start|stop|restart|install|remove|console>");
+        System.out.println("Usage: <start|stop|restart|install|remove|console> [CONFIG-FILE]");
         System.out.println("   start      - Start service");
         System.out.println("   stop       - Stop service");
         System.out.println("   restart    - Restart service");

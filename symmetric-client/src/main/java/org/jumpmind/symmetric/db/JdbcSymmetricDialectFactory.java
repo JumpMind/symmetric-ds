@@ -49,8 +49,6 @@ import org.jumpmind.symmetric.db.db2.Db2SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2v9SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2zOsSymmetricDialect;
 import org.jumpmind.symmetric.db.derby.DerbySymmetricDialect;
-import org.jumpmind.symmetric.db.firebird.Firebird20SymmetricDialect;
-import org.jumpmind.symmetric.db.firebird.Firebird21SymmetricDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdSymmetricDialect;
 import org.jumpmind.symmetric.db.h2.H2SymmetricDialect;
 import org.jumpmind.symmetric.db.hsqldb.HsqlDbSymmetricDialect;
@@ -133,15 +131,7 @@ public class JdbcSymmetricDialectFactory {
                 dialect = new Db2v9SymmetricDialect(parameterService, platform);
             }
         } else if (platform instanceof FirebirdDatabasePlatform) {
-            int dbMajorVersion = platform.getSqlTemplate().getDatabaseMajorVersion();
-            int dbMinorVersion = platform.getSqlTemplate().getDatabaseMinorVersion();
-            if (dbMajorVersion == 2 && dbMinorVersion == 0) {
-                dialect = new Firebird20SymmetricDialect(parameterService, platform);
-            } else if (dbMajorVersion == 2) {
-                dialect = new Firebird21SymmetricDialect(parameterService, platform);
-            } else {
-                dialect = new FirebirdSymmetricDialect(parameterService, platform);
-            }
+            dialect = new FirebirdSymmetricDialect(parameterService, platform);
         } else if (platform instanceof AseDatabasePlatform) {
             dialect = new AseSymmetricDialect(parameterService, platform);
         } else if (platform instanceof SqlAnywhereDatabasePlatform) {

@@ -63,7 +63,6 @@ import org.jumpmind.symmetric.route.FileSyncDataRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ISequenceService;
@@ -82,8 +81,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     
     private ISequenceService sequenceService;
 
-    private IExtensionService extensionService;
-    
     private Map<String, Router> routersCache;
 
     private long routersCacheTime;
@@ -99,6 +96,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private long triggerRouterPerNodeCacheTime;
 
     private long triggerRouterPerChannelCacheTime;
+
+    private List<ITriggerCreationListener> triggerCreationListeners;
 
     private TriggerFailureListener failureListener = new TriggerFailureListener();
 
@@ -128,8 +127,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         this.groupletService = engine.getGroupletService();
         this.nodeService = engine.getNodeService();
         this.sequenceService = engine.getSequenceService();
-        this.extensionService = engine.getExtensionService();
-        engine.getExtensionService().addExtensionPoint(failureListener);
+        this.addTriggerCreationListeners(this.failureListener);
         setSqlMap(new TriggerRouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -202,14 +200,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void createTriggersOnChannelForTables(String channelId, String catalogName,
             String schemaName, List<String> tables, String lastUpdateBy) {
-        createTriggersOnChannelForTablesWithReturn(channelId, catalogName, schemaName, tables, lastUpdateBy);
-    }
-    
-    public List<Trigger> createTriggersOnChannelForTablesWithReturn(String channelId, String catalogName,
-            String schemaName, List<String> tables, String lastUpdateBy) {
-        
-        List<Trigger> createdTriggers = new ArrayList<Trigger>();
-        
         List<Trigger> existingTriggers = getTriggers();
         for (String table : tables) {
             Trigger trigger = new Trigger();
@@ -250,10 +240,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setLastUpdateTime(new Date());
             trigger.setCreateTime(new Date());
             saveTrigger(trigger);
-            createdTriggers.add(trigger);
         }
-        return createdTriggers;
-    
     }
     
     public Collection<Trigger> findMatchingTriggers(List<Trigger> triggers, String catalog, String schema,
@@ -526,6 +513,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerRouter;
     }
 
+    private String getTriggerRouterSql() {
+        return getTriggerRouterSql(null);
+    }
+
+    private String getTriggerRouterSql(String sql) {
+        return getSql("select ", "selectTriggersColumnList", ",", "selectRoutersColumnList", ",",
+                "selectTriggerRoutersColumnList", "selectTriggerRoutersSql", sql);
+    }
+
+    public List<TriggerRouter> getTriggerRouters() {
+        return sqlTemplate.query(getTriggerRouterSql(), new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)));
+    }
+
     public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(String catalogName,
             String schemaName, String tableName, boolean refreshCache) {
         return getTriggerRouterForTableForCurrentNode(null, catalogName, schemaName, tableName,
@@ -783,58 +783,31 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return sqlTemplate.query(getSql("select ", "selectRoutersColumnList", "selectRoutersSql"),
                 new RouterMapper(configurationService.getNodeGroupLinks(false)));
     }
-    
-    private String getTriggerRouterSql(String sql) {
-        return getSql("select ", "selectTriggerRoutersColumnList", "selectTriggerRoutersSql", sql);
-    }
-
-    public List<TriggerRouter> getTriggerRouters() {
-        return enhanceTriggerRouters(sqlTemplate.query(getTriggerRouterSql(null), new TriggerRouterMapper()));
-    }
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId) {
-        List<TriggerRouter> triggerRouters = enhanceTriggerRouters(sqlTemplate.query(
+        List<TriggerRouter> triggerRouters = (List<TriggerRouter>) sqlTemplate.query(
                 getTriggerRouterSql("activeTriggersForSourceNodeGroupSql"),
-                new TriggerRouterMapper(), sourceNodeGroupId));
+                new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)), sourceNodeGroupId);
         mergeInConfigurationTablesTriggerRoutersForCurrentNode(sourceNodeGroupId, triggerRouters);
         return triggerRouters;
     }
 
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(
             String sourceNodeGroupId, String targetNodeGroupId) {
-        return enhanceTriggerRouters(sqlTemplate.query(
-                getTriggerRouterSql("activeTriggersForReloadSql"), new TriggerRouterMapper(),
-                sourceNodeGroupId, targetNodeGroupId, Constants.CHANNEL_CONFIG));
+        return sqlTemplate.query(
+                getTriggerRouterSql("activeTriggersForReloadSql"), new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)),
+                sourceNodeGroupId, targetNodeGroupId, Constants.CHANNEL_CONFIG);
     }
 
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId) {
         List<TriggerRouter> configs = (List<TriggerRouter>) sqlTemplate.query(
-                getTriggerRouterSql("selectTriggerRouterSql"), new TriggerRouterMapper(),
+                getTriggerRouterSql("selectTriggerRouterSql"), new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)),
                 triggerId, routerId);
         if (configs.size() > 0) {
-            TriggerRouter triggerRouter = configs.get(0);
-            triggerRouter.setRouter(getRouterById(triggerRouter.getRouter().getRouterId()));
-            triggerRouter.setTrigger(getTriggerById(triggerRouter.getTrigger().getTriggerId()));
-            return triggerRouter;
+            return configs.get(0);
         } else {
             return null;
         }
-    }
-    
-    private List<TriggerRouter> enhanceTriggerRouters(List<TriggerRouter> triggerRouters) {
-    	HashMap<String, Router> routersById = new HashMap<String, Router>();
-    	for (Router router : getRouters()) {
-    		routersById.put(router.getRouterId(), router);
-    	}
-    	HashMap<String, Trigger> triggersById = new HashMap<String, Trigger>();
-    	for (Trigger trigger : getTriggers()) {
-    		triggersById.put(trigger.getTriggerId(), trigger);
-    	}
-    	for (TriggerRouter triggerRouter : triggerRouters) {
-    		triggerRouter.setTrigger(triggersById.get(triggerRouter.getTrigger().getTriggerId()));
-    		triggerRouter.setRouter(routersById.get(triggerRouter.getRouter().getRouterId()));    		
-    	}
-    	return triggerRouters;
     }
 
     public List<TriggerRouter> getTriggerRoutersFor(String tableName, String sourceNodeGroupId) {
@@ -867,16 +840,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         || System.currentTimeMillis() - this.triggerRouterPerChannelCacheTime > triggerRouterCacheTimeoutInMs) {
                     final  Map<String, List<TriggerRouter>> newValue = new HashMap<String, List<TriggerRouter>>();
                     this.triggerRouterPerChannelCacheTime = System.currentTimeMillis();
-                    List<TriggerRouter> triggerRouters = enhanceTriggerRouters(sqlTemplate.query(
-                    		getTriggerRouterSql("selectGroupTriggersSql"), new TriggerRouterMapper(), nodeGroupId, nodeGroupId));
-                    for (TriggerRouter triggerRouter : triggerRouters) {
-                        List<TriggerRouter> list = newValue.get(triggerRouter.getTrigger().getChannelId());
-                        if (list == null) {
-                            list = new ArrayList<TriggerRouter>();
-                            newValue.put(triggerRouter.getTrigger().getChannelId(), list);
-                        }
-                        list.add(triggerRouter);                    	
-                    }
+                    sqlTemplate.query(getTriggerRouterSql("selectGroupTriggersSql"),
+                            new TriggerRouterMapper(configurationService.getNodeGroupLinks(false)) {
+                                @Override
+                                public TriggerRouter mapRow(Row rs) {
+                                    TriggerRouter tr = super.mapRow(rs);
+                                    List<TriggerRouter> list = newValue.get(tr
+                                            .getTrigger().getChannelId());
+                                    if (list == null) {
+                                        list = new ArrayList<TriggerRouter>();
+                                        newValue.put(tr.getTrigger()
+                                                .getChannelId(), list);
+                                    }
+                                    list.add(tr);
+                                    return tr;
+                                };
+                            }, nodeGroupId, nodeGroupId);
                     triggerRouterCacheByChannel = newValue;
                     testValue = newValue;
                 }
@@ -911,7 +890,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void saveTriggerRouter(TriggerRouter triggerRouter) {
-        saveTriggerRouter(triggerRouter, true);
+        saveTriggerRouter(triggerRouter, false);
     }
 
     public void saveTriggerRouter(TriggerRouter triggerRouter, boolean updateTriggerRouterTableOnly) {
@@ -1168,7 +1147,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             Set<Table> tables = tablesByTriggerId.get(history.getTriggerId());
             Trigger trigger = getTriggerFromList(history.getTriggerId(), triggersThatShouldBeActive);
             if (tables == null && trigger != null) {
-                tables = getTablesForTrigger(trigger, triggersThatShouldBeActive, false);
+                tables = getTablesForTrigger(trigger, triggersThatShouldBeActive, true);
                 tablesByTriggerId.put(trigger.getTriggerId(), tables);
             }
 
@@ -1239,8 +1218,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                l.triggerInactivated(null, history);
+            if (this.triggerCreationListeners != null) {
+                for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                    l.triggerInactivated(null, history);
+                }
             }
         }
 
@@ -1412,8 +1393,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     "Could not find any database tables matching '{}' in the datasource that is configured",
                     trigger.qualifiedSourceTableName());
 
-            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                l.tableDoesNotExist(trigger);
+            if (this.triggerCreationListeners != null) {
+                for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                    l.tableDoesNotExist(trigger);
+                }
             }
         }
     }
@@ -1434,7 +1417,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         try {
             if (listener != null) {
-                extensionService.addExtensionPoint(listener);
+                addTriggerCreationListeners(listener);
             }
 
             List<TriggerHistory> allHistories = getActiveTriggerHistories();
@@ -1455,7 +1438,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         } finally {
             if (listener != null) {
-                extensionService.removeExtensionPoint(listener);
+                this.triggerCreationListeners.remove(listener);
             }
         }
     }
@@ -1543,8 +1526,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 activeTriggerHistories.add(newestHistory);
                 newestHistory.setErrorMessage(errorMessage);
                 if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-                    for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                        l.triggerCreated(trigger, newestHistory);
+                    if (this.triggerCreationListeners != null) {
+                        for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                            l.triggerCreated(trigger, newestHistory);
+                        }
                     }
                 }
             }
@@ -1568,8 +1553,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.getSourceTableName());
             }
 
-            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                l.triggerFailed(trigger, ex);
+            if (this.triggerCreationListeners != null) {
+                for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                    l.triggerFailed(trigger, ex);
+                }
             }
         }
     }
@@ -1664,7 +1651,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         } catch (RuntimeException ex) {
             if (hist != null) {
-                log.info(
+                log.warn(
                         "Cleaning up trigger hist row of {} after failing to create the associated trigger",
                         hist.getTriggerHistoryId());
                 hist.setErrorMessage(ex.getMessage());
@@ -1900,18 +1887,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     class TriggerRouterMapper implements ISqlRowMapper<TriggerRouter> {
 
-        public TriggerRouterMapper() {
+        private TriggerMapper triggerMapper;
+        private RouterMapper routerMapper;
+        
+        public TriggerRouterMapper(List<NodeGroupLink> nodeGroupLinks) {
+            routerMapper = new RouterMapper(nodeGroupLinks);
+            triggerMapper = new TriggerMapper();
         }
 
         public TriggerRouter mapRow(Row rs) {
             TriggerRouter triggerRouter = new TriggerRouter();
 
-            Trigger trigger = new Trigger();
-            trigger.setTriggerId(rs.getString("trigger_id"));
-            triggerRouter.setTrigger(trigger);
-            Router router = new Router();
-            router.setRouterId(rs.getString("router_id"));
-            triggerRouter.setRouter(router);
+            triggerRouter.setTrigger(triggerMapper.mapRow(rs));
+            triggerRouter.setRouter(routerMapper.mapRow(rs));
+
             triggerRouter.setCreateTime(rs.getDateTime("create_time"));
             triggerRouter.setLastUpdateTime(rs.getDateTime("last_update_time"));
             triggerRouter.setLastUpdateBy(rs.getString("last_update_by"));
@@ -1925,6 +1914,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
             return triggerRouter;
         }
+    }
+
+    public void setTriggerCreationListeners(
+            List<ITriggerCreationListener> autoTriggerCreationListeners) {
+        if (triggerCreationListeners != null) {
+            for (ITriggerCreationListener l : triggerCreationListeners) {
+                addTriggerCreationListeners(l);
+            }
+        }
+    }
+
+    public void addTriggerCreationListeners(ITriggerCreationListener l) {
+        if (this.triggerCreationListeners == null) {
+            this.triggerCreationListeners = new ArrayList<ITriggerCreationListener>();
+        }
+        this.triggerCreationListeners.add(l);
     }
 
     public void addExtraConfigTable(String table) {
@@ -1948,6 +1953,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return history;
     }
+
 
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
             String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories) {

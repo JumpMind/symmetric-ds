@@ -229,7 +229,7 @@ public class SymmetricServlet extends HttpServlet {
                     "Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
                     new Object[] { method, externalId, nodeId, address, hostName,
                             ServletUtils.normalizeRequestUri(req) });
-            log.error("", ex);
+            log.error(ex.getMessage(), ex);
         } else {
             log.warn(
                     "Error while processing {} request for externalId: {}, node: {} at {} ({}).  The message is: {}",

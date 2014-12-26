@@ -31,10 +31,24 @@
 	xmlns:html="http://www.w3.org/1999/xhtml">
 	
 	<title>Configuration</title>
-	<xi:include href="configuration/groups.xml" />
-	<xi:include href="configuration/group-links.xml" />
-	<xi:include href="configuration/channels.xml" />
-	<!--  
+	
+	<section id="configuration-groups">
+		<title>Groups</title>
+		<para>
+		Groups are defined in the
+		<xref linkend="table_node_group" xrefstyle="table" />
+		table. The following SQL statements would create node groups for "corp"
+		and "store" based on our retail store example.
+		<programlisting> 
+        insert into SYM_NODE_GROUP
+		  (node_group_id, description) 
+          values ('store', 'A retail store node');
+		
+		insert into SYM_NODE_GROUP 
+          (node_group_id, description) 
+          values ('corp', 'A corporate node');</programlisting>
+		</para>
+	</section>
 	<section id="configuration-group-links">
 		<title>Group Links</title>
 		<para>
@@ -97,7 +111,6 @@
           values ('corp', 'store', 'W');</programlisting>
 		</para>		
 	</section>
-	
 	<section id="configuration-channels">
 		<title>Channels</title>
 		<para>
@@ -245,7 +258,6 @@
 		lob is varies from database to database.
 		</para>
 	</section>
-	-->
 	<section id="configuration-table-triggers">
 	<title>Table Triggers</title>
 	
@@ -1314,21 +1326,21 @@ transformations are applied.</listitem>
 	interface. The pre-defined transform types include the following (the
 	transform_type entry is shown in parentheses):
 	<itemizedlist>
-	<listitem>Copy Column Transform ('copy'): This transformation
+	<listitem><emphasis role="bold">Copy Column Transform ('copy')</emphasis>: This transformation
 	type copies the source column value to the target column. This is the
 	default behavior.</listitem>
 	
-	<listitem>Remove Column Transform ('remove'): This
+	<listitem><emphasis role="bold">Remove Column Transform ('remove')</emphasis>: This
 	transformation type removes the source column. This transform type is
 	only valid for a table transformation type of 'IMPLIED' where all the
 	columns from the source are automatically copied to the target.</listitem>
 	
-	<listitem>Constant Transform ('const'): This transformation
+	<listitem><emphasis role="bold">Constant Transform ('const')</emphasis>: This transformation
 	type allows you to map a constant value to the given target column. The
 	constant itself is placed in transform_expression.</listitem>
 	
 	<listitem>
-	Variable Transform ('variable'): This transformation type allows you to
+	<emphasis role="bold">Variable Transform ('variable')</emphasis>: This transformation type allows you to
 	map a built-in dynamic variable to the given target column. The variable
 	name is placed in transform_expression. The following variables are
 	available:
@@ -1350,7 +1362,7 @@ transformations are applied.</listitem>
     is the name of the source schema as captured in the trigger hist table.
 	</listitem>
 	
-	<listitem>Additive Transform ('additive'): This
+	<listitem><emphasis role="bold">Additive Transform ('additive')</emphasis>: This
 	transformation type is used for numeric data. It computes the change
 	between the old and new values on the source and then adds the change to
 	the existing value in the target column. That is, target = target +
@@ -1361,19 +1373,19 @@ transformations are applied.</listitem>
 	will be to change the target column to a value of 16 ( 10+3*(4-2) =&gt;
 	16 ). Note that, in the case of deletes, the new column value is
 	considered 0 for the purposes of the calculation.</listitem>
-
+	
     <listitem>
-    Left Transform ('left'): This transformation keeps the first N characters of
+    <emphasis role="bold">Left Transform ('left')</emphasis>: This transformation keeps the first N characters of
     a column.  The transform_expression is the number of characters to keep.
     </listitem>
     
     <listitem>
-    Binary Left Transform ('bleft'): This transformation keeps characters that are part of the first N bytes 
+    <emphasis role="bold">Binary Left Transform ('bleft')</emphasis>: This transformation keeps characters that are part of the first N bytes 
     of a column.  The transform_expression is the number of bytes to keep.
-    </listitem>    
-	
+    </listitem> 
+    
 	<listitem>
-	Substring Transform ('substr'): This transformation computes a substring
+	<emphasis role="bold">Substring Transform ('substr')</emphasis>: This transformation computes a substring
 	of the source column data and uses the substring as the target column
 	value. The transform_expression can be a single integer (
 	<code>n</code>
@@ -1384,14 +1396,14 @@ transformations are applied.</listitem>
 	transform_expression.
 	</listitem>
 	
-	<listitem>Multiplier Transform ('multiply'): This
+	<listitem><emphasis role="bold">Multiplier Transform ('multiply')</emphasis>: This
 	transformation allows for the creation of multiple rows in the target
 	table based on the transform_expression. This transform type can only be
 	used on a primary key column. The transform_expression is a SQL
 	statement that returns the list to be used to create the multiple
 	targets.</listitem>
 	
-	<listitem>Lookup Transform ('lookup'): This transformation
+	<listitem><emphasis role="bold">Lookup Transform ('lookup')</emphasis>: This transformation
 	determines the target column value by using a query, contained in
 	transform_expression to lookup the value in another table. The query
 	must return a single row, and the first column of the query is used as
@@ -1399,7 +1411,7 @@ transformations are applied.</listitem>
 	colon (e.g., :MY_COLUMN).</listitem>
 	
 	<listitem>
-	BeanShell Script Transform ('bsh'): This transformation allows you to
+	<emphasis role="bold">BeanShell Script Transform ('bsh')</emphasis>: This transformation allows you to
 	provide a Bean Shell script in transform_expression and executes the
 	script at the time of transformation. Some variables are provided to the
 	script:
@@ -1427,7 +1439,7 @@ transformations are applied.</listitem>
 	</listitem>
 
     <listitem>
-    Java Transform ('java'): Use Java code in the transform expression that is included in the
+    <emphasis role="bold">Java Transform ('java')</emphasis>: Use Java code in the transform expression that is included in the
     transform method of a class that extends JavaColumnTransform.  The class is compiled 
     whenever the transform expression changes and kept in memory for runtime.
     The code must return a String for the new value of the column being mapped. 
@@ -1451,13 +1463,13 @@ transformations are applied.</listitem>
     is a String for the old value of the column if the event is an update or delete.
     </listitem>
 	
-	<listitem>Identity Transform ('identity'): This
+	<listitem><emphasis role="bold">Identity Transform ('identity')</emphasis>: This
 	transformation allows you to insert into an identity column by computing
 	a new identity, not copying the actual identity value from the source.
 	</listitem>
 	
 	<listitem>
-	Mathematical Transform ('math'): This transformation allows you to 
+	<emphasis role="bold">Mathematical Transform ('math')</emphasis>: This transformation allows you to 
 	perform mathematical equations in the transform expression. Some 
 	variables are provided to the script:
 	<code>#{COLUMN_NAME}</code>
@@ -1470,7 +1482,7 @@ transformations are applied.</listitem>
 	</listitem>
 	
 	<listitem>
-	Copy If Changed Transform ('copyIfChanged'):  This transformation will copy the value to the target column if the source value has changed.  More
+	<emphasis role="bold">Copy If Changed Transform ('copyIfChanged')</emphasis>:  This transformation will copy the value to the target column if the source value has changed.  More
 	specifically, the copy will occur if the the old value of the source does not equal the new value.  If the old and new are, in fact, equal, then either
 	the column will be ignored or the row will be ignored, based on the setting of the transform expression.  If the transform expression is euqal
 	to the string 'IgnoreColumn', the column will be ignored; otherwise, the row will be ignored.
@@ -1478,7 +1490,7 @@ transformations are applied.</listitem>
 	
 	
 	<listitem>
-	Value Map Transform ('valueMap'):  This transformation allows for simple value substitutions through use of the transform expression.
+	<emphasis role="bold">Value Map Transform ('valueMap')</emphasis>:  This transformation allows for simple value substitutions through use of the transform expression.
 	The transform expresion should consist of a space separated list of value pairs of the format sourceValue=TargetValue.  The column value is used to 
 	locate the correct sourceValue, and the transform will change the value into the corresponding targetValue.  A sourceValue of * can be used to
 	represent a default target value in the event that the sourceValue is not found.  Otherwise, if no default value is found,
@@ -1487,13 +1499,13 @@ transformations are applied.</listitem>
 	</listitem>
 	
 	<listitem>
-	Clarion Date Time ('clarionDateTime'):  Convert a Clarion date with optional time into a timestamp.  Clarion dates are stored as the number of days
+	<emphasis role="bold">Clarion Date Time ('clarionDateTime')</emphasis>:  Convert a Clarion date with optional time into a timestamp.  Clarion dates are stored as the number of days
 	since December 28, 1800, while Clarion times are stored as hundredths of a second since midnight, plus one.  Use a source column of the Clarion date
 	and a target column of the timestamp.  Optionally, in the transform expression, enter the name of the Clarion time column.
 	</listitem>
 	
 	<listitem>
-	Columns To Rows ('columnsToRowsKey' and 'columnsToRowsValue'):  Convert column values from a single source row into a row per column value
+	<emphasis role="bold">Columns To Rows ('columnsToRowsKey' and 'columnsToRowsValue')</emphasis>:  Convert column values from a single source row into a row per column value
 	at the target.  Two column mappings are needed to complete the work: use "columnsToRowsKey" to map which source column is used,
 	and use "columnsToRowsValue" to map the value.  The "columnsToRowsKey" mapping requires an expression in the format of
 	"column1=key1,column2=key2" to list the source column names and which key value is stored in the target column.

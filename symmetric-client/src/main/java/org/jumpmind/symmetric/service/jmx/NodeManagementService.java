@@ -83,7 +83,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
                 return false;
             }
         } catch (Exception ex) {
-            log.error("", ex);
+            log.error(ex.getMessage(), ex);
             return false;
         }
     }
@@ -95,7 +95,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
                 engine.stop();
             }
         } catch (Exception ex) {
-            log.error("", ex);
+            log.error(ex.getMessage(), ex);
         }
     }
 

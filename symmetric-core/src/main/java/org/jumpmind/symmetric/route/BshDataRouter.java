@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
@@ -48,7 +47,7 @@ import bsh.TargetError;
  * targetNodes. The script is expected to add the the list of target nodes a
  * list of the node_ids that should be routed to.
  */
-public class BshDataRouter extends AbstractDataRouter implements IBuiltInExtensionPoint {
+public class BshDataRouter extends AbstractDataRouter {
 
     protected ISymmetricEngine engine;
 

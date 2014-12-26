@@ -56,7 +56,7 @@ public class BandwidthService implements IBandwidthService {
         } catch (SocketTimeoutException e) {
             log.warn("Socket timeout while attempting to contact {}", syncUrl);
         } catch (Exception e) {
-            log.error("", e);
+            log.error(e.getMessage(), e);
         }
         return downloadSpeed;
 

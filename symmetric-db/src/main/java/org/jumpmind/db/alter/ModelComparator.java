@@ -326,13 +326,13 @@ public class ModelComparator {
                 (desiredTypeCode == Types.INTEGER || desiredTypeCode == Types.BIGINT);
         
         if (sourceColumn.isAutoIncrement() && targetColumn.isAutoIncrement() &&
-                (desiredTypeCode == Types.NUMERIC || desiredTypeCode == Types.DECIMAL) && 
+        		(desiredTypeCode == Types.NUMERIC || desiredTypeCode == Types.DECIMAL) && 
                 (actualTypeCode == Types.INTEGER || actualTypeCode == Types.BIGINT)) {
-            compatible = true;
-            
-            // This is the rare case where size doesnt matter!
-            sizeMatters = false;
-            scaleMatters = false;
+        	compatible = true;
+        	
+        	// This is the rare case where size doesnt matter!
+        	sizeMatters = false;
+        	scaleMatters = false;
         }
         
         if (!compatible && targetColumn.getMappedTypeCode() != sourceColumn.getMappedTypeCode()

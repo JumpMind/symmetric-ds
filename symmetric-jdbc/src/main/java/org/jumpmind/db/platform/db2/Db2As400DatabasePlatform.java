@@ -12,9 +12,9 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
 
     @Override
     protected Db2DdlReader createDdlReader() {
-        Db2DdlReader reader = new Db2DdlReader(this);
-        reader.setSystemSchemaName("QSYS2");
-        return reader;
+    	Db2DdlReader reader = new Db2DdlReader(this);
+    	reader.setSystemSchemaName("QSYS2");
+    	return reader;
     }
 
 }

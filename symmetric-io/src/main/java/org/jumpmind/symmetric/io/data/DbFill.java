@@ -351,7 +351,7 @@ public class DbFill {
                     ArrayUtils.toString(row.toArray(table.getColumnNames())));
             if (continueOnError) {
                 if (debug) {
-                    log.info("", ex);
+                    log.info(ex.getMessage(), ex);
                 }
             } else {
                 throw ex;
@@ -379,7 +379,7 @@ public class DbFill {
                     ArrayUtils.toString(row.toArray(table.getColumnNames())));
             if (continueOnError) {
                 if (debug) {
-                    log.info("", ex);
+                    log.info(ex.getMessage(), ex);
                 }
             } else {
                 throw ex;
@@ -425,7 +425,7 @@ public class DbFill {
                     ArrayUtils.toString(row.toArray(table.getColumnNames())));
             if (continueOnError) {
                 if (debug) {
-                    log.info("", ex);
+                    log.info(ex.getMessage(), ex);
                 }
             } else {
                 throw ex;

@@ -362,7 +362,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     String valueTrimmed = FormatUtils.abbreviateForLogging(value);
                     log.error("Could not convert a value of {} for column {} of type {}",
                             new Object[] { valueTrimmed, column.getName(), column.getMappedType() });
-                    log.error("", ex);
+                    log.error(ex.getMessage(), ex);
                     throw new RuntimeException(ex);
                 }
             }
@@ -445,8 +445,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         try {
             value = cleanNumber(value);
             return new Long(value.trim());
-        } catch (NumberFormatException ex) {
-            return new BigDecimal(value.replace(',', '.')).toBigInteger();
+        } catch (NumberFormatException ex) {            
+            return new BigDecimal(value.replace(',', '.')).toBigInteger();        
         }
     }    
         
@@ -830,19 +830,18 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public boolean canColumnBeUsedInWhereClause(Column column) {
         return true;
     }
-    
+
     @Override
     public void makePlatformSpecific(Database database) {
-        Table[] tables = database.getTables();
+    	Table[] tables = database.getTables();
         for (Table table : tables) {
-            for (Column autoIncrementColumn : table.getAutoIncrementColumns()) {
-                if (!autoIncrementColumn.isPrimaryKey() && !getDatabaseInfo().isNonPKIdentityColumnsSupported()) {
-                    log.info("Removing auto increment from table " + table.getName() + " for column " + autoIncrementColumn.getName() + 
-                        " since it was not part of primary key and not supported on this database based on nonPKIdentityColumnsSupported.");
-                    autoIncrementColumn.setAutoIncrement(false);
-                }
-            }
+        	for (Column autoIncrementColumn : table.getAutoIncrementColumns()) {
+	    		if (!autoIncrementColumn.isPrimaryKey() && !getDatabaseInfo().isNonPKIdentityColumnsSupported()) {
+	    			log.info("Removing auto increment from table " + table.getName() + " for column " + autoIncrementColumn.getName() + 
+	    				" since it was not part of primary key and not supported on this database based on nonPKIdentityColumnsSupported.");
+	    			autoIncrementColumn.setAutoIncrement(false);
+	    		}
+	    	}
         }
     }
-
 }

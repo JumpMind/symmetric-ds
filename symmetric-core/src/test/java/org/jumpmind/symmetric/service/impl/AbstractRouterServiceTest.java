@@ -944,7 +944,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                 Assert.assertEquals(0, gap.getEndId() - gap.getStartId());
             }
         } catch (Exception ex) {
-            logger.error("", ex);
+            logger.error(ex.getMessage(), ex);
             throw ex;
         }
     }
@@ -1122,10 +1122,9 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         // delete
         deleteAll(TEST_TABLE_1);
 
-        ISqlTransaction transaction = getSqlTemplate()
-        .startSqlTransaction();
         ChannelRouterContext context = new ChannelRouterContext(
-                TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, transaction);
+                TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, getSqlTemplate()
+                        .startSqlTransaction());
         DataGapRouteReader reader = new DataGapRouteReader(context, engine);
         reader.run();
 
@@ -1138,8 +1137,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                 break;
             }
         } while (true);
-        
-        transaction.close();
 
         Assert.assertEquals(100, list.size());
         for (Data data : list) {
@@ -1182,7 +1179,6 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         if (triggerRouters == null || triggerRouters.size() == 0) {
             trigger = new TriggerRouter();
             trigger.getTrigger().setSourceTableName(tableName);
-            trigger.getTrigger().setTriggerId(tableName);
             trigger.getRouter().setNodeGroupLink(
                     new NodeGroupLink(TestConstants.TEST_ROOT_NODE_GROUP,
                             TestConstants.TEST_CLIENT_NODE_GROUP));
@@ -1254,7 +1250,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         String columnName = platform.alterCaseToMatchDatabaseDefaultCase("ROUTING_VARCHAR");
         ISqlTransaction transaction = null;
         try {
-            transaction = platform.getSqlTemplate().startSqlTransaction();
+            transaction = platform.getSqlTemplate().startSqlTransaction(!transactional);
             if (node2disable != null) {
                 dialect.disableSyncTriggers(transaction, node2disable);
             }
@@ -1263,11 +1259,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             for (int i = 0; i < count; i++) {
                 transaction.addRow(i, new Object[] { routingVarcharFieldValue },
                         new int[] { Types.VARCHAR });
-                if (!transactional) {
-                    transaction.commit();
-                }
             }
-            
             if (node2disable != null) {
                 dialect.enableSyncTriggers(transaction);
             }

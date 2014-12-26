@@ -980,10 +980,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public String getQualifiedTableName(String quoteString, String catalogSeparator, String schemaSeparator) {
         return getFullyQualifiedTableName(catalog, schema, name, quoteString, catalogSeparator, schemaSeparator);
     }
-    
-    public String getQualifiedTableName() {
-        return getQualifiedTableName("", ".", ".");
-    }
 
     public static String getFullyQualifiedTableName(String catalogName, String schemaName,
             String tableName, String quoteString, String catalogSeparator, String schemaSeparator) {

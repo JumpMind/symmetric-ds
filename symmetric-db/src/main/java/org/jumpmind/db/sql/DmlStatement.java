@@ -396,7 +396,6 @@ public class DmlStatement {
                         args[index++] = params.get(column.getName());
                     }
                     break;
-                case SELECT:
                 case DELETE:
                     args = new Object[keys.length];
                     for (Column column : keys) {

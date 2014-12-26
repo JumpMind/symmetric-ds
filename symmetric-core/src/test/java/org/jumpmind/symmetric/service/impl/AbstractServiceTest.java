@@ -70,7 +70,7 @@ public abstract class AbstractServiceTest {
                     throw new IllegalStateException(cause);
                 }
             } catch (Exception ex) {
-                logger.error("", ex);
+                logger.error(ex.getMessage(), ex);
                 Assert.fail(ex.getMessage());
             }
             //setLoggingLevelForTest(old);

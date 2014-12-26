@@ -944,7 +944,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             platformColumn.setDecimalDigits(decimalDigits);
             column.addPlatformColumn(platformColumn);
         } catch (Exception ex) {
-            log.warn("", ex);
+            log.warn(ex.getMessage(), ex);
         }        
         
         if (columnSize == null) {

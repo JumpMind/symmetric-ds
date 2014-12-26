@@ -2671,7 +2671,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn) {
         if (!databaseInfo.isDelimitedIdentifiersSupported() && delimitedIdentifierModeOn) {
-            log.info("Platform does not support delimited identifier.  Delimited identifiers will not be enabled.");
+            log.warn("Platform does not support delimited identifier.  Delimited identifiers will not be enabled.");
         } else {
             this.delimitedIdentifierModeOn = delimitedIdentifierModeOn;
         }

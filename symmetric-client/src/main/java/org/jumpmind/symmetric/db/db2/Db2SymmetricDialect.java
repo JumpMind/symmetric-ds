@@ -121,8 +121,4 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
         return "var_old_data is null or var_row_data != var_old_data";
     }
 
-    @Override
-    public String getSourceNodeExpression() {
-        return "null";
-    }
 }

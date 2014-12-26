@@ -30,10 +30,6 @@ public class SimpleClassCompilerException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     
     List<Diagnostic<? extends JavaFileObject>> diagnostics;
-
-    public SimpleClassCompilerException(String message) {
-        super(message);
-    }
     
     public SimpleClassCompilerException(List<Diagnostic<? extends JavaFileObject>> diagnostics) {
         this.diagnostics = diagnostics;

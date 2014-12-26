@@ -52,12 +52,12 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
+import org.jumpmind.symmetric.ext.ExtensionPointManager;
+import org.jumpmind.symmetric.ext.IExtensionPointManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
-import org.jumpmind.symmetric.service.IExtensionService;
-import org.jumpmind.symmetric.service.impl.ClientExtensionService;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.symmetric.util.SnapshotUtil;
 import org.jumpmind.symmetric.util.TypedPropertiesFactory;
@@ -167,7 +167,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     protected void init() {
         try {
             LogSummaryAppenderUtils.registerLogSummaryAppender();
-
+            
             super.init();
 
             this.dataSource = platform.getDataSource();
@@ -209,8 +209,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
                 this.springContext = ctx;
 
-                ((ClientExtensionService) this.extensionService).setSpringContext(springContext);
-                this.extensionService.refresh();
+                this.extensionPointManger = createExtensionPointManager(springContext);
+                this.extensionPointManger.register();
             } catch (Exception ex) {
                 log.error(
                         "Failed to initialize the extension points.  Please fix the problem and restart the server.",
@@ -220,21 +220,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             destroy();
             throw ex;
         }
-    }
-    
-    @Override
-    public synchronized boolean start() {
-        if (this.springContext instanceof AbstractApplicationContext) {
-            AbstractApplicationContext ctx = (AbstractApplicationContext) this.springContext;
-            try {
-                if (!ctx.isActive()) {
-                    ctx.start();
-                }
-            } catch (Exception ex) {
-            }
-        }
-
-        return super.start();
     }
 
     @Override
@@ -246,6 +231,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                     ctx.stop();
                 }
             } catch (Exception ex) {
+            } finally {
+                this.springContext = null;
             }
         }
         super.stop();
@@ -318,9 +305,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         return settings;
     }
 
-    @Override
-    protected IExtensionService createExtensionService() {
-        return new ClientExtensionService(this, springContext);
+    protected IExtensionPointManager createExtensionPointManager(ApplicationContext springContext) {
+        return new ExtensionPointManager(this, springContext);
     }
 
     @Override
@@ -356,35 +342,28 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected ITypedPropertiesFactory createTypedPropertiesFactory() {
-        return createTypedPropertiesFactory(propertiesFile, properties);
+    	return createTypedPropertiesFactory(propertiesFile, properties);
     }
 
     protected static ITypedPropertiesFactory createTypedPropertiesFactory(File propFile, Properties prop) {
-        String propFactoryClassName = System.getProperties().getProperty(PROPERTIES_FACTORY_CLASS_NAME);
-        ITypedPropertiesFactory factory = null;
-        if (propFactoryClassName != null) {
-            try {
-                factory = (ITypedPropertiesFactory) Class.forName(propFactoryClassName).newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            factory = new TypedPropertiesFactory();
-        }
-        factory.init(propFile, prop);
-        return factory;
+    	String propFactoryClassName = System.getProperties().getProperty(PROPERTIES_FACTORY_CLASS_NAME);
+    	ITypedPropertiesFactory factory = null;
+    	if (propFactoryClassName != null) {
+    		try {
+    			factory = (ITypedPropertiesFactory) Class.forName(propFactoryClassName).newInstance();
+    		} catch (Exception e) {
+    			throw new RuntimeException(e);
+    		}
+    	} else {
+    		factory = new TypedPropertiesFactory();
+    	}
+    	factory.init(propFile, prop);
+    	return factory;
     }
-
+    
     @Override
     public synchronized void destroy() {
         super.destroy();
-        if (springContext instanceof AbstractApplicationContext) {
-            try {
-            ((AbstractApplicationContext)springContext).destroy();
-            } catch (Exception ex) {                
-            }
-        }
-        springContext = null;
         if (dataSource != null && dataSource instanceof BasicDataSource) {
             try {
                 ((BasicDataSource)dataSource).close();

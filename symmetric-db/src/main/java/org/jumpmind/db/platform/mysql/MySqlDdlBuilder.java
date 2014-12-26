@@ -193,7 +193,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                     processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
                     changeIt.remove();
                 } catch (CloneNotSupportedException e) {
-                    log.error("", e);
+                    log.error(e.getMessage(), e);
                 }
             }
         }
@@ -311,16 +311,15 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         writeColumn(targetTable, targetColumn, ddl);
         printEndOfStatement(ddl);
     }
-    
+
     @Override
     protected String getSqlType(Column column) {
-        String sqlType = super.getSqlType(column);
-
+    	String sqlType = super.getSqlType(column);
+    	
         if (column.isAutoIncrement()
                 && (column.getMappedTypeCode() == Types.DECIMAL || column.getMappedTypeCode() == Types.NUMERIC)) {
             sqlType = "BIGINT";
         }
-        return sqlType;
+    	return sqlType;
     }
-
 }

@@ -3,14 +3,14 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-jdbc</artifactId>
     <packaging>jar</packaging>
-    <version>3.7.0-SNAPSHOT</version>
+    <version>3.6.17</version>
     <name>jdbc</name>
     <url>http://symmetricds.org</url>
 
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.7.0-SNAPSHOT</version>
+        <version>3.6.17</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
 
@@ -27,10 +27,6 @@
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
         </dependency>
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-        </dependency>        
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

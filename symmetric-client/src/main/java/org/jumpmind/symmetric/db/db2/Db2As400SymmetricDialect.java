@@ -31,7 +31,7 @@ public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISy
     }
 
     protected String getSystemSchemaName() {
-        return "QSYS2";
+    	return "QSYS2";
     }
 
 }

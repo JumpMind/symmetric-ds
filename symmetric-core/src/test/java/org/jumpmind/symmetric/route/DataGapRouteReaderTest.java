@@ -48,12 +48,10 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.impl.DataService;
-import org.jumpmind.symmetric.service.impl.ExtensionService;
 import org.jumpmind.symmetric.service.impl.NodeService;
 import org.jumpmind.symmetric.service.impl.ParameterService;
 import org.jumpmind.symmetric.service.impl.RouterService;
@@ -123,16 +121,13 @@ public class DataGapRouteReaderTest {
         ISymmetricDialect symmetricDialect = mock(AbstractSymmetricDialect.class);
         when(symmetricDialect.supportsTransactionId()).thenReturn(true);
         when(symmetricDialect.getPlatform()).thenReturn(platform);
-
-        IExtensionService extensionService = mock(ExtensionService.class);
-
+        
         ISymmetricEngine engine = mock(AbstractSymmetricEngine.class);
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getStatisticManager()).thenReturn(statisticManager);
         when(engine.getNodeService()).thenReturn(nodeService);
         when(engine.getDataService()).thenReturn(dataService);
         when(engine.getSymmetricDialect()).thenReturn(symmetricDialect);
-        when(engine.getExtensionService()).thenReturn(extensionService);
         IRouterService routerService = new RouterService(engine);
         when(engine.getRouterService()).thenReturn(routerService);
 

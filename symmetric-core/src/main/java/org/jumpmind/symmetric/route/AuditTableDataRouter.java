@@ -33,7 +33,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -44,7 +43,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.FormatUtils;
 
-public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltInExtensionPoint {
+public class AuditTableDataRouter extends AbstractDataRouter {
 
     private static final String COLUMN_AUDIT_EVENT = "AUDIT_EVENT";
 

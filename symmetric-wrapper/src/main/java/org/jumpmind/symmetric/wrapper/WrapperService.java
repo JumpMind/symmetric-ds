@@ -70,14 +70,11 @@ public abstract class WrapperService {
         }
 
         System.out.println("Waiting for server to start");
-        ArrayList<String> cmdLine = getWrapperCommand("exec");
-        Process process = null;
         boolean success = false;
         int rc = 0;
         try {
-            ProcessBuilder pb = new ProcessBuilder(cmdLine);
-            pb.redirectErrorStream(true);
-            process = pb.start();
+            ProcessBuilder pb = new ProcessBuilder(getWrapperCommand("exec"));
+            Process process = pb.start();
             if (!(success = waitForPid(getProcessPid(process)))) {
                 rc = process.exitValue();
             }
@@ -89,16 +86,6 @@ public abstract class WrapperService {
         if (success) {
             System.out.println("Started");
         } else {
-            System.err.println(commandToString(cmdLine));
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    System.err.println(line);
-                }
-                reader.close();
-            } catch (Exception e) {
-            }            
             throw new WrapperException(Constants.RC_FAIL_EXECUTION, rc, "Failed second stage");
         }
     }
@@ -138,7 +125,7 @@ public abstract class WrapperService {
 
         long startTime = 0;
         int startCount = 0;
-        boolean startProcess = true, restartDetected = false;
+        boolean startProcess = true;
         int serverPid = 0;
 
         while (keepRunning) {
@@ -175,8 +162,11 @@ public abstract class WrapperService {
                     String line = null;
 
                     while ((line = childReader.readLine()) != null) {
-                        System.out.println(line);
-                        logger.log(Level.INFO, line, "java");
+                        if (isConsole) {
+                            System.out.println(line);
+                        } else {
+                            logger.log(Level.INFO, line, "java");
+                        }
                         if ((usingHeapDump && line.matches("Heap dump file created.*")) || 
                                 (!usingHeapDump && line.matches("java.lang.OutOfMemoryError.*")) ||
                                 line.matches(".*java.net.BindException.*")) {
@@ -186,21 +176,15 @@ public abstract class WrapperService {
                             stopProcess(serverPid, "symmetricds");
                             break;
                         }
-                        if (line.equalsIgnoreCase("Restarting")) {
-                            restartDetected = true;
-                        }
                     }
                 } catch (IOException e) {
                     logger.log(Level.SEVERE, "Error while reading from process");
                 }
-
-                if (restartDetected) {
-                    restartDetected = false;
-                    startProcess = true;
-                } else if (keepRunning) {
+                
+                if (keepRunning) {
                     logger.log(Level.SEVERE, "Unexpected exit from server: " + child.exitValue());
                     long runTime = System.currentTimeMillis() - startTime;
-                    if (System.currentTimeMillis() - startTime < 7000) {
+                    if (System.currentTimeMillis() - startTime < 5000) {
                         logger.log(Level.SEVERE, "Stopping because server exited too quickly after only " + runTime + " milliseconds");
                         updateStatus(Status.STOPPED);
                         throw new WrapperException(Constants.RC_SERVER_EXITED, child.exitValue(), "Unexpected exit from server");
@@ -241,8 +225,8 @@ public abstract class WrapperService {
         if (keepRunning) {
             keepRunning = false;
             new Thread() {
-                @Override
-                public void run() {
+            	@Override
+            	public void run() {
                     logger.log(Level.INFO, "Stopping server");
                     child.destroy();
                     try {
@@ -252,9 +236,9 @@ public abstract class WrapperService {
                     logger.log(Level.INFO, "Stopping wrapper");
                     deletePidFile(config.getWrapperPidFile());
                     deletePidFile(config.getServerPidFile());
-                    updateStatus(Status.STOPPED);
-                    System.exit(0);
-                }
+            		updateStatus(Status.STOPPED);
+            		System.exit(0);
+            	}
             }.start();            
         }
     }
@@ -266,9 +250,6 @@ public abstract class WrapperService {
         start();
     }
     
-    public void relaunchAsPrivileged(String cmd, String args) {
-    }
-
     public void status() {
         boolean isRunning = isRunning();
         System.out.println("Installed: " + isInstalled());
@@ -311,14 +292,7 @@ public abstract class WrapperService {
         cmd.add(quote + config.getConfigFile() + quote);
         return cmd;
     }
-
-    protected ArrayList<String> getPrivilegedCommand() {
-        ArrayList<String> cmd = new ArrayList<String>();
-        String quote = getWrapperCommandQuote();
-        cmd.add(quote + config.getJavaCommand() + quote);
-        return cmd;
-    }
-
+    
     protected String getWrapperCommandQuote() {
         return "";
     }

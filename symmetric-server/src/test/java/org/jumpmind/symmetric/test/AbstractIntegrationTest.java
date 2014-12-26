@@ -82,11 +82,6 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected ISymmetricEngine getServer() {
-        SymmetricWebServer webServer = getWebServer();
-        return webServer != null ? webServer.getEngine() : null;
-    }
-
-    protected SymmetricWebServer getWebServer() {
         try {
             if (server == null) {
                 EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(
@@ -103,11 +98,11 @@ public abstract class AbstractIntegrationTest {
                 File rootdbs = new File("target/rootdbs");
                 FileUtils.deleteDirectory(rootdbs);
                 rootdbs.mkdirs();
-
+                
                 File clientdbs = new File("target/clientdbs");
                 FileUtils.deleteDirectory(clientdbs);
                 clientdbs.mkdirs();
-
+                
                 File engineDir = new File(rootDir, "engines");
                 engineDir.mkdirs();
                 File rootPropertiesFile = new File(engineDir, "root.properties");
@@ -120,10 +115,11 @@ public abstract class AbstractIntegrationTest {
 
                 System.setProperty(SystemConstants.SYSPROP_ENGINES_DIR, engineDir.getAbsolutePath());
                 System.setProperty(SystemConstants.SYSPROP_WEB_DIR, "src/main/deploy/web");
+                String port = System.getProperty(AppUtils.SYSPROP_PORT_NUMBER, "31415"); 
                 SymmetricWebServer server = new SymmetricWebServer();
                 server.setJmxEnabled(false);
                 server.setJoin(false);
-                server.start(Integer.parseInt(AppUtils.getPortNumber()));
+                server.start(Integer.parseInt(port));
 
                 server.waitForEnginesToComeOnline(240000);
 
@@ -132,11 +128,11 @@ public abstract class AbstractIntegrationTest {
                 AbstractIntegrationTest.server = server;
             }
         } catch (Exception e) {
-            logger.error("", e);
+            logger.error(e.getMessage(), e);
             fail(e.getMessage());
         }
 
-        return server != null ? server : null;
+        return server != null ? server.getEngine() : null;
     }
 
     protected boolean clientPush() {
@@ -200,35 +196,36 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected boolean isServerOracle() {
-        return DatabaseNamesConstants.ORACLE.equals(getServer().getSymmetricDialect().getPlatform()
-                .getName());
-    }
-
-    protected boolean isClientInterbase() {
-        return DatabaseNamesConstants.INTERBASE.equals(getClient().getSymmetricDialect()
+        return DatabaseNamesConstants.ORACLE.equals(getServer().getSymmetricDialect()
                 .getPlatform().getName());
     }
-
+    
+    protected boolean isClientInterbase() {
+        return DatabaseNamesConstants.INTERBASE.equals(getClient().getSymmetricDialect()
+                .getPlatform().getName());        
+    }
+    
     protected int getIncomingBatchCountForClient() {
-        return getClient().getSqlTemplate().queryForInt("select count(*) from sym_incoming_batch");
+        return getClient().getSqlTemplate()
+        .queryForInt("select count(*) from sym_incoming_batch");
     }
-
+    
     protected int getIncomingBatchNotOkCountForClient() {
-        return getClient().getSqlTemplate().queryForInt(
-                "select count(*) from sym_incoming_batch where status != ?", Status.OK.name());
+        return getClient().getSqlTemplate()
+        .queryForInt("select count(*) from sym_incoming_batch where status != ?", Status.OK.name());
     }
-
+    
     protected void assertNoPendingBatchesOnServer() {
         IOutgoingBatchService outgoingBatchService = getServer().getOutgoingBatchService();
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(
-                TestConstants.TEST_CLIENT_NODE.getNodeId(), false);
+                TestConstants.TEST_CLIENT_NODE.getNodeId(), false);        
         assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
     }
-
+    
     protected void assertNoPendingBatchesOnClient() {
         IOutgoingBatchService outgoingBatchService = getClient().getOutgoingBatchService();
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(
-                TestConstants.TEST_ROOT_NODE.getNodeId(), false);
+                TestConstants.TEST_ROOT_NODE.getNodeId(), false);        
         assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
     }
 

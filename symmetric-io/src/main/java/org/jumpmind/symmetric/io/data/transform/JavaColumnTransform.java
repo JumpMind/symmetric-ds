@@ -36,7 +36,7 @@ public class JavaColumnTransform implements ISingleValueColumnTransform, IBuiltI
             + "import org.jumpmind.db.platform.*;\n"
             + "import org.jumpmind.db.sql.*;\n"
             + "import java.util.*;\n"
-            + "public class JavaColumnTransformExt extends JavaColumnTransform { \n"
+            + "public class " + SimpleClassCompiler.CLASSNAME_TOKEN + " extends JavaColumnTransform { \n"
             + "    public String transform(IDatabasePlatform platform, DataContext context, TransformColumn column, TransformedData data,\n"
             + "        Map<String, String> sourceValues, String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {\n\n";
 

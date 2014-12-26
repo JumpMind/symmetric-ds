@@ -210,7 +210,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                 }
             }
         } catch (final Throwable ex) {
-            log.error("", ex);
+            log.error(ex.getMessage(), ex);
         }
 
         return ran;

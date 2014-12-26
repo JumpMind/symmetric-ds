@@ -38,7 +38,7 @@
         <column name="use_pk_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the pk data during routing."/>
         <column name="reload_flag" type="BOOLEANINT" size="1" required="true" default="0" description="Indicates that this channel is used for reloads."/>
         <column name="file_sync_flag" type="BOOLEANINT" size="1" required="true" default="0" description="Indicates that this channel is used for file sync."/>
-        <column name="contains_big_lob" type="BOOLEANINT" size="1" required="true" default="0" description="Provides SymmetricDS a hint on how to treat captured data.  Currently only supported by Oracle, Interbase and Firebird.  If set to '0', then selects for routing and data extraction will be more efficient and lobs will be truncated at 4k in the trigger text.  When it is set to '0' there is a 4k limit on the total size of a row and on the size of a LOB column.  Note, when switching this value back and forth triggers need to be forced to regenerate."/>
+        <column name="contains_big_lob" type="BOOLEANINT" size="1" required="true" default="0" description="Provides SymmetricDS a hint on how to treat captured data.  Currently only supported by Oracle.  If set to '0', then selects for routing and data extraction will be more efficient and lobs will be truncated at 4k in the trigger text.  When it is set to '0' there is a 4k limit on the total size of a row and on the size of a LOB column.  Note, when switching this value back and forth triggers need to be forced to regenerate."/>
         <column name="batch_algorithm" type="VARCHAR" size="50" required="true" default="default" description="The algorithm to use when batching data on this channel.  Possible values are: 'default', 'transactional', and 'nontransactional'"/>
         <column name="data_loader_type" type="VARCHAR" size="50" required="true" default="default" description="Identify the type of data loader this channel should use.  Allows for the default dataloader to be swapped out via configuration for more efficient platform specific data loaders."/>
         <column name="description" type="VARCHAR" size="255" description="Description on the type of data carried in this channel."/>
@@ -111,19 +111,6 @@
             <index-column name="status"/>
         </index>
      </table>
-
-    <table name="extension" description="Dynamic extensions stored in the database that plug-in to the running engine and receive callbacks according to their interface.">
-        <column name="extension_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The unique id of the extension." />
-        <column name="extension_type" type="VARCHAR" size="10" required="true" description="The type of the extension.  Types are 'java' and 'bsh'" />
-        <column name="interface_name" type="VARCHAR" size="255" required="false" description="Name of interface, required for 'bsh' only." />
-        <column name="node_group_id" type="VARCHAR" size="50" required="true" description="Target the extension at a specific node group id. To target all groups, use the value of 'ALL'." />
-        <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not the extension is enabled." />
-        <column name="extension_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to install extensions when multiple extensions implement the same interface."/>
-        <column name="extension_text" type="LONGVARCHAR" description="The script or code of the extension." />
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
-    </table>
 
     <table name="extract_request" description="This table is used internally to request the extract of initial loads asynchronously when the initial load extract job is enabled.">
         <column name="request_id" type="BIGINT" required="true" primaryKey="true" description="Unique identifier for a request." />
@@ -365,8 +352,8 @@
     <table name="node_group_channel_wnd" description="An optional window of time for which a node group and channel will extract and send data.">
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node_group_id that this window applies to."/>
         <column name="channel_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The channel_id that this window applies to."/>
-        <column name="start_time" type="TIMESTAMP" required="true" primaryKey="true"  description="The start time for the active window."/>
-        <column name="end_time" type="TIMESTAMP" required="true" primaryKey="true" description="The end time for the active window.  Note that if the end_time is less than the start_time then the window crosses a day boundary."/>
+        <column name="start_time" type="TIME" required="true" primaryKey="true"  description="The start time for the active window."/>
+        <column name="end_time" type="TIME" required="true" primaryKey="true" description="The end time for the active window.  Note that if the end_time is less than the start_time then the window crosses a day boundary."/>
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="0" description="Enable this window.  If this is set to '0' then this window is ignored."/>
     </table>
 

@@ -113,7 +113,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 log.warn("Did not run the data gap purge process because the cluster service has it locked");
             }
         } catch (Exception ex) {
-            log.error("", ex);
+            log.error(ex.getMessage(), ex);
         }
         return rowsPurged;
     }
@@ -140,7 +140,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 log.debug("Could not get a lock to run an outgoing purge");
             }
         } catch (Exception ex) {
-            log.error("", ex);
+            log.error(ex.getMessage(), ex);
         }
         return rowsPurged;
     }
@@ -315,7 +315,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 log.debug("Could not get a lock to run an incoming purge");
             }
         } catch (Exception ex) {
-            log.error("", ex);
+            log.error(ex.getMessage(), ex);
         }
         return purgedRowCount;
     }

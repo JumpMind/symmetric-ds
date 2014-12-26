@@ -61,7 +61,6 @@ public class InternalTransportManager extends AbstractTransportManager implement
     protected ISymmetricEngine symmetricEngine;
 
     public InternalTransportManager(ISymmetricEngine engine) {
-        super(engine.getExtensionService());
         this.symmetricEngine = engine;
     }
 
@@ -192,7 +191,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
             }
             return HttpURLConnection.HTTP_OK;
         } catch (Exception ex) {
-            log.error("", ex);
+            log.error(ex.getMessage(), ex);
             return -1;
         }
     }
@@ -212,7 +211,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                     ISymmetricEngine engine = getTargetEngine(url);
                     runnable.run(engine, is, os);
                 } catch (Exception e) {
-                    log.error("", e);
+                    log.error(e.getMessage(), e);
                 } finally {
                     IOUtils.closeQuietly(is);
                     IOUtils.closeQuietly(os);

@@ -61,21 +61,6 @@ public class AppUtils {
 
     private static FastDateFormat timezoneFormatter = FastDateFormat.getInstance("Z");
 
-    public static String getSymHome() {
-        String home = System.getenv("SYM_HOME");
-        if (home == null) {
-            home = ".";
-        }
-        return home;
-    }
-
-    public static String getCanonicalSymHome(String dirName) {
-        if (!dirName.startsWith("/") && !dirName.startsWith("\\")) {
-            dirName = getSymHome() + "/" + dirName;
-        }
-        return dirName;
-    }
-    
     public static String getHostName() {
         String hostName = System.getProperty(SYSPROP_HOST_NAME, UNKNOWN);
         if (UNKNOWN.equals(hostName)) {
@@ -102,7 +87,7 @@ public class AppUtils {
                 }
 
             } catch (Exception ex) {
-                log.warn("", ex);
+                log.warn(ex.getMessage(), ex);
             }
         }
         return hostName;
@@ -115,7 +100,7 @@ public class AppUtils {
             try {
                 portNumber = "31415";
             } catch (Exception ex) {
-                log.warn("", ex);
+                log.warn(ex.getMessage(), ex);
             }
         }
         return portNumber;
@@ -137,7 +122,7 @@ public class AppUtils {
                     }
                 }
             } catch (Exception ex) {
-                log.warn("", ex);
+                log.warn(ex.getMessage(), ex);
             } finally {
             }
         }
@@ -146,7 +131,7 @@ public class AppUtils {
             try {
                 ipAddress = InetAddress.getLocalHost().getHostAddress();
             } catch (UnknownHostException ex) {
-                log.warn("", ex);
+                log.warn(ex.getMessage(), ex);
                 ipAddress = "127.0.0.1";
             }
         }

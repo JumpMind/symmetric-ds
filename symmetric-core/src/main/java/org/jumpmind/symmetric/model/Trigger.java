@@ -44,6 +44,8 @@ public class Trigger implements Serializable {
 
     static final Logger log = LoggerFactory.getLogger(Trigger.class);
 
+    private static int maxTriggerId;
+
     private static final String DEFAULT_CONDITION = "1=1";
 
     private String triggerId;
@@ -113,6 +115,7 @@ public class Trigger implements Serializable {
     private String lastUpdateBy;
 
     public Trigger() {
+        triggerId = Integer.toString(maxTriggerId++);
     }
 
     public Trigger(String tableName, String channelId) {
@@ -240,6 +243,12 @@ public class Trigger implements Serializable {
 
     public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
+        if (StringUtils.isNotBlank(triggerId) && StringUtils.isNumeric(triggerId)) {
+            int id = Integer.parseInt(triggerId);
+            if (id >= maxTriggerId) {
+                maxTriggerId = id + 1;
+            }
+        }
     }
 
     public String getSourceTableName() {

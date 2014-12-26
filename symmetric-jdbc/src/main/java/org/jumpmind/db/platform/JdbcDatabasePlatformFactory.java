@@ -86,8 +86,8 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "Informix Dynamic Server", InformixDatabasePlatform.class);
         addPlatform(platforms, "Apache Derby", DerbyDatabasePlatform.class);
         addPlatform(platforms, "Firebird", FirebirdDatabasePlatform.class);
-        addPlatform(platforms, DatabaseNamesConstants.GREENPLUM, GreenplumPlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.FIREBIRD_DIALECT1, FirebirdDialect1DatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.GREENPLUM, GreenplumPlatform.class);
         addPlatform(platforms, "HsqlDb", HsqlDbDatabasePlatform.class);
         addPlatform(platforms, "HSQL Database Engine2", HsqlDb2DatabasePlatform.class);
         addPlatform(platforms, "Interbase", InterbaseDatabasePlatform.class);
@@ -234,19 +234,18 @@ public class JdbcDatabasePlatformFactory {
                 } else if (nameVersion[0].indexOf("400") != -1) {
                     nameVersion[0] = DatabaseNamesConstants.DB2AS400;
                 } else {
-                    nameVersion[0] = DatabaseNamesConstants.DB2;
+                	nameVersion[0] = DatabaseNamesConstants.DB2;
                 }
             }
             if (nameVersion[0].equalsIgnoreCase("AS") && nameVersion[2].equalsIgnoreCase("db2")) {
-                nameVersion[0] = DatabaseNamesConstants.DB2AS400;
+            	nameVersion[0] = DatabaseNamesConstants.DB2AS400;
             }
 
             if (nameVersion[0].toLowerCase().startsWith(DatabaseNamesConstants.FIREBIRD)) {
-                if (isFirebirdDialect1(connection)) {
-                    nameVersion[0] = DatabaseNamesConstants.FIREBIRD_DIALECT1;
-                }
+            	if (isFirebirdDialect1(connection)) {
+            		nameVersion[0] = DatabaseNamesConstants.FIREBIRD_DIALECT1;
+            	}
             }
-            
             log.info("Detected database '" + nameVersion[0] + "', version '" + nameVersion[1] + "', protocol '" + nameVersion[2] + "'");
 
             return nameVersion;
@@ -307,30 +306,6 @@ public class JdbcDatabasePlatformFactory {
             }
         }
         return isRedshift;
-    }
-
-    private static boolean isFirebirdDialect1(Connection connection) {
-        boolean isDialect1 = false;
-        Statement stmt = null;
-        ResultSet rs = null;
-        try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery("select current_time from rdb$database");
-            rs.next();
-        } catch (SQLException ex) {
-            isDialect1 = true;
-            try {
-                JdbcUtils.closeSilently(rs);
-                rs = stmt.executeQuery("select cast(1 as numeric(10,0)) from rdb$database");
-                rs.next();
-            } catch (SQLException e) {
-                log.error("The client sql dialect does not match the database, which is not a supported mode.  You must add ?sql_dialect=1 to the end of the JDBC URL.");
-            }
-        } finally {
-            JdbcUtils.closeSilently(rs);
-            JdbcUtils.closeSilently(stmt);
-        }        
-        return isDialect1;
     }
 
     private static boolean isMariaDBDatabase(Connection connection) {
@@ -396,6 +371,30 @@ public class JdbcDatabasePlatformFactory {
             }
         }
         return productVersion;
+    }
+
+    private static boolean isFirebirdDialect1(Connection connection) {
+        boolean isDialect1 = false;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery("select current_time from rdb$database");
+            rs.next();
+        } catch (SQLException ex) {
+            isDialect1 = true;
+            try {
+                JdbcUtils.closeSilently(rs);
+                rs = stmt.executeQuery("select cast(1 as numeric(10,0)) from rdb$database");
+                rs.next();
+            } catch (SQLException e) {
+                log.error("The client sql dialect does not match the database, which is not a supported mode.  You must add ?sql_dialect=1 to the end of the JDBC URL.");
+            }
+        } finally {
+            JdbcUtils.closeSilently(rs);
+            JdbcUtils.closeSilently(stmt);
+        }        
+        return isDialect1;
     }
 
     public static String getDatabaseProductVersion(DataSource dataSource) {

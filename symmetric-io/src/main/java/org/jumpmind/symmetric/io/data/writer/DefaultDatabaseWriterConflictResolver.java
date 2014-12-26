@@ -54,12 +54,6 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         DmlStatement stmt = databaseWriter.getPlatform().createDmlStatement(DmlType.FROM, targetTable
                 , writer.getWriterSettings().getTextColumnExpression());
         Column column = targetTable.getColumnWithName(columnName);
-        
-        if (column == null) {
-            throw new RuntimeException(String.format("Could not find a timestamp column with a name of %s on the table %s.  "
-                    + "Please check your conflict resolution configuration", columnName, targetTable.getQualifiedTableName()));
-        }
-        
         String sql = stmt.getColumnsSql(new Column[] { column });
 
         Map<String, String> newData = data.toColumnNameValuePairs(sourceTable.getColumnNames(),
@@ -106,7 +100,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
 
         return existingTs == null || loadingTs.compareTo(existingTs) > 0;
     }
-
+    
     protected boolean isVersionNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
         DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter)writer;
         String columnName = conflict.getDetectExpression();

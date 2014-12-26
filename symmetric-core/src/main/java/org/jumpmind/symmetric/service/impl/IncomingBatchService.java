@@ -59,15 +59,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public IncomingBatch findIncomingBatch(long batchId, String nodeId) {
-        if (nodeId != null) {
-            return sqlTemplate.queryForObject(
-                    getSql("selectIncomingBatchPrefixSql", "findIncomingBatchSql"),
-                    new IncomingBatchMapper(), batchId, nodeId);
-        } else {
-            return sqlTemplate.queryForObject(
-                    getSql("selectIncomingBatchPrefixSql", "findIncomingBatchByBatchIdSql"),
-                    new IncomingBatchMapper(), batchId);            
-        }
+        return sqlTemplate.queryForObject(
+                getSql("selectIncomingBatchPrefixSql", "findIncomingBatchSql"),
+                new IncomingBatchMapper(), batchId, nodeId);
     }
 
     public int countIncomingBatchesInError() {

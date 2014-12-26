@@ -231,7 +231,7 @@ public class SymmetricEngineHolder {
             }
             return engine;
         } catch (Exception e) {
-            log.error("", e);
+            log.error(e.getMessage(), e);
             return null;
         }
     }
@@ -255,7 +255,7 @@ public class SymmetricEngineHolder {
             try {
                 engines.get(engineName).stop();
             } catch (Exception e) {
-                log.error("", e);
+                log.error(e.getMessage(), e);
             }
             engines.remove(engineName);
         }
@@ -418,19 +418,6 @@ public class SymmetricEngineHolder {
         return engineName;
     }
 
-    public boolean isMissingBasicConfiguration() {
-        int triggerRouterCount = 0;
-        
-        Collection<ServerSymmetricEngine> all = getEngines().values();
-        for (ISymmetricEngine currentEngine : all) {
-            triggerRouterCount = currentEngine.getTriggerRouterService().getTriggerRouters().size();
-            if (triggerRouterCount > 0) {
-                break;
-            }
-        }
-        return triggerRouterCount == 0;
-    }
-    
     public static Date getCreateTime() {
         return createTime;
     }

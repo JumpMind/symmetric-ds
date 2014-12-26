@@ -1,3 +1,26 @@
+SymmetricDS - 3.6.17 (Released 2014-12-26) 
+==========================================
+- 0002078: [Bug] Service wrapper unsatisfied link error (elong) - closed.
+- 0002090: [Bug] Informix installations fail when existing SymmetricDS tables exist due to case sensitive comparisons (chenson) - closed.
+- 0002094: [Bug] Row deletion is not synced if table has conflict resolution by timestamp (chenson) - closed.
+- 0002100: [Bug] getChannelStatus REST call is broken (chenson) - closed.
+- 0002101: [Improvement] Add a property that instructs symmetricds to use PK from target tables when creating update and delete statements (chenson) - closed.
+- 0002103: [Bug] Create table to check and allow for identity columns that are not part of PK. (josh-a-hicks) - closed.
+- 0002104: [Improvement] Add feature to turn off the use of default values in the create schema first feature (chenson) - closed.
+- 0002105: [Bug] Error code 2601 on Sql Server should be treated like other unique constraint errors (chenson) - closed.
+- 0002107: [Bug] Initial load extract in background can fail when purge is set aggressively (chenson) - closed.
+- 0002109: [Bug] Trigger creation fails on Sybase ASE database for CLOB,BLOB,BINARY,VARBINARY,LONGBINARY (chenson) - closed.
+- 0002110: [Bug] On firebird ddl fails if table column switches from NOT NULL to NULLABLE (chenson) - closed.
+- 0002111: [Improvement] When big transactions are interspersed routing requires a lot of memory which can result in OOM errors (chenson) - closed.
+- 0002112: [Bug] When lots of unrouted data exists with small transactions, the peek ahead queue can get big and cause out of memory errors (chenson) - closed.
+- 0002113: [Bug] sqlite trigger fails to capture data when a blank string is inserted into a datetime field (chenson) - closed.
+
+SymmetricDS - 3.6.16 (Released 2014-12-11) 
+==========================================
+- 0002093: [Bug] Table structure changes, sym_trigger is updated and old table structure is used for new trigger (chenson) - closed.
+- 0002090: [Bug] Informix installations fail when existing SymmetricDS tables exist due to case sensitive comparisons (josh-a-hicks) - closed.
+- 0002097: [Bug] sync triggers gets called during and initial load (chenson) - closed.
+
 SymmetricDS - 3.6.15 (Released 2014-12-04) 
 ==========================================
 - 0002087: [Bug] Extract initial load in background doesn't work with wildcard catalogs and schemas (chenson) - closed.

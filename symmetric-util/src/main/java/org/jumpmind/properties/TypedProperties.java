@@ -178,7 +178,7 @@ public class TypedProperties extends Properties {
             }
             return objects;
         } catch (Exception ex) {
-            log.warn("", ex);
+            log.warn(ex.getMessage(), ex);
             return objects;
         }
     }

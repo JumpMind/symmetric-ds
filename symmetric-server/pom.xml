@@ -3,12 +3,12 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-server</artifactId>
     <packaging>jar</packaging>
-    <version>3.7.0-SNAPSHOT</version>
+    <version>3.6.17</version>
     <name>server</name>
     <parent>
         <groupId>org.jumpmind.symmetric</groupId>
         <artifactId>symmetric-parent</artifactId>
-        <version>3.7.0-SNAPSHOT</version>
+        <version>3.6.17</version>
         <relativePath>../symmetric-parent/pom.xml</relativePath>
     </parent>
     <build>
@@ -69,6 +69,26 @@
         </dependency>
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-oracle</artifactId>
+        </dependency>        
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-postgres</artifactId>
+        </dependency>        
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-mssql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-mongo</artifactId>              
+        </dependency>        
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-ftp</artifactId>
+        </dependency>        
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-wrapper</artifactId>
             <scope>provided</scope>
         </dependency>        
@@ -82,10 +102,6 @@
             <artifactId>log4j</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
-        </dependency>        
         <!-- Spring Framework -->
         <dependency>
             <groupId>org.springframework</groupId>

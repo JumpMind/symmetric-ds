@@ -59,7 +59,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                 + "  inner join $(router) r on tr.router_id=r.router_id      ");
 
         putSql("selectTriggerRoutersColumnList",
-                "  tr.trigger_id, tr.router_id, tr.create_time, tr.last_update_time, tr.last_update_by, tr.initial_load_order, tr.initial_load_select, tr.initial_load_delete_stmt, tr.initial_load_batch_count, tr.ping_back_enabled, tr.enabled   ");
+                ""
+                        + "  tr.create_time,tr.last_update_time,tr.last_update_by,tr.initial_load_order,tr.initial_load_select,tr.initial_load_delete_stmt,tr.initial_load_batch_count,tr.ping_back_enabled, tr.enabled   ");
 
         putSql("selectRoutersColumnList",
                 ""

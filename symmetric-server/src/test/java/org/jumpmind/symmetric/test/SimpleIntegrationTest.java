@@ -20,14 +20,6 @@
  */
 package org.jumpmind.symmetric.test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -54,18 +46,14 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.util.AppUtils;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     static final String THIS_IS_A_TEST = "This is a test";
-    
-    static {
-        System.setProperty("h2.baseDir", "./");
-    }
 
     public static boolean testFlag = false;
 
@@ -106,7 +94,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
     @Test(timeout = 240000)
-    public void test01CreateServer() {
+    public void createServer() {
         ISymmetricEngine server = getServer();
         assertNotNull(server);
         server.getParameterService().saveParameter(ParameterConstants.FILE_SYNC_ENABLE, false, "unit_test");
@@ -115,7 +103,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 240000)
-    public void test02RegisterClientWithRoot() {
+    public void registerClientWithRoot() {
         logTestRunning();
         ISymmetricEngine rootEngine = getServer();
         INodeService rootNodeService = rootEngine.getNodeService();
@@ -136,7 +124,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test03InitialLoad() {
+    public void initialLoad() {
         logTestRunning();
         serverTestService.insertIntoTestUseStreamLob(100, "test_use_stream_lob", THIS_IS_A_TEST);
         serverTestService.insertIntoTestUseStreamLob(100, "test_use_capture_lob", THIS_IS_A_TEST);
@@ -202,7 +190,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
     
     @Test(timeout = 120000)
-    public void test04LobSyncUsingStreaming() throws Exception {
+    public void testLobSyncUsingStreaming() throws Exception {
         String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
         if (serverTestService.insertIntoTestUseStreamLob(200, "test_use_stream_lob", text)) {
             String rowData = getServer()
@@ -218,7 +206,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test05LobSyncUsingCapture() throws Exception {
+    public void testLobSyncUsingCapture() throws Exception {
         String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
         if (serverTestService.insertIntoTestUseStreamLob(200, "test_use_capture_lob", text)) {
             String rowData = getServer()
@@ -238,7 +226,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }    
 
     @Test(timeout = 120000)
-    public void test06SyncToClient() {
+    public void syncToClient() {
         logTestRunning();
 
         // test pulling no data
@@ -281,7 +269,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test07SyncToClientMultipleUpdates() {
+    public void syncToClientMultipleUpdates() {
 
         logTestRunning();
         // test pulling no data
@@ -305,7 +293,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test08InsertSqlEvent() {
+    public void testInsertSqlEvent() {
         assertTrue(getClient().getSqlTemplate().queryForInt(
                 "select count(*) from sym_node where schema_version='test'") == 0);
         getServer()
@@ -318,7 +306,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test09EmptyNullLob() {
+    public void testEmptyNullLob() {
         Customer customer = new Customer(300, "Eric", true, "100 Main Street", "Columbus", "OH",
                 43082, new Date(), new Date(), "", new byte[0]);
 
@@ -362,7 +350,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test10LargeLob() {
+    public void testLargeLob() {
         if (!isServerOracle()) {
             return;
         }
@@ -374,7 +362,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test11SuspendIgnorePushRemoteBatches() throws Exception {
+    public void testSuspendIgnorePushRemoteBatches() throws Exception {
         // test suspend / ignore with remote database specifying the suspends
         // and ignores
         logTestRunning();
@@ -447,7 +435,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test12SuspendIgnorePushLocalBatches() throws Exception {
+    public void testSuspendIgnorePushLocalBatches() throws Exception {
 
         // test suspend / ignore with local database specifying the suspends
         // and ignores
@@ -511,7 +499,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test13SuspendIgnorePullRemoteBatches() throws Exception {
+    public void testSuspendIgnorePullRemoteBatches() throws Exception {
 
         // test suspend / ignore with remote database specifying the suspends
         // and ignores
@@ -587,7 +575,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test14SuspendIgnorePullRemoteLocalComboBatches() throws Exception {
+    public void testSuspendIgnorePullRemoteLocalComboBatches() throws Exception {
 
         // test suspend / ignore with remote database specifying the suspends
         // and ignores
@@ -675,7 +663,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test15UpdateDataWithNoChangesSyncToClient() throws Exception {
+    public void testUpdateDataWithNoChangesSyncToClient() throws Exception {
         int clientIncomingBatchCount = getIncomingBatchCountForClient();
         int rowsUpdated = getServer().getSqlTemplate().update(
                 "update test_sync_column_level set string_value=string_value");
@@ -691,7 +679,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test16SuspendIgnorePullLocalBatches() throws Exception {
+    public void testSuspendIgnorePullLocalBatches() throws Exception {
 
         // test suspend / ignore with local database specifying suspends and
         // ignores
@@ -749,7 +737,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test17SyncToRootAutoGeneratedPrimaryKey() {
+    public void syncToRootAutoGeneratedPrimaryKey() {
         logTestRunning();
         final String NEW_VALUE = "unique new value one value";
 
@@ -767,7 +755,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test18ReopenRegistration() {
+    public void reopenRegistration() {
         logTestRunning();
         getServer().reOpenRegistration(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         clientPull();
@@ -778,7 +766,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test19SyncToRoot() throws Exception {
+    public void syncToRoot() throws Exception {
         logTestRunning();
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         Order order = new Order("10", 100, null, date);
@@ -791,7 +779,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test20SyncInsertCondition() throws Exception {
+    public void syncInsertCondition() throws Exception {
         logTestRunning();
         // Should not sync when status = null
         Date date = DateUtils.parseDate("2007-01-02", new String[] { "yyyy-MM-dd" });
@@ -814,7 +802,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test21OneColumnTableWithPrimaryKeyUpdate() throws Exception {
+    public void oneColumnTableWithPrimaryKeyUpdate() throws Exception {
         logTestRunning();
         getServer().getSqlTemplate().update("insert into one_column_table values(1)");
         assertTrue(getClient().getSqlTemplate().queryForInt(
@@ -833,7 +821,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test22SyncUpdateCondition() {
+    public void syncUpdateCondition() {
         logTestRunning();
 
         Order order = clientTestService.getOrder("1");
@@ -850,7 +838,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test23IgnoreNodeChannel() {
+    public void ignoreNodeChannel() {
         logTestRunning();
         INodeService rootNodeService = getServer().getNodeService();
         IConfigurationService rootConfigService = getServer().getConfigurationService();
@@ -885,7 +873,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test24SyncUpdateWithEmptyKey() {
+    public void syncUpdateWithEmptyKey() {
         logTestRunning();
         try {
             if (getClient().getSymmetricDialect().getPlatform().getDatabaseInfo()
@@ -918,7 +906,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test25TestPurge() throws Exception {
+    public void testPurge() throws Exception {
         logTestRunning();
 
         // do an extra push & pull to make sure we have events cleared out
@@ -977,7 +965,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test26Heartbeat() throws Exception {
+    public void testHeartbeat() throws Exception {
         logTestRunning();
         Level previous = setLoggingLevelForTest(Level.DEBUG);
         try {
@@ -1024,7 +1012,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test27VirtualTransactionId() {
+    public void testVirtualTransactionId() {
         logTestRunning();
         getServer().getSqlTemplate().update(
                 "insert into test_very_long_table_name_1234 values('42')");
@@ -1053,7 +1041,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test28CaseSensitiveTableNames() {
+    public void testCaseSensitiveTableNames() {
         logTestRunning();
         String rquote = getServer().getSymmetricDialect().getPlatform().getDatabaseInfo()
                 .getDelimiterToken();
@@ -1073,7 +1061,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
-    public void test29SyncShellCommand() throws Exception {
+    public void testSyncShellCommand() throws Exception {
         logTestRunning();
         IDataService rootDataService = getServer().getDataService();
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
@@ -1088,7 +1076,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
     
     @Test
-    public void test30AutoConfigureTablesAfterAlreadyCreated() {
+    public void testAutoConfigureTablesAfterAlreadyCreated() {
         testAutoConfigureTablesAfterAlreadyCreated(getServer());
         testAutoConfigureTablesAfterAlreadyCreated(getClient());
     }
@@ -1098,12 +1086,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         ISymmetricDialect dialect = engine.getSymmetricDialect();
         assertEquals("Tables were altered when they should not have been", false, dialect.createOrAlterTablesIfNecessary());
     }   
-    
-    @Test
-    public void test99Shutdown() throws Exception {
-        getClient().destroy();
-        getWebServer().stop();
-    }
     
 
     // @Test(timeout = 120000)

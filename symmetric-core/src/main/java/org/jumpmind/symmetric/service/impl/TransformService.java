@@ -32,36 +32,20 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.BinaryLeftColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.BshColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ClarionDateTimeColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ColumnPolicy;
-import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsKeyColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.DeleteAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.JavaColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.LeftColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.LookupColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.MathColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ParameterColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
-import org.jumpmind.symmetric.io.data.transform.ValueMapColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
+import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITransformService;
 
@@ -72,49 +56,32 @@ public class TransformService extends AbstractService implements ITransformServi
     private long lastCacheTimeInMs;
 
     private IConfigurationService configurationService;
-    
-    private IExtensionService extensionService;
 
     private Date lastUpdateTime;
+    
+    private Map<String, IColumnTransform<?>> columnTransforms;
 
     public TransformService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            IConfigurationService configurationService, IExtensionService extensionService) {
+            IConfigurationService configurationService) {
         super(parameterService, symmetricDialect);
         this.configurationService = configurationService;
-        this.extensionService = extensionService;
         
-        addColumnTransform(ParameterColumnTransform.NAME, new ParameterColumnTransform(parameterService));
-        addColumnTransform(VariableColumnTransform.NAME, new VariableColumnTransform());
-        addColumnTransform(LookupColumnTransform.NAME, new LookupColumnTransform());
-        addColumnTransform(BshColumnTransform.NAME, new BshColumnTransform(parameterService));
-        addColumnTransform(AdditiveColumnTransform.NAME, new AdditiveColumnTransform());
-        addColumnTransform(JavaColumnTransform.NAME, new JavaColumnTransform());
-        addColumnTransform(ConstantColumnTransform.NAME, new ConstantColumnTransform());
-        addColumnTransform(CopyColumnTransform.NAME, new CopyColumnTransform());
-        addColumnTransform(IdentityColumnTransform.NAME, new IdentityColumnTransform());
-        addColumnTransform(MultiplierColumnTransform.NAME, new MultiplierColumnTransform());
-        addColumnTransform(SubstrColumnTransform.NAME, new SubstrColumnTransform());
-        addColumnTransform(LeftColumnTransform.NAME, new LeftColumnTransform());
-        addColumnTransform(BinaryLeftColumnTransform.NAME, new BinaryLeftColumnTransform());
-        addColumnTransform(RemoveColumnTransform.NAME, new RemoveColumnTransform());
-        addColumnTransform(MathColumnTransform.NAME, new MathColumnTransform());
-        addColumnTransform(ValueMapColumnTransform.NAME, new ValueMapColumnTransform());
-        addColumnTransform(CopyIfChangedColumnTransform.NAME, new CopyIfChangedColumnTransform());
-        addColumnTransform(ColumnsToRowsKeyColumnTransform.NAME, new ColumnsToRowsKeyColumnTransform());
-        addColumnTransform(ColumnsToRowsValueColumnTransform.NAME, new ColumnsToRowsValueColumnTransform());
-        addColumnTransform(ClarionDateTimeColumnTransform.NAME, new ClarionDateTimeColumnTransform());
+        columnTransforms = TransformWriter.buildDefaultColumnTransforms();
+        addColumnTransform(new ParameterColumnTransform(parameterService));
+        addColumnTransform(new VariableColumnTransform());
+        addColumnTransform(new LookupColumnTransform());
+        addColumnTransform(new BshColumnTransform(parameterService));
         
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }    
     
-    private void addColumnTransform(String name, IColumnTransform<?> columnTransform) {
-        extensionService.addExtensionPoint(name, columnTransform);
+    public void addColumnTransform(IColumnTransform<?> columnTransform) {
+        columnTransforms.put(columnTransform.getName(), columnTransform);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Map<String, IColumnTransform<?>> getColumnTransforms() {
-        return (Map) extensionService.getExtensionPointMap(IColumnTransform.class);
+        return columnTransforms;
     }
 
     public boolean refreshFromDatabase() {
