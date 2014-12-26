@@ -716,7 +716,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                             currentBatch, sourceNode, targetNode, processInfo));
                             DataContext ctx = new DataContext();
                             ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
+                            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_ID, targetNode.getNodeId());
+                            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_EXTERNAL_ID, targetNode.getExternalId());
+                            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_GROUP_ID, targetNode.getNodeGroupId());
+                            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                             ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
+                            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_ID, sourceNode.getNodeId());
+                            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID, sourceNode.getExternalId());
+                            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_GROUP_ID, sourceNode.getNodeGroupId());
+                            
                             new DataProcessor(dataReader, transformExtractWriter, "extract").process(ctx);
                             extractTimeInMs = System.currentTimeMillis() - ts;
                             Statistics stats = transformExtractWriter.getNestedWriter()

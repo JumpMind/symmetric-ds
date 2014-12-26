@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.util.CollectionUtils;
+import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +102,10 @@ public class ExtractDataReader implements IDataReader {
             }
             if (this.data != null) {
                 this.table = this.currentSource.getTargetTable();
+                if (this.table != null) {
+                    this.table.setCatalog(substituteVariables(this.table.getCatalog()));
+                    this.table.setSchema(substituteVariables(this.table.getSchema()));
+                }
             }
         }
         
@@ -108,6 +113,18 @@ public class ExtractDataReader implements IDataReader {
             this.batch.setComplete(true);
         }
         return this.table;
+    }
+
+    protected String substituteVariables(String sourceString) {
+        if (sourceString != null && sourceString.indexOf("$(") != -1) {
+            sourceString = FormatUtils.replace("sourceNodeId", (String) dataContext.get("sourceNodeId"), sourceString);
+            sourceString = FormatUtils.replace("sourceNodeExternalId", (String) dataContext.get("sourceNodeExternalId"), sourceString);
+            sourceString = FormatUtils.replace("sourceNodeGroupId", (String) dataContext.get("sourceNodeGroupId"), sourceString);
+            sourceString = FormatUtils.replace("targetNodeId", (String) dataContext.get("targetNodeId"), sourceString);
+            sourceString = FormatUtils.replace("targetNodeExternalId", (String) dataContext.get("targetNodeExternalId"), sourceString);
+            sourceString = FormatUtils.replace("targetNodeGroupId", (String) dataContext.get("targetNodeGroupId"), sourceString);
+        }
+        return sourceString;
     }
 
     public CsvData nextData() {
