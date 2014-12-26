@@ -115,6 +115,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private static final String OPTION_NODE_GROUP = "node-group";
 
+    private static final String OPTION_REVERSE = "reverse";
+
     private static final int WIDTH = 80;
 
     private static final int PAD = 3;
@@ -212,6 +214,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 addOption(options, "o", OPTION_OUT, false);
                 addOption(options, "f", OPTION_FORCE, false);
             }
+            if (cmd.equals(CMD_RELOAD_NODE)) {
+                addOption(options, "r", OPTION_REVERSE, false);
+            }
 
             if (options.getOptions().size() > 0) {
                 format.printWrapped(writer, WIDTH, "\nOptions:");
@@ -245,6 +250,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         addOption(options, "w", OPTION_WHERE, true);
         addOption(options, "f", OPTION_FORCE, false);
         addOption(options, "o", OPTION_OUT, true);
+        addOption(options, "r", OPTION_REVERSE, false);
         buildCryptoOptions(options);
     }
 
@@ -380,8 +386,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void reloadNode(CommandLine line, List<String> args) {
         String nodeId = popArg(args, "Node ID");
+        boolean reverse = line.hasOption(OPTION_REVERSE);
         IDataService dataService = getSymmetricEngine().getDataService();
-        String message = dataService.reloadNode(nodeId, false, "symadmin");
+        String message = dataService.reloadNode(nodeId, reverse, "symadmin");
         System.out.println(message);
     }
 
