@@ -149,5 +149,26 @@ public class FileTriggerRouter implements Serializable {
     }
 
     
+    public String getTriggerId() {
+        return this.fileTrigger != null ? this.fileTrigger.getTriggerId() : null;
+    }
+    
+    public String getRouterId() {
+        return this.router != null ? this.router.getRouterId() : null;
+    }
+    
+    public void setTriggerId(String triggerId) {
+        if (this.fileTrigger == null) {
+            this.fileTrigger = new FileTrigger();
+        }
+        this.fileTrigger.setTriggerId(triggerId);
+    }
+    
+    public void setRouterId(String routerId) {
+        if (this.router == null) {
+            this.router = new Router();
+        }
+        this.router.setRouterId(routerId);
+    }
     
 }
