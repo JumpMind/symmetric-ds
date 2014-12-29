@@ -1,7 +1,7 @@
 
 === LDAP
 
-Configuring LDAP on SymmetricDS is as simple as setting up the following three <<Parameters>>.
+Configuring a <<Users>> authentication on SymmetricDS using LDAP is as simple as setting up the following three <<Parameters>>.
 
 console.auth.ldap.baseDN::  The LDAP base DN to search for a user.
                             [&#xA0;Default:&#xA0;]

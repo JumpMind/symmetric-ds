@@ -1,4 +1,36 @@
 
 === Users
 
-TODO
+Additional users may be set up to access the SymmetricDS web console.
+
+image::users.png[]
+
+==== Authentication Method
+
+There are two ways to authenticate a user.
+
+===== Internal Authentication  
+
+Users are stored in the SYM_CONSOLE_USER table.
+
+===== LDAP Authentication
+
+To set up User Authentication using LDAP, please refer to the <<LDAP>> section.
+
+==== Role
+
+Users can be given a role of ADMIN, READ, or WRITE.
+
+===== Admin
+
+Admin users can read and write data and have full control of the SymmetricDS web console.
+
+===== Read
+
+Read users can read data, but cannot write data.  Read users have a limited control of the SymmetricDS web console.
+
+===== Write
+
+Write users can read and write data, but have a limited control of the SymmetricDS web console. 
+
+image::users-add.png[]
