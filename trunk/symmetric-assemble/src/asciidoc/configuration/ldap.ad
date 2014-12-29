@@ -1,4 +1,21 @@
 
 === LDAP
 
-TODO
+Configuring LDAP on SymmetricDS is as simple as setting up the following three <<Parameters>>.
+
+console.auth.ldap.baseDN::  The LDAP base DN to search for a user.
+                            [&#xA0;Default:&#xA0;]
+                        
+console.auth.ldap.host::  The LDAP server host name.
+                            [&#xA0;Default:&#xA0;]
+                            
+console.auth.ldap.searchAttribute::  LDAP attribute to search for.
+                            [&#xA0;Default:&#xA0;]
+
+image::ldap/ldap-parameters.png[]
+                            
+After setting these parameters, choose the Target Node you want to Test against and click the Test button.  Enter the user credentials and click Test to test the authentication.
+
+image::ldap/ldap-authentication.png[]
+
+IMPORTANT: You must have values for all three of the parameters or the test will fail.
