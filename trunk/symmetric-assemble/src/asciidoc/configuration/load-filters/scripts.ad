@@ -32,12 +32,12 @@ Handle Error Script:: A script to execute if data cannot be processed.
 |Variable|BSH|JAVA|Description
 
 |engine|X||The Symmetric engine object.
-|'<COLUMN_NAME>'|X||The source values for the row being inserted, updated or deleted.
-|'OLD_<COLUMN_NAME>'|X||The old values for the row being inserted, updated or deleted.
+|COLUMN_NAME|X||The source values for the row being inserted, updated or deleted.
+|OLD_COLUMN_NAME|X||The old values for the row being inserted, updated or deleted.
 |context|X|X|The data context object for the data being inserted, updated or deleted. .
 |table|X|X|The table object for the table being inserted, updated or deleted.
-|data|X|X|The CvsData object for the data change.
-|error|X|X|java.lang.Exception
+|data|X|X|The `CsvData` object for the data change.
+|error|X|X|`java.lang.Exception`
 
 |===
 
@@ -138,7 +138,7 @@ image::load-filters/load-filter-example.png[]
 image::load-filters/load-filter-example-bsh.png[]
 
 .Beanshell Expression
-[source, BSH]
+[source, Java]
 ----
 authListener = new javax.mail.Authenticator() {
   protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
