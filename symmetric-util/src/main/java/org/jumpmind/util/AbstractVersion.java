@@ -29,16 +29,12 @@ import java.util.jar.Manifest;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Follow the Apache versioning scheme documented <a
  * href="http://apr.apache.org/versioning.html">here</a>.
  */
 abstract public class AbstractVersion {
-
-    final Logger log = LoggerFactory.getLogger(getClass());
 
     public static final int MAJOR_INDEX = 0;
 
