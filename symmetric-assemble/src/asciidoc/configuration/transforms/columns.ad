@@ -5,6 +5,13 @@ Transforms are not complete until the columns involved in the transformation hav
 there will be several columns defined for each transform, each of which will define a source column and a target
 column.
 
+ifdef::pro[]
+To see a transform's columns, select the transform and press "Edit Columns".
+
+image::transforms/transform-edit-columns.png[]
+
+endif::pro[]
+
 PK:: Indicates that this mapping is used to define the "primary key" for identifying the target row(s) (which may or may not be the true primary key of the target table). 
 This is used to define the "where" clause when an Update or Delete on the target is occurring. 
 
