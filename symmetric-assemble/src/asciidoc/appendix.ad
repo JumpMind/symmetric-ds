@@ -78,6 +78,11 @@ include::appendix/versioning.ad[]
 [appendix]
 == Upgrading
 
+ifdef::pro[]
+The SymmetricDS Pro setup program can upgrade an existing installation, which is the preferred method
+for the Pro version.  The full upgrade and incremental upgrade methods work best with the open source version.
+endif::pro[]
+
 The upgrade process can either be a full upgrade of a new installation that copies in existing settings
 or an incremental upgrade of an existing installation that copies in new library files.
 A full upgrade is the cleanest method that ensures all new files are updated, while an incremental upgrade
@@ -86,7 +91,39 @@ An incremental upgrade works best for patch releases and most minor releases.
 When SymmetricDS is started after a major or minor software update, it will alter its database tables with any changes needed
 for that release. 
 
+ifdef::pro[]
+
+=== Pro Upgrade
+
+The SymmetricDS Pro setup program can upgrade an existing installation to a newer version.  
+It stops the server, makes a backup copy of libraries, copies in new libraries, merges settings, and restarts the server.
+
+[.float-group]
+--
+[.left.text-left]
+image::upgrade/upgrade-1.png[]
+
+Select *Upgrade* for the installation type to upgrade an existing installation to a newer version.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::upgrade/upgrade-2.png[]
+
+Provide the directory of the existing installation.  The directory is verified as a valid installation of SymmetricDS
+before continuing.
+
+--
+
+endif::pro[]
+
 === Full Upgrade
+
+ifdef::pro[]
+The full upgrade method is for the open source version; SymmetricDS Pro users should use the <<Pro Upgrade>> method.
+endif::pro[]
 
 For major releases and clean upgrades, copy old settings into a new installation using the following steps:
 
@@ -99,6 +136,10 @@ For major releases and clean upgrades, copy old settings into a new installation
 . Restart SymmetricDS.
   
 === Incremental Upgrade 
+
+ifdef::pro[]
+The incremental upgrade method is for the open source version; SymmetricDS Pro users should use the <<Pro Upgrade>> method.
+endif::pro[]
  
 For patch and minor releases, copy and replace the library folders of the installation using the following steps:
 
