@@ -161,7 +161,12 @@ endif::pro[]
 SymmetricDS can be configured to start automatically when the system boots, running as a Windows service or Linux/Unix daemon.
 A wrapper process starts SymmetricDS and monitors it, so it can be restarted if it runs out of memory or exits unexpectedly.
 The wrapper writes standard output and standard error to the `logs/wrapper.log` file.
-    
+
+ifdef::pro[]
+For SymmetricDS Pro, you may have already installed as a service, so this section will show you how to manually install
+the service from command line.
+endif::pro[]
+
 ==== Running as a Windows Service
        
 To install the service, run the following command as Administrator:
