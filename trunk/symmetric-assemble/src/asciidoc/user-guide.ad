@@ -5,20 +5,21 @@
 :source-highlighter: coderay
 
 = SymmetricDS User Guide
-Copyright (C) 2007-2014 JumpMind, Inc
+Copyright (C) 2007-2015 JumpMind, Inc
 Version 3.7
 _Permission to use, copy, modify, and distribute this SymmetricDS User Guide for any purpose and without fee is hereby granted in perpetuity, provided that the above copyright notice and this paragraph appear in all copies._
 [preface]
 :numbered!:
 == Preface
-SymmetricDS is an open-source, web-enabled, database independent, data synchronization software application. It uses
-web and database technologies to replicate tables between relational databases in near
-real time. The software was designed to scale for a large number of databases, work
-across low-bandwidth connections, and withstand periods of network outages.
-        
-This User Guide introduces SymmetricDS and its uses for data synchronization. It is
-intended for users who want to be quickly familiarized with the software, configure it,
-and use its many features.  This version of the guide was generated on {docdate}.
+
+SymmetricDS is open source software for database and file database synchronization, with support for multi-master replication, 
+filtered synchronization, and transformation.
+It uses web and database technologies to replicate data as a scheduled or near real-time operation. 
+The software was designed to scale for a large number of nodes, work across low-bandwidth connections, and withstand periods of network outage.
+
+This User Guide introduces SymmetricDS and its features for data synchronization. 
+It is intended for users, developers, and administrators who want to install, configure, and manage it.
+This version of the guide was generated on {docdate}.
 
 :numbered:
 
