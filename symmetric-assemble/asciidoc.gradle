@@ -59,7 +59,7 @@ task generateDocs(type: Copy) {
     
     destinationDir = file("$buildDir/src/asciidoc")
     if (project.properties.containsKey('pro')) {
-        destinationDir = file(symAssembleDir + "/../symmetric-pro/src/main/webapp/doc")
+        destinationDir = file("../symmetric-pro/src/main/webapp/doc")
     }
 
     into('html') {
