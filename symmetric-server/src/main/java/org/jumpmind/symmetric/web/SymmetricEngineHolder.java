@@ -417,19 +417,6 @@ public class SymmetricEngineHolder {
         }
         return engineName;
     }
-
-    public boolean isMissingBasicConfiguration() {
-        int triggerRouterCount = 0;
-        
-        Collection<ServerSymmetricEngine> all = getEngines().values();
-        for (ISymmetricEngine currentEngine : all) {
-            triggerRouterCount = currentEngine.getTriggerRouterService().getTriggerRouters().size();
-            if (triggerRouterCount > 0) {
-                break;
-            }
-        }
-        return triggerRouterCount == 0;
-    }
     
     public static Date getCreateTime() {
         return createTime;
