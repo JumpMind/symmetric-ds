@@ -20,3 +20,12 @@ code="2". LINE NUMBER=1. SQLSTATE=54040
 ----
            
 Simply create a system temporary tablespace that has a bigger page size. A page size of 8k will probably suffice.
+
+=== DB2 for IBM i
+The DB2 for IBM i dialect is for connecting to a database on IBM iSeries (AS/400) machines.  It was tested with the
+http://jt400.sourceforge.net/[jt400 JDBC driver].  The "libraries" property is used in the JDBC URL
+to set the default schema.
+
+----
+jdbc:as400://hostname/;libraries=myschema
+----

@@ -747,23 +747,14 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected void removeInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk) throws SQLException {
         List<String> columnNames = new ArrayList<String>();
-        boolean mustBeUnique = !getPlatformInfo().isSystemForeignKeyIndicesAlwaysNonUnique();
 
         for (int columnIdx = 0; columnIdx < fk.getReferenceCount(); columnIdx++) {
-            String name = fk.getReference(columnIdx).getLocalColumnName();
-            Column localColumn = table.findColumn(name, getPlatform().getDdlBuilder()
-                    .isDelimitedIdentifierModeOn());
-
-            if (mustBeUnique && !localColumn.isPrimaryKey()) {
-                mustBeUnique = false;
-            }
-            columnNames.add(name);
+            columnNames.add(fk.getReference(columnIdx).getLocalColumnName());
         }
 
         for (int indexIdx = 0; indexIdx < table.getIndexCount();) {
             IIndex index = table.getIndex(indexIdx);
-            if ((mustBeUnique == index.isUnique()) && matches(index, columnNames)
-                    && isInternalForeignKeyIndex(connection, metaData, table, fk, index)) {
+            if (matches(index, columnNames) && isInternalForeignKeyIndex(connection, metaData, table, fk, index)) {
                 fk.setAutoIndexPresent(true);
                 table.removeIndex(indexIdx);
             } else {
