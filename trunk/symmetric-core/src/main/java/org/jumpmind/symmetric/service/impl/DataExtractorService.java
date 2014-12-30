@@ -950,15 +950,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             table.setPrimaryKeys(triggerHistory.getParsedPkColumnNames());
         }
 
-        Router router = triggerRouterService.getRouterById(routerId, false);
-        if (router != null && router.isUseSourceCatalogSchema()) {
-            table.setCatalog(catalogName);
-            table.setSchema(schemaName);
-        } else {
-            table.setCatalog(null);
-            table.setSchema(null);
-        }
-        if (router != null && setTargetTableName) {
+        Router router = triggerRouterService.getRouterById(routerId, false);        
+        if (router != null && setTargetTableName) {            
+            if (router.isUseSourceCatalogSchema()) {
+                table.setCatalog(catalogName);
+                table.setSchema(schemaName);
+            } else {
+                table.setCatalog(null);
+                table.setSchema(null);
+            }
+            
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetCatalogName())) {
                 table.setCatalog(null);
             } else if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
