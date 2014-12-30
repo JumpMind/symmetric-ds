@@ -100,26 +100,28 @@ public class ExtensionService extends AbstractService implements IExtensionServi
     }
 
     protected void registerExtension(Extension extension) {
-        if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_JAVA)) {
-            try {
-                Object ext = SimpleClassCompiler.getInstance().getCompiledClass(extension.getExtensionText());
-                registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
-            } catch (Exception e) {
-                log.error("Error while compiling Java extension " + extension.getExtensionId(), e);
+        if (extension.getExtensionText() != null) {
+            if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_JAVA)) {
+                try {
+                    Object ext = SimpleClassCompiler.getInstance().getCompiledClass(extension.getExtensionText());
+                    registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
+                } catch (Exception e) {
+                    log.error("Error while compiling Java extension " + extension.getExtensionId(), e);
+                }
+            } else if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_BSH)) {
+                try {
+                    Interpreter interpreter = new Interpreter();
+                    interpreter.eval(extension.getExtensionText());
+                    Object ext = interpreter.getInterface(Class.forName(extension.getInterfaceName()));
+                    registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
+                } catch (EvalError e) {
+                    log.error("Error while parsing BSH extension " + extension.getExtensionId(), e);
+                } catch (ClassNotFoundException e) {
+                    log.error("Interface class not found for BSH extension " + extension.getExtensionId(), e);
+                }
+            } else {
+                log.error("Skipping extension " + extension.getExtensionId() + ", unknown extension type " + extension.getExtensionType());
             }
-        } else if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_BSH)) {
-            try {
-                Interpreter interpreter = new Interpreter();
-                interpreter.eval(extension.getExtensionText());
-                Object ext = interpreter.getInterface(Class.forName(extension.getInterfaceName()));
-                registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
-            } catch (EvalError e) {
-                log.error("Error while parsing BSH extension " + extension.getExtensionId(), e);
-            } catch (ClassNotFoundException e) {
-                log.error("Interface class not found for BSH extension " + extension.getExtensionId(), e);
-            }
-        } else {
-            log.error("Skipping extension " + extension.getExtensionId() + ", unknown extension type " + extension.getExtensionType());
         }
     }
     
