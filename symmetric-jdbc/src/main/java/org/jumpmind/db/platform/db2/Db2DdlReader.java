@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
@@ -80,7 +81,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             // metadata
             String sql = "SELECT NAME FROM " + systemSchemaName + ".SYSCOLUMNS WHERE TBNAME=? AND IDENTITY=?";
             if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
-                sql = sql + " AND TBCREATOR=?";
+                sql = sql + " AND DBNAME=?";
             }
 
             PreparedStatement pstmt = null;
@@ -88,7 +89,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             try {
                 pstmt = connection.prepareStatement(sql);
                 pstmt.setString(1, table.getName());
-                pstmt.setString(2, "Y");
+                pstmt.setString(2, getTrueValue());
                 if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
                     pstmt.setString(3, metaData.getSchemaPattern());
                 }
@@ -110,6 +111,10 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             }
         }
         return table;
+    }
+
+    protected String getTrueValue() {
+    	return "Y";
     }
 
     @Override
@@ -216,7 +221,13 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             return pkNames.contains(index.getName());
         }
     }
-    
+
+    @Override
+    protected boolean isInternalForeignKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) throws SQLException {
+    	return fk.getName().equalsIgnoreCase(index.getName());
+    }
+
     public void setSystemSchemaName(String systemSchemaName) {
 		this.systemSchemaName = systemSchemaName;
 	}

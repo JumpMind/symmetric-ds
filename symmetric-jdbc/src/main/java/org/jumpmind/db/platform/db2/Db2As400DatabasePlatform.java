@@ -12,9 +12,16 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
 
     @Override
     protected Db2DdlReader createDdlReader() {
-        Db2DdlReader reader = new Db2DdlReader(this);
-        reader.setSystemSchemaName("QSYS2");
-        return reader;
+        return new Db2As400DdlReader(this);
+    }
+
+    @Override
+    protected Db2DdlBuilder createDdlBuilder() {
+        return new Db2As400DdlBuilder();
+    }
+
+    public String getDefaultCatalog() {
+        return null;
     }
 
 }
