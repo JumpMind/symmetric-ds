@@ -8,6 +8,7 @@ dependencies {
 }
 
 task generateAppendixes {
+    
     doLast{
         javaexec {
             main = 'org.jumpmind.properties.DefaultParameterParser'
@@ -59,7 +60,7 @@ task generateDocs(type: Copy) {
     
     destinationDir = file("$buildDir/src/asciidoc")
     if (project.properties.containsKey('pro')) {
-        destinationDir = file("../symmetric-pro/src/main/webapp/doc")
+        destinationDir = file(rootProject.buildDir.path + "/../../symmetric-pro/src/main/webapp/doc")
     }
 
     into('html') {
