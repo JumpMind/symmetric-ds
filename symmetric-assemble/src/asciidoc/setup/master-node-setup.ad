@@ -1,6 +1,6 @@
-=== Registration Node Setup
+=== Master Node Setup
 
-The registration node requires that the node tables be populated with records that represent the registration node.
+The master node requires that the node tables be populated with records that represent the node.
 
 Four tables are used to represent nodes.  Nodes are defined in the <<NODE>> table. 
 The current node is represented by a _single_ row in the <<NODE_IDENTITY>> table. 
