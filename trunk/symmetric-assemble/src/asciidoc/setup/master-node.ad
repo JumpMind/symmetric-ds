@@ -50,5 +50,15 @@ image::wizard-connect/wizard-connect-user.png[]
 
 The admin user is the user and password required to access the SymmetricDS web console.  
 
-Additional users can be setup in the web console after the wizard completes.
+Additional users can be setup in the web console after the wizard completes.  For more information, see <<Users>>.
+--
+
+==== Summary
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-ready.png[]
+
+The node is now ready to be installed.
 --
