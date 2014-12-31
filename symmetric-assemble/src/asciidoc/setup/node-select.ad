@@ -4,7 +4,7 @@
 Open a web browser to the SymmetricDS web console (default will be http:.//localhost:31415).   When there are not any engines found for the current installation of SymmetricDS you will be prompted 
 with the following screen to get started.   
 
-NOTE: All three of these options (master, node, and demo) will create engine property files in your /engines folder of SymmetricDS).
+NOTE: All three of these options (master, node, and demo) will create engine property files in your /engines folder of SymmetricDS.
 
 [.float-group]
 --
@@ -24,4 +24,4 @@ Demo:: Installs a sample SymmetricDS configuration with preloaded tables to obse
 
 To setup the first node in a synchronization scenario see <<Master Node>>.
 
-To connect a new node to an existing synchronization scenario see <<Wizard: Connect a Node>>.
+To connect a new node to an existing synchronization scenario see <<Add Node>>.

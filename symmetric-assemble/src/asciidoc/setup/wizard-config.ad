@@ -3,10 +3,14 @@
 
 The configuration wizard is responsible for setting up the necessary SymmetricDS components with their 
 `default settings` to configure synchronization.   Behind the scenes it will create the appropriate 
-triggers and link them based on the selections.
+triggers and link them based on the selections.  The Quick Config Wizard can be found under the Configure->Overview screen.
+
+image::configure-overview.png[]
 
 NOTE: The quick config wizard will show a screen for each router that is in place.  The below example
 shows the profile "Standard 2 Tier" with a client and server.
+
+image::wizard-config/wizard-config-start.png[]
 
 ==== Router 1: Client to Server
 
@@ -36,14 +40,14 @@ will be configured for `bi-directional` sync.
 --
 
 
-==== Verify Configuration
+==== Configuration Summary
 
 [.float-group]
 --
 [.left.text-left]
 image::wizard-config/wizard-config-verify.png[]
 
-Verify the configuration that will be created.
+The summary of the configuration made by the wizard.
 
 --
 

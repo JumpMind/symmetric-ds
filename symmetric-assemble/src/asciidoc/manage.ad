@@ -46,7 +46,7 @@ the
 JMX method which takes a
 `node_id`
 as an argument.
-ifndef::pro[]
+endif::pro[]
 		
 ==== Initial Loads
 
@@ -113,7 +113,7 @@ on knowledge of how the data is structured.
 Initial load data is always queried from the source
 database table. All data is passed through the configured router to
 filter out data that might not be targeted at a node.
-ifndef::pro[]
+endif::pro[]
 
 			
 ===== Target table prep for initial load
