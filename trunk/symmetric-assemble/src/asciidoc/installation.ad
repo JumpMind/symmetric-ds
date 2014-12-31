@@ -36,15 +36,10 @@ the web server any further.
 [.float-group]
 --
 [.left.text-left]
-image:install/install-first.png[]
+image::install/install-first.png[]
 
 In order to open the .jar installation file, you must have the Java Runtime Environment (JRE) and it must be attached to the .jar file.
-To do this, either double-click on the .jar file or run the following command in the command prompt:
-
-[source, cli]
-----
-java -jar <filename.jar>
-----
+To do this, either double-click on the .jar file or run `java -jar <filename.jar>` in the command prompt.
 
 Now that the .jar file is open, press Next.
 
