@@ -2,7 +2,8 @@
 == Setup
 
 The first node created is called the registration server.  The registration server is where configuration is managed.  Other nodes register with the 
-registration server to get their initial configuration.  After registering with the registration server configuration is synchronized to other nodes.
+registration server to get their initial configuration.  After a node is registered, additional configuration changes made at the registration server
+are synchronized to the registered node.
 
 ifndef::pro[]
 All nodes require a properties file that contains identity information and database connection information.  SymmetricDS configuration needs to be inserted via 
