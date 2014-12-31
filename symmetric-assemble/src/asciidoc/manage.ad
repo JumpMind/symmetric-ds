@@ -8,8 +8,16 @@ synchronization of data to and from that database.  A node communicates with its
 database via JDBC.  Nodes communicate with each other over HTTP/S using the protocol described 
 by <<Data Format>>.
     
+==== Add Node
+
+ifdef::pro[]
+include::manage/add-node.ad[]
+endif::pro[]
+	
+	
 ==== Registration
-			
+
+ifndef::pro[]		
 Node registration is the act of setting up a new
 <<NODE>>
 and
@@ -38,9 +46,11 @@ the
 JMX method which takes a
 `node_id`
 as an argument.
-			
+ifndef::pro[]
+		
 ==== Initial Loads
 
+ifndef::pro[]
 An initial load is the process of seeding tables at a
 target node with data from its parent node. When a node connects and
 data is extracted, after it is registered and if an initial load was
@@ -103,6 +113,8 @@ on knowledge of how the data is structured.
 Initial load data is always queried from the source
 database table. All data is passed through the configured router to
 filter out data that might not be targeted at a node.
+ifndef::pro[]
+
 			
 ===== Target table prep for initial load
 
