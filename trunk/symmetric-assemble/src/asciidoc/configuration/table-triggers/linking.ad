@@ -18,16 +18,10 @@ endif::pro[]
 See <<Linking Routers>> for additional information about linking to routers.
 
 ifdef::pro[]
-NOTE: The "Link" button will remain disabled for triggers that have already been linked.
 
-.Select triggers then hit the "Link" button.
+.Create a new Table Routing Item
 ====
-image::triggers/triggers-link-select.png[align="center"]
-====
-
-.Select routers that will be used to send the captured data to a target.
-====
-image::triggers/triggers-link.png[align="center"]
+image::triggers/triggers-link-router.png[align="center"]
 ====
 
 Initial Load SQL:: SQL used as part of the WHERE clause on a SQL statement during the initial load process to extract data from the source node
@@ -41,10 +35,6 @@ IMPORTANT: Initial Load Delete SQL will only be used if the following parameter 
 initial.load.delete.first=true
 ----
 
-.View hidden columns available while linking triggers
-====
-image::triggers/triggers-link-hidden.png[align="center"]
-====
 endif::pro[]
 
 Enabled:: Each individual trigger-router combination can be disabled or enabled if needed. By default, a trigger router is enabled, 
