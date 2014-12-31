@@ -6,8 +6,8 @@ Configuring SymmetricDS not only helps you set up data synchronization, but allo
 ifdef::pro[]
 
 The Configure Overview page is a one stop shop for the configuration of SymmetricDS.  
-On this page you will find the Quick Config Wizard to help you start your data synchronization using SymmetricDS.
-You will also find tools to help you import and export your SymmetricDS configuration.  
+On this page you will find the <<Wizard: Quick Config>> to help you start your data synchronization using SymmetricDS.
+You will also find tools to help you <<Import>> and <<Export>> your SymmetricDS configuration.  
 Lastly, a table will be displayed that has a count of each SymmetricDS Configuration Item in your configuration.
 If a required SymmetricDS Configuration Item is missing from your configuration, a warning symbol will be displayed next to its name.
 
