@@ -3,59 +3,11 @@
 
 === Nodes
 
-A
-_node_
-is a single instance of SymmetricDS. It can be thought of as a proxy for a database which manages the
-synchronization of data to and/or from its database. For our example retail application, the following would be
-SymmetricDS nodes:
-
-* Each point-of-sale workstation.
-* The central office database server.
-
-Each node of SymmetricDS can be either embedded in another application, run stand-alone, or even run in the
-background as a service. If desired, nodes can be clustered to help disperse load if they send and/or receive
-large volumes of data to or from a large number of nodes.
-
-Individual nodes are easy to identify when planning your implementation. If a database exists in your domain
-that needs to send or receive data, there needs to be a corresponding SymmetricDS instance (a node) responsible
-for managing the synchronization for that database.
-        
-==== Creating Nodes
-
-Nodes are defined in the
-<<NODE>>
-table. Two other tables play a direct role in defining a node, as well
-The first is
-<<NODE_IDENTITY>>
-. The
-_only_
-row in this table is inserted in the database when the node first
-_registers_
-with a parent node. In the case of a root node, the row is entered by
-the user. The row is used by a node instance to determine its node
-identity.
-		
-The following SQL statements set up a top-level registration server as a
-node identified as "00000" in the "corp" node group.
-
-[source,sql]
-----
-insert into SYM_NODE (node_id, node_group_id, external_id, sync_enabled) values ('00000', 'corp', '00000', 1); insert into SYM_NODE_IDENTITY values ('00000');
-----
-
-The second table,
-<<NODE_SECURITY>>
-has rows created for each
-_child_
-node that registers with the node, assuming auto-registration is
-enabled. If auto registration is not enabled, you must create a row in
-<<NODE>>
-and
-<<NODE_SECURITY>>
-for the node to be able to register. You can also, with this table,
-manually cause a node to re-register or do a re-initial load by setting
-the corresponding columns in the table itself. 
-		
+One _node_ is associated with one relational database. A node manages the
+synchronization of data to and from that database.  A node communicates with its 
+database via JDBC.  Nodes communicate with each other over HTTP/S using the protocol described 
+by <<Data Format>>.
+    
 ==== Registration
 			
 Node registration is the act of setting up a new
