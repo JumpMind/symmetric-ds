@@ -95,6 +95,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private Map<String, TriggerRoutersCache> triggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();
 
     private Map<String, List<TriggerRouter>> triggerRouterCacheByChannel = new HashMap<String, List<TriggerRouter>>();
+    
+    private List<TriggerRouter> triggerRoutersCache = new ArrayList<TriggerRouter>();
 
     private long triggerRouterPerNodeCacheTime;
 
@@ -788,8 +790,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return getSql("select ", "selectTriggerRoutersColumnList", "selectTriggerRoutersSql", sql);
     }
 
-    public List<TriggerRouter> getTriggerRouters() {
-        return enhanceTriggerRouters(sqlTemplate.query(getTriggerRouterSql(null), new TriggerRouterMapper()));
+    public List<TriggerRouter> getTriggerRouters(boolean refreshCache) {
+        long triggerRouterCacheTimeoutInMs = parameterService
+                .getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
+        List<TriggerRouter> testValue = triggerRoutersCache;
+        if (testValue == null
+                || refreshCache
+                || System.currentTimeMillis() - this.triggerRouterPerChannelCacheTime > triggerRouterCacheTimeoutInMs) {
+            synchronized (cacheLock) {
+
+                List<TriggerRouter> newValue = enhanceTriggerRouters(sqlTemplate.query(
+                        getTriggerRouterSql(null), new TriggerRouterMapper()));
+                triggerRoutersCache = newValue;
+                testValue = newValue;
+            }
+        }
+        return testValue;
     }
 
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId) {
@@ -835,18 +851,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     		triggerRouter.setRouter(routersById.get(triggerRouter.getRouter().getRouterId()));    		
     	}
     	return triggerRouters;
-    }
-
-    public List<TriggerRouter> getTriggerRoutersFor(String tableName, String sourceNodeGroupId) {
-        List<TriggerRouter> results = new ArrayList<TriggerRouter>();
-        List<TriggerRouter> all = getTriggerRouters();
-        for (TriggerRouter triggerRouter : all) {
-            if (triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId().equals(sourceNodeGroupId) &&
-                    triggerRouter.getTrigger().getSourceTableName().equals(tableName)) {
-                results.add(triggerRouter);
-            }
-        }
-        return results;
     }
 
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId) {
@@ -950,6 +954,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.SMALLINT, Types.TIMESTAMP,
                             Types.VARCHAR, Types.TIMESTAMP, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR });
         }
+        
+        clearCache();
     }
 
     protected void resetTriggerRouterCacheByNodeGroupId() {
@@ -992,7 +998,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.TIMESTAMP, Types.VARCHAR,
                             Types.TIMESTAMP, Types.VARCHAR });
         }
-        resetTriggerRouterCacheByNodeGroupId();
+        clearCache();
     }
 
     public boolean isRouterBeingUsed(String routerId) {
@@ -1057,6 +1063,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR });
         }
+        
+        clearCache();
     }
 
     public void syncTriggers() {

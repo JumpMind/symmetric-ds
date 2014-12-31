@@ -62,8 +62,6 @@ public class TriggerRouter implements Serializable {
     private String lastUpdateBy;
     
     private boolean pingBackEnabled = false;
-
-    private String triggerId;
     
     public TriggerRouter() {
         this(new Trigger(), new Router());

@@ -325,17 +325,13 @@ public class RouterService extends AbstractService implements IRouterService {
             final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(
                     false);
 
-            Map<String, List<TriggerRouter>> triggerRouters = engine.getTriggerRouterService()
-                    .getTriggerRoutersByChannel(engine.getParameterService().getNodeGroupId());
-
             for (NodeChannel nodeChannel : channels) {
                 if (nodeChannel.isEnabled()) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
                     dataCount += routeDataForChannel(processInfo,
                             nodeChannel,
                             sourceNode,
-                            producesCommonBatches(nodeChannel.getChannel(),
-                                    triggerRouters.get(nodeChannel.getChannelId())), gapDetector);
+                            producesCommonBatches(nodeChannel.getChannel()), gapDetector);
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug(
@@ -352,16 +348,17 @@ public class RouterService extends AbstractService implements IRouterService {
         return dataCount;
     }
 
-    protected boolean producesCommonBatches(Channel channel,
-            List<TriggerRouter> allTriggerRoutersForChannel) {
+    protected boolean producesCommonBatches(Channel channel) {
         String channelId = channel.getChannelId();
         Boolean producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
                 && !channel.isFileSyncFlag()
                 && !channel.isReloadFlag() 
                 && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
         String nodeGroupId = parameterService.getNodeGroupId();
-        if (allTriggerRoutersForChannel != null) {
-            for (TriggerRouter triggerRouter : allTriggerRoutersForChannel) {
+        List<TriggerRouter> triggerRouters = engine.getTriggerRouterService()
+                .getTriggerRouters(false);
+        if (triggerRouters != null) {
+            for (TriggerRouter triggerRouter : triggerRouters) {
                 IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
                 /*
                  * If the data router is not a default data router or there will
@@ -380,7 +377,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         if (triggerRouter.getTrigger().isSyncOnIncomingBatch()) {
                             String tableName = triggerRouter.getTrigger()
                                     .getFullyQualifiedSourceTableName();
-                            for (TriggerRouter triggerRouter2 : allTriggerRoutersForChannel) {
+                            for (TriggerRouter triggerRouter2 : triggerRouters) {
                                 if (triggerRouter2.getTrigger().getFullyQualifiedSourceTableName()
                                         .equals(tableName)
                                         && triggerRouter2.getRouter().getNodeGroupLink()
@@ -690,16 +687,17 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     } else {
                         try {
-                        IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
-                        context.addUsedDataRouter(dataRouter);
-                        long ts = System.currentTimeMillis();
-                        nodeIds = dataRouter.routeToNodes(context, dataMetaData,
+                            IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
+                            context.addUsedDataRouter(dataRouter);
+                            long ts = System.currentTimeMillis();
+                            nodeIds = dataRouter.routeToNodes(context, dataMetaData,
                                     findAvailableNodes(triggerRouter, context), false, false,
                                     triggerRouter);
-                        context.incrementStat(System.currentTimeMillis() - ts,
-                                ChannelRouterContext.STAT_DATA_ROUTER_MS);
+                            context.incrementStat(System.currentTimeMillis() - ts,
+                                    ChannelRouterContext.STAT_DATA_ROUTER_MS);
                         } catch (RuntimeException ex) {
-                            StringBuilder failureMessage = new StringBuilder("Failed to route data: ");
+                            StringBuilder failureMessage = new StringBuilder(
+                                    "Failed to route data: ");
                             failureMessage.append(data.getDataId());
                             failureMessage.append(" for table: ");
                             failureMessage.append(data.getTableName());

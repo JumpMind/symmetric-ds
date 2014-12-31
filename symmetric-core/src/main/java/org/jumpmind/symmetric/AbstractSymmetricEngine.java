@@ -605,7 +605,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     groupletService.deleteGrouplet(grouplet);
                 }
                 
-                List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters();
+                List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters(true);
                 for (TriggerRouter triggerRouter : triggerRouters) {
                     triggerRouterService.deleteTriggerRouter(triggerRouter);
                 }

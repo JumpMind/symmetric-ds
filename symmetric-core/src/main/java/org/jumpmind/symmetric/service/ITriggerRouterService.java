@@ -46,9 +46,7 @@ public interface ITriggerRouterService {
     
     public List<TriggerHistory> getActiveTriggerHistories(String tableName);
 
-    public List<TriggerRouter> getTriggerRouters();
-    
-    public List<TriggerRouter> getTriggerRoutersFor(String tableName, String sourceNodeGroupId);
+    public List<TriggerRouter> getTriggerRouters(boolean refreshCache);
     
     /**
      * Return a list of triggers used when extraction configuration data during 
