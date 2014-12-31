@@ -1,9 +1,9 @@
 
 == Setup
 
-The first node created is called the registration server.  The registration server is where configuration is managed.  Other nodes register with the 
-registration server to get their initial configuration.  After a node is registered, additional configuration changes made at the registration server
-are synchronized to the registered node.
+The first node created is called the Master Node.  The master node is where configuration is managed.  Other nodes typically register with the 
+master node to get their initial configuration.  After nodes are registered, additional configuration changes made at the master node
+are synchronized to the registered nodes automatically.
 
 ifndef::pro[]
 All nodes require a properties file that contains identity information and database connection information.  SymmetricDS configuration needs to be inserted via 
@@ -20,6 +20,6 @@ endif::pro[]
 include::setup/engine-properties.ad[]
 
 ifndef::pro[]
-include::setup/registration-node-setup.ad[]
+include::setup/master-node-setup.ad[]
 endif::pro[]
 
