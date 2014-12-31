@@ -1,8 +1,12 @@
 
 == Setup
 
+The first node created is called the registration server.  The registration server is where configuration is managed.  Other nodes register with the 
+registration server to get their initial configuration.  After registering with the registration server configuration is synchronized to other nodes.
+
 ifndef::pro[]
-include::setup/engine-properties.ad[]
+All nodes require a properties file that contains identity information and database connection information.  SymmetricDS configuration needs to be inserted via 
+a SQL script at the registration server.
 endif::pro[]
 
 ifdef::pro[]
@@ -11,3 +15,10 @@ include::setup/master-node.ad[]
 include::setup/wizard-config.ad[]
 include::setup/wizard-connect.ad[]
 endif::pro[]
+
+include::setup/engine-properties.ad[]
+
+ifndef::pro[]
+include::setup/registration-node-setup.ad[]
+endif::pro[]
+
