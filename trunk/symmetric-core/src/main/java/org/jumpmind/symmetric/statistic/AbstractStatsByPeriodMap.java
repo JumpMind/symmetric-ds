@@ -41,7 +41,7 @@ abstract public class AbstractStatsByPeriodMap<T,M extends AbstractNodeHostStats
         startCal.set(Calendar.MILLISECOND, 0);
         startCal.set(Calendar.MINUTE, round(startCal.get(Calendar.MINUTE)));
         Date periodStart = startCal.getTime();
-        Date periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
+        Date periodEnd = DateUtils.addMinutes(periodStart, periodSizeInMinutes);
         M stat = null;
         while (periodStart.before(end)) {
             if (stat == null && stats.hasNext()) {
@@ -60,7 +60,7 @@ abstract public class AbstractStatsByPeriodMap<T,M extends AbstractNodeHostStats
                     addBlank(periodStart);
                 }
                 periodStart = periodEnd;
-                periodEnd = DateUtils.add(periodStart, Calendar.MINUTE, periodSizeInMinutes);
+                periodEnd = DateUtils.addMinutes(periodStart, periodSizeInMinutes);
             }
         }
     }
