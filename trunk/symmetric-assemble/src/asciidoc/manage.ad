@@ -7,13 +7,27 @@ One _node_ is associated with one relational database. A node manages the
 synchronization of data to and from that database.  A node communicates with its 
 database via JDBC.  Nodes communicate with each other over HTTP/S using the protocol described 
 by <<Data Format>>.
+
+ifdef::pro[]
+Nodes can be added and managed in the Nodes screen under the Manage tab.
+
+image::manage/manage-nodes.png[]
+endif::pro[]
+    
     
 ==== Add Node
+
+Multiple nodes can be hosted in a single SymmetricDS instance.  When more than one node is hosted in an instance it is called "multi-homing."    
+SymmetricDS will start a node for each properties file it finds in the engines directory.  
+
+ifndef::pro[]
+To add additional nodes to SymmetricDS, just add additional <<Engine Files>> to the engines directory.
+endif::pro[]
 
 ifdef::pro[]
 include::manage/add-node.ad[]
 endif::pro[]
-	
+
 	
 ==== Registration
 

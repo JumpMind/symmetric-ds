@@ -7,7 +7,7 @@ are synchronized to the registered nodes automatically.
 
 ifndef::pro[]
 All nodes require a properties file that contains identity information and database connection information.  SymmetricDS configuration needs to be inserted via 
-a SQL script at the registration server.
+a SQL script at the master node.
 endif::pro[]
 
 ifdef::pro[]

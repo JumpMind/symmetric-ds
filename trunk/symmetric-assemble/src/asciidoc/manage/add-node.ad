@@ -1,8 +1,7 @@
-Add another node to your synchronization scenario by using the "Connect a Node" wizard.
+Add nodes to your synchronization scenario by using the "Node Setup Wizard".  This wizard is automatically shown when less the 2 nodes are configured.  
+It can also be access from the Manage Nodes screen by pressing the _Add_ button. 
 
 image::wizard-connect/wizard-connect-menu.png[]
-
-NOTE: This wizard will be displayed automatically if only one node is currently setup.
 
 ==== Choosing node location
 
