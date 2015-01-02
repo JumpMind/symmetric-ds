@@ -1,9 +1,18 @@
+Multiple nodes can be hosted in a single SymmetricDS instance.  When more than one node is hosted in an instance it is called "multi-homing."    
+SymmetricDS will start a node for each properties file it finds in the engines directory.  
+
+ifndef::pro[]
+To add additional nodes to SymmetricDS, just add additional <<Engine Properties File>> to the engines directory.
+endif::pro[]
+
+ifdef::pro[]
+
 Add nodes to your synchronization scenario by using the "Node Setup Wizard".  This wizard is automatically shown when less the 2 nodes are configured.  
 It can also be access from the Manage Nodes screen by pressing the _Add_ button. 
 
 image::wizard-connect/wizard-connect-menu.png[]
 
-==== Choosing node location
+===== Choosing node location
 
 [.float-group]
 --
@@ -23,7 +32,7 @@ advantage of HTTPS to be sure your data is safe
 --
 
 
-==== Remote Nodes
+===== Remote Nodes
 
 [.float-group]
 --
@@ -39,9 +48,9 @@ connect.  By clicking this button registration will occur automatically and not 
 intervention.
 --
 
-==== Local Nodes
+===== Local Nodes
 
-===== Database Setup
+====== Database Setup
 
 [.float-group]
 --
@@ -54,7 +63,7 @@ After selecting a database type the jdbc url will be populated for you based on 
 host name, port, and database name if necessary (varies by type).
 --
 
-===== Registration URL
+====== Registration URL
 
 [.float-group]
 --
@@ -66,7 +75,7 @@ Provide the registration url in order to register the node on the SymmetricDS ne
 This url is the sync url of the Master Node.    
 --
 
-===== Node Group
+====== Node Group
 
 [.float-group]
 --
@@ -80,7 +89,7 @@ new group will need to be linked and associated to triggers and routers before s
 occur.  
 --
 
-===== External ID
+====== External ID
 
 [.float-group]
 --
@@ -93,7 +102,7 @@ For example, in retail examples this might be a register number when the node is
 
 --
 
-==== Communication Settings
+===== Communication Settings
 
 [.float-group]
 --
@@ -108,7 +117,7 @@ You can also select `HTTPS` or `HTTP` to be used for transferring data.
 --
 
 
-==== Initial Loads
+===== Initial Loads
 
 [.float-group]
 --
@@ -124,7 +133,7 @@ as part of the initial load process if they do not already exist.
 See <<Initial Loads>> for more details.
 --
 
-==== Finish
+===== Finish
 
 [.float-group]
 --
@@ -133,3 +142,5 @@ image::wizard-connect/wizard-connect-install.png[]
 
 The node is now ready to be installed.
 --
+
+endif::pro[]
