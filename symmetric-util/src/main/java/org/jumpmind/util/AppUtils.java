@@ -197,7 +197,7 @@ public class AppUtils {
             try {
                 Thread.sleep(ms);
             } catch (InterruptedException e) {
-                log.warn("{}", e.getMessage());
+                log.info("Interrupted while sleeping for " + ms);
             }
         }
     }
