@@ -94,7 +94,7 @@ Commonly used algorithms that are supported include aes, blowfish, desede, and r
 [source, cli]
 ----
 keytool -keystore keystore -storepass changeit -storetype jceks \
-   -alias sym.secret -genseckey -keyalg aes -keysize 128</programlisting>
+   -alias sym.secret -genseckey -keyalg aes -keysize 128
 ----
 
 If using an alternative provider, place the provider JAR file in the SymmetricDS `lib` folder.
@@ -270,7 +270,7 @@ Enter key password for <sym>
                    
 [source, cli]
 ----
-keytool -keystore keystore -export -alias sym -rfc -file sym.cer</command>
+keytool -keystore keystore -export -alias sym -rfc -file sym.cer
 ----
                 
 * Install the certificate in the trusted keystore.
@@ -306,7 +306,7 @@ parameters.
 -Dcom.sun.management.jmxremote.ssl=false
 ----
 
-More details about enabling JMX for JConsole can be found <ulink url="http://docs.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html">here</ulink>.
+More details about enabling JMX for JConsole can be found http://docs.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html[here].
          
 Using the Java jconsole command, SymmetricDS is listed as a local process named SymmetricLauncher.
 In jconsole, SymmetricDS appears under the MBeans tab under the name defined by the `engine.name`
@@ -377,7 +377,7 @@ the groupByColumnNames property which have the same values.
 
 The publisher property on the XmlPublisherDatabaseWriterFilter takes an interface of type IPublisher.  The implementation
 demonstrated here is an implementation that publishes to JMS using Spring's
-<ulink url="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate">JMS template</ulink>.
+http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/jms.html#jms-jmstemplate[JMS template].
 Other implementations of IPublisher could easily publish the XML to other targets like an HTTP server, the file system or secure copy it to another server.
        
 The above configuration will publish XML similar to the following:
