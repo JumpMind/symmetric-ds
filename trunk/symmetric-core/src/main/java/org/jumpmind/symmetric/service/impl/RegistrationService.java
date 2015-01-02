@@ -88,9 +88,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private IConfigurationService configurationService;
     
     private IExtensionService extensionService;
+    
+    private ISymmetricEngine engine;
 
     public RegistrationService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
+        this.engine = engine;
         this.nodeService = engine.getNodeService();
         this.dataExtractorService = engine.getDataExtractorService();
         this.dataService = engine.getDataService();
@@ -380,7 +383,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private void sleepBeforeRegistrationRetry() {
         long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
                 * randomTimeSlot.getRandomValueSeededByExternalId();
-        log.warn("Could not register.  Sleeping before attempting again.", sleepTimeInMs);
+        log.info("Could not register.  Sleeping before attempting again.", sleepTimeInMs);
         log.info("Sleeping for {}ms", sleepTimeInMs);
         AppUtils.sleep(sleepTimeInMs);
     }
@@ -396,7 +399,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         boolean registered = isRegisteredWithServer();
         int maxNumberOfAttempts = parameterService
                 .getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);
-        while (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
+        while (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0) && engine.isStarted()) {
             try {
                 log.info("This node is unregistered.  It will attempt to register using the registration.url");
                 registered = dataLoaderService.loadDataFromPull(null).getStatus() == Status.DATA_PROCESSED;
