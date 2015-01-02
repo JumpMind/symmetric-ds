@@ -68,7 +68,7 @@ equal to the value of the sync.url of the registration server.
 +		
 [IMPORTANT]
 Note that a
-<emphasis>registration server node</emphasis>
+`registration server node`
 is defined as one whose
 `registration.url`
 is either (a) blank, or (b) identical to its

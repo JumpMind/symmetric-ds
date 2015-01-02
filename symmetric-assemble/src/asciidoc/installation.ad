@@ -144,7 +144,7 @@ The installation is now complete.  Choose if you want to open the SymmetricDS Pr
 image::install/install-twelth.png[]
 
 If you chose to open the SymmetricDS Pro Control Center, you will be greeted by this screen.  From the SymmetricDS Pro Control Center, 
-you may start/stop the server, open the web console, and choose to run SymmetricDS as a service if you have not already done so.
+you may start/stop the server, open the web console, and choose to install SymmetricDS as a service if you have not already done so.
 
 --
 
