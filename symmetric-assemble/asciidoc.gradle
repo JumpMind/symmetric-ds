@@ -70,10 +70,6 @@ task generateDocs(type: Copy) {
     into('html') {
         from ("$buildDir/src/asciidoc/html5/tutorials") { include "tutorials.html" }
     }
-    
-    into('html/images') {
-        from ("$buildDir/src/asciidoc/html5/images") 
-    }
 
     into('pdf') {
         from ("$buildDir/src/asciidoc/pdf") { include "user-guide.pdf" }
@@ -81,6 +77,11 @@ task generateDocs(type: Copy) {
 
     into('pdf') {
         from ("$buildDir/src/asciidoc/pdf/tutorials") { include "tutorials.pdf" }
+    }
+    
+    doFirst {
+        println "Deleting $destinationDir.path"
+        delete destinationDir
     }
 
 }
@@ -95,7 +96,10 @@ asciidoctor { (1)
             symAssembleDir + 'user-guide.ad',
             symAssembleDir + 'tutorials/tutorials.ad']
     ]    
-    attributes 'source-highlighter':'coderay'
+    attributes = [
+        'source-highlighter':'coderay',
+        'data-uri':'true'
+    ]
     if (project.properties.containsKey('pro')) {
        attributes['pro'] = 'true'  
     }     
