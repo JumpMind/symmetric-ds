@@ -1,0 +1,27 @@
+In order for a node to join a synchronization network it must be registered.  When a node registers it downloads its SymmetricDS 
+configuration.  A node is considered unregistered if it does not have an <<IDENTITY>> row.  If a node is unregistered, it will
+use the `registration.url` in the <<Engine Properties File>> to request registration.
+
+By default you have to open registration for a node before it will be allowed to register. 
+ 
+ifdef::pro[]
+To allow a node to register click the Registration button and select Allow.
+
+image::manage/mange-nodes-allow-registration.png[]
+
+endif::pro[]
+
+You can open registration from the command line with the following command:
+
+`bin/symadmin --engine <engine name> <node group> <external id>`
+
+The <node group> and <external id> should match the `group.id` and `external.id` in the registering node's <<Engine Properties File>>.
+
+
+Node registration is controlled by the <<NODE>> and <<NODE_SECURITY>> tables.  Nodes are only allowed to register if rows exist for the registering node and the `registration_enabled`
+flag is set to 1. 
+
+If the `auto.registration` SymmetricDS parameter is set to true, then when a node attempts to register, the node will automatically be registered.
+
+SymmetricDS allows you to have multiple nodes with the same `external_id`.  In order to enable this you must set `external.id.is.unique.enabled` to false.
+
