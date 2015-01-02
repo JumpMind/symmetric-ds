@@ -228,7 +228,7 @@ project(':symmetric-server') {
                     rename 'symmetric-default.properties', 'conf/symmetric.properties'
                     fileMode 664
                 }
-                into('doc') { from ("$symAssembleDir/target/src/asciidoc") }
+                into('doc') { from ("$symAssembleDir/target/doc") }
                 into('lib') {
                     from project(":symmetric-wrapper").configurations.compile {
                         include "*jna*"

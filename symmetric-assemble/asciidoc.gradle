@@ -58,7 +58,7 @@ task generateDocs(type: Copy) {
     
     dependsOn asciidoctor
     
-    destinationDir = file("$buildDir/src/asciidoc")
+    destinationDir = file("$buildDir/doc")
     if (project.properties.containsKey('pro')) {
         destinationDir = file(rootProject.buildDir.path + "/../../symmetric-pro/src/main/webapp/doc")
     }
