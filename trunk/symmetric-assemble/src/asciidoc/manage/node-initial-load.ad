@@ -17,7 +17,7 @@ endif::pro[]
 When a load is requested it will either set the `initial_load_enabled` or the `reverse_initial_load_enabled` flag on the 
 appropriate <<NODE_SECURITY>> row.
 
-When the <<ROUTE JOB>> runs next, it will create batches that represent the initial load.  Batches will be created on the reload 
+When the <<Route Job>> runs next, it will create batches that represent the initial load.  Batches will be created on the reload 
 channel for each table that is defined by a <<TRIGGER>> and linked by a <<TRIGGER_ROUTER>> in the direction that the load 
 was requested.  The default reload channel is the _"reload"_ channel.  At the
 same time reload batches are inserted, all previously pending batches
@@ -47,31 +47,6 @@ IMPORTANT: Note that if the parent node that a node is registering with is _not_
 entry must exist at the parent node and have a non-null value for column `initial_load_time`.  Nodes can't be registered 
 to a non-registration-server node without this value being set one way or another (i.e., manually, or as a result
 of an initial load occurring at the parent node).           
-            
-===== Other Initial Load Settings
-
-There are several parameters that can be used to modify the behavior of an initial load.
-
-auto.reload:: A load is queued up _to_ a node automatically when it registers.
-
-initial.load.delete.first / initial.load.delete.first.sql:: By default, an initial load will not delete existing rows from a target
-table before loading the data. If a delete is desired, the parameter `initial.load.delete.first` can be set to true. If true, the 
-command found in `initial.load.delete.first.sql` will be run on each table prior to loading the data. The default value
-for `initial.load.delete.first.sql` is
-+
-`delete from %s`
-+
-Note that individual reload batches are created that represent the deletes in the reverse order that load batches are created.  All
-delete batches are inserted first.  The `initial.load.delete.first.sql` can be overwritten at the <<TRIGGER_ROUTER>> level by entering 
-a `initial_load_delete_stmt`.
-            
-initial.load.create.first:: By default, an initial load will not create the table on the target if it doesn't already exist. 
-If the desired behavior is to create the table on the target if it is not present, set the parameter
-`intial.load.create.first` to true. SymmetricDS will attempt to create the table and indexes on the target database before 
-doing the initial load. Note that individual create batches are created to represent each of the table creates.
-+
-Sometimes when creating tables across different database platforms default values do not translate.  You can turn off the use of default values
-during the table create by setting `create.table.without.defaults`.
             
 ===== Partial Initial Loads
 
@@ -118,7 +93,7 @@ IMPORTANT: When providing an
             be sure to test out the criteria against production data in a query
             browser. Do an explain plan to make sure you are properly using indexes.
 
-===== Splitting an Initial Load for a Table Across Multiple Batches
+===== Initial Load Extract In Background
             
 By default, all data for a given table will be initial loaded in a single batch, regardless
 of the max batch size parameter on the reload channel.  That is, for a table with one million
@@ -126,7 +101,7 @@ rows, all rows for that table will be initial loaded and sent to the destination
 single batch. For large tables, this can result in a batch that can take a long time to
 extract and load.
 
-Initial loads for a table can be broken into multiple batches by specifying
+Initial loads for a table can be broken into multiple batches by setting
 `initial.load.use.extract.job.enabled` to true.  This parameter allows
 SymmetricDS to pre-extract initial load batches versus having them extracted when
 the batch is pulled or pushed.  When using this parameter, there are two ways to tell
@@ -135,33 +110,48 @@ a positive integer in the initial_load_batch_count column on
 <<TRIGGER_ROUTER>>.  This
 number will dictate the number of batches created for the initial load of the given table.
 The second way is to specify 0 for initial_load_batch_count on
-<<TRIGGER_ROUTER>> and
-specify a max_batch_size on the reload channel in <<CHANNEL>>.
-When 0 is specified for
-initial_load_batch_count, SymmetricDS will execute a count(*) query on the table during
-the extract process and create N batches based on the total number of records found
-in the table divided by the max_batch_size on the reload channel.
+<<TRIGGER_ROUTER>> and specify a max_batch_size on the reload channel in <<CHANNEL>>.
+When 0 is specified for initial_load_batch_count, SymmetricDS will execute a count(*) query on the table during
+the extract process and pre-create N batches based on the total number of records found
+in the table divided by the `max_batch_size` on the reload channel.
 
 ===== Reverse Initial Loads
 
-The default behavior for initial loads is to load data from the
-registration server or parent node, to a client node. Occasionally,
-there may be need to do a one-time initial load of data in the opposite
-or "reverse" direction, namely from a client node to the registration
-node. To achieve this, set the parameter
-`auto.reload.reverse`
-to be true _at the registration node_. This will cause 
-a one-time reverse load of data, for tables configured
-with non-negative initial load orders, to be batched at the point when
-registration of the client node is occurring. These batches are then
-sent to the parent or registration node. This capability might be
-needed, for example, if there is data already present in the client that
-doesn't exist in the parent but needs to.
+Normal initial loads load data from the parent node to a client node. Occasionally, there may be need to do a one-time 
+initial load of data in the "reverse" direction.  A reverse initial load is started by setting the `reverse_initial_load_enabled` flag
+on <<NODE_SECURITY>>. 
+
+ifdef::pro[]
+A reverse initial load is requested from the user interface by clicking _Initial Load_ and selecting _Receive Load From_.
+endif::pro[]
+
+===== Other Initial Load Settings
+
+There are several parameters that can be used to modify the behavior of an initial load.
+
+auto.reload:: A load is queued up _to_ a node automatically when it registers.
+
+auto.reload.reverse:: A reverse initial load is queued up for a node automatically when it registers.
+
+initial.load.delete.first / initial.load.delete.first.sql:: By default, an initial load will not delete existing rows from a target
+table before loading the data. If a delete is desired, the parameter `initial.load.delete.first` can be set to true. If true, the 
+command found in `initial.load.delete.first.sql` will be run on each table prior to loading the data. The default value
+for `initial.load.delete.first.sql` is
++
+`delete from %s`
++
+Note that individual reload batches are created that represent the deletes in the reverse order that load batches are created.  All
+delete batches are inserted first.  The `initial.load.delete.first.sql` can be overwritten at the <<TRIGGER_ROUTER>> level by entering 
+a `initial_load_delete_stmt`.
             
-Reverse initial load can be invoked manually by setting 
-`reverse_initial_load_enabled=1`
-in
-<<NODE_SECURITY>> 
-on the node that is supposed to send the load.          
+initial.load.create.first:: By default, an initial load will not create the table on the target if it doesn't already exist. 
+If the desired behavior is to create the table on the target if it is not present, set the parameter
+`intial.load.create.first` to true. SymmetricDS will attempt to create the table and indexes on the target database before 
+doing the initial load. Note that individual create batches are created to represent each of the table creates.
++
+Sometimes when creating tables across different database platforms default values do not translate.  You can turn off the use of default values
+during the table create by setting `create.table.without.defaults`.
+            
+        
 
 
