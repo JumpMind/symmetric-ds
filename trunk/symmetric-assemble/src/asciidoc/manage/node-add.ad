@@ -8,7 +8,7 @@ endif::pro[]
 ifdef::pro[]
 
 Add nodes to your synchronization scenario by using the "Node Setup Wizard".  This wizard is automatically shown when less the 2 nodes are configured.  
-It can also be access from the Manage Nodes screen by pressing the _Add_ button. 
+It can also be accessed from the Manage Nodes screen by pressing the _Add_ button. 
 
 image::wizard-connect/wizard-connect-menu.png[]
 
