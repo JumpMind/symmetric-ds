@@ -1,11 +1,15 @@
-In order for a node to join a synchronization network it must be registered.  When a node registers it downloads its SymmetricDS 
-configuration.  A node is considered unregistered if it does not have an <<IDENTITY>> row.  If a node is unregistered, it will
-use the `registration.url` in the <<Engine Properties File>> to request registration.
+In order for a node to synchronize with other nodes it must be registered.  When a node is registered, 
+it downloads its SymmetricDS configuration as well as references to the nodes that it should sync with.  
 
-By default you have to open registration for a node before it will be allowed to register. 
+A node is considered unregistered if it does not have an <<NODE_IDENTITY>> row.  When a node is unregistered, 
+it will use the `registration.url` defined in the <<Engine Properties File>> to request registration.  
+The `registration.url` of the new node is the `sync.url` of the node that is being registered with.
+
+Before a node is allowed to register, it must have an open registration.  If there is no open registration, then a 
+<<REGISTRATION_REQUEST>> is recorded. 
  
 ifdef::pro[]
-To allow a node to register click the Registration button and select Allow.
+To allow a node to register click the _Registration_ button and select _Allow_.
 
 image::manage/mange-nodes-allow-registration.png[]
 
@@ -17,11 +21,12 @@ You can open registration from the command line with the following command:
 
 The <node group> and <external id> should match the `group.id` and `external.id` in the registering node's <<Engine Properties File>>.
 
+Node registration is stored in the <<NODE>> and <<NODE_SECURITY>> tables.  Nodes are only allowed to register if rows exist 
+for the registering node and the `registration_enabled` flag is set to 1. 
 
-Node registration is controlled by the <<NODE>> and <<NODE_SECURITY>> tables.  Nodes are only allowed to register if rows exist for the registering node and the `registration_enabled`
-flag is set to 1. 
+If the `auto.registration` SymmetricDS parameter is set to true, then when a node attempts to register, the node will 
+automatically be registered.
 
-If the `auto.registration` SymmetricDS parameter is set to true, then when a node attempts to register, the node will automatically be registered.
-
-SymmetricDS allows you to have multiple nodes with the same `external_id`.  In order to enable this you must set `external.id.is.unique.enabled` to false.
+SymmetricDS allows you to have multiple nodes with the same `external_id`.  In order to enable this you must set 
+`external.id.is.unique.enabled` to false.
 

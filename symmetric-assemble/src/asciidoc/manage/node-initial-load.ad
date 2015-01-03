@@ -1,98 +1,79 @@
-ifndef::pro[]
-An initial load is the process of seeding tables at a
-target node with data from its parent node. When a node connects and
-data is extracted, after it is registered and if an initial load was
-requested, each table that is configured to synchronize to the target
-node group will be given a reload event in the order defined by the end
-user. A SQL statement is run against each table to get the data load
-that will be streamed to the target node. The selected data is filtered
-through the configured router for the table being loaded. If the data
-set is going to be large, then SQL criteria can optionally be provided
-to pare down the data that is selected out of the database.
-            
-An initial load cannot occur until after a node is registered. An
-initial load is requested by setting the
-`initial_load_enabled`
-column on
-<<NODE_SECURITY>>
-to
-_1_
-on the row for the target node in the parent node's database. You can
-configure SymmetricDS to automatically perform an initial load when a
-node registers by setting the parameter
-`auto.reload`
-to true. Regardless of how the initial load is initiated, the next time
-the source node routes data, reload batches will be inserted. At the
-same time reload batches are inserted, all previously pending batches
-for the node are marked as successfully sent.
-            
-IMPORTANT: Note that if the parent node that a node is registering with is
-_not_
-a registration server node (as can happen with a registration redirect
-or certain non-tree structure node configurations) the parent node's
-<<NODE_SECURITY>>
-entry must exist at the parent node and have a non-null value for column
-`initial_load_time`
-. Nodes can't be registered to non-registration-server nodes without
-this value being set one way or another (i.e., manually, or as a result
-of an initial load occurring at the parent node).
-            
-SymmetricDS recognizes that an initial load has completed when the
-`initial_load_time`
-column on the target node is set to a non-null value.
-            
-An initial load is accomplished by inserting reload batches in a defined
-order according to the
-`initial_load_order`
-column on
-<<TRIGGER_ROUTER>>
-. If the
-`initial_load_order`
-column contains a negative value the associated table will
-_NOT_
-be loaded. If the
-`initial_load_order`
-column contains the same value for multiple tables, SymmetricDS will
-attempt to order the tables according to foreign key constraints. If
-there are cyclical constraints, then foreign keys might need to be
-turned off or the initial load will need to be manually configured based
-on knowledge of how the data is structured.
-            
-Initial load data is always queried from the source
-database table. All data is passed through the configured router to
-filter out data that might not be targeted at a node.
+An initial load is the process of seeding tables at a target node with data from a source node.  Instead of 
+capturing data, data is selected from the source table using a SQL statement and then it is streamed to the 
+client.
+
+ifdef::pro[]
+An initial load is requested by click the _Initial Load_ button and selecting either _Send Load To_ or _Receive Load From_.
+
+_Send Load To_ will queue up a load to be sent to the node that is selected from the node that is currently selected in the
+web interface.
+
+_Receive Load From_ will queue up a request for a load from the node that is selected to the current node.   
+
+image::manage/manage-nodes-send-load-to.png[]
+
 endif::pro[]
 
-            
-===== Target table prep for initial load
+When a load is requested it will either set the `initial_load_enabled` or the `reverse_initial_load_enabled` flag on the 
+appropriate <<NODE_SECURITY>> row.
 
-There are several parameters that can be used to specify
-what, if anything, should be done to the table on the target database
-just prior to loading the data. Note that the parameters below specify
-the desired behavior for all tables in the initial load, not just one. 
+When the <<ROUTE JOB>> runs next, it will create batches that represent the initial load.  Batches will be created on the reload 
+channel for each table that is defined by a <<TRIGGER>> and linked by a <<TRIGGER_ROUTER>> in the direction that the load 
+was requested.  The default reload channel is the _"reload"_ channel.  At the
+same time reload batches are inserted, all previously pending batches
+for the node are marked as successfully sent.
 
-* initial.load.delete.first / initial.load.delete.first.sql:: By default, an initial load will not delete existing rows from a target
-            table before loading the data. If a delete is desired, the parameter
-            `initial.load.delete.first`
-            can be set to true. If true, the command found in
-            `initial.load.delete.first.sql`
-            will be run on each table prior to loading the data. The default value
-            for
-            `initial.load.delete.first.sql`
-            is
-            `delete from %s`
-            , but could be changed if needed. Note that additional reload batches
-            are created, in the correct order, to achieve the delete.
+ifdef::pro[]
+A load's progress can be monitored on the <<Outgoing Load>> screen or the <<Outgoing Batch>> screen. 
+endif::pro[]
+
+Each table defined by a <<TRIGGER>> and linked by a <<TRIGGER_ROUTER>> gets its a single reload <<OUTGOING_BATCH>>.  The batches 
+are inserted in the defined order.  If the `initial_load_order` is the same then SymmetricDS tries to determine the order the 
+tables need to be loaded in automatically based on foreign key dependencies.  A negative value for `initial_load_order` will result
+_no_ reload batch being inserted for that <<TRIGGER_ROUTER>>.
+
+If there are cyclical constraints, then foreign keys might need to be
+turned off or the initial load will need to be manually configured based
+on knowledge of how the data is structured.
+
+A SQL statement is run against each table to get the data load
+that will be streamed to the target node. The selected data is filtered
+through the configured router for the table being loaded. If the data
+set is going to be large, then SQL criteria can optionally be provided in `initial_load_select` 
+to pare down the data that is selected out of the database.
             
-* initial.load.create.first:: By default, an initial load will not create the table on the target if
-            it doesn't already exist. If the desired behavior is to create the table
-            on the target if it is not present, set the parameter
-            `intial.load.create.first`
-            to true. SymmetricDS will attempt to create the table and indexes on the
-            target database before doing the initial load. (Additional batches are
-            created to represent the table schema).
+IMPORTANT: Note that if the parent node that a node is registering with is _not_ a registration server node 
+(as can happen when using <<REGISTRATION_REDIRECT>> or when using multiple tiers) the parent node's <<NODE_SECURITY>> 
+entry must exist at the parent node and have a non-null value for column `initial_load_time`.  Nodes can't be registered 
+to a non-registration-server node without this value being set one way or another (i.e., manually, or as a result
+of an initial load occurring at the parent node).           
             
-===== Loading subsets of data
+===== Other Initial Load Settings
+
+There are several parameters that can be used to modify the behavior of an initial load.
+
+auto.reload:: A load is queued up _to_ a node automatically when it registers.
+
+initial.load.delete.first / initial.load.delete.first.sql:: By default, an initial load will not delete existing rows from a target
+table before loading the data. If a delete is desired, the parameter `initial.load.delete.first` can be set to true. If true, the 
+command found in `initial.load.delete.first.sql` will be run on each table prior to loading the data. The default value
+for `initial.load.delete.first.sql` is
++
+`delete from %s`
++
+Note that individual reload batches are created that represent the deletes in the reverse order that load batches are created.  All
+delete batches are inserted first.  The `initial.load.delete.first.sql` can be overwritten at the <<TRIGGER_ROUTER>> level by entering 
+a `initial_load_delete_stmt`.
+            
+initial.load.create.first:: By default, an initial load will not create the table on the target if it doesn't already exist. 
+If the desired behavior is to create the table on the target if it is not present, set the parameter
+`intial.load.create.first` to true. SymmetricDS will attempt to create the table and indexes on the target database before 
+doing the initial load. Note that individual create batches are created to represent each of the table creates.
++
+Sometimes when creating tables across different database platforms default values do not translate.  You can turn off the use of default values
+during the table create by setting `create.table.without.defaults`.
+            
+===== Partial Initial Loads
 
 An efficient way to select a subset of data from a table for an initial
 load is to provide an
@@ -182,76 +163,5 @@ Reverse initial load can be invoked manually by setting
 in
 <<NODE_SECURITY>> 
 on the node that is supposed to send the load.          
-
-===== Data Reloads
-           
-There may be times where you find you need to re-send or re-synchronize data when the change itself was not captured.  This could be needed, for example,
-if the data changes occurred prior to SymmetricDS placing triggers on the data tables themselves, or if the data at the destination was accidentally deleted, or for
-some other reason.  Two approaches are commonly taken to re-send the data, both of which are discussed below.
-            
-IMPORTANT: Be careful when re-sending data using either of these two techniques.  Be sure you are only sending the rows you intend to send and,
-more importantly, be sure to re-send the data in a way that won't cause foreign key constraint issues at the destination.  In other words,
-if more than one table is involved, be sure to send any tables which are referred to by other tables by foreign keys first.  Otherwise,
-the channel's synchronization will block because SymmetricDS is unable to insert or update the row because the foreign key relationship refers to
-a non-existent row in the destination!
-               
-One possible approach would be to "touch" the rows in individual tables that need re-sent.  By "touch", we mean to alter the row data in such a way
-that SymmetricDS detects a data change and therefore includes the data change in the batching and synchronizing steps.  Note that you have to
-change the data in some meaningful way (e.g., update a time stamp); setting a column to its current value is not sufficient (by default, if there's not an actual data
-value change, SymmetricDS won't treat the change as something that needs to sync).
-
-A second approach would be to take advantage of SymmetricDS built-in functionality by simulating a partial "initial load" of the data.  The approach
-is to manually create "reload" events in <<DATA>> for the necessary tables, thereby resending the desired rows for the given tables.
-Again, foreign key constraints must be kept in mind when creating these reload events.  These reload events are created in the source database itself, and
-the necessary table, trigger-router combination, and channel are included to indicate the direction of synchronization.
-   
-To create a reload event, you create a <<DATA>> row, using:
-           
-[horizontal]
-data_id::  null
-table_name::  name of table to be sent
-event_type:: 'R', for reload
-row_data::  a "where" clause (minus the word 'where') which defines the subset of rows from the table to be sent.  To send all rows, one can use 1=1 for this value.
-pk_data::  null
-old_data:: null
-trigger_hist_id::  use the id of the most recent entry (i.e., max(trigger_hist_id) ) in <<TRIGGER_HIST>>
-            for the trigger-router combination for your table and router.
-channel_id::  the channel in which the table is routed
-transaction_id::  pick a value, for example '1'
-source_node_id:: null
-external_data:: null
-create_time::  current_timestamp
-           
-Let's say we need to re-send a particular sales transaction from the store to corp over again because we lost the data in corp due to
-an overzealous delete.  For the tutorial, all transaction-related tables start with 
-_sale__
-, use the 
-_sale_transaction_
-channel, and are routed using the 
-_store_corp_identity_
-router.  In addition, the trigger-routers have been set up with an initial load order based on the necessary
-foreign key relationships (i.e., transaction tables which are "parents" have a lower initial load order than those of their
-"children").  An insert statement that would create the necessary "reload" events (three in this case, one for each table) would be as follows
-(where MISSING_ID is changed to the needed transaction id):
-
-[source, sql]
-----
- insert into sym_data (source_node_id, table_name, event_type, row_data, 
-                       trigger_hist_id, channel_id, create_time) (
-    select '00001', t.source_table_name, 'R', 'tran_id=''MISSING-ID''', 
-            h.trigger_hist_id, t.channel_id, current_timestamp
-        from sym_trigger t inner join sym_trigger_router tr on
-            t.trigger_id=tr.trigger_id inner join sym_trigger_hist h on
-            h.trigger_hist_id=(select max(trigger_hist_id) from sym_trigger_hist
-                where trigger_id=t.trigger_id)
-    where channel_id='sale_transaction' and
-        tr.router_id like 'store_corp_identity' and
-        (t.source_table_name like 'sale_%')
-    order by tr.initial_load_order asc);
-----
-    
-This insert statement generates three rows, one for each configured sale table.  It uses the most recent
-trigger history id for the corresponding table.  It takes advantage of the initial load order for each trigger-router to
-create the three rows in the correct order (the order corresponding to the order in which the tables would have been initial loaded).
 
 
