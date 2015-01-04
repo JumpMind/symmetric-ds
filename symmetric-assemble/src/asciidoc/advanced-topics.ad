@@ -442,3 +442,68 @@ the same pattern is valid, with the exception that the extension point would be 
 would be configured by setting the `router_type` of a <<ROUTER>> to the Spring bean
 name of the registered extension point.  Of course, the router would need to be linked through <<TRIGGER_ROUTER>>s
 to each <<TRIGGER>> table that needs published.
+
+==== File Synchronization
+SymmetricDS not only supports the synchronization of database tables, but it also supports the synchronization of 
+files and folders from one node to another.
+
+===== File Synchronization Overview
+.File synchronization features include:
+* Monitoring one or more file system directory locations for file and folder changes
+* Support synchronizing a different target directory than the source directory
+* Use of wild card expressions to “include” or “exclude” files
+* Choice of whether to recurse into subfolders of monitored directories
+* Use of existing SymmetricDS routers to subset target nodes based on file and directory metadata
+* Ability to specify if files will be synchronized on creation, or deletion, and/or modification
+* Ability to specify the frequency with which file systems are monitored for changes
+* Ability to extend file synchronization through scripts that run before or after a file is copied to its source location
+* Support for bidirectional file synchronization
+* Like database synchronization, file synchronization is configured in a series of database tables. The configuration 
+was designed to be similar to database synchronization in order to maintain consistency and to give database 
+synchronization users a sense of familiarity.
+
+For database synchronization, SymmetricDS uses <<Table Triggers>> to configure which tables will capture data for synchronization 
+and <<Routers>> to designate which nodes will be the source of data changes and which nodes will receive the data changes. 
+<<Table Routing>> links triggers to routers.
+
+Likewise, for file synchronization, SymmetricDS uses <<File Triggers>> to designate which base directories will be monitored. 
+Each entry in <<File Triggers>> designates one base directory to monitor for changes on the source system. The columns on 
+<<File Triggers>> provide additional settings for choosing specific files in the base directory that will be monitored, and 
+whether to recurse into subdirectories, etc. File triggers are linked to routers using <<File Routing>>. The file trigger 
+router not only links the source and the target node groups, but it also optionally provides the ability to override the 
+base directory name at the target. <<File Routing>> also provides a flag that indicates if the target node should be 
+seeded with the files from the source node during SymmetricDS's initial load process.
+
+NOTE: File synchronization does require a database for runtime information about the synchronization scenario.
+File Triggers will also need to be linked to an appropriate router like table triggers in order to complete the setup.
+
+TIP: H2 database works great as a small lightweight database to support file synchronization runtime information if you do 
+not have a relational database readily available to support file sync. 
+
+===== How File Synchronization Works 
+Not only is file synchronization configured similar to database synchronization, but it also operates in a very similar way. 
+The file system is monitored for changes via a background job that tracks the file system changes (this parallels the use of 
+triggers to monitor for changes when synchronizing database changes). When a change is detected it is written to the 
+<<FILE_SNAPSHOT>> table. The file snapshot table represents the most recent known state of the monitored files. The file snapshot 
+table has a SymmetricDS database trigger automatically installed on it so that when it is updated the changes are captured by 
+SymmetricDS on an internal channel named filesync.
+
+The changes to <<FILE_SNAPSHOT>> are then routed and batched by a file-synchronization-specific router that delegates to the 
+configured router based on the <<File Routing>> configuration. The file sync router can make routing decisions based on the 
+column data of the snapshot table, columns which contain attributes of the file like the name, path, size, and last modified time. 
+Both old and new file snapshot data are also available. The router can, for example, parse the path or name of the file and use it as 
+the node id to route to.
+
+Batches of file snapshot changes are stored on the filesync channel in <<OUTGOING_BATCH>>. The existing SymmetricDS pull and push jobs 
+ignore the filesync channel. Instead, they are processed by file-synchronization-specific push and pull jobs.
+
+When transferring data, the file sync push and pull jobs build a zip file dynamically based on the batched snapshot data. The zip 
+file contains a directory per batch. The directory name is the batch_id. A sync.bsh Bean Shell script is generated and placed in the 
+root of each batch directory. The Bean Shell script contains the commands to copy or delete files at their file destination from an 
+extracted zip in the staging directory on the target node. The zip file is downloaded in the case of a pull, or, in the case of a push, 
+is uploaded as an HTTP multi-part attachment. Outgoing zip files are written and transferred from the outgoing staging directory. 
+Incoming zip files are staged in the filesync_incoming staging directory by source node id. The filesync_incoming/{node_id} staging 
+directory is cleared out before each subsequent delivery of files.
+
+The acknowledgement of a batch happens the same way it is acknowledged in database synchronization. The client responds with an 
+acknowledgement as part of the response during a file push or pull.
