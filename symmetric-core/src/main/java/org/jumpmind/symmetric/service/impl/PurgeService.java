@@ -33,7 +33,6 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -81,40 +80,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
         retentionCutoff.add(Calendar.MINUTE,
                 -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
         rowsPurged += purgeIncoming(retentionCutoff, force);
-        return rowsPurged;
-    }
-
-    public long purgeDataGaps(boolean force) {
-        long rowsPurged = 0;
-        Calendar retentionCutoff = Calendar.getInstance();
-        retentionCutoff.add(Calendar.MINUTE, -parameterService
-                .getInt(ParameterConstants.ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES));
-        rowsPurged += purgeDataGaps(retentionCutoff, force);
-        return rowsPurged;
-    }
-
-    public long purgeDataGaps(Calendar retentionCutoff, boolean force) {
-        long rowsPurged = -1l;
-        try {
-            if (force || clusterService.lock(ClusterConstants.PURGE_DATA_GAPS)) {
-                try {
-                    log.info("The data gap purge process is about to run");
-                    rowsPurged = sqlTemplate.update(getSql("deleteFromDataGapsSql"), new Object[] {
-                            retentionCutoff.getTime(), DataGap.Status.GP.name() });
-                    log.info("Purged {} data gap rows", rowsPurged);
-                } finally {
-                    if (!force) {
-                        clusterService.unlock(ClusterConstants.PURGE_DATA_GAPS);
-                    }
-                    log.info("The data gap purge process has completed");
-                }
-
-            } else {
-                log.warn("Did not run the data gap purge process because the cluster service has it locked");
-            }
-        } catch (Exception ex) {
-            log.error("", ex);
-        }
         return rowsPurged;
     }
 

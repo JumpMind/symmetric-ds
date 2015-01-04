@@ -779,7 +779,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         MDC.put("engineName", getEngineName());
         purgeService.purgeOutgoing(true);
         purgeService.purgeIncoming(true);
-        purgeService.purgeDataGaps(true);
     }    
 
     public boolean isConfigured() {

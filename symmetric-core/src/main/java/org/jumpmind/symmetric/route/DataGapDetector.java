@@ -82,7 +82,6 @@ public class DataGapDetector {
         ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
                 nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
         try {
-            boolean deleteImmediately = isDeleteFilledGapsImmediately();
             long ts = System.currentTimeMillis();
             final List<DataGap> gaps = removeAbandonedGaps(dataService.findDataGaps());
             long lastDataId = -1;
@@ -120,11 +119,7 @@ public class DataGapDetector {
                                 dataGap.getEndId()));
                     }
 
-                    if (deleteImmediately) {
-                        dataService.deleteDataGap(dataGap);
-                    } else {
-                        dataService.updateDataGap(dataGap, DataGap.Status.OK);
-                    }
+                    dataService.deleteDataGap(dataGap);
 
                     // if we did not find data in the gap and it was not the
                     // last gap
@@ -155,11 +150,7 @@ public class DataGapDetector {
                                                 dataGap.getStartId(), dataGap.getEndId());
                                     }
 
-                                    if (deleteImmediately) {
-                                        dataService.deleteDataGap(dataGap);
-                                    } else {
-                                        dataService.updateDataGap(dataGap, DataGap.Status.SK);
-                                    }
+                                    dataService.deleteDataGap(dataGap);
                                 }
                             }
                         } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
@@ -172,11 +163,7 @@ public class DataGapDetector {
                                         "Found a gap in data_id from {} to {}.  Skipping it because the gap expired",
                                         dataGap.getStartId(), dataGap.getEndId());
                             }
-                            if (deleteImmediately) {
-                                dataService.deleteDataGap(dataGap);
-                            } else {
-                                dataService.updateDataGap(dataGap, DataGap.Status.SK);
-                            }
+                            dataService.deleteDataGap(dataGap);
                         }
                     } else {
                         dataService.checkForAndUpdateMissingChannelIds(dataGap.getStartId() - 1,
@@ -209,32 +196,18 @@ public class DataGapDetector {
      * @param gaps
      */
     protected List<DataGap> removeAbandonedGaps(List<DataGap> gaps) {
-        boolean deleteImmediately = isDeleteFilledGapsImmediately();
         List<DataGap> finalList = new ArrayList<DataGap>(gaps);
         for (final DataGap dataGap1 : gaps) {
             for (final DataGap dataGap2 : gaps) {
                 if (!dataGap1.equals(dataGap2) && dataGap1.contains(dataGap2)) {
                     finalList.remove(dataGap2);
                     if (dataService != null) {
-                        if (deleteImmediately) {
-                            dataService.deleteDataGap(dataGap2);
-                        } else {
-                            dataService.updateDataGap(dataGap2, DataGap.Status.SK);
-                        }
+                        dataService.deleteDataGap(dataGap2);
                     }
                 }
             }
         }
         return finalList;
-    }
-
-    protected boolean isDeleteFilledGapsImmediately() {
-        if (parameterService != null) {
-            return parameterService.is(
-                    ParameterConstants.ROUTING_DELETE_FILLED_IN_GAPS_IMMEDIATELY, true);
-        } else {
-            return true;
-        }
     }
 
     protected boolean isDataGapExpired(long dataId) {

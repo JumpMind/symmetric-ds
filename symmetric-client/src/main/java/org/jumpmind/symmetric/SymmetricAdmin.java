@@ -337,9 +337,6 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         if (args.contains("incoming") || all) {
             purgeService.purgeIncoming(true);
         }
-        if (args.contains("data-gaps") || all) {
-            purgeService.purgeDataGaps(true);
-        }
     }
 
     private void exportBatch(CommandLine line, List<String> args) throws Exception {
