@@ -6,6 +6,14 @@ and configuration of SymmetricDS.
     
 === Advanced Synchronization
 
+==== Disabling Synchronization
+
+All data loading may be disabled by setting the `dataloader.enable` property to false. This has the effect of not allowing incoming
+synchronizations, while allowing outgoing synchronizations. All data extractions may be disabled by setting the `dataextractor.enable`
+property to false. These properties can be controlled by inserting into the master node's <<PARAMETER>>
+table. These properties affect every channel with the exception of the
+'config' channel.
+
 ==== Bi-Directional Synchronization
        
 SymmetricDS allows tables to be synchronized bi-directionally.  Note that an outgoing

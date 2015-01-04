@@ -50,6 +50,45 @@ TODO
 TODO
 
 === Outgoing Batches
+
+Data is extracted by channel from the source database's <<DATA>>
+table at an interval controlled by the
+`extract_period_millis`
+column on the
+<<CHANNEL>>
+table. The
+`last_extract_time`
+is always recorded, by channel, on the
+<<NODE_CHANNEL_CTL>>
+table for the host node's id. When the Pull and Push Job run, if the
+extract period has not passed according to the last extract time, then
+the channel will be skipped for this run. If the
+`extract_period_millis`
+is set to zero, data extraction will happen every time the jobs run.
+
+
+The maximum number of batches to extract per synchronization is
+controlled by
+_max_batch_to_send_
+on the
+<<CHANNEL>>
+table. There is also a setting that controls the max number of bytes to
+send in one synchronization. If SymmetricDS has extracted the more than
+the number of bytes configured by the
+`transport.max.bytes.to.sync`
+parameter, then it will finish extracting the current batch and finish
+synchronization so the client has a chance to process and acknowledge the
+"big" batch. This may happen before the configured max number of batches
+has been reached.
+
+
+SymmetricDS provides the ability to configure windows of time when synchronization is allowed. This is done using the
+<<NODE_GROUP_CHANNEL_WND>> table. A list of allowed time windows can be specified for a node group and a channel. 
+If one or more windows exist, then data will only be extracted and transported if the time of day falls within the window of
+time specified. The configured times are always for the target node's local time. If the `start_time` is greater than the
+`end_time`, then the window crosses over to the next day.
+
+
 		
 By design, whenever SymmetricDS encounters an issue with a synchronization, the batch containing the error is marked as being in
 an error state, and all subsequent batches _for that particular channel to that particular node_ are held and not
@@ -241,7 +280,19 @@ TODO
 
 === Pull Threads
 
-TODO 
+Both the push and pull jobs can be configured to push and pull multiple
+nodes in parallel. In order to take advantage of this the
+`pull.thread.per.server.count`
+or
+`push.thread.per.server.count`
+should be adjusted (from their default value of 10) to the number to the
+number of concurrent push/pulls you want to occur per period on each
+SymmetricDS instance. Push and pull activity is recorded in the
+<<NODE_COMMUNICATION>>
+table. This table is also used to lock push and pull activity across
+multiple servers in a cluster.
+
+
 
 === Push Threads
 
