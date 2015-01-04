@@ -52,7 +52,6 @@ public class JobManager implements IJobManager {
         this.jobs.add(new PullJob(engine, taskScheduler));
         this.jobs.add(new OutgoingPurgeJob(engine, taskScheduler));
         this.jobs.add(new IncomingPurgeJob(engine, taskScheduler));
-        this.jobs.add(new DataGapPurgeJob(engine, taskScheduler));
         this.jobs.add(new StatisticFlushJob(engine, taskScheduler));
         this.jobs.add(new SyncTriggersJob(engine, taskScheduler));
         this.jobs.add(new HeartbeatJob(engine, taskScheduler));

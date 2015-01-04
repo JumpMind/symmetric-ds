@@ -35,10 +35,6 @@ public interface IPurgeService {
     
     public long purgeIncoming(boolean force);
     
-    public long purgeDataGaps(boolean force);    
-    
-    public long purgeDataGaps(Calendar retentionCutoff, boolean force);
-    
     public long purgeOutgoing(Calendar retentionCutoff, boolean force);
     
     public long purgeIncoming(Calendar retentionCutoff, boolean force);
