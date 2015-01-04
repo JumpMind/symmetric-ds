@@ -13,6 +13,9 @@ If a required SymmetricDS Configuration Item is missing from your configuration,
 
 image::configure-overview.png[]
 
+include::configuration/import.ad[]
+include::configuration/export.ad[]
+
 endif::pro[]  
 
 include::configuration/groups.ad[]
@@ -30,8 +33,6 @@ include::configuration/extensions.ad[]
 include::configuration/parameters.ad[]
 
 ifdef::pro[]
-include::configuration/export.ad[]
-include::configuration/import.ad[]
 include::configuration/users.ad[]
 include::configuration/ldap.ad[]
 include::configuration/license-key.ad[]

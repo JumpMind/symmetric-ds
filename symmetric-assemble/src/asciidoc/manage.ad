@@ -1,6 +1,8 @@
 
 == Manage
 
+This section will talk about how to manage and monitor SymmetricDS.
+ 
 === Nodes
 
 One _node_ is associated with one relational database. A node manages the
