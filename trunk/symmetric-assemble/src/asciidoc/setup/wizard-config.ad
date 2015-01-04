@@ -1,7 +1,7 @@
 
 === Wizard: Quick Config
 
-Once the SymmetricDS software is installed, and instance of it is running, and a master node is setup, the synchronization
+Once the SymmetricDS software is installed, an instance of it is running, and a master node is setup, the synchronization
 scenario must be configured (i.e. what tables and/or files do I want to synchronize from which source node groups to which
 target node groups).  The *Quick Config* wizard simplifies this process by walking you through several simple configuration steps.
 
