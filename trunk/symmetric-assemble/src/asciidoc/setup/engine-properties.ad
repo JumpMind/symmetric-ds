@@ -85,4 +85,5 @@ db.user:: The database username, which is used to login, create, and
 		update SymmetricDS tables.
 		
 db.password:: The password for the database user.
-		See <<Startup Parameters>>, for additional parameters that can be specified in the engine properties file.
+		
+See <<Startup Parameters>>, for additional parameters that can be specified in the engine properties file.
