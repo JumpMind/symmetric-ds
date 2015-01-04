@@ -1,6 +1,4 @@
-=== Master Node Setup
-
-The majority of the synchronization configuration is stored in the database, including configuration information that 
+The majority of the synchronization <<Configuration>> is stored in the database, including configuration information that 
 _identifies_ the individual nodes.  The master node requires that the node tables be populated with records that represent the node.
 
 A node is represented by four tables:
@@ -10,7 +8,7 @@ A node is represented by four tables:
 <<NODE_SECURITY>>:: Contains a password need to authenticate with another node
 <<NODE_HOST>>:: Contains informational data about the node.  Updated by SymmetricDS.
 
-When setting up a master node for the first you must insert into at least two of these tables for the node to startup properly.
+When setting up a master node for the first you must insert into two of these tables for the node to startup properly.
 
 The following SQL statements configure a node with a `node_id` and `external_id` of "server" that belongs to the "server" node group.  The `node_group_id` must match the `group.id` in the properties file.  
 The `external_id` must match the `external.id` in the properties file.

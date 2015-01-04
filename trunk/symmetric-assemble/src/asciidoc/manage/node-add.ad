@@ -2,7 +2,11 @@ Multiple nodes can be hosted in a single SymmetricDS instance.  When more than o
 SymmetricDS will start a node for each properties file it finds in the engines directory.  
 
 ifndef::pro[]
-To add additional nodes to SymmetricDS, just add additional <<Engine Properties File>> to the engines directory.
+Additional nodes can be added to the same SymmetricDS instance that the master node is running in or they can be added to a different
+SymmetricDS instance.  Either way, you create additional nodes by creating an <<Engine Properties File>> with the `registration.url` set to 
+the `sync.url` of the master node.  When the SymmetricDS instance is restarted the new node will attempt to register with the master node.
+
+For the new node to fully become a part of the synchronization network <<Registration>> must be opened.
 endif::pro[]
 
 ifdef::pro[]
