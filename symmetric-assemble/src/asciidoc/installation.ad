@@ -95,7 +95,7 @@ Choose the installation location or path for SymmetricDS and press Next.
 [.left.text-left]
 image::install/install-fifth.png[]
 
-Select the packages you want to install and press Next.  By default, all packages are selected.  If you are integrating 
+Select the packages you want to install and press Next.  By default, all packages are selected.  If you are NOT integrating 
 SymmetricDS with Android, you may uncheck the Android package.
 
 --
