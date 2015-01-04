@@ -1,10 +1,28 @@
 
 === Node Selection
 
-Open a web browser to the SymmetricDS web console (default will be http:.//localhost:31415).   When there are not any engines found for the current installation of SymmetricDS you will be prompted 
-with the following screen to get started.   
+When opening the SymmetricDS Pro web console, if there are no SymmetricDS nodes defined within the running SymmetricDS instance,
+the *Node Setup Wizard* will be displayed to guide you through the process of creating one.  There are two types of SymmetricDS nodes:
 
-NOTE: All three of these options (master, node, and demo) will create engine property files in your /engines folder of SymmetricDS.
+. *Master Node* - The master node is typically the first node created when defining a synchronization scenario and
+serves as the central configuration point for the synchronization scenario.  All SymmetricDS configuration is stored in the database
+this node is attached to.  This node also acts as the registration server for the synchronization scenario, accepting registration requests
+from other nodes and providing them the SymmetricDS configuration they need. 
+
+. *Node* - All other nodes are simply designated nodes.  They have all of the same responsibilities as a Master Node as far as being responsible
+for synchronizing a particular database or file system's data, but have NO responsibilities for configuration or registration.
+
+In addition to the two standard node types above, there is also an option to create a *Demo* installation.  This Demo installation does the 
+following:
+
+. Creates two fully populated H2 example databases (a server and a client) to be synchronized 
+. Creates a SymmetricDS _Master_ node within the running SymmetricDS instance attached to the server database
+. Creates a second _Node_ within the running SymmetricDS instance attached to the client database
+. Configures SymmetricDS to synchronize the two sample databases
+. Randomly executes insert, update and delete statements on the database to show database activity
+
+The _Demo_ option is a great way to look at an existing synchronization scenario configuration and setup.  If your desire is to begin 
+synchronizing your own databases, select the _Master_ or _Node_ options from above.
 
 [.float-group]
 --
@@ -12,16 +30,6 @@ NOTE: All three of these options (master, node, and demo) will create engine pro
 .Node selection.
 image::wizard-node-setup.png[]
 
-
-[horizontal]
-Master Node:: The *first* node to be created.  Identical to all other nodes with with a few additional features.
-. Registers all other nodes for synchronization.
-. Centralized configuration point
-Node:: Point of synchronization supported by a database.
-Demo:: Installs a sample SymmetricDS configuration with preloaded tables to observe a fully functional synchronization.
+Select the type of node to be created within this running SymmetricDS instance.
 
 --
-
-To setup the first node in a synchronization scenario see <<Master Node>>.
-
-To connect a new node to an existing synchronization scenario see <<Add Node>>.

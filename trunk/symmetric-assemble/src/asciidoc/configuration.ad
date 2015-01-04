@@ -1,7 +1,7 @@
 
 == Configuration
 
-Configuring SymmetricDS not only helps you set up data synchronization, but allows you to customize it.
+Configuring SymmetricDS is the process of setting up your synchronization scenario.  
 
 ifdef::pro[]
 
