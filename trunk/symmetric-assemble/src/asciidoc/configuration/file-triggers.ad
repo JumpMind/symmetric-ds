@@ -1,7 +1,8 @@
 
 === File Triggers
 
-SymmetricDS not only supports the synchronization of database tables, but it also supports the synchronization of files and folders from one node to another.
+SymmetricDS not only supports the synchronization of database tables, but it also supports 
+the <<File Synchronization>>.
 
 ifdef::pro[]
 image::file-trigger.png[]
