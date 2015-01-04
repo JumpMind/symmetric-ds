@@ -1,8 +1,11 @@
 
-=== Export
+==== Export
 
-Export your configuration at any time through the web console.   
-This might be useful in order to save a configuration in source control or used as an import on another node.
+Export your configuration at any time through the web console.   Use the drop down to select the format you would like to use for the export.
+
+
+Exporting your configuration might be useful in order to save a configuration in source control or to be used as an import 
+into another environment.  Export and Import are frequently used to migrate configuration between test and production environments.
 
 .Export currently selected node configuration through the Overview Screen
 image::configure-overview.png[]
