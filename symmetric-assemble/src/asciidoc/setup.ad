@@ -1,16 +1,21 @@
 
 == Setup
 
+ifndef::pro[]
 The first node created is called the Master Node.  The master node is where configuration is managed.  Other nodes typically register with the 
 master node to get their initial configuration.  After nodes are registered, additional configuration changes made at the master node
 are synchronized to the registered nodes automatically.
 
-ifndef::pro[]
 All nodes require a properties file that contains identity information and database connection information.  SymmetricDS configuration needs to be inserted via 
 a SQL script at the master node.
 endif::pro[]
 
 ifdef::pro[]
+Once the SymmetricDS software is installed on a computer and an instance of it is running, the next step in setting up the 
+synchronization scenario is to set up a SymmetricDS node within that running SymmetricDS instance.  As a reminder, a SymmetricDS node is 
+connected to a database or file system and is responsible for synchronizing that database's data to other SymmetricDS nodes within the
+node network.     
+
 include::setup/node-select.ad[]
 include::setup/master-node.ad[]
 include::setup/wizard-config.ad[]

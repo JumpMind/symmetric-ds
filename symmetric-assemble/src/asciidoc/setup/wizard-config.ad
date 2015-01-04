@@ -1,9 +1,11 @@
 
 === Wizard: Quick Config
 
-The configuration wizard is responsible for setting up the necessary SymmetricDS components with their 
-`default settings` to configure synchronization.   Behind the scenes it will create the appropriate 
-triggers and link them based on the selections.  The Quick Config Wizard can be found under the Configure->Overview screen.
+Once the SymmetricDS software is installed, and instance of it is running, and a master node is setup, the synchronization
+scenario must be configured (i.e. what tables and/or files do I want to synchronize from which source node groups to which
+target node groups).  The *Quick Config* wizard simplifies this process by walking you through several simple configuration steps.
+
+The Quick Config Wizard can be found under the Configure->Overview screen.
 
 image::configure-overview.png[]
 
@@ -20,7 +22,7 @@ image::wizard-config/wizard-config-start.png[]
 image::wizard-config/wizard-config-client-server.png[]
 
 Select all tables that should be synchronized in the direction
-stated in the header, in this case its `CLIENT` to the `SERVER`
+stated in the header, in this case from `CLIENT` to the `SERVER`
 
 --
 
