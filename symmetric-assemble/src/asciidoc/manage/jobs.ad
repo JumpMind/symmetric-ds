@@ -16,7 +16,7 @@ From the manage jobs screen the frequency that a job will run for the *current n
 the frequency a job runs across a group or for everyone, you modify the parameter in the <<Parameters>> screen.  
 
 A job can also be _stopped_ and _restarted_.  If a job is scheduled to run infrequently and the job is needed to run immediately 
-you can select job and click _Run Now_.
+you can select job and click *Run Now*.
 
 image::manage/manage-jobs.png[]
 endif::pro[]

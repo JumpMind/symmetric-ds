@@ -3,7 +3,7 @@ capturing data, data is selected from the source table using a SQL statement and
 client.
 
 ifdef::pro[]
-An initial load is requested by click the _Initial Load_ button and selecting either _Send Load To_ or _Receive Load From_.
+An initial load is requested by click the *Initial Load* button and selecting either *Send Load To* or *Receive Load From*.
 
 _Send Load To_ will queue up a load to be sent to the node that is selected from the node that is currently selected in the
 web interface.

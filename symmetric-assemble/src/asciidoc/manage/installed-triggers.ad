@@ -8,7 +8,7 @@ has not yet been delivered, we need a record of what columns were in play at the
 ifdef::pro[]
 The Installed Triggers Screen is used to view tables that have successfully been installed with triggers.
 
-This screen allows you to _Rebuild_ an individual trigger or _Rebuild All_ triggers.  It also allows you to _Drop_ triggers.  Only reason 
+This screen allows you to *Rebuild* an individual database trigger or *Rebuild All* database triggers.  It also allows you to *Drop* triggers.  Only reason 
 you might need to drop triggers to alter a table or perform a batch job where you don't want data to be captured.
 
 image::manage/manage-installed-triggers.png[]
