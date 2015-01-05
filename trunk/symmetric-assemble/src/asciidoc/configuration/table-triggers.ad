@@ -112,8 +112,6 @@ trigger.update.capture.changed.data.only.enabled=false
 This property is currently only supported on MySQL, DB2, SQL Server, and Oracle.
 ====
 
-
-include::table-triggers/linking.ad[]
 include::table-triggers/wildcards.ad[]
 include::table-triggers/external-select.ad[]
 include::table-triggers/load-only.ad[]
