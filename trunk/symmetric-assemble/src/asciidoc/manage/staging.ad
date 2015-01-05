@@ -14,5 +14,9 @@ The location of the temporary directory may be changed by setting the Java Syste
 ----   
 
 ifdef::pro[]
+
+The Staging Area screen shows files that are currently in the staging area.  Staging area can be cleared at any time by clicking the *Clear Staging* button.
+
 image::manage/staging.png[]
+
 endif::pro[]
