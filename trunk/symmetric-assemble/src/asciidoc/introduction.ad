@@ -24,7 +24,7 @@ Multiple servers can be used as a cluster behind a load balancer to achieve bett
 
 === Overview
 
-A node is a running instance of SymmetricDS that communicates with other nodes over HTTP to exchange data.
+A node is responsible for synchronizing the data from a database or file system with other nodes in the network using HTTP.
 Nodes are assigned to one of the node <<Groups>> that are configured together as a unit.  The node groups are linked together with <<Group Links>>
 to define either a push or pull communication.  A pull causes one node to connect with other nodes and request changes that are waiting,
 while a push causes one node to connect with other nodes when it has changes to send.
@@ -34,13 +34,14 @@ While nodes can be separated across wide area networks, the database a node is c
 for the best performance.
 Using its database connection, a node creates tables as a <<Data Model>> for configuration settings and runtime operations.
 The user populates configuration tables to define the synchronization and the runtime tables capture changes and track activity.
-The tables to sync can be located in any <<Catalog and Schema>> that are accessible from the connection. 
+The tables to sync can be located in any <<Catalog and Schema>> that are accessible from the connection, while the files to sync
+can be located in any directory that is accessible on the local server.
 
 image::overview.png[]
 
 At startup, SymmetricDS looks for <<Engine Properties File,Engine Properties Files>> and starts a node for each file it finds, 
-which allows multiple nodes to run in the same server and share resources.
-The engine file for a node contains its external ID, node group, registration server URL, and database connection information.
+which allows multiple nodes to run in the same instance and share resources.
+The property file for a node contains its external ID, node group, registration server URL, and database connection information.
 The external ID is the name for a node used to identify it from other nodes.
 One node is configured as the registration server where the master configuration is stored.
 When a node is started for the first time, it contacts the registration server using a registration process that sends
@@ -49,7 +50,7 @@ as authentication during synchronization with other nodes.
 
 === Architecture
 
-Each subsystem in the engine is responsible for part of the data movement and is controlled through configuration.
+Each subsystem in the node is responsible for part of the data movement and is controlled through configuration.
 Data flows through the system in the following steps:
 
 . *Capture* into a runtime table at the source database
@@ -80,14 +81,14 @@ Transform:: If transformations are configured, they operate on the change data e
 at the source node or the load phase at the target node.  The node's database can be queried to enhance the data.  
 Data is transformed into the tables, rows, columns, and values needed for either the outgoing or incoming batch.  
 
-Incoming:: The synchronization receives batches from remote nodes and the data is loaded. 
-The status of the batch is updated on the <<INCOMING_BATCH>> table as it processes.
-The resulting status of the batch is returned to the source node in an acknowledgment.
-
 Outgoing:: The synchronization sends batches to target nodes to be loaded.
 Multiple batches can be configured to send during a single synchronization.
 The status of the batch is updated on the <<OUTGOING_BATCH>> table as it processes.
 An acknowledgment is received from target nodes and recorded on the batch.
+
+Incoming:: The synchronization receives batches from remote nodes and the data is loaded. 
+The status of the batch is updated on the <<INCOMING_BATCH>> table as it processes.
+The resulting status of the batch is returned to the source node in an acknowledgment.
 
 === Features
 
@@ -109,8 +110,6 @@ scheduled for periodic or near real-time synchronization.
 * *Transformation* - Manipulate data at multiple points to filter, subset, translate, merge, and enrich the data.
 
 * *Conflict Management* - Enforce consistency of two-way synchronization by configuring rules for automatic and manual resolution.
-
-* *Flexible Topology* - Link nodes together with push or pull communication that can traverse firewalls and arrange multiple tiers in a hierarchy.
 
 * *Extendable* - Scripts and Java code can be configured to handle events, transform data, and create customized behavior.
 
