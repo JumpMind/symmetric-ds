@@ -43,11 +43,12 @@ include::manage/jobs.ad[]
 
 === Installed Triggers
 
-TODO 
+include::manage/installed-triggers.ad[]
 
+ifdef::pro[]
 === Outgoing Loads
 
-TODO
+endif::pro[]
 
 === Outgoing Batches
 
