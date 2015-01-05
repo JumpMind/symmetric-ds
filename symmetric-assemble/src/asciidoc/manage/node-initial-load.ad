@@ -18,19 +18,19 @@ When a load is requested it will either set the `initial_load_enabled` or the `r
 appropriate <<NODE_SECURITY>> row.
 
 When the <<Route Job>> runs next, it will create batches that represent the initial load.  Batches will be created on the reload 
-channel for each table that is defined by a <<TRIGGER>> and linked by a <<TRIGGER_ROUTER>> in the direction that the load 
+channel for each table that is defined by <<Table Triggers>> and linked by <<Table Routing>> in the direction that the load 
 was requested.  The default reload channel is the _"reload"_ channel.  At the
 same time reload batches are inserted, all previously pending batches
 for the node are marked as successfully sent.
 
 ifdef::pro[]
-A load's progress can be monitored on the <<Outgoing Load>> screen or the <<Outgoing Batch>> screen. 
+A load's progress can be monitored on the <<Outgoing Loads>> screen or the <<Outgoing Batches>> screen. 
 endif::pro[]
 
-Each table defined by a <<TRIGGER>> and linked by a <<TRIGGER_ROUTER>> gets its a single reload <<OUTGOING_BATCH>>.  The batches 
+Each table defined by <<Table Triggers>> and linked by <<Table Routing>> is represented by a reload <<OUTGOING_BATCH>>.  The batches 
 are inserted in the defined order.  If the `initial_load_order` is the same then SymmetricDS tries to determine the order the 
-tables need to be loaded in automatically based on foreign key dependencies.  A negative value for `initial_load_order` will result
-_no_ reload batch being inserted for that <<TRIGGER_ROUTER>>.
+tables need to be loaded in automatically based on foreign key dependencies.  A negative value for `initial_load_order` in <<Table Routing>> will result
+_no_ reload batch being inserted.
 
 If there are cyclical constraints, then foreign keys might need to be
 turned off or the initial load will need to be manually configured based
@@ -51,16 +51,10 @@ of an initial load occurring at the parent node).
 ===== Partial Initial Loads
 
 An efficient way to select a subset of data from a table for an initial
-load is to provide an
-`initial_load_select`
-clause on
-<<TRIGGER_ROUTER>>
-. This clause, if present, is applied as a
-`where`
-clause to the SQL used to select the data to be loaded. The clause may
-use "t" as an alias for the table being loaded, if needed. The
-`$(externalId)`
-token can be used for subsetting the data in the where clause.
+load is to provide an `initial_load_select` clause in <<Table Routing>>
+. This clause, if present, is applied as a `where` clause to the SQL used to 
+select the data to be loaded. The clause may use "t" as an alias for the table being loaded, if needed. The
+`$(externalId)` token can be used for subsetting the data in the where clause.
             
 In cases where routing is done using a feature like
 <<Subselect Router>>
@@ -107,10 +101,10 @@ SymmetricDS to pre-extract initial load batches versus having them extracted whe
 the batch is pulled or pushed.  When using this parameter, there are two ways to tell
 SymmetricDS the number of batches to create for a given table.  The first is to specify
 a positive integer in the initial_load_batch_count column on
-<<TRIGGER_ROUTER>>.  This
+<<Table Routing>>.  This
 number will dictate the number of batches created for the initial load of the given table.
 The second way is to specify 0 for initial_load_batch_count on
-<<TRIGGER_ROUTER>> and specify a max_batch_size on the reload channel in <<CHANNEL>>.
+<<Table Routing>> and specify a max_batch_size on the reload channel for <<Channels>>.
 When 0 is specified for initial_load_batch_count, SymmetricDS will execute a count(*) query on the table during
 the extract process and pre-create N batches based on the total number of records found
 in the table divided by the `max_batch_size` on the reload channel.
