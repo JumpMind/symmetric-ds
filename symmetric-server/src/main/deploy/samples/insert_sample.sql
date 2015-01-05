@@ -64,7 +64,6 @@ values('sale_transaction','sale_transaction','sale_transaction',current_timestam
 insert into sym_trigger 
 (trigger_id,source_table_name,channel_id,last_update_time,create_time)
 values('sale_return_line_item','sale_return_line_item','sale_transaction',current_timestamp,current_timestamp);
-
 --
 -- Routers
 --
@@ -105,9 +104,5 @@ values('sale_transaction','store_2_corp', 200, current_timestamp, current_timest
 insert into sym_trigger_router 
 (trigger_id,router_id,initial_load_order,last_update_time,create_time)
 values('sale_return_line_item','store_2_corp', 200, current_timestamp, current_timestamp);
-
-insert into sym_trigger_router 
-(trigger_id,router_id,initial_load_order,last_update_time,create_time)
-values('sale_tender_line_item','store_2_corp', 200, current_timestamp, current_timestamp);
 
 
