@@ -240,6 +240,7 @@ project(':symmetric-server') {
                     rename 'symmetric-wrapper(.*).jar', 'symmetric-wrapper.jar'
                 }
                 into('web/WEB-INF/lib') {
+                    from project(":symmetric-server").jar
                     from configurations.compile.filter {  a ->
                         !a.path.contains("symmetric-wrapper") &&
                                 !configurations.provided.contains(a) &&
