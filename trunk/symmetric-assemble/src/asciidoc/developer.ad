@@ -148,7 +148,7 @@ Implement this extension point to get callbacks for offline events detected on a
 Implement this extension point to intercept the saving and rendering of the node password.
 
 === Embedding in Android
-SymmetricDS now has its web-enabled, fault-tolerant, database synchronization software available on the Android mobile computing platform. 
+SymmetricDS has its web-enabled, fault-tolerant, database synchronization software available on the Android mobile computing platform. 
 The Android client follows all of the same concepts and brings to Android all of the same core SymmetricDS features as the full-featured, 
 Java-based SymmetricDS client. The Android client is a little bit different in that it is not a stand-alone application, but is designed to 
 be referenced as a library to run in-process with an Android	application	requiring synchronization for its SQLite database.
