@@ -5,8 +5,8 @@ Once group links and routers are defined, configuration must be completed to spe
 synchronized over those links and routers.  The next step in defining which specific data in the database is moved is to define logical 
 groupings for that data.  Channels define those logical groupings.  As an example, a set of tables that hold customer data might be 
 logically grouped together in a Customer channel.  Sales, returns, tenders, etc. (transaction data) might be logically grouped into a 
-transaction channel.  A default channel is automatically created that all tables will fall into unless others are created and specified.
-The default channel is called 'default'.
+transaction channel.  A default channel is automatically created that all tables will fall into unless other channels are created and 
+specified.  The default channel is called 'default'.
 
 Channels can be disabled, suspended, or scheduled as needed.  
 
@@ -66,13 +66,14 @@ ifdef::pro[]
 .Advanced Options
 endif::pro[]
 
-Enabled:: Indicator to determine if a channel is currently in use.
-Reload Channel:: Indicator to determine if a channel is available for initial loads and reverse initial loads.
-File Sync Channel:: Indicator to determine if a channel is available for file synchronization.
+Enabled:: Indicates whether the channel is enabled or disabled.  If a channel is disabled, data is still captured for changes
+that occur on the source system, but it will not be routed and sent to the target until the channel is re-enabled.
+Reload Channel:: Indicates whether a channel is available for initial loads and reverse initial loads.
+File Sync Channel:: Indicates whether a channel is available for file synchronization.
 Use Old Data To Route:: Indicates if the old data will be included for routing.   Routing can then use this data for processing.  Defaults to true.
 Use Row Data To Route:: Indicates if the current data will be included for routing.   Routing can then use this data for processing.  Defaults to true.
 Use Primary Key (PK) Data to Route:: Indicates if the primary key data will be include for routing.   For example maybe a store ID is needed to apply logic on before sending to the appropriate target nodes.  Defaults to true.
-Tables Contain Big Lobs:: Indicator to provide SymmetricDS the hint that the channel contains big lobs. Some databases have shortcuts that SymmetricDS can take advantage of if it knows that the lob columns in SYM_DATA aren't going to contain large lobs. The definition of how large a 'big' lob is varies from database to database.
+Tables Contain Big Lobs:: Indicates whether the channel contains big lobs. Some databases have shortcuts that SymmetricDS can take advantage of if it knows that the lob columns in SYM_DATA aren't going to contain large lobs. The definition of how large a 'big' lob is varies from database to database.
 
 .Sample Channels
 =====
