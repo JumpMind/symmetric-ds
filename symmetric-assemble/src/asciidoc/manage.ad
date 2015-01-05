@@ -260,59 +260,13 @@ The second column, `resolve_ignore` if set will cause this particular data item 
 two columns used when a manual conflict resolution strategy is chosen, as discussed in <<Conflicts>>.
       
       
-=== Staging Area
-		
-SymmetricDS creates temporary extraction and data load files with the CSV payload of a synchronization when
-the value of the `stream.to.file.threshold.bytes` SymmetricDS property has been reached.  Before reaching the threshold, files
-are streamed to/from memory.  The default threshold value is 32,767 bytes. This feature may be turned off by setting the `stream.to.file.enabled`
-property to false.
-        
-SymmetricDS creates these temporary files in the directory specified by the `java.io.tmpdir` Java System property.
-       
-The location of the temporary directory may be changed by setting the Java System property passed into the Java program at startup.  For example,
-[source, cli]
-----
--Djava.io.tmpdir=/home/.symmetricds/tmp
-----   
-
-=== Processes
-
-TODO
-
-=== Pull Threads
-
-Both the push and pull jobs can be configured to push and pull multiple
-nodes in parallel. In order to take advantage of this the
-`pull.thread.per.server.count`
-or
-`push.thread.per.server.count`
-should be adjusted (from their default value of 10) to the number to the
-number of concurrent push/pulls you want to occur per period on each
-SymmetricDS instance. Push and pull activity is recorded in the
-<<NODE_COMMUNICATION>>
-table. This table is also used to lock push and pull activity across
-multiple servers in a cluster.
 
 
+include::manage/staging.ad[]
+include::manage/processes.ad[]
+include::manage/pull-threads.ad[]
+include::manage/push-threads.ad[]
+include::manage/jvm-properties.ad[]
+include::manage/jvm-threads.ad[]
+include::manage/logging.ad[]
 
-=== Push Threads
-
-TODO
-
-=== JVM Properties
-
-TODO
-
-=== JVM Threads
-
-TODO
-
-=== Logging
-	   
-The standalone SymmetricDS installation uses http://logging.apache.org/log4j/1.2/index.html[Log4J] for logging.  The configuration file is `conf/log4j.xml`.
-The `log4j.xml` file has hints as to what logging can be enabled for useful, finer-grained logging.
-
-There is a command line option to turn on preconfigured debugging levels.  When the `--debug` option is used the `conf/debug-log4j.xml` is used instead of log4j.xml.
-
-SymmetricDS proxies all of its logging through http://www.slf4j.org/[SLF4J].  When deploying to an application server or if Log4J is not
-being leveraged, then the general rules for for SLF4J logging apply.
