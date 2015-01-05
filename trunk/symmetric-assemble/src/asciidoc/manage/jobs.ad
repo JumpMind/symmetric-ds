@@ -136,26 +136,6 @@ The Sync Triggers Job runs when a node is started and on the prescribed job sche
 triggers and creates them.  It also updates the SymmetricDS database triggers that have had a change to its configuration or the database
 table has had a change to its structure.
 
-The change activity is recorded on the
-<<TRIGGER_HIST>>
-table with a reason for the change. The following reasons for a change
-are possible:
-        
-[horizontal]        
-N::  New trigger that has not been created before
-S::  Schema changes in the table were detected
-C::  Configuration changes in Trigger
-T::  Trigger was missing
-        
-A configuration entry in Trigger without any history in Trigger Hist
-results in a new trigger being created (N). The Trigger Hist stores a
-hash of the underlying table, so any alteration to the table causes the
-trigger to be rebuilt (S). When the
-`last_update_time`
-is changed on the Trigger entry, the configuration change causes the
-trigger to be rebuilt (C). If an entry in Trigger Hist is missing the
-corresponding database trigger, the trigger is created (T).
-
 ==== Heartbeat Job
 
 The Heartbeat Job updates its own <<NODE_HOST>> row with a new `heartbeat_time` so that it is synchronized to it's `created_at_node_id` node 
