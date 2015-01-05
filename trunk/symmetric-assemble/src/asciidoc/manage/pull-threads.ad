@@ -1,0 +1,21 @@
+
+=== Pull Threads
+
+Both the push and pull jobs can be configured to push and pull multiple
+nodes in parallel. In order to take advantage of this the
+`pull.thread.per.server.count`
+or
+`push.thread.per.server.count`
+should be adjusted (from their default value of 10) to the number to the
+number of concurrent push/pulls you want to occur per period on each
+SymmetricDS instance. Push and pull activity is recorded in the
+<<NODE_COMMUNICATION>>
+table. This table is also used to lock push and pull activity across
+multiple servers in a cluster.
+
+
+ifdef::pro[]
+image::manage/pull-threads.png[]
+endif::pro[]
+
+
