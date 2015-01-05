@@ -1,7 +1,14 @@
 
 === Channels
 
-Channels group the data to be synchronized.   Channels can be disabled, suspended, or scheduled as needed.  
+Once group links and routers are defined, configuration must be completed to specify which data (tables, file systems, etc.) should be 
+synchronized over those links and routers.  The next step in defining which specific data in the database is moved is to define logical 
+groupings for that data.  Channels define those logical groupings.  As an example, a set of tables that hold customer data might be 
+logically grouped together in a Customer channel.  Sales, returns, tenders, etc. (transaction data) might be logically grouped into a 
+transaction channel.  A default channel is automatically created that all tables will fall into unless others are created and specified.
+The default channel is called 'default'.
+
+Channels can be disabled, suspended, or scheduled as needed.  
 
 ifdef::pro[]
 image::channel.png[]
@@ -14,7 +21,7 @@ ifdef::pro[]
 endif::pro[]
 
 Channel ID:: Identifier used through the system to identify a given channel.
-Processing Order:: Numeric value to determine the order in which a channel will be used.
+Processing Order:: Numeric value to determine the order in which a channel will be processed.
 Batch Algorithm:: Batching is the grouping of data, by channel, to be transferred and committed at the client together.
 .Channel Batching Algorithms
 |===
