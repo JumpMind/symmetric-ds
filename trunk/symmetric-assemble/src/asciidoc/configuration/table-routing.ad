@@ -65,7 +65,7 @@ Select the table triggers to associate with the previously selected routers.
 Click save to install the triggers on the database and begin data capture.
 --
 The table routing elements created by the wizard can be maintained from the Table Routing List Screen.  New table routing
-entries can also be created manually from this page if desired.
+entries can also be created manually from this screen if desired.
 
 
 IMPORTANT: SymmetricDS will not install table triggers on the database until they are associated with a router through table routing.
