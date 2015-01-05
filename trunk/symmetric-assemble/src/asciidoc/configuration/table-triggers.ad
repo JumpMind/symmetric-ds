@@ -14,12 +14,21 @@ When set to true, SymmetricDS will only capture a change if the data has truly c
 endif::pro[]
 
 ifdef::pro[]
-The starting point for all data capture through SymmetricDS is through the use of triggers.   Triggers are created and removed by 
-SymmetricDS to capture changes for inserts, updates, and deletes so that they can be synchronized to a target node.
+The next step in defining the synchronization scenario is to define which tables should be synchronized.  The simplest
+way to do this is by using the *Auto Create...* button on the Configure -> Table Triggers screen.  The Auto Create functionality
+introspects the mater node's database and looks for available tables to synchronize.  
+
+Select a channel from the dropdown, select the tables that should be synchronized using that channel, and then click the *Apply* 
+button.  The Auto Create functionality can be used repeatedly to select different table and channel combinations.  
+
+image::triggers/triggers-auto-create.png[]
+
+For each table selected in the Auto Create wizard, a corresponding Table Trigger configuration element will be added that can be
+maintained within the Table Triggers list screen.  New Table Trigger configuration elements can also be created manually from this
+screen.
 
 image::trigger.png[]
 
-IMPORTANT: Triggers also need to be linked to a router in order for synchronization to occur.
 endif::pro[]
 
 ifdef::pro[]
@@ -104,6 +113,7 @@ This property is currently only supported on MySQL, DB2, SQL Server, and Oracle.
 ====
 
 
+include::table-triggers/linking.ad[]
 include::table-triggers/wildcards.ad[]
 include::table-triggers/external-select.ad[]
 include::table-triggers/load-only.ad[]
