@@ -915,7 +915,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void saveTriggerRouter(TriggerRouter triggerRouter) {
-        saveTriggerRouter(triggerRouter, true);
+        saveTriggerRouter(triggerRouter, false);
     }
 
     public void saveTriggerRouter(TriggerRouter triggerRouter, boolean updateTriggerRouterTableOnly) {
