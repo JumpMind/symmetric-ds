@@ -16,7 +16,7 @@ endif::pro[]
 ifdef::pro[]
 The next step in defining the synchronization scenario is to define which tables should be synchronized.  The simplest
 way to do this is by using the *Auto Create...* button on the Configure -> Table Triggers screen.  The Auto Create functionality
-introspects the mater node's database and looks for available tables to synchronize.  
+introspects the master node's database and looks for available tables to synchronize.  
 
 Select a channel from the dropdown, select the tables that should be synchronized using that channel, and then click the *Apply* 
 button.  The Auto Create functionality can be used repeatedly to select different table and channel combinations.  
