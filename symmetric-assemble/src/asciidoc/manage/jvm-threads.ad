@@ -1,8 +1,8 @@
 
 === JVM Threads
 
-ifdef::pro[]
+The JVM Threads Screen shows active threads in the JVM.
+
 image::manage/jvm-threads.png[]
-endif::pro[]
 
 
