@@ -1,7 +1,7 @@
 
 === Load Filters
 
-Load filters execute while data is being loaded and then take action based on the load of that data.  
+Load Filters are a way to take a specific action when a row of data is loaded by SymmetricDS at a destination database node.
 
 NOTE: Load filters run for each row of data being loaded.
 
