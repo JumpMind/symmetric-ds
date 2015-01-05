@@ -443,11 +443,12 @@ would be configured by setting the `router_type` of a <<ROUTER>> to the Spring b
 name of the registered extension point.  Of course, the router would need to be linked through <<TRIGGER_ROUTER>>s
 to each <<TRIGGER>> table that needs published.
 
-==== File Synchronization
+=== File Synchronization
 SymmetricDS not only supports the synchronization of database tables, but it also supports the synchronization of 
 files and folders from one node to another.
 
-===== File Synchronization Overview
+==== File Synchronization Overview
+
 .File synchronization features include:
 * Monitoring one or more file system directory locations for file and folder changes
 * Support synchronizing a different target directory than the source directory
@@ -480,7 +481,8 @@ File Triggers will also need to be linked to an appropriate router like table tr
 TIP: H2 database works great as a small lightweight database to support file synchronization runtime information if you do 
 not have a relational database readily available to support file sync. 
 
-===== How File Synchronization Works 
+==== How File Synchronization Works 
+
 Not only is file synchronization configured similar to database synchronization, but it also operates in a very similar way. 
 The file system is monitored for changes via a background job that tracks the file system changes (this parallels the use of 
 triggers to monitor for changes when synchronizing database changes). When a change is detected it is written to the 
