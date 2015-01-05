@@ -34,31 +34,6 @@ values (900, 11000001, 0.20, 1, 0);
 ------------------------------------------------------------------------------
 -- Sample Symmetric Configuration
 ------------------------------------------------------------------------------
---
--- Nodes
---
-delete from sym_node_group_link;
-delete from sym_node_group;
-delete from sym_node_identity;
-delete from sym_node_security;
-delete from sym_node;
-
-insert into sym_node_group (node_group_id, description) 
-values ('corp', 'Central Office');
-insert into sym_node_group (node_group_id, description) 
-values ('store', 'Store');
-
-
-insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action)
-values ('store', 'corp', 'P');
-insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action)
-values ('corp', 'store', 'W');
-
-insert into sym_node (node_id, node_group_id, external_id, sync_enabled)
-values ('000', 'corp', '000', 1);
-insert into sym_node_security (node_id,node_password,registration_enabled,registration_time,initial_load_enabled,initial_load_time,initial_load_id,initial_load_create_by,rev_initial_load_enabled,rev_initial_load_time,rev_initial_load_id,rev_initial_load_create_by,created_at_node_id) 
-values ('000','changeme',0,current_timestamp,0,current_timestamp,null,null,0,null,null,null,'000');
-insert into sym_node_identity values ('000');
 
 --
 -- Channels
@@ -90,15 +65,6 @@ insert into sym_trigger
 (trigger_id,source_table_name,channel_id,last_update_time,create_time)
 values('sale_return_line_item','sale_return_line_item','sale_transaction',current_timestamp,current_timestamp);
 
-insert into sym_trigger 
-(trigger_id,source_table_name,channel_id,last_update_time,create_time)
-values('sale_tender_line_item','sale_tender_line_item','sale_transaction',current_timestamp,current_timestamp);
-
--- Example of a "dead" trigger, which is used to only sync the table during initial load
-insert into sym_trigger 
-(trigger_id,source_table_name,channel_id, sync_on_insert, sync_on_update, sync_on_delete, last_update_time,create_time)
-values('sale_transaction_dead','sale_transaction','sale_transaction',0,0,0,current_timestamp,current_timestamp);
-
 --
 -- Routers
 --
@@ -129,7 +95,7 @@ values('item','corp_2_store', 100, current_timestamp, current_timestamp);
 
 insert into sym_trigger_router 
 (trigger_id,router_id,initial_load_order,initial_load_select,last_update_time,create_time)
-values('item_selling_price','corp_2_one_store',100,'"store_id"=''$(externalId)''',current_timestamp,current_timestamp);
+values('item_selling_price','corp_2_one_store',100,'store_id=''$(externalId)''',current_timestamp,current_timestamp);
 
 
 insert into sym_trigger_router 
@@ -144,8 +110,4 @@ insert into sym_trigger_router
 (trigger_id,router_id,initial_load_order,last_update_time,create_time)
 values('sale_tender_line_item','store_2_corp', 200, current_timestamp, current_timestamp);
 
--- Example of a 'dead' trigger, which is used to only sync the table during initial load
-insert into sym_trigger_router 
-(trigger_id,router_id,initial_load_order,last_update_time,create_time)
-values('sale_transaction_dead','store_2_corp', 200, current_timestamp, current_timestamp);
 
