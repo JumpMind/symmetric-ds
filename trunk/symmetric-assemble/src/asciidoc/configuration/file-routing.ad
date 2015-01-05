@@ -28,7 +28,7 @@ Conflict Strategy:: The strategy to employ when a file has been modified at both
 .Conflict Strategy Options
 |===
 
-|sourc_wins|The source file will be used when a conflict occurs.
+|source_wins|The source file will be used when a conflict occurs.
 
 |target_wins|The target file will be used when a conflict occurs.
 
