@@ -185,6 +185,14 @@ ifdef::pro[]
 image::transforms/transform-type-substring.png[]
 endif::pro[]
 
+===== Left Transform
+
+This transform copies the left most number of characters specified.
+
+===== BLeft Transform
+
+This transform copies the left most number of bytes specified. 
+
 ===== Multiplier Transform
 
 This transformation allows for the creation of multiple rows in the target table based on the 
