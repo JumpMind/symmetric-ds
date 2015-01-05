@@ -9,7 +9,7 @@ Before a node is allowed to register, it must have an open registration.  If the
 <<REGISTRATION_REQUEST>> is recorded. 
  
 ifdef::pro[]
-To allow a node to register click the _Registration_ button and select _Allow_.
+To allow a node to register click the *Registration* button and select *Allow*.
 
 image::manage/mange-nodes-allow-registration.png[]
 

@@ -2,7 +2,7 @@
 Installed nodes are started automatically when the SymmetricDS server is started.  An individual node instance can be stopped while other nodes continue to run.
 
 ifdef::pro[]
-To stop a node, select the node you want to stop and click on the _Control_ button and choose _Stop_.  The node's status will indicate that is has been stopped.
+To stop a node, select the node you want to stop and click on the *Control* button and choose *Stop*.  The node's status will indicate that is has been stopped.
 endif::pro[]
 
 From the command line, you can use JMX to stop a node.  The following is an example.  You would replace <engine name> with the name of the engine as found in the <<Engine Properties File>>

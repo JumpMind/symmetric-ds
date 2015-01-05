@@ -22,7 +22,7 @@ the channel's synchronization will block because SymmetricDS is unable to insert
 a non-existent row in the destination!
 
 ifdef::pro[]
-If you click on the _Send_ button and select _Table Data_ you will be prompted to select the tables you want to send.  Events will be queued up
+If you click on the *Send* button and select *Table Data* you will be prompted to select the tables you want to send.  Events will be queued up
 for each node that is selected on the Manage Nodes screen.
 endif::pro[]
 
