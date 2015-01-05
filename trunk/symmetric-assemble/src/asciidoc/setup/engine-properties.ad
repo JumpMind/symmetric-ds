@@ -19,7 +19,7 @@ they will take effect across all engines deployed to the server. Note
 that you can use the variable
 `$(hostName)`
 to represent the host name of the machine when defining these properties
-(for example, external.id=$(hostName) ).
+(for example, `external.id=$(hostName)` ).
 		
 		
 engine.name:: 
@@ -67,12 +67,9 @@ SymmetricDS and is enabled as part of the deployment. This is typically
 equal to the value of the sync.url of the registration server.
 +		
 [IMPORTANT]
-Note that a
-`registration server node`
-is defined as one whose
-`registration.url`
-is either (a) blank, or (b) identical to its
-`sync.url`
+Note that a registration server node
+is defined as one whose `registration.url`
+is either blank or identical to its `sync.url`.
 +
 For a deployment where the database connection pool should
 be created using a JDBC driver, set the following properties:

@@ -52,19 +52,19 @@ _default_ and _transactional_ algorithm,n `max_data_to_route` rows may by exceed
 An <<OUTGOING_BATCH>> is initially created with a status of "RT".  <<DATA>> is assigned to the batch by inserting into
 <<DATA_EVENT>>.  When a batch is complete, the batch is committed and the status is changed to "NE".
 
-The route job will respect the `max_batch_size` on the <<CHANNEL>>.  If the max batch size is reached before the end 
+The route job will respect the `max_batch_size` as configured in <<Channels>>.  If the max batch size is reached before the end 
 of a captured database transaction and the batch algorithm is set to something other than _nontransactional_
 the batch may exceed the specified max size.
 
-The route job delegates to <<Routers>> to decided which nodes need to received the data.  The correct <<Router>> is looked up by 
-referencing the captured `trigger_hist_id` in <<DATA>> and using the <<TRIGGER_ROUTER>>.  
+The route job delegates to a <<_routers,router>> to decided which nodes need to received the data.  The correct <<_routers, router>> is looked up by 
+referencing the captured `trigger_hist_id` in <<DATA>> and using <<Table Routing>> configuration.  
 
 After <<OUTGOING_BATCH>>s have been created by the Route Job, they need to be transported to the target node. 
         
 ===== Data Gaps
 
 The <<DATA>> to route is selected based on the values in the <<DATA_GAP>> table.  For efficiency,
-<<DATA_GAP>> tracks gaps in the `data_id`s in <<DATA>> table that have not yet been processed.
+<<DATA_GAP>> tracks gaps in the data ids in <<DATA>> table that have not yet been processed.
 
 A gap while routing in <<DATA>> can occur because concurrently running transactions have not yet committed.  They can 
 also be caused by rolled back transactions. 

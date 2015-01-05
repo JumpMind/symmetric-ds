@@ -1,4 +1,4 @@
-Multiple nodes can be hosted in a single SymmetricDS instance.  When more than one node is hosted in an instance it is called "multi-homing."    
+Multiple nodes can be hosted in a single SymmetricDS instance.      
 SymmetricDS will start a node for each properties file it finds in the engines directory.  
 
 ifndef::pro[]
