@@ -532,6 +532,10 @@
         <column name="filter_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
         <column name="load_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
         <column name="extract_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent extracting the data out of the source database." />
+        <column name="transform_extract_millis" type="BIGINT" required="true" default="0" description="Not implemented. The number of milliseconds spent transforming the data on the extract side." />
+        <column name="transform_load_millis" type="BIGINT" required="true" default="0" description="Not implemented. The number of milliseconds spent transforming the data on the load side." />
+        <column name="total_extract_millis" type="BIGINT" required="true" default="0" description="Not implemented. The total number of milliseconds spent processing a batch on the extract side." />
+        <column name="total_load_millis" type="BIGINT" required="true" default="0" description="Not implemented. The total number of milliseconds spent processing a batch on the load side." />
         <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
         <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
         <column name="sql_message" type="LONGVARCHAR" description="For a status of error (ER), this is the error message that describes the error." />
