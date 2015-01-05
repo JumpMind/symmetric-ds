@@ -48,217 +48,22 @@ include::manage/installed-triggers.ad[]
 ifdef::pro[]
 === Outgoing Loads
 
+The Outgoing Loads screen shows the number of loads that have been queued.  It also lists loads that have had <<Outgoing Batches>> created.  The screens shows 
+loads that are sourced from the current node.
+
+You can cancel a load that is in progress by selecting the load and pressing the _Cancel_ button.  
+
+image::manage/manage-outgoing-loads.png[]
+
 endif::pro[]
 
 === Outgoing Batches
 
-Data is extracted by channel from the source database's <<DATA>>
-table at an interval controlled by the
-`extract_period_millis`
-column on the
-<<CHANNEL>>
-table. The
-`last_extract_time`
-is always recorded, by channel, on the
-<<NODE_CHANNEL_CTL>>
-table for the host node's id. When the Pull and Push Job run, if the
-extract period has not passed according to the last extract time, then
-the channel will be skipped for this run. If the
-`extract_period_millis`
-is set to zero, data extraction will happen every time the jobs run.
-
-
-The maximum number of batches to extract per synchronization is
-controlled by
-_max_batch_to_send_
-on the
-<<CHANNEL>>
-table. There is also a setting that controls the max number of bytes to
-send in one synchronization. If SymmetricDS has extracted the more than
-the number of bytes configured by the
-`transport.max.bytes.to.sync`
-parameter, then it will finish extracting the current batch and finish
-synchronization so the client has a chance to process and acknowledge the
-"big" batch. This may happen before the configured max number of batches
-has been reached.
-
-
-SymmetricDS provides the ability to configure windows of time when synchronization is allowed. This is done using the
-<<NODE_GROUP_CHANNEL_WND>> table. A list of allowed time windows can be specified for a node group and a channel. 
-If one or more windows exist, then data will only be extracted and transported if the time of day falls within the window of
-time specified. The configured times are always for the target node's local time. If the `start_time` is greater than the
-`end_time`, then the window crosses over to the next day.
-
-
-		
-By design, whenever SymmetricDS encounters an issue with a synchronization, the batch containing the error is marked as being in
-an error state, and all subsequent batches _for that particular channel to that particular node_ are held and not
-synchronized until the error batch is resolved.  SymmetricDS will retry the batch in error until the situation creating the
-error is resolved (or the data for the batch itself is changed).
-       	
-Analyzing and resolving issues can take place on the outgoing or incoming side.  The techniques for analysis are slightly different in
-the two cases, however, due to the fact that the node with outgoing batch data also has the data and data events associated with the batch in
-the database.  On the incoming node, however, all that is available is the incoming batch header and data present in an incoming error table.
-		
-==== Analyzing the Issue
-
-The first step in analyzing the cause of a failed batch is to locate information about the data in the batch, starting with
-<<OUTGOING_BATCH>>
-.  To locate batches in error, use:
-   
-[source, sql]
-----
-select * from sym_outgoing_batch where error_flag=1;
-----
-
-Several useful pieces of information are available from this query:
-
-* The batch number of the failed batch, available in column `BATCH_ID`.
-* The node to which the batch is being sent, available in column `NODE_ID`.
-* The channel to which the batch belongs, available in column `CHANNEL_ID`.
-   All subsequent batches on this channel to this node will be held until the error condition is resolved.
-* The specific data id in the batch which is causing the failure, available in column `FAILED_DATA_ID`.
-* Any SQL message, SQL State, and SQL Codes being returned during the synchronization attempt, available in columns `SQL_MESSAGE`,
-   `SQL_STATE`, and `SQL_CODE`, respectively.
-	       
-NOTE: Using the `error_flag` on the batch table, as shown above, is more reliable than using the
-   `status` column.  The status column can change from 'ER' to a different status temporarily as
-   the batch is retried.
-	       
-NOTE: The query above will also show you any recent batches that
-   were originally in error and were changed to be manually skipped.  See the end of <<Outgoing Batches>> for more details.
-
-To get a full picture of the batch, you can query for information representing the complete
-list of all data changes associated with the failed batch by joining
-<<DATA>> and <<DATA_EVENT>>, such as:
-   
-[source, sql]
-----
-select * from sym_data where data_id in
-   (select data_id from sym_data_event where batch_id='XXXXXX');
-----
-where XXXXXX is the batch id of the failing batch.
-	      
-This query returns a wealth of information about each data change in a batch, including:
-
-* The table involved in each data change, available in column `TABLE_NAME`,
-* The event type (Update [U], Insert [I], or Delete [D]), available in column `EVENT_TYPE`,
-* A comma separated list of the new data and (optionally) the old data, available in columns `ROW_DATA` and
-	       `OLD_DATA`, respectively.
-* The primary key data, available in column `PK_DATA`
-* The channel id, trigger history information, transaction id if available, and other information.
-
-More importantly, if you narrow your query to just the failed data id you can determine the exact data change that is causing the failure:
-[source, sql]
-----
-select * from sym_data where data_id in
-    (select failed_data_id from sym_outgoing_batch where batch_id='XXXXX'
-    and node_id='YYYYY');
-----
-where XXXXXX is the batch id and YYYYY is the node id of the batch that is failing.
-	       
-The queries above usually yield enough information to be able to determine why a
-   particular batch is failing. Common reasons a batch might be failing include:
-
-* The schema at the destination has a column that is not nullable yet the source
-has the column defined as nullable and a data change was sent with the column as null.
-* A foreign key constraint at the destination is preventing an insertion or update, which could be caused from
-data being deleted at the destination or the foreign key constraint is not in place at the source.
-* The data size of a column on the destination is smaller than the data size in the source, and data that
-is too large for the destination has been synced.
-
-==== Resolving the Issue
-           
-Once you have decided upon the cause of the issue, you'll have to decide the best course of action to fix the issue.  If, for example,
-the problem is due to a database schema mismatch, one possible solution would be to alter the destination database
-in such a way that the SQL error no longer occurs.  Whatever approach you take to remedy the issue, once you have
-made the change, on the next push or pull SymmetricDS will retry the batch
-and the channel's data will start flowing again.
-
-If you have instead decided that the batch itself is wrong, or does not need synchronized, or you wish to remove a
-particular data change from a batch, you do have the option of changing the data associated with the batch directly.
-
-WARNING: Be cautious when using the following two approaches to resolve synchronization issues.  By far, the
-best approach to solving a synchronization error is to resolve what is truly causing the
-error at the destination database.  Skipping a batch or removing a data id as discussed below should be your
-solution of last resort, since doing so results in differences between the source and destination databases.
-
-Now that you've read the warning, if you _still_ want to change the batch
-data itself, you do have several options, including:
-            
-* Causing SymmetricDS to skip the batch completely.  This is accomplished by setting the
-batch's status to 'OK', as in:
-[source, sql]  
-----              
-update sym_outgoing_batch set status='OK' where batch_id='XXXXXX'
-----                
-where XXXXXX is the failing batch. On the next pull or push, SymmetricDS will skip this batch since
-it now thinks the batch has already been synchronized.  Note that you can still distinguish between successful
-batches and ones that you've artificially marked as 'OK', since the `error_flag` column on
-the failed batch will still be set to '1' (in error).
-
-* Removing the failing data id from the batch by deleting the corresponding row in <<DATA_EVENT>>.
-Eliminating the data id from the list of data ids in the batch will cause future synchronization attempts
-of the batch to no longer include that particular data change as part of the batch.  For example:
-                  
-[source, sql]
-delete from sym_data_event where batch_id='XXXXXX' and data_id='YYYYYY'
-where XXXXXX is the failing batch and YYYYYY is the data id to longer be included in the batch.
+include::manage/outgoing-batches.ad[]
 
 === Incoming Batches
 
-==== Analyzing the Issue
-	      
-Analysis using an incoming batch is different than that of outgoing batches.  For incoming batches, you will rely on two tables,
-<<INCOMING_BATCH>> and <<INCOMING_ERROR>>.
-
-The first step in analyzing the cause of an incoming failed batch is to locate information about the batch, starting with
-<<INCOMING_BATCH>>
-.  To locate batches in error, use:
-
-[source, sql]
-----
-select * from sym_incoming_batch where error_flag=1;
-----
-
-Several useful pieces of information are available from this query:
-
-* The batch number of the failed batch, available in column `BATCH_ID`.  Note that this is the batch number of the
-outgoing batch on the outgoing node.
-* The node the batch is being sent from, available in column `NODE_ID`.
-* The channel to which the batch belongs, available in column `CHANNEL_ID`.
-All subsequent batches on this channel from this node will be held until the error condition is resolved.
-* The data_id that was being processed when the batch failed, available in column `FAILED_DATA_ID`.
-* Any SQL message, SQL State, and SQL Codes being returned during the synchronization attempt, available in columns `SQL_MESSAGE`,
-`SQL_STATE`, and `SQL_CODE`, respectively.
-
-For incoming batches, we do not have data and data event entries in the database we can query.
-We do, however, have a table, <<INCOMING_ERROR>>, which provides some information about the batch.
-
-[source, sql]
-----
-select * from sym_incoming_error
-where batch_id='XXXXXX' and node_id='YYYYY';
-----
-where XXXXXX is the batch id and YYYYY is the node id of the failing batch.
-
-This query returns a wealth of information about each data change in a batch, including:
-
-* The table involved in each data change, available in column `TARGET_TABLE_NAME`,
-* The event type (Update [U], Insert [I], or Delete [D]), available in column `EVENT_TYPE`,
-* A comma separated list of the new data and (optionally) the old data, available in columns `ROW_DATA` and
-`OLD_DATA`, respectively,
-* The column names of the table, available in column `COLUMN_NAMES`,
-* The primary key column names of the table, available in column `PK_COLUMN_NAMES`,
-	       
-==== Resolving the Issue
-           
-For batches in error, from the incoming side you'll also have to decide the best course of action to fix the issue.
-Incoming batch errors _that are in conflict_ can by fixed by taking advantage of two columns in <<INCOMING_ERROR>> which are examined each time
-batches are processed.  The first column, `resolve_data` if filled in will be used in place of `row_data`.
-The second column, `resolve_ignore` if set will cause this particular data item to be ignored and batch processing to continue.  This is the same
-two columns used when a manual conflict resolution strategy is chosen, as discussed in <<Conflicts>>.
-      
+include::manage/incoming-batches.ad[]
       
 
 
