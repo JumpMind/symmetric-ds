@@ -4,7 +4,14 @@
 :icons: font
 :source-highlighter: coderay
 
+ifdef::pro[]
+= SymmetricDS Professional User Guide
+endif::pro[]
+
+ifndef::pro[]
 = SymmetricDS User Guide
+endif::pro[]
+
 Copyright (C) 2007-2015 JumpMind, Inc
 Version 3.7
 _Permission to use, copy, modify, and distribute this SymmetricDS User Guide for any purpose and without fee is hereby granted in perpetuity, provided that the above copyright notice and this paragraph appear in all copies._
