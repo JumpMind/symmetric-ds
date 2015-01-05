@@ -1,9 +1,26 @@
+ifdef::pro[]
+
+The Incoming Batches screens allows you to monitor batches that have been delivered to the target node.
+
+image::manage/manage-incoming-batches.png[]
+
+endif::pro[]
+
+Incoming batches are delivered to the target node when the source node <<_push_job,pushes>> or when the target node <<_pull_job,pulls>>.
+
+Incoming batches are written to the <<Staging Area>> first and then loaded.  The use of the staging area can be turned off by setting the `stream.to.file.enabled` parameter.
 
 ==== Incoming Batch Errors
 
+When a batch fails to load it is marked with an Error status.
+
 ===== Analyzing the Issue
           
-Analysis using an incoming batch is different than that of outgoing batches.  For incoming batches, you will rely on two tables,
+Analysis using an incoming batch is different than that of outgoing batches.  
+
+ifndef::pro[]
+
+For incoming batches, you will rely on two tables,
 <<INCOMING_BATCH>> and <<INCOMING_ERROR>>.
 
 The first step in analyzing the cause of an incoming failed batch is to locate information about the batch, starting with
@@ -44,10 +61,25 @@ This query returns a wealth of information about each data change in a batch, in
 `OLD_DATA`, respectively,
 * The column names of the table, available in column `COLUMN_NAMES`,
 * The primary key column names of the table, available in column `PK_COLUMN_NAMES`,
-           
+
+endif::pro[]
+
+ifdef::pro[]
+
+Batches in Error can be viewed when the *Status* is set to _<Not Ok>_ or _Error_.
+
+image::manage/manage-incoming-batches-error.png[]
+
+The error message can be viewed by clicking the *Status* link.
+
+image::manage/manage-incoming-batches-error-show.png[]
+
+endif::pro[]
+                      
 ===== Resolving the Issue
            
 For batches in error, from the incoming side you'll also have to decide the best course of action to fix the issue.
+
 Incoming batch errors _that are in conflict_ can by fixed by taking advantage of two columns in <<INCOMING_ERROR>> which are examined each time
 batches are processed.  The first column, `resolve_data` if filled in will be used in place of `row_data`.
 The second column, `resolve_ignore` if set will cause this particular data item to be ignored and batch processing to continue.  This is the same

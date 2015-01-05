@@ -170,7 +170,7 @@ ifndef::pro[]
 batch's status to 'OK', as in:
 +
 [source, sql]  
-----              
+----
 update sym_outgoing_batch set status='OK' where batch_id='XXXXXX'
 ----
 +                
