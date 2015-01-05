@@ -116,7 +116,7 @@ initial load of data in the "reverse" direction.  A reverse initial load is star
 on <<NODE_SECURITY>>. 
 
 ifdef::pro[]
-A reverse initial load is requested from the user interface by clicking _Initial Load_ and selecting _Receive Load From_.
+A reverse initial load is requested from the user interface by pressing _Initial Load_ and selecting _Receive Load From_.
 endif::pro[]
 
 ===== Other Initial Load Settings

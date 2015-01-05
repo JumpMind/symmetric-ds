@@ -1,0 +1,55 @@
+
+==== Incoming Batch Errors
+
+===== Analyzing the Issue
+          
+Analysis using an incoming batch is different than that of outgoing batches.  For incoming batches, you will rely on two tables,
+<<INCOMING_BATCH>> and <<INCOMING_ERROR>>.
+
+The first step in analyzing the cause of an incoming failed batch is to locate information about the batch, starting with
+<<INCOMING_BATCH>>
+.  To locate batches in error, use:
+
+[source, sql]
+----
+select * from sym_incoming_batch where error_flag=1;
+----
+
+Several useful pieces of information are available from this query:
+
+* The batch number of the failed batch, available in column `BATCH_ID`.  Note that this is the batch number of the
+outgoing batch on the outgoing node.
+* The node the batch is being sent from, available in column `NODE_ID`.
+* The channel to which the batch belongs, available in column `CHANNEL_ID`.
+All subsequent batches on this channel from this node will be held until the error condition is resolved.
+* The data_id that was being processed when the batch failed, available in column `FAILED_DATA_ID`.
+* Any SQL message, SQL State, and SQL Codes being returned during the synchronization attempt, available in columns `SQL_MESSAGE`,
+`SQL_STATE`, and `SQL_CODE`, respectively.
+
+For incoming batches, we do not have data and data event entries in the database we can query.
+We do, however, have a table, <<INCOMING_ERROR>>, which provides some information about the batch.
+
+[source, sql]
+----
+select * from sym_incoming_error
+where batch_id='XXXXXX' and node_id='YYYYY';
+----
+where XXXXXX is the batch id and YYYYY is the node id of the failing batch.
+
+This query returns a wealth of information about each data change in a batch, including:
+
+* The table involved in each data change, available in column `TARGET_TABLE_NAME`,
+* The event type (Update [U], Insert [I], or Delete [D]), available in column `EVENT_TYPE`,
+* A comma separated list of the new data and (optionally) the old data, available in columns `ROW_DATA` and
+`OLD_DATA`, respectively,
+* The column names of the table, available in column `COLUMN_NAMES`,
+* The primary key column names of the table, available in column `PK_COLUMN_NAMES`,
+           
+===== Resolving the Issue
+           
+For batches in error, from the incoming side you'll also have to decide the best course of action to fix the issue.
+Incoming batch errors _that are in conflict_ can by fixed by taking advantage of two columns in <<INCOMING_ERROR>> which are examined each time
+batches are processed.  The first column, `resolve_data` if filled in will be used in place of `row_data`.
+The second column, `resolve_ignore` if set will cause this particular data item to be ignored and batch processing to continue.  This is the same
+two columns used when a manual conflict resolution strategy is chosen, as discussed in <<Conflicts>>.
+      
