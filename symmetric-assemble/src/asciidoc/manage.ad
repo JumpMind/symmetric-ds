@@ -5,11 +5,6 @@ This section will talk about how to manage and monitor SymmetricDS.
  
 === Nodes
 
-One _node_ is associated with one relational database. A node manages the
-synchronization of data to and from that database.  A node communicates with its 
-database via JDBC.  Nodes communicate with each other over HTTP/S using the protocol described 
-by <<Data Format>>.
-
 ifdef::pro[]
 Nodes can be added and managed in the Nodes screen under the Manage tab.
 

@@ -5,7 +5,7 @@
 :source-highlighter: coderay
 
 ifdef::pro[]
-= SymmetricDS Professional User Guide
+= SymmetricDS Pro User Guide
 endif::pro[]
 
 ifndef::pro[]
