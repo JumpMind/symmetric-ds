@@ -124,11 +124,13 @@ The Purge Incoming Job is responsible for purging the <<INCOMING_BATCH>> table.
 
 ==== Statistics Job
 
-The Statistics Job is flushes captured statistics to following tables:
+The Statistics Job flushes captured statistics to following tables:
  
 * <<NODE_HOST_CHANNEL_STATS>>
 * <<NODE_HOST_JOB_STATS>>
 * <<NODE_HOST_STATS>>
+
+It also purges the same tables based on the `purge.stats.retention.minutes` parameter.
 
 ==== Sync Triggers Job
 
