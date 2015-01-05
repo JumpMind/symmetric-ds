@@ -173,7 +173,7 @@ Create the NotePad project. You do this by adding a new Android Sample Project. 
 image::developer/sync-android-1.png[title="New Sample NotePad Project"]
 
 SymmetricDS for Android comes as a zip file of Java archives (jar files) that are required by the SymmetricDS client at runtime. 
-This zip file symmetric-ds-3.4.7-android.zip) can be downloaded from the SymmetricDS.org website. The first step to using SymmetricDS 
+This zip file (symmetric-ds-3.4.7-android.zip) can be downloaded from the SymmetricDS.org website. The first step to using SymmetricDS 
 in an Android application is to unzip the jar files into a location where the project will recognize them. The latest Android SDK and the 
 Eclipse ADK requires that these jar files be put into a libs directory under the Android application project.
 
