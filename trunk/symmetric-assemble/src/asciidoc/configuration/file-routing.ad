@@ -1,4 +1,99 @@
 
 === File Routing
 
-TODO
+ifndef::pro[]
+The FILE_TRIGGER_ROUTER table is used to define which specific combinations of file triggers and routers are needed for your configuration. 
+The relationship between file triggers and routers is many-to-many, so this table serves as the join table to define which combinations 
+are valid, as well as to define settings available at the trigger-router level of granularity.
+
+endif::pro[]
+
+ifdef::pro[]
+File routing tells SymmetricDS how changes to files will be managed and sent to a target node.
+
+IMPORTANT: SymmetricDS will not create file triggers until they are associated with a router through file routing.
+
+NOTE: Once a file routing relationship is created changes on the base directory will be captured and file sync will begin.
+
+image::file-routing/file-routing-new.png[]
+endif::pro[]
+
+ifdef::pro[]
+.Required Fields
+endif::pro[]
+File Triggers:: The file trigger to link.
+Routers:: The router to link.
+Target Base Directory:: The base directory on the target that files will be synchronized to.
+Conflict Strategy:: The strategy to employ when a file has been modified at both the client and the server. 
+.Conflict Strategy Options
+|===
+
+|sourc_wins|The source file will be used when a conflict occurs.
+
+|target_wins|The target file will be used when a conflict occurs.
+
+|manual|If a conflict occurs the batch will be put in ER (error) status and require manual intervention to resolve the issue.
+
+|===
+
+ifdef::pro[]
+.Advanced Options
+endif::pro[]
+Initial Enabled:: Indicates whether this file trigger should be initial loaded.
+Enabled:: Indicates whether this file trigger router is enabled or not.  
+
+ifdef::pro[]
+==== Auto Create
+
+In order to simply file synchronization setup the auto create feature allows you to create file routing relationships quickly.
+
+Click the *Auto Create* button from the file routing screen to begin the process.
+
+[.float-group]
+--
+[.left.text-left]
+image::file-routing/auto-create-1-triggers.png[]
+
+The default entry point for the auto creation is from the file triggers perspective.  This will allow you to select file triggers first then routers.
+
+Clicking next to select from available routers
+
+--
+
+
+[.float-group]
+--
+[.left.text-left]
+image::file-routing/auto-create-2-routers.png[]
+
+
+Select the routers (direction) to associate with the previously selected file triggers.
+
+Click save to setup the file triggers and begin file sync.
+--
+
+You can also select routers on the first screen of the auto create if you would like to select routers first then file triggers.   Both approaches will
+result in the same file routing.
+
+[.float-group]
+--
+[.left.text-left]
+image::file-routing/auto-create-1-routers.png[]
+
+Select from available routers.
+
+Clicking next to select from available file triggers
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::file-routing/auto-create-2-triggers.png[]
+
+Select the file triggers to associate with the previously selected routers.
+
+Click save to setup the file routers and begin file sync.
+--
+
+endif::pro[]

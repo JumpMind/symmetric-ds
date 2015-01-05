@@ -32,8 +32,10 @@ a negative number, then the table will be excluded from an initial load.
 ifdef::pro[]
 .Advanced Options
 endif::pro[]
+
 Initial Load SQL:: SQL used as part of the WHERE clause on a SQL statement during the initial load process to extract data from the source node
 of the router.  If blank all rows will be selected.
+
 Initial Load Delete SQL:: SQL used as part of the WHERE clause on a SQL statement during the initial load process to delete data on the target node
 of the router.  
 
@@ -41,6 +43,7 @@ IMPORTANT: Initial Load Delete SQL will only be used if the following parameter 
 ----
 initial.load.delete.first=true
 ----
+
 
 endif::pro[]
 
@@ -66,6 +69,10 @@ a negative number, then the table will be excluded from an initial load.
 Initial Load Batch Count:: Only applicable if the initial load extract job is enabled. The number of batches to split 
 an initial load of a table across.  If 0 then a select count(*) will be used to dynamically determine the number of 
 batches based on the max_batch_size of the reload channel.
+
+Group Link:: The group link represented by the router.
+
+ifdef::pro[]
 
 ==== Auto Create
 
@@ -120,3 +127,5 @@ Select the table triggers to associate with the previously selected routers.
 
 Click save to install the triggers on the database and begin data capture.
 --
+
+endif::pro[]
