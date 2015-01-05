@@ -1,7 +1,9 @@
 
 === Group Links
-Group links define how a node that belongs to a group will communicate with nodes in other groups.
- 
+Group links define at a high level how data moves throughout your synchronization scenario.  The group link defines
+which node groups will synchronize data to other node groups and within that exchange, which node group will
+initiate the conversation for that exchange.
+
 ifdef::pro[]
 image::group-link.png[]
 endif::pro[]
@@ -16,20 +18,13 @@ Link:: Defines how the source and target groups will communicate.
 .Options for Group Links
 |===
 
-ifndef::pro[]
-|Push [P]|Indicates that the source node will initiate communication over an HTTP PUT.
+|Push [P]|Indicates that nodes in the source node group will initiate communication over an HTTP PUT and push data to nodes in the target node group.
 
-|Wait for Pull [W]|Indicates that the source node will wait for a target node to connect via an HTTP GET to pull data.
+|Wait for Pull [W]|Indicates nodes in the source node group will wait for a node in the target node group to connect via an HTTP GET and allow 
+the nodes in the target node group to pull data from the nodes in the source node group.
 
-|Route-only [R]|Route-only indicates that the data isn't going to be transported via SymmetricDS.  This action type might be useful when using an XML publishing router or an audit table changes router.
-endif::pro[]
-ifdef::pro[]
-|Pushes To|Indicates that the source node will initiate communication over an HTTP PUT.
-
-|Wait for Pull From|Indicates that the source node will wait for a target node to connect via an HTTP GET to pull data.
-
-|Only Routes To|Route-only indicates that the data isn't going to be transported via SymmetricDS.  This action type might be useful when using an XML publishing router or an audit table changes router.
-endif::pro[]
+|Route-only [R]|Route-only indicates that the data isn't exchanged between nodes in the source and nodes in the target node groups via SymmetricDS.  
+This action type might be useful when using an XML publishing router or an audit table changes router.
 
 |===
 
