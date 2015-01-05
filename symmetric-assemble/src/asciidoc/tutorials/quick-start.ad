@@ -19,7 +19,7 @@ ifndef::pro[]
 First, we need to copy over the `corp-000.properties`, `store-001.properties` and `store-002.properties` files from the `samples/` folder to the `engines/` folder.
 Next, we need to populate the database with the demo configuration.  To do this, execute the following steps.
 
-* Open a command prompt and navigate to the samples subdirectory of your SymmetricDS installation.
+* Open a command prompt and navigate to the `samples` subdirectory of your SymmetricDS installation.
 * Create the sample tables for items, prices, and sales, in the root database by executing the following command:
 
 [source, cli]
@@ -29,22 +29,7 @@ bin/dbimport --engine corp-000 --format XML create_sample.xml
 
 NOTE: The warning messages from the command are safe to ignore.
 
-* Next, create the SymmetricDS-specific tables in the corp node database. 
-These tables will contain the configuration for synchronization. The following command uses the auto-creation feature to create all the necessary SymmetricDS system tables.
-
-[source, cli]
-----
-bin/symadmin --engine corp-000 create-sym-tables
-----
-
-* Load the sample item and transaction data and SymmetricDS configuration into the root node database by executing:
-
-[source, cli]
-----
-bin/dbimport --engine corp-000 insert_sample.sql
-----
-
-We will now start the SymmetricDS nodes. To do this, open three command prompts, navigate to the samples directory of the SymmetricDS installation, 
+We will now start the SymmetricDS nodes. To do this, open three command prompts, navigate to the `samples/` directory of the SymmetricDS installation, 
 and run the following commands.
 
 [source, cli]
@@ -62,8 +47,15 @@ bin/sym --engine store-001 --port 9090
 bin/sym --engine store-002 --port 1010
 ----
 
-Watch the logging output of the store nodes to see it successfully register with the corp node. 
-The stores are configured to attempt registration at a random time interval up to every minute. Once registered, the corp and store nodes are enabled for synchronization!
+* Watch the logging output of the store nodes to see it successfully register with the corp node. 
+The stores are configured to attempt registration at a random time interval up to every minute.
+
+* Load the sample item and transaction data and SymmetricDS configuration into the root node database by executing:
+
+[source, cli]
+----
+bin/dbimport --engine corp-000 insert_sample.sql
+----
 
 endif::pro[]
 
@@ -283,8 +275,9 @@ endif::pro[]
 
 IMPORTANT:  Make sure you have selected corp-000 to run your query against.
 
+=== Finish
 [horizontal]
 icon:graduation-cap[role="green" size="2x"]:: [big]#*Congratulations! You have completed the Demo.*#  
 
-[small]#Continue to browse through the demo configuration to see how basic triggers, routers, group 
-links and more are setup. When you are ready, uninstall the demo and begin your own configuration.#
+Continue to browse through the demo configuration to see how basic triggers, routers, group 
+links and more are setup. When you are ready, uninstall the demo and begin your own configuration.
