@@ -1,0 +1,17 @@
+:toc: left
+:toclevels: 3
+:imagesdir: ../images
+:icons: font
+:source-highlighter: coderay
+
+:numbered:
+
+= SymmetricDS Tutorials
+
+Copyright (C) 2007-2015 JumpMind, Inc
+Version 3.7
+_Permission to use, copy, modify, and distribute this SymmetricDS Tutorials Guide 
+for any purpose and without fee is hereby granted in perpetuity, provided that 
+the above copyright notice and this paragraph appear in all copies._
+
+include::quick-start.ad[]

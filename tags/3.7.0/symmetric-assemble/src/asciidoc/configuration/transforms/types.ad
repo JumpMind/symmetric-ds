@@ -1,0 +1,492 @@
+
+==== Transform Types
+
+There are several pre-defined transform types available in SymmetricDS. Additional ones can be 
+defined by creating and configuring an extension point which implements the IColumnTransform interface. 
+The pre-defined transform types include the following:
+
+===== Copy Transform
+
+This transformation type copies the source column value to the target column. This is the default behavior.
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'ITEM_ID', 'ITEM_ID', 1,
+	'copy', '', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'STORE_ID', 'STORE_ID', 1,
+	'copy', '', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+endif::pro[]
+
+ifdef::pro[]
+image::transforms/transform-type-copy.png[]
+endif::pro[]
+
+
+===== Remove Transform
+
+This transformation type excludes the source column. This transform type is only valid for a table 
+transformation type of 'IMPLIED' where all the columns from the source are automatically copied to the target.
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', '', 'COST', 1,
+	'remove', '', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+endif::pro[]
+
+ifdef::pro[]
+image::transforms/transform-type-remove.png[]
+endif::pro[]
+
+===== Constant Transform
+
+This transformation type allows you to map a constant value to the given target column. The constant itself is placed in transform expression.
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'PRICE', 'PRICE', 0,
+	'const', '10', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+endif::pro[]
+
+ifdef::pro[]
+image::transforms/transform-type-const.png[]
+endif::pro[]
+
+===== Variable Transform
+
+This transformation type allows you to map a built-in dynamic variable to the given target column. 
+The variable name is placed in transform expression. The following variables are available: 
+
+.Variables
+|===
+
+|system_date|current system date
+|system_timestamp|current system date and time
+|source_node_id|node id of the source
+|target_node_id|node id of the target
+|null|null value 
+|old_column_value|column's old value prior to the DML operation.
+
+|===
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'STORE_ID', 'STORE_ID', 0,
+	'variable', 'source_node_id', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+endif::pro[]
+
+ifdef::pro[]
+image::transforms/transform-type-variable.png[]
+endif::pro[]
+
+===== Additive Transform
+
+This transformation type is used for numeric data. It computes the change between the old and new 
+values on the source and then adds the change to the existing value in the target column. That is, 
+target = target + multiplier (source_new - source_old), where multiplier is a constant found in the 
+transform expression (default is 1 if not specified). 
+
+.Additive Transform Example
+====
+If the source column changed from a 2 to a 4, the target column is currently 10, and the multiplier is 3, 
+the effect of the transform will be to change the target column to a value of 16 ( 10+3*(4-2) => 16 ). 
+
+NOTE: In the case of deletes, the new column value is considered 0 for the purposes of the calculation.
+====
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'PRICE', 'PRICE', 0,
+	'additive', '3', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+endif::pro[]
+
+ifdef::pro[]
+image::transforms/transform-type-additive.png[]
+endif::pro[]
+
+===== Substring Transform
+
+This transformation computes a substring of the source column data and uses the substring as the target 
+column value. The transform expression can be a single integer ( n , the beginning index), or a pair of 
+comma-separated integers ( n,m - the beginning and ending index). The transform behaves as the Java 
+substring function would using the specified values in transform expression.
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'STORE_ID', 'STORE_ID', 0,
+	'substring', '0,5', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+endif::pro[]
+
+ifdef::pro[]
+image::transforms/transform-type-substring.png[]
+endif::pro[]
+
+===== Left Transform
+
+This transform copies the left most number of characters specified.
+
+===== BLeft Transform
+
+This transform copies the left most number of bytes specified. 
+
+===== Multiplier Transform
+
+This transformation allows for the creation of multiple rows in the target table based on the 
+transform expression. This transform type can only be used on a primary key column. The transform expression 
+is a SQL statement that returns the list to be used to create the multiple targets.
+
+===== Lookup Transform
+
+This transformation determines the target column value by using a query, contained in transform expression 
+to lookup the value in another table. The query must return a single row, and the first column of the query 
+is used as the value. Your query references source column names by prefixing with a colon (e.g., :MY_COLUMN).
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'COST', 'COST', 0,
+	'lookup', 'select max(price) from sale_return_line_item 
+	where item_id = :ITEM_ID', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+endif::pro[]
+
+ifdef::pro[]
+image::transforms/transform-type-lookup.png[]
+endif::pro[]
+
+
+
+===== Shell Script Transform
+
+This transformation allows you to provide a Bean Shell script in transform expression and executes the script
+ at the time of transformation. Some variables are provided to the script: 
+ 
+.Variables
+|===
+
+|_COLUMN_NAME_|The variable name is the source column name in uppercase of the row being changed (replace COLUMN_NAME with your column)
+|currentValue|The value of the current source column
+|oldValue|The old value of the source column for an updated row
+|sqlTemplate|a org.jumpmind.db.sql.ISqlTemplate object for querying or updating the database
+|channelId|a reference to the channel on which the transformation is happening
+|sourceNode|a org.jumpmind.symmetric.model.Node object that represents the node from where the data came
+|targetNode|a org.jumpmind.symmetric.model.Node object that represents the node where the data is being loaded.
+
+|===
+
+.Tranform Expression Example
+====
+----
+if (currentValue > oldValue) { 
+	return currentValue * .9 
+} else { 
+	return PRICE 
+}
+----
+====
+
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'COST', 'COST', 0,
+	'bsh', 'if (currentValue > oldValue) { return currentValue * .9 } else { return PRICE }', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+endif::pro[]
+
+ifdef::pro[]
+image::transforms/transform-type-beanshell.png[]
+endif::pro[]
+
+
+===== Identity Transform
+
+This transformation allows you to insert into an identity column by letting the database compute a new identity, instead of loading 
+an explicit value from a source database.  This transform is needed on databases like SQL-Server and Sybase, which have an
+INSERT_IDENTITY option that is normally ON for normal data sync.  By using the identity transform, the INSERT_IDENTITY is set to OFF,
+so the next value is generated by the database.  
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'ITEM_ID', 'ITEM_ID', 0,
+	'identity', '', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+endif::pro[]
+
+ifdef::pro[]
+image::transforms/transform-type-identity.png[]
+endif::pro[]
+
+
+===== Mathematical Transform
+
+This transformation allows you to perform mathematical equations in the transform expression. Some variables 
+are provided to the script: 
+
+|===
+
+|#{COLUMN_NAME}|A variable for a source column in the row, where the variable name is the column name in uppercase (replace COLUMN_NAME with your column name).
+|#{currentValue}|The value of the current source column
+|#{oldValue}|The old value of the source column for an updated row.
+
+|===
+
+.Tranform Expression Example
+====
+----
+#{currentValue} - #{oldValue} * #{PRICE}
+----
+====
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'COST', 'COST', 0,
+	'math', '#{currentValue} - #{oldValue} * #{PRICE}', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+endif::pro[]
+
+ifdef::pro[]
+image::transforms/transform-type-math.png[]
+endif::pro[]
+
+
+===== Copy If Changed
+
+This transformation will copy the value to the target column if the source value has changed. More specifically, 
+the copy will occur if the the old value of the source does not equal the new value. 
+
+====
+.Target Expression Options
+|===
+
+|IgnoreColumn|If old and new values are equal, the *COLUMN* will be ignored
+
+|{empty string}|If old and new values are equal, the *ROW* will be ignored
+
+|===
+====
+
+ifndef::pro[]
+
+.Old and new values are equal, ignore just the column
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'COST', 'COST', 0,
+	'copyIfChanged', 'IgnoreColumn', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+
+.Old and new values are equal, ignore entire row
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'COST', 'COST', 0,
+	'copyIfChanged', '', 2, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+
+endif::pro[]
+
+ifdef::pro[]
+.If values are equal, ignore only the *COLUMN*
+image::transforms/transform-type-copy-if-change.png[]
+
+.If values are equal, ignore the entire *ROW*
+image::transforms/transform-type-copy-if-change-blank.png[]
+
+endif::pro[]
+
+
+===== Value Map Transform
+
+This transformation allows for simple value substitutions through use of the transform expression. The transform 
+expression should consist of a space separated list of value pairs of the format sourceValue=TargetValue. The column 
+value is used to locate the correct sourceValue, and the transform will change the value into the corresponding 
+targetValue. A sourceValue of * can be used to represent a default target value in the event that the sourceValue 
+is not found. Otherwise, if no default value is found, the result will be null. 
+
+.Value Map Examples
+====
+
+|===
+|transform expression|source value|target value (result)
+
+|s1=t1 s2=t2 s3=t3 *=t4|s1|t1
+|s1=t1 s2=t2 s3=t3 *=t4|s2|t2
+|s1=t1 s2=t2 s3=t3 *=t4|s3|t3
+|s1=t1 s2=t2 s3=t3 *=t4|s4|t4
+|s1=t1 s2=t2 s3=t3 *=t4|s5|t4
+|s1=t1 s2=t2 s3=t3 *=t4|null|t4
+
+====
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time, 
+	last_update_by, create_time
+) values (
+	'itemSellingPriceTransform', '*', 'COST', 'COST', 0,
+	'valueMap', 's1=t1 s2=t2 s3=t3 *=t4', 1, current_timestamp, 'Documentation', 
+	current_timestamp
+);
+----
+endif::pro[]
+
+ifdef::pro[]
+image::transforms/transform-type-valueMap.png[]
+endif::pro[]
+
+
+===== Clarion Date Time
+
+Convert a Clarion date column with optional time column into a timestamp. Clarion dates are stored as the number of days since 
+December 28, 1800, while Clarion times are stored as hundredths of a second since midnight, plus one. Use a source 
+column of the Clarion date and a target column of the timestamp. If the Clarion time exists in a separate column it can optionally be
+provided through the transform expression to be included in the target timestamp column.
+
+===== Columns To Rows
+
+Convert column values from a single source row into a row per column value at the target. Two column mappings are 
+needed to complete the work: 
+
+[horizontal]
+columnsToRowsKey:: Maps which source column is used
+.Sample Target Expression
+----
+column1=key1,column2=key2
+----
+
+[horizontal]
+columnsToRowsValue:: Maps the value
+.Optional target expression values
+|===
+
+|changesOnly=true|Convert only rows when the old and new values have changed
+|ignoreNulls=true|Convert only rows that are not null
+
+|===
+
+ifndef::pro[]
+[source, SQL]
+----
+TODO Need SQL for this scenario
+----
+endif::pro[]
+
+ifdef::pro[]
+TODO add image
+endif::pro[]
+
+.Example 
+====
+"fieldid" mapped as "columnsToRowsKey" with expression of "user1=1,user2=2" and column "color" mapped as "columnsToRowsValue" 
+would convert a row with columns named "user1" and "user2" containing values "red" and "blue" into two rows with columns 
+"fieldid" and "color" containing a row of "1" and "red" and a row of "2" and "blue".
+====
