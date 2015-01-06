@@ -3,7 +3,8 @@
 
 SymmetricDS is open source software for database and file synchronization, with support for multi-master replication, 
 filtered synchronization, and transformation. 
-It uses web and database technologies to replicate data as a scheduled or near real-time operation. 
+It uses web and database technologies to replicate change data as a scheduled or near real-time operation, and it includes an
+initial load feature for full data loads. 
 The software was designed to scale for a large number of nodes, work across low-bandwidth connections, and withstand periods of network outage.
 
 === System Requirements
@@ -11,7 +12,7 @@ The software was designed to scale for a large number of nodes, work across low-
 SymmetricDS is written in Java and requires a Java Runtime Environment (JRE) Standard Edition (SE) or Java Development Kit (JDK)
 Standard Edition (SE) version 6.0 or above.
 Most major operating systems and databases are supported.  See the list of supported databases in the <<databases-compatibility>> section.
-The minimum system requirements are:
+The minimum operating system requirements are:
 
 * Java SE Runtime Environment 6 or above
 * Memory - 64 (MB) available
@@ -19,8 +20,17 @@ The minimum system requirements are:
 
 The memory, disk, and CPU requirements increase with the number of connected clients and the amount of data being synchronized.
 The best way to size a server is to simulate synchronization in a lower environment and benchmark data loading.
-However, a rule of thumb for servers is one server-class CPU with 4 GB of memory for every 500 MB/hour of data transfer and 350 clients.
+However, a rule of thumb for servers is one server-class CPU with 2 GB of memory for every 500 MB/hour of data transfer and 350 clients.
 Multiple servers can be used as a cluster behind a load balancer to achieve better performance and availability.
+
+ifdef::pro[]
+SymmetricDS Pro is accessed from a web console, which requires one of the following supported web browsers:
+
+* Google Chrome 23 or newer
+* Internet Explorer 8 or newer
+* Mozilla Firefox 17 or newer
+* Safari 6 or newer
+endif::pro[]
 
 === Overview
 
@@ -95,11 +105,11 @@ The resulting status of the batch is returned to the source node in an acknowled
 SymmetricDS offers a rich set of features with flexible configuration for large scale deployment in a mixed environment with multiple systems. 
 
 ifdef::pro[]
-* *Web UI* - The web management console provides easy configuration, management, and troubleshooting.
+* *Web UI* - The web console provides easy configuration, management, and troubleshooting.
 endif::pro[]
 
 * *Data Synchronization* - Change data capture for relational databases and file synchronization for file systems can be
-scheduled for periodic or near real-time synchronization.
+periodic or near real-time, with an initial load feature to fully populate a node.
 
 * *Central Management* - Configure, monitor, and troubleshoot synchronization from a central location where conflicts and errors can be investigated and resolved. 
 
@@ -120,17 +130,17 @@ or embedded within an application.
 
 SymmetricDS is a feature-rich data synchronization solution that focuses on ease of use, openness, and flexibility.
 The software encourages interoperability and accessibility for users and developers with the availability of source code,
-application programming interfaces, and a data model supported by documentation.
+an application programming interface (API), and a data model supported by documentation.
 Configuration includes a powerful set of options to define node topology, communication direction, transformation of data, and integration with
 external systems.  Through scripts and Java code, the user can also extend functionality with custom behavior.
 With a central database for setup and runtime information, the user has one place to configure, manage, and troubleshoot synchronization, with
 changes taking immediate effect across the network.
 
-The trigger-based data capture system is easy to understand and widely supported on databases, with around twenty databases supported already.
+The trigger-based data capture system is easy to understand and widely supported by database systems.
 Table synchronization can be setup by users and application developers without requiring a database administrator to modify the server.
-Since triggers are database objects written in a procedural language, they are open
+Triggers are database objects written in a procedural language, so they are open
 for examination, and include flexible configuration options for conditions and customization.
-With some overhead associated with triggers, they perform well for applications of online transaction processing,
+Some overhead is associated with triggers, but they perform well for applications of online transaction processing,
 and their benefits of flexibility and maintenance outweigh the cost for most scenarios.
 
 Using an architecture based on web server technology, many simultaneous requests can be handled at a central server,
