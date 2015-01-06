@@ -94,7 +94,7 @@ there will be issues with the ordering of the triggers.
 
 ifdef::pro[]
 .Quick Config Wizard
-TIP: Use the "Quick Config" wizard to setup a complete synchronization scenario with default trigger settings.
+TIP: Use the <<Quick Config Wizard>> to setup a complete synchronization scenario with default trigger settings.
 
 .Auto Create Triggers
 TIP: By using the "Auto Create" button the on the "Table Triggers" screen you can create all your triggers through a single dialog.

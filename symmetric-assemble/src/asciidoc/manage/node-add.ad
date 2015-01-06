@@ -1,3 +1,4 @@
+Multiple nodes can be hosted in a single SymmetricDS instance.  SymmetricDS will start a node for each properties file it finds in the engines directory.  
 Multiple nodes can be hosted in a single SymmetricDS instance.      
 SymmetricDS will start a node for each properties file it finds in the engines directory.  
 
@@ -11,7 +12,7 @@ endif::pro[]
 
 ifdef::pro[]
 
-Add nodes to your synchronization scenario by using the "Node Setup Wizard".  This wizard is automatically shown when less the 2 nodes are configured.  
+Add nodes to your synchronization scenario by using the Node Setup Wizard.  This wizard is automatically shown when less the 2 nodes are configured.  
 It can also be accessed from the Manage Nodes screen by clicking the *Add* button. 
 
 image::wizard-connect/wizard-connect-menu.png[]
@@ -47,7 +48,7 @@ Remote nodes require that another installation of SymmetricDS be installed on a 
 The registration url shown on this screen will be used by the remote node during its installation 
 process in order to properly connect to the SymmetricDS network.
 
-`Auto registration` by default is turned off.   This ensures a person manually allows remote nodes to 
+Auto registration by default is turned off.   This ensures a person manually allows remote nodes to 
 connect.  By clicking this button registration will occur automatically and not require manual
 intervention.
 --
@@ -116,7 +117,7 @@ image::wizard-connect/wizard-connect-host-2.png[]
 If your network will be accessing the web console through a proxy or a different host 
 name that the one shown in the first bullet you can override the hostname to be used.
 
-You can also select `HTTPS` or `HTTP` to be used for transferring data.
+You can also select HTTPS or HTTP to be used for transferring data.
 
 --
 

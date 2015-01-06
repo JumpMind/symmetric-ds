@@ -16,3 +16,7 @@ The license key is a block of encoded text that is sent to the user over email, 
 http://support.jumpmind.com/[Support Center].  When an installed license key expires, the web console
 will require a new valid key before allowing access, but data synchronization and command line access
 will continue to function normally.
+
+ifdef::pro[]
+image::configuration/license-key.png[]
+endif::pro[]

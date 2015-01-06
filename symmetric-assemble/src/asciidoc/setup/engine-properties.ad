@@ -15,11 +15,10 @@ other properties found in
 can be overridden for a specific engine in an engine's properties file.
 If the properties are changed in
 `conf/symmetric.properties`
-they will take effect across all engines deployed to the server. Note
-that you can use the variable
-`$(hostName)`
-to represent the host name of the machine when defining these properties
-(for example, `external.id=$(hostName)` ).
+they will take effect across all engines deployed to the server. 
+
+NOTE: You can use the variable `$(hostName)` to represent the host name of the machine when defining these properties
+(for example, external.id=`$(hostName)`).
 		
 		
 engine.name:: 

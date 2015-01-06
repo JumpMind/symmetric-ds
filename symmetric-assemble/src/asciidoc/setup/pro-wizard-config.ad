@@ -1,5 +1,5 @@
 
-=== Wizard: Quick Config
+=== Quick Config Wizard
 
 Once the SymmetricDS software is installed, an instance of it is running, and a master node is setup, the synchronization
 scenario must be configured (i.e. what tables and/or files do I want to synchronize from which source node groups to which
@@ -14,7 +14,7 @@ shows the profile "Standard 2 Tier" with a client and server.
 
 image::wizard-config/wizard-config-start.png[]
 
-==== Router 1: Client to Server
+==== Router: Client to Server
 
 [.float-group]
 --
@@ -25,7 +25,7 @@ Select all tables that should be synchronized in the direction
 stated in the header, in this case from *CLIENT* to the *SERVER*
 --
 
-==== Router 2: Server to Client
+==== Router: Server to Client
 
 [.float-group]
 --
@@ -34,7 +34,7 @@ image::wizard-config/wizard-config-server-client.png[]
 
 Next we will select tables to sync from the *SERVER* to the *CLIENT*. 
 
-NOTE: The item_selling_price table was selected on both wizard screens so this table
+NOTE: The `item_selling_price` table was selected on both wizard screens so this table
 will be configured for bi-directional sync.
 
 
