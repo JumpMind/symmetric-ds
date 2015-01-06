@@ -79,7 +79,7 @@ public class SnapshotUtil {
 
     public static File createSnapshot(ISymmetricEngine engine) {
 
-        String dirName = engine.getEngineName().replaceAll(" ", "-") + "-" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String dirName = engine.getEngineName().replaceAll(" ", "-") + "-" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
         File snapshotsDir = getSnapshotDirectory(engine);
 
