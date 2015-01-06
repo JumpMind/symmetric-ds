@@ -2,62 +2,63 @@
 == Installation
 
 SymmetricDS at its core is a web application.  A SymmetricDS instance runs within the context of a web application container 
-like Jetty or Tomcat, and uses web based protocols like http to communicate with other SymmetricDS instances.  
+like Jetty or Tomcat, and uses web based protocols like HTTP to communicate with other instances.  
 
-A SymmetricDS instance can be installed and run in three different ways:
+An instance has one of the following installation options:
 
-. *<<Standalone Installation>>* - SymmetricDS is installed and run as a standalone process that includes and leverages
-the Jetty embedded web server.  This is the simplest, and recommended way to install a SymmetricDS instance.  
+. *<<Standalone Installation>>* - SymmetricDS is installed and run as a standalone process using the built-in
+Jetty web server.  This is the simplest and recommended way to install an instance.  
 
-. *<<Web Archive (WAR)>>* - A SymmetricDS WAR file is deployed to an existing web application container that is
+. *<<Web Archive (WAR)>>* - A SymmetricDS web archive (WAR) file is deployed to an existing web application container that is
 separately installed, maintained and run.    
 
 . *<<Embedded>>* - SymmetricDS is embedded within an existing application.  In this option, a custom wrapper program is
-written that calls exposed SymmetricDS functions to synchronize data.
+written that calls the SymmetricDS API to synchronize data.
 
 === Standalone Installation
 
 ifndef::pro[]
-The SymmetricDS stand alone zip file can be downloaded from https://sourceforge.net/projects/symmetricds/files[Sourceforge].  
-It is installed by unzipping to the desired installation location.
+The SymmetricDS standalone ZIP file can be downloaded from https://sourceforge.net/projects/symmetricds/files[Sourceforge].  
+It is installed by unzipping to the installation location.
 
-The `sym` command line utility starts a standalone web server with
-SymmetricDS pre-deployed.  The standalone server uses an embedded instance of the
-Jetty application server to handle web requests.  The web server can be configured
-using command line options or the web server can be configured by changing properties in the
+The `sym` command line utility starts a standalone instance of SymmetricDS using
+the built-in Jetty web server to handle requests.
+The web server can be configured by changing properties in the
 `conf/symmetric-server.properties` file.
            
-The following example starts the SymmetricDS server on port 8080 with the startup
+The following example starts the server on the default port with the node startup
 properties found in the `root.properties` file.
             
 [source, cli]
 ----
-/symmetric/bin/sym --properties root.properties --port 8080 --server
+bin/sym --properties root.properties
 ----
 
-Even though the port and properties settings can be passed in on the command line, the preferred
-configuration approach is to put each hosted node's properties file in the `engines` directory
-and to modify port settings and enable secure mode using the `conf/symmetric-server.properties`.
-
-It is also suggested that SymmetricDS be configured to run as a service according to the instructions 
-for your platform as documented in the following section.
+To automatically start SymmetricDS when the machine boots, see <<Running as a Service>>.
 
 endif::pro[]
 
 ifdef::pro[]
-The SymmetricDS installer is packaged as an executable jar file named *symmetric-pro-<version>-setup.jar*.  
-In order to run the installer and utilize SymmetricDS you must have the Java Runtime Environment (JRE)
-version 6.0 or greater installed.  
+The SymmetricDS installer is an executable jar file named *symmetric-pro-<version>-setup.jar*.  
+In order to run the installer, you must have the Java Runtime Environment (JRE)
+version 6.0 or newer installed.
+Start the installer by _double-clicking_ it (if the JRE is in your path and associated with .jar files),
+or by running it from a command prompt, like this:
+
+`java -jar symmetric-pro-<version>-setup.jar`
+
+The default installation will run in graphical mode, but it can also be run from a command window by
+adding the `-console` argument on the end of the command.
 
 [.float-group]
 --
 [.left.text-left]
 image::install/install-first.png[]
 
-To start the installer, either double-click on the .jar file (if the JRE is in your path and associated
-with .jar files) or run `java -jar symmetric-pro-<version>-setup.jar` from a command prompt.
+The first screen is a Welcome screen that includes the SymmetricDS Pro version number.
+The installer will ask a series of questions before writing files to disk.
 
-The first screen shown by the installer is a Welcome screen.  Click *Next* to continue.
+To begin selecting installation options, click *Next*.
 
 --
 
@@ -66,9 +67,10 @@ The first screen shown by the installer is a Welcome screen.  Click *Next* to co
 [.left.text-left]
 image::install/install-second.png[]
 
-The next screen allows you to specify whether you want to install a new version of SymmetricDS for the first time 
-(_Install new software_) or upgrade an existing version of SymmetricDS that had previously been installed 
-(_Upgrade existing software_).
+Specify whether you want to install a new version of SymmetricDS for the first time 
+(_Install new software_) or upgrade an existing version of SymmetricDS that was previously installed 
+(_Upgrade existing software_).  For upgrade, the existing installation of SymmetricDS or
+SymmetricDS Pro is verified before continuing.
 
 Select the appropriate option and click *Next*.
 
@@ -79,8 +81,9 @@ Select the appropriate option and click *Next*.
 [.left.text-left]
 image::install/install-third.png[]
 
-Carefully read the SymmetricDS Pro License Agreement.  If you accept, select _I accept the terms of this license agreement._ 
-and press *Next*.
+Carefully read the SymmetricDS Pro License Agreement.
+
+If you accept, select _I accept the terms of this license agreement_ and click *Next*.
 
 --
 
@@ -89,7 +92,11 @@ and press *Next*.
 [.left.text-left]
 image::install/install-fourth.png[]
 
-Choose the installation location or path for SymmetricDS and click *Next*.
+Choose the installation path where SymmetricDS will either be installed or upgraded.
+If the directory does not already exist, it will be created for you.  Make sure your user has permission
+to write to the file system.
+
+After entering the directory path, click *Next*.
 
 --
 
@@ -98,10 +105,11 @@ Choose the installation location or path for SymmetricDS and click *Next*.
 [.left.text-left]
 image::install/install-fifth.png[]
 
-Select the packages you want to install and click Next.  By default, all packages are selected.  If you are NOT integrating 
-SymmetricDS with Android, you may uncheck the Android package.
+Select the packages you want to install and verify disk space requirements are met.
+By default, all packages are selected.  If you are NOT integrating 
+SymmetricDS with Android, you can unselect the Android package.
 
-Click *Next*.
+After selecting packages, click *Next*.
 
 --
 
@@ -110,14 +118,14 @@ Click *Next*.
 [.left.text-left]
 image::install/install-sixth.png[]
 
-A standalone installation of SymmetricDS can be installed to run as a service, or installed as a program to be started and stopped
-manually by a user.  It is suggested that SymmetricDS be installed to run as a service so that it will automatically start when 
-the computer is restarted.  Refer to <<Running SymmetricDS as a Service>> for more information on running SymmetricDS
-as a service.  Click the _Install service to run autmatically_ checkbox to have SymmetricDS installed as a service.  
+A standalone installation can either be run automatically by the system or manually by the user.
+Select the _Install service to run automatically_ checkbox to install a Windows service or Unix daemon that will
+start SymmetricDS when the computer is restarted.  The service can installed or uninstalled later using
+the Control Center or command line (see <<Running as a Service>>).
 
-Click the _Run server after installing_ to have SymmetricDS automatically start upon completion of the install wizard.
+Select the _Run server after installing_ checkbox to also run SymmetricDS after installation so it can be used immediately.
 
-Click *Next*.
+After selecting options, click *Next*.
 
 --
 
@@ -126,13 +134,14 @@ Click *Next*.
 [.left.text-left]
 image::install/install-seventh.png[]
 
-As mentioned previously, SymmetricDS is a web application and communicates over HTTP or HTTPS utilizing TCP/IP ports.  The first two checkboxes,
-_Enable HTTP_ and _Enable SSL_ determine whether SymmetricDS exchanges data with other SymmetricDS instances using HTTP or HTTPS.  HTTPS 
-encrypts the data when being sent between nodes for security purposes, while HTTP does not.   
+For standard synchronization and web console access over HTTP, select the _Enable HTTP_ checkbox.
+For encrypted synchronization and web console access over HTTPS, select the _Enabled SSL_ checkbox.
 
-In addition to specifying HTTP or HTTPS you can also determine whether the SymmetricDS JMS management console should be run.  
+The Java Management eXtensions (JMX) are a set of server properties and operations that can be used to manage the server.
+To enable a simple web console for JMX, select the _Enable JMX_ checkbox.
+To enable remote access for JMX clients like JConsole and `bin/jmx`, select the _Enable JMX Agent_ checkbox.
 
-When you have selected the desired options and ports, click *Next*.
+After selecting options and specifying unused ports, click *Next*.
 
 --
 
@@ -150,7 +159,7 @@ Confirm your installation settings and click *Next* to begin the installation.
 [.left.text-left]
 image::install/install-ninth.png[]
 
-Once SymmetricDS finishes installing, click *Next*.
+After SymmetricDS finishes installing, click *Next*.
 
 --
 
@@ -159,7 +168,7 @@ Once SymmetricDS finishes installing, click *Next*.
 [.left.text-left]
 image::install/install-tenth.png[]
 
-If you chose the option for the SymmetricDS Server to start after installation, wait for it to start and then click *Next*.
+If you chose the option for the server to start after installation, wait for it to start and then click *Next*.
 
 --
 
@@ -168,9 +177,10 @@ If you chose the option for the SymmetricDS Server to start after installation, 
 [.left.text-left]
 image::install/install-eleventh.png[]
 
-The installation is now complete.  Choose if you want to open the SymmetricDS Pro Control Center and click Done.  The 
-SymmetricDS Pro Control Center allows you to see the status of SymmetricDS, start and stop SymmetricDS, and install SymmetricDS
-as a service if you haven't already done so.
+The installation is now complete.  Choose if you want to open the SymmetricDS Pro Control Center where
+you can view the server status and open a web console.
+
+Click *Done* to exit the installer.
 
 --
 
@@ -179,24 +189,18 @@ as a service if you haven't already done so.
 [.left.text-left]
 image::install/install-twelth.png[]
 
-If you chose to open the SymmetricDS Pro Control Center, you will be greeted by this screen.  From the SymmetricDS Pro Control Center, 
-you may start/stop the server, open the web console, and choose to install SymmetricDS as a service if you have not already done so.  To
-continue the installation and configuration of SymmetricDS, ensure the Server is running and click _Open Web Console_.  
+From the SymmetricDS Pro Control Center, 
+you can start/stop the server, open the web console, and install/uninstall the service.
+
+To begin configuration of SymmetricDS, check that the server is running, and then click *Open Web Console*.  
 
 --
 
-Refer to the <<Setup>> section of this guide to continue setup and configuration of SymmetricDS after the install is complete.
-
-=== Headless Install
-
-SymmetricDS can be installed from a command prompt without the user interface by passing a `-console` parameter to the installer.
-
-`java -jar symmetric-pro-<version>-setup.jar -console`
+To continue setup and configuration of SymmetricDS, refer to the <<Setup>> section.
 
 endif::pro[]
 
-
-=== Running SymmetricDS as a Service
+=== Running as a Service
    
 SymmetricDS can be configured to start automatically when the system boots, running as a Windows service or Linux/Unix daemon.
 A wrapper process starts SymmetricDS and monitors it, so it can be restarted if it runs out of memory or exits unexpectedly.
