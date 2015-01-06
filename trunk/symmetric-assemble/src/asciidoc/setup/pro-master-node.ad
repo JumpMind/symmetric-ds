@@ -11,12 +11,13 @@ image::wizard-connect/wizard-connect-database.png[]
 The first step in setting up a master node is to connect it to the database it will be responsible for synchronizing.  This
 database will also be used to store the SymmetricDS configuration. 
 
+--
+
 . Specify the database type
 . Specify the jdbc url.  An example will be provided based on the database type selected.  Be sure to replace host name, port and 
 database name if necessary (varies by database type)
 . Specify the id to be used to login to the database
 . Specify the password to be used to login to the database
---
 
 ==== Select a profile
 
