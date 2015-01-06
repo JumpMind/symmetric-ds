@@ -12,16 +12,16 @@ console.auth.ldap.host::  The LDAP server host name.
 console.auth.ldap.searchAttribute::  LDAP attribute to search for.
                             [&#xA0;Default:&#xA0;]
 
-These <<Parameters>> can be set on the Configure LDAP page by filling out the form and pressing Save.
+These parameters can be set on the Configure LDAP page by filling out the form and clicking *Save*.
 
 image::ldap/ldap-save.png[]
 
-These <<Parameters>> can also be set by manually by entering the desired values in Configure Parameters.
+These parameters can also be set by manually by entering the desired values in Configure->Parameters.
 
 image::ldap/ldap-parameters.png[]
                             
 You may test the values that have been input into the form to test the connection to your LDAP directory.  
-To do this, click the Test button, enter the user credentials and click Test to test the authentication.  If your authentication succeeded, save the form.
+To do this, click the *Test* button, enter the user credentials and click *Test* to test the authentication.  If the authentication succeeded, save the form.
 
 image::ldap/ldap-authentication.png[]
 
