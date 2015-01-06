@@ -1,3 +1,6 @@
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.apache.tools.ant.filters.FixCrLfFilter
 import org.apache.tools.ant.filters.ReplaceTokens
 
@@ -78,16 +81,13 @@ subprojects { subproject ->
     }
     
     jar {
-        filesMatching("**/*.properties") {
-            filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
-                'appVersion': version,
-                'buildTime': new java.text.SimpleDateFormat('yyyy-MM-dd HH:mm:ss').format(new java.util.Date()),
-                'scmVersion' : scmVersion
-            ])
-        }                
         manifest {
             attributes("Implementation-Title": project.name,
-                       "Implementation-Version": version)
+                       "Implementation-Version": version,
+                       "Project-Artifact": project.name,                       
+                       "Build-Version": version,
+                       "Build-Time": new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date()),
+                       "Build-Scm-Version": scmVersion)
         }    
     }
 

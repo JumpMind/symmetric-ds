@@ -20,6 +20,7 @@
  */
 package org.jumpmind.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -29,6 +30,7 @@ import java.util.jar.Manifest;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.properties.TypedProperties;
 
 /**
  * Follow the Apache versioning scheme documented <a
@@ -44,7 +46,7 @@ abstract public class AbstractVersion {
 
     private String version = null;
     
-    private int buildTime = -1;
+    private long buildTime = -1;
 
     abstract protected String getArtifactName();
 
@@ -75,17 +77,23 @@ abstract public class AbstractVersion {
             if (attributes != null) {
                 version = attributes.getValue("Build-Version");
             } else {
-                version = "development";
+                File gradleProperties = new File("../symmetric-assemble/gradle.properties");
+                if (gradleProperties.exists()) {
+                    TypedProperties props = new TypedProperties(gradleProperties);
+                    version = props.get("version");
+                } else {
+                    version = "development";
+                }
             }
         }
         return version;
     }
 
-    public int getBuildTime() {
+    public long getBuildTime() {
         if (buildTime == -1) {
-            Attributes attributes = findManifestAttributes();
+            Attributes attributes = findManifestAttributes();            
             try {
-                buildTime = Integer.parseInt(attributes.getValue("Build-Time").split("-")[0]);
+                buildTime = Long.parseLong(attributes.getValue("Build-Time").split("-")[0]);
             } catch (Exception e) {
                 buildTime = 0;
             }
