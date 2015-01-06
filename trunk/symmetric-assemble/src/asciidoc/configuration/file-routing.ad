@@ -21,7 +21,7 @@ image::file-routing/auto-create-1-triggers.png[]
 
 The default entry point for the auto creation is from the file triggers perspective.  This will allow you to select file triggers first then routers.
 
-Clicking next to select from available routers
+Click *Next* to select from available routers.
 
 --
 
@@ -34,7 +34,7 @@ image::file-routing/auto-create-2-routers.png[]
 
 Select the routers (direction) to associate with the previously selected file triggers.
 
-Click save to setup the file triggers and begin file sync.
+Click *Save* to setup the file triggers and begin file sync.
 --
 
 You can also select routers on the first screen of the auto create if you would like to select routers first then file triggers.   Both approaches will
@@ -47,7 +47,7 @@ image::file-routing/auto-create-1-routers.png[]
 
 Select from available routers.
 
-Clicking next to select from available file triggers
+Click *Next* to select from available file triggers.
 
 --
 
@@ -58,7 +58,7 @@ image::file-routing/auto-create-2-triggers.png[]
 
 Select the file triggers to associate with the previously selected routers.
 
-Click save to setup the file routers and begin file sync.
+Click *Save* to setup the file routers and begin file sync.
 --
 The file routing elements created by the wizard can be maintained from the File Routing List Screen.  New file routing
 entries can also be created manually from this screen if desired.
