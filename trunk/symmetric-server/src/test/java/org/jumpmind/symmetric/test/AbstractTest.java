@@ -117,7 +117,7 @@ abstract public class AbstractTest {
         }
     }
 
-    @Test
+    @Test(timeout = 240000)
     public void test() throws Exception {
         ISymmetricEngine rootServer = getRegServer().getEngine();
         ISymmetricEngine clientServer = getWebServer("client").getEngine();
