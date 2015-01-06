@@ -45,7 +45,7 @@ Import Existing:: Allows you to import an existing SymmetricDS configuration fil
 [.left.text-left]
 image::wizard-connect/wizard-connect-profile.png[]
 
-Select the profile or option and click Next
+Select the profile or option and click *Next*.
 --
 
 ==== Communication Settings
@@ -71,7 +71,7 @@ You can also select HTTPS or HTTP to be used for transferring data.
 image::wizard-connect/wizard-connect-user.png[]
 
 By default SymmetricDS uses an internal security scheme for protecting the SymmetricDS application. The admin user is
-the administrative user for the SymmetricDS web console.  Provide a password for this user and click Next.
+the administrative user for the SymmetricDS web console.  Provide a password for this user and click *Next*.
 
 Additional users can be setup in the web console after the wizard completes.  For more information, see <<Users>>.
 
@@ -85,5 +85,5 @@ SymmetricDS can also use LDAP to secure the SymmetricDS application.  For more i
 [.left.text-left]
 image::wizard-connect/wizard-connect-ready.png[]
 
-The node is now ready to be installed.  Click the Finish button.
+The node is now ready to be installed.  Click the *Finish* button.
 --
