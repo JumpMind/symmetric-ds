@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -284,7 +283,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             default:
                 break;
         }
-        return DateUtils.add(new Date(), Calendar.MILLISECOND,
+        return DateUtils.addMilliseconds(new Date(), 
                 -parameterService.getInt(parameter, 7200000));
     }
 

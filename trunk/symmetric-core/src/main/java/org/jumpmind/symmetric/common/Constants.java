@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.common;
 
+import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
 import org.jumpmind.symmetric.model.DataEvent;
 
@@ -31,7 +32,7 @@ final public class Constants {
     private Constants() {
     }
     
-    public static final long VIRTUAL_BATCH_FOR_REGISTRATION = -9999;   
+    public static final long VIRTUAL_BATCH_FOR_REGISTRATION = IoConstants.IGNORE_TABLES_BATCH;   
     
     public static final String NONE_TOKEN = "$(none)";
     

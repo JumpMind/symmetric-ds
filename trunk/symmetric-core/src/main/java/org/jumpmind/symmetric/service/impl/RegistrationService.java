@@ -227,6 +227,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             foundNode.setSyncUrl(nodePriorToRegistration.getSyncUrl());
             foundNode.setDatabaseType(nodePriorToRegistration.getDatabaseType());
             foundNode.setDatabaseVersion(nodePriorToRegistration.getDatabaseVersion());
+            foundNode.setSymmetricVersion(nodePriorToRegistration.getSymmetricVersion());
             nodeService.save(foundNode);                        
             
             /**
