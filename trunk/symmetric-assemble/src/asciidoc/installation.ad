@@ -251,7 +251,7 @@ When clustered, a hardware load balancer is typically used
 to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.
 
 ifndef::pro[]
-Also, the `sync.url` (discussed in <<Engine Properties File>>) SymmetricDS property should be set to the URL of the load balancer.
+Also, the `sync.url` (discussed in <<Node Properties File>>) SymmetricDS property should be set to the URL of the load balancer.
 endif::pro[]
 
 ifdef::pro[]
