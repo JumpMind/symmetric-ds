@@ -6,7 +6,7 @@ there will be several columns defined for each transform, each of which will def
 column.
 
 ifdef::pro[]
-To see a transform's columns, select the transform and press "Edit Columns".
+To see a transform's columns, select the transform and click "Edit Columns".
 
 image::transforms/transform-edit-columns.png[]
 
