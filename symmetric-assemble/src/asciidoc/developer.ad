@@ -166,7 +166,18 @@ In order to convey how to use the SymmetricDS Android libraries, the example bel
 sample application that comes with the Android ADK.
 
 The NotePad sample application is a very simple task list application	that persists notes to a SQLite database table called Notes. 
-Eclipse 3.7.2 and Android ADK 20.0.3 were used for this example.
+Eclipse 3.7.2 and Android ADK 20.0.3 were used for this example.  The `NOTES` table definition is below.
+
+[source, SQL]
+----
+CREATE TABLE NOTES (
+_ID VARCHAR(50) PRIMARY KEY,
+TITLE TEXT,
+NOTE TEXT,
+CREATED VARCHAR(50),
+MODIFIED VARCHAR(50),
+);
+----
 
 Create the NotePad project. You do this by adding a new Android Sample Project. Select the NotePad project.
 
@@ -264,6 +275,8 @@ The various parameters needed by SymmetricDS are being set in the Intent which w
 Most of the parameters will be familiar to SymmetricDS users. In this case a property is being set which will force an initial load of the 
 existing Notes from the client to the server. This allows the user of the application to enter Notes for the first time offline or while the 
 SymmetricDS engine is unregistered and still have them arrive at the centralized server once the SymmetricDS engine does get registered.
+
+
 
 Next, set up an Android Emulator. This can be done by opening the Android Virtual Device Manager. Click New and follow the steps. The higher 
 the Emulator's API, the better.
