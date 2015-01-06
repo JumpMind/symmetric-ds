@@ -18,6 +18,9 @@ written that calls exposed SymmetricDS functions to synchronize data.
 === Standalone Installation
 
 ifndef::pro[]
+The SymmetricDS stand alone zip file can be downloaded from https://sourceforge.net/projects/symmetricds/files[Sourceforge].  
+It is installed by unzipping to the desired installation location.
+
 The `sym` command line utility starts a standalone web server with
 SymmetricDS pre-deployed.  The standalone server uses an embedded instance of the
 Jetty application server to handle web requests.  The web server can be configured
@@ -183,6 +186,13 @@ continue the installation and configuration of SymmetricDS, ensure the Server is
 --
 
 Refer to the <<Setup>> section of this guide to continue setup and configuration of SymmetricDS after the install is complete.
+
+=== Headless Install
+
+SymmetricDS can be installed from a command prompt without the user interface by passing a `-console` parameter to the installer.
+
+`java -jar symmetric-pro-<version>-setup.jar -console`
+
 endif::pro[]
 
 
