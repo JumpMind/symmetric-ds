@@ -75,7 +75,7 @@ ifdef::pro[]
 endif::pro[]
 File Triggers:: The file trigger to link.
 Routers:: The router to link.
-Target Base Directory:: The base directory on the target that files will be synchronized to.
+Target Base Directory:: The base directory on the target node that files will be synchronized to.
 Conflict Strategy:: The strategy to employ when a file has been modified at both the client and the server. 
 .Conflict Strategy Options
 |===
