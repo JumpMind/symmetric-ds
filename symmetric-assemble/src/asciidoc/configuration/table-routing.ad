@@ -25,7 +25,7 @@ image::table-routing/auto-create-1-triggers.png[]
 
 The default entry point for the auto creation is from the triggers perspective.  This will allow you to select table triggers first then routers.
 
-Clicking next to select from available routers
+Clicking *Next* to select from available routers.
 
 --
 
@@ -38,7 +38,7 @@ image::table-routing/auto-create-2-routers.png[]
 
 Select the routers (direction) to associate with the previously selected triggers.
 
-Click save to install the triggers on the database and begin data capture.
+Click *Save* to install the triggers on the database and begin data capture.
 --
 
 You can also select routers on the first screen of the auto create if you would like to select routers first then triggers.   Both approaches will
@@ -51,7 +51,7 @@ image::table-routing/auto-create-1-routers.png[]
 
 Select from available routers.
 
-Clicking next to select from available table triggers
+Clicking *Next* to select from available table triggers.
 
 --
 
@@ -62,7 +62,7 @@ image::table-routing/auto-create-2-triggers.png[]
 
 Select the table triggers to associate with the previously selected routers.
 
-Click save to install the triggers on the database and begin data capture.
+Click *Save* to install the triggers on the database and begin data capture.
 --
 The table routing elements created by the wizard can be maintained from the Table Routing List Screen.  New table routing
 entries can also be created manually from this screen if desired.
