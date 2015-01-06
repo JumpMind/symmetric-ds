@@ -42,24 +42,27 @@ This table is only used if the `cluster.lock.enabled` is set to true.
         
 ==== Route Job
 
-The Route Job is responsible for creating <<OUTGOING_BATCH>>s of captured <<DATA>> that are targeted at specific <<NODE>>s.
+The Route Job is responsible for creating <<OUTGOING_BATCH,outgoing batches>> of captured <<DATA,data>> that are targeted at specific <<NODE,nodes>>.
 
-The job processes <<Channels>>, one at a time, reading up to `max_data_to_route` <<DATA>> rows which have not been routed. 
+The job processes <<Channels>>, one at a time, reading up to <<configuration/channels.ad#max-data-to-route,Max Data To Route>> <<DATA,data>> 
+rows which have not been routed. 
 
-The data is assigned to <<OUTGOING_BATCH>>s based on the `batch_algorithm` defined for the channel.  Note that, for the
-_default_ and _transactional_ algorithm,n `max_data_to_route` rows may by exceeded depending on the transaction boundaries. 
+The data is assigned to <<OUTGOING_BATCH,outgoing batches>> based on the 
+<<configuration/channels.ad#batch-algorithm,Batch Algorithm>> defined for the channel.  Note that, for the
+_default_ and _transactional_ algorithm <<configuration/channels.ad#max-data-to-route,Max Data To Route>> 
+rows may be exceeded depending on the transaction boundaries. 
 
-An <<OUTGOING_BATCH>> is initially created with a status of "RT".  <<DATA>> is assigned to the batch by inserting into
-<<DATA_EVENT>>.  When a batch is complete, the batch is committed and the status is changed to "NE".
+An <<OUTGOING_BATCH,outgoing batch>> is initially created with a status of "RT".  <<DATA,Data>> is assigned to the batch by inserting into
+<<DATA_EVENT,data event>>.  When a batch is complete, the batch is committed and the status is changed to "NE".
 
-The route job will respect the `max_batch_size` as configured in <<Channels>>.  If the max batch size is reached before the end 
+The route job will respect the <<configuration/channels.ad#max-batch-size,Max Batch Size>> as configured in <<Channels>>.  If the max batch size is reached before the end 
 of a captured database transaction and the batch algorithm is set to something other than _nontransactional_
 the batch may exceed the specified max size.
 
 The route job delegates to a <<_routers,router>> to decided which nodes need to received the data.  The correct <<_routers, router>> is looked up by 
-referencing the captured `trigger_hist_id` in <<DATA>> and using <<Table Routing>> configuration.  
+referencing the captured `trigger_hist_id` in the <<DATA>> table and using <<Table Routing>> configuration.  
 
-After <<OUTGOING_BATCH>>s have been created by the Route Job, they need to be transported to the target node. 
+After <<OUTGOING_BATCH,outgoing batches>> have been created by the Route Job, they need to be transported to the target node. 
         
 ===== Data Gaps
 
