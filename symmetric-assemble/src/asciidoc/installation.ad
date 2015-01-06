@@ -54,7 +54,7 @@ image::install/install-first.png[]
 To start the installer, either double-click on the .jar file (if the JRE is in your path and associated
 with .jar files) or run `java -jar symmetric-pro-<version>-setup.jar` from a command prompt.
 
-The first screen shown by the installer is a Welcome screen.  Click Next to continue.
+The first screen shown by the installer is a Welcome screen.  Click *Next* to continue.
 
 --
 
@@ -67,7 +67,7 @@ The next screen allows you to specify whether you want to install a new version 
 (_Install new software_) or upgrade an existing version of SymmetricDS that had previously been installed 
 (_Upgrade existing software_).
 
-Select the appropriate option and click Next.
+Select the appropriate option and click *Next*.
 
 --
 
@@ -77,7 +77,7 @@ Select the appropriate option and click Next.
 image::install/install-third.png[]
 
 Carefully read the SymmetricDS Pro License Agreement.  If you accept, select _I accept the terms of this license agreement._ 
-and press Next.
+and press *Next*.
 
 --
 
@@ -86,7 +86,7 @@ and press Next.
 [.left.text-left]
 image::install/install-fourth.png[]
 
-Choose the installation location or path for SymmetricDS and click Next.
+Choose the installation location or path for SymmetricDS and click *Next*.
 
 --
 
@@ -97,6 +97,8 @@ image::install/install-fifth.png[]
 
 Select the packages you want to install and click Next.  By default, all packages are selected.  If you are NOT integrating 
 SymmetricDS with Android, you may uncheck the Android package.
+
+Click *Next*.
 
 --
 
@@ -112,7 +114,7 @@ as a service.  Click the _Install service to run autmatically_ checkbox to have 
 
 Click the _Run server after installing_ to have SymmetricDS automatically start upon completion of the install wizard.
 
-Click Next.
+Click *Next*.
 
 --
 
@@ -127,7 +129,7 @@ encrypts the data when being sent between nodes for security purposes, while HTT
 
 In addition to specifying HTTP or HTTPS you can also determine whether the SymmetricDS JMS management console should be run.  
 
-When you have selected the desired options and ports, click Next.
+When you have selected the desired options and ports, click *Next*.
 
 --
 
@@ -136,7 +138,7 @@ When you have selected the desired options and ports, click Next.
 [.left.text-left]
 image::install/install-eigth.png[]
 
-Confirm your installation settings and click Next to begin the installation.
+Confirm your installation settings and click *Next* to begin the installation.
 
 --
 
@@ -145,7 +147,7 @@ Confirm your installation settings and click Next to begin the installation.
 [.left.text-left]
 image::install/install-ninth.png[]
 
-Once SymmetricDS finishes installing, click Next.
+Once SymmetricDS finishes installing, click *Next*.
 
 --
 
@@ -154,7 +156,7 @@ Once SymmetricDS finishes installing, click Next.
 [.left.text-left]
 image::install/install-tenth.png[]
 
-If you chose the option for the SymmetricDS Server to start after installation, wait for it to start and then click Next.
+If you chose the option for the SymmetricDS Server to start after installation, wait for it to start and then click *Next*.
 
 --
 
