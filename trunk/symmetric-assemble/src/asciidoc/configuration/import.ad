@@ -11,7 +11,5 @@ image::import-wizard-profile.png[]
 +
 . Import a configuration through the web console
 +
-.Import a configuration file through the Overview Screen
-image::configure-overview.png[]
 
 WARNING: This will wipe out all existing configuration settings and replace with the newly imported ones.

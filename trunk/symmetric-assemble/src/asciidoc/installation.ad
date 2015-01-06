@@ -77,7 +77,7 @@ Select the appropriate option and click Next.
 image::install/install-third.png[]
 
 Carefully read the SymmetricDS Pro License Agreement.  If you accept, select _I accept the terms of this license agreement._ 
-and click Next.
+and press Next.
 
 --
 
@@ -176,11 +176,11 @@ image::install/install-twelth.png[]
 
 If you chose to open the SymmetricDS Pro Control Center, you will be greeted by this screen.  From the SymmetricDS Pro Control Center, 
 you may start/stop the server, open the web console, and choose to install SymmetricDS as a service if you have not already done so.  To
-continue the installation and configuration of SymmetricDS, ensure the Server is running and click _Open Web Console_.  Refer to the 
-<<Setup>> section of this guide to continue setup and configuration of SymmetricDS after the install is complete.
+continue the installation and configuration of SymmetricDS, ensure the Server is running and click _Open Web Console_.  
 
 --
 
+Refer to the <<Setup>> section of this guide to continue setup and configuration of SymmetricDS after the install is complete.
 endif::pro[]
 
 

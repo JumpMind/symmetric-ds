@@ -1,5 +1,5 @@
 
-=== Node Selection
+=== Node Type
 
 When opening the SymmetricDS Pro web console, if there are no SymmetricDS nodes defined within the running SymmetricDS instance,
 the *Node Setup Wizard* will be displayed to guide you through the process of creating one.  There are two types of SymmetricDS nodes:
