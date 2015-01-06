@@ -119,7 +119,7 @@ project(':symmetric-android') {
 
     distributions {
         android {
-            baseName = 'android'
+            baseName = 'symmetric-android'
             contents {
                 from { 'COPYING' }
                 from { 'CREDITS' }
