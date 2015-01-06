@@ -1,4 +1,4 @@
-=== Engine Properties File
+=== Node Properties File
 ifdef::pro[]
 The node setup wizard generates a properties file that contains all the information a node needs to bootstrap itself.
 endif::pro[]

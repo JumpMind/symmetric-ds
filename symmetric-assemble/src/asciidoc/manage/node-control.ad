@@ -5,7 +5,7 @@ ifdef::pro[]
 To stop a node, select the node you want to stop and click on the *Control* button and choose *Stop*.  The node's status will indicate that is has been stopped.
 endif::pro[]
 
-From the command line, you can use JMX to stop a node.  The following is an example.  You would replace <engine name> with the name of the engine as found in the <<Engine Properties File>>
+From the command line, you can use JMX to stop a node.  The following is an example.  You would replace <engine name> with the name of the engine as found in the <<Node Properties File>>
 
 `bin/jmx --bean org.jumpmind.symmetric.<engine name>:name=Node --method stop`
 

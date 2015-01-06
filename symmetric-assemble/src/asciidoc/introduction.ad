@@ -39,7 +39,7 @@ can be located in any directory that is accessible on the local server.
 
 image::overview.png[]
 
-At startup, SymmetricDS looks for <<Engine Properties File,Engine Properties Files>> and starts a node for each file it finds, 
+At startup, SymmetricDS looks for <<Node Properties File,Node Properties Files>> and starts a node for each file it finds, 
 which allows multiple nodes to run in the same instance and share resources.
 The property file for a node contains its external ID, node group, registration server URL, and database connection information.
 The external ID is the name for a node used to identify it from other nodes.

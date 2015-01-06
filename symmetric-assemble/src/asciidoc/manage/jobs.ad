@@ -23,7 +23,7 @@ endif::pro[]
 
 ifndef::pro[]
 
-The frequency of jobs can be configured in either the <<Engine Properties File>> or in the <<PARAMETER>> table.  When managed in
+The frequency of jobs can be configured in either the <<Node Properties File>> or in the <<PARAMETER>> table.  When managed in
 <<PARAMETER>> table the frequency properties can be changed in the master node and when the updated settings sync to the other nodes 
 in the system the job manager will restart the jobs at the new frequency settings.
 
