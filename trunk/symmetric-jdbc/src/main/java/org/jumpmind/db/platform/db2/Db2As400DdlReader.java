@@ -23,6 +23,11 @@ public class Db2As400DdlReader extends Db2DdlReader {
 	protected String getTrueValue() {
     	return "YES";
     }
+	
+	@Override
+	protected String getSysColumnsSchemaColumn() {
+	    return "DBNAME";
+	}
 
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
     		DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {

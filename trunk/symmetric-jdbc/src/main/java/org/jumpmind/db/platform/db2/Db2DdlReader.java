@@ -62,6 +62,10 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }
+	
+	protected String getSysColumnsSchemaColumn() {
+	    return "TBCREATOR";
+	}
 
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
@@ -81,7 +85,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             // metadata
             String sql = "SELECT NAME FROM " + systemSchemaName + ".SYSCOLUMNS WHERE TBNAME=? AND IDENTITY=?";
             if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
-                sql = sql + " AND DBNAME=?";
+                sql = sql + " AND "+getSysColumnsSchemaColumn()+"=?";
             }
 
             PreparedStatement pstmt = null;
