@@ -1,0 +1,84 @@
+
+The SymmetricDS Data Format is used to stream data from one node to another. The data format reader and writer are pluggable with an initial implementation using a format based on Comma Separated Values (CSV). Each line in the stream is a record with fields separated by commas. String fields are surrounded with double quotes. Double quotes and backslashes used in a string field are escaped with a backslash. Binary values are represented as a string with hex values in "\0xab" format. The absence of any value in the field indicates a null value. Extra spacing is ignored and lines starting with a hash are ignored.
+
+The first field of each line gives the directive for the line. The following directives are used:
+
+nodeid, {node_id}::
+Identifies which node the data is coming from. Occurs once in CSV file.
+
+binary, {BASE64|NONE|HEX}::
+Identifies the type of decoding the loader needs to use to decode binary data in the pay load. This varies depending on what database is the source of the data.
+
+channel, {channel_id}::
+Identifies which channel a batch belongs to. The SymmetricDS data loader expects the channel to be specified before the batch.
+
+batch, {batch_id}::
+Uniquely identifies a batch. Used to track whether a batch has been loaded before. A batch of -9999 is considered a virtual batch and will be loaded, but will not be recorded in incoming_batch.
+
+schema, {schema name}::
+The name of the schema that is being targeted.
+
+catalog, {catalog name}::
+The name of the catalog that is being targeted.
+
+table, {table name}::
+The name of the table that is being targeted.
+
+keys, {column name...}::
+Lists the column names that are used as the primary key for the table. Only needs to occur after the first occurrence of the table.
+
+columns, {column name...}::
+Lists all the column names (including key columns) of the table. Only needs to occur after the first occurrence of the table.
+
+insert, {column value...}::
+Insert into the table with the values that correspond with the columns.
+
+update, {new column value...},{old key value...}::
+Update the table using the old key values to set the new column values.
+
+old, {old column value...}::
+Represent all the old values of the data. This data can be used for conflict resolution.
+
+delete, {old key value...}::
+Delete from the table using the old key values.
+
+sql, {sql statement}::
+Optional notation that instructs the data loader to run the accompanying SQL statement.
+
+bsh, {bsh script}::
+Optional notation that instructs the data loader to run the accompanying BeanShell snippet.
+
+create, {xml}::
+Optional notation that instructs the data loader to run the accompanying DdlUtils XML table definition in order to create a database table.
+
+commit, {batch_id}::
+An indicator that the batch has been transmitted and the data can be committed to the database.
+
+.Data Format Stream
+====
+----
+nodeid, 1001
+channel, pricing
+binary, BASE64
+batch, 100
+schema,
+catalog,
+table, item_selling_price
+keys, price_id
+columns, price_id, price, cost
+insert, 55, 0.65, 0.55
+schema,
+catalog,
+table, item
+keys, item_id 
+columns, item_id, price_id, name
+insert, 110000055, 55, "Soft Drink"
+delete, 110000001
+schema,
+catalog,
+table, item_selling_price
+update, 55, 0.75, 0.65, 55
+commit, 100
+----      
+====
+
