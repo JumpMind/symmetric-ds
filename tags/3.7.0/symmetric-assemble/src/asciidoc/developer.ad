@@ -1,0 +1,285 @@
+
+== Developer
+
+This chapter focuses on a variety of ways for developers to build upon and extend some of the existing features found within SymmetricDS.
+
+=== Extension Points
+SymmetricDS has a pluggable architecture that can be extended. A Java class that implements the appropriate extension point interface, can implement custom logic and change the behavior of SymmetricDS to suit special needs. All supported extension points extend the IExtensionPoint interface. The available extension points are documented in the following sections.
+
+When SymmetricDS starts up, the ExtensionPointManager searches a Spring Framework context for classes that implement the IExtensionPoint interface, then creates and registers the class with the appropriate SymmetricDS component.
+
+Extensions should be configured in the conf/symmetric-extensions.xml file as Spring beans. The jar file that contains the extension should be placed in the web/WEB-INF/lib directory.
+
+If an extension point needs access to SymmetricDS services or needs to connect to the database it may implement the ISymmetricEngineAware interface in order to get a handle to the ISymmetricEngine.
+
+The INodeGroupExtensionPoint interface may be optionally implemented to indicate that a registered extension point should only be registered with specific node groups.
+
+[source, java]
+----
+/**
+ * Only apply this extension point to the 'root' node group.
+ */
+ public String[] getNodeGroupIdsToApplyTo() {
+     return new String[] { "root" };
+ }
+----
+
+===== IParameterFilter
+Parameter values can be specified in code using a parameter filter. Note that there can be only one parameter filter per engine instance. The IParameterFilter replaces the deprecated IRuntimeConfig from prior releases.
+
+[source, java]
+----
+public class MyParameterFilter
+    implements IParameterFilter, INodeGroupExtensionPoint {
+
+    /**
+     * Only apply this filter to stores
+     */
+    public String[] getNodeGroupIdsToApplyTo() {
+        return new String[] { "store" };
+    }
+
+    public String filterParameter(String key, String value) {
+        // look up a store number from an already existing properties file.
+        if (key.equals(ParameterConstants.EXTERNAL_ID)) {
+            return StoreProperties.getStoreProperties().
+              getProperty(StoreProperties.STORE_NUMBER);
+        }
+        return value;
+    }
+
+    public boolean isAutoRegister() {
+        return true;
+    }
+
+}
+----
+
+===== IDatabaseWriterFilter
+Data can be filtered or manipulated before it is loaded into the target database. A filter can change the data in a column, save it somewhere else or do something else with the data entirely. It can also specify by the return value of the function call that the data loader should continue on and load the data (by returning true) or ignore it (by returning false). One possible use of the filter, for example, might be to route credit card data to a secure database and blank it out as it loads into a less-restricted reporting database.
+
+A DataContext is passed to each of the callback methods. A new context is created for each synchronization. The context provides a mechanism to share data during the load of a batch between different rows of data that are committed in a single database transaction.
+
+The filter also provides callback methods for the batch lifecycle. The DatabaseWriterFilterAdapter may be used if not all methods are required.
+
+A class implementing the IDatabaseWriterFilter interface is injected onto the DataLoaderService in order to receive callbacks when data is inserted, updated, or deleted.
+
+[source, java]
+----
+public class MyFilter extends DatabaseWriterFilterAdapter {
+
+    @Override
+    public boolean beforeWrite(DataContext context, Table table, CsvData data) {
+        if (table.getName().equalsIgnoreCase("CREDIT_CARD_TENDER")
+                && data.getDataEventType().equals(DataEventType.INSERT)) {
+            String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
+            // blank out credit card number
+            parsedData[table.getColumnIndex("CREDIT_CARD_NUMBER")] = null;
+        }
+        return true;
+    }
+}
+----
+
+The filter class should be specified in conf/symmetric-extensions.xml as follows.
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <bean id="myFilter" class="com.mydomain.MyFilter"/>
+
+</beans>
+----
+
+===== IDatabaseWriterErrorHandler
+Implement this extension point to override how errors are handled. You can use this extension point to ignore rows that produce foreign key errors.
+
+===== IDataLoaderFactory
+Implement this extension point to provide a different implementation of the org.jumpmind.symmetric.io.data.IDataWriter that is used by the SymmetricDS data loader. Data loaders are configured for a channel. After this extension point is registered it can be activated for a CHANNEL by indicating the data loader name in the data_loader_type column.
+
+SymmetricDS has two out of the box extensions of IDataLoaderFactory already implemented in its PostgresBulkDataLoaderFactory and OracleBulkDataLoaderFactory classes. These extension points implement bulk data loading capabilities for Oracle, Postgres and Greenplum dialects. See Appendix C. Database Notes for details.
+
+Another possible use of this extension point is to route data to a NOSQL data sink.
+
+===== IAcknowledgeEventListener
+Implement this extension point to receive callback events when a batch is acknowledged. The callback for this listener happens at the point of extraction.
+
+===== IReloadListener
+Implement this extension point to listen in and take action before or after a reload is requested for a Node. The callback for this listener happens at the point of extraction.
+
+===== ISyncUrlExtension
+This extension point is used to select an appropriate URL based on the URI provided in the sync_url column of sym_node.
+
+To use this extension point configure the sync_url for a node with the protocol of ext://beanName. The beanName is the name you give the extension point in the extension xml file.
+
+===== IColumnTransform
+This extension point allows custom column transformations to be created. There are a handful of out-of-the-box implementations. If any of these do not meet the column transformation needs of the application, then a custom transform can be created and registered. It can be activated by referencing the column transform's name transform_type column of TRANSFORM_COLUMN
+
+===== INodeIdCreator
+This extension point allows SymmetricDS users to implement their own algorithms for how node ids and passwords are generated or selected during the registration process. There may be only one node creator per SymmetricDS instance (Please note that the node creator extension has replaced the node generator extension).
+
+===== ITriggerCreationListener
+Implement this extension point to get status callbacks during trigger creation.
+
+===== IBatchAlgorithm
+Implement this extension point and set the name of the Spring bean on the batch_algorithm column of the Channel table to use. This extension point gives fine grained control over how a channel is batched.
+
+===== IDataRouter
+Implement this extension point and set the name of the Spring bean on the router_type column of the Router table to use. This extension point gives the ability to programmatically decide which nodes data should be routed to.
+
+===== IHeartbeatListener
+Implement this extension point to get callbacks during the heartbeat job.
+
+===== IOfflineClientListener
+Implement this extension point to get callbacks for offline events on client nodes.
+
+===== IOfflineServerListener
+Implement this extension point to get callbacks for offline events detected on a server node during monitoring of client nodes.
+
+===== INodePasswordFilter
+Implement this extension point to intercept the saving and rendering of the node password.
+
+=== Embedding in Android
+SymmetricDS has its web-enabled, fault-tolerant, database synchronization software available on the Android mobile computing platform. 
+The Android client follows all of the same concepts and brings to Android all of the same core SymmetricDS features as the full-featured, 
+Java-based SymmetricDS client. The Android client is a little bit different in that it is not a stand-alone application, but is designed to 
+be referenced as a library to run in-process with an Android	application	requiring synchronization for its SQLite database.
+
+By using SymmetricDS, mobile application development is simplified, in that the mobile application developer can now focus solely on interacting 
+with their local SQLite database. SymmetricDS takes care of capturing and moving data changes to and from a centralized database when the 
+network is available
+
+The same core libraries that are used for the SymmetricDS server are also used for Android. SymmetricDS's overall footprint is reduced by 
+eliminating a number of external dependencies in order to fit better on an Android device. The database access layer is abstracted so that 
+the Android specific database access layer could be used. This allows SymmetricDS to be efficient in accessing the SQLite database on the 
+Android device.
+
+In order to convey how to use the SymmetricDS Android libraries, the example below will show how to integrate SymmetricDS into the NotePad 
+sample application that comes with the Android ADK.
+
+The NotePad sample application is a very simple task list application	that persists notes to a SQLite database table called Notes. 
+Eclipse 3.7.2 and Android ADK 20.0.3 were used for this example.  The `NOTES` table definition is below.
+
+[source, SQL]
+----
+CREATE TABLE NOTES (
+_ID VARCHAR(50) PRIMARY KEY,
+TITLE TEXT,
+NOTE TEXT,
+CREATED VARCHAR(50),
+MODIFIED VARCHAR(50),
+);
+----
+
+Create the NotePad project. You do this by adding a new Android Sample Project. Select the NotePad project.
+
+image::developer/sync-android-1.png[title="New Sample NotePad Project"]
+
+SymmetricDS for Android comes as a zip file of Java archives (jar files) that are required by the SymmetricDS client at runtime. 
+This zip file (symmetric-ds-3.4.7-android.zip) can be downloaded from the SymmetricDS.org website. The first step to using SymmetricDS 
+in an Android application is to unzip the jar files into a location where the project will recognize them. The latest Android SDK and the 
+Eclipse ADK requires that these jar files be put into a libs directory under the Android application project.
+
+image::developer/sync-android-2.png[title="New Sample NotePad Project"]
+
+Unzip the symmetric-ds-x.x.x-android.zip file to the NotePad project directory. Refresh the NotePad project in Eclipse. You should end up 
+with a libs directory that is automatically added to the Android Dependencies.
+
+image::developer/sync-android-3.png[title="Jar Files Added to Libs"]
+
+The Android version of the SymmetricDS engine is a Java class that can be instantiated directly or wired into an application via a 
+provided Android service. Whether you are using the service or the engine directly you need to provide a few required startup parameters to the engine:
+
+[horizontal]
+SQLiteOpenHelper:: It is best (but not required) if the SQLiteOpenHelper is shared with the application that will be sharing the SQLite 
+database. This core Android Java class provides software synchronization around the access to the database and minimizes locking errors.
+registrationUrl:: This is the URL of where the centralized SymmetricDS instance is hosted.
+externalId:: This is the identifier that can be used by the centralized SymmetricDS server to identify whether this instance should get 
+data changes that happen on the server. It could be the serial number of the device, an account username, or some other business concept like store number.
+nodeGroupId:: This is the group id for the mobile device in the synchronization configuration. For example, if the nodeGroupId is 'handheld', 
+then the SymmetricDS configuration might have a group called 'handheld' and a group called 'corp' where 'handheld' is configured to push and pull data from 'corp.'
+properties:: Optionally tweak the settings for SymmetricDS.
+
+In order to integrate SymmetricDS into the NotePad application, the	Android-specific SymmetricService will be used, and we need to tell the 
+Android application this by adding the service to the AndroidManifest.xml file. Add the following snipped to the Manifest as the last entry 
+under the <application> tag.
+
+[source, xml]
+----
+<service android:name="org.jumpmind.symmetric.android.SymmetricService" 
+android:enabled="true" >           
+    <intent-filter>
+  		<action android:name="org.jumpmind.symmetric.android.
+  		SymmetricService" />
+  	</intent-filter>
+</service>
+----
+	
+The other change required in the Manifest is to give the application permission to use the Internet. Add this as the first entry in the 
+AndroidManifest.xml right before the <application> tag.
+
+[source, xml]
+----
+<uses-permission android:name="android.permission.INTERNET"></uses-permission> 
+----
+	
+The only additional change needed is the call to start the service in the application. The service needs to be started manually because 
+we need to give the application a chance to provide configuration information to the service.
+
+In NotePadProvider.java add the following code snippet in the onCreate method.
+
+image::developer/sync-android-4.png[title="NotePadProvider.java"]
+
+[source, java]
+----	
+final String HELPER_KEY = "NotePadHelperKey";
+
+// Register the database helper, so it can be shared with the SymmetricService
+SQLiteOpenHelperRegistry.register(HELPER_KEY, mOpenHelper);
+
+Intent intent = new Intent(getContext(), SymmetricService.class);
+
+// Notify the service of the database helper key
+intent.putExtra(SymmetricService.INTENTKEY_SQLITEOPENHELPER_REGISTRY_KEY,
+HELPER_KEY);
+intent.putExtra(SymmetricService.INTENTKEY_REGISTRATION_URL,
+"http://10.0.2.2:31415/sync/server");
+intent.putExtra(SymmetricService.INTENTKEY_EXTERNAL_ID,
+"android-simulator");
+intent.putExtra(SymmetricService.INTENTKEY_NODE_GROUP_ID, "client");
+intent.putExtra(SymmetricService.INTENTKEY_START_IN_BACKGROUND,
+true);
+`
+Properties properties = new Properties();
+// initial load existing notes from the Client to the Server
+properties.setProperty(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED,
+"true");
+intent.putExtra(SymmetricService.INTENTKEY_PROPERTIES, properties);
+
+getContext().startService(intent);
+----		
+		
+This code snippet shows how the SQLiteOpenHelper is shared. The application's SQLiteOpenHelper is registered in a static registry provided by 
+the SymmetricDS Android library. When the service is started, the key used to store the helper is passed to the service so that the service may pull the helper back out of the registry.
+
+The various parameters needed by SymmetricDS are being set in the Intent which will be used by the SymmetricService to start the engine.
+
+Most of the parameters will be familiar to SymmetricDS users. In this case a property is being set which will force an initial load of the 
+existing Notes from the client to the server. This allows the user of the application to enter Notes for the first time offline or while the 
+SymmetricDS engine is unregistered and still have them arrive at the centralized server once the SymmetricDS engine does get registered.
+
+
+
+Next, set up an Android Emulator. This can be done by opening the Android Virtual Device Manager. Click New and follow the steps. The higher 
+the Emulator's API, the better.
+
+Run your NotePad project by pressing Run on NotePadProvider.java in Eclipse. When prompted, select the emulator you just created. Monitor the 
+Console in Eclipse. Let the NotePad.apk install on the emulator. Now watch the LogCat and wait as it attempts to register with your SymmetricDS Master Node.

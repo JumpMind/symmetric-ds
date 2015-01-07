@@ -1,0 +1,37 @@
+===== Stopping a Node
+Installed nodes are started automatically when the SymmetricDS server is started.  An individual node instance can be stopped while other nodes continue to run.
+
+ifdef::pro[]
+To stop a node, select the node you want to stop and click on the *Control* button and choose *Stop*.  The node's status will indicate that is has been stopped.
+endif::pro[]
+
+From the command line, you can use JMX to stop a node.  The following is an example.  You would replace <engine name> with the name of the engine as found in the <<Node Properties File>>
+
+`bin/jmx --bean org.jumpmind.symmetric.<engine name>:name=Node --method stop`
+
+===== Uninstalling a Node 
+
+Uninstalling a node will remove all SymmetricDS database artifacts and delete the engine's property file.
+
+WARNING: This can not be undone so be sure to uninstall with caution.
+
+ifdef::pro[]
+To uninstall a node, select the node you want to uninstall and click on the _Control_ button and choose _Uninstall_.
+
+.Control->Uninstall
+image::uninstall.png[]
+
+If the node has no children, you will be prompted by a confirm dialog to make sure you want to uninstall the node.
+
+.Uninstall single node
+image::uninstall-single.png[]
+
+If the node has child nodes you will be told that uninstalling the parent node will uninstall all of the child nodes.
+
+.Uninstall current node and all children
+image::uninstall-with-children.png[]
+endif::pro[]
+
+From the command line you can use the symadmin utility to uninstall a node.
+
+`bin/symadmin --engine <engine name> uninstall`

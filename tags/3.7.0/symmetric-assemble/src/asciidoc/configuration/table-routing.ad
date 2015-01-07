@@ -1,0 +1,129 @@
+
+=== Table Routing
+
+ifndef::pro[]
+The TRIGGER_ROUTER table is used to define which specific combinations of triggers and routers are needed for your configuration. 
+The relationship between triggers and routers is many-to-many, so this table serves as the join table to define which combinations 
+are valid, as well as to define settings available at the trigger-router level of granularity.
+
+Three important controls can be configured for a specific Trigger / Router combination: Enabled, Initial Loads and Ping Back. 
+The parameters for these can be found in the Trigger / Router mapping table, TRIGGER_ROUTER .
+endif::pro[]
+
+ifdef::pro[]
+As discussed previously, Routers define more specifically which captured data from a source node should be sent to which
+specific nodes in a target node group.  Table Triggers define which tables should be synchronized.  Table Routing defines how the
+Routers and Table Triggers work together, specifying what tables are associated with each router (and thus the direction the table
+data flows). 
+
+The simplest way to set up Table Routing is to use the *Auto Create...* button.  
+
+[.float-group]
+--
+[.left.text-left]
+image::table-routing/auto-create-1-triggers.png[]
+
+The default entry point for the auto creation is from the triggers perspective.  This will allow you to select table triggers first then routers.
+
+Clicking *Next* to select from available routers.
+
+--
+
+
+[.float-group]
+--
+[.left.text-left]
+image::table-routing/auto-create-2-routers.png[]
+
+
+Select the routers (direction) to associate with the previously selected triggers.
+
+Click *Save* to install the triggers on the database and begin data capture.
+--
+
+You can also select routers on the first screen of the auto create if you would like to select routers first then triggers.   Both approaches will
+result in the same table routing.
+
+[.float-group]
+--
+[.left.text-left]
+image::table-routing/auto-create-1-routers.png[]
+
+Select from available routers.
+
+Clicking *Next* to select from available table triggers.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::table-routing/auto-create-2-triggers.png[]
+
+Select the table triggers to associate with the previously selected routers.
+
+Click *Save* to install the triggers on the database and begin data capture.
+--
+The table routing elements created by the wizard can be maintained from the Table Routing List Screen.  New table routing
+entries can also be created manually from this screen if desired.
+
+
+IMPORTANT: SymmetricDS will not install table triggers on the database until they are associated with a router through table routing.
+
+NOTE: Once a table routing relationship is created data capture will begin.
+
+image::table-routing/table-routing-new.png[]
+endif::pro[]
+
+ifdef::pro[]
+.Required Fields
+endif::pro[]
+Table Triggers:: The table trigger to link.
+Routers:: The router to link.
+Initial Load Order:: Order sequence of this table when an initial load is sent to a node. If this value is the same for 
+multiple tables, then SymmetricDS will attempt to order the tables according to FK constraints.  If this value is set to 
+a negative number, then the table will be excluded from an initial load.
+
+ifdef::pro[]
+.Advanced Options
+endif::pro[]
+
+Initial Load SQL:: SQL used as part of the WHERE clause on a SQL statement during the initial load process to extract data from the source node
+of the router.  If blank all rows will be selected.
+
+Initial Load Delete SQL:: SQL used as part of the WHERE clause on a SQL statement during the initial load process to delete data on the target node
+of the router.  
+
+IMPORTANT: Initial Load Delete SQL will only be used if the following parameter is true (default is false).     
+----
+initial.load.delete.first=true
+----
+
+
+endif::pro[]
+
+Enabled:: Each individual trigger-router combination can be disabled or enabled if needed. By default, a trigger router is enabled, 
+but if you have a reason you wish to define a trigger router combination prior to it being active, 
+ifndef::pro[you can set the enabled flag to 0.]
+ifdef::pro[you can uncheck the enabled box.]
+This will cause the trigger-router mapping to be sent to all nodes, but the trigger-router mapping will not be considered 
+active or enabled for the purposes of capturing data changes or routing.
+
+Ping Back Enabled:: SymmetricDS, by default, avoids circular data changes. When a trigger fires as a result of SymmetricDS itself 
+(such as the case when sync on incoming batch is set), it records the originating source node of the data change in source_node_id. 
+During routing, if routing results in sending the data back to the originating source node, the data is not routed by default. 
+If instead you wish to route the data back to the originating node, 
+ifndef::pro[you can set the ping_back_enabled column for the needed particular trigger / router combination.]
+ifdef::pro[you can check the ping back enabled column.]
+This will cause the router to "ping" the data back to the originating node when it usually would not.
+
+Initial Load Order:: Order sequence of this table when an initial load is sent to a node. If this value is the same for 
+multiple tables, then SymmetricDS will attempt to order the tables according to FK constraints.  If this value is set to 
+a negative number, then the table will be excluded from an initial load.
+
+Initial Load Batch Count:: Only applicable if the initial load extract job is enabled. The number of batches to split 
+an initial load of a table across.  If 0 then a select count(*) will be used to dynamically determine the number of 
+batches based on the max_batch_size of the reload channel.
+
+Group Link:: The group link represented by the router.
+
