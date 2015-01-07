@@ -325,6 +325,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         serverTestService.insertCustomer(customer);
 
         clientPull();
+        
+        assertNotNull("Customer 300 did not sync to the client", clientTestService.getCustomer(300));
 
         if (getServer().getSymmetricDialect().isClobSyncSupported()) {
             if (isClientInterbase()) {
