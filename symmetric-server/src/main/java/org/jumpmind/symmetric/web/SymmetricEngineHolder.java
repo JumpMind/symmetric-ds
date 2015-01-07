@@ -84,6 +84,8 @@ public class SymmetricEngineHolder {
     private int engineCount;
 
     private String deploymentType = "server";
+    
+    private boolean holderHasBeenStarted = false;
 
     public Map<String, ServerSymmetricEngine> getEngines() {
         return engines;
@@ -150,58 +152,60 @@ public class SymmetricEngineHolder {
     }
 
     public void start() {
-    	if (staticEnginesMode) {
-    		log.info("In static engine mode");
-    	    engines = staticEngines;
-    	    enginesStarting = staticEnginesStarting;
-    	}
-    	
-		if (autoCreate) {
-			if (isMultiServerMode()) {
-				File enginesDir = new File(
-						AbstractCommandLauncher.getEnginesDir());
-				File[] files = null;
+        try {
+            if (staticEnginesMode) {
+                log.info("In static engine mode");
+                engines = staticEngines;
+                enginesStarting = staticEnginesStarting;
+            }
 
-				if (enginesDir != null) {
-					files = enginesDir.listFiles();
-				}
+            if (autoCreate) {
+                if (isMultiServerMode()) {
+                    File enginesDir = new File(AbstractCommandLauncher.getEnginesDir());
+                    File[] files = null;
 
-				if (files == null) {
-					String firstAttempt = enginesDir.getAbsolutePath();
-					enginesDir = new File(".");
-					log.warn(
-							"Unable to retrieve engine properties files from {}.  Trying current working directory {}",
-							firstAttempt, enginesDir.getAbsolutePath());
+                    if (enginesDir != null) {
+                        files = enginesDir.listFiles();
+                    }
 
-					if (enginesDir != null) {
-						files = enginesDir.listFiles();
-					}
-				}
+                    if (files == null) {
+                        String firstAttempt = enginesDir.getAbsolutePath();
+                        enginesDir = new File(".");
+                        log.warn(
+                                "Unable to retrieve engine properties files from {}.  Trying current working directory {}",
+                                firstAttempt, enginesDir.getAbsolutePath());
 
-				if (files != null) {
-					for (int i = 0; i < files.length; i++) {
-						engineCount++;
-						File file = files[i];
-						if (file.getName().endsWith(".properties")) {
-							enginesStarting.add(new EngineStarter(file
-									.getAbsolutePath()));
-						}
-					}
-				} else {
-					log.error("Unable to retrieve engine properties files from default location or from current working directory.  No engines to start.");
-				}
+                        if (enginesDir != null) {
+                            files = enginesDir.listFiles();
+                        }
+                    }
 
-			} else {
-				engineCount++;
-				enginesStarting.add(new EngineStarter(
-						singleServerPropertiesFile));
-			}
+                    if (files != null) {
+                        for (int i = 0; i < files.length; i++) {
+                            engineCount++;
+                            File file = files[i];
+                            if (file.getName().endsWith(".properties")) {
+                                enginesStarting.add(new EngineStarter(file.getAbsolutePath()));
+                            }
+                        }
+                    } else {
+                        log.error("Unable to retrieve engine properties files from default location or from current working directory.  No engines to start.");
+                    }
 
-			for (EngineStarter starter : enginesStarting) {
-				starter.start();
-			}
+                } else {
+                    engineCount++;
+                    enginesStarting.add(new EngineStarter(singleServerPropertiesFile));
+                }
 
-		}
+                for (EngineStarter starter : enginesStarting) {
+                    starter.start();
+                }
+
+            }
+
+        } finally {
+            holderHasBeenStarted = true;
+        }
 
     }
     
@@ -351,7 +355,7 @@ public class SymmetricEngineHolder {
     }
 
     public boolean areEnginesStarting() {
-        return enginesStarting.size() > 0;
+        return !holderHasBeenStarted || enginesStarting.size() > 0;
     }
 
     public String getEngineName(Properties properties) {
