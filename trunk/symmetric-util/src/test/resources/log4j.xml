@@ -34,7 +34,7 @@
     <appender name="ROLLING" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="target/junit.log" />
         <param name="MaxFileSize" value="100MB" />
-        <param name="Append" value="false" />
+        <param name="Append" value="true" />
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
         </layout>
