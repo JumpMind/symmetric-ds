@@ -1,0 +1,21 @@
+
+=== Interbase
+
+The Interbase Dialect requires the installation of a User Defined Function (UDF) library in order to 
+provide functionality needed by the database triggers. SymmetricDS includes the required UDF library, 
+called SYM_UDF, in both source form (as a C program) and as pre-compiled libraries for both Windows and Linux. 
+The SYM_UDF library is copied into the UDF folder within the Interbase installation directory.
+
+For Linux users:
+
+*cp databases/interbase/sym_udf.so /opt/interbase/UDF*
+
+For Windows users:
+
+*copy databases\interbase\sym_udf.dll C:\CodeGear\InterBase\UDF*
+
+The Interbase dialect currently has the following limitations:
+
+. Data capture is limited to 4 KB per row, including large objects (LOB).
+
+. There is no transaction ID recorded on data captured. Either specify a tx_id_expression on the TRIGGER table, or set a max_batch_size on the CHANNEL table that will accommodate your transactional data.

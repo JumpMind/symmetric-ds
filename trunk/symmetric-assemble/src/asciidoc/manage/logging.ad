@@ -1,0 +1,17 @@
+
+=== Logging
+	   
+The standalone SymmetricDS installation uses http://logging.apache.org/log4j/1.2/index.html[Log4J] for logging.  The configuration file is `conf/log4j.xml`.
+The `log4j.xml` file has hints as to what logging can be enabled for useful, finer-grained logging.
+
+There is a command line option to turn on preconfigured debugging levels.  When the `--debug` option is used the `conf/debug-log4j.xml` is used instead of log4j.xml.
+
+SymmetricDS proxies all of its logging through http://www.slf4j.org/[SLF4J].  When deploying to an application server or if Log4J is not
+being leveraged, then the general rules for for SLF4J logging apply.
+
+
+ifdef::pro[]
+You can use the logging screen to dynamically adjust the log level in order to help triage issues.  When developing transforms it is useful to turn on *Log Sync Details*.
+
+image::manage/logging.png[]
+endif::pro[]
