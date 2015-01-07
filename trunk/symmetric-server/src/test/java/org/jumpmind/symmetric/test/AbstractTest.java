@@ -218,7 +218,9 @@ abstract public class AbstractTest {
         ISymmetricEngine regEngine = getRegServer().getEngine();
         IDataLoaderService dataLoaderService = regEngine.getDataLoaderService();
         boolean inError = false;
-        InputStream is = getClass().getResourceAsStream(getClass().getSimpleName() + ".csv");
+        String fileName = getClass().getSimpleName() + ".csv";
+        log.info("Loading " + fileName + " on " + regEngine.getEngineName());
+        InputStream is = getClass().getResourceAsStream(fileName);
         assertNotNull("Could not find configuration as a resource", is);
         List<IncomingBatch> batches = dataLoaderService.loadDataBatch(IOUtils.toString(is));
         for (IncomingBatch batch : batches) {
