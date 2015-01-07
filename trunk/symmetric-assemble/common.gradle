@@ -94,7 +94,6 @@ subprojects { subproject ->
         }    
     }
 
-
     artifacts { testArtifacts testJar }
 
     ext {
@@ -170,7 +169,7 @@ subprojects { subproject ->
         
         deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
         
-    }
+    }    
 
     task develop {
         dependsOn tasks.cleanEclipse, tasks.cleanEclipseWtp, tasks.eclipse, tasks.eclipseWtp

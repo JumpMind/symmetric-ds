@@ -14,6 +14,26 @@ buildscript {
 project.buildDir='target'
 apply from: symAssembleDir + '/common.gradle'
 
+
+task generateJavadoc(type: Javadoc) {
+    destinationDir = new File(buildDir, 'doc/javadoc')
+    title = "SymmetricDS API $version"
+}
+
+subprojects { subproject ->
+    afterEvaluate {
+        if(plugins.hasPlugin(JavaPlugin)) {
+            
+            // configuration here
+            rootProject.tasks.generateJavadoc {
+                source += files(sourceSets.collect { srcSet -> srcSet.allJava })
+                classpath += files(sourceSets*.compileClasspath)
+            }
+    
+        }
+    }    
+}
+
 project(":symmetric-csv") {
     description = 'General purpose csv parser'
     dependencies {
