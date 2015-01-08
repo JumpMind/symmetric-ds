@@ -35,9 +35,6 @@ Router Type:: The type of router.  Standard router types are listed below.  Cust
 
 |bsh|x|A router that executes a Bean Shell script expression in order to select nodes to route to. The script can use the old and new column values.  See <<Beanshell Router>>
 
-|xml||A router the publishes data changes directly to a messaging solution instead of transmitting changes to registered nodes.  See <<XML Publishing Router>>
-This router must be configured manually in XML as an extension point.
-
 |===
 ifdef::pro[]
 .Advanced Options
