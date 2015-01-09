@@ -5,6 +5,32 @@ Additional users may be set up to access the SymmetricDS web console.
 
 image::users.png[]
 
+ifdef::pro[]
+.Required Fields
+endif::pro[]
+
+Authentication Method:: Method to authenticate the user.  
+!===
+
+|Internal|Internal refers to users being stored in the SYM_CONSOLE_USER table.  
+|LDAP| LDAP refers to users being authenticated through an LDAP server.  See the <<LDAP>> section for more information.
+
+!===
+[[user-id]]User Id:: Unique Identifier for a User.
+[[password]]Password:: Password for a User.
+[[first-name]]First Name:: First Name for a User.
+[[last-name]]Last Name:: Last Name for a User.
+[[role]]Role:: Role for the user.
+.Roles
+|===
+
+|Admin|Admin users can read and write data and have full control of the SymmetricDS web console.
+
+|Read|Read users can read data, but cannot write data.  Read users have a limited control of the SymmetricDS web console.
+
+|Write|Write users can read and write data, but have a limited control of the SymmetricDS web console. 
+
+|===            
 ==== Authentication Method
 
 There are two ways to authenticate a user.
