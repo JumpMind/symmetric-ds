@@ -934,10 +934,16 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
             } else if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null) {
                 setDecimalValue(ps, i, arg, argType);
+            } else if (argType == Types.TINYINT) {
+                setTinyIntValue(ps, i, arg, argType);                
             } else {
                 StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             }
         }
+    }    
+    
+    protected void setTinyIntValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
+        StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
     }
 
     protected void setDecimalValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {

@@ -20,6 +20,10 @@
  */
 package org.jumpmind.db.platform.mssql;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
+
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -42,6 +46,12 @@ public class MsSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
+    }
+    
+    @Override
+    protected void setTinyIntValue(PreparedStatement ps, int i, Object arg, int argType)
+            throws SQLException {
+        super.setTinyIntValue(ps, i, arg, Types.SMALLINT);
     }
     
 }
