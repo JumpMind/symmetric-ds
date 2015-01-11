@@ -1012,7 +1012,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
         Set<String> keys = new HashSet<String>(map.keySet());
         for (String key : keys) {
-            if (map.get(key).equals(this)) {
+            if (this.equals(map.get(key))) {
                 map.remove(key);
             }
         }
