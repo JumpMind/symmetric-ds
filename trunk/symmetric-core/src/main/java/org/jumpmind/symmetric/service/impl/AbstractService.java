@@ -38,6 +38,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -212,6 +213,9 @@ abstract public class AbstractService implements IService {
         boolean needsAnd = false;
         if (nodeIds.size() > 0) {
             where.append("node_id in (:NODES)");
+            needsAnd = true;
+        } else {
+            where.append("node_id != '" + Constants.UNROUTED_NODE_ID + "'");
             needsAnd = true;
         }
         if (channels.size() > 0) {
