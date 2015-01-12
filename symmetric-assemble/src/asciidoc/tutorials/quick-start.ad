@@ -1,6 +1,12 @@
 
 == SymmetricDS Quick Start Guide
 
+This guide talks about how to setup a quick demonstration of SymmetricDS to help you understand what a working 
+system looks like.
+
+Three nodes, which represent three embedded databases, will be installed.  One node will represent a corporate database and the 
+other two nodes will represent two retail store databases.
+
 === Setup
 
 For information on how to install SymmetricDS, please refer to the SymmetricDS User Guide.
@@ -16,7 +22,9 @@ image::wizard-node-setup.png[]
 endif::pro[]
 
 ifndef::pro[]
-First, we need to copy over the `corp-000.properties`, `store-001.properties` and `store-002.properties` files from the `samples/` folder to the `engines/` folder.
+First, we need to copy over the `corp-000.properties`, `store-001.properties` and `store-002.properties` files from the `samples/` folder to the `engines/` folder.  
+Each file represents a node.  
+
 Next, we need to populate the database with the demo configuration.  To do this, execute the following steps.
 
 * Open a command prompt and navigate to the `samples` subdirectory of your SymmetricDS installation.
@@ -29,22 +37,19 @@ bin/dbimport --engine corp-000 --format XML create_sample.xml
 
 NOTE: The warning messages from the command are safe to ignore.
 
-We will now start the SymmetricDS nodes. To do this, open three command prompts, navigate to the `samples/` directory of the SymmetricDS installation, 
-and run the following commands.
+We will now start the SymmetricDS instance.  All three nodes run in the same instance.  To do this, open a command prompt and 
+run the following command:
 
 [source, cli]
 ----
-bin/sym --engine corp-000 --port 8080
+bin/sym
 ----
+
+The log output will go to the command line.  Log output for each node can be identified by the name of the node in brackets.
 
 [source, cli]
 ----
-bin/sym --engine store-001 --port 9090
-----
-
-[source, cli]
-----
-bin/sym --engine store-002 --port 1010
+2015-01-10 10:28:09,604 INFO [corp-000] [AbstractSymmetricEngine] [symmetric-engine-startup-0] Started SymmetricDS
 ----
 
 * Watch the logging output of the store nodes to see it successfully register with the corp node. 
