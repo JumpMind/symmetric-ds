@@ -72,7 +72,11 @@
     
     <category name="org.jumpmind.symmetric.util.PropertiesFactoryBean">
         <priority value="ERROR" />
-    </category>    
+    </category>
+    
+    <category name="com.jumpmind">
+        <priority value="INFO" />
+    </category>            
 
     <category name="org.springframework">
         <priority value="ERROR" />
