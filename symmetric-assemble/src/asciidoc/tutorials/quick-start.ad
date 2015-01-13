@@ -1,15 +1,17 @@
 
 == SymmetricDS Quick Start Guide
 
-This guide talks about how to setup a quick demonstration of SymmetricDS to help you understand what a working 
+This guide explains how to quickly setup a demonstration of SymmetricDS to help you understand what a working 
 system looks like.
 
-Three nodes, which represent three embedded databases, will be installed.  One node will represent a corporate database and the 
-other two nodes will represent two retail store databases.
+Three nodes, which represent three embedded databases, will be installed.  One node will represent a centralized corporate database and the 
+other two nodes will represent two individual retail store databases.
 
-=== Setup
+image::tutorials/quickstart-two-tier.png[]
 
-For information on how to install SymmetricDS, please refer to the SymmetricDS User Guide.
+=== Installation
+
+For information on how to install SymmetricDS, please refer to the Installation section of the SymmetricDS User Guide.
 
 ==== Creating and Starting
 
@@ -22,30 +24,46 @@ image::wizard-node-setup.png[]
 endif::pro[]
 
 ifndef::pro[]
-First, we need to copy over the `corp-000.properties`, `store-001.properties` and `store-002.properties` files from the `samples/` folder to the `engines/` folder.  
-Each file represents a node.  
+First, we need to copy over the `corp-000.properties`, `store-001.properties` and `store-002.properties` files from the `samples/` folder to the `engines/` folder.    
+Each properties file represents a node.  
 
 Next, we need to populate the database with the demo configuration.  To do this, execute the following steps.
 
 * Open a command prompt and navigate to the `samples` subdirectory of your SymmetricDS installation.
 * Create the sample tables for items, prices, and sales, in the root database by executing the following command:
-
++
 [source, cli]
 ----
-bin/dbimport --engine corp-000 --format XML create_sample.xml
+../bin/dbimport --engine corp-000 --format XML --alter-case create_sample.xml
+----
++
+* Next, create the SymmetricDS tables.  Tables are automatically created when the server starts for the first time.  There is 
+also a utility that can be used to create the SymmetricDS tables.  Please run the following.
++
+[source, cli]
+----
+../bin/symadmin --engine corp-000 create-sym-tables
+----
++
+* Load the SymmetricDS configuration and sample item and transaction data into the root node database by executing:
++
+[source, cli]
+----
+../bin/dbimport --engine corp-000 insert_sample.sql
 ----
 
-NOTE: The warning messages from the command are safe to ignore.
-
-We will now start the SymmetricDS instance.  All three nodes run in the same instance.  To do this, open a command prompt and 
-run the following command:
+We will now start the SymmetricDS instance.  All three nodes run in the same instance.  From the command prompt, 
+navigate to the SymmetricDS home directory and run the following command.
 
 [source, cli]
 ----
 bin/sym
 ----
 
-The log output will go to the command line.  Log output for each node can be identified by the name of the node in brackets.
+NOTE: SymmetricDS is normally deployed as a service.  For more information about deploying SymmetricDS as a service please refer 
+to the SymmetricDS User Guide.
+
+The log output will go to both the command line and the `logs/symmetric.log`.  Log output for each node can be identified by the name of the node in brackets.
 
 [source, cli]
 ----
@@ -55,12 +73,6 @@ The log output will go to the command line.  Log output for each node can be ide
 * Watch the logging output of the store nodes to see it successfully register with the corp node. 
 The stores are configured to attempt registration at a random time interval up to every minute.
 
-* Load the sample item and transaction data and SymmetricDS configuration into the root node database by executing:
-
-[source, cli]
-----
-bin/dbimport --engine corp-000 insert_sample.sql
-----
 
 endif::pro[]
 
@@ -74,9 +86,8 @@ By default, the Demo does this action for you.  However, it is worth noting that
 endif::pro[]
 
 ifndef::pro[]
-By default, the `corp-000.properties` file kicks off this initial load where it says `initial.load.create.first=true`.  However, it
+The store nodes were pre-configured to do an initial load after registration.  However, it
 is worth noting that Initial Loads can be sent using the following commands:
-
 [source, cli]
 ----
 bin/symadmin --engine corp-000 reload-node 001
@@ -91,14 +102,17 @@ endif::pro[]
 
 ==== What's Created
 
-image::tutorials/quickstart-two-tier.png[]
-
 ifdef::pro[]
+
+The demo databases are http://www.h2database.com[H2 Databases].  You can connect to them using a sql explorer tool like 
+http://squirrel-sql.sourceforge.net/[Squirrel Sql].  The connection information can be found in the properties files in the 
+engines directory.
+
 Please verify the databases by navigating to the Explore tab and using the database explorer on the left.
 endif::pro[]
 
 ifndef::pro[]
-Please verify the databases by logging in and listing the tables.
+Please verify the databases by logging in and listing the tables.  You can 
 endif::pro[]
 
 * Find the item tables that sync from root to client (that is, from corp to store): item and item_selling_price.
