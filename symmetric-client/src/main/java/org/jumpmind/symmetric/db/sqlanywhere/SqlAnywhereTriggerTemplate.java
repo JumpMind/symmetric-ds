@@ -42,7 +42,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + cast($(tableAlias).\"$(columnName)\" as varchar) + '\"') end" ;
-        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + replace(convert(varchar,$(tableAlias).\"$(columnName)\",23),'T',' ') + '\"') end" ;
+        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + replace(convert(varchar,$(tableAlias).\"$(columnName)\",21),'T',' ') + '\"') end" ;
         clobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(cast($(origTableAlias).\"$(columnName)\" as varchar(16384)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         blobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + base64_encode($(origTableAlias).\"$(columnName)\") + '\"' end" ;
         booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" = 1 then '\"1\"' else '\"0\"' end" ;
