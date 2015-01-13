@@ -6,7 +6,15 @@
 
 :numbered:
 
+ifdef::pro[]
+= SymmetricDS Pro Tutorials
+endif::pro[]
+
+ifndef::pro[]
 = SymmetricDS Tutorials
+endif::pro[]
+
+
 
 Copyright (C) 2007-2015 JumpMind, Inc
 
