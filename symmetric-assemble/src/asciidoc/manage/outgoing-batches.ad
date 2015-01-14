@@ -44,6 +44,30 @@ If one or more windows exist, then data will only be extracted and transported i
 time specified. The configured times are always for the target node's local time. If the `start_time` is greater than the
 `end_time`, then the window crosses over to the next day.
 
+==== Outgoing Sync Status
+
+The status of synchronization can be queried at the source database.
+
+The following query will show the number of data rows that have *not* been delivered to target nodes:
+
+[source, sql]
+----
+select sum(data_event_count), node_id from sym_outgoing_batch 
+  where status != 'OK' group by node_id;
+----
+
+The following queries summed together give an approximation of the number of rows that have *not* been routed:
+
+[source, sql]
+----
+select sum(end_id-start_id) from sym_data_gap 
+  where start_id < (select max(start_id) from sym_data_gap);
+
+select count(*) from sym_data 
+  where data_id >= (select max(start_id) from sym_data_gap);
+----
+
+
 ==== Outgoing Batch Errors
         
 By design, whenever SymmetricDS encounters an issue with synchronization, the batch containing the error is marked as being in
