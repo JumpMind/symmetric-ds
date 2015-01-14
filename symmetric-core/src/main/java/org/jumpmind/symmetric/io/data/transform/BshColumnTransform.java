@@ -119,7 +119,23 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
                 context.put(methodName, Boolean.TRUE);
             }
 
-            Object result = interpreter.eval(methodName);
+            Object result = interpreter.eval(methodName);            
+            
+            if (csvData != null && csvData.getTriggerHistory() != null) {
+                interpreter.unset("sourceSchemaName");
+                interpreter.unset("sourceCatalogName");
+                interpreter.unset("sourceTableName");
+            }
+            
+            for (String columnName : sourceValues.keySet()) {
+                interpreter.unset(columnName.toUpperCase());
+                interpreter.unset(columnName);
+            }
+
+            for (String key : keys) {
+                interpreter.unset(key);
+            }
+            
             if (result != null) {
                 return result.toString();
             } else {
