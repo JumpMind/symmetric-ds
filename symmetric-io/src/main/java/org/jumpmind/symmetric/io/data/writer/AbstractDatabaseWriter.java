@@ -77,7 +77,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
 
     protected IDatabaseWriterConflictResolver conflictResolver;
 
-    protected Set<String> missingTables = new HashSet<String>();    
+    protected Set<String> missingTables = new HashSet<String>();
 
     public AbstractDatabaseWriter() {
         this(null, null);
@@ -120,6 +120,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
     }
 
     public void write(CsvData data) {
+        context.remove(AbstractDatabaseWriter.CONFLICT_ERROR);
         write(data, false);
     }
 
@@ -178,7 +179,8 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                                 conflictResolver.needsResolved(this, data, loadStatus);
                             } else {
                                 throw new ConflictException(data, targetTable, false,
-                                        writerSettings.pickConflict(targetTable, batch));
+                                        writerSettings.pickConflict(targetTable, batch),
+                                        (Exception) context.get(AbstractDatabaseWriter.CONFLICT_ERROR));
                             }
                         }
 

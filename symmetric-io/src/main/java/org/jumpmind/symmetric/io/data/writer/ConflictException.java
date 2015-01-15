@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io.data.writer;
 
 import java.util.Map;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.CsvData;
 
@@ -37,24 +38,28 @@ public class ConflictException extends RuntimeException {
     
     protected Conflict conflict;
 
-    public ConflictException(CsvData data, Table table, boolean fallbackOperationFailed, Conflict conflict, Exception cause) {
-        super(message(data, table, fallbackOperationFailed), cause);
+    public ConflictException(CsvData data, Table table, boolean fallbackOperationFailed, Conflict conflict, Exception originalCause) {
+        super(message(data, table, fallbackOperationFailed, originalCause));
         this.data = data;
         this.table = table;
         this.fallbackOperationFailed = fallbackOperationFailed;
         this.conflict = conflict;
     }
     
-    public ConflictException(CsvData data, Table table, boolean fallbackOperationFailed, Conflict conflict) {
-        this(data, table, fallbackOperationFailed, conflict, null);
-    }
-
-    protected static String message(CsvData data, Table table, boolean fallbackOperationFailed) {
+    protected static String message(CsvData data, Table table, boolean fallbackOperationFailed, Exception originalCause) {
         Map<String, String> pks = data.toKeyColumnValuePairs(table);
-        return String.format(
+        String msg = String.format(
                 "Detected conflict while executing %s on %s.  The primary key data was: %s. %s",
                 data.getDataEventType().toString(), table.getFullyQualifiedTableName(), pks,
-                fallbackOperationFailed ? "Failed to fallback." : "");
+                fallbackOperationFailed ? "Failed to fallback.  " : "  ");
+        if (originalCause != null) {
+            Throwable originalRoot = ExceptionUtils.getRootCause(originalCause);
+            if (originalRoot == null) {
+                originalRoot = originalCause;
+            }
+            msg = msg + String.format("The original error message was: %s", originalRoot.getMessage());
+        }
+        return msg;
     }
 
     public CsvData getData() {
