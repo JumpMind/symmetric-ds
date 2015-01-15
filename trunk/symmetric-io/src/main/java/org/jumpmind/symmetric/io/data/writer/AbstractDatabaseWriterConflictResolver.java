@@ -156,7 +156,8 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                                 }
                             }
                         } else {
-                            throw new ConflictException(data, writer.getTargetTable(), false, conflict);
+                            throw new ConflictException(data, writer.getTargetTable(), false, conflict,
+                                    (Exception) writer.getContext().get(AbstractDatabaseWriter.CONFLICT_ERROR));
                         }
                         break;
 
@@ -234,7 +235,8 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
             beforeResolutionAttempt(conflict);
             LoadStatus loadStatus = writer.update(data, conflict.isResolveChangesOnly(), false);
             if (loadStatus != LoadStatus.SUCCESS) {
-                throw new ConflictException(data, writer.getTargetTable(), true, conflict);
+                throw new ConflictException(data, writer.getTargetTable(), true, conflict,
+                        (Exception) writer.getContext().get(AbstractDatabaseWriter.CONFLICT_ERROR));
             } else {
                 writer.getStatistics().get(writer.getBatch())
                         .increment(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
@@ -249,7 +251,8 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
             beforeResolutionAttempt(conflict);
             LoadStatus loadStatus = writer.insert(csvData);
             if (loadStatus != LoadStatus.SUCCESS) {
-                throw new ConflictException(csvData, writer.getTargetTable(), true, conflict);
+                throw new ConflictException(csvData, writer.getTargetTable(), true, conflict,
+                        (Exception) writer.getContext().get(AbstractDatabaseWriter.CONFLICT_ERROR));
             } else {
                 writer.getStatistics().get(writer.getBatch())
                         .increment(DataWriterStatisticConstants.FALLBACKINSERTCOUNT);
