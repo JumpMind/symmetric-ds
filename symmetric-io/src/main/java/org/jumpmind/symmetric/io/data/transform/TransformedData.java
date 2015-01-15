@@ -108,7 +108,7 @@ public class TransformedData implements Cloneable {
                 keyValues = new LinkedHashMap<String, String>();
                 targetNewKeysByIncludeOnType.put(column.getIncludeOn(), keyValues);
             }
-            keyValues.put(column.getTargetColumnName(), columnValue);
+            keyValues.put(column.getTargetColumnName(), oldValue != null ? oldValue : columnValue);
         }
         
         if (targetNewValueByIncludeOnType == null) {
