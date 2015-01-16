@@ -1,7 +1,10 @@
 
 === Informix
 
-The Informix Dialect was tested against Informix Dynamic Server 11.50, but older versions may also work. You need to download the Informix JDBC Driver (from the IBM Download Site) and put the ifxjdbc.jar and ifxlang.jar files in the SymmetricDS lib folder.
+The Informix Dialect was tested against Informix Dynamic Server 11.50, but older versions may also work. You need to download the Informix 
+JDBC Driver (from the IBM Download Site) and put the ifxjdbc.jar and ifxlang.jar files in the SymmetricDS lib folder.
+
+SymmetricDS requires the db space to have at least a 4k page size.
 
 Make sure your database has logging enabled, which enables transaction support. Enable logging when creating the database, like this:
 
