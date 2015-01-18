@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io.data.writer;
 
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -44,8 +45,14 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                     transformedData.getSourceKeyValues(), transformedData.getOldSourceValues(),
                     transformedData.getSourceValues());
             for (TransformedData newlyTransformedData : newlyTransformedDatas) {
-                if (newlyTransformedData.hasSameKeyValues(transformedData.getKeyValues())
+                /* If there is only one transform, then process it.  Otherwise, we 
+                 * need to attempt to match the key values to choose the correct transform.
+                 */
+                boolean foundTransform = false;
+                if (newlyTransformedDatas.size() == 1
+                        || newlyTransformedData.hasSameKeyValues(transformedData.getKeyValues())
                         || newlyTransformedData.isGeneratedIdentityNeeded()) {
+                    foundTransform = true;
                     Table table = newlyTransformedData.buildTargetTable();
                     CsvData newData = newlyTransformedData.buildTargetCsvData();
                     if (newlyTransformedData.isGeneratedIdentityNeeded()) {
@@ -61,6 +68,12 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                     writer.start(table);
                     writer.write(newData, true);
                     writer.end(table);
+                }
+                
+                if (!foundTransform) {
+                    log.warn("The attempt to retransform resulted in more than one transform.  We tried to choose one "
+                            + "by matching on the ordered key values, but could not find a match.  The original key values "
+                            + "that we tried to match on were: {}" + ArrayUtils.toString(transformedData.getKeyValues()) );
                 }
             }
         } else {
