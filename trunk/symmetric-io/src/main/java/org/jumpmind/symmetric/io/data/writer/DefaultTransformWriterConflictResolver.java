@@ -44,38 +44,47 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                     DataEventType.INSERT, writer.getContext(), transformedData.getTransformation(),
                     transformedData.getSourceKeyValues(), transformedData.getOldSourceValues(),
                     transformedData.getSourceValues());
-            for (TransformedData newlyTransformedData : newlyTransformedDatas) {
-                /* If there is only one transform, then process it.  Otherwise, we 
-                 * need to attempt to match the key values to choose the correct transform.
-                 */
-                boolean foundTransform = false;
-                if (newlyTransformedDatas.size() == 1
-                        || newlyTransformedData.hasSameKeyValues(transformedData.getKeyValues())
-                        || newlyTransformedData.isGeneratedIdentityNeeded()) {
-                    foundTransform = true;
-                    Table table = newlyTransformedData.buildTargetTable();
-                    CsvData newData = newlyTransformedData.buildTargetCsvData();
-                    if (newlyTransformedData.isGeneratedIdentityNeeded()) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Enabling generation of identity for {}",
-                                    newlyTransformedData.getTableName());
+            if (newlyTransformedDatas.size() > 0) {
+                boolean matchedTransform = false;
+                for (TransformedData newlyTransformedData : newlyTransformedDatas) {
+                    /*
+                     * If there is only one transform, then process it.
+                     * Otherwise, we need to attempt to match the key values to
+                     * choose the correct transform.
+                     */
+                    if (newlyTransformedDatas.size() == 1
+                            || newlyTransformedData
+                                    .hasSameKeyValues(transformedData.getKeyValues())
+                            || newlyTransformedData.isGeneratedIdentityNeeded()) {
+                        matchedTransform = true;
+                        Table table = newlyTransformedData.buildTargetTable();
+                        CsvData newData = newlyTransformedData.buildTargetCsvData();
+                        if (newlyTransformedData.isGeneratedIdentityNeeded()) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Enabling generation of identity for {}",
+                                        newlyTransformedData.getTableName());
+                            }
+                            writer.allowInsertIntoAutoIncrementColumns(false, table);
+                        } else if (table.hasAutoIncrementColumn()) {
+                            writer.allowInsertIntoAutoIncrementColumns(true, table);
                         }
-                        writer.allowInsertIntoAutoIncrementColumns(false, table);
-                    } else if (table.hasAutoIncrementColumn()) {
-                        writer.allowInsertIntoAutoIncrementColumns(true, table);
+
+                        writer.start(table);
+                        writer.write(newData, true);
+                        writer.end(table);
                     }
 
-                    writer.start(table);
-                    writer.write(newData, true);
-                    writer.end(table);
                 }
-                
-                if (!foundTransform) {
+
+                if (!matchedTransform) {
                     log.warn("The attempt to retransform resulted in more than one transform.  We tried to choose one "
-                            + "by matching on the ordered key values, but could not find a match.  The original key values "
-                            + "that we tried to match on were: {}" + ArrayUtils.toString(transformedData.getKeyValues()) );
+                            + "by matching on the ordered key values, but could not find a match.  Please check that the "
+                            + "transformation is configured so that it will return keys in the same order regardless of DML type.  "
+                            + "The original key values that we tried to match on were: {}"
+                            + ArrayUtils.toString(transformedData.getKeyValues()));
                 }
             }
+
         } else {
             super.performFallbackToInsert(writer, data, conflict, retransform);
         }
