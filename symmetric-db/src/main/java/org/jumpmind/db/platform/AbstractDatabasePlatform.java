@@ -245,7 +245,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             List<String> catalogNames = reader.getCatalogNames();
             if (catalogNames != null) {
             for (String name : catalogNames) {
-                if (name.equalsIgnoreCase(catalogName))  {
+                if (name != null && name.equalsIgnoreCase(catalogName))  {
                     catalogName = name;
                     break;
                 }
@@ -255,7 +255,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             List<String> schemaNames = reader.getSchemaNames(catalogName);
             if (schemaNames != null) {
                 for (String name : schemaNames) {
-                    if (name.equalsIgnoreCase(schemaName))  {
+                    if (name != null && name.equalsIgnoreCase(schemaName))  {
                         schemaName = name;
                         break;
                     }
@@ -265,7 +265,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             List<String> tableNames = reader.getTableNames(catalogName, schemaName, null);
             if (tableNames != null) {
                 for (String name : tableNames) {
-                    if (name.equalsIgnoreCase(tableName))  {
+                    if (name != null && name.equalsIgnoreCase(tableName))  {
                         tableName = name;
                         break;
                     }
