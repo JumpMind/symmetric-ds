@@ -239,51 +239,44 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         schemaName = schemaName == null && useDefaultSchema ? getDefaultSchema() : schemaName;        
         Table table = ddlReader.readTable(catalogName, schemaName, tableName);
         if (table == null && metadataIgnoreCase) {
-            if (isStoresUpperCaseIdentifiers()) {
-                catalogName = StringUtils.upperCase(catalogName);
-                schemaName = StringUtils.upperCase(schemaName);
-                tableName = StringUtils.upperCase(tableName);
-                // if we didn't find the table, the database stores upper case,
-                // and the catalog, schema or table were not in upper case
-                // already then it is probably stored in uppercase
-                if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
-                        catalogName, schemaName, tableName))) {
-                    table = ddlReader.readTable(catalogName, schemaName, tableName);
-                }
-            } else if (isStoresLowerCaseIdentifiers()) {
-                catalogName = StringUtils.lowerCase(catalogName);
-                schemaName = StringUtils.lowerCase(schemaName);
-                tableName = StringUtils.lowerCase(tableName);
-                // if we didn't find the table, the database stores lower case,
-                // and the catalog, schema or table were not in lower case
-                // already then it is probably stored in uppercase
-                if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
-                        catalogName, schemaName, tableName))) {
-                    table = ddlReader.readTable(catalogName, schemaName, tableName);
-                }
-            } else {
-                tableName = StringUtils.lowerCase(tableName);
-                // Last ditch lower case effort. This case applied to
-                // symmetricds tables stored in a mixed case schema or catalog
-                // whose default case is different on the source system than on
-                // the target system.
-                if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
-                        catalogName, schemaName, tableName))) {
-                    table = ddlReader.readTable(catalogName, schemaName, tableName);
+            
+            IDdlReader reader = getDdlReader();
+            
+            List<String> catalogNames = reader.getCatalogNames();
+            if (catalogNames != null) {
+            for (String name : catalogNames) {
+                if (name.equalsIgnoreCase(catalogName))  {
+                    catalogName = name;
+                    break;
                 }
             }
-
-            if (table == null) {
-                // Last ditch upper case effort. This case applied to
-                // symmetricds tables stored in a mixed case schema or catalog
-                // whose default case is different on the source system than on
-                // the target system.
-                tableName = StringUtils.upperCase(tableName);
-                if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
-                        catalogName, schemaName, tableName))) {
-                    table = ddlReader.readTable(catalogName, schemaName, tableName);
+            }
+            
+            List<String> schemaNames = reader.getSchemaNames(catalogName);
+            if (schemaNames != null) {
+                for (String name : schemaNames) {
+                    if (name.equalsIgnoreCase(schemaName))  {
+                        schemaName = name;
+                        break;
+                    }
                 }
             }
+            
+            List<String> tableNames = reader.getTableNames(catalogName, schemaName, null);
+            if (tableNames != null) {
+                for (String name : tableNames) {
+                    if (name.equalsIgnoreCase(tableName))  {
+                        tableName = name;
+                        break;
+                    }
+                } 
+            }
+            
+            if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
+                    catalogName, schemaName, tableName))) {
+                table = ddlReader.readTable(catalogName, schemaName, tableName);
+            }
+            
         }
 
         if (table != null && log.isDebugEnabled()) {
