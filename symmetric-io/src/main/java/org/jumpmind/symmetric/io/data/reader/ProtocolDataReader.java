@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
@@ -168,11 +169,17 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.UPDATE);
-                    // TODO check for invalid range and print results
+                    int columnCount = context.getLastParsedTable().getColumnCount();
+                    if (tokens.length <= columnCount) {
+                        String msg = String.format("Invalid state while parsing row data.  "
+                                + "The number of columns reported for table '%s' don't match up with the token data: {}",
+                                context.getLastParsedTable().getFullyQualifiedTableName(), ArrayUtils.toString(tokens));
+                        throw new IllegalStateException(msg);
+                    }
                     data.putParsedData(CsvData.ROW_DATA,
-                            CollectionUtils.copyOfRange(tokens, 1, context.getLastParsedTable().getColumnCount() + 1));
+                            CollectionUtils.copyOfRange(tokens, 1, columnCount + 1));
                     data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens,
-                            context.getLastParsedTable().getColumnCount() + 1, tokens.length));
+                            columnCount + 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
                     tokens = null;
                     return data;
