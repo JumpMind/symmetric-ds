@@ -313,7 +313,6 @@ task publishSymmetric {
 task releaseSymmetric {
     dependsOn publishSymmetric
     dependsOn publishDoc
-    dependsOn deploy
 }
 
 task wrapper(type: Wrapper) { gradleVersion = '2.2.1' }
