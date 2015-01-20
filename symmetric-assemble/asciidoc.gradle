@@ -1,10 +1,17 @@
 apply plugin: 'org.asciidoctor.gradle.asciidoctor'
+apply plugin: 'docbook-reference'
 
 configurations{ generateAppendixesDependencies }
 
 dependencies {
     generateAppendixesDependencies project(":symmetric-util")
     generateAppendixesDependencies project(":symmetric-db")
+}
+
+reference {
+    sourceDir = file("$buildDir/src/asciidoc/docbook")
+    // Configure which files have ${} expanded
+    expandPlaceholders = '**/user-guide.xml'
 }
 
 task generateAppendixes {
@@ -94,6 +101,23 @@ task generateDocs(type: Copy) {
         delete destinationDir
     }
 
+}
+
+
+task publishDoc {
+    dependsOn generateDocs
+    doLast {
+        ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
+        classpath: configurations.sshAntTask.asPath)
+
+        ant.scp(
+            todir: "$publishUser:$publishPassword@$publishServer:~/www/doc/$majorMinorVersion",
+            trust: 'true',
+            verbose: 'true') {
+            fileset(dir: "$buildDir/doc") { include(name: '**/**')
+            }
+        }
+    }
 }
 
 asciidoctor { (1)

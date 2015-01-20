@@ -7,7 +7,8 @@ buildscript {
     dependencies {
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.2'
         classpath 'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.6'
-        classpath "org.springframework.build.gradle:propdeps-plugin:0.0.7"
+        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
+        classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
     }
 }
 
@@ -281,5 +282,32 @@ task buildSymmetric {
     dependsOn ':symmetric-android:androidDistZip', ':symmetric-server:serverDistZip'
 }
 
+task publishSymmetric {
+    dependsOn buildSymmetric
+    doLast {
+        ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
+        classpath: configurations.sshAntTask.asPath)
+
+        println "Publishing android distribution to source forge"
+        ant.scp(
+            todir: "$sourceforgeUser:$sourceforgePassword@frs.sourceforge.net:/home/frs/project/symmetricds/symmetricds/symmetricds-$majorMinorVersion",
+            trust: 'true',
+            verbose: 'true') {
+            fileset(dir: "../symmetric-android/target/distributions/") {
+                include(name: 'symmetric-android-' + version + '.zip')
+            }
+        }
+
+        println "Publishing server distribution to source forge"
+        ant.scp(
+            todir: "$sourceforgeUser:$sourceforgePassword@frs.sourceforge.net:/home/frs/project/symmetricds/symmetricds/symmetricds-$majorMinorVersion",
+            trust: 'true',
+            verbose: 'true') {
+            fileset(dir: "../symmetric-server/target/distributions/") { 
+                include(name: 'symmetric-server-' + version + '.zip')
+            }
+        }
+    }
+}
 
 task wrapper(type: Wrapper) { gradleVersion = '2.2.1' }

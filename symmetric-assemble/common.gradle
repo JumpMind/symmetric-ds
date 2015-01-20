@@ -6,6 +6,14 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 apply from: symAssembleDir + '/asciidoc.gradle'
 
+configurations {
+    sshAntTask
+}
+
+dependencies {
+    sshAntTask 'org.apache.ant:ant-jsch:1.7.1', 'jsch:jsch:0.1.29'
+}
+
 allprojects {
 
     apply plugin: 'eclipse-wtp'
@@ -18,6 +26,7 @@ allprojects {
         mavenCentral()
         maven { url "http://repository.codehaus.org" }
         maven { url "http://maven.jumpmind.com/repo" }
+        maven { url "http://maven.vaadin.com/vaadin-addons" }
     }
 
     eclipse {
@@ -25,6 +34,10 @@ allprojects {
             downloadSources = true
             downloadJavadoc = false
         }
+    }
+    
+    ext {
+        majorMinorVersion = version.substring(0, version.indexOf(".", version.indexOf(".")+ 1))
     }
     
 }
@@ -131,7 +144,7 @@ subprojects { subproject ->
         animalSnifferVersion = '1.10'
         jnaVersion = "4.1.0"
         jettyVersion = "7.6.3.v20120416"
-
+        
         env = System.getenv()
     }
 
