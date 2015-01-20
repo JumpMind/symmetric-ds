@@ -89,6 +89,7 @@ public class DataGapDetector {
                     .getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
             final long maxDataToSelect = parameterService
                     .getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
+            long databaseTime = symmetricDialect.getDatabaseTime();
             for (final DataGap dataGap : gaps) {
                 final boolean lastGap = dataGap.equals(gaps.get(gaps.size() - 1));
                 String sql = routerService.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
@@ -153,7 +154,7 @@ public class DataGapDetector {
                                     dataService.deleteDataGap(dataGap);
                                 }
                             }
-                        } else if (isDataGapExpired(dataGap.getEndId() + 1)) {
+                        } else if (isDataGapExpired(dataGap.getEndId() + 1, databaseTime)) {
                             if (dataGap.getStartId() == dataGap.getEndId()) {
                                 log.info(
                                         "Found a gap in data_id at {}.  Skipping it because the gap expired",
@@ -210,14 +211,14 @@ public class DataGapDetector {
         return finalList;
     }
 
-    protected boolean isDataGapExpired(long dataId) {
+    protected boolean isDataGapExpired(long dataId, long databaseTime) {
         long gapTimoutInMs = parameterService
                 .getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
         Date createTime = dataService.findCreateTimeOfData(dataId);
         if (createTime == null) {
             createTime = dataService.findNextCreateTimeOfDataStartingAt(dataId);
-        }
-        if (createTime != null && System.currentTimeMillis() - createTime.getTime() > gapTimoutInMs) {
+        }        
+        if (createTime != null && databaseTime - createTime.getTime() > gapTimoutInMs) {
             return true;
         } else {
             return false;
