@@ -1,0 +1,151 @@
+Multiple nodes can be hosted in a single SymmetricDS instance.  SymmetricDS will start a node for each properties file it finds in the engines directory.  
+Multiple nodes can be hosted in a single SymmetricDS instance.      
+SymmetricDS will start a node for each properties file it finds in the engines directory.  
+
+ifndef::pro[]
+Additional nodes can be added to the same SymmetricDS instance that the master node is running in or they can be added to a different
+SymmetricDS instance.  Either way, you create additional nodes by creating an <<Node Properties File>> with the `registration.url` set to 
+the `sync.url` of the master node.  When the SymmetricDS instance is restarted the new node will attempt to register with the master node.
+
+For the new node to fully become a part of the synchronization network <<Registration>> must be opened.
+endif::pro[]
+
+ifdef::pro[]
+
+Add nodes to your synchronization scenario by using the Node Setup Wizard.  This wizard is automatically shown when less the 2 nodes are configured.  
+It can also be accessed from the Manage Nodes screen by clicking the *Add* button. 
+
+image::wizard-connect/wizard-connect-menu.png[]
+
+===== Choosing node location
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-second.png[]
+
+SymmetricDS uses HTTP protocol to send data between nodes and uses JDBC to connect to databases. 
+HTTP is designed to for sending across networks and will perform better than JDBC connections. As a result the 
+maximum performance will be achieved the closer each SymmetricDS node is to its data source. This will provide 
+the best JDBC performance to read and write data from the database and utilizes the HTTP protocol to maximize 
+the transfer of data across a network.
+
+HTTP can also be converted to use HTTPS so that the information is encrypted. JDBC drivers usually do not 
+supply the ability to encrypt the data. This is a big plus for setting up your nodes remotely and taking full 
+advantage of HTTPS to be sure your data is safe
+
+--
+
+
+===== Remote Nodes
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-remote.png[]
+
+Remote nodes require that another installation of SymmetricDS be installed on a remote machine.
+The registration url shown on this screen will be used by the remote node during its installation 
+process in order to properly connect to the SymmetricDS network.
+
+Auto registration by default is turned off.   This ensures a person manually allows remote nodes to 
+connect.  By clicking this button registration will occur automatically and not require manual
+intervention.
+--
+
+===== Local Nodes
+
+====== Database Setup
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-database-2.png[]
+
+Provide database credentials to connect the node to a database.
+
+After selecting a database type the jdbc url will be populated for you based on the driver.  Be sure to replace
+host name, port, and database name if necessary (varies by type).
+--
+
+====== Registration URL
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-reg-url.png[]
+
+Provide the registration url in order to register the node on the SymmetricDS network. 
+
+This url is the sync url of the Master Node.    
+--
+
+====== Node Group
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-group.png[]
+
+The list of groups will be provided from the Master Node.  
+
+A new group can be typed in though if the desired group is not present.  Note, that the 
+new group will need to be linked and associated to triggers and routers before synchronization will 
+occur.  
+--
+
+====== External ID
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-external.png[]
+
+This is a unique identifier for the node.   
+
+For example, in retail examples this might be a register number when the node is the store.   
+
+--
+
+===== Communication Settings
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-host-2.png[]
+
+If your network will be accessing the web console through a proxy or a different host 
+name that the one shown in the first bullet you can override the hostname to be used.
+
+You can also select HTTPS or HTTP to be used for transferring data.
+
+--
+
+
+===== Load Existing Data
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-initial.png[]
+
+Often when new nodes are connected for synchronization they need to be 
+initially loaded with existing data before synchronization was in place.
+
+You can also indicate if you wish tables to be created in the new node 
+as part of the initial load process if they do not already exist.
+
+See <<Initial Loads>> for more details.
+--
+
+===== Finish
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-install.png[]
+
+The node is now ready to be installed.
+--
+
+endif::pro[]

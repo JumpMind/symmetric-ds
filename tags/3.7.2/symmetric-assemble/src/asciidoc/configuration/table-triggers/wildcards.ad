@@ -1,0 +1,19 @@
+
+==== Trigger Wildcards
+
+The source table name may contain the asterisk ('*') wildcard character so that one trigger entry can define synchronization 
+for many tables.   
+
+.Wildcard Rules
+* If multiple wildcard tokens are are supplied they should be deliminated with a comma.
+* Tokens are always evaluated from left to right. 
+* When a table match is made, the table is either added to or removed from the list of 
+tables. If another trigger already exists for a table, then that table is not included in the wildcard match (the explicitly defined 
+trigger entry take precendence).
+* System tables and any tables that start with the SymmetricDS table prefix will be excluded.
+* A wildcard token can also start with an exclamation ('!') to indicate an exclusive match.
+
+ifdef::pro[]
+.Sample wildcard trigger for all tables that start with "sale" or " item"
+image::triggers/trigger-wildcard.png[500,400]
+endif::pro[]

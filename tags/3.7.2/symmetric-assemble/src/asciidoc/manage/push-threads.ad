@@ -1,0 +1,15 @@
+=== Push Threads
+
+Both the <<Push Job>> and the <<File Sync Push Job>> can be configured to push multiple nodes in parallel.  In order to take advantage of this the
+`push.thread.per.server.count` or `file.push.thread.per.server.count` should be adjusted (from the default value of 1) to the number to the
+number of concurrent pushes you want to occur per period on each SymmetricDS instance. 
+
+ifdef::pro[]
+This screen shows pull activity for both table and file synchronization.
+
+image::manage/push-threads.png[]
+endif::pro[]
+
+Push activity is recorded in the <<NODE_COMMUNICATION>>
+table. This table is also used as a semaphore to lock push activity across
+multiple servers in a cluster.

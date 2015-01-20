@@ -1,0 +1,18 @@
+
+=== SQLite
+
+For SQLite, the implementation of sync-on-incoming back and the population of a source node if in the sym data rows relies on use of a
+context table (by default, called sym_context) to hold a boolean and node id in place of the more common methods of using temp tables 
+(which are inaccessible from triggers) or functions (which are not available).
+The context table assumes there's a single thread updating the database at any one time.
+ If that is not the case in the future, the current implementation of sync on incoming batch will be unreliable.
+
+Nodes using SQLite should have the jobs.synchronized.enable parameter set to true. 
+This parameter causes the jobs and push/pull threads to all run in a synchronized fashion, which is needed in the case of SQLite.
+
+The SQLite dialect has the following limitations:
+
+* There is no transaction ID recorded on data captured. Either specify a tx_id_expression on the TRIGGER table, 
+  or set a max_batch_size on the CHANNEL table that will accommodate your transactional data.
+
+* Due to the single threaded access to SQLite, the following parameter should be set to true: jobs.synchronized.enable.
