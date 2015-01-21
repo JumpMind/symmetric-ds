@@ -21,15 +21,19 @@
 package org.jumpmind.db.platform.sqlite;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.NonUniqueIndex;
+import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
@@ -37,6 +41,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlConstants;
+import org.jumpmind.db.sql.mapper.RowMapper;
 
 public class SqliteDdlReader implements IDdlReader {
 
@@ -116,6 +121,22 @@ public class SqliteDdlReader implements IDdlReader {
                         .contains("autoindex"))) {
                     table.addIndex(index);
                 }
+            }
+            
+            
+            Map<Integer, ForeignKey> keys = new HashMap<Integer, ForeignKey>();
+            List<Row> rows = platform.getSqlTemplate().query(
+                    "pragma foreign_key_list(" + tableName + ")", new RowMapper());
+            for (Row row : rows) {
+                Integer id = row.getInt("id");
+                ForeignKey fk = keys.get(id);
+                if (fk == null) {
+                    fk = new ForeignKey();
+                    fk.setForeignTable(new Table(row.getString("table")));
+                    keys.put(id, fk);
+                    table.addForeignKey(fk);
+                }
+                fk.addReference(new Reference(new Column(row.getString("from")), new Column(row.getString("to"))));
             }
         }
 
@@ -197,7 +218,7 @@ public class SqliteDdlReader implements IDdlReader {
                 return new NonUniqueIndex(name);
             }
         }
-    }
+    }  
 
     static class IndexColumnMapper extends AbstractSqlRowMapper<IndexColumn> {
         public IndexColumn mapRow(Row row) {

@@ -152,7 +152,7 @@ public class ModelComparator {
     
                 if (targetFk == null) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Foreign key " + sourceFk + " needs to be removed from table "
+                        log.debug(sourceFk + " needs to be removed from table "
                                 + sourceTable.getName());
                     }
                     changes.add(new RemoveForeignKeyChange(sourceTable, sourceFk));
@@ -165,7 +165,7 @@ public class ModelComparator {
     
                 if (sourceFk == null) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Foreign key " + targetFk + " needs to be created for table "
+                        log.debug(targetFk + " needs to be created for table "
                                 + sourceTable.getName());
                     }
                     /*
