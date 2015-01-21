@@ -19,6 +19,8 @@ package org.jumpmind.db.model;
  * under the License.
  */
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -290,7 +292,7 @@ public class ForeignKey implements Cloneable, Serializable {
         result.foreignTableName = foreignTableName;
         result.references = new ListOrderedSet();
 
-        for (Iterator it = references.iterator(); it.hasNext();) {
+        for (Iterator<?> it = references.iterator(); it.hasNext();) {
             result.references.add(((Reference) it.next()).clone());
         }
 
@@ -310,8 +312,7 @@ public class ForeignKey implements Cloneable, Serializable {
             // (which is irrelevant for fks) because they are contained in a set
             EqualsBuilder builder = new EqualsBuilder();
 
-            if ((name != null) && (name.length() > 0) && (otherFk.name != null)
-                    && (otherFk.name.length() > 0)) {
+            if (isCheckName(otherFk)) {
                 builder.append(name, otherFk.name);
             }
             builder.append(foreignTableName, otherFk.foreignTableName);
@@ -337,20 +338,20 @@ public class ForeignKey implements Cloneable, Serializable {
      * @return <code>true</code> if this foreign key is equal (ignoring case) to
      *         the given one
      */
+    @SuppressWarnings("unchecked")
     public boolean equalsIgnoreCase(ForeignKey otherFk) {
-        boolean checkName = (name != null) && (name.length() > 0) && (otherFk.name != null)
-                && (otherFk.name.length() > 0);
+        boolean checkName = isCheckName(otherFk);
 
         if ((!checkName || name.equalsIgnoreCase(otherFk.name))
                 && foreignTableName.equalsIgnoreCase(otherFk.foreignTableName)) {
             HashSet<Reference> otherRefs = new HashSet<Reference>();
 
             otherRefs.addAll(otherFk.references);
-            for (Iterator it = references.iterator(); it.hasNext();) {
+            for (Iterator<?> it = references.iterator(); it.hasNext();) {
                 Reference curLocalRef = (Reference) it.next();
                 boolean found = false;
 
-                for (Iterator otherIt = otherRefs.iterator(); otherIt.hasNext();) {
+                for (Iterator<?> otherIt = otherRefs.iterator(); otherIt.hasNext();) {
                     Reference curOtherRef = (Reference) otherIt.next();
 
                     if (curLocalRef.equalsIgnoreCase(curOtherRef)) {
@@ -368,13 +369,22 @@ public class ForeignKey implements Cloneable, Serializable {
             return false;
         }
     }
+    
+    private boolean isCheckName(ForeignKey otherFk) {
+        return name != null && name.length() > 0 && otherFk.name != null
+                && otherFk.name.length() > 0;
+    }
 
     /**
      * {@inheritDoc}
      */
     public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(name).append(foreignTableName).append(references)
-                .toHashCode();
+        HashCodeBuilder builder = new HashCodeBuilder(17, 37).append(foreignTableName).append(
+                references);
+        if (isNotBlank(name)) {
+            builder.append(name);
+        }
+        return builder.toHashCode();
     }
 
     /**

@@ -24,6 +24,8 @@ import java.sql.Connection;
 import java.sql.Types;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
@@ -83,7 +85,19 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setBlankCharColumnSpacePadded(false);
         databaseInfo.setNonBlankCharColumnSpacePadded(false);
-        databaseInfo.setForeignKeysSupported(false);
+        databaseInfo.setForeignKeysSupported(true);
+        databaseInfo.setForeignKeysEmbedded(true);
+        databaseInfo.setEmbeddedForeignKeysNamed(false);
+    }
+    
+    @Override
+    protected void writeExternalForeignKeyCreateStmt(Database database, Table table,
+            ForeignKey key, StringBuilder ddl) {
+    }
+    
+    @Override
+    protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
+            StringBuilder ddl) {
     }
     
     @Override
