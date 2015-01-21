@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
@@ -62,7 +63,7 @@ public class Db2As400DdlReader extends Db2DdlReader {
         if (table != null) {
             for (int columnIdx = 0; columnIdx < table.getColumnCount(); columnIdx++) {
                 Column column = table.getColumn(columnIdx);
-                if (column.getDefaultValue().equals("")) {
+                if (StringUtils.isBlank(column.getDefaultValue())) {
                 	column.setDefaultValue(null);
                 }
             }
