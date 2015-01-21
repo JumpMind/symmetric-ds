@@ -18,15 +18,12 @@ package org.jumpmind.db.platform.db2;
  * under the License.
  */
 
-import java.sql.Types;
-
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class Db2As400DdlBuilder extends Db2DdlBuilder {
 
 	public Db2As400DdlBuilder() {
 		this.databaseName = DatabaseNamesConstants.DB2AS400;
-		databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR", Types.VARCHAR);
 	}
 
 }
