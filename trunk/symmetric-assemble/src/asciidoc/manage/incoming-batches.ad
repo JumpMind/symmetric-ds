@@ -10,6 +10,33 @@ Incoming batches are delivered to the target node when the source node <<_push_j
 
 Incoming batches are written to the <<Staging Area>> first and then loaded.  The use of the staging area can be turned off by setting the `stream.to.file.enabled` parameter.
 
+==== Incoming Sync Status
+
+The status of incoming synchronization can be queried at the target database.
+
+The following query will show incoming synchronization failures by node:
+
+[source, sql]
+----
+select count(*), node_id from sym_incoming_batch 
+  where error_flag=1 group by node_id;
+----
+
+Client nodes update their `heartbeat_time` in the <<NODE_HOST>> table.  If a client node is online and actively syncing you can 
+monitor the <<NODE_HOST>> table at the server to find client nodes that are offline.  Note that at times there could be more 
+than one <<NODE_HOST>> row per `node_id`.  This could be the case if the nodes are clustered or the `host_name` changes.  
+
+The following query will give you nodes that have not synchronized in the last 24 hours.  Note that the SQL might vary slightly for
+some databases as some of the supported databases do not support `current_timestamp`.
+
+[source, sql]
+----
+select node_id, host_name from sym_node_host 
+  where heartbeat_time < current_timestamp-1;
+----
+
+
+
 ==== Incoming Batch Errors
 
 When a batch fails to load it is marked with an Error status.
