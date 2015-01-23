@@ -46,7 +46,15 @@ time specified. The configured times are always for the target node's local time
 
 ==== Outgoing Sync Status
 
-The status of synchronization can be queried at the source database.
+The status of outgoing synchronization can be queried at the source database.
+
+The following query will show outgoing synchronization failures by node:
+
+[source, sql]
+----
+select count(*), node_id from sym_outgoing_batch 
+  where error_flag=1 group by node_id;
+----
 
 The following query will show the number of data rows that have *not* been delivered to target nodes:
 
