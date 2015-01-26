@@ -40,7 +40,7 @@ public class SqlScriptTest {
         SqlScript script = new SqlScript(getClass().getResource("sqlscript-simple.sql"), platform.getSqlTemplate());
         script.execute();
         JdbcTemplate template = new JdbcTemplate(ds);
-        assertEquals(2, template.queryForInt("select count(*) from test"));
+        assertEquals(2, (int)template.queryForObject("select count(*) from test", Integer.class));
         assertEquals(3, template.queryForObject("select test from test where test_id=2", String.class).split("\r\n|\r|\n").length);
         ds.destroy();
     }
