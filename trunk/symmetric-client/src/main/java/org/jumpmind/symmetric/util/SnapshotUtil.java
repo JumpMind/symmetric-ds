@@ -61,7 +61,6 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.JarBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,34 +80,34 @@ public class SnapshotUtil {
 
         String dirName = engine.getEngineName().replaceAll(" ", "-") + "-" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
-        File snapshotsDir = getSnapshotDirectory(engine);
-
-        File logfile = new File(AppUtils.getCanonicalSymHome(engine.getParameterService().getString(ParameterConstants.SERVER_LOG_FILE)));
+        //File snapshotsDir = getSnapshotDirectory(engine);
 
         File tmpDir = new File(engine.getParameterService().getTempDirectory(), dirName);
         tmpDir.mkdirs();
 
-        if (logfile.exists() && logfile.isFile()) {
-            try {
-                FileUtils.copyFileToDirectory(logfile, tmpDir);
-            } catch (IOException e) {
-                log.warn("Failed to copy the log file to the snapshot directory", e);
-            }
-        } else {
-            log.warn("Could not find {} to copy to the snapshot directory",
-                    logfile.getAbsolutePath());
+        File logDir = new File("logs");
+        
+        if (!logDir.exists()) {
+            logDir = new File("../logs");
         }
-
-        File serviceWrapperLogFile = new File(AppUtils.getSymHome() + "/logs/wrapper.log");
-        if (serviceWrapperLogFile.exists() && serviceWrapperLogFile.isFile()) {
-            try {
-                FileUtils.copyFileToDirectory(serviceWrapperLogFile, tmpDir);
-            } catch (IOException e) {
-                log.warn("Failed to copy the wrapper.log file to the snapshot directory", e);
+        
+        if (!logDir.exists()) {
+            logDir = new File("target");
+        }
+        
+        if (logDir.exists()) {
+            File[] files = logDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.getName().toLowerCase().endsWith(".log")) {
+                        try {
+                            FileUtils.copyFileToDirectory(file, tmpDir);
+                        } catch (IOException e) {
+                            log.warn("Failed to copy "+file.getName()+" to the snapshot directory", e);
+                        }                        
+                    }
+                }
             }
-        } else {
-            log.debug("Could not find {} to copy to the snapshot directory",
-                    serviceWrapperLogFile.getAbsolutePath());
         }
 
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService(); 
@@ -282,7 +281,7 @@ public class SnapshotUtil {
         }
 
         try {
-            File jarFile = new File(snapshotsDir, tmpDir.getName()
+            File jarFile = new File(getSnapshotDirectory(engine), tmpDir.getName()
                     + ".zip");
             JarBuilder builder = new JarBuilder(tmpDir, jarFile, new File[] { tmpDir }, Version.version());
             builder.build();
