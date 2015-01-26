@@ -282,7 +282,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         } else {
             return o.startTime.compareTo(startTime);
         }
-    }
+    }    
 
     public ThreadData getThreadData() {
         if (thread != null && thread.isAlive()) {

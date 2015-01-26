@@ -62,6 +62,8 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -713,6 +715,21 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (nodeCommunicationService != null) {
         	nodeCommunicationService.stop();
         }
+        
+        List<ProcessInfo> infos = getStatisticManager().getProcessInfos();
+        for (ProcessInfo processInfo : infos) {
+            Thread thread = processInfo.getThread();
+            if (processInfo.getStatus() != Status.OK && thread.isAlive()) {
+                log.info("Trying to interrupt thread '{}' ", thread.getName());
+                try {
+                    thread.interrupt();                    
+                } catch (Exception e) {
+                    log.info("Caught exception while attempting to interrupt thread", e);
+                }
+            }
+        }
+        
+        Thread.interrupted();
         
         started = false;
         starting = false;
