@@ -255,8 +255,6 @@ final public class ParameterConstants {
 
     public final static String SEQUENCE_TIMEOUT_MS = "sequence.timeout.ms";
 
-    public final static String SERVER_LOG_FILE = "server.log.file";
-
     public final static String REST_API_ENABLED = "rest.api.enable";
 
     public final static String REST_HEARTBEAT_ON_PULL = "rest.api.heartbeat.on.pull";
