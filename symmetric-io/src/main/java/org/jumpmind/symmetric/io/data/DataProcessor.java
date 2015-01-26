@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io.data;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.writer.IgnoreBatchException;
 import org.jumpmind.util.Statistics;
@@ -215,6 +216,10 @@ public class DataProcessor {
                                     stats.toString() });
                 }
                 ts = System.currentTimeMillis();
+            }
+            
+            if (Thread.currentThread().isInterrupted()) {
+                throw new IoException("This  thread was interrupted");
             }
         } while (currentData != null);
 
