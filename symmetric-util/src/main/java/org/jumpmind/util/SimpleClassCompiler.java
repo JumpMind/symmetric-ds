@@ -107,8 +107,13 @@ public class SimpleClassCompiler {
             
             if (success) {
                 log.debug("Compilation has succeeded");
-                javaObject = fileManager.getClassLoader(null).loadClass(className).newInstance();
-                objectMap.put(id, javaObject);
+                Class<?> clazz =  fileManager.getClassLoader(null).loadClass(className);
+                if (clazz != null) {
+                    javaObject = clazz.newInstance();
+                    objectMap.put(id, javaObject);
+                } else {
+                    throw new SimpleClassCompilerException("The '"+className+"' class could not be located");
+                }
             } else {
                 log.error("Compilation of '" + origClassName + "' failed");
                 for (Diagnostic diagnostic : diag.getDiagnostics()) {
@@ -173,8 +178,12 @@ public class SimpleClassCompiler {
                 @Override
                 protected Class<?> findClass(String name) throws ClassNotFoundException {
                     JavaClassObject jclassObject = jclassObjects.get(name);
-                    byte[] bytes = jclassObject.getBytes();
-                    return super.defineClass(name, bytes, 0, bytes.length);
+                    if (jclassObject != null) {
+                        byte[] bytes = jclassObject.getBytes();
+                        return super.defineClass(name, bytes, 0, bytes.length);
+                    } else {
+                        return null;
+                    }
                 }
             };
         }
