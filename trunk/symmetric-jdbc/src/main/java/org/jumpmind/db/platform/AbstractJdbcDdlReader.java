@@ -541,6 +541,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
     public Table readTable(final String catalog, final String schema, final String table) {
         try {
+            log.debug("reading table: " + table);
             JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
             return postprocessTableFromDatabase(sqlTemplate.execute(new IConnectionCallback<Table>() {
                 public Table execute(Connection connection) throws SQLException {
@@ -552,7 +553,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     
                     ResultSet tableData = null;
                     try {
+                        log.debug("getting table metadata for " + table);
                         tableData = metaData.getTables(getTableNamePattern(table));
+                        log.debug("done getting table metadata for " + table);
                         if (tableData != null && tableData.next()) {
                             Map<String, Object> values = readMetaData(tableData, initColumnsForTable());
                             return readTable(connection, metaData, values);
@@ -1365,6 +1368,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 DatabaseMetaData meta = connection.getMetaData();
                 ResultSet rs = null;
                 try {
+                    
                     rs = meta.getSchemas();
                     while (rs.next()) {
                         int columnCount = rs.getMetaData().getColumnCount();

@@ -19,6 +19,8 @@ package org.jumpmind.db.platform;
  * under the License.
  */
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -218,8 +220,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public Database readFromDatabase(Table... tables) {
         Database fromDb = new Database();
         for (Table tableFromXml : tables) {
-            Table tableFromDatabase = getTableFromCache(getDefaultCatalog(),
-                    getDefaultSchema(), tableFromXml.getName(), true);
+            Table tableFromDatabase = getTableFromCache(tableFromXml.getCatalog(),
+                    tableFromXml.getSchema(), tableFromXml.getName(), true);
             if (tableFromDatabase != null) {
                 fromDb.addTable(tableFromDatabase);
             }
@@ -235,29 +237,34 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public Table readTableFromDatabase(String catalogName, String schemaName, String tableName, boolean useDefaultSchema) {
         String originalFullyQualifiedName = Table.getFullyQualifiedTableName(catalogName,
                 schemaName, tableName);
-        catalogName = catalogName == null && useDefaultSchema ? getDefaultCatalog() : catalogName;
-        schemaName = schemaName == null && useDefaultSchema ? getDefaultSchema() : schemaName;        
-        Table table = ddlReader.readTable(catalogName, schemaName, tableName);
+        String defaultedCatalogName = catalogName == null && useDefaultSchema ? getDefaultCatalog() : catalogName;
+        String defaultedSchemaName = schemaName == null && useDefaultSchema ? getDefaultSchema() : schemaName;   
+        
+        Table table = ddlReader.readTable(defaultedCatalogName, defaultedSchemaName, tableName);
         if (table == null && metadataIgnoreCase) {
             
             IDdlReader reader = getDdlReader();
             
-            List<String> catalogNames = reader.getCatalogNames();
-            if (catalogNames != null) {
-            for (String name : catalogNames) {
-                if (name != null && name.equalsIgnoreCase(catalogName))  {
-                    catalogName = name;
-                    break;
+            if (isNotBlank(catalogName)) {
+                List<String> catalogNames = reader.getCatalogNames();
+                if (catalogNames != null) {
+                    for (String name : catalogNames) {
+                        if (name != null && name.equalsIgnoreCase(catalogName)) {
+                            catalogName = name;
+                            break;
+                        }
+                    }
                 }
             }
-            }
-            
-            List<String> schemaNames = reader.getSchemaNames(catalogName);
-            if (schemaNames != null) {
-                for (String name : schemaNames) {
-                    if (name != null && name.equalsIgnoreCase(schemaName))  {
-                        schemaName = name;
-                        break;
+
+            if (isNotBlank(schemaName)) {
+                List<String> schemaNames = reader.getSchemaNames(catalogName);
+                if (schemaNames != null) {
+                    for (String name : schemaNames) {
+                        if (name != null && name.equalsIgnoreCase(schemaName)) {
+                            schemaName = name;
+                            break;
+                        }
                     }
                 }
             }
@@ -308,9 +315,6 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             synchronized (this.getClass()) {
                 try {
                     Table table = readTableFromDatabase(catalogName, schemaName, tableName, true);
-                    if (table == null) {
-                        table = readTableFromDatabase(catalogName, schemaName, tableName, false);
-                    }
                     tableCache.put(key, table);
                     retTable = table;
                 } catch (RuntimeException ex) {

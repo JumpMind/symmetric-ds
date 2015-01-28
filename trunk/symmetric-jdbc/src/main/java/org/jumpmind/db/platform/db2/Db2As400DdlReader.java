@@ -3,11 +3,11 @@ package org.jumpmind.db.platform.db2;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
@@ -29,6 +29,18 @@ public class Db2As400DdlReader extends Db2DdlReader {
 	protected String getSysColumnsSchemaColumn() {
 	    return "DBNAME";
 	}
+	
+	@Override
+    public List<String> getSchemaNames(String catalog) {
+        try {
+            return super.getSchemaNames(catalog);
+        } catch (Exception ex) {
+            ArrayList<String> list = new ArrayList<String>();
+            list.add(platform.getSqlTemplate().queryForObject(
+                    "select CURRENT SCHEMA from sysibm.sysdummy1", String.class));
+            return list;
+        }
+    }
 
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
     		DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {
@@ -56,19 +68,6 @@ public class Db2As400DdlReader extends Db2DdlReader {
         }
 
         return indexMatchesPk;
-    }
-
-    protected Table postprocessTableFromDatabase(Table table) {
-    	super.postprocessTableFromDatabase(table);
-        if (table != null) {
-            for (int columnIdx = 0; columnIdx < table.getColumnCount(); columnIdx++) {
-                Column column = table.getColumn(columnIdx);
-                if (StringUtils.isBlank(column.getDefaultValue())) {
-                	column.setDefaultValue(null);
-                }
-            }
-        }
-        return table;
     }
 
 }

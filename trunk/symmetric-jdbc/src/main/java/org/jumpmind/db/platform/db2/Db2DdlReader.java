@@ -81,9 +81,10 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
         Table table = super.readTable(connection, metaData, values);
 
         if (table != null) {
-            // DB2 does not return the auto-increment status via the database
-            // metadata
-            String sql = "SELECT NAME FROM " + systemSchemaName + ".SYSCOLUMNS WHERE TBNAME=? AND IDENTITY=?";
+            log.debug("about to read additional column data");
+            /* DB2 does not return the auto-increment status via the database
+             metadata */
+            String sql = "SELECT NAME, IDENTITY, DEFAULT, DFTVALUE FROM " + systemSchemaName + ".SYSCOLUMNS WHERE TBNAME=?";
             if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
                 sql = sql + " AND "+getSysColumnsSchemaColumn()+"=?";
             }
@@ -93,9 +94,8 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             try {
                 pstmt = connection.prepareStatement(sql);
                 pstmt.setString(1, table.getName());
-                pstmt.setString(2, getTrueValue());
                 if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
-                    pstmt.setString(3, metaData.getSchemaPattern());
+                    pstmt.setString(2, metaData.getSchemaPattern());
                 }
 
                 rs = pstmt.executeQuery();
@@ -103,16 +103,25 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
                     String columnName = rs.getString(1);
                     Column column = table.getColumnWithName(columnName);
                     if (column != null) {
-                        column.setAutoIncrement(true);
-                    }
-                    if (log.isDebugEnabled()) {
-                        log.debug("Found identity column {} on {}", columnName, table.getName());
+                        String isIdentity = rs.getString(2);
+                        if (isIdentity != null && isIdentity.startsWith("Y")) {
+                            column.setAutoIncrement(true);
+                            if (log.isDebugEnabled()) {
+                                log.debug("Found identity column {} on {}", columnName,
+                                        table.getName());
+                            }
+                        }
+                        String hasDefault = rs.getString(3);
+                        if (hasDefault != null && hasDefault.startsWith("Y")) {
+                            column.setDefaultValue(rs.getString(4));
+                        }
                     }
                 }
             } finally {
                 JdbcSqlTemplate.close(rs);
                 JdbcSqlTemplate.close(pstmt);
             }
+            log.debug("done reading additional column data");
         }
         return table;
     }
@@ -120,7 +129,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
     protected String getTrueValue() {
     	return "Y";
     }
-
+    
     @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
@@ -210,7 +219,9 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             HashSet<String> pkNames = new HashSet<String>();
 
             try {
+                log.debug("getting pk info");
                 pkData = metaData.getPrimaryKeys(table.getName());
+                log.debug("done getting pk info");
                 while (pkData.next()) {
                     Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
 

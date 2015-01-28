@@ -211,7 +211,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+    protected boolean writeAlterColumnDataTypeToBigInt(ColumnDataTypeChange change, StringBuilder ddl) {
         if (!change.getChangedColumn().isPrimaryKey()) {
             writeTableAlterStmt(change.getChangedTable(), ddl);
             ddl.append(" ALTER COLUMN ");

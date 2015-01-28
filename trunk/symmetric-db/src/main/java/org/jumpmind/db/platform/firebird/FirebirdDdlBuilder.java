@@ -315,7 +315,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
     }
     
     @Override
-    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+    protected boolean writeAlterColumnDataTypeToBigInt(ColumnDataTypeChange change, StringBuilder ddl) {
         Table table = change.getChangedTable();
         Column column = change.getChangedColumn();
         if (column.isPrimaryKey()) {
