@@ -29,3 +29,5 @@ to set the default schema.
 ----
 jdbc:as400://hostname/;libraries=myschema
 ----
+
+WARNING: Note that if the library is not to auto journal resources, then all tables need to be journaled.   
