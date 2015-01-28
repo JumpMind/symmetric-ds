@@ -102,11 +102,6 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
             return true;
         }
     }
-    
-    @Override
-    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
-        return false;
-    }
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
@@ -136,7 +131,7 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
                         && dataTypeChange.getNewTypeCode() == Types.LONGVARCHAR) {
                     changeIt.remove();
                 } else if (dataTypeChange.getNewTypeCode() == Types.BIGINT) {
-                    if (writeAlterColumnDataType(dataTypeChange, ddl)) {
+                    if (writeAlterColumnDataTypeToBigInt(dataTypeChange, ddl)) {
                         changeIt.remove();
                     }
                 }

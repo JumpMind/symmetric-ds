@@ -195,7 +195,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
     }
     
     @Override
-    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+    protected boolean writeAlterColumnDataTypeToBigInt(ColumnDataTypeChange change, StringBuilder ddl) {
         change.getChangedColumn().setTypeCode(change.getNewTypeCode());
         writeAlterColumn(change.getChangedTable(), change.getChangedColumn(), ddl);
         return true;

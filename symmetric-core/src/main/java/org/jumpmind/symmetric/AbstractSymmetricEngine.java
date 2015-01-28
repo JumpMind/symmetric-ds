@@ -270,7 +270,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.parameterService = new ParameterService(platform, propertiesFactory,
                 properties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
 
-        boolean parameterTableExists = this.platform.getTableFromCache(TableConstants.getTableName(properties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX), TableConstants.SYM_PARAMETER), false) != null;
+        boolean parameterTableExists = this.platform.readTableFromDatabase(null, null, 
+                TableConstants.getTableName(properties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX), TableConstants.SYM_PARAMETER), true) != null;
         if (parameterTableExists) {
             this.parameterService.setDatabaseHasBeenInitialized(true);
             this.parameterService.rereadParameters();
@@ -716,20 +717,22 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         	nodeCommunicationService.stop();
         }
         
-        List<ProcessInfo> infos = getStatisticManager().getProcessInfos();
-        for (ProcessInfo processInfo : infos) {
-            Thread thread = processInfo.getThread();
-            if (processInfo.getStatus() != Status.OK && thread.isAlive()) {
-                log.info("Trying to interrupt thread '{}' ", thread.getName());
-                try {
-                    thread.interrupt();                    
-                } catch (Exception e) {
-                    log.info("Caught exception while attempting to interrupt thread", e);
+        if (statisticManager != null) {
+            List<ProcessInfo> infos = statisticManager.getProcessInfos();
+            for (ProcessInfo processInfo : infos) {
+                Thread thread = processInfo.getThread();
+                if (processInfo.getStatus() != Status.OK && thread.isAlive()) {
+                    log.info("Trying to interrupt thread '{}' ", thread.getName());
+                    try {
+                        thread.interrupt();
+                    } catch (Exception e) {
+                        log.info("Caught exception while attempting to interrupt thread", e);
+                    }
                 }
             }
+
+            Thread.interrupted();
         }
-        
-        Thread.interrupted();
         
         started = false;
         starting = false;
@@ -808,7 +811,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         false) || StringUtils.isNotBlank(getParameterService().getString(
                         ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT)));
 
-        Table symNodeTable = symmetricDialect.getPlatform().getTableFromCache(
+        Table symNodeTable = symmetricDialect.getPlatform().readTableFromDatabase(null, null,
                 TableConstants.getTableName(parameterService.getTablePrefix(),
                         TableConstants.SYM_NODE), true);
 

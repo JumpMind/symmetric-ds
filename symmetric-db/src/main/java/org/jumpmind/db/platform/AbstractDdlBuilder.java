@@ -592,6 +592,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         writeExternalIndexCreateStmt(change.getChangedTable(), change.getNewIndex(), ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
+    
+    protected void filterChanges(Collection<TableChange> changes) {
+        
+    }
 
     /**
      * Processes the changes to the structure of tables.
@@ -605,6 +609,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Collection<TableChange> changes, StringBuilder ddl) {
+        
+        filterChanges(changes);
+        
         LinkedHashMap<String, List<TableChange>> changesPerTable = new LinkedHashMap<String, List<TableChange>>();
         LinkedHashMap<String, List<ForeignKey>> unchangedFKs = new LinkedHashMap<String, List<ForeignKey>>();
         boolean caseSensitive = delimitedIdentifierModeOn;
@@ -878,7 +885,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             if (change instanceof ColumnDataTypeChange) {
                 ColumnDataTypeChange typeChange = (ColumnDataTypeChange)change;
                 if (typeChange.getNewTypeCode() == Types.BIGINT) {
-                    if (writeAlterColumnDataType(typeChange, ddl)) {
+                    if (writeAlterColumnDataTypeToBigInt(typeChange, ddl)) {
                         it.remove();
                     }
                 }
@@ -898,8 +905,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         change.apply(currentModel, delimitedIdentifierModeOn);
 
     }
-
-    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+    
+    protected boolean writeAlterColumnDataTypeToBigInt(ColumnDataTypeChange change, StringBuilder ddl) {
         return false;
     }
     

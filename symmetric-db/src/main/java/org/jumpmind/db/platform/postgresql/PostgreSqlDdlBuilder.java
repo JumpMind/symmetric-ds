@@ -125,7 +125,7 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
-    protected boolean writeAlterColumnDataType(ColumnDataTypeChange change, StringBuilder ddl) {
+    protected boolean writeAlterColumnDataTypeToBigInt(ColumnDataTypeChange change, StringBuilder ddl) {
         writeTableAlterStmt(change.getChangedTable(), ddl);
         ddl.append(" ALTER COLUMN ");
         Column column = change.getChangedColumn();
