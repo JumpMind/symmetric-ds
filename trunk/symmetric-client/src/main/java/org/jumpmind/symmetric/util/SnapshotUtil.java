@@ -337,6 +337,7 @@ public class SnapshotUtil {
         try {
             fos = new FileOutputStream(new File(tmpDir, "runtime-stats.properties"));
             Properties runtimeProperties = new Properties();
+            runtimeProperties.setProperty("engine.is.started", Boolean.toString(engine.isStarted()));
             runtimeProperties.setProperty("server.time", new Date().toString());
             runtimeProperties.setProperty("database.time", new Date(engine.getSymmetricDialect().getDatabaseTime()).toString());
             runtimeProperties.setProperty("unrouted.data.count",
