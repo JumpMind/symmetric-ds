@@ -1,0 +1,27 @@
+
+=== Informix
+
+The Informix Dialect was tested against Informix Dynamic Server 11.50, but older versions may also work. You need to download the Informix 
+JDBC Driver (from the IBM Download Site) and put the ifxjdbc.jar and ifxlang.jar files in the SymmetricDS lib folder.
+
+SymmetricDS requires the db space to have at least a 4k page size.
+
+Make sure your database has logging enabled, which enables transaction support. Enable logging when creating the database, like this:
+
+[source, SQL]
+----
+CREATE DATABASE MYDB WITH LOG;
+----
+            
+Or enable logging on an existing database, like this:
+
+----
+ondblog mydb unbuf log
+ontape -s -L 0
+----
+     
+The following features are not yet implemented:
+
+. Syncing of Binary and Character Large Objects (LOB) is disabled.
+
+. There is no transaction ID recorded on data captured, so it is possible for data to be committed within different transactions on the target database. If transaction synchronization is required, either specify a custom transaction ID or configure the synchronization so data is always sent in a single batch. A custom transaction ID can be specified with the tx_id_expression on TRIGGER. The batch size is controlled with the max_batch_size on CHANNEL. The pull and push jobs have runtime properties to control their interval.

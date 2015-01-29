@@ -1,0 +1,4 @@
+
+==== Custom Load Filters
+
+Custom load filters can be created by implementing the IDatabaseWriterFilter, see <<IDatabaseWriterFilter>> for more information.
