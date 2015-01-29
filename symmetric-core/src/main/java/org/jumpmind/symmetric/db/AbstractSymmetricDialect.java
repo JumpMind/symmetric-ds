@@ -403,39 +403,48 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = extensionService.getExtensionPointList(IAlterDatabaseInterceptor.class);
             IAlterDatabaseInterceptor[] interceptors = alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]);
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml, interceptors)) {
-                log.info("There are SymmetricDS tables that needed altered");
                 String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
-                
+
                 ISqlResultsListener resultsListener = new LogSqlResultsListener(log);
-                List<IDatabaseUpgradeListener> databaseUpgradeListeners = extensionService.getExtensionPointList(IDatabaseUpgradeListener.class);
-                        
-                for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
-                    String sql = listener
-                            .beforeUpgrade(this, this.parameterService.getTablePrefix(),
-                                    modelFromDatabase, modelFromXml);
-                    SqlScript script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
+                List<IDatabaseUpgradeListener> databaseUpgradeListeners = extensionService
+                        .getExtensionPointList(IDatabaseUpgradeListener.class);
+
+                String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml,
+                        interceptors);
+                if (isNotBlank(alterSql)) {
+                    log.info("There are SymmetricDS tables that needed altered");
+
+                    for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
+                        String sql = listener.beforeUpgrade(this,
+                                this.parameterService.getTablePrefix(), modelFromDatabase,
+                                modelFromXml);
+                        SqlScript script = new SqlScript(sql, getPlatform().getSqlTemplate(), true,
+                                false, false, delimiter, null);
+                        script.setListener(resultsListener);
+                        script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+                    }
+
+                    log.debug("Alter SQL generated: {}", alterSql);
+
+                    SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(),
+                            true, false, false, delimiter, null);
                     script.setListener(resultsListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+
+                    for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
+                        String sql = listener.afterUpgrade(this,
+                                this.parameterService.getTablePrefix(), modelFromXml);
+                        script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false,
+                                false, delimiter, null);
+                        script.setListener(resultsListener);
+                        script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+                    }
+
+                    log.info("Done with auto update of SymmetricDS tables");
+                    return true;
+                } else {
+                    return false;
                 }
-
-                String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml, interceptors);
-
-                log.debug("Alter SQL generated: {}", alterSql);
-
-                SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
-                script.setListener(resultsListener);
-                script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
-
-                for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
-                    String sql = listener.afterUpgrade(this,
-                            this.parameterService.getTablePrefix(), modelFromXml);
-                    script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
-                    script.setListener(resultsListener);
-                    script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
-                }
-
-                log.info("Done with auto update of SymmetricDS tables");
-                return true;
             } else {
                 return false;
             }
