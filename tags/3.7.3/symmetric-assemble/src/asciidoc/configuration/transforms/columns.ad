@@ -1,0 +1,41 @@
+
+==== Columns
+
+Transforms are not complete until the columns involved in the transformation have been defined.   Typically 
+there will be several columns defined for each transform, each of which will define a source column and a target
+column.
+
+ifdef::pro[]
+To see a transform's columns, select the transform and click "Edit Columns".
+
+image::transforms/transform-edit-columns.png[]
+
+endif::pro[]
+
+PK:: Indicates that this mapping is used to define the "primary key" for identifying the target row(s) (which may or may not be the true primary key of the target table). 
+This is used to define the "where" clause when an Update or Delete on the target is occurring. 
+
+IMPORTANT: Unless the column policy is "IMPLIED" at least one row marked as a pk should be present for each transform_id.
+
+Source:: The source column name to be transformed.
+
+Target:: The target column name to be transformed.
+
+Transform On:: Defines whether this entry applies to source operations of Insert, Update, Delete, or All.
+
+ifndef::pro[]
+.Transform On Supported Values
+|===
+
+|I|Insert
+|U|Update
+|D|Delete
+|*|All
+
+|===
+endif::pro[]
+
+Type:: The name of a specific type of transform, default type is "copy".  See <<Transform Types>> for more information.
+Expression:: An expression that is specific to the type of transform that is configured in transform_type.  See <<Transform Types>> for more information.
+Order:: In the event there are more than one columns to transform, this defines the relative order in which the transformations are applied.
+
