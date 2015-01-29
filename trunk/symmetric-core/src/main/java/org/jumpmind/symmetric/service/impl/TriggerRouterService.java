@@ -91,6 +91,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private Map<String, Trigger> triggersCache;
 
     private long triggersCacheTime;
+    
+    private long triggerRoutersCacheTime;
 
     private Map<String, TriggerRoutersCache> triggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();
 
@@ -796,13 +798,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<TriggerRouter> testValue = triggerRoutersCache;
         if (testValue == null
                 || refreshCache
-                || System.currentTimeMillis() - this.triggerRouterPerChannelCacheTime > triggerRouterCacheTimeoutInMs) {
+                || System.currentTimeMillis() - this.triggerRoutersCacheTime > triggerRouterCacheTimeoutInMs) {
             synchronized (cacheLock) {
-
                 List<TriggerRouter> newValue = enhanceTriggerRouters(sqlTemplate.query(
                         getTriggerRouterSql(null), new TriggerRouterMapper()));
                 triggerRoutersCache = newValue;
                 testValue = newValue;
+                triggerRoutersCacheTime = System.currentTimeMillis();
             }
         }
         return testValue;
