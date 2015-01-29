@@ -26,6 +26,11 @@ public class Db2As400DdlReader extends Db2DdlReader {
     }
 	
 	@Override
+	protected String getSysColumnsDefaultValueColumn() {
+	    return "DFTVALUE";
+	}
+	
+	@Override
 	protected String getSysColumnsSchemaColumn() {
 	    return "DBNAME";
 	}
