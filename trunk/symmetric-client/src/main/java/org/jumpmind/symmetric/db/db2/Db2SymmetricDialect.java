@@ -25,6 +25,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -58,6 +59,17 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
         return platform.getSqlTemplate().queryForInt(
                 "SELECT COUNT(*) FROM " + getSystemSchemaName() + ".SYSTRIGGERS WHERE NAME = ? AND SCHEMA = ?",
                 new Object[] { triggerName.toUpperCase(), schema.toUpperCase() }) > 0;
+    }
+    
+    @Override
+    public String massageDataExtractionSql(String sql, Channel channel) {
+        /* Remove tranaction_id from the sql because DB2 doesn't support transactions.  In fact,
+         * DB2 iSeries does return results because the query asks for every column in the table PLUS
+         * the router_id.  We max out the size of the table on iSeries so when you try to return the 
+         * entire table + additional columns we go past the max size for a row
+         */
+        sql = sql.replace("d.transaction_id, ", "");
+        return super.massageDataExtractionSql(sql, channel);
     }
     
     protected String getSystemSchemaName() {

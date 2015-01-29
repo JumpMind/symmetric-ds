@@ -1547,7 +1547,7 @@ public class DataService extends AbstractService implements IDataService {
             data.putCsvData(CsvData.PK_DATA, row.getString("PK_DATA", false));
             data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA", false));
             data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
-            data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID"));
+            data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID", false));
             data.putAttribute(CsvData.ATTRIBUTE_TABLE_NAME, row.getString("TABLE_NAME"));
             data.setDataEventType(DataEventType.getEventType(row.getString("EVENT_TYPE")));
             data.putAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID, row.getString("SOURCE_NODE_ID"));
