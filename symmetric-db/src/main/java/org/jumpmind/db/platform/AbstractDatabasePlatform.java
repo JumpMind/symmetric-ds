@@ -231,14 +231,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Table readTableFromDatabase(String catalogName, String schemaName, String tableName) {
-        return readTableFromDatabase(catalogName, schemaName, tableName, true);
-    }
-    
-    public Table readTableFromDatabase(String catalogName, String schemaName, String tableName, boolean useDefaultSchema) {
         String originalFullyQualifiedName = Table.getFullyQualifiedTableName(catalogName,
                 schemaName, tableName);
-        String defaultedCatalogName = catalogName == null && useDefaultSchema ? getDefaultCatalog() : catalogName;
-        String defaultedSchemaName = schemaName == null && useDefaultSchema ? getDefaultSchema() : schemaName;   
+        String defaultedCatalogName = catalogName == null ? getDefaultCatalog() : catalogName;
+        String defaultedSchemaName = schemaName == null ? getDefaultSchema() : schemaName;   
         
         Table table = ddlReader.readTable(defaultedCatalogName, defaultedSchemaName, tableName);
         if (table == null && metadataIgnoreCase) {
@@ -250,7 +246,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 if (catalogNames != null) {
                     for (String name : catalogNames) {
                         if (name != null && name.equalsIgnoreCase(catalogName)) {
-                            catalogName = name;
+                            defaultedCatalogName = name;
                             break;
                         }
                     }
@@ -262,13 +258,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 if (schemaNames != null) {
                     for (String name : schemaNames) {
                         if (name != null && name.equalsIgnoreCase(schemaName)) {
-                            schemaName = name;
+                            defaultedSchemaName = name;
                             break;
                         }
                     }
                 }
             }
             
+
             List<String> tableNames = reader.getTableNames(catalogName, schemaName, null);
             if (tableNames != null) {
                 for (String name : tableNames) {
@@ -281,7 +278,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             
             if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
                     catalogName, schemaName, tableName))) {
-                table = ddlReader.readTable(catalogName, schemaName, tableName);
+                table = ddlReader.readTable(defaultedCatalogName, defaultedSchemaName, tableName);
             }
             
         }
@@ -314,7 +311,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (retTable == null || forceReread) {
             synchronized (this.getClass()) {
                 try {
-                    Table table = readTableFromDatabase(catalogName, schemaName, tableName, true);
+                    Table table = readTableFromDatabase(catalogName, schemaName, tableName);
                     tableCache.put(key, table);
                     retTable = table;
                 } catch (RuntimeException ex) {
