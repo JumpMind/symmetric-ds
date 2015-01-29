@@ -66,6 +66,10 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
 	protected String getSysColumnsSchemaColumn() {
 	    return "TBCREATOR";
 	}
+	
+	protected String getSysColumnsDefaultValueColumn () {
+	    return "DEFAULTVALUE";
+	}
 
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
@@ -84,7 +88,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             log.debug("about to read additional column data");
             /* DB2 does not return the auto-increment status via the database
              metadata */
-            String sql = "SELECT NAME, IDENTITY, DEFAULT, DFTVALUE FROM " + systemSchemaName + ".SYSCOLUMNS WHERE TBNAME=?";
+            String sql = "SELECT NAME, IDENTITY, DEFAULT, "+getSysColumnsDefaultValueColumn()+" FROM " + systemSchemaName + ".SYSCOLUMNS WHERE TBNAME=?";
             if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
                 sql = sql + " AND "+getSysColumnsSchemaColumn()+"=?";
             }
