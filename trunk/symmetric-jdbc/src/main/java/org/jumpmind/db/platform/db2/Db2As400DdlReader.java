@@ -1,6 +1,7 @@
 package org.jumpmind.db.platform.db2;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -8,32 +9,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
 
 public class Db2As400DdlReader extends Db2DdlReader {
 
 	public Db2As400DdlReader(IDatabasePlatform platform) {
         super(platform);
-        setSystemSchemaName("QSYS2");
     }
-
-	@Override
-	protected String getTrueValue() {
-    	return "YES";
-    }
-	
-	@Override
-	protected String getSysColumnsDefaultValueColumn() {
-	    return "DFTVALUE";
-	}
-	
-	@Override
-	protected String getSysColumnsSchemaColumn() {
-	    return "DBNAME";
-	}
 	
 	@Override
     public List<String> getSchemaNames(String catalog) {
@@ -73,6 +61,52 @@ public class Db2As400DdlReader extends Db2DdlReader {
         }
 
         return indexMatchesPk;
+    }
+    
+    @Override
+    protected void enhanceTableMetaData(Connection connection, DatabaseMetaDataWrapper metaData,
+            Table table) throws SQLException {
+        log.debug("about to read additional column data");
+        /* DB2 does not return the auto-increment status via the database
+         metadata */
+        String sql = "SELECT NAME, IDENTITY, DEFAULT, DFTVALUE FROM QSYS2.SYSCOLUMNS WHERE TBNAME=?";
+        if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
+            sql = sql + " AND DBNAME=?";
+        }
+
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            pstmt = connection.prepareStatement(sql);
+            pstmt.setString(1, table.getName());
+            if (StringUtils.isNotBlank(metaData.getSchemaPattern())) {
+                pstmt.setString(2, metaData.getSchemaPattern());
+            }
+
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                String columnName = rs.getString(1);
+                Column column = table.getColumnWithName(columnName);
+                if (column != null) {
+                    String isIdentity = rs.getString(2);
+                    if (isIdentity != null && isIdentity.startsWith("Y")) {
+                        column.setAutoIncrement(true);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Found identity column {} on {}", columnName,
+                                    table.getName());
+                        }
+                    }
+                    String hasDefault = rs.getString(3);
+                    if (hasDefault != null && hasDefault.startsWith("Y")) {
+                        column.setDefaultValue(rs.getString(4));
+                    }
+                }
+            }
+        } finally {
+            JdbcSqlTemplate.close(rs);
+            JdbcSqlTemplate.close(pstmt);
+        }
+        log.debug("done reading additional column data");
     }
 
 }

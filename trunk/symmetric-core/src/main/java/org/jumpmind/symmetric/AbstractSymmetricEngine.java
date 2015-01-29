@@ -271,7 +271,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 properties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, "sym"));
 
         boolean parameterTableExists = this.platform.readTableFromDatabase(null, null, 
-                TableConstants.getTableName(properties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX), TableConstants.SYM_PARAMETER), true) != null;
+                TableConstants.getTableName(properties.get(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX), TableConstants.SYM_PARAMETER)) != null;
         if (parameterTableExists) {
             this.parameterService.setDatabaseHasBeenInitialized(true);
             this.parameterService.rereadParameters();
@@ -813,7 +813,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         Table symNodeTable = symmetricDialect.getPlatform().readTableFromDatabase(null, null,
                 TableConstants.getTableName(parameterService.getTablePrefix(),
-                        TableConstants.SYM_NODE), true);
+                        TableConstants.SYM_NODE));
 
         Node node = symNodeTable != null ? getNodeService().findIdentity() : null;
 
