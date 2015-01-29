@@ -1147,6 +1147,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         synchronized (cacheLock) {
             this.triggerRouterPerNodeCacheTime = 0;
             this.triggerRouterPerChannelCacheTime = 0;
+            this.triggerRoutersCacheTime = 0;
             this.routersCacheTime = 0;
             this.triggersCacheTime = 0;
         }
