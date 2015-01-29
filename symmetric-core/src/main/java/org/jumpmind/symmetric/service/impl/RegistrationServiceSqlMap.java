@@ -20,9 +20,17 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.File;
+import java.sql.Types;
+import java.util.Date;
 import java.util.Map;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
+import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.util.BasicDataSourceFactory;
+import org.jumpmind.properties.TypedProperties;
 
 public class RegistrationServiceSqlMap extends AbstractSqlMap {
 
@@ -69,10 +77,10 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
         putSql("updateRegistrationRequestSql",
                 ""
                         + "update $(registration_request)                                                                    "
-                        + "  set                                                                                                   "
-                        + "  last_update_by=?, last_update_time=?, attempt_count=attempt_count+1, registered_node_id=?, status=?, error_message=?   "
+                        + "  set attempt_count=?,                                                                                      "
+                        + "  last_update_by=?, last_update_time=?, registered_node_id=?, status=?, error_message=?   "
                         + "  where                                                                                                 "
-                        + "  node_group_id=? and external_id=? and ip_address=? and host_name=? and status in ('RQ','ER')                       ");
+                        + "  node_group_id=? and external_id=? and ip_address=? and host_name=? and (status='RQ' or status='ER')                       ");
 
         putSql("selectRegistrationRequestSql",
                 ""
@@ -84,6 +92,24 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
         putSql("deleteRegistrationRequestSql",
                 "delete from $(registration_request) where node_group_id=? and external_id=? and ip_address=? and host_name=? and status=?");
 
+    }
+    
+    public static void main(String[] args) throws Exception {
+        String sql = "update sym_registration_request                                                                    "
+                + "  set                                                                                                   "
+                + "  last_update_by=?, last_update_time=?, attempt_count=1, registered_node_id=?, status=?, error_message=?   "
+                + "  where                                                                                                 "
+                + "  node_group_id=? and external_id=? and ip_address=? and host_name=? and status in ('RQ', 'ER')                       ";
+        BasicDataSource ds = BasicDataSourceFactory.create(new TypedProperties(new File("../symmetric-pro/target/engines/server.properties")));
+        IDatabasePlatform platform  = JdbcDatabasePlatformFactory.createNewPlatformInstance(ds, new SqlTemplateSettings(), false);
+        int count = platform.getSqlTemplate().update(
+                sql,
+                new Object[] { "me", new Date(),
+                        "1", "ER", "", 
+                        "client", "1", "127.0.0.1", "localhost" },
+                        new int[] { Types.VARCHAR, Types.DATE, Types.VARCHAR,  Types.VARCHAR, Types.VARCHAR, 
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+        System.out.println("updated " + count);
     }
 
 }

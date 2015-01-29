@@ -28,6 +28,7 @@ public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISy
 
     public Db2As400SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
+        this.triggerTemplate = new Db2As400TriggerTemplate(this);
     }
     
     @Override

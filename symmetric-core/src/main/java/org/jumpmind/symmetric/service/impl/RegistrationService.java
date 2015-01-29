@@ -313,23 +313,43 @@ public class RegistrationService extends AbstractService implements IRegistratio
     }
 
     public void saveRegistrationRequest(RegistrationRequest request) {
+        /**
+         * Lookup existing registration requests to update the attempt count.  We previously
+         * did this in SQL on the update, but as400 v5 didn't like that
+         */
+        boolean foundOne = false;
+        List<RegistrationRequest> requests = getRegistrationRequests(true);
+        for (RegistrationRequest registrationRequest : requests) {
+            if (registrationRequest.getNodeGroupId().equals(request.getNodeGroupId()) && registrationRequest.getExternalId().equals(request.getExternalId())) {
+                request.setAttemptCount(registrationRequest.getAttemptCount()+1);
+                foundOne = true;
+                break;
+            }
+        }
         String externalId = request.getExternalId() == null ? "" : request.getExternalId();
         String nodeGroupId = request.getNodeGroupId() == null ? "" : request.getNodeGroupId();
-        int count = sqlTemplate.update(
-                getSql("updateRegistrationRequestSql"),
-                new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
-                        request.getRegisteredNodeId(), request.getStatus().name(), request.getErrorMessage(),
-                        nodeGroupId, externalId, request.getIpAddress(), request.getHostName() },
-                        new int[] { Types.VARCHAR, Types.DATE, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, 
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+        int count = 0;
+        if (foundOne) {
+            count = sqlTemplate.update(
+                    getSql("updateRegistrationRequestSql"),
+                    new Object[] { request.getAttemptCount(), request.getLastUpdateBy(),
+                            request.getLastUpdateTime(), request.getRegisteredNodeId(),
+                            request.getStatus().name(), request.getErrorMessage(), nodeGroupId,
+                            externalId, request.getIpAddress(), request.getHostName() }, new int[] {
+                            Types.NUMERIC, Types.VARCHAR, Types.DATE, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR });
+        }
+        
         if (count == 0) {
             sqlTemplate.update(
                     getSql("insertRegistrationRequestSql"),
                     new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
                             request.getRegisteredNodeId(), request.getStatus().name(), nodeGroupId,
-                            externalId, request.getIpAddress(), request.getHostName(), request.getErrorMessage() },
-                            new int[] { Types.VARCHAR, Types.DATE, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, 
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+                            externalId, request.getIpAddress(), request.getHostName(),
+                            request.getErrorMessage() }, new int[] { Types.VARCHAR, Types.DATE,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         }
 
     }
