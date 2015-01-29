@@ -38,7 +38,7 @@ public class RegistrationRequest implements Serializable {
     private RegistrationStatus status;
     private String hostName;
     private String ipAddress;
-    private long attemptCount;
+    private long attemptCount = 1;
     private String registeredNodeId;
     private String errorMessage;
     private Date createTime = new Date();
