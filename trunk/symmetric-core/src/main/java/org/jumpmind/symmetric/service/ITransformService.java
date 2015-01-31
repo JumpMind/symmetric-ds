@@ -34,7 +34,7 @@ public interface ITransformService {
     public boolean refreshFromDatabase();
 
     public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink link,
-            TransformPoint transformPoint, boolean useCache);
+            TransformPoint transformPoint);
 
     public List<TransformTableNodeGroupLink> getTransformTables();
 

@@ -135,42 +135,29 @@ public class TransformService extends AbstractService implements ITransformServi
         return false;
     }
 
-
     public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink nodeGroupLink,
-            TransformPoint transformPoint, boolean useCache) {
-
-        // get the cache timeout
-        long cacheTimeoutInMs = parameterService
-                .getLong(ParameterConstants.CACHE_TIMEOUT_TRANSFORM_IN_MS);
-
-        // if the cache is expired or the caller doesn't want to use the cache,
-        // pull the data and refresh the cache
-        synchronized (this) {
-            if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
-                    || transformsCacheByNodeGroupLinkByTransformPoint == null || useCache == false) {
-                refreshCache();
-            }
-        }
-
-        if (transformsCacheByNodeGroupLinkByTransformPoint != null) {
-            Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = transformsCacheByNodeGroupLinkByTransformPoint
-                    .get(nodeGroupLink);
-            if (byTransformPoint != null) {
-                if (transformPoint != null) {
-                    return byTransformPoint.get(transformPoint);
-                } else {
-                    // Transform point not specified, so return all transforms.
-                    List<TransformTableNodeGroupLink> transformsExtract = byTransformPoint.get(TransformPoint.EXTRACT);
-                    List<TransformTableNodeGroupLink> transformsLoad = byTransformPoint.get(TransformPoint.LOAD);
-                    List<TransformTableNodeGroupLink> transforms = new ArrayList<TransformTableNodeGroupLink>();
-                    if (transformsExtract != null) {
-                        transforms.addAll(transformsExtract);
-                    }
-                    if (transformsLoad != null) {
-                        transforms.addAll(transformsLoad);
-                    }
-                    return transforms;
+            TransformPoint transformPoint) {
+        Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> byLinkByTransformPoint = 
+                readInCacheIfExpired();
+        Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = byLinkByTransformPoint
+                .get(nodeGroupLink);
+        if (byTransformPoint != null) {
+            if (transformPoint != null) {
+                return byTransformPoint.get(transformPoint);
+            } else {
+                // Transform point not specified, so return all transforms.
+                List<TransformTableNodeGroupLink> transformsExtract = byTransformPoint
+                        .get(TransformPoint.EXTRACT);
+                List<TransformTableNodeGroupLink> transformsLoad = byTransformPoint
+                        .get(TransformPoint.LOAD);
+                List<TransformTableNodeGroupLink> transforms = new ArrayList<TransformTableNodeGroupLink>();
+                if (transformsExtract != null) {
+                    transforms.addAll(transformsExtract);
                 }
+                if (transformsLoad != null) {
+                    transforms.addAll(transformsLoad);
+                }
+                return transforms;
             }
         }
         return null;
@@ -182,27 +169,29 @@ public class TransformService extends AbstractService implements ITransformServi
         }
     }
 
-    protected void refreshCache() {
+    private Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> readInCacheIfExpired() {
 
         // get the cache timeout
         long cacheTimeoutInMs = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TRANSFORM_IN_MS);
+        
+        Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> byByLinkByTransformPoint = transformsCacheByNodeGroupLinkByTransformPoint;
 
         synchronized (this) {
             if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
-                    || transformsCacheByNodeGroupLinkByTransformPoint == null) {
+                    || byByLinkByTransformPoint == null) {
 
-                transformsCacheByNodeGroupLinkByTransformPoint = new HashMap<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>>();
+                byByLinkByTransformPoint = new HashMap<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>>();
 
                 List<TransformTableNodeGroupLink> transforms = getTransformTablesFromDB();
 
                 for (TransformTableNodeGroupLink transformTable : transforms) {
                     NodeGroupLink nodeGroupLink = transformTable.getNodeGroupLink();
-                    Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = transformsCacheByNodeGroupLinkByTransformPoint
+                    Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = byByLinkByTransformPoint
                             .get(nodeGroupLink);
                     if (byTransformPoint == null) {
                         byTransformPoint = new HashMap<TransformPoint, List<TransformTableNodeGroupLink>>();
-                        transformsCacheByNodeGroupLinkByTransformPoint.put(nodeGroupLink,
+                        byByLinkByTransformPoint.put(nodeGroupLink,
                                 byTransformPoint);
                     }
 
@@ -216,8 +205,11 @@ public class TransformService extends AbstractService implements ITransformServi
                     byTableName.add(transformTable);
                 }
                 lastCacheTimeInMs = System.currentTimeMillis();
+                this.transformsCacheByNodeGroupLinkByTransformPoint = byByLinkByTransformPoint;
             }
         }
+        
+        return byByLinkByTransformPoint;
     }
 
     private List<TransformTableNodeGroupLink> getTransformTablesFromDB() {
@@ -304,8 +296,8 @@ public class TransformService extends AbstractService implements ITransformServi
             throw ex;
         } finally {
             close(transaction);
-        }
-        refreshCache();
+            clearCache();
+        }        
     }
 
     protected void deleteTransformColumns(ISqlTransaction transaction, String transformTableId) {
@@ -321,7 +313,6 @@ public class TransformService extends AbstractService implements ITransformServi
             transaction.prepareAndExecute(getSql("deleteTransformTableSql"),
                     (Object) transformTableId);
             transaction.commit();
-            refreshCache();
         } catch (Error ex) {
             if (transaction != null) {
                 transaction.rollback();
@@ -334,6 +325,7 @@ public class TransformService extends AbstractService implements ITransformServi
             throw ex;
         } finally {
             close(transaction);
+            clearCache();
         }
     }
 
