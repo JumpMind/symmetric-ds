@@ -266,7 +266,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
             
 
-            List<String> tableNames = reader.getTableNames(catalogName, schemaName, null);
+            List<String> tableNames = reader.getTableNames(defaultedCatalogName, defaultedSchemaName, null);
             if (tableNames != null) {
                 for (String name : tableNames) {
                     if (name != null && name.equalsIgnoreCase(tableName))  {
