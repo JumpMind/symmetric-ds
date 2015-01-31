@@ -36,21 +36,21 @@ ifdef::pro[]
 endif::pro[]
 
 Trigger Id:: Unique identifier for a trigger.
+Source Catalog:: Optional name for the catalog the configured table is in.  If the name includes * then a wildcard match on the table name will be attempted.  \
+Wildcard names can include a list of names that are comma separated.  The ! symbol may be used to indicate a NOT match condition.
+Source Schema:: Optional name for the schema a configured table is in.  If the name includes * then a wildcard match on the table name will be attempted.  
+Wildcard names can include a list of names that are comma separated.  The ! symbol may be used to indicate a NOT match condition.
 Source Table:: The name of the source table that will have a trigger installed to watch for data changes.  See <<Trigger Wildcards>> for using wildcards
 to specify multiple source tables.
 Channel:: The channel_id of the channel that data changes will flow through.
-Sync On Insert:: Determines if changes will be captured for inserts.
-Sync On Update:: Determines if changes will be captured for updates.
-Sync On Delete:: Determines if changes will be captured for deletes.
 
 ifdef::pro[]
 .Advanced Options
 endif::pro[]
 
-Source Catalog:: Optional name for the catalog the configured table is in.  If the name includes * then a wildcard match on the table name will be attempted.  \
-Wildcard names can include a list of names that are comma separated.  The ! symbol may be used to indicate a NOT match condition.
-Source Schema:: Optional name for the schema a configured table is in.  If the name includes * then a wildcard match on the table name will be attempted.  
-Wildcard names can include a list of names that are comma separated.  The ! symbol may be used to indicate a NOT match condition.
+Sync On Insert:: Determines if changes will be captured for inserts.
+Sync On Update:: Determines if changes will be captured for updates.
+Sync On Delete:: Determines if changes will be captured for deletes.
 Reload Channel Id:: The channel_id of the channel that will be used for initial loads.
 Sync On Insert Condition:: Specify a condition for the insert trigger firing using an expression specific to the database.   This will be appended to the "WHERE" clause in a SQL expression.  
 Sync On Update Condition:: Specify a condition for the update trigger firing using an expression specific to the database.   This will be appended to the "WHERE" clause in a SQL expression.  
