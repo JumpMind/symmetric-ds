@@ -523,7 +523,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
 
             List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
-                    link, TransformPoint.LOAD, true);
+                    link, TransformPoint.LOAD);
             transforms = transformsList != null ? transformsList
                     .toArray(new TransformTable[transformsList.size()]) : null;
 

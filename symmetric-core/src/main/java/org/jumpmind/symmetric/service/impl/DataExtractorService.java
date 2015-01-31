@@ -916,7 +916,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (targetNode != null) {
             transformsList = transformService.findTransformsFor(
                     new NodeGroupLink(identity.getNodeGroupId(), targetNode.getNodeGroupId()),
-                    TransformPoint.EXTRACT, true);
+                    TransformPoint.EXTRACT);
         }
         TransformTable[] transforms = transformsList != null ? transformsList
                 .toArray(new TransformTable[transformsList.size()]) : null;
