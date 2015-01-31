@@ -56,6 +56,8 @@ Data loaders can also use other techniques to increase performance of data loads
 
 |mongodb|MongoDB data loader.
 
+|redshift_bulk|Amazon Redshift bulk loader over S3.
+
 |===
 
 TIP: Tables that should be data loaded should be configured to use this channel.  Many times, a reload channel will 
