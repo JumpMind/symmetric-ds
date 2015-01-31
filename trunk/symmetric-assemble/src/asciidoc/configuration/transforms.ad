@@ -40,21 +40,6 @@ Transform Point:: Where this transform will occur. The options include:
 
 |===
 
-Source Table:: The name of the source table that will be transformed.
-Target Table:: The name of the target table.
-Delete Action:: An action to take upon delete of a row. 
-
-.Transform Points
-|===
-
-|DEL_ROW|The delete results in a delete of the row as specified by the pk columns defined in the transformation configuration.
-
-|UPDATE_COL|The delete results in an update operation (see <<Operation Change>>) on the target which updates the specific rows and columns based 
-on the defined transformation.
-
-|NONE|The delete results in no target changes.
-|===
-
 Column Policy:: Indicates whether unspecified columns are passed thru or if all columns must be explicitly defined. The options include:
 .Column Policy
 |===
@@ -68,25 +53,40 @@ also want to pass it through. You would define an implied transform from the sou
 |NONE|The delete results in no target changes.
 |===
 
-Transform Order:: For a single source operation that is mapped to a transformation, there could be more than one 
-target operation that takes place. You may control the order in which the target operations are applied through a 
-configuration parameter defined for each source-target table combination. This might be important, for example, 
-if the foreign key relationships on the target tables require you to execute the transformations in a particular order.
+Source Catalog:: Name of the catalog of the configured source table.  This should only be set if <<use-source-catalog-schema,Use Source Catalog/Schema>> or <<router-target-catalog,Target Catalog>> are set on the Router.
+Source Schema:: Name of the schema for the configured source table.  This should only be set if <<use-source-catalog-schema,Use Source Catalog/Schema>> or <<router-target-schema,Target Schema>> are set on the Router.
+Source Table:: The name of the source table that will be transformed.
+Target Catalog:: Optional name for the catalog a target target table is in. Only use this if the target table is not in the default catalog.
+Target Schema:: Optional name of the schema a target target table is in. Only use this if the target table is not in the default schema."
+Target Table:: The name of the target table.
 
 ifdef::pro[]
 .Advanced Options
 endif::pro[]
 
+Delete Action:: An action to take upon delete of a row. 
+
+.Transform Points
+|===
+
+|DEL_ROW|The delete results in a delete of the row as specified by the pk columns defined in the transformation configuration.
+
+|UPDATE_COL|The delete results in an update operation (see <<Operation Change>>) on the target which updates the specific rows and columns based 
+on the defined transformation.
+
+|NONE|The delete results in no target changes.
+|===
+
 Update First:: This option overrides the default behavior for an Insert operation. Instead of attempting the Insert first, 
 SymmetricDS will always perform an Update first and then fall back to an Insert if that fails. Note that, by default, fall 
 back logic always applies for Insert and Updates. Here, all you a specifying is whether to always do an Update first, which 
 can have performance benefits under certain situations you may run into (see <<Operation Change>>).
-Source Catalog:: Optional name for the catalog the configured source table is in.
-Source Schema:: Optional name for the schema a configured source table is in.
-Target Catalog:: Optional name for the catalog a target target table is in. Only use this if the target table is not in the default catalog.
-Target Schema:: Optional name of the schema a target target table is in. Only use this if the target table is not in the default schema."
 
-IMPORTANT: TODO Discuss how target catalog and schema can change if router also changes targets.
+Transform Order:: For a single source operation that is mapped to a transformation, there could be more than one 
+target operation that takes place. You may control the order in which the target operations are applied through a 
+configuration parameter defined for each source-target table combination. This might be important, for example, 
+if the foreign key relationships on the target tables require you to execute the transformations in a particular order.
+
 
 .Some Transform Use Cases
 ====
