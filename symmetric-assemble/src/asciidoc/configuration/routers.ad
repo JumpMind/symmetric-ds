@@ -36,11 +36,13 @@ Router Type:: The type of router.  Standard router types are listed below.  Cust
 |bsh|x|A router that executes a Bean Shell script expression in order to select nodes to route to. The script can use the old and new column values.  See <<Beanshell Router>>
 
 |===
+
+Router Expression:: An expression that is specific to the type of router that is configured in router type.  See the documentation for each router for more details.
+
 ifdef::pro[]
 .Advanced Options
 endif::pro[]
 
-Router Expression:: An expression that is specific to the type of router that is configured in router type.  See the documentation for each router for more details.
 Sync on Update:: Flag that indicates that this router should send updated rows from nodes in the source node group to nodes in the target node group.
 Sync on Insert:: Flag that indicates that this router should send inserted rows from nodes in the source node group to nodes in the target node group.
 Sync on Delete:: Flag that indicates that this router should send deleted rows from nodes in the source node group to nodes in the target node group.

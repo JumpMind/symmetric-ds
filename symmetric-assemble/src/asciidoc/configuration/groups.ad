@@ -12,7 +12,7 @@ ifdef::pro[]
 image::group.png[]
 endif::pro[]
 
-.Options for Groups
+.Required Fields
 
 Group ID:: Unique identifier for the group.
 
