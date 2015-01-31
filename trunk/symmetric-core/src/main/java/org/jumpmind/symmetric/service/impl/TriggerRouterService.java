@@ -1043,7 +1043,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             sqlTemplate.update(
                     getSql("insertTriggerSql"),
                     new Object[] { trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                            trigger.getSourceTableName(), trigger.getChannelId(), trigger.getChannelId(),
+                            trigger.getSourceTableName(), trigger.getChannelId(), trigger.getReloadChannelId(),
                             trigger.isSyncOnUpdate() ? 1 : 0, trigger.isSyncOnInsert() ? 1 : 0,
                             trigger.isSyncOnDelete() ? 1 : 0, trigger.isSyncOnIncomingBatch() ? 1 : 0,
                             trigger.isUseStreamLobs() ? 1 : 0, trigger.isUseCaptureLobs() ? 1 : 0,
