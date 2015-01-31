@@ -30,15 +30,13 @@ image::transforms/transform.png[]
 endif::pro[]
 Transform Id:: Unique identifier of a specific transform.
 Group Link:: The group link defining which direction the transform will process.
-Transform Point:: When a source operation of Delete takes place, there are three possible ways to handle the 
-transformation at the target. The options include:
+Transform Point:: Where this transform will occur. The options include:
 
 .Transform Points
 |===
 
-|EXTRACT|The transform will execute while data is being extracted from the source.
-
-|LOAD|The transform will execute while data is being loaded into the target.
+|EXTRACT|The transform will execute while data is being extracted from the source.  This means the transform will have access to the source's database.
+|LOAD|The transform will execute while data is being loaded into the target.  This means the transform will have access to the target's database.
 
 |===
 
