@@ -12,7 +12,13 @@ ifdef::pro[]
 image::group.png[]
 endif::pro[]
 
+.Options for Groups
+
 Group ID:: Unique identifier for the group.
+
+ifdef::pro[]
+.Advanced Options
+endif::pro[]
 Description:: Description of the group that is available through the console.
 
 .Sample Node Groups
