@@ -1,0 +1,45 @@
+
+=== MongoDB
+        
+Since SymmetricDS is trigger based and there are not triggers in MongoDB data can only synchronized to a MongoDB instance.  The runtime SymmetricDS 
+tables will also need to be installed in a full relational database to support integration with MongoDB.
+
+TIP:  The simplest solution to support MongoDB is to add a new node (see <<Add Node>>) that is connected to an H2 database to store all the SYM_* runtime tables.
+           
+The MongoDB data loader maps relational database rows to MongoDB documents in collections.  To use the preconfigured MongoDB data loader,
+you set the `data_loader_type` to *MongoDB* on a <<Channels, channel>>.  
+
+ifdef::pro[]
+image::appendix/mongodb-new-channel.png[]
+endif::pro[]
+
+Tables that should be synchronized to MongoDB should be configured to use this channel.
+
+ifdef::pro[]
+image::appendix/mongodb-trigger.png[]
+endif::pro[]
+
+In order to point it to a MongoDB instance set the following properties in the engines properties file.
+
+[source,properties]   
+----       
+mongodb.username=xxxx
+mongodb.password=xxxx
+mongodb.host=xxxx
+mongodb.port=xxxx
+mongodb.default.databasename=default
+----
+      
+By default, the catalog or schema passed by SymmetricDS will be used for the MongoDB database name. The table passed by SymmetricDS 
+will be used as the MongoDB collection name.  If the catalog or schema are not set, the default database name property is used as the 
+database name. 
+           
+The _id of the MongoDB document will be the primary key of the database record. If the table has a composite primary key, then the 
+_id will be an embedded document that has name value pairs of the composite key. The body of the document will be name value pairs 
+of the table column name and table row value.
+           
+SymmetricDS uses the MongoDB Java Driver to upsert documents.
+           
+TIP: SymmetricDS transforms can be used to transform the data.  If a complex mapping is required that is not supported by transforms, then
+the `IDBObjectMapper` can be implemented and a new `MongoDataLoaderFactory` can be wired up
+as an extension point.

@@ -1,0 +1,21 @@
+The SymmetricDS team acknowledges all community members, especially those 
+mentioned here. If your name is not listed, please contact the project team.
+
+Keith Naas <knaas@users.sourceforge.net> 
+  Developed the initial H2 dialect and the SymmetricServlet
+  
+Andrew Wilcox <andrewbwilcox@users.sourceforge.net>
+  Developed the initial version of the DataExtractorService
+  
+Jeff Bailey
+  Developed the offline listeners and the WatchdogJob
+  
+Dave Michels <dmichels2@users.sourceforge.net>
+  Contributed the IP based authorizer
+  
+Jon Krajewski <jkrajewski@users.sourceforge.net>
+  Contributed several extension points      
+  
+Cronje Fourie
+  Contributed improvements for the PostgreSQL dialect, including PostGIS support
+  
