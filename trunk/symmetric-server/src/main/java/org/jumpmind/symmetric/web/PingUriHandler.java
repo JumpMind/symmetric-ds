@@ -40,6 +40,8 @@ public class PingUriHandler extends AbstractUriHandler {
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
+        res.setContentType("text/plain");
+        res.getWriter().write("pong");
     }
 
 }
