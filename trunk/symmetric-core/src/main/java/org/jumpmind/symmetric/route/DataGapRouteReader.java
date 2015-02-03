@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.route;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -198,7 +201,16 @@ public class DataGapRouteReader implements IDataToRouteReader {
             processInfo.setStatus(Status.OK);
         } catch (Throwable ex) {
             processInfo.setStatus(Status.ERROR);
-            log.error("", ex);
+            String msg = "";
+            if (engine.getDatabasePlatform() instanceof FirebirdDatabasePlatform
+                    && isNotBlank(ex.getMessage())
+                    && ex.getMessage().contains(
+                            "arithmetic exception, numeric overflow, or string truncation")) {
+                msg = "There is a good chance that the truncation error you are receiving is because contains_big_lobs on the '"
+                        + context.getChannel().getChannelId()
+                        + "' channel needs to be turned on.  Firebird casts to varchar when this setting is not turned on and the data length has most likely exceeded the 10k row size";
+            }
+            log.error(msg, ex);
         } finally {
             if (cursor != null) {
                 cursor.close();
