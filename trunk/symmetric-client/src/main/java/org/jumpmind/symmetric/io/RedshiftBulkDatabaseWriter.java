@@ -63,10 +63,11 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
     private String accessKey;
     private String secretKey;
     private String appendToCopyCommand;
+    private String s3Endpoint;
 
     public RedshiftBulkDatabaseWriter(IDatabasePlatform platform, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, int maxRowsBeforeFlush, long maxBytesBeforeFlush, String bucket,
-            String accessKey, String secretKey, String appendToCopyCommand) {
+            String accessKey, String secretKey, String appendToCopyCommand, String s3Endpoint) {
         super(platform);
         this.stagingManager = stagingManager;
         this.writerSettings.setDatabaseWriterFilters(filters);
@@ -77,6 +78,7 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.appendToCopyCommand = appendToCopyCommand;
+        this.s3Endpoint = s3Endpoint;
     }
 
     public boolean start(Table table) {
@@ -155,8 +157,11 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected void flush() {
         if (loadedRows > 0) {
             stagedInputFile.close();
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);            
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);  
             AmazonS3 s3client = new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey));
+            if (isNotBlank(s3Endpoint)) {
+                s3client.setEndpoint(s3Endpoint);
+            }
             String objectKey = stagedInputFile.getFile().getName();
             try {
                 s3client.putObject(bucket, objectKey, stagedInputFile.getFile());

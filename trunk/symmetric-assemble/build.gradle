@@ -167,7 +167,7 @@ project(':symmetric-client') {
 
         provided "org.mongodb:mongo-java-driver:2.12.3"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
-        provided "com.amazonaws:aws-java-sdk:1.8.9.1"
+        provided "com.amazonaws:aws-java-sdk:1.9.17"
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
