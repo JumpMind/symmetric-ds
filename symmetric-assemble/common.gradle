@@ -129,6 +129,7 @@ subprojects { subproject ->
         hsqldbVersion = '2.3.2'
         sqliteVersion = '3.8.7'
         firebirdVersion = '2.1.6'
+        jt400Version = '8.4'
         javaMailVersion = '1.4.7'
         jdomVersion = '2.0.5'
         junitVersion = '4.11'
@@ -142,8 +143,8 @@ subprojects { subproject ->
         jtdsVersion = '1.2.8'
         bouncyCastleVersion = '140'
         animalSnifferVersion = '1.10'
-        jnaVersion = "4.1.0"
-        jettyVersion = "7.6.3.v20120416"
+        jnaVersion = '4.1.0'
+        jettyVersion = '7.6.3.v20120416'        
         
         env = System.getenv()
     }
@@ -170,6 +171,7 @@ subprojects { subproject ->
             exclude group: 'log4j'
             exclude group: 'junit'
         }
+        provided ("net.sf.jt400:jt400:$jt400Version")
         // javax.resource needed by jaybird
         provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
         
