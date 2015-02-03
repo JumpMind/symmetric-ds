@@ -38,7 +38,7 @@ public class Db2JdbcSqlTemplate extends JdbcSqlTemplate {
 
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
-        return "values IDENTITY_VAL_LOCAL()";
+        return "SELECT IDENTITY_VAL_LOCAL() FROM SYSIBM.SYSDUMMY1";
     }
 
     @Override
