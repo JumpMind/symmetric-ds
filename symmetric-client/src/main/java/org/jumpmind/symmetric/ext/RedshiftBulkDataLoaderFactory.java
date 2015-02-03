@@ -63,16 +63,17 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory, ISymme
         String accessKey = param.getString("redshift.bulk.load.s3.access.key");
         String secretKey = param.getString("redshift.bulk.load.s3.secret.key");
         String appendToCopyCommand = param.getString("redshift.append.to.copy.command");
+        String s3Endpoint = param.getString("redshift.bulk.load.s3.endpoint");
 
         try {
             Class<?> dbWriterClass = Class.forName("org.jumpmind.symmetric.io.RedshiftBulkDatabaseWriter");
             Constructor<?> dbWriterConstructor = dbWriterClass.getConstructor(new Class<?>[] {
                     IDatabasePlatform.class, IStagingManager.class, List.class,
                     List.class, Integer.TYPE, Long.TYPE, String.class,
-                    String.class, String.class, String.class });
+                    String.class, String.class, String.class, String.class });
             return (IDataWriter) dbWriterConstructor.newInstance(
                     symmetricDialect.getPlatform(), engine.getStagingManager(), filters, errorHandlers,
-                    maxRowsBeforeFlush, maxBytesBeforeFlush, bucket, accessKey, secretKey, appendToCopyCommand);
+                    maxRowsBeforeFlush, maxBytesBeforeFlush, bucket, accessKey, secretKey, appendToCopyCommand, s3Endpoint);
 
         } catch (Exception e) {
             log.warn("Failed to create the mongo database writer.  Check to see if all of the required jars have been added");
@@ -89,7 +90,7 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory, ISymme
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
-        return true;//DatabaseNamesConstants.REDSHIFT.equals(platform.getName());
+        return true;
     }
 
 }
