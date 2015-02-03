@@ -25,6 +25,7 @@ redshift.bulk.load.max.bytes.before.flush:: When the max bytes is reached, the f
 redshift.bulk.load.s3.bucket:: The S3 bucket name where files are uploaded. This bucket should be created from the AWS console ahead of time.
 redshift.bulk.load.s3.access.key:: The AWS access key ID to use as credentials for uploading to S3 and loading from S3.
 redshift.bulk.load.s3.secret.key:: The AWS secret key to use as credentials for uploading to S3 and loading from S3.
+redshift.bulk.load.s3.endpoint:: The AWS endpoint used for uploading to S3.  This is optional.  You might need to specify if you get warnings about retrying during the S3 upload.
 
 To clean and organize tables after bulk changes, it is recommended to run a "vacuum" against individual tables or the entire 
 database so that consistent query performance is maintained. Deletes and updates mark rows for delete that are not automatically 
