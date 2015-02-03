@@ -33,7 +33,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -202,7 +202,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         } catch (Throwable ex) {
             processInfo.setStatus(Status.ERROR);
             String msg = "";
-            if (engine.getDatabasePlatform() instanceof FirebirdDatabasePlatform
+            if (engine.getDatabasePlatform().getName().startsWith(DatabaseNamesConstants.FIREBIRD)
                     && isNotBlank(ex.getMessage())
                     && ex.getMessage().contains(
                             "arithmetic exception, numeric overflow, or string truncation")) {
