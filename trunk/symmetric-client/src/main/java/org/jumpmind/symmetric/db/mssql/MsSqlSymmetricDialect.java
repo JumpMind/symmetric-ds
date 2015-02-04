@@ -104,26 +104,30 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                             + "or i.allow_page_locks = 'true')") > 0) {
                 log.info("Updating indexes to prevent lock escalation");
                 
-                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
-                        + "_DATA SET (ALLOW_ROW_LOCKS = ON)");
-                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
-                        + "_DATA_EVENT SET (ALLOW_ROW_LOCKS = ON)");
-                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
-                        + "_OUTGOING_BATCH SET (ALLOW_ROW_LOCKS = ON)");
+                String dataTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_data");
+                String dataEventTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_data_event");
+                String outgoingBatchTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_outgoing_batch");
                 
-                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
-                        + "_DATA SET (ALLOW_PAGE_LOCKS = OFF)");
-                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
-                        + "_DATA_EVENT SET (ALLOW_PAGE_LOCKS = OFF)");
-                sqlTemplate.update("ALTER INDEX ALL ON " + tablePrefix.toUpperCase()
-                        + "_OUTGOING_BATCH SET (ALLOW_PAGE_LOCKS = OFF)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + dataTable
+                        + " SET (ALLOW_ROW_LOCKS = ON)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + dataEventTable
+                        + " SET (ALLOW_ROW_LOCKS = ON)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + outgoingBatchTable
+                        + " SET (ALLOW_ROW_LOCKS = ON)");
                 
-                sqlTemplate.update("ALTER TABLE " + tablePrefix.toUpperCase()
-                        + "_DATA SET (LOCK_ESCALATION = DISABLE)");
-                sqlTemplate.update("ALTER TABLE " + tablePrefix.toUpperCase()
-                        + "_DATA_EVENT SET (LOCK_ESCALATION = DISABLE)");
-                sqlTemplate.update("ALTER TABLE " + tablePrefix.toUpperCase()
-                        + "_OUTGOING_BATCH SET (LOCK_ESCALATION = DISABLE)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + dataTable
+                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + dataEventTable
+                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + outgoingBatchTable
+                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
+                
+                sqlTemplate.update("ALTER TABLE " + dataTable
+                        + " SET (LOCK_ESCALATION = DISABLE)");
+                sqlTemplate.update("ALTER TABLE " + dataEventTable
+                        + " SET (LOCK_ESCALATION = DISABLE)");
+                sqlTemplate.update("ALTER TABLE " + outgoingBatchTable
+                        + " SET (LOCK_ESCALATION = DISABLE)");
             }
         } catch (Exception e) {            
             log.warn("Failed to disable lock escalation");
