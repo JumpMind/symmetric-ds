@@ -110,51 +110,64 @@ public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilt
         executeScripts(context, BATCH_ROLLBACK_SCRIPTS_KEY);
     }
     
-    protected boolean processLoadFilters(DataContext context, Table table,
-            CsvData data, Exception error, WriteMethod writeMethod) {
-
+    protected boolean processLoadFilters(DataContext context, Table table, CsvData data,
+            Exception error, WriteMethod writeMethod) {
         boolean writeRow = true;
 
-        List<LoadFilter> wildcardLoadFilters = null;
         if (table != null) {
-            if (!table.getName().toLowerCase()
-                    .startsWith(engine.getTablePrefix() + "_")) {
-                wildcardLoadFilters = loadFilters.get(Table
-                        .getFullyQualifiedTableName(table.getCatalog(),
-                                table.getSchema(), FormatUtils.WILDCARD));
+            List<LoadFilter> foundFilters = null;
+            if (!table.getName().toLowerCase().startsWith(engine.getTablePrefix() + "_")) {
+                foundFilters = lookupFilters(foundFilters, 
+                        table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD);
+                
+                foundFilters = lookupFilters(foundFilters, 
+                        table.getCatalog(), FormatUtils.WILDCARD, FormatUtils.WILDCARD);
+                
+                foundFilters = lookupFilters(foundFilters, 
+                        FormatUtils.WILDCARD, FormatUtils.WILDCARD, FormatUtils.WILDCARD);
             }
 
-            String tableName = table.getFullyQualifiedTableName();
+            String tableName = null;
             if (isIgnoreCase()) {
-                tableName = Table.getFullyQualifiedTableName(
-                        table.getCatalog(), table.getSchema(), table.getName()
-                                .toUpperCase());
+                tableName = table.getName().toUpperCase();
+            } else {
+                tableName = table.getName();
             }
-            List<LoadFilter> tableSpecificLoadFilters = loadFilters
-                    .get(tableName);
-            int size = (wildcardLoadFilters != null ? wildcardLoadFilters
-                    .size() : 0)
-                    + (tableSpecificLoadFilters != null ? tableSpecificLoadFilters
-                            .size() : 0);
+            
+            foundFilters = lookupFilters(foundFilters, 
+                    FormatUtils.WILDCARD, FormatUtils.WILDCARD, tableName);
+            
+            foundFilters = lookupFilters(foundFilters, 
+                    FormatUtils.WILDCARD, table.getSchema(), tableName);
 
-            if (size > 0) {
-                List<LoadFilter> loadFiltersForTable = new ArrayList<LoadFilter>(
-                        size);
-                if (wildcardLoadFilters != null) {
-                    loadFiltersForTable.addAll(wildcardLoadFilters);
-                }
+            foundFilters = lookupFilters(foundFilters, 
+                    table.getCatalog(), FormatUtils.WILDCARD, tableName);
 
-                if (tableSpecificLoadFilters != null) {
-                    loadFiltersForTable.addAll(tableSpecificLoadFilters);
-                }
-                for (LoadFilter filter : loadFiltersForTable) {
+            foundFilters = lookupFilters(foundFilters, 
+                    table.getCatalog(), table.getSchema(), tableName);
+
+            if (foundFilters != null) {
+                for (LoadFilter filter : foundFilters) {
                     addBatchScriptsToContext(context, filter);
                 }
-                writeRow = processLoadFilters(context, table, data, error, writeMethod, loadFiltersForTable);
+                writeRow = processLoadFilters(context, table, data, error, writeMethod,
+                        foundFilters);
             }
         }
 
         return writeRow;
+    }
+    
+    private List<LoadFilter> lookupFilters(List<LoadFilter> foundFilters, String catalogName, String schemaName, String tableName) {
+        List<LoadFilter> filters = loadFilters.get(Table.getFullyQualifiedTableName(catalogName,
+                schemaName, tableName));
+        if (filters != null) {
+            if (foundFilters == null) {
+                foundFilters = new ArrayList<LoadFilter>();
+            }
+            foundFilters.addAll(filters);
+        }
+        return foundFilters;
     }
 
     protected abstract boolean processLoadFilters(DataContext context, Table table, CsvData data,
