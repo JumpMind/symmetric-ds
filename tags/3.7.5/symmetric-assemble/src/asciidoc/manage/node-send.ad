@@ -1,0 +1,66 @@
+Events other than data changes can be sent to nodes in the synchronization network.  The following can also be sent to nodes:
+
+SQL Scripts:: Sql can be sent to be executed on a target node
+BSH Scripts:: Beanshell scripts can be sent to be executed on a target node
+Table Schema:: The schema the source node can be replicated to the target node individually
+Table Data:: Tables can be loaded or reloaded individually
+
+ifdef::pro[]
+image::manage/manage-nodes-send.png[]
+endif::pro[]
+
+===== Table Data
+           
+There may be times where you find you need to re-send or re-synchronize data when the change itself was not captured.  This could be needed, for example,
+if the data changes occurred prior to SymmetricDS placing triggers on the data tables themselves, or if the data at the destination was accidentally deleted or for
+some other reason.  
+            
+IMPORTANT: Be careful when re-sending data.  Be sure you are only sending the rows you intend to send and,
+more importantly, be sure to re-send the data in a way that won't cause foreign key constraint issues at the destination.  In other words,
+if more than one table is involved, be sure to send any tables which are referred to by other tables by foreign keys first.  Otherwise,
+the channel's synchronization will block because SymmetricDS is unable to insert or update the row because the foreign key relationship refers to
+a non-existent row in the destination!
+
+ifdef::pro[]
+If you click on the *Send* button and select *Table Data* you will be prompted to select the tables you want to send.  Events will be queued up
+for each node that is selected on the Manage Nodes screen.
+endif::pro[]
+
+You can manually insert "reload" events into the <<DATA>> table that represent the table/s to reload.  These reload events are created in 
+the source database.
+   
+To create a reload event, you create a <<DATA>> row, using the following values.  Any column not specified is not required.
+
+|===           
+| Column  | Value  
+| data_id | null 
+| table_name | name of table to be sent 
+| event_type | 'R', for reload 
+| row_data   |  a "where" clause (minus the word 'where') which defines the subset of rows from the table to be sent.  To send all rows, one can use 1=1 for this value. 
+| trigger_hist_id  |  use the id of the most recent entry (i.e., max(trigger_hist_id) ) in <<TRIGGER_HIST>> for the trigger-router combination for your table and router. 
+| channel_id  |  the channel in which the table is routed 
+| create_time |  current_timestamp 
+| node_list | A comma separated list of node_ids to route to 
+|===
+
+The following is an example insert statement:
+
+[source, sql]
+----
+ insert into sym_data (node_list, table_name, event_type, row_data, 
+                       trigger_hist_id, channel_id, create_time) (
+    select '00001', t.source_table_name, 'R', 'tran_id=''MISSING-ID''', 
+            h.trigger_hist_id, t.channel_id, current_timestamp
+        from sym_trigger t inner join sym_trigger_router tr on
+            t.trigger_id=tr.trigger_id inner join sym_trigger_hist h on
+            h.trigger_hist_id=(select max(trigger_hist_id) from sym_trigger_hist
+                where trigger_id=t.trigger_id)
+    where channel_id='sale_transaction' and
+        tr.router_id like 'store_corp_identity' and
+        (t.source_table_name like 'sale_%')
+    order by tr.initial_load_order asc);
+----
+    
+This insert statement generates N rows, one for each configured table that starts with sale_.  It uses the most recent
+trigger history id for the corresponding table.  It takes advantage of the initial load order for each trigger-router to
+create the three rows in the correct order (the order corresponding to the order in which the tables would have been initial loaded).

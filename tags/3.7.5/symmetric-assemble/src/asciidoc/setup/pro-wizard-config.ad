@@ -1,0 +1,57 @@
+
+=== Quick Config Wizard
+
+Once the SymmetricDS software is installed, an instance of it is running, and a master node is setup, the synchronization
+scenario must be configured (i.e. what tables and/or files do I want to synchronize from which source node groups to which
+target node groups).  The Quick Config wizard simplifies this process by walking you through several simple configuration steps.
+
+The Quick Config Wizard can be found under the Configure->Overview screen.
+
+image::configure-overview.png[]
+
+NOTE: The quick config wizard will show a screen for each router that is in place.  The below example
+shows the profile `Standard 2 Tier` with a client and server.
+
+image::wizard-config/wizard-config-start.png[]
+
+==== Router: Client to Server
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-config/wizard-config-client-server.png[]
+
+Select all tables that should be synchronized in the direction
+stated in the header, in this case from `CLIENT` to the `SERVER`
+--
+
+==== Router: Server to Client
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-config/wizard-config-server-client.png[]
+
+Next we will select tables to sync from the `SERVER` to the `CLIENT`. 
+
+NOTE: The `item_selling_price` table was selected on both wizard screens so this table
+will be configured for bi-directional sync.
+
+
+--
+
+
+==== Configuration Summary
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-config/wizard-config-verify.png[]
+
+The summary of the configuration made by the wizard.
+
+--
+
+TIP: Once the quick config wizard has completed your setup you can still navigate
+to the specific components created to provide customizations beyond the default 
+settings.  

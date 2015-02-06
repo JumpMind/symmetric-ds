@@ -1,0 +1,36 @@
+/*
+ * This gradle script publishes jar files to a maven repository.
+ * Modify file path and pom info: ./gradlew -b standalone.publish.gradle uploadAllJars
+ */
+
+apply plugin:'maven'
+
+configurations{ allJars }
+
+artifacts{ allJars file("/Users/cshenso/Dropbox/Jdbc/jt400.jar") }
+
+configurations { deployerJars }
+
+repositories {
+    mavenCentral()
+}
+
+uploadAllJars {
+    repositories {
+        mavenDeployer {
+            configuration = configurations.deployerJars
+            repository(url: deployUploadUrl) {
+                authentication(userName: deployUser, password: deployPassword)
+            }
+            pom.version = "8.4"
+            pom.artifactId = "jt400"
+            pom.groupId = "net.sf.jt400"
+        }
+    }
+
+}
+
+dependencies {
+    deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
+    
+}
