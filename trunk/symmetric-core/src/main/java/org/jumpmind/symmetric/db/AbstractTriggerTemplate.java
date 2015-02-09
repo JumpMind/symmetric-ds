@@ -840,6 +840,9 @@ abstract public class AbstractTriggerTemplate {
 
         String formattedColumnText = FormatUtils.replace("columnName",
                 String.format("%s%s", columnPrefix, column.getName()), templateToUse);
+        
+        formattedColumnText = FormatUtils.replace("columnSize",
+                column.getSize(), formattedColumnText);
 
         formattedColumnText = FormatUtils.replace("masterCollation",
                 symmetricDialect.getMasterCollation(), formattedColumnText);
