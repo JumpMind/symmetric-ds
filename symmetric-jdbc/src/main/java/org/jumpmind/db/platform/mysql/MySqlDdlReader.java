@@ -90,6 +90,8 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             return Types.CLOB;
         } else if ("MEDIUMTEXT".equals(typeName)) {
             return Types.LONGVARCHAR;
+        } else if ("TINYTEXT".equals(typeName)) {
+            return Types.LONGVARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
