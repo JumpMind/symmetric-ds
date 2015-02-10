@@ -6,6 +6,28 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
 
     public Db2As400TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
+        
+        clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as CLOB),'\\','\\\\'),'\"','\\\"') || '\"' end" ;
+
+        sqlTemplates.put("insertTriggerTemplate" ,
+"CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             " +
+"                                AFTER INSERT ON $(schemaName)$(tableName)                                                                                                                              " +
+"                                REFERENCING NEW AS NEW                                                                                                                                                 " +
+"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " +
+"                                BEGIN ATOMIC                                                                                                                                                           " +
+"                                    IF $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                               " +
+"                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 " +
+"                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                " +
+"                                        VALUES('$(targetTableName)', 'I', $(triggerHistoryId),                                                                                                         " +
+"                                            $(columns),                                                                                                                                                " +
+"                                            $(channelExpression), $(txIdExpression), $(sourceNodeExpression),                                                                                          " +
+"                                            $(externalSelect),                                                                                                                                         " +
+"                                            CURRENT_TIMESTAMP);                                                                                                                                        " +
+"                                    END IF;                                                                                                                                                            " +
+"                                    $(custom_on_insert_text)                                                                                                                                           " +
+"                                END                                                                                                                                                                    " );
+
+        
         sqlTemplates.put("updateTriggerTemplate" ,
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n"+
 "                                AFTER UPDATE ON $(schemaName)$(tableName)                                                                                                                              \n"+
@@ -27,6 +49,28 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
 "                                    END IF;                                                                                                                                                            \n"+
 "                                    $(custom_on_update_text)                                                                                                                                           \n"+
 "                                END                                                                                                                                                                    " );
+        
+        sqlTemplates.put("deleteTriggerTemplate" ,
+"CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             " +
+"                                AFTER DELETE ON $(schemaName)$(tableName)                                                                                                                              " +
+"                                REFERENCING OLD AS OLD                                                                                                                                                 " +
+"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " +
+"                                BEGIN ATOMIC                                                                                                                                                           " +
+"                                    IF $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                               " +
+"                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 " +
+"                                            (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                       " +
+"                                        VALUES ('$(targetTableName)', 'D', $(triggerHistoryId),                                                                                                        " +
+"                                            $(oldKeys),                                                                                                                                                " +
+"                                            $(oldColumns),                                                                                                                                             " +
+"                                            $(channelExpression),                                                                                                                                          " +
+"                                            $(txIdExpression),                                                                                                                                         " +
+"                                            $(sourceNodeExpression),                                                                                                                                   " +
+"                                            $(externalSelect),                                                                                                                                         " +
+"                                            CURRENT_TIMESTAMP);                                                                                                                                        " +
+"                                    END IF;                                                                                                                                                            " +
+"                                    $(custom_on_delete_text)                                                                                                                                           " +
+"                                END                                                                                                                                                                    " );
+        
 
     }
     

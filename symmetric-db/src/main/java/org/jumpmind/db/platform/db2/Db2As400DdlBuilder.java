@@ -20,11 +20,7 @@ package org.jumpmind.db.platform.db2;
  */
 
 import java.sql.Types;
-import java.util.Collection;
-import java.util.Iterator;
 
-import org.jumpmind.db.alter.ColumnDataTypeChange;
-import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -33,28 +29,10 @@ public class Db2As400DdlBuilder extends Db2DdlBuilder {
 
     public Db2As400DdlBuilder() {
         this.databaseName = DatabaseNamesConstants.DB2AS400;
-        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "LONG VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.CLOB);
         databaseInfo.setRequiresAutoCommitForDdl(true);
     }
     
-    @Override
-    protected void filterChanges(Collection<TableChange> changes) {
-        super.filterChanges(changes);
-        Iterator<TableChange> i = changes.iterator();
-        while (i.hasNext()) {
-            TableChange tableChange = i.next();
-            if (tableChange instanceof ColumnDataTypeChange) {
-                ColumnDataTypeChange change = (ColumnDataTypeChange)tableChange;
-                if (change.getNewTypeCode() == Types.LONGVARCHAR && 
-                        change.getChangedColumn().getJdbcTypeCode() == Types.VARCHAR) {
-                    log.debug("Not processing the detect type change to LONGVARCHAR because "
-                            + "a create of a long varchar results in a variable length VARCHAR field");
-                    i.remove();
-                }
-            }
-        }
-    }
-
     @Override
     protected void writeCastExpression(Column sourceColumn, Column targetColumn, StringBuilder ddl) {
         String sourceNativeType = getBareNativeType(sourceColumn);
@@ -64,10 +42,10 @@ public class Db2As400DdlBuilder extends Db2DdlBuilder {
             printIdentifier(getColumnName(sourceColumn), ddl);
         } else {
             String type = getSqlType(targetColumn);
-            if ("LONG VARCHAR".equals(type)) {
-                type = "VARCHAR";
-            }
 
+            /**
+             * iSeries needs size in cast
+             */
             if ("VARCHAR".equals(type)) {
                 type = type + "(" + sourceColumn.getSizeAsInt() + ")";
             }
