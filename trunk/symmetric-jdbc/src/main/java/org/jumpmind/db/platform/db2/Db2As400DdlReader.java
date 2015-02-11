@@ -99,6 +99,8 @@ public class Db2As400DdlReader extends Db2DdlReader {
                     String hasDefault = rs.getString(3);
                     if (hasDefault != null && hasDefault.startsWith("Y")) {
                         column.setDefaultValue(rs.getString(4));
+                    } else {
+                        column.setDefaultValue(null);
                     }
                 }
             }
