@@ -38,3 +38,4 @@ update test
   set one = '1', two = '2'
   where one = 'one';
 ## last comment
+create table "TE--ST" ("ID##2" VARCHAR(100));
