@@ -1,0 +1,68 @@
+
+===== Subselect Router
+
+Sometimes routing decisions need to be made based on data that is not in the current row being synchronized. 
+A 'subselect' router can be used in these cases. A 'subselect' is configured with a router expression that is 
+a SQL select statement which returns a result set of the node ids that need routed to. Column tokens can be 
+used in the SQL expression and will be replaced with row column data. 
+
+WARNING: The overhead of using this router type is high because the 'subselect' statement runs for each row that is 
+routed. It should not be used for tables that have a lot of rows that are updated. It also has the disadvantage that 
+if the data being relied on to determine the node id has been deleted before routing takes place, then no results 
+would be returned and routing would not happen.
+
+The router expression you specify is appended to the following SQL statement in order to select the node ids:
+
+[source, SQL]
+----
+select c.node_id 
+from sym_node c 
+where c.node_group_id=:NODE_GROUP_ID 
+	and c.sync_enabled=1 and ... 
+----
+
+As you can see, you have access to information about the node currently under consideration for routing through 
+the 'c' alias, for example c.external_id . There are two node-related tokens you can use in your expression:
+
+. :NODE_GROUP_ID
+. :EXTERNAL_DATA
+
+Column names representing data for the row in question are prefixed with a colon as well., for example: :EMPLOYEE_ID, or :OLD_EMPLOYEE_ID. 
+Here, the OLD_ prefix indicates the value before the change in cases where the old data has been captured.
+
+.Sample Use Case for Subselect Router
+====
+For an example, consider the case where an Order table and an OrderLineItem table need to be routed to a specific store. The Order table 
+has a column named order_id and STORE_ID. A store node has an external_id that is equal to the STORE_ID on the Order table. OrderLineItem, 
+however, only has a foreign key to its Order of order_id. To route OrderLineItems to the same nodes that the Order will be routed to, we 
+need to reference the master Order record.
+
+There are two possible ways to solve this in SymmetricDS. 
+
+. Configure a 'subselect' router type (shown below).
+. Use an external select to capture the data via a trigger for use in a column match router, see <<External Select>>.
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_ROUTER (router_id,
+	source_node_group_id, target_node_group_id, router_type,
+	router_expression, create_time, last_update_time) values
+	('corp-2-store','corp', 'store', 'subselect', 'c.external_id in (select
+	STORE_ID from order where order_id=:ORDER_ID)', current_timestamp,
+	current_timestamp); 
+----
+endif::pro[]
+ifdef::pro[]
+
+.Router Expression
+
+----
+c.external_id in (select STORE_ID from order where order_id=:ORDER_ID)
+----
+endif::pro[]
+
+NOTE: In this example that the parent row in Order must still exist at the moment of routing for the child rows (OrderLineItem) 
+to route, since the select statement is run when routing is occurring, not when the change data is first captured.
+====
+
