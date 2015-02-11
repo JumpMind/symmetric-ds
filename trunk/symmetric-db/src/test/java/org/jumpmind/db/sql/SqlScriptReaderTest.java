@@ -41,6 +41,7 @@ public class SqlScriptReaderTest {
         assertEquals("update something set oops=';' where whoops='test'", reader.readSqlStatement());
         assertEquals("update test set one = '''', two='\\\\##--''' where one is null", reader.readSqlStatement());
         assertEquals("update test\n  set one = '1', two = '2'\nwhere one = 'one'", reader.readSqlStatement());
+        assertEquals("create table \"TE--ST\" (\"ID##2\" VARCHAR(100))", reader.readSqlStatement());
         assertNull(reader.readSqlStatement());
         reader.close();
     }

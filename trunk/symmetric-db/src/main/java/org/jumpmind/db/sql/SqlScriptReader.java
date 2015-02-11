@@ -127,30 +127,11 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
     }
  
     protected String trimComments(String line) {
-        int inLiteralStart = -1;
-        int inLiteralEnd = -1;
         char[] content = line.toCharArray();
         for (int i = 0; i < line.length(); i++) {
-            if (inLiteralStart == -1 && content[i] == '\'') {
-                inLiteralStart = i;
-                for (int j = inLiteralStart + 1; j < line.length(); j++) {
-                    if (content[j] == '\'') {
-                        if (j + 1 < content.length && content[j + 1] == '\'') {
-                            j++;
-                        } else {
-                            inLiteralEnd = j + 1;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (inLiteralEnd == i) {
-                inLiteralEnd = -1;
-                inLiteralStart = -1;
-            }
-
-            if (inLiteralStart == -1) {
+            if (!betweenOccurences('\'', i, content) 
+                    && !betweenOccurences('"', i, content) 
+                    && !betweenOccurences('`', i, content)) {
                 for (char c : COMMENT_CHARS) {
                     if (c == content[i]) {
                         if (i + 1 < content.length && content[i + 1] == c) {
@@ -165,6 +146,19 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
             }
         }
         return line;
+    }
+    
+    protected boolean betweenOccurences(char q, int i, char[] content) {
+        boolean startFound = false;
+        for (int j = 0; j < content.length; j++) {
+            if (content[j] == q)
+                if (j < i) {
+                    startFound = !startFound;
+                } else if (j > i) {
+                    return startFound;
+                }
+        }
+        return false;
     }
 
     protected boolean checkStatementEnds(String s) {
