@@ -121,10 +121,6 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
 
     public void write(CsvData data) {
         context.remove(AbstractDatabaseWriter.CONFLICT_ERROR);
-        write(data, false);
-    }
-
-    protected void write(CsvData data, boolean fallback) {
         /* If the startTable has been called and the targetTable is required then check
          * to see if the writer has been configured to ignore this data event
          */
@@ -175,7 +171,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                         }
 
                         if (loadStatus == LoadStatus.CONFLICT) {
-                            if (conflictResolver != null && !fallback) {
+                            if (conflictResolver != null) {
                                 conflictResolver.needsResolved(this, data, loadStatus);
                             } else {
                                 throw new ConflictException(data, targetTable, false,
