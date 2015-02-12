@@ -99,6 +99,8 @@ public class RouterService extends AbstractService implements IRouterService {
     protected IExtensionService extensionService;
     
     protected boolean syncTriggersBeforeInitialLoadAttempted = false;
+    
+    protected boolean firstTimeCheckForAbandonedBatches = true;
 
     public RouterService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -158,7 +160,10 @@ public class RouterService extends AbstractService implements IRouterService {
         if (identity != null) {
             if (force || engine.getClusterService().lock(ClusterConstants.ROUTE)) {
                 try {
-                    engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
+                    if (firstTimeCheckForAbandonedBatches) {
+                        engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
+                        firstTimeCheckForAbandonedBatches = false;
+                    }
                     
                     insertInitialLoadEvents();
                     
