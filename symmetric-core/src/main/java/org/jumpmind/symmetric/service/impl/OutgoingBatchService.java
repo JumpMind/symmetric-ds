@@ -147,7 +147,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         int count = sqlTemplate.queryForInt(getSql("countOutgoingBatchesWithStatusSql"), Status.RT.name());
         if (count > 0) {
             log.info("Cleaning up {} batches that were abandoned by a failed or aborted attempt at routing", count);
-            sqlTemplate.update(getSql("updateOutgoingBatchesStatusSql"), Status.NE.name(),
+            sqlTemplate.update(getSql("updateOutgoingBatchesStatusSql"), Status.OK.name(),
                     Status.RT.name());
         }
     }
