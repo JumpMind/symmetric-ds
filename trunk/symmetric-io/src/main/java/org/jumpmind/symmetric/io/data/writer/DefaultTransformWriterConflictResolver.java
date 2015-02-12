@@ -70,7 +70,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                         }
 
                         writer.start(table);
-                        writer.write(newData, true);
+                        super.performFallbackToInsert(writer, newData, conflict, retransform);
                         writer.end(table);
                     }
 
@@ -102,7 +102,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                 if (newlyTransformedData.hasSameKeyValues(transformedData.getKeyValues())) {
                     Table table = newlyTransformedData.buildTargetTable();
                     writer.start(table);
-                    writer.write(newlyTransformedData.buildTargetCsvData(), true);
+                    super.performFallbackToUpdate(writer, newlyTransformedData.buildTargetCsvData(), conflict, retransform);
                     writer.end(table);
                 }
             }
