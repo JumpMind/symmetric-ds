@@ -71,93 +71,93 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
-"create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                " +
-"                                begin                                                                                                                                                                  " +
-"                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
-"                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
-"                                    (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                        " +
-"                                    values(                                                                                                                                                            " +
-"                                      '$(targetTableName)',                                                                                                                                            " +
-"                                      'I',                                                                                                                                                             " +
-"                                      $(triggerHistoryId),                                                                                                                                             " +
-"                                      $(columns),                                                                                                                                                      " +
-"                                      $(channelExpression),                                                                                                                                                " +
-"                                      $(txIdExpression),                                                                                                                                               " +
-"                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
-"                                      $(externalSelect),                                                                                                                                               " +
-"                                      CURRENT_TIMESTAMP                                                                                                                                                " +
-"                                    );                                                                                                                                                                 " +
-"                                  end if;                                                                                                                                                              " +
-"                                  $(custom_on_insert_text)                                                                                                                                             " +
-"                                  return null;                                                                                                                                                         " +
-"                                end;                                                                                                                                                                   " +
+"create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                \n" +
+"                                begin                                                                                                                                                                  \n" +
+"                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
+"                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
+"                                    (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                        \n" +
+"                                    values(                                                                                                                                                            \n" +
+"                                      '$(targetTableName)',                                                                                                                                            \n" +
+"                                      'I',                                                                                                                                                             \n" +
+"                                      $(triggerHistoryId),                                                                                                                                             \n" +
+"                                      $(columns),                                                                                                                                                      \n" +
+"                                      $(channelExpression),                                                                                                                                                \n" +
+"                                      $(txIdExpression),                                                                                                                                               \n" +
+"                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   \n" +
+"                                      $(externalSelect),                                                                                                                                               \n" +
+"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
+"                                    );                                                                                                                                                                 \n" +
+"                                  end if;                                                                                                                                                              \n" +
+"                                  $(custom_on_insert_text)                                                                                                                                             \n" +
+"                                  return null;                                                                                                                                                         \n" +
+"                                end;                                                                                                                                                                   \n" +
 "                                $function$ language plpgsql;                                                                                                                                           " );
 
         sqlTemplates.put("insertPostTriggerTemplate" ,
-"create trigger $(triggerName) after insert on $(schemaName)$(tableName)                                                                                                                                " +
+"create trigger $(triggerName) after insert on $(schemaName)$(tableName)                                                                                                                                \n" +
 "                                for each row execute procedure $(schemaName)f$(triggerName)();                                                                                                         " );
 
         sqlTemplates.put("updateTriggerTemplate" ,
-"create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                " +
-"                                declare var_row_data text; " +        
-"                                declare var_old_data text; " +
-"                                begin" +
-"                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
-"                                    var_row_data := $(columns); " +
-"                                    var_old_data := $(oldColumns); " +
-"                                    if $(dataHasChangedCondition) then " +
-"                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
-"                                    (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                     " +
-"                                    values(                                                                                                                                                            " +
-"                                      '$(targetTableName)',                                                                                                                                            " +
-"                                      'U',                                                                                                                                                             " +
-"                                      $(triggerHistoryId),                                                                                                                                             " +
-"                                      $(oldKeys),                                                                                                                                                      " +
-"                                      var_row_data,                                                                                                                                                      " +
-"                                      var_old_data,                                                                                                                                                   " +
-"                                      $(channelExpression),                                                                                                                                                " +
-"                                      $(txIdExpression),                                                                                                                                               " +
-"                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
-"                                      $(externalSelect),                                                                                                                                               " +
-"                                      CURRENT_TIMESTAMP                                                                                                                                                " +
-"                                    );                                                                                                                                                                 " +
-"                                  end if;                                                                                                                                                              " +
-"                                  end if;                                                                                                                                                              " +
-"                                  $(custom_on_update_text)                                                                                                                                             " +
-"                                  return null;                                                                                                                                                         " +
-"                                end;                                                                                                                                                                   " +
+"create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                \n" +
+"                                declare var_row_data text; \n" +        
+"                                declare var_old_data text; \n" +
+"                                begin\n" +
+"                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
+"                                    var_row_data := $(columns); \n" +
+"                                    var_old_data := $(oldColumns); \n" +
+"                                    if $(dataHasChangedCondition) then \n" +
+"                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
+"                                    (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                     \n" +
+"                                    values(                                                                                                                                                            \n" +
+"                                      '$(targetTableName)',                                                                                                                                            \n" +
+"                                      'U',                                                                                                                                                             \n" +
+"                                      $(triggerHistoryId),                                                                                                                                             \n" +
+"                                      $(oldKeys),                                                                                                                                                      \n" +
+"                                      var_row_data,                                                                                                                                                      \n" +
+"                                      var_old_data,                                                                                                                                                   \n" +
+"                                      $(channelExpression),                                                                                                                                                \n" +
+"                                      $(txIdExpression),                                                                                                                                               \n" +
+"                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   \n" +
+"                                      $(externalSelect),                                                                                                                                               \n" +
+"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
+"                                    );                                                                                                                                                                 \n" +
+"                                  end if;                                                                                                                                                              \n" +
+"                                  end if;                                                                                                                                                              \n" +
+"                                  $(custom_on_update_text)                                                                                                                                             \n" +
+"                                  return null;                                                                                                                                                         \n" +
+"                                end;                                                                                                                                                                   \n" +
 "                                $function$ language plpgsql;                                                                                                                                           " );
 
         sqlTemplates.put("updatePostTriggerTemplate" ,
-"create trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                                " +
+"create trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                                \n" +
 "                                for each row execute procedure $(schemaName)f$(triggerName)();                                                                                                         " );
 
         sqlTemplates.put("deleteTriggerTemplate" ,
-"create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                " +
-"                                begin                                                                                                                                                                  " +
-"                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
-"                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
-"                                    (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               " +
-"                                    values(                                                                                                                                                            " +
-"                                      '$(targetTableName)',                                                                                                                                            " +
-"                                      'D',                                                                                                                                                             " +
-"                                      $(triggerHistoryId),                                                                                                                                             " +
-"                                      $(oldKeys),                                                                                                                                                      " +
-"                                      $(oldColumns),                                                                                                                                                   " +
-"                                      $(channelExpression),                                                                                                                                                " +
-"                                      $(txIdExpression),                                                                                                                                               " +
-"                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   " +
-"                                      $(externalSelect),                                                                                                                                               " +
-"                                      CURRENT_TIMESTAMP                                                                                                                                                " +
-"                                    );                                                                                                                                                                 " +
-"                                  end if;                                                                                                                                                              " +
-"                                  $(custom_on_delete_text)                                                                                                                                             " +
-"                                  return null;                                                                                                                                                         " +
-"                                end;                                                                                                                                                                   " +
+"create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                \n" +
+"                                begin                                                                                                                                                                  \n" +
+"                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
+"                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
+"                                    (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               \n" +
+"                                    values(                                                                                                                                                            \n" +
+"                                      '$(targetTableName)',                                                                                                                                            \n" +
+"                                      'D',                                                                                                                                                             \n" +
+"                                      $(triggerHistoryId),                                                                                                                                             \n" +
+"                                      $(oldKeys),                                                                                                                                                      \n" +
+"                                      $(oldColumns),                                                                                                                                                   \n" +
+"                                      $(channelExpression),                                                                                                                                                \n" +
+"                                      $(txIdExpression),                                                                                                                                               \n" +
+"                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   \n" +
+"                                      $(externalSelect),                                                                                                                                               \n" +
+"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
+"                                    );                                                                                                                                                                 \n" +
+"                                  end if;                                                                                                                                                              \n" +
+"                                  $(custom_on_delete_text)                                                                                                                                             \n" +
+"                                  return null;                                                                                                                                                         \n" +
+"                                end;                                                                                                                                                                   \n" +
 "                                $function$ language plpgsql;                                                                                                                                           " );
 
         sqlTemplates.put("deletePostTriggerTemplate" ,
-"create trigger $(triggerName) after delete on $(schemaName)$(tableName)                                                                                                                                " +
+"create trigger $(triggerName) after delete on $(schemaName)$(tableName)                                                                                                                                \n" +
 "                                for each row execute procedure $(schemaName)f$(triggerName)();                                                                                                         " );
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
