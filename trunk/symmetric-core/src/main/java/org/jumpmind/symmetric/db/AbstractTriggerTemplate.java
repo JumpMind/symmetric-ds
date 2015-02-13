@@ -709,121 +709,121 @@ abstract public class AbstractTriggerTemplate {
             Trigger trigger) {
         boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
         String templateToUse = null;
-        switch (column.getMappedTypeCode()) {
-            case Types.TINYINT:
-            case Types.SMALLINT:
-            case Types.INTEGER:
-            case Types.BIGINT:
-            case Types.FLOAT:
-            case Types.REAL:
-            case Types.DOUBLE:
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-                templateToUse = numberColumnTemplate;
-                break;
-            case Types.CHAR:
-            case Types.NCHAR:
-            case Types.VARCHAR:
-            case ColumnTypes.NVARCHAR:
-                templateToUse = stringColumnTemplate;
-                break;
-            case ColumnTypes.SQLXML:
-                templateToUse = xmlColumnTemplate;
-                break;
-            case Types.ARRAY:
-                templateToUse = arrayColumnTemplate;
-                break;
-            case Types.LONGVARCHAR:
-            case ColumnTypes.LONGNVARCHAR:
-                if (!isLob) {
+        if (column.getJdbcTypeName() != null
+                && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY))
+                && StringUtils.isNotBlank(geometryColumnTemplate)) {
+            templateToUse = geometryColumnTemplate;
+        } else {
+            switch (column.getMappedTypeCode()) {
+                case Types.TINYINT:
+                case Types.SMALLINT:
+                case Types.INTEGER:
+                case Types.BIGINT:
+                case Types.FLOAT:
+                case Types.REAL:
+                case Types.DOUBLE:
+                case Types.NUMERIC:
+                case Types.DECIMAL:
+                    templateToUse = numberColumnTemplate;
+                    break;
+                case Types.CHAR:
+                case Types.NCHAR:
+                case Types.VARCHAR:
+                case ColumnTypes.NVARCHAR:
                     templateToUse = stringColumnTemplate;
                     break;
-                }
-            case Types.CLOB:
-                if (isOld && symmetricDialect.needsToSelectLobData()) {
-                    templateToUse = emptyColumnTemplate;
-                } else {
-                    templateToUse = clobColumnTemplate;
-                }
-                break;
-            case Types.BLOB:
-                if (requiresWrappedBlobTemplateForBlobType()) {
-                    templateToUse = wrappedBlobColumnTemplate;
+                case ColumnTypes.SQLXML:
+                    templateToUse = xmlColumnTemplate;
                     break;
-                }
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-                // SQL-Server ntext binary type
-            case -10:
-                if (column.getJdbcTypeName() != null
-                        && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY))
-                        && StringUtils.isNotBlank(geometryColumnTemplate)) {
-                    templateToUse = geometryColumnTemplate;
-                } else if (column.getJdbcTypeName() != null
-                        && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.IMAGE))
-                        && StringUtils.isNotBlank(imageColumnTemplate)) {
-                    if (isOld) {
+                case Types.ARRAY:
+                    templateToUse = arrayColumnTemplate;
+                    break;
+                case Types.LONGVARCHAR:
+                case ColumnTypes.LONGNVARCHAR:
+                    if (!isLob) {
+                        templateToUse = stringColumnTemplate;
+                        break;
+                    }
+                case Types.CLOB:
+                    if (isOld && symmetricDialect.needsToSelectLobData()) {
                         templateToUse = emptyColumnTemplate;
                     } else {
-                        templateToUse = imageColumnTemplate;
+                        templateToUse = clobColumnTemplate;
                     }
-                } else if (isOld && symmetricDialect.needsToSelectLobData()) {
-                    templateToUse = emptyColumnTemplate;
-                } else {
-                    templateToUse = blobColumnTemplate;
-                }
-                break;
-            case Types.DATE:
-                if (noDateColumnTemplate()) {
-                    templateToUse = datetimeColumnTemplate;
                     break;
-                }
-                templateToUse = dateColumnTemplate;
-                break;
-            case Types.TIME:
-                if (noTimeColumnTemplate()) {
-                    templateToUse = datetimeColumnTemplate;
-                    break;
-                }
-                templateToUse = timeColumnTemplate;
-                break;
-            case Types.TIMESTAMP:
-                templateToUse = datetimeColumnTemplate;
-                break;
-            case Types.BOOLEAN:
-            case Types.BIT:
-                templateToUse = booleanColumnTemplate;
-                break;
-            default:
-                if (column.getJdbcTypeName() != null) {
-                    if (column.getJdbcTypeName().toUpperCase().equals(TypeMap.INTERVAL)) {
-                        templateToUse = numberColumnTemplate;
-                        break;
-                    } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)
-                            && StringUtils.isNotBlank(geometryColumnTemplate)) {
-                        templateToUse = geometryColumnTemplate;
-                        break;
-                    } else if (column.getMappedType().equals(TypeMap.TIMESTAMPTZ)
-                            && StringUtils.isNotBlank(this.dateTimeWithTimeZoneColumnTemplate)) {
-                        templateToUse = this.dateTimeWithTimeZoneColumnTemplate;
-                        break;
-                    } else if (column.getMappedType().equals(TypeMap.TIMESTAMPLTZ)
-                            && StringUtils.isNotBlank(this.dateTimeWithLocalTimeZoneColumnTemplate)) {
-                        templateToUse = this.dateTimeWithLocalTimeZoneColumnTemplate;
+                case Types.BLOB:
+                    if (requiresWrappedBlobTemplateForBlobType()) {
+                        templateToUse = wrappedBlobColumnTemplate;
                         break;
                     }
-
-                }
-
-                if (StringUtils.isBlank(templateToUse)
-                        && StringUtils.isNotBlank(this.otherColumnTemplate)) {
-                    templateToUse = this.otherColumnTemplate;
+                case Types.BINARY:
+                case Types.VARBINARY:
+                case Types.LONGVARBINARY:
+                    // SQL-Server ntext binary type
+                case -10:
+                    if (column.getJdbcTypeName() != null
+                            && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.IMAGE))
+                            && StringUtils.isNotBlank(imageColumnTemplate)) {
+                        if (isOld) {
+                            templateToUse = emptyColumnTemplate;
+                        } else {
+                            templateToUse = imageColumnTemplate;
+                        }
+                    } else if (isOld && symmetricDialect.needsToSelectLobData()) {
+                        templateToUse = emptyColumnTemplate;
+                    } else {
+                        templateToUse = blobColumnTemplate;
+                    }
                     break;
-                }
+                case Types.DATE:
+                    if (noDateColumnTemplate()) {
+                        templateToUse = datetimeColumnTemplate;
+                        break;
+                    }
+                    templateToUse = dateColumnTemplate;
+                    break;
+                case Types.TIME:
+                    if (noTimeColumnTemplate()) {
+                        templateToUse = datetimeColumnTemplate;
+                        break;
+                    }
+                    templateToUse = timeColumnTemplate;
+                    break;
+                case Types.TIMESTAMP:
+                    templateToUse = datetimeColumnTemplate;
+                    break;
+                case Types.BOOLEAN:
+                case Types.BIT:
+                    templateToUse = booleanColumnTemplate;
+                    break;
+                default:
+                    if (column.getJdbcTypeName() != null) {
+                        if (column.getJdbcTypeName().toUpperCase().equals(TypeMap.INTERVAL)) {
+                            templateToUse = numberColumnTemplate;
+                            break;
+                        } else if (column.getMappedType().equals(TypeMap.TIMESTAMPTZ)
+                                && StringUtils.isNotBlank(this.dateTimeWithTimeZoneColumnTemplate)) {
+                            templateToUse = this.dateTimeWithTimeZoneColumnTemplate;
+                            break;
+                        } else if (column.getMappedType().equals(TypeMap.TIMESTAMPLTZ)
+                                && StringUtils
+                                        .isNotBlank(this.dateTimeWithLocalTimeZoneColumnTemplate)) {
+                            templateToUse = this.dateTimeWithLocalTimeZoneColumnTemplate;
+                            break;
+                        }
 
-                throw new NotImplementedException(column.getName() + " is of type "
-                        + column.getMappedType() + " with JDBC type of " + column.getJdbcTypeName());
+                    }
+
+                    if (StringUtils.isBlank(templateToUse)
+                            && StringUtils.isNotBlank(this.otherColumnTemplate)) {
+                        templateToUse = this.otherColumnTemplate;
+                        break;
+                    }
+
+                    throw new NotImplementedException(column.getName() + " is of type "
+                            + column.getMappedType() + " with JDBC type of "
+                            + column.getJdbcTypeName());
+            }
         }
 
         if (dml == DataEventType.DELETE && isLob && requiresEmptyLobTemplateForDeletes()) {
