@@ -600,8 +600,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     nextData = reader.take();
                     if (data != null) {
                         processInfo.setCurrentTableName(data.getTableName());
-                        processInfo.incrementBatchDataCount();
-                        processInfo.incrementDataCount();
+                        processInfo.incrementCurrentDataCount();
                         boolean atTransactionBoundary = false;
                         if (nextData != null) {
                             String nextTxId = nextData.getTransactionId();
