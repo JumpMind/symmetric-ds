@@ -66,7 +66,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     private Status status = Status.NEW;
 
-    private long currentBatchDataCount;
+    private long currentDataCount;
     
     private long dataCount = -1;
 
@@ -131,12 +131,12 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         }
     }
 
-    public long getCurrentBatchDataCount() {
-        return currentBatchDataCount;
+    public long getCurrentDataCount() {
+        return currentDataCount;
     }
 
-    public void setCurrentBatchDataCount(long dataCount) {
-        this.currentBatchDataCount = dataCount;
+    public void setCurrentDataCount(long dataCount) {
+        this.currentDataCount = dataCount;
     }
 
     public long getBatchCount() {
@@ -147,8 +147,8 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         this.batchCount = batchCount;
     }
 
-    public void incrementBatchDataCount() {
-        this.currentBatchDataCount++;
+    public void incrementCurrentDataCount() {
+        this.currentDataCount++;
     }
 
     public void incrementBatchCount() {
@@ -162,7 +162,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     public void setCurrentBatchId(long currentBatchId) {
         this.currentBatchId = currentBatchId;
         this.currentBatchStartTime = new Date();
-        this.currentBatchDataCount = 0;
+        this.currentDataCount = 0;
     }
     
     public void setCurrentLoadId(long loadId) {
@@ -219,10 +219,6 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     
     public long getDataCount() {
         return dataCount;
-    }
-    
-    public void incrementDataCount() {
-        dataCount++;
     }
     
     public Date getCurrentBatchStartTime() {

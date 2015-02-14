@@ -101,7 +101,7 @@ public class DataGapDetector {
                 processInfo.setStatus(Status.PROCESSING);
                 for (Number number : ids) {
                     long dataId = number.longValue();
-                    processInfo.incrementBatchDataCount();
+                    processInfo.incrementCurrentDataCount();
                     if (lastDataId == -1 && dataGap.getStartId() + dataIdIncrementBy <= dataId) {
                         // there was a new gap at the start
                         dataService.insertDataGap(new DataGap(dataGap.getStartId(), dataId - 1));
