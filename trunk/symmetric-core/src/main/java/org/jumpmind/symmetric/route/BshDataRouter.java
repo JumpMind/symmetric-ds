@@ -126,6 +126,7 @@ public class BshDataRouter extends AbstractDataRouter implements IBuiltInExtensi
         interpreter.set("initialLoad", initialLoad);
         interpreter.set("dataMetaData", dataMetaData);
         interpreter.set("nodes", nodes);
+        interpreter.set("nodeIds", toNodeIds(nodes, null));
         interpreter.set("identityNodeId", engine.getNodeService().findIdentityNodeId());
         interpreter.set("targetNodes", targetNodes);
         interpreter.set("engine", engine);

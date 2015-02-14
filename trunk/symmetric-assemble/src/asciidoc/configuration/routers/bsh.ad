@@ -13,6 +13,8 @@ The router type for a Bean Shell scripted router is 'bsh'. The router expression
 
 |nodes|Collection of org.jumpmind.symmetric.model.Node objects the router would route to normally.
 
+|nodeIds|Collection of node ids that the router would route to normally.  You can just return this if you want the bsh router to behave like the default router.
+
 |targetNodes|Collection of org.jumpmind.symmetric.model.Node objects to be populated and returned.
 
 |engine|The instance of org.jumpmind.symmetric.ISymmetricEngine which has access to SymmetricDS services.
