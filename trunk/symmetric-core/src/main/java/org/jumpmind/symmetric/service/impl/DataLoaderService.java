@@ -100,10 +100,12 @@ import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
@@ -833,6 +835,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED)
                     || (batch.getChannelId() != null && batch.getChannelId().equals(
                             Constants.CHANNEL_CONFIG))) {
+                if (batch.getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
+                    /* Remove outgoing configuration batches because we are about to get 
+                     * the complete configuration.
+                     */
+                    IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
+                    IDataService dataService = engine.getDataService();
+                    dataService.deleteCapturedConfigChannelData();
+                    outgoingBatchService.markAllConfigAsSentForNode(batch.getSourceNodeId());
+                }
                 IncomingBatch incomingBatch = new IncomingBatch(batch);
                 this.batchesProcessed.add(incomingBatch);
                 if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {

@@ -129,6 +129,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 if (outgoingBatch.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
                     outgoingBatch.setStatus(Status.OK);
                     outgoingBatch.setErrorFlag(false);
+                    outgoingBatch.setIgnoreCount(1);
                     updateOutgoingBatch(outgoingBatch);
                     updateCount++;
                 }
