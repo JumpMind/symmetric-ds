@@ -105,6 +105,8 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         
         putSql("selectMaxDataIdSql", "" + "select max(data_id) from $(data)   ");
         
+        putSql("deleteCapturedConfigChannelDataSql", "delete from $(data) where channel_id='config'");
+        
 
     }
 

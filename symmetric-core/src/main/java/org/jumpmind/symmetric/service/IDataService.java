@@ -139,6 +139,8 @@ public interface IDataService {
     
     public void deleteDataGap(DataGap gap);
     
+    public void deleteCapturedConfigChannelData();
+    
     public long findMaxDataId();
     
     public ISqlReadCursor<Data> selectDataFor(Batch batch);

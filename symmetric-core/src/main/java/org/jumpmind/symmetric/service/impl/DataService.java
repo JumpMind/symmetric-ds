@@ -1539,6 +1539,15 @@ public class DataService extends AbstractService implements IDataService {
     public long findMaxDataId() {
         return sqlTemplate.queryForLong(getSql("selectMaxDataIdSql"));
     }
+    
+    
+    @Override
+    public void deleteCapturedConfigChannelData() {
+        int count = sqlTemplate.update(getSql("deleteCapturedConfigChannelDataSql"));
+        if (count > 0) {
+            log.info("Deleted {} data rows that were on the config channel", count);
+        }
+    }
 
     public class DataMapper implements ISqlRowMapper<Data> {
         public Data mapRow(Row row) {
