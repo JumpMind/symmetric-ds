@@ -210,7 +210,7 @@ public class Router implements Serializable {
         if (nodeGroupLink != null) {
             return nodeGroupLink.getSourceNodeGroupId()
             .toLowerCase()
-            + "_2_"
+            + " to "
             + nodeGroupLink.getTargetNodeGroupId().toLowerCase();
         } else {
             throw new IllegalStateException("Need the nodeGroupLink to be set");
