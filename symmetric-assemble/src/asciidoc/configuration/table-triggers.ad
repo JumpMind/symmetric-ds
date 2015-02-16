@@ -18,8 +18,12 @@ The next step in defining the synchronization scenario is to define which tables
 way to do this is by using the *Auto Create...* button on the Configure -> Table Triggers screen.  The Auto Create functionality
 introspects the master node's database and looks for available tables to synchronize.  
 
-Select a channel from the dropdown, select the tables that should be synchronized using that channel, and then click the *Apply* 
-button.  The Auto Create functionality can be used repeatedly to select different table and channel combinations.  
+Note that you will be configuring tables to synchronize for specific <<Routers>>.  You will get a chance to select tables for each configured Router.  Select the channel you desire from the dropdown, 
+select the tables that should be synchronized using that channel, and then click the *Next* 
+button.  A summary will be presented at the end of the configuration.  Click *Finish* to create the triggers.  
+
+The Auto Create functionality can be used repeatedly to select different table, router and channel combinations.  If you are configuring a new set of tables triggers that should use an independent 
+Trigger definition be sure to enter values for either the _Id Prefix_ or the _Id Suffix_ fields.  These will be used to create a unique _Trigger Id_.   
 
 image::triggers/triggers-auto-create.png[]
 
