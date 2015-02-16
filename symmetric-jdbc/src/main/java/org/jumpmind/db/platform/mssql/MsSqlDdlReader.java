@@ -19,6 +19,8 @@ package org.jumpmind.db.platform.mssql;
  * under the License.
  */
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -138,12 +140,21 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
 
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
+        int size = -1;
+        String columnSize = (String) values.get("COLUMN_SIZE");
+            if (isNotBlank(columnSize)) {
+                size = Integer.parseInt(columnSize);
+            }
         if (typeName != null && typeName.toLowerCase().startsWith("text")) {
             return Types.LONGVARCHAR;
         } else if (typeName != null && typeName.toLowerCase().startsWith("ntext")) {
             return Types.CLOB;
         } else if (typeName != null && typeName.toUpperCase().contains(TypeMap.GEOMETRY)) {
             return Types.VARCHAR;
+        } else if (typeName != null && typeName.toUpperCase().contains("VARCHAR") && size > 8000) {
+            return Types.LONGVARCHAR;
+        } else if (typeName != null && typeName.toUpperCase().contains("NVARCHAR") && size > 8000) {
+            return Types.LONGNVARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
