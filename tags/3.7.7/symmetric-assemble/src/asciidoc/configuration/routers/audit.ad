@@ -1,0 +1,38 @@
+
+===== Audit Table Router
+
+This router audits captured data by recording the change in an audit table that the router creates and keeps up to date. The router 
+creates a table named the same as the table for which data was captured with the suffix of _AUDIT. It will contain all of the same columns as the original 
+table with the same data types only each column is nullable with no default values.
+
+IMPORTANT: The following parameter must be set to true so that the audit table can be created.   
+----
+auto.config.database=true
+----
+
+.Three extra "AUDIT" columns are added to the table:
+
+[horizontal]
+AUDIT_ID:: the primary key of the table.
+AUDIT_TIME:: the time at which the change occurred.
+AUDIT_EVENT:: the DML type that happened to the row.
+
+
+ifndef::pro[]
+.The following is an example of an audit router
+[source, SQL]
+----
+insert into SYM_ROUTER (router_id,
+	source_node_group_id, target_node_group_id, router_type, create_time,
+	last_update_time) values ('audit_at_corp','corp', 'local', 'audit',
+	current_timestamp, current_timestamp); 
+----	
+endif::pro[]
+	
+IMPORTANT: The audit router must be associated with a node group link of type 'R'. 
+The 'R' stands for 'only routes to' (see <<Group Links>>). 
+ifndef::pro[]
+In the above example, we refer to a 'corp to local' group link. Here, local is a new node_group created for the audit router. 
+No nodes belong to the 'local' node_group. If a trigger linked to an audit router fires on the corp node, a new audit table will 
+be created at the corp node with the new data inserted.
+endif::pro[]

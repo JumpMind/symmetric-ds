@@ -1,0 +1,5 @@
+
+=== SQL Anywhere
+
+SQL Anywhere and Sybase Adaptive Server Anywhere (ASA) were tested using the jConnect JDBC driver.
+The jConnect JDBC driver should be placed in the "lib" folder.
