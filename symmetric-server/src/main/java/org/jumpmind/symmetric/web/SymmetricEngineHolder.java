@@ -336,10 +336,11 @@ public class SymmetricEngineHolder {
             }
 
             engine = create(symmetricProperties.getAbsolutePath());
-            engineCount++;
             if (engine != null && autoStart) {
+                engineCount++;
                 engine.start();
             } else {
+                FileUtils.deleteQuietly(symmetricProperties);
                 log.warn("The engine could not be created.  It will not be started");
             }
             return engine;

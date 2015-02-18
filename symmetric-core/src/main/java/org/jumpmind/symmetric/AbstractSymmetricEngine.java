@@ -742,6 +742,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         removeMeFromMap(registeredEnginesByName);        
         removeMeFromMap(registeredEnginesByUrl);
         if (parameterService != null) {
+            parameterService.setDatabaseHasBeenInitialized(false);
             registeredEnginesByName.remove(getEngineName());
             registeredEnginesByUrl.remove(getSyncUrl());
         }
