@@ -114,6 +114,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * This is a REST API for SymmetricDS. The API will be active only if
@@ -879,6 +880,7 @@ public class RestService {
     @ResponseBody
     public final PullDataResults getPullData(
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
+            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table") 
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestParam(value = "useJdbcTimestampFormat", required = false, defaultValue = "true") boolean useJdbcTimestampFormat,
             @RequestParam(value = "useUpsertStatements", required = false, defaultValue = "false") boolean useUpsertStatements,
@@ -895,6 +897,7 @@ public class RestService {
     public final PullDataResults getPullData(
             @PathVariable("engine") String engineName,
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
+            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.") 
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestParam(value = "useJdbcTimestampFormat", required = false, defaultValue = "true") boolean useJdbcTimestampFormat,
             @RequestParam(value = "useUpsertStatements", required = false, defaultValue = "false") boolean useUpsertStatements,
@@ -964,6 +967,7 @@ public class RestService {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public final void putHeartbeat(
+            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestBody Heartbeat heartbeat) {
         if (securityVerified(heartbeat.getNodeId(), getSymmetricEngine(), securityToken)) {
@@ -985,6 +989,7 @@ public class RestService {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public final void putHeartbeat(@PathVariable("engine") String engineName,
+            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.") 
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestBody Heartbeat heartbeat) {
 
@@ -1074,6 +1079,7 @@ public class RestService {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final BatchAckResults putAcknowledgeBatch(
+            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestBody BatchResults batchResults) {
         BatchAckResults results = putAcknowledgeBatch(getSymmetricEngine().getEngineName(),
@@ -1086,6 +1092,7 @@ public class RestService {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final BatchAckResults putAcknowledgeBatch(@PathVariable("engine") String engineName,
+            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestBody BatchResults batchResults) {
 
@@ -1174,6 +1181,7 @@ public class RestService {
     @ResponseBody
     public final OutgoingBatchSummary getOutgoingBatchSummary(
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
+            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
         return getOutgoingBatchSummary(getSymmetricEngine().getEngineName(), nodeId, securityToken);
     }
@@ -1185,6 +1193,7 @@ public class RestService {
     public final OutgoingBatchSummary getOutgoingBatchSummary(
             @PathVariable("engine") String engineName,
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
+            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
 
         ISymmetricEngine engine = getSymmetricEngine(engineName);
