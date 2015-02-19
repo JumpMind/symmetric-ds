@@ -3,7 +3,8 @@
 :imagesdir: ../images
 :icons: font
 :source-highlighter: coderay
-
+:linkattrs:
+:relpathprefix: '../'
 :numbered:
 
 ifdef::pro[]
@@ -24,4 +25,7 @@ _Permission to use, copy, modify, and distribute this SymmetricDS Tutorials Guid
 for any purpose and without fee is hereby granted in perpetuity, provided that 
 the above copyright notice and this paragraph appear in all copies._
 
+
 include::quick-start.ad[]
+
+include::demo.ad[]
