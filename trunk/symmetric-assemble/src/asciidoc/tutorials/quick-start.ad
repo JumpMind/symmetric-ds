@@ -1,302 +1,208 @@
+== Quick Start
 
-== SymmetricDS Quick Start Guide
+IMPORTANT: To see a demonstration of a preconfigured SymmetricDS environment see the <<Demo>> tutorial.
 
-This guide explains how to quickly setup a demonstration of SymmetricDS to help you understand what a working 
-system looks like.
+This guide will walk you through the minimum steps required to setup data synchronization through a single installation of SymmetricDS.
 
-Three nodes, which represent three embedded databases, will be installed.  One node will represent a centralized corporate database and the 
-other two nodes will represent two individual retail store databases.
-
-image::tutorials/quickstart-two-tier.png[]
-
-=== Installation
-
-For information on how to install SymmetricDS, please refer to the Installation section of the SymmetricDS User Guide.
-
-==== Creating and Starting
+ifndef::pro[]
+.Steps covered 
+. Install
+. Connect Source Database
+. Configure
+. Connect Target Database
+endif::pro[]
 
 ifdef::pro[]
-The Demo button will automatically install three `nodes` with synchronization pre-configured.  This will allow
-you to see a working model of SymmetricDS.
+.Steps covered 
+. Install
+. Run
+. Connect Source Database
+. Select Tables
+. Connect Target Database
+endif::pro[]
 
-.Open the web console and click Demo.
+
+=== Install 
+ifndef::pro[]
+Download and install SymmetricDS from the http://www.symmetricds.org/download[SymmetricDS.org] website.
+endif::pro[]
+
+ifdef::pro[]
+Download and install SymmetricDS from the http://www.jumpmind.com/products/symmetricds/download[JumpMind] website.
+endif::pro[]
+
+TIP: For complete installation instructions click link:../user-guide.html#_installation[here,window="_tutorials"]
+
+
+
+ifdef::pro[]
+=== Run
+
+Open the control center to verify SymmetricDS server is running.  If it is not start the server using the start server button.   Then open the web console using the open web console button.  
+
+.SymmetricDS Control Center
+image::tutorials/control-center.png[]
+
+TIP: Depending on your operating system a program shortcut for the control center might have been setup.  Otherwise you can find it directly in the /bin directory of your
+SymmetricDS installation.  The executable file is named *symcc*.
+endif::pro[]
+
+=== Connect Source Database
+
+ifndef::pro[]
+Create a property file named `xxxxx.properties` in the engines folder of your SymmetricDS installation.   Replace the `xxxxx` with a name for your node (homeoffice, central, server, etc).
+
+.Properties
+. engine.name={an arbitrary name for the node}
+. group.id={this must match the name of a group inserted in step 3, ex: corp}
+. external.id={id for the node, ex: 000 }
+. sync.url=http://{hostname}:{port}/{webcontext}/sync/{engine.name}
+. registration.url={leave this blank for the source node}
+. db.driver={JDBC driver class}
+. db.url={JDBC url for your source database}
+. db.user={JDBC username}
+. db.password={JDBC password}
+
+TIP: For complete instructions creating the master node click link:../user-guide.html#_node_properties_file[here,window="_tutorials"]
+endif::pro[]
+
+ifdef::pro[]
 image::wizard-node-setup.png[]
+
+. Select "Master Node" from the node setup wizard
+. Provide JDBC connection information for your source database, hit next
+. Select "Standard 2 Tier" profile, hit next
+. Use the default sync url, hit next
+. Provide a password for the web console, hit next
+. Finish
+
+TIP: For complete instructions creating the master node click link:../user-guide.html#_master_node_setup[here,window="_tutorials"]
 endif::pro[]
 
 ifndef::pro[]
-First, we need to copy over the `corp-000.properties`, `store-001.properties` and `store-002.properties` files from the `samples/` folder to the `engines/` folder.    
-Each properties file represents a node.  
+=== Configure
 
-Next, we need to populate the database with the demo configuration.  To do this, execute the following steps.
+SymmetricDS configuration requires at a minimum each of the following entities. 
 
-* Open a command prompt and navigate to the `samples` subdirectory of your SymmetricDS installation.
-* Create the sample tables for items, prices, and sales, in the root database by executing the following command:
-+
-[source, cli]
-----
-../bin/dbimport --engine corp-000 --format XML --alter-case create_sample.xml
-----
-+
-* Next, create the SymmetricDS tables.  Tables are automatically created when the server starts for the first time.  There is 
-also a utility that can be used to create the SymmetricDS tables.  Please run the following.
-+
-[source, cli]
-----
-../bin/symadmin --engine corp-000 create-sym-tables
-----
-+
-* Load the SymmetricDS configuration and sample item and transaction data into the root node database by executing:
-+
-[source, cli]
-----
-../bin/dbimport --engine corp-000 insert_sample.sql
-----
+. Group
+. Group Links
+. Router
+. Trigger
+. Trigger Router
 
-We will now start the SymmetricDS instance.  All three nodes run in the same instance.  From the command prompt, 
-navigate to the SymmetricDS home directory and run the following command.
+Use the following SQL templates to help you generate these entities replacing anything in red with your values (with the exception of the group link data_event_action, 'P', 'W').
 
-[source, cli]
-----
-bin/sym
-----
-
-NOTE: SymmetricDS is normally deployed as a service.  For more information about deploying SymmetricDS as a service please refer 
-to the SymmetricDS User Guide.
-
-The log output will go to both the command line and the `logs/symmetric.log`.  Log output for each node can be identified by the name of the node in brackets.
-
-[source, cli]
-----
-2015-01-10 10:28:09,604 INFO [corp-000] [AbstractSymmetricEngine] [symmetric-engine-startup-0] Started SymmetricDS
-----
-
-* Watch the logging output of the store nodes to see it successfully register with the corp node. 
-The stores are configured to attempt registration at a random time interval up to every minute.
-
-
-endif::pro[]
-
-==== Initial Load
-
-An initial load is the process of seeding tables at a target node with data from a source node. 
-Instead of capturing data, data is selected from the source table using a SQL statement and then it is streamed to the client.
-
-ifdef::pro[]
-By default, the Demo does this action for you.  However, it is worth noting that Initial Loads can be sent through the Manage->Nodes screen.
-endif::pro[]
-
-ifndef::pro[]
-The store nodes were pre-configured to do an initial load after registration.  However, it
-is worth noting that Initial Loads can be sent using the following commands:
-[source, cli]
-----
-bin/symadmin --engine corp-000 reload-node 001
-----
-
-[source, cli]
-----
-bin/symadmin --engine corp-000 reload-node 002
-----
-
-endif::pro[]
-
-==== What's Created
-
-ifdef::pro[]
-
-The demo databases are http://www.h2database.com[H2 Databases].  You can connect to them using a sql explorer tool like 
-http://squirrel-sql.sourceforge.net/[Squirrel Sql].  The connection information can be found in the properties files in the 
-engines directory.
-
-Please verify the databases by navigating to the Explore tab and using the database explorer on the left.
-endif::pro[]
-
-ifndef::pro[]
-Please verify the databases by logging in and listing the tables.  You can 
-endif::pro[]
-
-* Find the item tables that sync from root to client (that is, from corp to store): item and item_selling_price.
-* Find the sales tables that sync from store to corp: sale_transaction and sale_return_line_item.
-* Find the SymmetricDS system tables, which have a prefix of "sym_", such as sym_channel, sym_trigger, sym_router, and sym_trigger_router.
-* Validate the corp item tables have sample data.
-
-=== Pulling Data
-
-Next, we will make a change to the item data in the central office corp node database (we'll add a new item), and observe the data being pulled down to the store.
-
-==== Create Data
-
-Create data in corp for all stores to pull.
-
-ifdef::pro[]
-Navigate to the SQL Explorer for the corp node and execute (image:explore-execute-all.png[title="Run As Script"]) the following scripts.
-endif::pro[]
-ifndef::pro[]
-Open an interactive SQL session with the corp database and add a new item for sale, with different prices at store 001 and store 002.
-endif::pro[]
-
+.Groups
 [source, SQL]
 ----
-insert into item (item_id, name) values (110000055, 'Soft Drink');
-insert into item_selling_price (item_id, store_id, price) 
-	values (110000055, '001', 0.65);
-insert into item_selling_price (item_id, store_id, price) 
-	values (110000055, '002', 1.00);
+insert into SYM_NODE_GROUP
+        (node_group_id, description)
+        values ('corp', 'A corporate node');
+        
+insert into SYM_NODE_GROUP
+        (node_group_id, description)
+        values ('store', 'A retail store node');
 ----
 
-ifdef::pro[]
-image::tutorials/demo-pull-sql.png[]
+.Group Links
+[source, SQL]
+----
+insert into SYM_NODE_GROUP_LINK
+(source_node_group, target_node_group, data_event_action)
+      values ('store', 'corp', 'P');
+
+insert into SYM_NODE_GROUP_LINK
+(source_node_group, target_node_group, data_event_action)
+      values ('corp', 'store', 'W');
+----
+
+.Router
+[source, SQL]
+----
+insert into SYM_ROUTER (router_id,
+        source_node_group_id, target_node_group_id, create_time,
+        last_update_time) values ('corp-2-store','corp', 'store',
+        current_timestamp, current_timestamp);
+----
+
+.Trigger
+[source, SQL]
+----
+insert into SYM_TRIGGER (trigger_id, source_table_name,
+          channel_id, last_update_time, create_time)
+                  values ('item', 'item', 'item', current_timestamp, current_timestamp);
+----
+
+.Trigger Router
+[source, SQL]
+----
+insert into SYM_TRIGGER_ROUTER
+        (trigger_id, router_id, initial_load_order, create_time,
+        last_update_time) values ('item', 'corp-2-store', 1, current_timestamp,
+        current_timestamp);
+----
+
 endif::pro[]
+
+ifdef::pro[]
+=== Select Tables
+
+The Quick Config wizard will be displayed by default when configuration is missing.  If it is closed or not visible it can be opened by hitting the "Quick Config" button on the Overview screen of the Configure tab.
+
+[.float-group]
+--
+[.left]
+image::wizard-config/wizard-config-start.png[]
+[.left]
+image::wizard-config/wizard-config-client-server.png[]
+--
+
+. Welcome, hit next
+. Select tables you wish to sync from client to server, hit next
+. Select tables you wish to sync from server to client, hit next
+. Verify the summary, hit finish
+
+TIP: For complete instructions for the quick config wizard click link:../user-guide.html#_quick_config_wizard[here,window="_tutorials"]
+endif::pro[]
+
+
+=== Connect Target Database
 
 ifndef::pro[]
-Watch the logging output of both nodes to see the data transfer. The store is configured to push data to the corp node every minute.
-endif::pro[]
+Create a property file named `xxxxx.properties` in the engines folder of your SymmetricDS installation.   Replace the `xxxxx` with a name for your target node (ex. store).
 
-==== Verify Outgoing Batches
+.Properties
+. engine.name={an arbitrary name for the node}
+. group.id={this must match the name of a group inserted in step 3, ex: store}
+. external.id={id for the node, ex: 001 }
+. sync.url=http://{hostname}:{port}/{webcontext}/sync/{engine.name}
+. registration.url={this should match the sync.url in your source property file}
+. db.driver={JDBC driver class}
+. db.url={JDBC url for your target database}
+. db.user={JDBC username}
+. db.password={JDBC password}
+
+TIP: For complete instructions creating the target node click link:../user-guide.html#_node_properties_file[here,window="_tutorials"]
+endif::pro[]
 
 ifdef::pro[]
-.Verify the outgoing batches were created and sent (status of `OK`).
-image::tutorials/demo-pull-verify-batch.png[]
-endif::pro[]
+The Add Node wizard will be displayed by default when only one node has been configured.  If it is closed or not visible it can be opened by hitting the "Add" button on the Nodes screen of the Manage tab. 
 
-ifndef::pro[]
-Open an interactive SQL session with the corp node database and run the following query to see that the batch sent (status of `OK`).
+image::wizard-connect/wizard-connect-menu.png[]
 
-[source, SQL]
-----
-select * from sym_outgoing_batch order by batch_id desc
-----
+. Select Local Node, hit next
+. Provide JDBC connection information for your target database, hit next
+. Select default registration url, hit next
+. Select client node group, hit next
+. Provide an external id of 1, hit next
+. Select default sync url, hit next
+. Choose appropriate options here depending if your target tables already exist and if they should be initially loaded with data from the source.  Hit next
+. Hit finish
 
-endif::pro[]
-
-==== Verify Incoming Batches
-
-ifdef::pro[]
-.Verify the incoming batches were received (status of `OK`).
-image::tutorials/demo-pull-verify-batch.png[]
-endif::pro[]
-
-ifndef::pro[]
-Open an interactive SQL session with the store node database and run the following query to see that the batch was received (status of `OK`).
-
-[source, SQL]
-----
-select * from sym_incoming_batch order by batch_id desc
-----
+TIP: For complete instructions to setup the target database click link:../user-guide.html#_add_node[here,window="_tutorials"] 
 
 endif::pro[]
 
-==== Verify SQL
-
-Verify the change directly in a store database.  
-
-[source, SQL]
-----
-select * from item_selling_price
-----
-
-ifdef::pro[]
-.Verify the new price for store 002 is 1.00
-image::tutorials/demo-pull-verify-explore.png[]
-endif::pro[]
-
-IMPORTANT:  Make sure you have selected either store-001 or store-002 to run your query against.
-
-=== Pushing Data
-
-We will now simulate a sale at the store and observe how SymmetricDS pushes the sale transaction to the central office.
-
-==== Create Data
-
-Create data in a store to be pushed to corp.  
-ifdef::pro[]
-Navigate to the SQL Explorer for the corp node 
-and execute (image:explore-execute-all.png[title="Run As Script"]) the following scripts.
-endif::pro[]
-
-ifndef::pro[]
-Open an interactive SQL session with the store node database and add a new sale to the store node database.
-endif::pro[]
-
-[source, SQL]
-----
-insert into sale_transaction (tran_id, store_id, workstation, day, seq) 
-	values (1000, '001', '3', '2014-03-21', 100);
-	
-insert into sale_return_line_item (tran_id, item_id, price, quantity) 
-	values (1000, 110000055, 0.65, 1);
-----
-
-ifdef::pro[]
-image::tutorials/demo-push-sql.png[]
-endif::pro[]
-
-ifndef::pro[]
-Watch the logging output of both nodes to see the data transfer. The store is configured to push data to the corp node every minute.
-endif::pro[]
-
-==== Verify Outgoing Batches
-
-ifdef::pro[]
-.Verify the outgoing batches were created and sent (status of `OK`).
-image::tutorials/demo-push-verify-batch.png[]
-endif::pro[]
-
-ifndef::pro[]
-Open an interactive SQL session with the store node database and run the following query to see that the batch sent (status of `OK`).
-
-[source, SQL]
-----
-select * from sym_outgoing_batch order by batch_id desc
-----
-
-endif::pro[]
-
-==== Verify Incoming Batches
-ifdef::pro[]
-.Verify the incoming batches were received (status of `OK`).
-image::tutorials/demo-push-verify-batch.png[]
-endif::pro[]
-
-ifndef::pro[]
-Open an interactive SQL session with the corp node database and run the following query to see that the batch was received (status of `OK`).
-
-[source, SQL]
-----
-select * from sym_incoming_batch order by batch_id desc
-----
-
-endif::pro[]
-
-==== Verify SQL
-
-Verify the change directly in the corp database. 
- 
-[source, SQL]
-----
-select * from sale_transaction;
-----
-
-ifdef::pro[]
-.Verify the sale transaction from store 001 is present
-image::tutorials/demo-push-verify-explore-1.png[]
-endif::pro[]
-
-[source, SQL]
-----
-select * from sale_return_line_item;
-----
-
-ifdef::pro[]
-.Verify the sale return line item from store 001 is present
-image::tutorials/demo-push-verify-explore-2.png[]
-endif::pro[]
-
-IMPORTANT:  Make sure you have selected corp-000 to run your query against.
-
-=== Finish
 [horizontal]
-icon:graduation-cap[role="green" size="2x"]:: [big]#*Congratulations! You have completed the Demo.*#  
+icon:graduation-cap[role="green" size="2x"]:: [big]#*Congratulations! You have completed the Quick Start.*#  
 
-Continue to browse through the demo configuration to see how basic triggers, routers, group 
-links and more are setup. When you are ready, uninstall the demo and begin your own configuration.
