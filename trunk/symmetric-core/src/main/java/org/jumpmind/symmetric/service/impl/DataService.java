@@ -75,6 +75,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
+import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.AppUtils;
@@ -660,28 +661,31 @@ public class DataService extends AbstractService implements IDataService {
         if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
                 && !Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
-            TriggerHistory fileSyncSnapshotHistory = triggerRouterService.findTriggerHistory(null,
-                    null,
-                    TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
-            String routerid = triggerRouterService.buildSymmetricTableRouterId(
-                    fileSyncSnapshotHistory.getTriggerId(), parameterService.getNodeGroupId(),
-                    targetNode.getNodeGroupId());
-            TriggerRouter fileSyncSnapshotTriggerRouter = triggerRouterService
-                    .getTriggerRouterForCurrentNode(fileSyncSnapshotHistory.getTriggerId(),
-                            routerid, true);
+            IFileSyncService fileSyncService = engine.getFileSyncService();
+            if (fileSyncService.getFileTriggerRoutersForCurrentNode().size() > 0) {
+                TriggerHistory fileSyncSnapshotHistory = triggerRouterService.findTriggerHistory(
+                        null, null,
+                        TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
+                String routerid = triggerRouterService.buildSymmetricTableRouterId(
+                        fileSyncSnapshotHistory.getTriggerId(), parameterService.getNodeGroupId(),
+                        targetNode.getNodeGroupId());
+                TriggerRouter fileSyncSnapshotTriggerRouter = triggerRouterService
+                        .getTriggerRouterForCurrentNode(fileSyncSnapshotHistory.getTriggerId(),
+                                routerid, true);
 
-            List<Channel> channels = engine.getConfigurationService().getFileSyncChannels();
-            for (Channel channel : channels) {
-                if (channel.isReloadFlag()) {
-                    insertReloadEvent(transaction, targetNode, fileSyncSnapshotTriggerRouter,
-                            fileSyncSnapshotHistory, "reload_channel_id='" + channel.getChannelId() + "'",
-                            true, loadId, createBy, Status.NE, channel.getChannelId());
-                    if (!transactional) {
-                        transaction.commit();
+                List<Channel> channels = engine.getConfigurationService().getFileSyncChannels();
+                for (Channel channel : channels) {
+                    if (channel.isReloadFlag()) {
+                        insertReloadEvent(transaction, targetNode, fileSyncSnapshotTriggerRouter,
+                                fileSyncSnapshotHistory,
+                                "reload_channel_id='" + channel.getChannelId() + "'", true, loadId,
+                                createBy, Status.NE, channel.getChannelId());
+                        if (!transactional) {
+                            transaction.commit();
+                        }
                     }
                 }
             }
-
         }
     }
 
