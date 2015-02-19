@@ -269,11 +269,17 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                             nodeIds.remove(nodeIdForRecordBeingRouted);
                         }
                     }
-
-                    /*
-                     * The parent node never needs node_security updates.
-                     */
-                    nodeIds.remove(columnValues.get("CREATED_AT_NODE_ID"));
+                    
+                    boolean removeParentNode = true;
+                    if (eventType == DataEventType.UPDATE) {
+                        if ("1".equals(columnValues.get("INITIAL_LOAD_ENABLED")) &&
+                                me.getNodeId().equals(nodeIdForRecordBeingRouted)) {
+                            removeParentNode = false;
+                        }                            
+                    }
+                    if (removeParentNode) {
+                        nodeIds.remove(columnValues.get("CREATED_AT_NODE_ID"));
+                    }
                     
                     if (engine.getConfigurationService().isMasterToMaster()) {
                         /*
