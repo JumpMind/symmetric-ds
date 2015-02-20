@@ -84,6 +84,8 @@ import org.jumpmind.symmetric.web.rest.model.Batch;
 import org.jumpmind.symmetric.web.rest.model.BatchAckResults;
 import org.jumpmind.symmetric.web.rest.model.BatchResult;
 import org.jumpmind.symmetric.web.rest.model.BatchResults;
+import org.jumpmind.symmetric.web.rest.model.BatchSummaries;
+import org.jumpmind.symmetric.web.rest.model.BatchSummary;
 import org.jumpmind.symmetric.web.rest.model.ChannelStatus;
 import org.jumpmind.symmetric.web.rest.model.Engine;
 import org.jumpmind.symmetric.web.rest.model.EngineList;
@@ -1179,7 +1181,7 @@ public class RestService {
     @RequestMapping(value = "/engine/outgoingBatchSummary", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final OutgoingBatchSummary getOutgoingBatchSummary(
+    public final BatchSummaries getOutgoingBatchSummary(
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
             @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
@@ -1190,32 +1192,38 @@ public class RestService {
     @RequestMapping(value = "/engine/{engine}/outgoingBatchSummary", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final OutgoingBatchSummary getOutgoingBatchSummary(
+    public final BatchSummaries getOutgoingBatchSummary(
             @PathVariable("engine") String engineName,
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
             @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
             @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
 
+        
         ISymmetricEngine engine = getSymmetricEngine(engineName);
-        OutgoingBatchSummary summary = new OutgoingBatchSummary();
-        summary.setNodeId(nodeId);
-        summary.setStatus(OutgoingBatch.Status.OK);
 
         if (securityVerified(nodeId, engine, securityToken)) {
+            BatchSummaries summaries = new BatchSummaries();
+            summaries.setNodeId(nodeId);
+
             IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
-            List<OutgoingBatchSummary> summaries = outgoingBatchService.findOutgoingBatchSummary(
+            List<OutgoingBatchSummary> list = outgoingBatchService.findOutgoingBatchSummary(
                     OutgoingBatch.Status.RQ, OutgoingBatch.Status.QY, OutgoingBatch.Status.NE,
                     OutgoingBatch.Status.SE, OutgoingBatch.Status.LD, OutgoingBatch.Status.ER);
-            for (OutgoingBatchSummary sum : summaries) {
+            for (OutgoingBatchSummary sum : list) {
                 if (sum.getNodeId().equals(nodeId)) {
-                    summary = sum;
-                    break;
+                    BatchSummary summary = new BatchSummary();
+                    summary.setBatchCount(sum.getBatchCount());
+                    summary.setDataCount(sum.getDataCount());
+                    summary.setOldestBatchCreateTime(sum.getOldestBatchCreateTime());
+                    summary.setStatus(sum.getStatus().name());
+                    summaries.getBatchSummaries().add(summary);
                 }
             }
+            
+            return summaries;
         } else {
             throw new NotAllowedException();
         }
-        return summary;
     }
 
     @ApiOperation(value = "Read parameter value")
