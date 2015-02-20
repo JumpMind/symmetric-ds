@@ -318,7 +318,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
 
         String sql = getSql("selectOutgoingBatchPrefixSql", where, startAtBatchIdSql,
-                ascending ? "order by batch_id asc" : " order by batch_id desc");
+                ascending ? " order by batch_id asc" : " order by batch_id desc");
         return sqlTemplate.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true),
                 params);
 
