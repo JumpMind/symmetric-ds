@@ -1,0 +1,9 @@
+
+==== Linking File Triggers
+
+SymmetricDS will not install file triggers on the database until they are linked.   Linking file triggers to a router tells SymmetricDS
+how to synchronize the file changes once they have been triggered.
+
+See <<Linking Routers>> for additional information about linking to routers.
+ 
+TODO
