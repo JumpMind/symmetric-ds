@@ -44,6 +44,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.exception.IoException;
@@ -100,13 +102,20 @@ public class SnapshotUtil {
             logDir = new File("logs");
 
             if (!logDir.exists()) {
+                File file = findSymmetricLogFile();
+                if (file != null) {
+                    logDir = file.getParentFile();
+                }
+            }
+
+            if (!logDir.exists()) {
                 logDir = new File("../logs");
             }
 
             if (!logDir.exists()) {
                 logDir = new File("target");
             }
-
+            
             if (logDir.exists()) {
                 File[] files = logDir.listFiles();
                 if (files != null) {
@@ -453,6 +462,25 @@ public class SnapshotUtil {
                     .getLastFinishTime());
         }
     }
+    
+    @SuppressWarnings("unchecked")
+    public static File findSymmetricLogFile() {
+        Enumeration<Appender> appenders = org.apache.log4j.Logger.getRootLogger().getAllAppenders();
+        while (appenders.hasMoreElements()) {
+            Appender appender = appenders.nextElement();
+            if (appender instanceof FileAppender) {
+                FileAppender fileAppender = (FileAppender) appender;
+                if (fileAppender != null) {
+                    File file = new File(fileAppender.getFile());
+                    if (file != null && file.exists()) {
+                        return file;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 
     static class SortedProperties extends Properties {
         private static final long serialVersionUID = 1L;
