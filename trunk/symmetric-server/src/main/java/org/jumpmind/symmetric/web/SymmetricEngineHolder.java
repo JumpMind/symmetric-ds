@@ -182,9 +182,9 @@ public class SymmetricEngineHolder {
 
                     if (files != null) {
                         for (int i = 0; i < files.length; i++) {
-                            engineCount++;
                             File file = files[i];
                             if (file.getName().endsWith(".properties")) {
+                                engineCount++;
                                 enginesStarting.add(new EngineStarter(file.getAbsolutePath()));
                             }
                         }
