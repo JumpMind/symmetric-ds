@@ -65,9 +65,6 @@ public class PushUriHandler extends AbstractUriHandler {
 
         push(nodeId, inputStream, outputStream);
 
-        // Not sure if this is necessary, but it's been here and it hasn't hurt
-        // anything ...
-        res.flushBuffer();
         log.debug("Push completed for {}", nodeId);
 
     }
