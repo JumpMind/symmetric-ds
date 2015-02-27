@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.util;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -60,6 +62,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.JarBuilder;
 import org.slf4j.Logger;
@@ -80,34 +83,46 @@ public class SnapshotUtil {
 
         String dirName = engine.getEngineName().replaceAll(" ", "-") + "-" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
-        //File snapshotsDir = getSnapshotDirectory(engine);
-
-        File tmpDir = new File(engine.getParameterService().getTempDirectory(), dirName);
+        IParameterService parameterService = engine.getParameterService();
+        File tmpDir = new File(parameterService.getTempDirectory(), dirName);
         tmpDir.mkdirs();
+        
+        File logDir = null;
+        
+        String parameterizedLogDir = parameterService.getString("server.log.dir");
+        if (isNotBlank(parameterizedLogDir)) {
+            logDir = new File(parameterizedLogDir);
+        }
+        
+        if (logDir != null && logDir.exists()) {
+            log.info("Using server.log.dir setting as the location of the log files");
+        } else {
+            logDir = new File("logs");
 
-        File logDir = new File("logs");
-        
-        if (!logDir.exists()) {
-            logDir = new File("../logs");
-        }
-        
-        if (!logDir.exists()) {
-            logDir = new File("target");
-        }
-        
-        if (logDir.exists()) {
-            File[] files = logDir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.getName().toLowerCase().endsWith(".log")) {
-                        try {
-                            FileUtils.copyFileToDirectory(file, tmpDir);
-                        } catch (IOException e) {
-                            log.warn("Failed to copy "+file.getName()+" to the snapshot directory", e);
-                        }                        
+            if (!logDir.exists()) {
+                logDir = new File("../logs");
+            }
+
+            if (!logDir.exists()) {
+                logDir = new File("target");
+            }
+
+            if (logDir.exists()) {
+                File[] files = logDir.listFiles();
+                if (files != null) {
+                    for (File file : files) {
+                        if (file.getName().toLowerCase().endsWith(".log")) {
+                            try {
+                                FileUtils.copyFileToDirectory(file, tmpDir);
+                            } catch (IOException e) {
+                                log.warn("Failed to copy " + file.getName()
+                                        + " to the snapshot directory", e);
+                            }
+                        }
                     }
                 }
             }
+
         }
 
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService(); 
