@@ -227,10 +227,10 @@ endif::pro[]
 
 
 
-===== Shell Script Transform
+===== BeanShell Script Transform
 
-This transformation allows you to provide a Bean Shell script in transform expression and executes the script
- at the time of transformation. Some variables are provided to the script: 
+This transformation allows you to provide a http://www.beanshell.org/[BeanShell] script in the transform expression and executes the script
+at the time of transformation.  Some variables are provided to the script: 
  
 .Variables
 |===
