@@ -26,12 +26,12 @@ the built-in Jetty web server to handle requests.
 The web server can be configured by changing properties in the
 `conf/symmetric-server.properties` file.
            
-The following example starts the server on the default port with the node startup
-properties found in the `root.properties` file.
+The following example starts the server on the default port from the command line.  SymmetricDS will automatically create a node for each  
+<<Node Properties File>> configured in the engines directory.
             
 [source, cli]
 ----
-bin/sym --properties root.properties
+bin/sym
 ----
 
 To automatically start SymmetricDS when the machine boots, see <<Running as a Service>>.
