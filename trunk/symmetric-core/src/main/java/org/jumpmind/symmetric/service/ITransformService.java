@@ -35,12 +35,12 @@ public interface ITransformService {
 
     public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink link,
             TransformPoint transformPoint);
-
-    public List<TransformTableNodeGroupLink> getTransformTables();
+    
+    public List<TransformTableNodeGroupLink> getTransformTables(boolean includeColumns);
 
     public List<TransformColumn> getTransformColumns();
 
-    public List<TransformColumn> getTransformColumnsForTable();
+    public List<TransformColumn> getTransformColumnsForTable(String transformId);
 
     public void saveTransformTable(TransformTableNodeGroupLink transformTable);
 
