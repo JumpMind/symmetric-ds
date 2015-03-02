@@ -183,7 +183,7 @@ public class TransformService extends AbstractService implements ITransformServi
 
                 byByLinkByTransformPoint = new HashMap<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>>();
 
-                List<TransformTableNodeGroupLink> transforms = getTransformTablesFromDB();
+                List<TransformTableNodeGroupLink> transforms = getTransformTablesFromDB(true);
 
                 for (TransformTableNodeGroupLink transformTable : transforms) {
                     NodeGroupLink nodeGroupLink = transformTable.getNodeGroupLink();
@@ -212,16 +212,18 @@ public class TransformService extends AbstractService implements ITransformServi
         return byByLinkByTransformPoint;
     }
 
-    private List<TransformTableNodeGroupLink> getTransformTablesFromDB() {
+    private List<TransformTableNodeGroupLink> getTransformTablesFromDB(boolean includeColumns) {
         List<TransformTableNodeGroupLink> transforms = sqlTemplate.query(
                 getSql("selectTransformTable"), new TransformTableMapper());
-        List<TransformColumn> columns = getTransformColumnsFromDB();
-        for (TransformTableNodeGroupLink transformTable : transforms) {
-            for (TransformColumn column : columns) {
-                if (column.getTransformId().equals(transformTable.getTransformId())) {
-                    transformTable.addTransformColumn(column);
-                }
+        if (includeColumns) {
+            List<TransformColumn> columns = getTransformColumnsFromDB();
+            for (TransformTableNodeGroupLink transformTable : transforms) {
+                for (TransformColumn column : columns) {
+                    if (column.getTransformId().equals(transformTable.getTransformId())) {
+                        transformTable.addTransformColumn(column);
+                    }
 
+                }
             }
         }
         return transforms;
@@ -233,17 +235,18 @@ public class TransformService extends AbstractService implements ITransformServi
         return columns;
     }
 
-    public List<TransformTableNodeGroupLink> getTransformTables() {
-        return this.getTransformTablesFromDB();
+    public List<TransformTableNodeGroupLink> getTransformTables(boolean includeColumns) {
+        return this.getTransformTablesFromDB(includeColumns);
     }
 
     public List<TransformColumn> getTransformColumns() {
         return this.getTransformColumnsFromDB();
     }
 
-    public List<TransformColumn> getTransformColumnsForTable() {
+    @Override
+    public List<TransformColumn> getTransformColumnsForTable(String transformId) {
         List<TransformColumn> columns = sqlTemplate.query(getSql("selectTransformColumnForTable"),
-                new TransformColumnMapper());
+                new TransformColumnMapper(), transformId);
         return columns;
     }
 

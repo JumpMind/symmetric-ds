@@ -643,7 +643,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 // need to remove all transforms before we can remove the node
                 // group links
                 List<TransformTableNodeGroupLink> transforms = transformService
-                        .getTransformTables();
+                        .getTransformTables(false);
                 for (TransformTableNodeGroupLink transformTable : transforms) {
                     transformService.deleteTransformTable(transformTable.getTransformId());
                 }
