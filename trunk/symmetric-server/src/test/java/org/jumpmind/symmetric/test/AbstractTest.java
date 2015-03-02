@@ -166,7 +166,22 @@ abstract public class AbstractTest {
                 System.setProperty(SystemConstants.SYSPROP_ENGINES_DIR, engineDir.getAbsolutePath());
                 System.setProperty(SystemConstants.SYSPROP_WEB_DIR, "src/main/deploy/web");
 
-                ISymmetricEngine engine = new ClientSymmetricEngine(properties);
+                ISymmetricEngine engine = null;
+
+                int tries = 2;
+                do {
+                    /** 
+                     * Firebird is flaky.  Trying to work around it.
+                     */
+                    try {
+                        engine = new ClientSymmetricEngine(properties);
+                    } catch (Exception ex) {
+                        log.warn("Failed to create engine on the first try.  Trying again.  The root cause of the first failure was: ", ex);
+                        tries--;
+                        AppUtils.sleep(30000);
+                    }
+                } while (tries > 0 && engine == null);
+                
                 IDatabasePlatform platform = engine.getDatabasePlatform();
                 engine.getStagingManager().clean(0);
                 engine.uninstall();
