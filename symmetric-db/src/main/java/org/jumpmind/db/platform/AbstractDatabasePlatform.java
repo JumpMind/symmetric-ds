@@ -148,7 +148,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public void dropDatabase(Database database, boolean continueOnError) {
         String sql = ddlBuilder.dropTables(database);
-        new SqlScript(sql, getSqlTemplate(), !continueOnError, null).execute(true);
+        new SqlScript(sql, getSqlTemplate(), !continueOnError, null).execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
     }
 
     public void createTables(boolean dropTablesFirst, boolean continueOnError, Table... tables) {
@@ -170,7 +170,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
 
         String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
-        new SqlScript(createSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null).execute();
+        new SqlScript(createSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null).execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
     }
 
     public void alterDatabase(Database desiredDatabase, boolean continueOnError) {
