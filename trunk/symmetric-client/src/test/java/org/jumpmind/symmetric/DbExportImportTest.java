@@ -25,8 +25,6 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -48,6 +46,7 @@ import org.jumpmind.symmetric.io.data.DbImport;
 import org.jumpmind.symmetric.io.data.writer.ConflictException;
 import org.jumpmind.symmetric.service.impl.AbstractServiceTest;
 import org.jumpmind.util.FormatUtils;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -161,15 +160,9 @@ public class DbExportImportTest extends AbstractServiceTest {
         ISymmetricEngine engine = getSymmetricEngine();
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
         Database testTables = platform.readDatabaseFromXml("/test-dbimport.xml", true);
-        platform.dropDatabase(testTables, true);
         Table table = testTables.findTable("test_db_import_1", false);
 
-        DbImport dbImport = new DbImport(platform);
-        dbImport.setFormat(DbImport.Format.XML);
-        dbImport.setSchema(platform.getDefaultSchema());
-        dbImport.setCatalog(platform.getDefaultCatalog());
-        dbImport.setAlterCaseToMatchDatabaseDefaultCase(true);
-        dbImport.importTables(getClass().getResourceAsStream("/test-dbimport.xml"));
+        recreateImportTable();
 
         DbExport export = new DbExport(platform);
         export.setFormat(Format.XML);
