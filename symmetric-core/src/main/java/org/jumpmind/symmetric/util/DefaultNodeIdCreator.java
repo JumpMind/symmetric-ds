@@ -87,12 +87,13 @@ public class DefaultNodeIdCreator implements INodeIdCreator, IBuiltInExtensionPo
                         if (nodeService.findNode(nodeId) == null || autoRegisterEnabled) {                        
                             break;
                         }
-                        nodeId = buildNodeId(nodeService, node) + "-" + sequence;
-                        
-                        if (nodeService.findNode(nodeId) != null && !autoRegisterEnabled) {
-                            nodeId = null;
-                        }
+                        nodeId = buildNodeId(nodeService, node) + "-" + sequence;                        
                     }
+                    
+                    if (nodeService.findNode(nodeId) != null && !autoRegisterEnabled) {
+                        nodeId = null;
+                    }
+
                 }
                 
                 

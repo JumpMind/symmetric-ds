@@ -129,6 +129,33 @@ public class DefaultNodeIdCreatorTest {
         String selectedNodeId = generator.generateNodeId(node, null, null);
         assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
+    
+    
+    @Test
+    public void testGenerateNodeIdWithMultipleExistingWithUniqueParam() throws Exception {
+        final String EXPECTED_NODE_ID = "100-5";
+        IParameterService paramService = mock(IParameterService.class);
+        Mockito.when(paramService.is(ParameterConstants.EXTERNAL_ID_IS_UNIQUE)).thenReturn(false);
+        Mockito.when(paramService.getInt(ParameterConstants.NODE_ID_CREATOR_MAX_NODES, 100)).thenReturn(100);
+        
+        DefaultNodeIdCreator generator = new DefaultNodeIdCreator(paramService, new MockNodeService() {
+            @Override
+            public Node findNode(String nodeId) {
+
+                if (nodeId != null && !nodeId.equals("100-5")) {
+                    Node node = new Node();
+                    node.setNodeId(nodeId);
+                    return node;
+                } else {
+                    return null;
+                }
+            }
+        }, SecurityServiceFactory.create());
+        Node node = new Node();
+        node.setExternalId("100");
+        String selectedNodeId = generator.generateNodeId(node, null, null);
+        assertEquals(EXPECTED_NODE_ID, selectedNodeId);
+    }
 
     @Test
     public void testGenerateNodeIdExistingAll() throws Exception {
