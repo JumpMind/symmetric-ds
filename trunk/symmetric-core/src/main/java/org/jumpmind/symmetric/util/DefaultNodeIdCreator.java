@@ -125,6 +125,7 @@ public class DefaultNodeIdCreator implements INodeIdCreator, IBuiltInExtensionPo
                 interpreter.set("hostname", remoteHost);
                 interpreter.set("remoteHost", remoteHost);
                 interpreter.set("remoteAddress", remoteAddress);
+                interpreter.set("log", log);
                 Object retValue = interpreter.eval(script);
                 if (retValue != null) {
                     return retValue.toString();
