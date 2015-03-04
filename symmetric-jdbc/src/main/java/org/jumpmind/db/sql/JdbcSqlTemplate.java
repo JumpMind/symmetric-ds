@@ -228,6 +228,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public Map<String, Object> queryForMap(final String sql, final Object... args) {
         logSql(sql, args);
         return execute(new IConnectionCallback<Map<String, Object>>() {
+            @SuppressWarnings("resource")
             public Map<String, Object> execute(Connection con) throws SQLException {
                 Map<String, Object> result = null;
                 PreparedStatement ps = null;
@@ -341,6 +342,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public int update(final boolean autoCommit, final boolean failOnError, final boolean failOnDrops,
             final boolean failOnSequenceCreate, final int commitRate, final ISqlResultsListener resultsListener, final ISqlStatementSource source) {
         return execute(new IConnectionCallback<Integer>() {
+            @SuppressWarnings("resource")
             public Integer execute(Connection con) throws SQLException {
                 int totalUpdateCount = 0;
                 boolean oldAutoCommitSetting = con.getAutoCommit();
