@@ -75,7 +75,11 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     public String getDefaultSchema() {
-        return "dbo";
+        if (StringUtils.isBlank(defaultSchema)) {
+            defaultSchema = (String) getSqlTemplate().queryForObject("select current_user",
+                    String.class);
+        }
+        return defaultSchema;
     }
 
     @Override

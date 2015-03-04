@@ -32,6 +32,11 @@ public class MsSql2000SymmetricDialect extends MsSqlSymmetricDialect {
         super(parameterService, platform);
         this.triggerTemplate = new MsSql2000TriggerTemplate(this);
     }
+    
+    @Override
+    protected boolean alterLockEscalation() {
+        return false;
+    }
 
     @Override
     public void createRequiredDatabaseObjects() {

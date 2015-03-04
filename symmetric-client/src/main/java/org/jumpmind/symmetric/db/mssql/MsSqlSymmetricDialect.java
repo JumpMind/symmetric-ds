@@ -89,6 +89,11 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     public boolean createOrAlterTablesIfNecessary(String... tableNames) {
         boolean altered = super.createOrAlterTablesIfNecessary(tableNames);
+        altered |= alterLockEscalation();
+        return altered;
+    }
+    
+    protected boolean alterLockEscalation () {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();        
         String tablePrefix = getTablePrefix();
         try {
@@ -128,12 +133,15 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                         + " SET (LOCK_ESCALATION = DISABLE)");
                 sqlTemplate.update("ALTER TABLE " + outgoingBatchTable
                         + " SET (LOCK_ESCALATION = DISABLE)");
+                return true;
+            } else {
+                return false;
             }
         } catch (Exception e) {            
             log.warn("Failed to disable lock escalation");
             log.debug("", e);
+            return false;
         }
-        return altered;
     }
     
     @Override
