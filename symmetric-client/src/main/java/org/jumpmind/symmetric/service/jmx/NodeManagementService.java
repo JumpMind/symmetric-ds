@@ -324,13 +324,16 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
             @ManagedOperationParameter(name = "nodeGroup", description = "The node group id this node will belong to"),
             @ManagedOperationParameter(name = "externalId", description = "The external id for the node") })
     public void openRegistration(String nodeGroupId, String externalId) {
-        Node node = engine.getNodeService().findNodeByExternalId(nodeGroupId, externalId);
-        if (node != null) {
-            engine.getRegistrationService().reOpenRegistration(node.getExternalId());
-        } else {
-            engine.getRegistrationService().openRegistration(nodeGroupId, externalId);
-        }
+        engine.getRegistrationService().openRegistration(nodeGroupId, externalId);
     }
+    
+    @ManagedOperation(description = "Re-open the registration for a node with the specified external id")
+    @ManagedOperationParameters({
+            @ManagedOperationParameter(name = "nodeId", description = "The node id to reopen registration for")})
+    public void reopenRegistration(String nodeId) {
+        engine.getRegistrationService().reOpenRegistration(nodeId);
+    }
+
 
     @ManagedOperation(description = "Send an initial load of data to a node.")
     @ManagedOperationParameters({ @ManagedOperationParameter(name = "nodeId", description = "The node id to reload.") })
