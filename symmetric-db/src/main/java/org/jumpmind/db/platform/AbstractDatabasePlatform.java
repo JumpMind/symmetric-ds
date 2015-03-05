@@ -614,8 +614,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public boolean isBlob(int type) {
-        return type == Types.BLOB || type == Types.BINARY || type == Types.VARBINARY
-                || type == Types.LONGVARBINARY || type == -10;
+        return type == Types.BLOB || type == Types.LONGVARBINARY || type == -10;
     }
 
     public List<Column> getLobColumns(Table table) {
