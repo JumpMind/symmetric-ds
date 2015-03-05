@@ -95,7 +95,9 @@ public class Database implements Serializable, Cloneable {
         Map<String, Table> tableMap = new HashMap<String, Table>();
 
         for (int i = 0; i < tables.size(); i++) {
-            tableMap.put(tables.get(i).getName(), tables.get(i));
+            if (tables.get(i) != null) {
+               tableMap.put(tables.get(i).getName(), tables.get(i));
+            }
         }
 
         for (int i = 0; i < tables.size(); i++) {
