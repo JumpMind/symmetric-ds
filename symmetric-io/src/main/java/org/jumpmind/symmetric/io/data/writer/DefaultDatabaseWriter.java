@@ -256,7 +256,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 Iterator<Column> it = lookupKeys.iterator();
                 while (it.hasNext()) {
                     Column col = it.next();
-                    if ((col.isOfBinaryType() && data.isNoBinaryOldData())
+                    if ((platform.isLob(col.getMappedTypeCode()) && data.isNoBinaryOldData())
                             || !platform.canColumnBeUsedInWhereClause(col)) {
                         it.remove();
                     }
@@ -404,7 +404,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     Iterator<Column> it = lookupKeys.iterator();
                     while (it.hasNext()) {
                         Column col = it.next();
-                        if ((col.isOfBinaryType() && data.isNoBinaryOldData())
+                        if ((platform.isLob(col.getMappedTypeCode()) && data.isNoBinaryOldData())
                                 || !platform.canColumnBeUsedInWhereClause(col)) {
                             it.remove();
                         }
