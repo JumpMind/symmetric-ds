@@ -1,0 +1,29 @@
+SymmetricDS installs database triggers to capture changes in the <<DATA>> table.  A record of the triggers that were installed and what
+columns are being captured is stored in the <<TRIGGER_HIST>> table.  When data is captured in <<DATA>> it references the <<TRIGGER_HIST>>
+record that represented the trigger at the time data was captured.  
+
+This is necessary because if a trigger is rebuilt after columns are added or removed and data that was captured by the old trigger 
+has not yet been delivered, we need a record of what columns were in play at the time the data had been captured.
+
+ifdef::pro[]
+The Installed Triggers Screen is used to view tables that have successfully been installed with triggers.
+
+This screen allows you to *Rebuild* an individual database trigger or *Rebuild All* database triggers.  It also allows you to *Drop* triggers.  Only reason 
+you might need to drop triggers to alter a table or perform a batch job where you don't want data to be captured.
+
+image::manage/manage-installed-triggers.png[]
+endif::pro[]
+
+The <<TRIGGER_HIST>> table records the reason a trigger was rebuilt. The following reasons
+are possible:
+        
+[horizontal]        
+N::  New trigger that has not been created before
+S::  Schema changes in the table were detected
+C::  Configuration changes in Trigger
+T::  Trigger was missing
+        
+A configuration entry in Trigger without any history in Trigger Hist results in a new trigger being created (N). The Trigger Hist stores a
+hash of the underlying table, so any alteration to the table causes the trigger to be rebuilt (S). When the `last_update_time` is changed 
+on the Trigger entry, the configuration change causes the trigger to be rebuilt (C). If an entry in Trigger Hist is missing the
+corresponding database trigger, the trigger is created (T).

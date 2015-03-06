@@ -1,0 +1,14 @@
+String data = "${data}";
+log.info("Running the following script: " + data);
+ProcessBuilder pb = new ProcessBuilder(new String[] { ${commands} });
+pb.redirectErrorStream(true);        
+Process process = pb.start();
+java.io.OutputStream os = process.getOutputStream();
+org.apache.commons.io.IOUtils.copy(new StringReader(data), os);
+os.close();
+new org.jumpmind.util.StreamGobbler(process.getInputStream()).start();
+int exitCode = process.waitFor();
+if (exitCode != 0) {
+    throw new IoException("Failed to load schema.  Exited with code of " + exitCode);
+}
+log.info("Done building schema"); 
