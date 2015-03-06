@@ -52,7 +52,6 @@ public class HsqlDb2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
 
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "LONGVARBINARY", Types.LONGVARBINARY);
-        databaseInfo.addNativeTypeMapping(Types.BLOB, "LONGVARBINARY", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.CLOB, "LONGVARCHAR", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "LONGVARCHAR", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "LONGVARBINARY", Types.LONGVARBINARY);
