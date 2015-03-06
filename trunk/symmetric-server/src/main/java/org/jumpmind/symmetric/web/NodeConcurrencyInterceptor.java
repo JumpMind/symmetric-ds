@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An interceptor that controls access to this node for pushes and pulls. It is
+ * An intercepter that controls access to this node for pushes and pulls. It is
  * configured within symmetric-web.xml
  */
 public class NodeConcurrencyInterceptor implements IInterceptor {
