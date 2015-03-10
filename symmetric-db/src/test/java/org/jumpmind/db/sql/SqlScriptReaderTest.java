@@ -30,8 +30,9 @@ public class SqlScriptReaderTest {
 
     @Test
     public void testReadScript() throws Exception {
-        SqlScriptReader reader = new SqlScriptReader(new InputStreamReader(getClass().getResourceAsStream("/test-script-1.sql")));         
-        assertEquals("select * from \n  TEST where\nid = 'someid'", reader.readSqlStatement());
+        SqlScriptReader reader = new SqlScriptReader(new InputStreamReader(getClass().getResourceAsStream("/test-script-1.sql")));
+        String sql = reader.readSqlStatement();
+        assertEquals("select * from \n  TEST where\n  \n  id = 'someid'", sql);
         assertEquals("select * from test", reader.readSqlStatement());
         assertEquals("insert into test (one, two, three) values('1','1','2')", reader.readSqlStatement());
         for (int i = 0; i < 4; i++) {            
@@ -40,8 +41,16 @@ public class SqlScriptReaderTest {
         assertEquals("update sym_node set sync_url='http://localhost:8080/test' where node_id='test'", reader.readSqlStatement());
         assertEquals("update something set oops=';' where whoops='test'", reader.readSqlStatement());
         assertEquals("update test set one = '''', two='\\\\##--''' where one is null", reader.readSqlStatement());
-        assertEquals("update test\n  set one = '1', two = '2'\nwhere one = 'one'", reader.readSqlStatement());
+        assertEquals("update test\n  set one = '1', two = '2'\n  where one = 'one'", reader.readSqlStatement());
         assertEquals("create table \"TE--ST\" (\"ID##2\" VARCHAR(100))", reader.readSqlStatement());
+        sql = reader.readSqlStatement();
+        assertEquals("insert into test (col) values('import org.x.Test;\n" + 
+                "import com.y.Testy;\n" + 
+                "\n" + 
+                "class A {\n" + 
+                "  int x, y = 0;\n" + 
+                "}\n" + 
+                "')",sql);
         assertNull(reader.readSqlStatement());
         reader.close();
     }

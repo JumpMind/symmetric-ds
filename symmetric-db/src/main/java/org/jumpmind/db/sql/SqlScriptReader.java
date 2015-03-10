@@ -79,29 +79,25 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
             if (line != null) {
                 do {
                     line = trimComments(line);
-                    if (StringUtils.isNotBlank(line)) {
                         if (sql == null) {
                             sql = new StringBuilder();
                         }
-                        if (checkStatementEnds(line)) {
-                            if (sql.length() > 0) {
-                                sql.append("\n");
-                            }
-                            sql.append(line.substring(0, line.lastIndexOf(delimiter)).trim());
-                            String toExecute = prepareForExecute(sql);
+                        sql.append("\n");
+                        sql.append(line);
+
+                        if (checkStatementEnds(sql.toString())) {
+                            String toExecute = sql.substring(0, sql.lastIndexOf(delimiter));
+                            toExecute = prepareForExecute(toExecute);
                             if (StringUtils.isNotBlank(toExecute)) {
                                 return toExecute;
                             }
-                        } else {
-                            sql.append("\n");
-                            sql.append(line);
-                        }
-                    }
+                        } 
                     line = readLine();
                 } while (line != null);
 
-                if (sql != null) {
-                    return prepareForExecute(sql);
+                String toExecute = sql.toString();
+                if (StringUtils.isNotBlank(toExecute)) {
+                    return prepareForExecute(toExecute);
                 } else {
                     return null;
                 }
@@ -115,8 +111,7 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
 
     }
     
-    protected String prepareForExecute(StringBuilder sql) {
-        String toExecute = sql.toString();
+    protected String prepareForExecute(String toExecute) {
         toExecute = FormatUtils.replaceTokens(toExecute, replacementTokens,
                 usePrefixSuffixForReplacementTokens);
         if (StringUtils.isNotBlank(toExecute)) {
@@ -160,9 +155,15 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
         }
         return false;
     }
-
+    
+    protected boolean inQuotedArea(String s) {
+        return StringUtils.countMatches(s, "'") % 2 != 0
+                || StringUtils.countMatches(s, "\"") % 2 != 0
+                || StringUtils.countMatches(s, "`") % 2 != 0;
+    }
+    
     protected boolean checkStatementEnds(String s) {
-        return s.trim().endsWith("" + delimiter);
+        return s.trim().endsWith("" + delimiter) && !inQuotedArea(s);
     }
 
 }

@@ -39,3 +39,10 @@ update test
   where one = 'one';
 ## last comment
 create table "TE--ST" ("ID##2" VARCHAR(100));
+insert into test (col) values('import org.x.Test;
+import com.y.Testy;
+
+class A {
+  int x, y = 0;
+}
+');
