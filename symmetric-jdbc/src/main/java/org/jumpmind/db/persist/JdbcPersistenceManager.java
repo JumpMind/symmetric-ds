@@ -25,7 +25,7 @@ public class JdbcPersistenceManager extends AbstractPersistenceManager {
 
     public JdbcPersistenceManager(IDatabasePlatform databasePlatform) {
         this.databasePlatform = databasePlatform;
-    }    
+    }
 
     /**
      * @return true if the object was created, false if the object was updated
@@ -67,12 +67,12 @@ public class JdbcPersistenceManager extends AbstractPersistenceManager {
     public boolean delete(Object object, String catalogName, String schemaName, String tableName) {
         return excecuteDml(DmlType.DELETE, object, catalogName, schemaName, tableName) > 0;
     }
-    
+
     @Override
     public <T> List<T> find(Class<T> clazz) {
         return find(clazz, null, null, camelCaseToUnderScores(clazz.getSimpleName()));
     }
-    
+
     @Override
     public <T> List<T> find(Class<T> clazz, Map<String, Object> conditions) {
         return find(clazz, conditions, null, null, camelCaseToUnderScores(clazz.getSimpleName()));
@@ -87,7 +87,7 @@ public class JdbcPersistenceManager extends AbstractPersistenceManager {
 
             LinkedHashMap<String, Column> objectToTableMapping = mapObjectToTable(object, table);
             LinkedHashMap<String, Object> objectValuesByColumnName = new LinkedHashMap<String, Object>();
-            
+
             Column[] keys = new Column[conditions.size()];
 
             Set<String> keyPropertyNames = conditions.keySet();
@@ -111,8 +111,8 @@ public class JdbcPersistenceManager extends AbstractPersistenceManager {
                     new Column[objectToTableMapping.size()]);
 
             DmlStatement statement = databasePlatform.createDmlStatement(DmlType.SELECT,
-                    table.getCatalog(), table.getSchema(), table.getName(), keys, columns, nullKeyValues,
-                    null);
+                    table.getCatalog(), table.getSchema(), table.getName(), keys, columns,
+                    nullKeyValues, null);
             String sql = statement.getSql();
             Object[] values = statement.getValueArray(objectValuesByColumnName);
             int[] types = statement.getTypes();
@@ -199,10 +199,12 @@ public class JdbcPersistenceManager extends AbstractPersistenceManager {
 
             Row row = databasePlatform.getSqlTemplate().queryForRow(sql, values);
 
-            Set<String> propertyNames = objectToTableMapping.keySet();
-            for (String propertyName : propertyNames) {
-                Object value = row.get(objectToTableMapping.get(propertyName).getName());
-                BeanUtils.copyProperty(object, propertyName, value);
+            if (row != null) {
+                Set<String> propertyNames = objectToTableMapping.keySet();
+                for (String propertyName : propertyNames) {
+                    Object value = row.get(objectToTableMapping.get(propertyName).getName());
+                    BeanUtils.copyProperty(object, propertyName, value);
+                }
             }
         } catch (Exception e) {
             throw toRuntimeException(e);
