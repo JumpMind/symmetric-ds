@@ -69,6 +69,7 @@ transform(platform, context, column, data, sourceValues, newValue, oldValue) {
 endif::pro[]
 
 ifndef::pro[]
+
 [source,sql]
 ----
 insert into sym_extension
@@ -104,6 +105,45 @@ values
 endif::pro[]
 
 =====
+
+ifndef::pro[]
+.Java `IReloadListener` extension that disables foreign keys before a load and enables them after the load.
+=====
+
+
+[source,sql]
+----
+insert into SYM_EXTENSION (EXTENSION_ID, EXTENSION_TYPE, INTERFACE_NAME, NODE_GROUP_ID, ENABLED, EXTENSION_ORDER, EXTENSION_TEXT, CREATE_TIME, LAST_UPDATE_BY, LAST_UPDATE_TIME) values ('disable ref integrity','java','org.jumpmind.symmetric.load.IReloadListener','ALL',1,1,'import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
+import org.jumpmind.symmetric.load.IReloadListener;
+import org.jumpmind.symmetric.model.Node;
+
+public class MyReloadListener implements IReloadListener, ISymmetricEngineAware {
+
+    ISymmetricEngine engine;
+
+    @Override
+    public void setSymmetricEngine(ISymmetricEngine engine) {
+        this.engine = engine;
+    }
+
+    @Override
+    public void beforeReload(ISqlTransaction transaction, Node node, long loadId) {
+        engine.getDataService().insertSqlEvent(transaction, node, "SET REFERENTIAL_INTEGRITY FALSE", true, loadId, "initial load");
+    }
+
+    @Override
+    public void afterReload(ISqlTransaction transaction, Node node, long loadId) {
+        engine.getDataService().insertSqlEvent(transaction, node, "SET REFERENTIAL_INTEGRITY TRUE", true, loadId, "initial load");
+    }
+
+}
+',current_timestamp,'some user',current_timestamp);
+----
+=====
+endif::pro[]
+
 
 .Extensions Tips and Tricks
 
