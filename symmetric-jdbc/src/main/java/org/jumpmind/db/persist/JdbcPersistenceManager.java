@@ -80,59 +80,64 @@ public class JdbcPersistenceManager extends AbstractPersistenceManager {
 
     public <T> List<T> find(Class<T> clazz, Map<String, Object> conditions, String catalogName,
             String schemaName, String tableName) {
-        try {
-            Table table = findTable(catalogName, schemaName, tableName);
+        if (conditions == null || conditions.size() == 0) {
+            return find(clazz, catalogName, schemaName, tableName);
+        } else {
+            try {
+                Table table = findTable(catalogName, schemaName, tableName);
 
-            T object = clazz.newInstance();
+                T object = clazz.newInstance();
 
-            LinkedHashMap<String, Column> objectToTableMapping = mapObjectToTable(object, table);
-            LinkedHashMap<String, Object> objectValuesByColumnName = new LinkedHashMap<String, Object>();
+                LinkedHashMap<String, Column> objectToTableMapping = mapObjectToTable(object, table);
+                LinkedHashMap<String, Object> objectValuesByColumnName = new LinkedHashMap<String, Object>();
 
-            Column[] keys = new Column[conditions.size()];
+                Column[] keys = new Column[conditions.size()];
 
-            Set<String> keyPropertyNames = conditions.keySet();
-            boolean[] nullKeyValues = new boolean[conditions.size()];
-            int index = 0;
-            for (String propertyName : keyPropertyNames) {
-                Column column = objectToTableMapping.get(propertyName);
-                if (column != null) {
-                    keys[index] = column;
-                    nullKeyValues[index] = conditions.get(propertyName) == null;
-                    objectValuesByColumnName.put(column.getName(), conditions.get(propertyName));
-                    index++;
-                } else {
-                    throw new IllegalStateException(
-                            "Could not find a database column that maps to the " + propertyName
-                                    + " property on " + clazz.getName());
+                Set<String> keyPropertyNames = conditions.keySet();
+                boolean[] nullKeyValues = new boolean[conditions.size()];
+                int index = 0;
+                for (String propertyName : keyPropertyNames) {
+                    Column column = objectToTableMapping.get(propertyName);
+                    if (column != null) {
+                        keys[index] = column;
+                        nullKeyValues[index] = conditions.get(propertyName) == null;
+                        objectValuesByColumnName
+                                .put(column.getName(), conditions.get(propertyName));
+                        index++;
+                    } else {
+                        throw new IllegalStateException(
+                                "Could not find a database column that maps to the " + propertyName
+                                        + " property on " + clazz.getName());
+                    }
                 }
-            }
 
-            Column[] columns = objectToTableMapping.values().toArray(
-                    new Column[objectToTableMapping.size()]);
+                Column[] columns = objectToTableMapping.values().toArray(
+                        new Column[objectToTableMapping.size()]);
 
-            DmlStatement statement = databasePlatform.createDmlStatement(DmlType.SELECT,
-                    table.getCatalog(), table.getSchema(), table.getName(), keys, columns,
-                    nullKeyValues, null);
-            String sql = statement.getSql();
-            Object[] values = statement.getValueArray(objectValuesByColumnName);
-            int[] types = statement.getTypes();
+                DmlStatement statement = databasePlatform.createDmlStatement(DmlType.SELECT,
+                        table.getCatalog(), table.getSchema(), table.getName(), keys, columns,
+                        nullKeyValues, null);
+                String sql = statement.getSql();
+                Object[] values = statement.getValueArray(objectValuesByColumnName);
+                int[] types = statement.getTypes();
 
-            List<Row> rows = databasePlatform.getSqlTemplate().query(sql, values, types);
-            List<T> objects = new ArrayList<T>();
+                List<Row> rows = databasePlatform.getSqlTemplate().query(sql, values, types);
+                List<T> objects = new ArrayList<T>();
 
-            for (Row row : rows) {
-                object = clazz.newInstance();
-                Set<String> propertyNames = objectToTableMapping.keySet();
-                for (String propertyName : propertyNames) {
-                    Object value = row.get(objectToTableMapping.get(propertyName).getName());
-                    BeanUtils.copyProperty(object, propertyName, value);
+                for (Row row : rows) {
+                    object = clazz.newInstance();
+                    Set<String> propertyNames = objectToTableMapping.keySet();
+                    for (String propertyName : propertyNames) {
+                        Object value = row.get(objectToTableMapping.get(propertyName).getName());
+                        BeanUtils.copyProperty(object, propertyName, value);
+                    }
+                    objects.add(object);
                 }
-                objects.add(object);
-            }
 
-            return objects;
-        } catch (Exception e) {
-            throw toRuntimeException(e);
+                return objects;
+            } catch (Exception e) {
+                throw toRuntimeException(e);
+            }
         }
 
     }
