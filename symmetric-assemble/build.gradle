@@ -142,6 +142,11 @@ project(':symmetric-android') {
         android {
             baseName = 'symmetric-android'
             contents {
+                exclude ("**/slf4j-api*.jar")
+                exclude ("**/jul-to-slf4j*.jar")
+                exclude ("**/jcl-over-slf4j*.jar")
+                exclude ("**/slf4j-log4j12*.jar")
+                exclude ("**/log4j*.jar")
                 from { 'COPYING' }
                 from { 'CREDITS' }
                 from { 'NOTICE' }
@@ -190,7 +195,9 @@ project(':symmetric-server') {
         compile "javax.xml.bind:jaxb-api:2.2.7"
         compile "org.codehaus.jackson:jackson-mapper-asl:1.9.9"
         compile "org.jdom:jdom:1.1"
-        compile "com.mangofactory:swagger-springmvc:0.6.5"
+        compile ("com.mangofactory:swagger-springmvc:0.6.5") {
+            exclude group: 'asm'
+        }
         compile project(":symmetric-wrapper")
 
         provided "javax.jms:jms-api:1.1-rev-1"
