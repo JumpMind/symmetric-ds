@@ -689,17 +689,28 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void insertIncomingError(ISqlTransaction transaction, IncomingError incomingError) {
         if (StringUtils.isNotBlank(incomingError.getNodeId()) && incomingError.getBatchId() >= 0) {
-            transaction.prepareAndExecute(getSql("insertIncomingErrorSql"),
-                    incomingError.getBatchId(), incomingError.getNodeId(),
-                    incomingError.getFailedRowNumber(), incomingError.getFailedLineNumber(),
-                    incomingError.getTargetCatalogName(), incomingError.getTargetSchemaName(),
-                    incomingError.getTargetTableName(), incomingError.getEventType().getCode(),
-                    incomingError.getBinaryEncoding().name(), incomingError.getColumnNames(),
-                    incomingError.getPrimaryKeyColumnNames(), incomingError.getRowData(),
-                    incomingError.getOldData(), incomingError.getCurData(),
-                    incomingError.getResolveData(), incomingError.getResolveData(),
-                    incomingError.getConflictId(), incomingError.getCreateTime(),
-                    incomingError.getLastUpdateBy(), incomingError.getLastUpdateTime());
+            transaction.prepareAndExecute(
+                    getSql("insertIncomingErrorSql"),
+                    new Object[] { incomingError.getBatchId(), incomingError.getNodeId(),
+                            incomingError.getFailedRowNumber(),
+                            incomingError.getFailedLineNumber(),
+                            incomingError.getTargetCatalogName(),
+                            incomingError.getTargetSchemaName(),
+                            incomingError.getTargetTableName(),
+                            incomingError.getEventType().getCode(),
+                            incomingError.getBinaryEncoding().name(),
+                            incomingError.getColumnNames(),
+                            incomingError.getPrimaryKeyColumnNames(), incomingError.getRowData(),
+                            incomingError.getOldData(), incomingError.getCurData(),
+                            incomingError.getResolveData(),
+                            incomingError.isResolveIgnore() ? 1 : 0, incomingError.getConflictId(),
+                            incomingError.getCreateTime(), incomingError.getLastUpdateBy(),
+                            incomingError.getLastUpdateTime() }, new int[] { Types.BIGINT,
+                            Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP,
+                            Types.VARCHAR, Types.TIMESTAMP });
         }
     }
 
