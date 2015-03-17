@@ -92,6 +92,8 @@ abstract public class AbstractTriggerTemplate {
     protected String clobColumnTemplate;
 
     protected String blobColumnTemplate;
+    
+    protected String binaryColumnTemplate;
 
     protected String imageColumnTemplate;
 
@@ -758,6 +760,10 @@ abstract public class AbstractTriggerTemplate {
                     }
                 case Types.BINARY:
                 case Types.VARBINARY:
+                    if (isNotBlank(binaryColumnTemplate)) {
+                        templateToUse = binaryColumnTemplate;
+                        break;
+                    }
                 case Types.LONGVARBINARY:
                     // SQL-Server ntext binary type
                 case -10:

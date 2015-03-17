@@ -45,6 +45,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + replace(convert(varchar,$(tableAlias).\"$(columnName)\",21),'T',' ') + '\"') end" ;
         clobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(cast($(origTableAlias).\"$(columnName)\" as varchar(16384)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         blobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + base64_encode($(origTableAlias).\"$(columnName)\") + '\"' end" ;
+        binaryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + base64_encode($(tableAlias).\"$(columnName)\") + '\"' end" ;
         booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" = 1 then '\"1\"' else '\"0\"' end" ;
         triggerConcatCharacter = "+" ;
         newTriggerValue = "inserted" ;
