@@ -107,7 +107,9 @@ public class JdbcPersistenceManager extends AbstractPersistenceManager {
                     } else {
                         throw new IllegalStateException(
                                 "Could not find a database column that maps to the " + propertyName
-                                        + " property on " + clazz.getName());
+                                        + " property on " + clazz.getName()
+                                        + ".  Make sure the property is defined on the class and "
+                                        + "the matching column is defined in the database table");
                     }
                 }
 
