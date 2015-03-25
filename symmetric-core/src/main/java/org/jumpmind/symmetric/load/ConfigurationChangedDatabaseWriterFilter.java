@@ -133,7 +133,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     }
     
     private void recordSyncNeeded(DataContext context, Table table, CsvData data) {
-        if (isSyncTriggersNeeded(table)) {
+        if (isSyncTriggersNeeded(context, table)) {
             context.put(CTX_KEY_RESYNC_NEEDED, true);
         }
         
@@ -192,13 +192,15 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         }
     }
 
-    private boolean isSyncTriggersNeeded(Table table) {
-        return matchesTable(table, TableConstants.SYM_TRIGGER)
+    private boolean isSyncTriggersNeeded(DataContext context, Table table) {
+        boolean autoSync = engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS_AFTER_CONFIG_LOADED) || 
+                context.getBatch().getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION;
+        return autoSync && (matchesTable(table, TableConstants.SYM_TRIGGER)
                 || matchesTable(table, TableConstants.SYM_ROUTER)
                 || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER)
                 || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET)
                 || matchesTable(table, TableConstants.SYM_GROUPLET_LINK)
-                || matchesTable(table, TableConstants.SYM_NODE_GROUP_LINK);
+                || matchesTable(table, TableConstants.SYM_NODE_GROUP_LINK));
     }
     
     private boolean isGroupletFlushNeeded(Table table) {
