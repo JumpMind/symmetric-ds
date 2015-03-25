@@ -302,7 +302,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
         
         if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
-            sql = sql + engine.getRouterService().getSql("orderByDataId");
+            sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByDataId"));
         }
 
         ISqlTemplate sqlTemplate = engine.getSymmetricDialect().getPlatform().getSqlTemplate();
