@@ -842,15 +842,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private List<TriggerRouter> enhanceTriggerRouters(List<TriggerRouter> triggerRouters) {
     	HashMap<String, Router> routersById = new HashMap<String, Router>();
     	for (Router router : getRouters()) {
-    		routersById.put(router.getRouterId(), router);
+    		routersById.put(router.getRouterId().trim().toUpperCase(), router);
     	}
     	HashMap<String, Trigger> triggersById = new HashMap<String, Trigger>();
     	for (Trigger trigger : getTriggers()) {
-    		triggersById.put(trigger.getTriggerId(), trigger);
+    		triggersById.put(trigger.getTriggerId().trim().toUpperCase(), trigger);
     	}
     	for (TriggerRouter triggerRouter : triggerRouters) {
-    		triggerRouter.setTrigger(triggersById.get(triggerRouter.getTrigger().getTriggerId()));
-    		triggerRouter.setRouter(routersById.get(triggerRouter.getRouter().getRouterId()));    		
+    		triggerRouter.setTrigger(triggersById.get(triggerRouter.getTrigger().getTriggerId().trim().toUpperCase()));
+    		triggerRouter.setRouter(routersById.get(triggerRouter.getRouter().getRouterId().trim().toUpperCase()));
     	}
     	return triggerRouters;
     }
