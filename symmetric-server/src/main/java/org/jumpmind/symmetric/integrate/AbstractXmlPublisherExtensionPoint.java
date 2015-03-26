@@ -365,6 +365,9 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                 }
             }
 
+            if (id.length() > 0) {
+                return id.toString();
+            }
         } else {
             log.warn("You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
         }
