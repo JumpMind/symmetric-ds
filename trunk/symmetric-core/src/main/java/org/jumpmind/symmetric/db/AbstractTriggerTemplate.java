@@ -753,20 +753,19 @@ abstract public class AbstractTriggerTemplate {
                         templateToUse = clobColumnTemplate;
                     }
                     break;
-                case Types.BLOB:
-                    if (requiresWrappedBlobTemplateForBlobType()) {
-                        templateToUse = wrappedBlobColumnTemplate;
-                        break;
-                    }
                 case Types.BINARY:
                 case Types.VARBINARY:
                     if (isNotBlank(binaryColumnTemplate)) {
                         templateToUse = binaryColumnTemplate;
                         break;
                     }
-                case Types.LONGVARBINARY:
-                    // SQL-Server ntext binary type
-                case -10:
+                case Types.BLOB:
+                    if (requiresWrappedBlobTemplateForBlobType()) {
+                        templateToUse = wrappedBlobColumnTemplate;
+                        break;
+                    }                    
+                case Types.LONGVARBINARY:                   
+                case -10:  // SQL-Server ntext binary type
                     if (column.getJdbcTypeName() != null
                             && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.IMAGE))
                             && StringUtils.isNotBlank(imageColumnTemplate)) {
