@@ -265,14 +265,22 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     protected String switchCatalogForTriggerInstall(String catalog, ISqlTransaction transaction) {
         if (catalog != null) {
             Connection c = ((JdbcSqlTransaction) transaction).getConnection();
-            String previousCatalog;
+            String previousCatalog = null;
             try {
                 previousCatalog = c.getCatalog();
                 c.setCatalog(catalog);
                 return previousCatalog;
             } catch (SQLException e) {
                 throw new SqlException(e);
+            } finally {
+                if (catalog != null) {
+                    try {
+                        c.setCatalog(previousCatalog);
+                    } catch (SQLException e) {
+                    }
+                }
             }
+
         } else {
             return null;
         }
