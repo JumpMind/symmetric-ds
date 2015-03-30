@@ -1,0 +1,142 @@
+
+===== Beanshell Router
+
+When more flexibility is needed in the logic to choose the nodes to route to, then the a scripted router may be used. 
+The currently available scripting language is Bean Shell. Bean Shell is a Java-like scripting language. Documentation 
+for the Bean Shell scripting language can be found at http://www.beanshell.org .
+
+The router type for a Bean Shell scripted router is 'bsh'. The router expression is a valid Bean Shell script that:
+
+.Variables available to the script
+[cols=".^2,8"] 
+|===
+
+|nodes|Collection of org.jumpmind.symmetric.model.Node objects the router would route to normally.
+
+|nodeIds|Collection of node ids that the router would route to normally.  You can just return this if you want the bsh router to behave like the default router.
+
+|targetNodes|Collection of org.jumpmind.symmetric.model.Node objects to be populated and returned.
+
+|engine|The instance of org.jumpmind.symmetric.ISymmetricEngine which has access to SymmetricDS services.
+
+|Any Data Column|Data column values are bound to the script evaluation as Java object representations 
+of the column data. The columns are bound using the uppercase names of the columns.  Example if store_id 
+is a column then STORE_ID is a variable name available in Bean Shell script.
+
+|Any Old Values|Old Data column values are bound to the script evaluation as Java object representations 
+of the column data. The columns are bound using the uppercase representations that are prefixed with 'OLD_'.
+Example if store_id is a column then OLD_STORE_ID is a variable name available in Bean Shell script representing
+the old value for the store_id before the change.
+
+|===
+
+.Return options 
+|===
+
+|targetNodes|Collection of org.jumpmind.symmetric.model.Node objects that will be routed to.
+|true|All nodes should be routed
+|false|No nodes should be routed
+
+|===
+
+NOTE: The last line of a bsh script is always the return value.
+
+
+.Use case using a Bean Shell where the node_id is a combination of STORE_ID and WORKSTATION_NUMBER, both of which are columns on the table that is being routed.
+====
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_ROUTER (router_id,
+	source_node_group_id, target_node_group_id, router_type,
+	router_expression, create_time, last_update_time) values
+	('corp-2-store-bsh','corp', 'store', 'bsh', 'targetNodes.add(STORE_ID +
+	"-" + WORKSTATION_NUMBER);', current_timestamp, current_timestamp); 
+----
+endif::pro[]
+ifdef::pro[]
+[source, java]
+----
+targetNodes.add(STORE_ID + "-" + WORKSTATION_NUMBER)
+----
+endif::pro[]
+
+The same could also be accomplished by simply returning the node id. 
+
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_ROUTER (router_id,
+	source_node_group_id, target_node_group_id, router_type,
+	router_expression, create_time, last_update_time) values
+	('corp-2-store-bsh','corp', 'store', 'bsh', 'STORE_ID +
+	"-" + WORKSTATION_NUMBER', current_timestamp, current_timestamp); 
+----
+endif::pro[]
+ifdef::pro[]
+[source, java]
+----
+STORE_ID + "-" + WORKSTATION_NUMBER
+----
+endif::pro[]
+====
+
+.Use case using a Bean Shell script to synchronize to all nodes if the FLAG column has changed, otherwise no nodes will be synchronized.
+====
+ifndef::pro[]
+[source, SQL]
+----
+insert into SYM_ROUTER (router_id,
+	source_node_group_id, target_node_group_id, router_type,
+	router_expression, create_time, last_update_time) values
+	('corp-2-store-flag-changed','corp', 'store', 'bsh', 'FLAG != null
+	&& !FLAG.equals(OLD_FLAG)', current_timestamp,
+	current_timestamp); 
+		
+----
+endif::pro[]
+ifdef::pro[]
+[source, java]
+----
+FLAG != null && !FLAG.equals(OLD_FLAG)
+----
+endif::pro[]
+
+NOTE: Here we make use of OLD_, which provides access to the old column value.
+====
+
+.Use case using a Bean Shell script that iterates over each eligible node and checks to see if the trimmed value of the column named STATION equals the external_id.
+====
+ifndef::pro[]
+[source, SQL]
+----
+ insert into SYM_ROUTER (router_id,
+	source_node_group_id, target_node_group_id, router_type,
+	router_expression, create_time, last_update_time) values
+	('corp-2-store-trimmed-station','corp', 'store', 'bsh', 'for
+	(org.jumpmind.symmetric.model.Node node : nodes) { if (STATION != null
+	&& node.getExternalId().equals(STATION.trim())) {
+	targetNodes.add(node.getNodeId()); } }', current_timestamp,
+	current_timestamp); 
+		
+----
+endif::pro[]
+ifdef::pro[]
+[source, java]
+----
+for(org.jumpmind.symmetric.model.Node node : nodes) { 
+	if (STATION != null && node.getExternalId().equals(STATION.trim())) {
+		targetNodes.add(node.getNodeId()); 
+	} 
+}
+----
+endif::pro[]
+
+====
+
+		
+		
+		
+		
+		
+

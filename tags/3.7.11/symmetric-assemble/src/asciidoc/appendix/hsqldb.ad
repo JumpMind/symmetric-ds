@@ -1,0 +1,10 @@
+
+=== HSQLDB
+
+HSQLDB was implemented with the intention that the database be run embedded in the same JVM process as SymmetricDS. 
+Instead of dynamically generating static SQL-based triggers like the other databases, HSQLDB triggers are Java classes 
+that re-use existing SymmetricDS services to read the configuration and insert data events accordingly.
+
+The transaction identifier support is based on SQL events that happen in a 'window' of time. The trigger(s) track 
+when the last trigger fired. If a trigger fired within X milliseconds of the previous firing, then the current event gets the same transaction 
+identifier as the last. If the time window has passed, then a new transaction identifier is generated.

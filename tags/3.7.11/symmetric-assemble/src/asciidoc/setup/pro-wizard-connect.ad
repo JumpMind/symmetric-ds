@@ -1,0 +1,6 @@
+
+=== Node Setup 
+
+Once configuration is complete SymmetricDS will automatically pop up a Node Setup Wizard if there is only one node currently setup in your network.
+
+See <<Add Node>> for more information.
