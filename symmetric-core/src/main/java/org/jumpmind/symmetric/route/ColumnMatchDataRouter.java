@@ -98,47 +98,55 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     public Set<String> routeToNodes(SimpleRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
         Set<String> nodeIds = null;
-        List<Expression> expressions = getExpressions(dataMetaData.getRouter(), routingContext);
-        Map<String, String> columnValues = getDataMap(dataMetaData, symmetricDialect);
-
-        if (columnValues != null) {
-            for (Expression e : expressions) {
-                String column = e.tokens[0].trim();
-                String value = e.tokens[1];
-                String columnValue = columnValues.get(column);
-
-                if (value.equalsIgnoreCase(TokenConstants.NODE_ID)) {
-                    for (Node node : nodes) {
-                        nodeIds = runExpression(e, columnValue, node.getNodeId(), nodes, nodeIds, node);
-                    }
-                } else if (value.equalsIgnoreCase(TokenConstants.EXTERNAL_ID)) {
-                    for (Node node : nodes) {
-                        nodeIds = runExpression(e, columnValue, node.getExternalId(), nodes, nodeIds, node);
-                    }
-                } else if (value.equalsIgnoreCase(TokenConstants.NODE_GROUP_ID)) {
-                    for (Node node : nodes) {
-                        nodeIds = runExpression(e, columnValue, node.getNodeGroupId(), nodes, nodeIds, node);
-                    }
-                } else if (e.hasEquals && value.equalsIgnoreCase(TokenConstants.REDIRECT_NODE)) {
-                    Map<String, String> redirectMap = getRedirectMap(routingContext);
-                    String nodeId = redirectMap.get(columnValue);
-                    if (nodeId != null) {
-                        nodeIds = addNodeId(nodeId, nodeIds, nodes);
-                    }
-                } else {
-                    String compareValue = value;
-                    if (value.equalsIgnoreCase(TokenConstants.EXTERNAL_DATA)) {
-                        compareValue = dataMetaData.getData().getExternalData();
-                    } else if (value.startsWith(":")) {
-                        compareValue = columnValues.get(value.substring(1));
-                    } else if (value.equals(NULL_VALUE)) {
-                        compareValue = null;
-                    }
-                    nodeIds = runExpression(e, columnValue, compareValue, nodes, nodeIds, null);
-                }
-            }
+        if (initialLoadSelectUsed && initialLoad) {
+            nodeIds = toNodeIds(nodes, null);
         } else {
-            log.warn("There were no columns to match for the data_id of {}", dataMetaData.getData().getDataId());
+            List<Expression> expressions = getExpressions(dataMetaData.getRouter(), routingContext);
+            Map<String, String> columnValues = getDataMap(dataMetaData, symmetricDialect);
+
+            if (columnValues != null) {
+                for (Expression e : expressions) {
+                    String column = e.tokens[0].trim();
+                    String value = e.tokens[1];
+                    String columnValue = columnValues.get(column);
+
+                    if (value.equalsIgnoreCase(TokenConstants.NODE_ID)) {
+                        for (Node node : nodes) {
+                            nodeIds = runExpression(e, columnValue, node.getNodeId(), nodes,
+                                    nodeIds, node);
+                        }
+                    } else if (value.equalsIgnoreCase(TokenConstants.EXTERNAL_ID)) {
+                        for (Node node : nodes) {
+                            nodeIds = runExpression(e, columnValue, node.getExternalId(), nodes,
+                                    nodeIds, node);
+                        }
+                    } else if (value.equalsIgnoreCase(TokenConstants.NODE_GROUP_ID)) {
+                        for (Node node : nodes) {
+                            nodeIds = runExpression(e, columnValue, node.getNodeGroupId(), nodes,
+                                    nodeIds, node);
+                        }
+                    } else if (e.hasEquals && value.equalsIgnoreCase(TokenConstants.REDIRECT_NODE)) {
+                        Map<String, String> redirectMap = getRedirectMap(routingContext);
+                        String nodeId = redirectMap.get(columnValue);
+                        if (nodeId != null) {
+                            nodeIds = addNodeId(nodeId, nodeIds, nodes);
+                        }
+                    } else {
+                        String compareValue = value;
+                        if (value.equalsIgnoreCase(TokenConstants.EXTERNAL_DATA)) {
+                            compareValue = dataMetaData.getData().getExternalData();
+                        } else if (value.startsWith(":")) {
+                            compareValue = columnValues.get(value.substring(1));
+                        } else if (value.equals(NULL_VALUE)) {
+                            compareValue = null;
+                        }
+                        nodeIds = runExpression(e, columnValue, compareValue, nodes, nodeIds, null);
+                    }
+                }
+            } else {
+                log.warn("There were no columns to match for the data_id of {}", dataMetaData
+                        .getData().getDataId());
+            }
         }
         
         if(nodeIds != null) {
