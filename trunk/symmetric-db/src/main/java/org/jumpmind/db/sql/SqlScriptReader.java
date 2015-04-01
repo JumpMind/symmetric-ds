@@ -90,6 +90,8 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
                             toExecute = prepareForExecute(toExecute);
                             if (StringUtils.isNotBlank(toExecute)) {
                                 return toExecute;
+                            } else {
+                                sql.setLength(0);
                             }
                         } 
                     line = readLine();
