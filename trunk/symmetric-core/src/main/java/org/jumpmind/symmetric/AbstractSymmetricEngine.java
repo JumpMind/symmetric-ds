@@ -526,7 +526,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                             registrationService.requestNodeCopy();
                         } else {
                             throw new SymmetricException(
-                                    "The configured state does not match recorded database state.  The recorded external id is %s while the configured external id is %s. The recorded node group id is {} while the configured node group id is {}",
+                                    "The configured state does not match recorded database state.  The recorded external id is %s while the configured external id is %s. The recorded node group id is %s while the configured node group id is %s",
                                     new Object[] { node.getExternalId(),
                                             getParameterService().getExternalId(),
                                             node.getNodeGroupId(),
