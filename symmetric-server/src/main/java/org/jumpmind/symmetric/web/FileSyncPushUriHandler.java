@@ -73,6 +73,8 @@ public class FileSyncPushUriHandler extends AbstractUriHandler {
 
             }
         }
+        
+        res.flushBuffer();
 
     }
 
