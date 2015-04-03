@@ -37,6 +37,7 @@ update test set one = '''', two='\\##--''' where one is null; // comment
 update test
   set one = '1', two = '2'
   where one = 'one';
+;
 ## last comment
 create table "TE--ST" ("ID##2" VARCHAR(100));
 insert into test (col) values('import org.x.Test;
