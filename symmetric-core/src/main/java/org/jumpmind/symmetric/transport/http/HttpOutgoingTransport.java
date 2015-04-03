@@ -260,6 +260,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             throw new SyncDisabledException();
         } else if (WebConstants.REGISTRATION_REQUIRED == code) {
             throw new RegistrationRequiredException();
+        } else if (200 != code) {
+            throw new IoException("Received an unexpected response code of " + code + " from the server");
         }
     }
 
