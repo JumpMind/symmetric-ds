@@ -281,6 +281,10 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             Types.VARCHAR });
         }
     }
+    
+    public void deleteFileTriggerRouter(String triggerId, String routerId) {
+        sqlTemplate.update(getSql("deleteFileTriggerRouterSql"), triggerId, routerId);
+    }
 
     public void deleteFileTriggerRouter(FileTriggerRouter fileTriggerRouter) {
         sqlTemplate.update(getSql("deleteFileTriggerRouterSql"), (Object) fileTriggerRouter
