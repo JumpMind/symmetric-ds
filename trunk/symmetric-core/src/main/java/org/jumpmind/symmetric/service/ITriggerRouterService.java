@@ -155,6 +155,8 @@ public interface ITriggerRouterService {
 
     public void deleteTriggerRouter(TriggerRouter triggerRouter);
     
+    public void deleteTriggerRouter(String triggerId, String routerId);
+    
     public void saveTriggerRouter(TriggerRouter triggerRouter, boolean updateTriggerRouterTableOnly);
     
     public void saveTriggerRouter(TriggerRouter triggerRouter);
