@@ -910,6 +910,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT,
                         Types.VARCHAR });
     }
+    
+    @Override
+    public void deleteTriggerRouter(String triggerId, String routerId) {
+        sqlTemplate.update(getSql("deleteTriggerRouterSql"), triggerId, routerId);
+        clearCache();
+    }
 
     public void deleteTriggerRouter(TriggerRouter triggerRouter) {
         sqlTemplate.update(getSql("deleteTriggerRouterSql"), (Object) triggerRouter.getTrigger()
