@@ -1,0 +1,52 @@
+
+=== Groups
+In SymmetricDS, configuration rules are applied to groups of nodes versus individual nodes.  A group is a categorization
+of nodes with similar synchronization needs.  For example, in a synchronization scenario where a corporate office database is
+synchronized with field office databases, two node groups would be created, one for the corporate office database (Corporate), and 
+one for the field office databases (Field_office).  In the corporate group, there would be a single node and database.  In the 
+field_office group, there would be many nodes and databases, one for each field office.  Configuration rules/elements are 
+applied to the node group versus the individual nodes in order to simplify the configuration setup (no need to configure each
+individual field office node, just how the field office nodes sync with the corporate office node).
+
+ifdef::pro[]
+image::group.png[]
+endif::pro[]
+
+.Required Fields
+
+Group ID:: Unique identifier for the group.
+
+ifdef::pro[]
+.Advanced Options
+endif::pro[]
+Description:: Description of the group that is available through the console.
+
+.Sample Node Groups
+====
+ifndef::pro[]
+[source,sql]
+----
+insert into SYM_NODE_GROUP 
+	(node_group_id, description) 
+	values ('store', 'A retail store node');
+
+insert into SYM_NODE_GROUP 
+	(node_group_id, description) 
+	values ('corp', 'A corporate node');
+----
+endif::pro[]
+
+ifdef::pro[]
+|===
+
+|Basic Two Tier|Server, Client
+
+|Retail|Corp, Store, Register,Handheld
+
+|Field Office|Corporate, Field_office
+
+|Failover|Master, Failover
+
+|===
+endif::pro[]
+====
