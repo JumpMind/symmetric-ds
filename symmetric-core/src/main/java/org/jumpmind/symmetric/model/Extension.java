@@ -39,7 +39,7 @@ public class Extension implements Serializable {
     
     private String nodeGroupId;
     
-    private boolean enabled;
+    private boolean enabled = true;
     
     private int extensionOrder = 1;
     
