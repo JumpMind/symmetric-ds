@@ -271,16 +271,14 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 c.setCatalog(catalog);
                 return previousCatalog;
             } catch (SQLException e) {
-                throw new SqlException(e);
-            } finally {
                 if (catalog != null) {
                     try {
                         c.setCatalog(previousCatalog);
-                    } catch (SQLException e) {
+                    } catch (SQLException ex) {
                     }
                 }
-            }
-
+                throw new SqlException(e);
+            } 
         } else {
             return null;
         }
