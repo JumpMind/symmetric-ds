@@ -1,0 +1,94 @@
+
+==== Virtual Columns
+
+Transforms provide the ability to create "virtual columns" which can pass data between nodes for use
+by other SymmetricDS processes.  
+
+.Use cases for virtual columns 
+. Extract transform adds virtual column to be processed by a target load transform.
+. Extract transform adds virtual column to be processed by a target load filter.
+. Extract transform adds virtual column to be processed by a source router.
+
+.Example of an extract transform passing a virtual column to a target load transform
+====
+ifdef::pro[]
+.Create two transforms, one for extract and one for target using different group links
+image::transforms/transform-virtual-columns.png[]
+endif::pro[]
+
+ifndef::pro[]
+.Create two transforms, one for extract and one for target using different group links
+[source, SQL]
+----
+insert into SYM_TRANSFORM_TABLE (
+	transform_id, source_node_group_id, target_node_group_id, transform_point, source_table_name,
+	target_table_name, delete_action, transform_order, column_policy, update_first,
+	last_update_by, last_update_time, create_time
+) values (
+	'extractStoreItemSellingPriceTransform', 'store', 'corp', 'EXTRACT', 'ITEM_SELLING_PRICE',
+	'ITEM_SELLING_PRICE', 'DEL_ROW', 1, 'IMPLIED', 0,
+	'Documentation', current_timestamp, current_timestamp
+);
+----
+
+[source, SQL]
+----
+insert into SYM_TRANSFORM_TABLE (
+	transform_id, source_node_group_id, target_node_group_id, transform_point, source_table_name,
+	target_table_name, delete_action, transform_order, column_policy, update_first,
+	last_update_by, last_update_time, create_time
+) values (
+	'loadCorpItemSellingPriceTransform', 'corp', 'store', 'LOAD', 'ITEM_SELLING_PRICE',
+	'ITEM_SELLING_PRICE', 'DEL_ROW', 1, 'IMPLIED', 0,
+	'Documentation', current_timestamp, current_timestamp
+);
+----
+endif::pro[]
+
+
+
+ifdef::pro[]
+.Create lookup transform for the extract transform to create a new virtual column to be sent to target.
+image::transforms/transform-virtual-columns-extract.png[]
+endif::pro[]
+
+ifndef::pro[]
+.Create lookup transform for the extract transform to create a new virtual column to be sent to target.
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time,
+	last_update_by, create_time
+) values (
+	'extractStoreItemSellingPriceTransform', '*', 'VIRTUAL_COL', 'COST', 0,
+	'lookup', 'select max(price) from sale_return_line_item
+	where item_id = :ITEM_ID', 1, current_timestamp, 'Documentation',
+	current_timestamp
+);
+----
+endif::pro[]
+
+
+ifdef::pro[]
+.Create copy transform for the load transform to populate the cost column from the virtual column that was sent over.
+image::transforms/transform-virtual-columns-load.png[]
+endif::pro[]
+
+ifndef::pro[]
+.Create copy transform for the load transform to populate the cost column from the virtual column that was sent over.
+[source, SQL]
+----
+insert into SYM_TRANSFORM_COLUMN (
+	transform_id, include_on, target_column_name, source_column_name, pk,
+	transform_type, transform_expression, transform_order, last_update_time,
+	last_update_by, create_time
+) values (
+	'loadCorpItemSellingPriceTransform', '*', 'COST', 'VIRTUAL_COL', 0,
+	'copy', '', 1, current_timestamp, 'Documentation',
+	current_timestamp
+);
+----
+endif::pro[]
+====
+

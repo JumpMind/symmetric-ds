@@ -1,0 +1,20 @@
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.config.INodeIdGenerator;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.INodeService;
+
+String selectNodeId(INodeService nodeService, Node node) {
+    if (StringUtils.isBlank(node.getNodeId())) {
+        return node.getExternalId();
+    } else {
+        return node.getNodeId();
+    }
+}
+
+String generateNodeId(INodeService nodeService, Node node) {
+    return selectNodeId(nodeService, node);
+}
+
+String generatePassword(INodeService nodeService, Node node) {
+    return node.getExternalId();
+}
