@@ -345,7 +345,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                 for (String col : groupByColumnNames) {
                     int index = ArrayUtils.indexOf(columns, col, 0);
                     if (index >= 0) {
-                        id.append(data[index]);
+                        id.append(keys[index]);
                     } else {
                         id = new StringBuilder();
                         break;
