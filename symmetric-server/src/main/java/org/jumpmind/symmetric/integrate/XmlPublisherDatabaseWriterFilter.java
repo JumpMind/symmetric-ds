@@ -28,6 +28,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
 /**
@@ -69,14 +70,18 @@ public class XmlPublisherDatabaseWriterFilter extends AbstractXmlPublisherExtens
             DataContext context, Table table, CsvData data) {
         if (tableNamesToPublishAsGroup == null
                 || tableNamesToPublishAsGroup.contains(table.getName())) {
+            String[] rowData = data.getParsedData(CsvData.ROW_DATA);
+            if (data.getDataEventType() == DataEventType.DELETE) {
+                rowData = data.getParsedData(CsvData.OLD_DATA);
+            }
             Element xml = getXmlFromCache(context, context.getBatch().getBinaryEncoding(), 
                     table.getColumnNames(),
-                    data.getParsedData(CsvData.ROW_DATA), table.getPrimaryKeyColumnNames(),
+                    rowData, table.getPrimaryKeyColumnNames(),
                     data.getParsedData(CsvData.PK_DATA));
             if (xml != null) {
                 toXmlElement(data.getDataEventType(), xml, table.getCatalog(), table.getSchema(),
                         table.getName(), table.getColumnNames(),
-                        data.getParsedData(CsvData.ROW_DATA), table.getPrimaryKeyColumnNames(), data.getParsedData(CsvData.PK_DATA));
+                        rowData, table.getPrimaryKeyColumnNames(), data.getParsedData(CsvData.PK_DATA));
             }
         } 
         return loadDataInTargetDatabase;
