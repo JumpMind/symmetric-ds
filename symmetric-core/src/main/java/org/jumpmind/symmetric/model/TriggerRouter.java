@@ -43,7 +43,7 @@ public class TriggerRouter implements Serializable {
     /**
      * This is the order in which the definitions will be processed.
      */
-    private int initialLoadOrder;
+    private int initialLoadOrder = 50;
     
     private String initialLoadSelect;
     
