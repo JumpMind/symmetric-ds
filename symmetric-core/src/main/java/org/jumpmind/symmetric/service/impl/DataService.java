@@ -330,6 +330,12 @@ public class DataService extends AbstractService implements IDataService {
                 synchronized (engine.getTriggerRouterService()) {
                     engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS);
 
+                    if (!reverse) {
+                        log.info("Queueing up an initial load to " + targetNode.getNodeId());
+                    } else {
+                        log.info("Queueing up a reverse initial load to " + targetNode.getNodeId());
+                    }
+                    
                     /*
                      * Outgoing data events are pointless because we are
                      * reloading all data
