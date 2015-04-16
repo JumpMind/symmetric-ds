@@ -74,6 +74,11 @@ public class Router implements Serializable {
         routerId = Integer.toString(maxRouterId++);
     }
     
+    public Router(String id, String sourceNodeGroupId, String targetNodeGroupId, String routerType) {
+        this(id, new NodeGroupLink(sourceNodeGroupId, targetNodeGroupId));
+        this.routerType = routerType;
+    }
+    
     public Router(String id, NodeGroupLink link) {
         this.routerId = id;
         this.nodeGroupLink = link;

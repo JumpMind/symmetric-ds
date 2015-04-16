@@ -120,6 +120,11 @@ public class Trigger implements Serializable {
         this.sourceTableName = tableName;
         this.channelId = channelId;
     }
+    
+    public Trigger(String tableName, String channelId, boolean syncOnIncomingBatch) {
+        this(tableName, channelId);
+        this.syncOnIncomingBatch = syncOnIncomingBatch;
+    }
 
     final public String qualifiedSourceTableName() {
         return qualifiedSourceTablePrefix() + sourceTableName;
