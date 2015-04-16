@@ -331,7 +331,8 @@ public class RouterService extends AbstractService implements IRouterService {
                     dataCount += routeDataForChannel(processInfo,
                             nodeChannel,
                             sourceNode,
-                            producesCommonBatches(nodeChannel.getChannel()), gapDetector);
+                            producesCommonBatches(nodeChannel.getChannel(), parameterService.getNodeGroupId(), 
+                                    engine.getTriggerRouterService().getTriggerRouters(false)), gapDetector);
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug(
@@ -348,18 +349,39 @@ public class RouterService extends AbstractService implements IRouterService {
         return dataCount;
     }
 
-    protected boolean producesCommonBatches(Channel channel) {
+    protected boolean producesCommonBatches(Channel channel, String nodeGroupId, List<TriggerRouter> triggerRouters) {
         String channelId = channel.getChannelId();
         Boolean producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
                 && !channel.isFileSyncFlag()
                 && !channel.isReloadFlag() 
                 && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
-        String nodeGroupId = parameterService.getNodeGroupId();
-        List<TriggerRouter> triggerRouters = engine.getTriggerRouterService()
-                .getTriggerRouters(false);
-        if (triggerRouters != null) {
+        if (producesCommonBatches && triggerRouters != null) {
+            List<TriggerRouter> testableTriggerRouters = new ArrayList<TriggerRouter>();
             for (TriggerRouter triggerRouter : triggerRouters) {
-                IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
+                if (triggerRouter.getTrigger().getChannelId().equals(channel.getChannelId())) {
+                    testableTriggerRouters.add(triggerRouter);
+                } else {
+                    /*
+                     * Add any trigger router that is in another channel, but is
+                     * for a table that is in the current channel
+                     */
+                    String anotherChannelTableName = triggerRouter.getTrigger()
+                            .getFullyQualifiedSourceTableName();
+                    for (TriggerRouter triggerRouter2 : triggerRouters) {
+                        String currentTableName = triggerRouter2
+                                .getTrigger()
+                                .getFullyQualifiedSourceTableName();
+                        String currentChannelId = triggerRouter2.getTrigger().getChannelId();
+                        if (anotherChannelTableName
+                                .equals(currentTableName) && currentChannelId.equals(channelId)) {
+                            testableTriggerRouters.add(triggerRouter);
+                        }
+                    }
+                }
+            }         
+            
+            for (TriggerRouter triggerRouter : testableTriggerRouters) {
+                boolean isDefaultRouter = triggerRouter.getRouter().getRouterType().equals("default");
                 /*
                  * If the data router is not a default data router or there will
                  * be incoming data on the channel where sync_on_incoming_batch
@@ -370,18 +392,20 @@ public class RouterService extends AbstractService implements IRouterService {
                  */
                 if (triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
                         .equals(nodeGroupId)) {
-                    if (!(dataRouter instanceof DefaultDataRouter)) {
+                    if (!isDefaultRouter) {
                         producesCommonBatches = false;
                         break;
                     } else {
                         if (triggerRouter.getTrigger().isSyncOnIncomingBatch()) {
-                            String tableName = triggerRouter.getTrigger()
+                            String outgoingTableName = triggerRouter.getTrigger()
                                     .getFullyQualifiedSourceTableName();
-                            for (TriggerRouter triggerRouter2 : triggerRouters) {
-                                if (triggerRouter2.getTrigger().getFullyQualifiedSourceTableName()
-                                        .equals(tableName)
-                                        && triggerRouter2.getRouter().getNodeGroupLink()
-                                                .getTargetNodeGroupId().equals(nodeGroupId)) {
+                            for (TriggerRouter triggerRouter2 : testableTriggerRouters) {
+                                String incomingTableName = triggerRouter2.getTrigger().getFullyQualifiedSourceTableName();
+                                String targetNodeGroupId = triggerRouter2.getRouter().getNodeGroupLink()
+                                        .getTargetNodeGroupId();
+                                if (incomingTableName
+                                        .equals(outgoingTableName)
+                                        && targetNodeGroupId.equals(nodeGroupId)) {
                                     producesCommonBatches = false;
                                     break;
                                 }
