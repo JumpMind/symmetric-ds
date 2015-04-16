@@ -1,0 +1,60 @@
+#!/bin/sh
+
+# ${wrapper.displayname}
+#
+# chkconfig: 235 20 80
+# description: ${wrapper.description}
+
+### BEGIN INIT INFO
+# Provides:          ${wrapper.name}
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:     2 3 5
+# Default-Stop:      0 1 6
+# Short-Description: ${wrapper.displayname}
+# Description:       ${wrapper.description}
+### END INIT INFO
+
+JAVA="${wrapper.java.command}"
+JARFILE="${wrapper.jarfile}"
+SYM_HOME="${wrapper.home}"
+export SYM_HOME
+RUN_AS_USER=""
+
+if [ "$RUN_AS_USER" != "" ]
+then
+   user=`id -u -n`
+   if [ $? -ne 0 ]
+   then
+      echo "Unable to locate 'id' command to determine current user"
+      exit 1
+   fi
+   if [ "$RUN_AS_USER" != "$user" ]
+   then
+      echo "Switching to user $RUN_AS_USER"
+      su - $RUN_AS_USER -c "`pwd`/$0 $1"
+      exit $?
+   fi
+fi
+
+cd "$SYM_HOME"
+
+case "$1" in
+   start)
+      "$JAVA" -jar "$JARFILE" start
+      ;;
+   stop)
+      "$JAVA" -jar "$JARFILE" stop
+      ;;
+   restart)
+      "$JAVA" -jar "$JARFILE" restart
+      ;;
+   status)
+      "$JAVA" -jar "$JARFILE" status
+      ;;
+   *)
+      echo "Usage: `basename $0` {start|stop|restart|status}"
+      exit 1
+esac
+
+exit $?
