@@ -85,7 +85,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     // clearing the error flag in case the user set the batch
                     // status to OK
                     outgoingBatch.setErrorFlag(false);
-                    log.info("Batch {} was already set to {}.  Not updating the status to ",
+                    log.info("Batch {} was already set to {}.  Not updating the status to {}",
                             new Object[] { batch.getBatchId(), outgoingBatch.getStatus().name(),
                                     status.name() });
                 }
