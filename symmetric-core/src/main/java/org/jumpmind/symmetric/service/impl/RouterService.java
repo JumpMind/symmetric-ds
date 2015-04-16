@@ -381,7 +381,7 @@ public class RouterService extends AbstractService implements IRouterService {
             }         
             
             for (TriggerRouter triggerRouter : testableTriggerRouters) {
-                boolean isDefaultRouter = triggerRouter.getRouter().getRouterType().equals("default");
+                boolean isDefaultRouter = "default".equals(triggerRouter.getRouter().getRouterType());
                 /*
                  * If the data router is not a default data router or there will
                  * be incoming data on the channel where sync_on_incoming_batch
