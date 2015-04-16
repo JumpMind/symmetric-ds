@@ -622,8 +622,10 @@ public class DataService extends AbstractService implements IDataService {
                             Table table = platform.getTableFromCache(
                                     triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
                                     triggerHistory.getSourceTableName(), false);                            
-                            String sql = String.format("select count(*) from %s ", table
-                                    .getQualifiedTableName(quote, catalogSeparator, schemaSeparator));
+                            String sql = String.format("select count(*) from %s where %s", table
+                                    .getQualifiedTableName(quote, catalogSeparator, schemaSeparator),
+                                    StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
+                                            : triggerRouter.getInitialLoadSelect());
                             sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
                             sql = FormatUtils
                                     .replace("externalId", targetNode.getExternalId(), sql);
