@@ -295,10 +295,17 @@ public class TransformWriter extends NestedDataWriter {
                                 }
                             }
                         } else {
-                            log.warn(
-                                    "Could not find a source column of {} for the transformation: {}",
-                                    transformColumn.getSourceColumnName(),
-                                    transformation.getTransformId());
+                            if (eventType != DataEventType.DELETE) {
+                                log.warn(
+                                        "Could not find a source column of {} for the transformation: {}",
+                                        transformColumn.getSourceColumnName(),
+                                        transformation.getTransformId());
+                            } else {
+                                log.debug(
+                                        "Could not find a source column of {} for the transformation: {}.  This is probably because this was a DELETE event and no old data was captured.",
+                                        transformColumn.getSourceColumnName(),
+                                        transformation.getTransformId());
+                            }
                         }
                     }
                 }
