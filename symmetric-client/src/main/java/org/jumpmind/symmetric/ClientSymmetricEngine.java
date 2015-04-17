@@ -291,7 +291,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             }
             
             String springBeanName = properties.getProperty(ParameterConstants.DB_SPRING_BEAN_NAME);
-            if (isNotBlank(springBeanName)) {
+            if (isNotBlank(springBeanName) && springContext != null) {
                 log.info("Using datasource from spring.  The spring bean name is {}", springBeanName);
                 dataSource = (DataSource)springContext.getBean(springBeanName);
             }
