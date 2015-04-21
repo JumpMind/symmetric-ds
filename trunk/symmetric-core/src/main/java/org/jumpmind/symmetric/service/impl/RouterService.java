@@ -704,9 +704,9 @@ public class RouterService extends AbstractService implements IRouterService {
                         nodeIds = CollectionUtils.intersection(targetNodeIdsList, toNodeIds(findAvailableNodes(triggerRouter, context)));
 
                         if (nodeIds.size() == 0) {
-                            log.warn(
-                                    "None of the target nodes specified in the data.node_list field ({}) were qualified nodes.  {} will not be routed",
-                                    targetNodeIds, data.getDataId());
+                            log.info(
+                                    "None of the target nodes specified in the data.node_list field ({}) were qualified nodes.  {} will not be routed using the {} router",
+                                    new Object[] {targetNodeIds, data.getDataId(), triggerRouter.getRouter().getRouterId() });
                         }
                     } else {
                         try {
