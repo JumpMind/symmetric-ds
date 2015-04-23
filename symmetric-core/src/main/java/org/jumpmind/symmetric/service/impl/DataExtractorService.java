@@ -1439,6 +1439,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         if (data.getDataEventType() == DataEventType.CREATE && StringUtils.isBlank(data.getCsvData(CsvData.ROW_DATA))) {                          
 
                             boolean excludeDefaults = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_DEFAULTS, false);
+                            boolean excludeForeignKeys = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_FOREIGN_KEYS, false);
                             
                             /*
                              * Force a reread of table so new columns are picked up.  A create
@@ -1468,6 +1469,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         }
                                     }
                                 }
+                            }
+                            if (excludeForeignKeys) {
+                                targetTable.removeAllForeignKeys();
                             }
                             data.setRowData(CsvUtils.escapeCsvData(DatabaseXmlUtil.toXml(db)));
                         }
