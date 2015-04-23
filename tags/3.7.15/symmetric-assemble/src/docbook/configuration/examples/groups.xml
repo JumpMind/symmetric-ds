@@ -1,0 +1,9 @@
+<programlisting> 
+insert into SYM_NODE_GROUP 
+	(node_group_id, description) 
+	values ('store', 'A retail store node');
+
+insert into SYM_NODE_GROUP 
+	(node_group_id, description) 
+	values ('corp', 'A corporate node');
+</programlisting>

@@ -1,0 +1,151 @@
+
+=== Extensions
+
+Extensions are custom code written to a plug-in interface, which allows them to run inside the engine and change its default behavior.
+Saving extension code in the configuration has the advantage of dynamically running without deployment or restarting.
+Configured extensions are available to other nodes and move between environments when configuration is exported and imported. 
+
+Extension Id:: Identifier for a unique extension entry.
+
+Extension Type:: Type of extension, either written in Java or BeanShell.  Java extensions are compiled to bytecode on first use
+and may be compiled to native code by the Just-In-Time (JIT) compiler, giving them the best performance.  BeanShell extensions are
+parsed on first use and interpreted at runtime, but they are easier to write because of loose typing and short-cuts with syntax. 
+
+.Options for Extension Type
+|===
+|Java|Indicates that Java code is provided in the extension text.
+|BSH|Indicates that BeanShell code is provided in the extension text.
+|===
+
+Interface Name:: The full class name for the interface implemented by the extension, including the package name.
+Only needed for extension type of BSH. 
+
+Node Group Id:: The node group where this extension will be active and run.
+
+Enabled:: Whether or not the extension should be run.
+
+Extension Order:: The order to register extensions when multiple extensions for the same interface exist.
+
+Extension Text:: The code for the extension that will be compiled or interpreted at runtime.
+
+.BSH extension that adds a new transform for masking characters
+=====
+
+Add a new transform type called "mask" that replaces all characters in a string with an asterisk except the last number of
+characters specified by the user in the expression.  This BeanShell extension uses the ISingleValueColumnTransform interface
+and applies only to the "corp" node group.
+
+ifdef::pro[]
+Click the *New* button to create a new extension.
+
+image::extensions/extension-new.png[]
+
+Click the *Edit Script* button to edit the script for the extension.
+
+[source,java]
+----
+import org.apache.commons.lang.StringUtils;
+
+isExtractColumnTransform() {
+    return true;
+}
+
+isLoadColumnTransform() {
+    return true;
+}
+
+transform(platform, context, column, data, sourceValues, newValue, oldValue) {
+    if (StringUtils.isNotBlank(newValue)) {
+        String expression = column.getTransformExpression();
+        if (StringUtils.isNotBlank(expression)) {
+            count = newValue.length() - Integer.parseInt(expression.trim());
+            return StringUtils.repeat("*", count) + newValue.substring(count); 
+        }
+    }
+    return newValue;
+}
+----
+
+endif::pro[]
+
+ifndef::pro[]
+
+[source,sql]
+----
+insert into sym_extension
+   (extension_id, extension_type, interface_name, node_group_id, enabled,
+    extension_order, extension_text)
+values 
+   ('mask', 'bsh', 
+    'org.jumpmind.symmetric.io.data.transform.ISingleValueColumnTransform',
+    'corp', 1, 1, '
+    import org.apache.commons.lang.StringUtils;
+    
+    isExtractColumnTransform() {
+        return true;
+    }
+    
+    isLoadColumnTransform() {
+        return true;
+    }
+    
+    transform(platform, context, column, data, sourceValues, newValue, oldValue) {
+        if (StringUtils.isNotBlank(newValue)) {
+            String expression = column.getTransformExpression();
+            if (StringUtils.isNotBlank(expression)) {
+                count = newValue.length() - Integer.parseInt(expression.trim());
+                return StringUtils.repeat("*", count) + newValue.substring(count); 
+            }
+        }
+        return newValue;
+    }
+   ');
+----
+
+endif::pro[]
+
+=====
+
+ifndef::pro[]
+.Java `IReloadListener` extension that disables foreign keys before a load and enables them after the load.
+=====
+
+
+[source,sql]
+----
+insert into SYM_EXTENSION (EXTENSION_ID, EXTENSION_TYPE, INTERFACE_NAME, NODE_GROUP_ID, ENABLED, EXTENSION_ORDER, EXTENSION_TEXT, CREATE_TIME, LAST_UPDATE_BY, LAST_UPDATE_TIME) values ('disable ref integrity','java','org.jumpmind.symmetric.load.IReloadListener','ALL',1,1,'import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
+import org.jumpmind.symmetric.load.IReloadListener;
+import org.jumpmind.symmetric.model.Node;
+
+public class MyReloadListener implements IReloadListener, ISymmetricEngineAware {
+
+    ISymmetricEngine engine;
+
+    @Override
+    public void setSymmetricEngine(ISymmetricEngine engine) {
+        this.engine = engine;
+    }
+
+    @Override
+    public void beforeReload(ISqlTransaction transaction, Node node, long loadId) {
+        engine.getDataService().insertSqlEvent(transaction, node, "SET REFERENTIAL_INTEGRITY FALSE", true, loadId, "initial load");
+    }
+
+    @Override
+    public void afterReload(ISqlTransaction transaction, Node node, long loadId) {
+        engine.getDataService().insertSqlEvent(transaction, node, "SET REFERENTIAL_INTEGRITY TRUE", true, loadId, "initial load");
+    }
+
+}
+',current_timestamp,'some user',current_timestamp);
+----
+=====
+endif::pro[]
+
+
+.Extensions Tips and Tricks
+
+TIP: For BeanShell, implement only the methods needed from an interface, then write a special method of "invoke(method, args) {}"
+that will be called for any unimplemented methods.

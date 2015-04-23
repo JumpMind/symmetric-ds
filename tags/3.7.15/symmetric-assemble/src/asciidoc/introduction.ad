@@ -1,0 +1,167 @@
+
+== Introduction
+
+SymmetricDS is open source software for database and file synchronization, with support for multi-master replication, 
+filtered synchronization, and transformation. 
+It uses web and database technologies to replicate change data as a scheduled or near real-time operation, and it includes an
+initial load feature for full data loads. 
+The software was designed to scale for a large number of nodes, work across low-bandwidth connections, and withstand periods of network outage.
+
+=== System Requirements
+
+SymmetricDS is written in Java and requires a Java Runtime Environment (JRE) Standard Edition (SE) or Java Development Kit (JDK)
+Standard Edition (SE) version 6.0 or above.
+Most major operating systems and databases are supported.  See the list of supported databases in the <<databases-compatibility>> section.
+The minimum operating system requirements are:
+
+* Java SE Runtime Environment 6 or above
+* Memory - 64 (MB) available
+* Disk - 256 (MB) available
+
+The memory, disk, and CPU requirements increase with the number of connected clients and the amount of data being synchronized.
+The best way to size a server is to simulate synchronization in a lower environment and benchmark data loading.
+However, a rule of thumb for servers is one server-class CPU with 2 GB of memory for every 500 MB/hour of data transfer and 350 clients.
+Multiple servers can be used as a cluster behind a load balancer to achieve better performance and availability.
+
+ifdef::pro[]
+SymmetricDS Pro is accessed from a web console, which requires one of the following supported web browsers:
+
+* Google Chrome 23 or newer
+* Internet Explorer 8 or newer
+* Mozilla Firefox 17 or newer
+* Safari 6 or newer
+endif::pro[]
+
+=== Overview
+
+A node is responsible for synchronizing the data from a database or file system with other nodes in the network using HTTP.
+Nodes are assigned to one of the node <<Groups>> that are configured together as a unit.  The node groups are linked together with <<Group Links>>
+to define either a push or pull communication.  A pull causes one node to connect with other nodes and request changes that are waiting,
+while a push causes one node to connect with other nodes when it has changes to send.
+
+Each node is connected to a database with a Java Database Connectivity (JDBC) driver using a connection URL, username, and password.
+While nodes can be separated across wide area networks, the database a node is connected to should be located nearby on a local area network
+for the best performance.
+Using its database connection, a node creates tables as a <<Data Model>> for configuration settings and runtime operations.
+The user populates configuration tables to define the synchronization and the runtime tables capture changes and track activity.
+The tables to sync can be located in any <<Catalog and Schema>> that are accessible from the connection, while the files to sync
+can be located in any directory that is accessible on the local server.
+
+image::overview.png[]
+
+At startup, SymmetricDS looks for <<Node Properties File,Node Properties Files>> and starts a node for each file it finds, 
+which allows multiple nodes to run in the same instance and share resources.
+The property file for a node contains its external ID, node group, registration server URL, and database connection information.
+The external ID is the name for a node used to identify it from other nodes.
+One node is configured as the registration server where the master configuration is stored.
+When a node is started for the first time, it contacts the registration server using a registration process that sends
+its external ID and node group.  In response, the node receives its configuration and a node password that must be sent
+as authentication during synchronization with other nodes.
+
+=== Architecture
+
+Each subsystem in the node is responsible for part of the data movement and is controlled through configuration.
+Data flows through the system in the following steps:
+
+. *Capture* into a runtime table at the source database
+. *Route* for delivery to target nodes and group into batches
+. *Extract* and *transform* into the rows, columns, and values needed for the outgoing batch
+. Send the *outgoing batch* to target nodes
+. Receive the *incoming batch* at the target node
+. *Transform* into the rows, columns, and values needed for the incoming batch  
+. *Load* data and return an acknowledgment to the source node
+
+image::architecture.png[]
+
+Capture:: Change Data Capture (CDC) for tables uses database triggers that fire and record changes as comma-separated values into
+a runtime table called <<DATA>>.  For file sync, a similar mechanism is used, except changes to the metadata about files are captured.
+The changes are recorded as insert, update, and delete event types.  
+The subsystem installs and maintains triggers on tables based on the configuration
+provided by the user, and it can automatically detect schema changes on tables and regenerate triggers.
+
+Route:: Routers run across new changes to determine which target nodes will receive the data.  
+The user configures which routers to use and what criteria is used to match data, creating subsets of rows if needed.
+Changes are grouped into batches and assigned to target nodes in the <<DATA_EVENT>> and <<OUTGOING_BATCH>> tables. 
+
+Extract:: Changes are extracted from the runtime tables and prepared to be sent as an outgoing batch.
+If large objects are configured for streaming instead of capture, they are queried from the table.
+Special event types like "reload" for <<Initial Loads>> are also processed. 
+
+Transform:: If transformations are configured, they operate on the change data either during the extract phase
+at the source node or the load phase at the target node.  The node's database can be queried to enhance the data.  
+Data is transformed into the tables, rows, columns, and values needed for either the outgoing or incoming batch.  
+
+Outgoing:: The synchronization sends batches to target nodes to be loaded.
+Multiple batches can be configured to send during a single synchronization.
+The status of the batch is updated on the <<OUTGOING_BATCH>> table as it processes.
+An acknowledgment is received from target nodes and recorded on the batch.
+
+Incoming:: The synchronization receives batches from remote nodes and the data is loaded. 
+The status of the batch is updated on the <<INCOMING_BATCH>> table as it processes.
+The resulting status of the batch is returned to the source node in an acknowledgment.
+
+=== Features
+
+SymmetricDS offers a rich set of features with flexible configuration for large scale deployment in a mixed environment with multiple systems. 
+
+ifdef::pro[]
+* *Web UI* - The web console provides easy configuration, management, and troubleshooting.
+endif::pro[]
+
+* *Data Synchronization* - Change data capture for relational databases and file synchronization for file systems can be
+periodic or near real-time, with an initial load feature to fully populate a node.
+
+* *Central Management* - Configure, monitor, and troubleshoot synchronization from a central location where conflicts and errors can be investigated and resolved. 
+
+* *Automatic Recovery* - Data delivery is durable and low maintenance, withstanding periods of downtime and automatically recovering from a network outage.
+
+* *Secure and Efficient* - Communication uses a data protocol designed for low bandwidth networks and streamed over HTTPS for encrypted transfer. 
+
+* *Transformation* - Manipulate data at multiple points to filter, subset, translate, merge, and enrich the data.
+
+* *Conflict Management* - Enforce consistency of two-way synchronization by configuring rules for automatic and manual resolution.
+
+* *Extendable* - Scripts and Java code can be configured to handle events, transform data, and create customized behavior.
+
+* *Deployment Options* - The software can be installed as a self-contained server that stands alone, deployed to a web application server,
+or embedded within an application.
+
+=== Why SymmetricDS?
+
+SymmetricDS is a feature-rich data synchronization solution that focuses on ease of use, openness, and flexibility.
+The software encourages interoperability and accessibility for users and developers with the availability of source code,
+an application programming interface (API), and a data model supported by documentation.
+Configuration includes a powerful set of options to define node topology, communication direction, transformation of data, and integration with
+external systems.  Through scripts and Java code, the user can also extend functionality with custom behavior.
+With a central database for setup and runtime information, the user has one place to configure, manage, and troubleshoot synchronization, with
+changes taking immediate effect across the network.
+
+The trigger-based data capture system is easy to understand and widely supported by database systems.
+Table synchronization can be setup by users and application developers without requiring a database administrator to modify the server.
+Triggers are database objects written in a procedural language, so they are open
+for examination, and include flexible configuration options for conditions and customization.
+Some overhead is associated with triggers, but they perform well for applications of online transaction processing,
+and their benefits of flexibility and maintenance outweigh the cost for most scenarios.
+
+Using an architecture based on web server technology, many simultaneous requests can be handled at a central server,
+with proven deployments in production supporting more than ten thousand client nodes. 
+Large networks of nodes can be grouped into tiers for more control and efficiency, with each group synchronizing data to the next tier.
+Data loading is durable and reliable by tracking batches in transactions and retrying of faults for automatic recovery,
+making it a low maintenance system.
+
+=== License
+
+ifndef::pro[]
+SymmetricDS is free software licensed under the GNU General Public License (GPL) version 3.0.
+See http://www.gnu.org/licenses/gpl.html for the full text of the license.
+This project includes software developed by JumpMind (http://www.jumpmind.com/) and a community of multiple contributors.
+SymmetricDS is licensed to JumpMind as the copyright holder under one or more Contributor License Agreements.
+SymmetricDS and the SymmetricDS logos are trademarks of JumpMind.
+endif::pro[]
+
+ifdef::pro[]
+SymmetricDS Pro is commercial software that is licensed, not sold.  
+It is subject to the terms of the End User License Agreement (EULA) and any accompanying JumpMind Support Contract.
+See the http://www.jumpmind.com/products/symmetricds/download?agreement=1&tmpl=component&format=raw[standard SymmetricDS Pro license]
+for reference, but your agreement with JumpMind may be different.
+endif::pro[]
