@@ -3,8 +3,8 @@
 
 There are two types of Bean Shell scripts that can be leveraged to customize file synchronization behavior: 
 
-* Before copy script
-* After copy script.
+Before copy script:: This runs on delivery of a file before it is copied to it's target location 
+After copy script::  This run on delivery of a file after it is copied to it's target location
 
 Each of these scripts have access to local variables that can be read or set to affect the behavior of copying files.
 
