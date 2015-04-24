@@ -277,7 +277,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
             
             if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
-                    catalogName, schemaName, tableName))) {
+                    defaultedCatalogName, defaultedSchemaName, tableName))) {
                 table = ddlReader.readTable(defaultedCatalogName, defaultedSchemaName, tableName);
             }
             
