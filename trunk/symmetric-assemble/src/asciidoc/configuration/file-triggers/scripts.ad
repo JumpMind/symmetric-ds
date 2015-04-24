@@ -42,3 +42,15 @@ the APIs available in SymmetricDS.
 sourceNodeId:: This is a bound variable that represents the nodeId that is the source of the file.
 
 log:: This is the bound instance of an org.slf4j.Logger that can be used to log to the SymmetricDS log file.
+
+.Example of a Before Copy Script
+====
+[source, JAVA]
+----
+File file = new File(batchDir + "/" + sourceFilePath + "/" + sourceFileName);
+if (file.exists()) {  
+    String path = file.getAbsolutePath();
+    cp (path,"/backup/" + sourceFileName);
+}
+----
+====

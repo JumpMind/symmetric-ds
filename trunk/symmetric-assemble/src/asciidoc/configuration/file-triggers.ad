@@ -33,8 +33,8 @@ Sync On Delete:: Whether to capture and send files when they are deleted.
 Sync On Ctl File:: Combined with sync_on_create, determines whether to capture and send files when a matching control file exists.  
 The control file is a file of the same name with a '.ctl' extension appended to the end.
 Delete After Sync:: Determines whether to delete the file after it has synced successfully.
-Before Copy Script:: A beanshell script that is run right before the file copy.
-After Copy Script:: A beanshell script that is run right after the file copy.
+Before Copy Script:: A beanshell script that is run at the target node right before the file copy to it's destination directory.
+After Copy Script:: A beanshell script that is run at the target node right after the file copy to it's destination directory.
 
 
 ifndef::pro[]
