@@ -28,13 +28,21 @@ public class FileTriggerRouter implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private FileTrigger fileTrigger;
+    
     private Router router;
+    
     private boolean enabled = true;
+    
     private boolean initialLoadEnabled;
+    
     private String targetBaseDir;
+    
     private FileConflictStrategy conflictStrategy = FileConflictStrategy.SOURCE_WINS;
+    
     private Date createTime = new Date();
+    
     private String lastUpdateBy;
+    
     private Date lastUpdateTime;
 
     public FileTriggerRouter(FileTrigger fileTrigger, Router router) {
