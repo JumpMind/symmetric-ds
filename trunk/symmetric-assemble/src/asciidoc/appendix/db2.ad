@@ -18,9 +18,21 @@ SQL1424N Too many references to transition variables and transition table
 columns or the row length for these references is too long. Reason
 code="2". LINE NUMBER=1. SQLSTATE=54040
 ----
-           
+     
+         
 Simply create a system temporary tablespace that has a bigger page size. A page size of 8k will probably suffice.
 
+[source, SQL]  
+----
+CREATE BUFFERPOOL tmp_bp PAGESIZE 8k;
+
+CREATE SYSTEM TEMPORARY TABLESPACE tmp_tbsp       
+     PAGESIZE 8K
+     MANAGED BY SYSTEM  
+     USING ('/home/db2inst1/tmp_tbsp')
+	 BUFFERPOOL tmp_bp     
+----
+    
 === DB2 for IBM i
 The DB2 for IBM i dialect is for connecting to a database on IBM iSeries (AS/400) machines.  It was tested with the
 http://jt400.sourceforge.net/[jt400 JDBC driver].  The "libraries" property is used in the JDBC URL
