@@ -19,6 +19,7 @@ package org.jumpmind.db.platform;
  * under the License.
  */
 
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.sql.Connection;
@@ -243,6 +244,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         result.add(new MetaDataColumnDescriptor("FKTABLE_NAME", Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("KEY_SEQ", Types.TINYINT, new Short((short) 0)));
         result.add(new MetaDataColumnDescriptor("FK_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("FKTABLE_NAME", Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("PKCOLUMN_NAME", Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor("FKCOLUMN_NAME", Types.VARCHAR));
         return result;
@@ -1024,7 +1026,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     
                 while (fkData.next()) {
                     Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
-                    readForeignKey(metaData, values, fks);
+                    String fkTableName = (String)values.get("FKTABLE_NAME");
+                    if (isBlank(fkTableName) || fkTableName.equalsIgnoreCase(tableName)) {
+                        readForeignKey(metaData, values, fks);
+                    }
                 }
             } finally {
                 close(fkData);
