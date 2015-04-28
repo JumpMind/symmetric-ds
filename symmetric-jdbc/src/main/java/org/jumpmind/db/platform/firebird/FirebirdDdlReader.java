@@ -24,10 +24,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.map.ListOrderedMap;
@@ -80,47 +78,6 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             rs.close();
         } finally {
             JdbcSqlTemplate.close(pstmt);
-        }
-    }
-
-    @Override
-    protected Collection<Column> readColumns(DatabaseMetaDataWrapper metaData, String tableName)
-            throws SQLException {
-        ResultSet columnData = null;
-        try {
-            List<Column> columns = new ArrayList<Column>();
-
-            if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
-                // Jaybird has a problem when delimited identifiers are used as
-                // it is not able to find the columns for the table
-                // So we have to filter manually below
-                columnData = metaData.getColumns(getDefaultTablePattern(),
-                        getDefaultColumnPattern());
-
-                while (columnData.next()) {
-                    Map<String,Object> values = readMetaData(columnData, getColumnsForColumn());
-
-                    if (tableName.equals(values.get("TABLE_NAME"))) {
-                        columns.add(readColumn(metaData, values));
-                    }
-                }
-            } else {
-                columnData = metaData.getColumns(tableName, getDefaultColumnPattern());
-
-                while (columnData.next()) {
-                    Map<String,Object> values = readMetaData(columnData, getColumnsForColumn());
-
-                    if (tableName.equals(values.get("TABLE_NAME"))) {
-                        columns.add(readColumn(metaData, values));
-                    }
-                }
-            }
-
-            return columns;
-        } finally {
-            if (columnData != null) {
-                columnData.close();
-            }
         }
     }
 
@@ -181,74 +138,6 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
             }
             stmt.close();
         }
-    }
-
-    @Override
-    protected Collection<String> readPrimaryKeyNames(DatabaseMetaDataWrapper metaData, String tableName)
-            throws SQLException {
-        List<String> pks = new ArrayList<String>();
-        ResultSet pkData = null;
-
-        try {
-            if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
-                // Jaybird has a problem when delimited identifiers are used as
-                // it is not able to find the primary key info for the table
-                // So we have to filter manually below
-                pkData = metaData.getPrimaryKeys(getDefaultTablePattern());
-            } else {
-                pkData = metaData.getPrimaryKeys(tableName);
-            }
-            while (pkData.next()) {
-                Map<String,Object> values = readMetaData(pkData, getColumnsForPK());
-
-                if (tableName.equals(values.get("TABLE_NAME"))) {
-                    pks.add(readPrimaryKeyName(metaData, values));
-                }
-            }
-        } finally {
-            if (pkData != null) {
-                pkData.close();
-            }
-        }
-        return pks;
-    }
-
-    @Override
-    protected Collection<ForeignKey> readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData,
-            String tableName) throws SQLException {
-        @SuppressWarnings("unchecked")
-        Map<String, ForeignKey> fks = new ListOrderedMap();
-        ResultSet fkData = null;
-
-        try {
-            if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
-                // Jaybird has a problem when delimited identifiers are used as
-                // it is not able to find the foreign key info for the table
-                // So we have to filter manually below
-                fkData = metaData.getForeignKeys(getDefaultTablePattern());
-                while (fkData.next()) {
-                    Map<String,Object> values = readMetaData(fkData, getColumnsForFK());
-
-                    if (tableName.equals(values.get("FKTABLE_NAME"))) {
-                        readForeignKey(metaData, values, fks);
-                    }
-                }
-            } else {
-                fkData = metaData.getForeignKeys(tableName);
-                while (fkData.next()) {
-                    Map<String,Object> values = readMetaData(fkData, getColumnsForFK());
-
-                    if (tableName.equals(values.get("FKTABLE_NAME"))) {
-                        readForeignKey(metaData, values, fks);
-                    }
-                }
-            }
-        } finally {
-            if (fkData != null) {
-                fkData.close();
-            }
-        }
-        return fks.values();
     }
 
     @Override
