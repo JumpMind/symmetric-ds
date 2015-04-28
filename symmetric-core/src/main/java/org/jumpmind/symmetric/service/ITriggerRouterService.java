@@ -40,6 +40,8 @@ public interface ITriggerRouterService {
 
     public boolean refreshFromDatabase();
     
+    public List<TriggerHistory> getActiveTriggerHistoriesFromCache();
+    
     public List<TriggerHistory> getActiveTriggerHistories();
     
     public List<TriggerHistory> getActiveTriggerHistories(Trigger trigger);
