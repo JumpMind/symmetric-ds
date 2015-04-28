@@ -385,14 +385,24 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return null;
     }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<TriggerHistory> getActiveTriggerHistoriesFromCache() {        
+        return new ArrayList<TriggerHistory>(historyMap != null ? historyMap.values() : Collections.EMPTY_LIST);
+    }
 
     /**
      * Get a list of trigger histories that are currently active
      */
     public List<TriggerHistory> getActiveTriggerHistories() {
-        return sqlTemplate.query(getSql("allTriggerHistSql", "activeTriggerHistSql"),
+        List<TriggerHistory> histories = sqlTemplate.query(getSql("allTriggerHistSql", "activeTriggerHistSql"),
                 new TriggerHistoryMapper());
-    }
+        for (TriggerHistory triggerHistory : histories) {
+            historyMap.put(triggerHistory.getTriggerHistoryId(), triggerHistory);
+        }
+        return histories;
+    }    
 
     public List<TriggerHistory> getActiveTriggerHistories(String tableName) {
         return sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
@@ -893,6 +903,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void insert(TriggerHistory newHistRecord) {
         newHistRecord.setTriggerHistoryId((int)sequenceService.nextVal(Constants.SEQUENCE_TRIGGER_HIST));
+        historyMap.put(newHistRecord.getTriggerHistoryId(), newHistRecord);
         sqlTemplate.update(
                 getSql("insertTriggerHistorySql"),
                 new Object[] { newHistRecord.getTriggerHistoryId(), newHistRecord.getTriggerId(), newHistRecord.getSourceTableName(),
