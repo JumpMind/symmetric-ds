@@ -53,6 +53,7 @@ import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
@@ -290,7 +291,10 @@ public class SnapshotUtil {
 
         writeRuntimeStats(engine, tmpDir);
         writeJobsStats(engine, tmpDir);
-        writeDirectoryListing(engine, tmpDir);
+        
+        if ("true".equals(System.getProperty(SystemConstants.SYSPROP_STANDALONE_WEB))) {
+            writeDirectoryListing(engine, tmpDir);
+        }
 
         fos = null;
         try {
@@ -338,24 +342,27 @@ public class SnapshotUtil {
 
         File[] files = dir.listFiles();
         for (File file : files) {
+            output.append("  ");
+            output.append(file.canRead() ? "r" : "-");
+            output.append(file.canWrite() ? "w" : "-");
+            output.append(file.canExecute() ? "x" : "-");
+            output.append(StringUtils.leftPad(file.length() + "", 11));
+            output.append(" ");
+            output.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(file
+                    .lastModified())));
+            output.append(" ");
+            output.append(file.getName());
+            output.append("\n");
+        }
+
+        for (File file : files) {
             if (file.isDirectory()) {
                 printDirectoryContents(file, output);
-            } else {
-                output.append("  ");
-                output.append(file.canRead() ? "r" : "-");
-                output.append(file.canWrite() ? "w" : "-");
-                output.append(file.canExecute() ? "x" : "-");
-                output.append(StringUtils.leftPad(file.length() + "", 11));
-                output.append(" ");
-                output.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(file.lastModified())));
-                output.append(" ");
-                output.append(file.getName());
-                output.append("\n");
             }
         }
 
     }
-    
+
     protected static void writeRuntimeStats(ISymmetricEngine engine, File tmpDir) {
         FileOutputStream fos = null;
         try {
