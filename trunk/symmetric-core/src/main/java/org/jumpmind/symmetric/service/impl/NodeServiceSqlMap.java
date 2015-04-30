@@ -117,7 +117,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         
         putSql("setOutgoingBatchOkSql", "update $(outgoing_batch) set status='OK', error_flag=0 where node_id = ?");
         
-        putSql("setIncomingBatchOkSql", "update $(incoming_batch) set status='OK', error_flag=0 where node_id = ?");
+        putSql("deleteIncomingBatchSql", "delete from $(incoming_batch) where node_id = ?");
 
         putSql("findNodeIdentitySql", "inner join $(node_identity) i on c.node_id =   "
                 + "  i.node_id                                          ");
