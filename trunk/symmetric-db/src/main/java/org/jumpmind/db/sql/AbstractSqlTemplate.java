@@ -155,7 +155,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         return query(newSql, maxRowsToFetch, mapper, params, null);
     }
 
-    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Map<String, Object> namedParams) {
+    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Map<String, ?> namedParams) {
         ParsedSql parsedSql = NamedParameterUtils.parseSqlStatement(sql);
         String newSql = NamedParameterUtils.substituteNamedParameters(parsedSql, namedParams);
         Object[] params = NamedParameterUtils.buildValueArray(parsedSql, namedParams);

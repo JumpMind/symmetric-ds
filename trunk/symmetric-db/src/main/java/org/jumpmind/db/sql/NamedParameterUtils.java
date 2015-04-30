@@ -196,7 +196,7 @@ public abstract class NamedParameterUtils {
      * @see #parseSqlStatement
      */
     public static String substituteNamedParameters(ParsedSql parsedSql,
-            Map<String, Object> paramSource) {
+            Map<String, ?> paramSource) {
         String originalSql = parsedSql.getOriginalSql();
         StringBuilder actualSql = new StringBuilder();
         List<String> paramNames = parsedSql.getParameterNames();
@@ -253,7 +253,7 @@ public abstract class NamedParameterUtils {
      *            the source for named parameters
      * @return the array of values
      */
-    public static Object[] buildValueArray(ParsedSql parsedSql, Map<String, Object> paramSource) {
+    public static Object[] buildValueArray(ParsedSql parsedSql, Map<String, ?> paramSource) {
         List<Object> paramArray = new ArrayList<Object>();
         if (parsedSql.getNamedParameterCount() > 0 && parsedSql.getUnnamedParameterCount() > 0) {
             throw new IllegalStateException(
