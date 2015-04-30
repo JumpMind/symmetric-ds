@@ -193,13 +193,6 @@ This transform copies the left most number of characters specified.
 
 This transform copies the left most number of bytes specified. 
 
-===== Multiply Transform
-
-This transformation allows for the creation of multiple rows in the target table based on the 
-transform expression. This transform type can only be used on a primary key column. The transform expression 
-is a SQL statement that returns the list to be used to create the multiple targets.  The SQL can contain
-one question mark (?) that will be prepared with the source column value. 
-
 ===== Lookup Transform
 
 This transformation determines the target column value by using a query, contained in transform expression 
@@ -226,7 +219,13 @@ ifdef::pro[]
 image::transforms/transform-type-lookup.png[]
 endif::pro[]
 
+===== Multiply Transform
 
+This transformation allows for the creation of multiple rows in the target table based on the 
+transform expression. This transform type can only be used on a primary key column. The transform expression 
+is a SQL statement, similar to the lookup transform, except it can return multiple rows that result in
+multiple rows for the target table.  The first column of the query is used as the value for the target
+column.  The query can reference source column names by prefixing them with a colon (e.g., :MY_COLUMN).
 
 ===== BeanShell Script Transform
 
