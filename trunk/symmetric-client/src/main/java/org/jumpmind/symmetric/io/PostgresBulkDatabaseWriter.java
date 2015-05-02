@@ -175,12 +175,18 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
     @Override
     public boolean start(Table table) {
         if (super.start(table)) {
-            needsBinaryConversion = false;
-            if (!batch.getBinaryEncoding().equals(BinaryEncoding.NONE)) {
-                for (Column column : targetTable.getColumns()) {
-                    if (column.isOfBinaryType()) {
-                        needsBinaryConversion = true;
-                        break;
+            /* If target table cannot be found the write method will decide 
+             * whether to ignore the write request or to log an error.  No 
+             * need to report the error right now.
+             */
+            if (targetTable != null) {
+                needsBinaryConversion = false;
+                if (!batch.getBinaryEncoding().equals(BinaryEncoding.NONE)) {
+                    for (Column column : targetTable.getColumns()) {
+                        if (column.isOfBinaryType()) {
+                            needsBinaryConversion = true;
+                            break;
+                        }
                     }
                 }
             }
