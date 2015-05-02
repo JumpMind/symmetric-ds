@@ -1,0 +1,18 @@
+=== Pull Threads
+
+Both the <<Pull Job>> and the <<File Sync Pull Job>> can be configured to pull multiple nodes in parallel.  In order to take advantage of this the
+`pull.thread.per.server.count` or `file.pull.thread.per.server.count` should be adjusted (from the default value of 1) to the number to the
+number of concurrent pulls you want to occur per period on each SymmetricDS instance. 
+
+ifdef::pro[]
+This screen shows pull activity for both table and file synchronization.
+
+image::manage/pull-threads.png[]
+endif::pro[]
+
+Pull activity is recorded in the <<NODE_COMMUNICATION>>
+table. This table is also used as a semaphore to lock pull activity across
+multiple servers in a cluster.
+
+
+

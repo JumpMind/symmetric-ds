@@ -1,0 +1,26 @@
+
+===== Default Router
+
+The simplest router is a router that sends all the data that is captured by its associated triggers 
+to all the nodes that belong to the target node group defined in the router. 
+
+ifndef::pro[]
+
+.The following SQL statement defines a router that will send data from the 'corp' group to the 'store' group.
+[source, SQL]
+----
+insert into SYM_ROUTER (router_id,
+	source_node_group_id, target_node_group_id, create_time,
+	last_update_time) values ('corp-2-store','corp', 'store',
+	current_timestamp, current_timestamp); 
+----
+
+.The following SQL statement maps the 'corp-2-store' router to the item trigger.
+[source, SQL]
+----
+insert into SYM_TRIGGER_ROUTER
+	(trigger_id, router_id, initial_load_order, create_time,
+	last_update_time) values ('item', 'corp-2-store', 1, current_timestamp,
+	current_timestamp); 
+----
+endif::pro[]

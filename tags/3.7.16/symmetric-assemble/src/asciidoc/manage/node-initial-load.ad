@@ -1,0 +1,151 @@
+An initial load is the process of seeding tables at a target node with data from a source node.  Instead of 
+capturing data, data is selected from the source table using a SQL statement and then it is streamed to the 
+client.
+
+ifdef::pro[]
+An initial load is requested by click the *Initial Load* button and selecting either *Send Load To* or *Receive Load From*.
+
+_Send Load To_ will queue up a load to be sent to the node that is selected from the node that is currently selected in the
+web interface.
+
+_Receive Load From_ will queue up a request for a load from the node that is selected to the current node.   
+
+image::manage/manage-nodes-send-load-to.png[]
+
+endif::pro[]
+
+When a load is requested it will either set the `initial_load_enabled` or the `reverse_initial_load_enabled` flag on the 
+appropriate <<NODE_SECURITY>> row.
+
+When the <<Route Job>> runs next, it will create batches that represent the initial load.  Batches will be created on the reload 
+channel for each table that is defined by <<Table Triggers>> and linked by <<Table Routing>> in the direction that the load 
+was requested.  The default reload channel is the _"reload"_ channel.  At the
+same time reload batches are inserted, all previously pending batches
+for the node are marked as successfully sent.
+
+ifdef::pro[]
+A load's progress can be monitored on the <<Outgoing Loads>> screen or the <<Outgoing Batches>> screen. 
+endif::pro[]
+
+Each table defined by <<Table Triggers>> and linked by <<Table Routing>> is represented by a reload <<OUTGOING_BATCH>>.  The batches 
+are inserted in the defined order.  If the `initial_load_order` is the same then SymmetricDS tries to determine the order the 
+tables need to be loaded in automatically based on foreign key dependencies.  A negative value for `initial_load_order` in <<Table Routing>> will result
+_no_ reload batch being inserted.
+
+If there are cyclical constraints, then foreign keys might need to be
+turned off or the initial load will need to be manually configured based
+on knowledge of how the data is structured.
+
+A SQL statement is run against each table to get the data load
+that will be streamed to the target node. The selected data is filtered
+through the configured router for the table being loaded. If the data
+set is going to be large, then SQL criteria can optionally be provided in `initial_load_select` 
+to pare down the data that is selected out of the database.
+            
+IMPORTANT: Note that if the parent node that a node is registering with is _not_ a registration server node 
+(as can happen when using <<REGISTRATION_REDIRECT>> or when using multiple tiers) the parent node's <<NODE_SECURITY>> 
+entry must exist at the parent node and have a non-null value for column `initial_load_time`.  Nodes can't be registered 
+to a non-registration-server node without this value being set one way or another (i.e., manually, or as a result
+of an initial load occurring at the parent node).           
+            
+===== Partial Initial Loads
+
+An efficient way to select a subset of data from a table for an initial
+load is to provide an `initial_load_select` clause in <<Table Routing>>
+. This clause, if present, is applied as a `where` clause to the SQL used to 
+select the data to be loaded. The clause may use "t" as an alias for the table being loaded, if needed. The
+`$(externalId)` token can be used for subsetting the data in the where clause.
+            
+In cases where routing is done using a feature like
+<<Subselect Router>>
+, an
+`initial_load_select`
+clause matching the subselect's criteria would be a more efficient
+approach. Some routers will check to see if the
+`initial_load_select`
+clause is provided, and they will
+_not_
+execute assuming that the more optimal path is using the
+`initial_load_select`
+statement.
+
+One example of the use of an initial load select would be if you wished
+to only load data created more recently than the start of year 2011.
+Say, for example, the column
+`created_time`
+contains the creation date. Your
+`initial_load_select`
+would read
+`created_time &gt; ts {'2011-01-01 00:00:00.0000'}`
+(using whatever timestamp format works for your database). This then
+gets applied as a
+`where`
+clause when selecting data from the table.
+
+IMPORTANT: When providing an
+            `initial_load_select`
+            be sure to test out the criteria against production data in a query
+            browser. Do an explain plan to make sure you are properly using indexes.
+
+===== Initial Load Extract In Background
+            
+By default, all data for a given table will be initial loaded in a single batch, regardless
+of the max batch size parameter on the reload channel.  That is, for a table with one million
+rows, all rows for that table will be initial loaded and sent to the destination node in a
+single batch. For large tables, this can result in a batch that can take a long time to
+extract and load.
+
+Initial loads for a table can be broken into multiple batches by setting
+`initial.load.use.extract.job.enabled` to true.  This parameter allows
+SymmetricDS to pre-extract initial load batches versus having them extracted when
+the batch is pulled or pushed.  When using this parameter, there are two ways to tell
+SymmetricDS the number of batches to create for a given table.  The first is to specify
+a positive integer in the initial_load_batch_count column on
+<<Table Routing>>.  This
+number will dictate the number of batches created for the initial load of the given table.
+The second way is to specify 0 for initial_load_batch_count on
+<<Table Routing>> and specify a max_batch_size on the reload channel for <<Channels>>.
+When 0 is specified for initial_load_batch_count, SymmetricDS will execute a count(*) query on the table during
+the extract process and pre-create N batches based on the total number of records found
+in the table divided by the `max_batch_size` on the reload channel.
+
+===== Reverse Initial Loads
+
+Normal initial loads load data from the parent node to a client node. Occasionally, there may be need to do a one-time 
+initial load of data in the "reverse" direction.  A reverse initial load is started by setting the `reverse_initial_load_enabled` flag
+on <<NODE_SECURITY>>. 
+
+ifdef::pro[]
+A reverse initial load is requested from the user interface by pressing _Initial Load_ and selecting _Receive Load From_.
+endif::pro[]
+
+===== Other Initial Load Settings
+
+There are several parameters that can be used to modify the behavior of an initial load.
+
+auto.reload:: A load is queued up _to_ a node automatically when it registers.
+
+auto.reload.reverse:: A reverse initial load is queued up for a node automatically when it registers.
+
+initial.load.delete.first / initial.load.delete.first.sql:: By default, an initial load will not delete existing rows from a target
+table before loading the data. If a delete is desired, the parameter `initial.load.delete.first` can be set to true. If true, the 
+command found in `initial.load.delete.first.sql` will be run on each table prior to loading the data. The default value
+for `initial.load.delete.first.sql` is
++
+`delete from %s`
++
+Note that individual reload batches are created that represent the deletes in the reverse order that load batches are created.  All
+delete batches are inserted first.  The `initial.load.delete.first.sql` can be overwritten at the <<TRIGGER_ROUTER>> level by entering 
+a `initial_load_delete_stmt`.
+            
+initial.load.create.first:: By default, an initial load will not create the table on the target if it doesn't already exist. 
+If the desired behavior is to create the table on the target if it is not present, set the parameter
+`intial.load.create.first` to true. SymmetricDS will attempt to create the table and indexes on the target database before 
+doing the initial load. Note that individual create batches are created to represent each of the table creates.
++
+Sometimes when creating tables across different database platforms default values do not translate.  You can turn off the use of default values
+during the table create by setting `create.table.without.defaults`.
+            
+        
+
+
