@@ -34,6 +34,8 @@ import org.jumpmind.symmetric.model.OutgoingBatches;
  * This service provides an API to access to the outgoing batch table. 
  */
 public interface IOutgoingBatchService {
+    
+    public List<String> getNodesInError();
 
     public void markAllAsSentForNode(String nodeId, boolean includeConfigChannel);
     

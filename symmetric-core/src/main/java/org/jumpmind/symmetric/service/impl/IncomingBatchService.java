@@ -33,6 +33,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.DateMapper;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchId;
@@ -49,6 +50,11 @@ import org.jumpmind.util.FormatUtils;
 public class IncomingBatchService extends AbstractService implements IIncomingBatchService {
 
     protected IClusterService clusterService;
+    
+    @Override
+    public List<String> getNodesInError() {
+        return sqlTemplate.query(getSql("selectNodesInErrorSql"), new StringMapper());
+    }
     
     public IncomingBatchService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IClusterService clusterService) {

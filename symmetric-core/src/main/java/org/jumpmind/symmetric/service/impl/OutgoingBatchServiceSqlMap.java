@@ -29,6 +29,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
     public OutgoingBatchServiceSqlMap(IDatabasePlatform platform,
             Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
+        
+        putSql("selectNodesInErrorSql", "select distinct node_id from $(outgoing_batch) where error_flag=1");
 
         putSql("initialLoadStatusSql", ""
                 + "select status from $(outgoing_batch) where node_id=? and load_flag=?   ");
