@@ -33,6 +33,8 @@ import org.jumpmind.symmetric.model.IncomingBatch;
  * This service provides an API to access to the incoming batch table. 
  */
 public interface IIncomingBatchService {
+    
+    public List<String> getNodesInError();
 
     public int countIncomingBatchesInError();
     

@@ -30,6 +30,8 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         super(platform, replacementTokens);
         
         // @formatter:off
+        
+        putSql("selectNodesInErrorSql", "select distinct node_id from $(incoming_batch) where error_flag=1");
 
         putSql("selectIncomingBatchPrefixSql" ,"" + 
 "select batch_id, node_id, channel_id, status, network_millis, filter_millis, database_millis, failed_row_number, failed_line_number, byte_count,           " + 
