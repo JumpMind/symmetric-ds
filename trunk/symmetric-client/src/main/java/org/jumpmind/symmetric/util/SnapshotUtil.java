@@ -387,7 +387,7 @@ public class SnapshotUtil {
                 runtimeProperties.setProperty("data.gap.start.id",
                         Long.toString(gaps.get(0).getStartId()));
                 runtimeProperties.setProperty("data.gap.end.id",
-                        Long.toString(gaps.get(gaps.size()-1).getStartId()));                
+                        Long.toString(gaps.get(gaps.size()-1).getEndId()));                
 
             }
             
