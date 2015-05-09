@@ -62,15 +62,15 @@ public class NodeGroupChannelWindow implements Serializable {
     }
 
     public void setStartTime(Time startTime) {
-        this.startTime = startTime;
+        this.startTime = Time.valueOf(HHmmss.format(startTime));
     }
 
     public Time getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(Time endTime) {
-        this.endTime = endTime;
+    public void setEndTime(Time endTime) {        
+        this.endTime = Time.valueOf(HHmmss.format(endTime));
     }
 
     public void setEnabled(boolean enabled) {
