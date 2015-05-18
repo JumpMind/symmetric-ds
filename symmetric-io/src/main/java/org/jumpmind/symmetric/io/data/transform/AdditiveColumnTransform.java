@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -138,7 +139,8 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
             if (log.isDebugEnabled()) {
                 log.debug("SQL: "+sql);
             }
-            if (0 < platform.getSqlTemplate().update(
+            ISqlTransaction transaction = context.findTransaction();
+            if (0 < transaction.prepareAndExecute(
                     sql.toString(),
                     platform.getObjectValues(context.getBatch().getBinaryEncoding(),
                             keyValuesList.toArray(new String[keyValuesList.size()]),
