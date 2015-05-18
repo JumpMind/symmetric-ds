@@ -965,7 +965,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 // If we were in the process of skipping a batch
                 // then its status would have been OK. We should not
                 // set the status to ER.
-                if (this.currentBatch.getStatus() != Status.OK) {
+                if (this.currentBatch.getStatus() != Status.OK &&
+                        this.currentBatch.getStatus() != Status.IG) {
 
                     this.currentBatch.setStatus(IncomingBatch.Status.ER);
                     if (context.getTable() != null && context.getData() != null) {
