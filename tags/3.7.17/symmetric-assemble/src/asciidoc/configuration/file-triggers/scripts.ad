@@ -1,0 +1,56 @@
+
+==== BeanShell Scripts
+
+There are two types of Bean Shell scripts that can be leveraged to customize file synchronization behavior: 
+
+Before copy script:: This runs on delivery of a file before it is copied to it's target location 
+After copy script::  This run on delivery of a file after it is copied to it's target location
+
+Each of these scripts have access to local variables that can be read or set to affect the behavior of copying files.
+
+targetBaseDir:: The preset base directory as configured in file trigger or overwritten in file trigger router. 
+This variable can be set by the before copy script to set a different target directory.
+
+targetFileName:: The name of the file that is being synchronized. This variable can be overwritten 
+by the before copy script to rename a file at the target.
+
+targetRelativeDir:: The name of a directory relative to the target base directory to which the target 
+file will be copied. The default value of this variable is the relative directory of the source. 
+For example, if the source base directory is /src and the target base directory is /tgt and the file 
+/src/subfolder/1.txt is changed, then the default targetRelativeDir will be subfolder. This variable 
+can be overwritten by the before_copy_script to change the relative directory at the target. In the 
+above example, if the variable is set to blank using the following script, then the target file will 
+be copied to /tgt/1.txt.
+[source, beanshell]
+----
+targetRelativeDir = "";
+----
+
+processFile:: This is a variable that is set to true by default. A custom before copy script may process 
+the file itself and set this variable to false to indicate that the file should NOT be copied to its target location.
+
+sourceFileName:: This is the name of the file.
+
+sourceFilePath:: This is the path where the file can be found relative to the batch directory.
+
+batchDir:: This is the staging directory where the batch has been extracted. The batchDir + sourceFilePath + sourceFileName 
+can be used to locate the extracted file.
+
+engine:: This is the bound instance of the ISymmetricEngine that is processing a file. It gives access to all of 
+the APIs available in SymmetricDS.
+
+sourceNodeId:: This is a bound variable that represents the nodeId that is the source of the file.
+
+log:: This is the bound instance of an org.slf4j.Logger that can be used to log to the SymmetricDS log file.
+
+.Example of a Before Copy Script
+====
+[source, JAVA]
+----
+File file = new File(batchDir + "/" + sourceFilePath + "/" + sourceFileName);
+if (file.exists()) {  
+    String path = file.getAbsolutePath();
+    cp (path,"/backup/" + sourceFileName);
+}
+----
+====

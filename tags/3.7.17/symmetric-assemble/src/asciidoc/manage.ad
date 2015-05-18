@@ -1,0 +1,78 @@
+
+== Manage
+
+This section will talk about how to manage and monitor SymmetricDS.
+ 
+=== Nodes
+
+ifdef::pro[]
+Nodes can be added and managed in the Nodes screen under the Manage tab.
+
+image::manage/manage-nodes.png[]
+endif::pro[]
+    
+    
+==== Add Node
+
+include::manage/node-add.ad[]
+
+==== Control
+
+include::manage/node-control.ad[]
+
+==== Registration
+
+include::manage/node-registration.ad[]
+		
+==== Initial Loads
+
+include::manage/node-initial-load.ad[]
+
+==== Send
+
+include::manage/node-send.ad[]
+	
+=== Jobs
+
+include::manage/jobs.ad[]
+
+=== Installed Triggers
+
+include::manage/installed-triggers.ad[]
+
+ifdef::pro[]
+=== Outgoing Loads
+
+The Outgoing Loads screen shows the number of loads that have been queued.  It also lists loads that have had <<Outgoing Batches>> created.  The screens shows 
+loads that are sourced from the current node.
+
+You can cancel a load that is in progress by selecting the load and pressing the _Cancel_ button.  
+
+image::manage/manage-outgoing-loads.png[]
+
+endif::pro[]
+
+=== Outgoing Batches
+
+include::manage/outgoing-batches.ad[]
+
+=== Incoming Batches
+
+include::manage/incoming-batches.ad[]
+
+include::manage/staging.ad[]
+
+ifdef::pro[]
+include::manage/processes.ad[]
+endif::pro[]
+
+include::manage/pull-threads.ad[]
+include::manage/push-threads.ad[]
+
+ifdef::pro[]
+include::manage/jvm-properties.ad[]
+include::manage/jvm-threads.ad[]
+endif::pro[]
+
+include::manage/logging.ad[]
+
