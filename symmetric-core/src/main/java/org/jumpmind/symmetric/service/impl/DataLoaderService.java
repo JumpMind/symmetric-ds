@@ -915,6 +915,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                      */
                     throw ex;
                 }
+                
+                /*
+                 * Reread batch to make sure it wasn't set to IG or OK
+                 */
+                currentBatch = engine.getIncomingBatchService().findIncomingBatch(currentBatch.getBatchId(), currentBatch.getNodeId());
+                
                 Batch batch = context.getBatch();
                 if (context.getWriter() != null
                         && context.getReader().getStatistics().get(batch) != null
