@@ -250,7 +250,7 @@ public class TransformService extends AbstractService implements ITransformServi
         return columns;
     }
 
-    public void saveTransformTable(TransformTableNodeGroupLink transformTable) {
+    public void saveTransformTable(TransformTableNodeGroupLink transformTable, boolean saveTransformColumns) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
@@ -279,11 +279,14 @@ public class TransformService extends AbstractService implements ITransformServi
                         transformTable.getLastUpdateBy(), transformTable.getCreateTime(),
                         transformTable.getTransformId());
             }
-            deleteTransformColumns(transaction, transformTable.getTransformId());
-            List<TransformColumn> columns = transformTable.getTransformColumns();
-            if (columns != null) {
-                for (TransformColumn transformColumn : columns) {
-                    saveTransformColumn(transaction, transformColumn);
+            
+            if (saveTransformColumns) {
+                deleteTransformColumns(transaction, transformTable.getTransformId());
+                List<TransformColumn> columns = transformTable.getTransformColumns();
+                if (columns != null) {
+                    for (TransformColumn transformColumn : columns) {
+                        saveTransformColumn(transaction, transformColumn);
+                    }
                 }
             }
             transaction.commit();
