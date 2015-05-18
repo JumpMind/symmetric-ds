@@ -962,7 +962,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
                 ISqlTransaction transaction = context.findTransaction();
 
-                // If we were in the process of skipping a batch
+                // If we were in the process of skipping or ignoring a batch
                 // then its status would have been OK. We should not
                 // set the status to ER.
                 if (this.currentBatch.getStatus() != Status.OK &&
