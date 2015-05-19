@@ -39,7 +39,7 @@ public class AckUriHandler extends AbstractUriHandler {
     private static final Comparator<BatchAck> BATCH_ID_COMPARATOR = new Comparator<BatchAck>() {
         public int compare(BatchAck batchInfo1, BatchAck batchInfo2) {
             Long batchId1 = batchInfo1.getBatchId();
-            Long batchId2 = batchInfo1.getBatchId();
+            Long batchId2 = batchInfo2.getBatchId();
             return batchId1.compareTo(batchId2);
         }
     };
