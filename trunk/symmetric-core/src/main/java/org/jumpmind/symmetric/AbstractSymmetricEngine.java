@@ -310,7 +310,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.groupletService = new GroupletService(this);
         this.triggerRouterService = new TriggerRouterService(this);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
-                nodeService, configurationService, sequenceService, clusterService);
+                nodeService, configurationService, sequenceService, clusterService, extensionService);
         this.dataService = new DataService(this, extensionService);
         this.routerService = buildRouterService();
         this.nodeCommunicationService = buildNodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
