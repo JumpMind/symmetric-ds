@@ -39,6 +39,7 @@ import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.ext.IOutgoingBatchFilter;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
@@ -51,6 +52,7 @@ import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.OutgoingLoadSummary;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -70,16 +72,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private ISequenceService sequenceService;
 
     private IClusterService clusterService;
+    
+    private IExtensionService extensionService;
 
     public OutgoingBatchService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, INodeService nodeService,
             IConfigurationService configurationService, ISequenceService sequenceService,
-            IClusterService clusterService) {
+            IClusterService clusterService, IExtensionService extensionService) {
         super(parameterService, symmetricDialect);
         this.nodeService = nodeService;
         this.configurationService = configurationService;
         this.sequenceService = sequenceService;
         this.clusterService = clusterService;
+        this.extensionService = extensionService;
         setSqlMap(new OutgoingBatchServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -356,23 +361,31 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                         OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                         OutgoingBatch.Status.IG.name() }, null);
-
+        
         OutgoingBatches batches = new OutgoingBatches(list);
 
         List<NodeChannel> channels = new ArrayList<NodeChannel>(configurationService.getNodeChannels(nodeId, true));
         batches.sortChannels(channels);
 
+        List<IOutgoingBatchFilter> filters = extensionService.getExtensionPointList(IOutgoingBatchFilter.class);
+
         List<OutgoingBatch> keepers = new ArrayList<OutgoingBatch>();
 
         for (NodeChannel channel : channels) {
+            List<OutgoingBatch> batchesForChannel = getBatchesForChannelWindows(
+                    batches,
+                    nodeId,
+                    channel,
+                    configurationService.getNodeGroupChannelWindows(
+                            parameterService.getNodeGroupId(), channel.getChannelId()));
+            if (filters != null) {
+                for (IOutgoingBatchFilter filter : filters) {
+                    batchesForChannel = filter.filter(channel, batchesForChannel);
+                }
+            }
             if (parameterService.is(ParameterConstants.DATA_EXTRACTOR_ENABLED)
                     || channel.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
-                keepers.addAll(getBatchesForChannelWindows(
-                        batches,
-                        nodeId,
-                        channel,
-                        configurationService.getNodeGroupChannelWindows(
-                                parameterService.getNodeGroupId(), channel.getChannelId())));
+                keepers.addAll(batchesForChannel);
             }
         }
         batches.setBatches(keepers);
