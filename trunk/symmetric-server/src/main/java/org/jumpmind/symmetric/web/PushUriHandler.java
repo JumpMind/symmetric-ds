@@ -53,7 +53,6 @@ public class PushUriHandler extends AbstractUriHandler {
         this.dataLoaderService = dataLoaderService;
         this.statisticManager = statisticManager;
         this.nodeService = nodeService;
-        log.info("Patched version of PushUriHandler with buffer flush is deployed");
     }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
