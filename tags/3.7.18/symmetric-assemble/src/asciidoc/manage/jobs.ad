@@ -1,0 +1,186 @@
+
+Most work done by SymmetricDS is initiated by jobs. Jobs are tasks that are started and scheduled by a job manager.  
+Jobs are enabled by the `start.<name>.job` parameter.  
+
+Most jobs are enabled by default.  The frequency at which a job 
+runs is controlled by one of two parameters:  
+
+* `job.<name>.period.time.ms`
+* `job.<name>.cron`
+
+If a valid cron property exists in the configuration, then it will be used to schedule the job. Otherwise, the job manager 
+will attempt to use the period.time.ms property.
+
+ifdef::pro[]
+From the manage jobs screen the frequency that a job will run for the *current node* in the cluster can be managed.  If you want to change
+the frequency a job runs across a group or for everyone, you modify the parameter in the <<Parameters>> screen.  
+
+A job can also be _stopped_ and _restarted_.  If a job is scheduled to run infrequently and the job is needed to run immediately 
+you can select job and click *Run Now*.
+
+image::manage/manage-jobs.png[]
+endif::pro[]
+
+ifndef::pro[]
+
+The frequency of jobs can be configured in either the <<Node Properties File>> or in the <<PARAMETER>> table.  When managed in
+<<PARAMETER>> table the frequency properties can be changed in the master node and when the updated settings sync to the other nodes 
+in the system the job manager will restart the jobs at the new frequency settings.
+
+endif::pro[]
+
+SymmetricDS utilizes Spring's CRON support, which includes seconds as the first parameter. This differs from the typical Unix-based
+implementation, where the first parameter is usually minutes. For example,
+`*/15 * * * * *`
+means every 15 seconds, not every 15 minutes. See
+http://static.springsource.org/spring/docs/3.0.x/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html"[Spring's
+documentation]
+for more details.
+
+Some jobs cannot be run in parallel against a single node. These jobs use the <<LOCK>> table to get an exclusive semaphore to run the job. 
+This table is only used if the `cluster.lock.enabled` is set to true.
+        
+==== Route Job
+
+The Route Job is responsible for creating <<OUTGOING_BATCH,outgoing batches>> of captured <<DATA,data>> that are targeted at specific <<NODE,nodes>>.
+
+The job processes <<Channels>>, one at a time, reading up to <<configuration/channels.ad#max-data-to-route,Max Data To Route>> <<DATA,data>> 
+rows which have not been routed. 
+
+The data is assigned to <<OUTGOING_BATCH,outgoing batches>> based on the 
+<<configuration/channels.ad#batch-algorithm,Batch Algorithm>> defined for the channel.  Note that, for the
+_default_ and _transactional_ algorithm <<configuration/channels.ad#max-data-to-route,Max Data To Route>> 
+rows may be exceeded depending on the transaction boundaries. 
+
+An <<OUTGOING_BATCH,outgoing batch>> is initially created with a status of "RT".  <<DATA,Data>> is assigned to the batch by inserting into
+<<DATA_EVENT,data event>>.  When a batch is complete, the batch is committed and the status is changed to "NE".
+
+The route job will respect the <<configuration/channels.ad#max-batch-size,Max Batch Size>> as configured in <<Channels>>.  If the max batch size is reached before the end 
+of a captured database transaction and the batch algorithm is set to something other than _nontransactional_
+the batch may exceed the specified max size.
+
+The route job delegates to a <<_routers,router>> to decided which nodes need to received the data.  The correct <<_routers, router>> is looked up by 
+referencing the captured `trigger_hist_id` in the <<DATA>> table and using <<Table Routing>> configuration.  
+
+After <<OUTGOING_BATCH,outgoing batches>> have been created by the Route Job, they need to be transported to the target node. 
+        
+===== Data Gaps
+
+The <<DATA>> to route is selected based on the values in the <<DATA_GAP>> table.  For efficiency,
+<<DATA_GAP>> tracks gaps in the data ids in <<DATA>> table that have not yet been processed.
+
+A gap while routing in <<DATA>> can occur because concurrently running transactions have not yet committed.  They can 
+also be caused by rolled back transactions. 
+
+Most of gaps are only temporarily and fill in at some point after routing and need to be picked up with the next routing run. 
+
+This table completely defines the entire range of data that can be routed at any point in time.
+For a brand new instance of SymmetricDS, this table is empty and SymmetricDS creates a gap starting 
+from data id of zero and ending with a very large number (defined by `routing.largest.gap.size`
+). 
+
+At the start of a route job, the list of valid gaps (gaps with status of 'GP') is collected, and each gap is evaluated in turn. 
+If a gap is sufficiently old (as defined by `routing.stale.dataid.gap.time.ms`, SymmetricDS assumes that a transaction has 
+been rolled back and deletes the gap.
+
+If the gap is not stale, then <<DATA_EVENT>> is searched for data ids present in the gap. If one or more data ids is
+found in <<DATA_EVENT>>, then the current gap is deleted, and new gap(s) are created to represent the data ids still 
+missing in the gap's range. This process is done for all gaps. If the very last gap contained data, a new
+gap starting from the highest data id and ending at (highest data id + `routing.largest.gap.size`) is then created. 
+
+This results in an updated gap list that can be used to select <<DATA>> for routing.
+        
+==== Push Job
+
+The Push Job is responsible for assigning nodes that need to be pushed to individual threads.  See <<Push Threads>> for more details.
+
+The job sends <<Outgoing Batches>> to the target node using an HTTP PUT.  By default an HTTP PUT buffers data at the client.  
+If large batches are going to be sent using the push job, then consider turning on `http.push.stream.output.enabled`.
+
+The push job is considered to be slightly more efficient than the <<Pull Job>> because it only needs to make a network connection if 
+there are batches available to send.
+
+In order to be more efficient, the push job sends an HTTP HEAD to request a reservation at the target node.  If the target nodes responds 
+and accepts the request, then the job issues the HTTP PUT with the data pay load in <<Data Format>>
+
+==== Pull Job
+
+The Pull Job is responsible for assigning nodes that need to be pulled to individual threads.  See <<Pull Threads>> for more details.
+
+The job expects to receive <<Incoming Batches>> from a source node using an HTTP GET.  
+
+==== Purge Outgoing Job
+
+The Purge Outgoing Job is responsible to purging outgoing data that has successfully been loaded at the target and is older than 
+`purge.retention.minutes`.
+
+This job purges the following tables:
+
+* <<DATA>>
+* <<DATA_EVENT>>
+* <<OUTGOING_BATCH>>
+* <<EXTRACT_REQUEST>>
+
+==== Purge Incoming Job
+
+The Purge Incoming Job is responsible for purging the <<INCOMING_BATCH>> table.
+
+==== Statistics Job
+
+The Statistics Job flushes captured statistics to following tables:
+ 
+* <<NODE_HOST_CHANNEL_STATS>>
+* <<NODE_HOST_JOB_STATS>>
+* <<NODE_HOST_STATS>>
+
+It also purges the same tables based on the `purge.stats.retention.minutes` parameter.
+
+==== Sync Triggers Job
+
+The Sync Triggers Job runs when a node is started and on the prescribed job schedule.  The job checks for missing SymmetricDS database
+triggers and creates them.  It also updates the SymmetricDS database triggers that have had a change to its configuration or the database
+table has had a change to its structure.
+
+==== Heartbeat Job
+
+The Heartbeat Job updates its own <<NODE_HOST>> row with a new `heartbeat_time` so that it is synchronized to it's `created_at_node_id` node 
+to indicate that the node is online and healthy.
+
+==== Watchdog Job
+
+The Watchdog Job looks for nodes that have been offline for `offline.node.detection.period.minutes` and disables them.
+
+==== Stage Management Job
+
+The Stage Management Job purges the staging area according to the `stream.to.file.ttl.ms` parameter.
+
+==== Refresh Cache Job
+
+The Refresh Cache Job checks the `last_update_time` on each cached configuration resource and determines if it needs to refresh the cached items.  
+This job is mostly relevant when a cluster is deployed.
+
+==== File Sync Tracker Job
+
+The File System Tracker job is responsible for monitoring and recording the events of files being created, modified, or deleted.
+It records the current state of files to the <<FILE_SNAPSHOT>> table. 
+
+See <<File Synchronization>> for more details.
+
+==== File Sync Pull Job
+
+The File Sync Pull Job is responsible for assigning nodes that need to be pulled to individual threads.  
+
+See <<File Synchronization>> and <<Pull Threads>> for more details.
+
+==== File Sync Push Job
+
+The File Sync Push Job is responsible for assigning nodes that need to be pushed to individual threads.  
+
+See <<File Synchronization>> and <<Pull Threads>> for more details.
+
+==== Initial Load Extract Job
+
+The Initial Load Extract Job processes <<EXTRACT_REQUEST>>s.  See <<Initial Load Extract In Background>> for more details.
+
+        
+        

@@ -1,0 +1,27 @@
+
+=== Parameters
+
+Parameters can be used to help tune and configure your SymmetricDS configuration. 
+Parameters can be set for an individual node or for all nodes in your network.
+
+See <<Parameter List>> for a complete list of parameters.
+
+
+ifdef::pro[]
+==== Targeting
+
+Parameters can be set for a given node or node group to allow more flexibility in configuration.
+
+.Setting parameters by target
+image::parameters/parameters-target.png[]
+
+NOTE: Only certain parameters can be edited.  To edit a SymmetricDS startup parameter, you must locate and edit the engine.properties file.
+
+==== Filtering
+
+Parameters can be filtered in order to help find specific parameters or parameters named a certain way.
+
+.Filter parameters by typing in a portion of the parameter name
+image::parameters/parameters-filter.png[]
+
+endif::pro[]
