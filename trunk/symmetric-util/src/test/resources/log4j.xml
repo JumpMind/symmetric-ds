@@ -56,7 +56,13 @@
     <category name="org.jumpmind.symmetric.io">
         <priority value="DEBUG" />
     </category>
-                 -->      
+                 -->   
+                 
+    <!-- In order to see http headers enable this
+    <category name="sun.net.www.protocol.http.HttpURLConnection">
+        <priority value="ALL" />
+    </category>                    
+     -->
           
     <category name="org.jumpmind.db.alter">
         <priority value="DEBUG" />
