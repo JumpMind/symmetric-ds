@@ -131,6 +131,12 @@
         <priority value="DEBUG" />
     </category>        
     -->
+    
+    <!-- In order to see http headers enable this
+    <category name="sun.net.www.protocol.http.HttpURLConnection">
+        <priority value="ALL" />
+    </category>                    
+     -->    
 
     <!-- Change the "CONSOLE" to "ROLLING" to log to a file instead -->
     <root>
