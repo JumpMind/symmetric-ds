@@ -57,6 +57,7 @@ import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
+import org.jumpmind.symmetric.io.data.transform.TrimColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ValueMapColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -95,6 +96,7 @@ public class TransformService extends AbstractService implements ITransformServi
         addColumnTransform(MultiplierColumnTransform.NAME, new MultiplierColumnTransform());
         addColumnTransform(SubstrColumnTransform.NAME, new SubstrColumnTransform());
         addColumnTransform(LeftColumnTransform.NAME, new LeftColumnTransform());
+        addColumnTransform(TrimColumnTransform.NAME, new TrimColumnTransform());
         addColumnTransform(BinaryLeftColumnTransform.NAME, new BinaryLeftColumnTransform());
         addColumnTransform(RemoveColumnTransform.NAME, new RemoveColumnTransform());
         addColumnTransform(MathColumnTransform.NAME, new MathColumnTransform());
