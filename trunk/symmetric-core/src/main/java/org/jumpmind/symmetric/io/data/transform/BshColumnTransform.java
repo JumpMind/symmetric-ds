@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
+import static org.jumpmind.symmetric.common.Constants.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.Context;
@@ -101,10 +103,17 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
             if (context.get(methodName) == null) {
                 interpreter.set("log", log);
                 interpreter.set("sqlTemplate", platform.getSqlTemplate());
-                interpreter.set("sourceNodeId", context.getBatch().getSourceNodeId());
-                interpreter.set("targetNodeId", context.getBatch().getTargetNodeId());
                 interpreter.set("context", context);
                 interpreter.set("bshContext", bshContext);
+                interpreter.set(DATA_CONTEXT_ENGINE, context.get(DATA_CONTEXT_ENGINE));            
+                interpreter.set(DATA_CONTEXT_TARGET_NODE, context.get(DATA_CONTEXT_TARGET_NODE));
+                interpreter.set(DATA_CONTEXT_TARGET_NODE_ID, context.get(DATA_CONTEXT_TARGET_NODE_ID));
+                interpreter.set(DATA_CONTEXT_TARGET_NODE_GROUP_ID, context.get(DATA_CONTEXT_TARGET_NODE_GROUP_ID));
+                interpreter.set(DATA_CONTEXT_TARGET_NODE_EXTERNAL_ID, context.get(DATA_CONTEXT_TARGET_NODE_EXTERNAL_ID));            
+                interpreter.set(DATA_CONTEXT_SOURCE_NODE, context.get(DATA_CONTEXT_SOURCE_NODE));
+                interpreter.set(DATA_CONTEXT_SOURCE_NODE_ID, context.get(DATA_CONTEXT_SOURCE_NODE_ID));                                                    
+                interpreter.set(DATA_CONTEXT_SOURCE_NODE_GROUP_ID, context.get(DATA_CONTEXT_SOURCE_NODE_GROUP_ID));                                                    
+                interpreter.set(DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID, context.get(DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID));
                 
                 if (StringUtils.isNotBlank(globalScript)) {
                     interpreter.eval(globalScript);
