@@ -41,6 +41,8 @@ public interface IIncomingBatchService {
     public int countIncomingBatchesInError(String channelId);
     
     public IncomingBatch findIncomingBatch(long batchId, String nodeId);
+    
+    public void refreshIncomingBatch(IncomingBatch batch);
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows);
 
