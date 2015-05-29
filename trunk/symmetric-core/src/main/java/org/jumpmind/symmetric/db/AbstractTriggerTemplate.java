@@ -673,7 +673,8 @@ abstract public class AbstractTriggerTemplate {
             }
             columnsText.append(",");
         }
-        return columnsText.substring(0, columnsText.length() - 1);
+        
+        return columnsText.length() > 0 ? columnsText.substring(0, columnsText.length() - 1) : columnsText.toString();
     }
 
     protected ColumnString buildColumnsString(String origTableAlias, String tableAlias,
