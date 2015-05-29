@@ -63,6 +63,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         setSqlMap(new IncomingBatchServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
+    
+    public void refreshIncomingBatch(IncomingBatch batch) {
+        sqlTemplate.queryForObject(
+                getSql("selectIncomingBatchPrefixSql", "findIncomingBatchSql"),
+                new IncomingBatchMapper(batch), batch.getBatchId(), batch.getNodeId());        
+    }
 
     public IncomingBatch findIncomingBatch(long batchId, String nodeId) {
         if (nodeId != null) {
@@ -363,8 +369,19 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     class IncomingBatchMapper implements ISqlRowMapper<IncomingBatch> {
+        
+        IncomingBatch batchToRefresh = null;
+        
+        public IncomingBatchMapper(IncomingBatch batchToRefresh) {
+            this.batchToRefresh = batchToRefresh;    
+        }
+        
+        public IncomingBatchMapper() {
+        }
+        
+        
         public IncomingBatch mapRow(Row rs) {
-            IncomingBatch batch = new IncomingBatch();
+            IncomingBatch batch = batchToRefresh != null ? batchToRefresh : new IncomingBatch();
             batch.setBatchId(rs.getLong("batch_id"));
             batch.setNodeId(rs.getString("node_id"));
             batch.setChannelId(rs.getString("channel_id"));
