@@ -20,7 +20,16 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
-import static org.jumpmind.symmetric.common.Constants.*;
+import static org.jumpmind.symmetric.common.Constants.DATA_CONTEXT_ENGINE;
+import static org.jumpmind.symmetric.common.Constants.DATA_CONTEXT_SOURCE_NODE;
+import static org.jumpmind.symmetric.common.Constants.DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID;
+import static org.jumpmind.symmetric.common.Constants.DATA_CONTEXT_SOURCE_NODE_GROUP_ID;
+import static org.jumpmind.symmetric.common.Constants.DATA_CONTEXT_SOURCE_NODE_ID;
+import static org.jumpmind.symmetric.common.Constants.DATA_CONTEXT_TARGET_NODE;
+import static org.jumpmind.symmetric.common.Constants.DATA_CONTEXT_TARGET_NODE_EXTERNAL_ID;
+import static org.jumpmind.symmetric.common.Constants.DATA_CONTEXT_TARGET_NODE_GROUP_ID;
+import static org.jumpmind.symmetric.common.Constants.DATA_CONTEXT_TARGET_NODE_ID;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +39,6 @@ import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.Context;
