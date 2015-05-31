@@ -1,0 +1,59 @@
+
+==== Load Only Triggers
+
+Occasionally the decision of what data to load initially results in additional triggers. These triggers, known as load only triggers, 
+are configured such that they do not capture any data changes. 
+In other words, the sync on insert, sync on update, and sync on delete attributes of the trigger are all set to false.
+
+ifdef::pro[]
+.Sample load only trigger
+====
+image::triggers/trigger-load-only.png[500,400]
+====
+endif::pro[]
+
+.Load only triggers still participate in the following:
+* Initial Loads
+* Reverse Initial Loads
+* Table Reloads
+* Creation of tables during initial loads
+
+.Use cases for load only triggers:
+* To load a read-only lookup table, for example. It could also be used to load a table that needs populated with example or default data. 
+* Recovery of data for tables that have a single direction of synchronization. For example, a retail store records sales 
+transactions that synchronize in one direction by trickling back to the central office. If the retail store needs to 
+recover all the sales transactions from the central office, they can be sent are part of an initial load from the central 
+office by setting up a load only trigger that "sync" in that direction.
+
+ifndef::pro[]
+The following SQL statement sets up a non-syncing dead Trigger that sends the sale_transaction table to the "store" Node Group 
+from the "corp" Node Group during an initial load.
+
+[source, sql]
+----
+insert into sym_trigger (TRIGGER_ID,SOURCE_CATALOG_NAME,
+  SOURCE_SCHEMA_NAME,SOURCE_TABLE_NAME,CHANNEL_ID,
+  SYNC_ON_UPDATE,SYNC_ON_INSERT,SYNC_ON_DELETE,
+  SYNC_ON_INCOMING_BATCH,NAME_FOR_UPDATE_TRIGGER,
+  NAME_FOR_INSERT_TRIGGER,NAME_FOR_DELETE_TRIGGER,
+  SYNC_ON_UPDATE_CONDITION,SYNC_ON_INSERT_CONDITION,
+  SYNC_ON_DELETE_CONDITION,EXTERNAL_SELECT,
+  TX_ID_EXPRESSION,EXCLUDED_COLUMN_NAMES,
+  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('SALE_TRANSACTION_DEAD',null,null, 'SALE_TRANSACTION','transaction',
+  0,0,0,0,null,null,null,null,null,null,null,null,null,
+  current_timestamp,'demo',current_timestamp); 
+
+insert into sym_router (ROUTER_ID,TARGET_CATALOG_NAME,TARGET_SCHEMA_NAME,
+  TARGET_TABLE_NAME,SOURCE_NODE_GROUP_ID,TARGET_NODE_GROUP_ID,ROUTER_TYPE,
+  ROUTER_EXPRESSION,SYNC_ON_UPDATE,SYNC_ON_INSERT,SYNC_ON_DELETE,
+  CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('CORP_2_STORE',null,null,null, 'corp','store',null,null,1,1,1,
+  current_timestamp,'demo',current_timestamp); 
+              
+insert into sym_trigger_router (TRIGGER_ID,ROUTER_ID,INITIAL_LOAD_ORDER,
+  INITIAL_LOAD_SELECT,CREATE_TIME,LAST_UPDATE_BY,LAST_UPDATE_TIME) 
+  values ('SALE_TRANSACTION_DEAD','CORP_2_REGION',100,null,
+  current_timestamp,'demo',current_timestamp); 
+----
+endif::pro[]

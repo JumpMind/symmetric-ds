@@ -1,0 +1,56 @@
+
+=== File Triggers
+
+In addition to supporting database synchronization, SymmetricDS also supports 
+<<File Synchronization>>.  Similar to database synchronization which allows configuring <<Table 
+Triggers>>, SymmetricDS also supports setting up File Triggers.  A file trigger is equivalent
+to specifying a directory structure or path that should be "watched" for files that need to be
+synchronized.
+
+ifdef::pro[]
+image::file-trigger.png[]
+endif::pro[]
+
+ifdef::pro[]
+.Required Fields
+endif::pro[]
+
+File Trigger Id:: Unique identifier for a trigger.
+Channel:: The channel_id of the channel that data changes will flow through.
+Reload Channel Id:: The channel_id of the channel that will be used for reloads.
+Base Directory:: The base directory on the source node that files will be synchronized from.
+
+ifdef::pro[]
+.Advanced Options
+endif::pro[]
+
+Recurse:: Whether to synchronize child directories.
+Include Files:: Wildcard-enabled (*), comma-separated list of file to include in synchronization.
+Exclude Files:: Wildcard-enabled (*), comma-separated list of file to exclude from synchronization.
+Sync On Create:: Whether to capture and send files when they are created.
+Sync On Modified:: Whether to capture and send files when they are modified.
+Sync On Delete:: Whether to capture and send files when they are deleted.
+Sync On Ctl File:: Combined with sync_on_create, determines whether to capture and send files when a matching control file exists.  
+The control file is a file of the same name with a '.ctl' extension appended to the end.
+Delete After Sync:: Determines whether to delete the file after it has synced successfully.
+Before Copy Script:: A beanshell script that is run at the target node right before the file copy to it's destination directory.
+After Copy Script:: A beanshell script that is run at the target node right after the file copy to it's destination directory.
+
+
+ifndef::pro[]
+==== Operation
+
+Not only is file synchronization configured similar to database synchronization, but it also operates in a very similar way. The file system is monitored for changes via a background job that tracks the file system changes (this parallels the use of triggers to monitor for changes when synchronizing database changes). When a change is detected it is written to the FILE_SNAPSHOT table. The file snapshot table represents the most recent known state of the monitored files. The file snapshot table has a SymmetricDS database trigger automatically installed on it so that when it is updated the changes are captured by SymmetricDS on an internal channel named filesync.
+
+The changes to FILE_SNAPSHOT are then routed and batched by a file-synchronization-specific router that delegates to the configured router based on the FILE_TRIGGER_ROUTER configuration. The file sync router can make routing decisions based on the column data of the snapshot table, columns which contain attributes of the file like the name, path, size, and last modified time. Both old and new file snapshot data are also available. The router can, for example, parse the path or name of the file and use it as the node id to route to.
+
+Batches of file snapshot changes are stored on the filesync channel in OUTGOING_BATCH. The existing SymmetricDS pull and push jobs ignore the filesync channel. Instead, they are processed by file-synchronization-specific push and pull jobs.
+
+When transferring data, the file sync push and pull jobs build a zip file dynamically based on the batched snapshot data. The zip file contains a directory per batch. The directory name is the batch_id. A sync.bsh Bean Shell script is generated and placed in the root of each batch directory. The Bean Shell script contains the commands to copy or delete files at their file destination from an extracted zip in the staging directory on the target node. The zip file is downloaded in the case of a pull, or, in the case of a push, is uploaded as an HTTP multi-part attachment. Outgoing zip files are written and transferred from the outgoing staging directory. Incoming zip files are staged in the filesync_incoming staging directory by source node id. The filesync_incoming/{node_id} staging directory is cleared out before each subsequent delivery of files.
+
+The acknowledgement of a batch happens the same way it is acknowledged in database synchronization. The client responds with an acknowledgement as part of the response during a file push or pull.
+endif::pro[]
+
+
+
+include::file-triggers/scripts.ad[]
