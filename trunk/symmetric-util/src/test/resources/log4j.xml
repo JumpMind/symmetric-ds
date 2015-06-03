@@ -63,6 +63,10 @@
         <priority value="ALL" />
     </category>                    
      -->
+
+    <category name="org.eclipse.jetty.security.HashLoginService">
+        <priority value="DEBUG" />
+    </category>    
           
     <category name="org.jumpmind.db.alter">
         <priority value="DEBUG" />
