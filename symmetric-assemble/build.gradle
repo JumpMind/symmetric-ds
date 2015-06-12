@@ -2,6 +2,7 @@ buildscript {
     repositories {
         jcenter()
         maven { url 'http://repo.spring.io/plugins-release' }
+        mavenCentral()
     }
 
     dependencies {
@@ -9,6 +10,7 @@ buildscript {
         classpath 'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.6'
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
+        classpath 'org.hibernate.build.gradle:gradle-animalSniffer-plugin:1.0.1.Final'
     }
 }
 
@@ -22,6 +24,13 @@ task generateJavadoc(type: Javadoc) {
 }
 
 subprojects { subproject ->
+    
+    apply plugin: 'org.hibernate.build.gradle.animalSniffer'
+    
+    dependencies {
+        animalSnifferSignature 'org.codehaus.mojo.signature:java15:1.0@signature'
+    }
+    
     afterEvaluate {
         if(plugins.hasPlugin(JavaPlugin)) {
             
@@ -29,7 +38,7 @@ subprojects { subproject ->
             rootProject.tasks.generateJavadoc {
                 source += files(sourceSets.collect { srcSet -> srcSet.allJava })
                 classpath += files(sourceSets*.compileClasspath)
-            }
+            }                        
     
         }
     }    
@@ -65,7 +74,7 @@ project(":symmetric-wrapper") {
 project(':symmetric-util') {
     description = 'Utility classes that are used by several Symmetric libraries'
 
-    dependencies {
+    dependencies {        
         compile "commons-lang:commons-lang:$commonsLangVersion"
         compile "commons-io:commons-io:$commonsIoVersion"
         compile "commons-codec:commons-codec:$commonsCodecVersion"
