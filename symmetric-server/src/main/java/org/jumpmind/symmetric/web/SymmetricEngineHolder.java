@@ -336,7 +336,7 @@ public class SymmetricEngineHolder {
             }
 
             engine = create(symmetricProperties.getAbsolutePath());
-            if (engine != null && autoStart) {
+            if (engine != null) {
                 engineCount++;
                 engine.start();
             } else {
@@ -441,7 +441,8 @@ public class SymmetricEngineHolder {
         @Override
         public void run() {
             ISymmetricEngine engine = create(propertiesFile);        	
-            if (engine != null && autoStart) {
+            if (engine != null && autoStart &&
+                    engine.getParameterService().is(ParameterConstants.AUTO_START_ENGINE)) {
                 engine.start();
             }
             enginesStarting.remove(this);

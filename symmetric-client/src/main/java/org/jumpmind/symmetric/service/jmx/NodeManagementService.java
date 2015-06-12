@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Node;
@@ -78,6 +79,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
     public boolean start() {
         try {
             if (engine != null) {
+                engine.getParameterService().saveParameter(ParameterConstants.AUTO_START_ENGINE, "true", Constants.SYSTEM_USER);
                 return engine.start();
             } else {
                 return false;
@@ -93,6 +95,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         try {
             if (engine != null) {
                 engine.stop();
+                engine.getParameterService().saveParameter(ParameterConstants.AUTO_START_ENGINE, "false", Constants.SYSTEM_USER);
             }
         } catch (Exception ex) {
             log.error("", ex);
