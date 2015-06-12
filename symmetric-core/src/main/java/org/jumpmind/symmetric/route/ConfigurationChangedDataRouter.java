@@ -180,6 +180,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
                 if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER)) {
                     routingContext.put(CTX_KEY_FLUSH_PARAMETERS_NEEDED, Boolean.TRUE);
+                    
+                    if (me.getExternalId().equals(columnValues.get("EXTERNAL_ID"))
+                            && me.getNodeGroupId().equals(columnValues.get("NODE_GROUP_ID"))) {
+                        nodeIds.clear();
+                    }                  
 
                     if (StringUtils.isBlank(dataMetaData.getData().getSourceNodeId())
                             && (dataMetaData.getData().getRowData() != null && dataMetaData
