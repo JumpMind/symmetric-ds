@@ -48,6 +48,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
 import org.jumpmind.symmetric.model.BatchAck;
@@ -1254,13 +1255,16 @@ public class RestService {
     }
 
     private void startImpl(ISymmetricEngine engine) {
-        if (!engine.start()) {
+        engine.getParameterService().saveParameter(ParameterConstants.AUTO_START_ENGINE, "true", Constants.SYSTEM_USER);
+        if (engine.start()) {
             throw new InternalServerErrorException();
         }
     }
 
     private void stopImpl(ISymmetricEngine engine) {
         engine.stop();
+        engine.getParameterService().saveParameter(ParameterConstants.AUTO_START_ENGINE, "false", Constants.SYSTEM_USER);
+
     }
 
     private void syncTriggersImpl(ISymmetricEngine engine, boolean force) {
