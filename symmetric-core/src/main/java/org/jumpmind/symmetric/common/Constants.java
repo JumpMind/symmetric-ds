@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.model.DataEvent;
 final public class Constants {
 
     private Constants() {
+        
     }
     
     public static final String SYSTEM_USER = "system";
