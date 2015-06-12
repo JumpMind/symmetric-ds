@@ -116,30 +116,27 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node node = nodeCommunication.getNode();
-        if (StringUtils.isNotBlank(node.getSyncUrl()) || 
-                !parameterService.isRegistrationServer()) {
-                int pullCount = 0;
-                long batchesProcessedCount = 0;
-                do {
-                    batchesProcessedCount = status.getBatchesProcessed();
-                    pullCount++;
-                    log.debug("Pull requested for {}", node.toString());
-                    if (pullCount > 1) {
-                        log.info("Immediate pull requested while in reload mode");
-                    }
-                 
-                    try {
+        if (StringUtils.isNotBlank(node.getSyncUrl()) || !parameterService.isRegistrationServer()) {
+            int pullCount = 0;
+            long batchesProcessedCount = 0;
+            do {
+                batchesProcessedCount = status.getBatchesProcessed();
+                pullCount++;
+                log.debug("Pull requested for {}", node.toString());
+                if (pullCount > 1) {
+                    log.info("Immediate pull requested while in reload mode");
+                }
+
+                try {
                     dataLoaderService.loadDataFromPull(node, status);
                 } catch (ConnectException ex) {
-                    log.warn(
-                            "Failed to connect to the transport: {}",
-                            (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
-                                    .getSyncUrl()));
+                    log.warn("Failed to connect to the transport: {}", (node.getSyncUrl() == null ? parameterService.getRegistrationUrl()
+                            : node.getSyncUrl()));
                     fireOffline(ex, node, status);
                 } catch (OfflineException ex) {
                     fireOffline(ex, node, status);
                 } catch (UnknownHostException ex) {
-                    fireOffline(ex, node, status);                
+                    fireOffline(ex, node, status);
                 } catch (SocketException ex) {
                     log.warn("{}", ex.getMessage());
                     fireOffline(ex, node, status);
@@ -147,31 +144,24 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                     log.error("An IO exception happened while attempting to pull data", ex);
                     fireOffline(ex, node, status);
                 }
-                    
-                    if (!status.failed() && 
-                            (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0)) {
-                        log.info(
-                                "Pull data received from {}.  {} rows and {} batches were processed",
-                                new Object[] { node.toString(), status.getDataProcessed(),
-                                        status.getBatchesProcessed() });
 
-                    } else if (status.failed()) {
-                        log.info(
-                                "There was a failure while pulling data from {}.  {} rows and {} batches were processed",
-                                new Object[] { node.toString(), status.getDataProcessed(),
-                                        status.getBatchesProcessed() });
-                    }
-                    /*
-                     * Re-pull immediately if we are in the middle of an initial
-                     * load so that the initial load completes as quickly as
-                     * possible.
-                     */
-                } while (nodeService.isDataLoadStarted() && !status.failed()
-                        && status.getBatchesProcessed() > batchesProcessedCount);
-           
+                if (!status.failed() && (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0)) {
+                    log.info("Pull data received from {}.  {} rows and {} batches were processed",
+                            new Object[] { node.toString(), status.getDataProcessed(), status.getBatchesProcessed() });
+
+                } else if (status.failed()) {
+                    log.info("There was a failure while pulling data from {}.  {} rows and {} batches were processed",
+                            new Object[] { node.toString(), status.getDataProcessed(), status.getBatchesProcessed() });
+                }
+                /*
+                 * Re-pull immediately if we are in the middle of an initial
+                 * load so that the initial load completes as quickly as
+                 * possible.
+                 */
+            } while (nodeService.isDataLoadStarted() && !status.failed() && status.getBatchesProcessed() > batchesProcessedCount);
+
         } else {
-            log.warn("Cannot pull node '{}' in the group '{}'.  The sync url is blank",
-                    node.getNodeId(), node.getNodeGroupId());
+            log.warn("Cannot pull node '{}' in the group '{}'.  The sync url is blank", node.getNodeId(), node.getNodeGroupId());
         }
     }
 
