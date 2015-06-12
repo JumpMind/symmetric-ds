@@ -20,9 +20,8 @@
  */
 package org.jumpmind.symmetric.transport;
 
-import org.jumpmind.exception.IoException;
 
-public class ConnectionRejectedException extends IoException {
+public class ConnectionRejectedException extends OfflineException {
 
     private static final long serialVersionUID = 3770259092569043530L;
 

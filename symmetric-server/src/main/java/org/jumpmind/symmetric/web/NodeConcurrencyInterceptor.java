@@ -73,14 +73,14 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             if (!concurrentConnectionManager
                     .reserveConnection(nodeId, poolId, ReservationType.SOFT)) {
                 statisticManager.incrementNodesRejected(1);
-                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);
+                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
             } else {
                 try {
                     buildSuspendIgnoreResponseHeaders(nodeId, resp);
                 } catch (Exception ex) {
                     concurrentConnectionManager.releaseConnection(nodeId, poolId);
                     log.error("Error building response headers", ex);
-                    ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);
+                    ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
                 }
             }
             return false;
@@ -92,13 +92,13 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             } catch (Exception ex) {
                 concurrentConnectionManager.releaseConnection(nodeId, poolId);
                 log.error("Error building response headers", ex);
-                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);
+                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
                 return false;
             }
 
         } else {
             statisticManager.incrementNodesRejected(1);
-            ServletUtils.sendError(resp, WebConstants.SC_SERVICE_UNAVAILABLE);
+            ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
             return false;
         }
     }
