@@ -45,10 +45,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.transport.AuthenticationException;
-import org.jumpmind.symmetric.transport.ConnectionRejectedException;
-import org.jumpmind.symmetric.transport.SyncDisabledException;
-import org.jumpmind.symmetric.transport.TransportException;
+import org.jumpmind.symmetric.transport.OfflineException;
 
 /**
  * @see IPullService
@@ -121,7 +118,6 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         Node node = nodeCommunication.getNode();
         if (StringUtils.isNotBlank(node.getSyncUrl()) || 
                 !parameterService.isRegistrationServer()) {
-            try {
                 int pullCount = 0;
                 long batchesProcessedCount = 0;
                 do {
@@ -131,8 +127,26 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                     if (pullCount > 1) {
                         log.info("Immediate pull requested while in reload mode");
                     }
-                    
+                 
+                    try {
                     dataLoaderService.loadDataFromPull(node, status);
+                } catch (ConnectException ex) {
+                    log.warn(
+                            "Failed to connect to the transport: {}",
+                            (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
+                                    .getSyncUrl()));
+                    fireOffline(ex, node, status);
+                } catch (OfflineException ex) {
+                    fireOffline(ex, node, status);
+                } catch (UnknownHostException ex) {
+                    fireOffline(ex, node, status);                
+                } catch (SocketException ex) {
+                    log.warn("{}", ex.getMessage());
+                    fireOffline(ex, node, status);
+                } catch (IOException ex) {
+                    log.error("An IO exception happened while attempting to pull data", ex);
+                    fireOffline(ex, node, status);
+                }
                     
                     if (!status.failed() && 
                             (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0)) {
@@ -154,30 +168,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                      */
                 } while (nodeService.isDataLoadStarted() && !status.failed()
                         && status.getBatchesProcessed() > batchesProcessedCount);
-            } catch (ConnectException ex) {
-                log.warn(
-                        "Failed to connect to the transport: {}",
-                        (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
-                                .getSyncUrl()));
-                fireOffline(ex, node, status);
-            } catch (ConnectionRejectedException ex) {
-                fireOffline(ex, node, status);
-            } catch (AuthenticationException ex) {
-                fireOffline(ex, node, status);
-            } catch (UnknownHostException ex) {
-                fireOffline(ex, node, status);                
-            } catch (SyncDisabledException ex) {
-                fireOffline(ex, node, status);
-            } catch (SocketException ex) {
-                log.warn("{}", ex.getMessage());
-                fireOffline(ex, node, status);
-            } catch (TransportException ex) {
-                log.warn("{}", ex.getMessage());
-                fireOffline(ex, node, status);
-            } catch (IOException ex) {
-                log.error("An IO exception happened while attempting to pull data", ex);
-                fireOffline(ex, node, status);
-            }
+           
         } else {
             log.warn("Cannot pull node '{}' in the group '{}'.  The sync url is blank",
                     node.getNodeId(), node.getNodeGroupId());
