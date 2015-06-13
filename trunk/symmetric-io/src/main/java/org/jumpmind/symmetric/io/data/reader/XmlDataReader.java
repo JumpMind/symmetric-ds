@@ -178,7 +178,7 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                                 next.add(table);
                             }
                             next.add(data);
-                            rowData = new HashMap<String, String>();
+                            rowData = new LinkedHashMap<String, String>();
                         } else if ("table_data".equalsIgnoreCase(name)) {
                             if (batch != null) {
                                 batch.setComplete(true);

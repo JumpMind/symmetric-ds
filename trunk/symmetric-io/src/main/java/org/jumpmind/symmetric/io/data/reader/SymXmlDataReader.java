@@ -77,7 +77,6 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
 
     protected Object readNext() {
         try {
-            boolean nullValue = false;
             Map<String, String> rowData = new LinkedHashMap<String, String>();
             String columnName = null;
             Table lastTable = this.table;
@@ -86,12 +85,7 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                 switch (eventType) {
                     case XmlPullParser.TEXT:
                         if (columnName != null) {
-                            if (!nullValue) {
-                                rowData.put(columnName, parser.getText());
-                            } else {
-                                rowData.put(columnName, null);
-                            }
-                            nullValue = false;
+                            rowData.put(columnName, parser.getText());
                             columnName = null;
                         }
                         break;
@@ -130,6 +124,7 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                                 }
                             }
                         } else if ("data".equalsIgnoreCase(name)) {
+                            boolean nullValue = false;
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
                                 String attributeName = parser.getAttributeName(i);
                                 String attributeValue = parser.getAttributeValue(i);
@@ -138,6 +133,11 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                                 } else if ("xsi:nil".equalsIgnoreCase(attributeName)) {
                                     nullValue = true;
                                 }
+                            }
+                            
+                            if (nullValue) {
+                                rowData.put(columnName, null);
+                                columnName = null;
                             }
                         } else if ("batch".equalsIgnoreCase(name)) {
                             batch = new Batch();
@@ -165,6 +165,7 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                             String[] columnValues = rowData.values().toArray(
                                     new String[rowData.values().size()]);
                             data.putParsedData(CsvData.ROW_DATA, columnValues);
+                            rowData = new LinkedHashMap<String, String>();
                             if (lastTable == null || !lastTable.equals(table)) {
                                 return table;
                             } else {
@@ -172,7 +173,6 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                             }
                         } else if ("data".equalsIgnoreCase(name)) {
                             columnName = null;
-                            nullValue = false;
                         }
 
                         break;
