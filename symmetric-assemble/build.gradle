@@ -25,10 +25,13 @@ task generateJavadoc(type: Javadoc) {
 
 subprojects { subproject ->
     
-    apply plugin: 'org.hibernate.build.gradle.animalSniffer'
+    checkJava5Compat = checkJava5Compat.toBoolean()
+    if (checkJava5Compat) {
+        apply plugin: 'org.hibernate.build.gradle.animalSniffer'
     
-    dependencies {
-        animalSnifferSignature 'org.codehaus.mojo.signature:java15:1.0@signature'
+        dependencies {
+            animalSnifferSignature 'org.codehaus.mojo.signature:java15:1.0@signature'
+        }
     }
     
     afterEvaluate {
