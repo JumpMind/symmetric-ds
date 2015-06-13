@@ -1,0 +1,20 @@
+<database>
+    <table name="my_table">
+        <column name="id" primaryKey="true" required="true" type="INTEGER" size="10" />
+        <column name="my_value" type="VARCHAR" size="50" />
+    </table>
+    <table_data name="my_table">
+        <row>
+            <field name="id">1</field>
+            <field name="my_value">A</field>
+        </row>
+        <row>
+            <field name="id">2</field>
+            <field name="my_value" xsi:nil="true" />
+        </row>
+        <row>
+            <field name="id">3</field>
+            <field name="my_value">C</field>
+        </row>
+    </table_data>
+</database>
