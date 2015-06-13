@@ -81,7 +81,6 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
 
     protected void readNext() {
         try {
-            boolean nullValue = false;
             Map<String, String> rowData = new LinkedHashMap<String, String>();
             String columnName = null;
             CsvData data = null;
@@ -93,12 +92,7 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                 switch (eventType) {
                     case XmlPullParser.TEXT:
                         if (columnName != null) {
-                            if (!nullValue) {
-                                rowData.put(columnName, parser.getText());
-                            } else {
-                                rowData.put(columnName, null);
-                            }
-                            nullValue = false;
+                            rowData.put(columnName, parser.getText());
                             columnName = null;
                         }
                         break;
@@ -113,6 +107,7 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                             }
                             data.setDataEventType(DataEventType.INSERT);
                         } else if ("field".equalsIgnoreCase(name)) {
+                            boolean nullValue = false;
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
                                 String attributeName = parser.getAttributeName(i);
                                 String attributeValue = parser.getAttributeValue(i);
@@ -121,6 +116,11 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                                 } else if ("xsi:nil".equalsIgnoreCase(attributeName)) {
                                     nullValue = true;
                                 }
+                            }
+                            
+                            if (nullValue) {
+                                rowData.put(columnName, null);
+                                columnName = null;
                             }
                         } else if ("table_data".equalsIgnoreCase(name)) {
                             Batch batch = new Batch();
@@ -178,13 +178,13 @@ public class XmlDataReader extends AbstractDataReader implements IDataReader {
                                 next.add(table);
                             }
                             next.add(data);
+                            rowData = new HashMap<String, String>();
                         } else if ("table_data".equalsIgnoreCase(name)) {
                             if (batch != null) {
                                 batch.setComplete(true);
                             }
                         } else if ("field".equalsIgnoreCase(name)) {
                             columnName = null;
-                            nullValue = false;
                         }
 
                         break;
