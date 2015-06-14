@@ -74,7 +74,6 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
 
-        addEscapedCharSequence("'", "''");
     }
 
     @Override

@@ -135,7 +135,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setAutoIncrementUpdateAllowed(false);
 
-        addEscapedCharSequence("'", "''");
     }
 
     @Override

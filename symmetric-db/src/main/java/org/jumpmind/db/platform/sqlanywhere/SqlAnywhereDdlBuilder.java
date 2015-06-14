@@ -99,7 +99,6 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setRequiresAutoCommitForDdl(true);
         databaseInfo.setRequiredCharColumnEmptyStringSameAsNull(true);
         
-        addEscapedCharSequence("'", "''");
     }
 
     @Override

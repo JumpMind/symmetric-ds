@@ -104,7 +104,6 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(true);
 
-        addEscapedCharSequence("'", "''");
     }
     
     @Override
