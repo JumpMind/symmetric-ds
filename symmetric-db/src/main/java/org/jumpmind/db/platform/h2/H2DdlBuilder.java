@@ -84,8 +84,7 @@ public class H2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setCharColumnSpaceTrimmed(true);
         databaseInfo.setEmptyStringNulled(false);                
         databaseInfo.setNullAsDefaultValueRequired(true);
-        
-        addEscapedCharSequence("'", "''");
+                
     }
     
     @Override
