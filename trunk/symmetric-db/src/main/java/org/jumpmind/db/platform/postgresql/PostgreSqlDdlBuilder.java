@@ -96,7 +96,6 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         // we need to handle the backslash first otherwise the other
         // already escaped sequences would be affected
         addEscapedCharSequence("\\", "\\\\");
-        addEscapedCharSequence("'", "\\'");
         addEscapedCharSequence("\b", "\\b");
         addEscapedCharSequence("\f", "\\f");
         addEscapedCharSequence("\n", "\\n");
