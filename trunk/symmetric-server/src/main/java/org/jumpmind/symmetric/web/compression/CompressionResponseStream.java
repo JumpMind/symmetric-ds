@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -166,12 +167,22 @@ public class CompressionResponseStream extends ServletOutputStream {
 
         gzipstream.write(b, off, len);
     }
+    
+    @Override
+    public boolean isReady() {
+        return true;
+    }    
+    
 
     /**
      * Has this response stream been closed?
      */
     public boolean closed() {
         return this.closed;
+    }
+
+    @Override
+    public void setWriteListener(WriteListener writeListener) {
     }
 
 }
