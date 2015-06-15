@@ -138,13 +138,13 @@ subprojects { subproject ->
         mockitoVersion = '1.9.5'
         powerMockVersion = '1.5.3'
         mysqlVersion = '5.1.30'
-        servletVersion = '3.0.1'
+        servletVersion = '3.1.0'
         springVersion = '4.0.5.RELEASE'
         jtdsVersion = '1.2.8'
         bouncyCastleVersion = '140'
         animalSnifferVersion = '1.10'
         jnaVersion = '4.1.0'
-        jettyVersion = '7.6.3.v20120416'        
+        jettyVersion = '9.2.11.v20150529'
         
         env = System.getenv()
     }
