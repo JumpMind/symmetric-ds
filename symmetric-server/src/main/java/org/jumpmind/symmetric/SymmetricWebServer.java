@@ -20,29 +20,47 @@
  */
 package org.jumpmind.symmetric;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 import javax.management.Attribute;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.XSLTProcessor;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.SessionManager;
-import org.eclipse.jetty.server.bio.SocketConnector;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
-import org.eclipse.jetty.server.ssl.SslSocketConnector;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.session.AbstractSession;
+import org.eclipse.jetty.server.session.HashSessionManager;
+import org.eclipse.jetty.server.session.HashedSession;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -74,17 +92,13 @@ public class SymmetricWebServer {
 
     protected static final Logger log = LoggerFactory.getLogger(SymmetricWebServer.class);
 
-    protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(
-            SystemConstants.SYSPROP_WEB_DIR, AppUtils.getSymHome() + "/web");
+    protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(SystemConstants.SYSPROP_WEB_DIR, AppUtils.getSymHome() + "/web");
 
-    public static final String DEFAULT_HTTP_PORT = System.getProperty(
-            SystemConstants.SYSPROP_DEFAULT_HTTP_PORT, "31415");
+    public static final String DEFAULT_HTTP_PORT = System.getProperty(SystemConstants.SYSPROP_DEFAULT_HTTP_PORT, "31415");
 
-    public static final String DEFAULT_JMX_PORT = System.getProperty(
-            SystemConstants.SYSPROP_DEFAULT_JMX_PORT, "31416");
+    public static final String DEFAULT_JMX_PORT = System.getProperty(SystemConstants.SYSPROP_DEFAULT_JMX_PORT, "31416");
 
-    public static final String DEFAULT_HTTPS_PORT = System.getProperty(
-            SystemConstants.SYSPROP_DEFAULT_HTTPS_PORT, "31417");
+    public static final String DEFAULT_HTTPS_PORT = System.getProperty(SystemConstants.SYSPROP_DEFAULT_HTTPS_PORT, "31417");
 
     public static final int DEFAULT_MAX_IDLE_TIME = 7200000;
 
@@ -130,11 +144,11 @@ public class SymmetricWebServer {
     protected boolean noDirectBuffer = false;
 
     protected String webAppDir = DEFAULT_WEBAPP_DIR;
-    
+
     protected String name = "SymmetricDS";
-    
+
     protected String httpSslVerifiedServerNames = "all";
-    
+
     protected boolean allowSelfSignedCerts = true;
 
     public SymmetricWebServer() {
@@ -150,8 +164,7 @@ public class SymmetricWebServer {
         this.maxIdleTime = maxIdleTime;
     }
 
-    public SymmetricWebServer(String webDirectory, int maxIdleTime, String propertiesUrl,
-            boolean join, boolean noNio, boolean noDirectBuffer) {
+    public SymmetricWebServer(String webDirectory, int maxIdleTime, String propertiesUrl, boolean join, boolean noNio, boolean noDirectBuffer) {
         this(propertiesUrl, webDirectory);
         this.maxIdleTime = maxIdleTime;
         this.join = join;
@@ -166,7 +179,7 @@ public class SymmetricWebServer {
     }
 
     protected void initFromProperties() {
-        
+
         try {
             Class.forName(AbstractCommandLauncher.class.getName());
         } catch (ClassNotFoundException e) {
@@ -185,14 +198,11 @@ public class SymmetricWebServer {
                 Integer.parseInt(System.getProperty(ServerConstants.HTTPS_PORT, "" + httpsPort)));
         jmxPort = serverProperties.getInt(ServerConstants.JMX_HTTP_PORT,
                 Integer.parseInt(System.getProperty(ServerConstants.JMX_HTTP_PORT, "" + jmxPort)));
-        host = serverProperties.get(ServerConstants.HOST_BIND_NAME,
-                System.getProperty(ServerConstants.HOST_BIND_NAME, host));
+        host = serverProperties.get(ServerConstants.HOST_BIND_NAME, System.getProperty(ServerConstants.HOST_BIND_NAME, host));
         httpSslVerifiedServerNames = serverProperties.get(ServerConstants.HTTPS_VERIFIED_SERVERS,
-                System.getProperty(ServerConstants.HTTPS_VERIFIED_SERVERS,
-                        httpSslVerifiedServerNames));
+                System.getProperty(ServerConstants.HTTPS_VERIFIED_SERVERS, httpSslVerifiedServerNames));
         allowSelfSignedCerts = serverProperties.is(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS,
-                Boolean.parseBoolean(System.getProperty(
-                        ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, "" + allowSelfSignedCerts)));
+                Boolean.parseBoolean(System.getProperty(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, "" + allowSelfSignedCerts)));
 
     }
 
@@ -209,8 +219,7 @@ public class SymmetricWebServer {
         } else if (httpsPort > 0 && httpsEnabled) {
             return startSecure(httpsPort, jmxPort);
         } else {
-            throw new IllegalStateException(
-                    "Either an http or https port needs to be set before starting the server.");
+            throw new IllegalStateException("Either an http or https port needs to be set before starting the server.");
         }
     }
 
@@ -233,32 +242,42 @@ public class SymmetricWebServer {
     public SymmetricWebServer start(int httpPort, int securePort, int httpJmxPort, Mode mode) throws Exception {
 
         TransportManagerFactory.initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts);
-        
+
         // indicate to the app that we are in stand alone mode
         System.setProperty(SystemConstants.SYSPROP_STANDALONE_WEB, "true");
 
         server = new Server();
 
-        server.setConnectors(getConnectors(httpPort, securePort, mode));
+        server.setConnectors(getConnectors(server, httpPort, securePort, mode));
         setupBasicAuthIfNeeded(server);
 
         webapp = new WebAppContext();
         webapp.setParentLoaderPriority(true);
+        webapp.setConfigurationDiscovered(true);
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
-        SessionManager sm = webapp.getSessionHandler().getSessionManager();
+        webapp.setResourceBase(webAppDir);
+        // webapp.addServlet(DefaultServlet.class, "/*");
+
+        SessionManager sm = new SessionManager();
         sm.setMaxInactiveInterval(10 * 60);
-        sm.setSessionCookie(sm.getSessionCookie() + (httpPort > 0 ? httpPort : securePort));
-        webapp.getServletContext().getContextHandler().setMaxFormContentSize(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormContentSize", "800000")));
-        webapp.getServletContext().getContextHandler().setMaxFormKeys(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormKeys", "100000")));
+        sm.setLazyLoad(true);
+        sm.setDeleteUnrestorableSessions(true);
+        // sm.setSessionCookie(sm.getSessionCookie() + (httpPort > 0 ? httpPort
+        // : securePort));
+        webapp.getSessionHandler().setSessionManager(sm);
+
+        webapp.getServletContext().getContextHandler()
+                .setMaxFormContentSize(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormContentSize", "800000")));
+        webapp.getServletContext().getContextHandler()
+                .setMaxFormKeys(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormKeys", "100000")));
         if (propertiesFile != null) {
-            webapp.getServletContext().getContextHandler().setInitParameter(
-                    WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE, propertiesFile);
-            webapp.getServletContext().getContextHandler().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
-                    Boolean.toString(false));
+            webapp.getServletContext().getContextHandler().setInitParameter(WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE, propertiesFile);
+            webapp.getServletContext().getContextHandler()
+                    .setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE, Boolean.toString(false));
         } else {
-            webapp.getServletContext().getContextHandler().setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE,
-                    Boolean.toString(true));
+            webapp.getServletContext().getContextHandler()
+                    .setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE, Boolean.toString(true));
         }
         server.setHandler(webapp);
 
@@ -282,8 +301,7 @@ public class SymmetricWebServer {
 
     public RestService getRestService() {
         ServletContext servletContext = getServletContext();
-        WebApplicationContext rootContext =
-                WebApplicationContextUtils.getWebApplicationContext(servletContext);
+        WebApplicationContext rootContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
         return rootContext.getBean(RestService.class);
     }
 
@@ -291,15 +309,13 @@ public class SymmetricWebServer {
         ISymmetricEngine engine = null;
         ServletContext servletContext = getServletContext();
         if (servletContext != null) {
-            SymmetricEngineHolder engineHolder = ServletUtils
-                    .getSymmetricEngineHolder(servletContext);
+            SymmetricEngineHolder engineHolder = ServletUtils.getSymmetricEngineHolder(servletContext);
             if (engineHolder != null) {
                 if (engineHolder.getEngines().size() == 1) {
                     return engineHolder.getEngines().values().iterator().next();
                 } else {
-                    throw new IllegalStateException(
-                            "Could not choose a single engine to return.  There are "
-                                    + engineHolder.getEngines().size() + " engines configured.");
+                    throw new IllegalStateException("Could not choose a single engine to return.  There are "
+                            + engineHolder.getEngines().size() + " engines configured.");
                 }
             }
         }
@@ -310,8 +326,7 @@ public class SymmetricWebServer {
         long startTime = System.currentTimeMillis();
         ServletContext servletContext = getServletContext();
         if (servletContext != null) {
-            SymmetricEngineHolder engineHolder = ServletUtils
-                    .getSymmetricEngineHolder(servletContext);
+            SymmetricEngineHolder engineHolder = ServletUtils.getSymmetricEngineHolder(servletContext);
             while (engineHolder.areEnginesStarting()) {
                 AppUtils.sleep(500);
                 if ((System.currentTimeMillis() - startTime) > maxWaitTimeInMs) {
@@ -348,47 +363,53 @@ public class SymmetricWebServer {
         }
     }
 
-    protected Connector[] getConnectors(int port, int securePort, Mode mode) {
+    protected Connector[] getConnectors(Server server, int port, int securePort, Mode mode) {
         ArrayList<Connector> connectors = new ArrayList<Connector>();
         String keyStoreFile = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
-        String keyStoreType = System.getProperty(SystemConstants.SYSPROP_KEYSTORE_TYPE, SecurityConstants.KEYSTORE_TYPE);
+        String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE, SecurityConstants.KEYSTORE_TYPE);
+
+        HttpConfiguration httpConfig = new HttpConfiguration();
+        if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
+            httpConfig.setSecureScheme("https");
+            httpConfig.setSecurePort(securePort);
+        }
+
+        httpConfig.setOutputBufferSize(32768);
 
         if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
-            Connector connector = null;
-            if (noNio) {
-                connector = new SocketConnector();
-            } else {
-                SelectChannelConnector nioConnector = new SelectChannelConnector();
-                nioConnector.setUseDirectBuffers(!noDirectBuffer);
-                connector = nioConnector;
-            }
-            connector.setPort(port);
-            connector.setHost(host);
-            connector.setMaxIdleTime(maxIdleTime);
-            connectors.add(connector);
+            ServerConnector http = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
+            http.setPort(port);
+            http.setHost(host);
+            http.setIdleTimeout(maxIdleTime);
+            connectors.add(http);
             log.info(String.format("About to start %s web server on host:port %s:%s", name, host == null ? "default" : host, port));
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
-            ISecurityService securityService = SecurityServiceFactory.create(SecurityServiceType.SERVER, new TypedProperties(System.getProperties()));
+            ISecurityService securityService = SecurityServiceFactory.create(SecurityServiceType.SERVER,
+                    new TypedProperties(System.getProperties()));
             securityService.installDefaultSslCert(host);
-            Connector connector = new SslSocketConnector();
-            String keyStorePassword = System
-                    .getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
-            keyStorePassword = (keyStorePassword != null) ? keyStorePassword
-                    : SecurityConstants.KEYSTORE_PASSWORD;
-            SslContextFactory sslConnectorFactory = ((SslSocketConnector) connector).getSslContextFactory();
+            String keyStorePassword = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
+            keyStorePassword = (keyStorePassword != null) ? keyStorePassword : SecurityConstants.KEYSTORE_PASSWORD;
+            SslContextFactory sslConnectorFactory = new SslContextFactory();
             sslConnectorFactory.setKeyStorePath(keyStoreFile);
             sslConnectorFactory.setKeyManagerPassword(keyStorePassword);
             /* Prevent POODLE attack */
             sslConnectorFactory.addExcludeProtocols("SSLv3");
-            sslConnectorFactory.setCertAlias(System.getProperty(SystemConstants.SYSPROP_KEYSTORE_CERT_ALIAS, SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
+            sslConnectorFactory.setCertAlias(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS,
+                    SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
             sslConnectorFactory.setKeyStoreType(keyStoreType);
 
-            ((SslSocketConnector) connector).setMaxIdleTime(maxIdleTime);
-            connector.setPort(securePort);
-            connector.setHost(host);
-            connectors.add(connector);
-            log.info(String.format("About to start %s web server on secure host:port %s:%s", name, host == null ? "default" : host, securePort));
+            HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
+            httpsConfig.addCustomizer(new SecureRequestCustomizer());
+
+            ServerConnector https = new ServerConnector(server,
+                    new SslConnectionFactory(sslConnectorFactory, HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory(httpsConfig));
+            https.setPort(securePort);
+            https.setIdleTimeout(maxIdleTime);
+            https.setHost(host);
+            connectors.add(https);
+            log.info(String.format("About to start %s web server on secure host:port %s:%s", name, host == null ? "default" : host,
+                    securePort));
         }
         return connectors.toArray(new Connector[connectors.size()]);
     }
@@ -399,8 +420,7 @@ public class SymmetricWebServer {
             MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             ObjectName name = getHttpJmxAdaptorName();
             mbeanServer.createMBean(HttpAdaptor.class.getName(), name);
-            if (!AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_LOCALHOST_ENABLED,
-                    true)) {
+            if (!AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_LOCALHOST_ENABLED, true)) {
                 mbeanServer.setAttribute(name, new Attribute("Host", "0.0.0.0"));
             } else if (StringUtils.isNotBlank(host)) {
                 mbeanServer.setAttribute(name, new Attribute("Host", host));
@@ -506,7 +526,6 @@ public class SymmetricWebServer {
         this.noNio = noNio;
     }
 
-
     public boolean isNoNio() {
         return noNio;
     }
@@ -559,5 +578,120 @@ public class SymmetricWebServer {
         return jmxEnabled;
     }
 
+    class SessionManager extends HashSessionManager {
+
+        @Override
+        protected AbstractSession newSession(HttpServletRequest request) {
+            return new Session(this, request);
+        }
+
+        @Override
+        protected AbstractSession newSession(long created, long accessed, String clusterId) {
+            return new Session(this, created, accessed, clusterId);
+        }
+
+        @Override
+        protected synchronized HashedSession restoreSession(String idInCuster) {
+            if (isNotBlank(idInCuster)) {
+                return super.restoreSession(idInCuster);
+            } else {
+                return null;
+            }
+        }
+
+        public HashedSession restoreSession(InputStream is, HashedSession session) throws Exception {
+            DataInputStream di = new DataInputStream(is);
+
+            String clusterId = di.readUTF();
+            di.readUTF(); // nodeId
+
+            long created = di.readLong();
+            long accessed = di.readLong();
+            int requests = di.readInt();
+
+            if (session == null)
+                session = (HashedSession) newSession(created, accessed, clusterId);
+            session.setRequests(requests);
+
+            int size = di.readInt();
+
+            restoreSessionAttributes(di, size, session);
+
+            try {
+                int maxIdle = di.readInt();
+                session.setMaxInactiveInterval(maxIdle);
+            } catch (EOFException e) {
+                log.debug("No maxInactiveInterval persisted for session " + clusterId, e);
+            }
+
+            return session;
+        }
+
+        private void restoreSessionAttributes(InputStream is, int size, HashedSession session) throws Exception {
+            if (size > 0) {
+                ObjectInputStream ois = new ObjectInputStream(is);
+                for (int i = 0; i < size; i++) {
+                    String key = ois.readUTF();
+                    try {
+                        Object value = ois.readObject();
+                        session.setAttribute(key, value);
+                    } catch (Exception ex) {
+                        if (ex instanceof ClassCastException || ex instanceof ClassNotFoundException) {
+                            log.warn("Could not restore the '" + key
+                                    + "' session object.  Code has probably changed.  The error message was: " + ex.getMessage());
+                        } else {
+                            log.error("Could not restore the '" + key + "' session object.", ex);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    class Session extends HashedSession {
+
+        protected Session(HashSessionManager hashSessionManager, HttpServletRequest request) {
+            super(hashSessionManager, request);
+        }
+
+        protected Session(HashSessionManager hashSessionManager, long created, long accessed, String clusterId) {
+            super(hashSessionManager, created, accessed, clusterId);
+        }
+
+        @Override
+        public synchronized void save(OutputStream os) throws IOException {
+            DataOutputStream out = new DataOutputStream(os);
+            out.writeUTF(getClusterId());
+            out.writeUTF(getNodeId());
+            out.writeLong(getCreationTime());
+            out.writeLong(getAccessed());
+            out.writeInt(getRequests());
+
+            Enumeration<String> e = getAttributeNames();
+            int count = 0;
+            while (e.hasMoreElements()) {
+                String key = e.nextElement();
+                Object obj = doGet(key);
+                if (obj instanceof Serializable) {
+                    count++;
+                }
+            }
+            out.writeInt(count);
+            ObjectOutputStream oos = new ObjectOutputStream(out);
+            e = getAttributeNames();
+            while (e.hasMoreElements()) {
+                String key = e.nextElement();
+                Object obj = doGet(key);
+                if (obj instanceof Serializable) {
+                    oos.writeUTF(key);
+                    oos.writeObject(obj);
+                }
+            }
+            oos.flush();
+            out.writeInt(getMaxInactiveInterval());
+        }
+
+    }
 
 }
