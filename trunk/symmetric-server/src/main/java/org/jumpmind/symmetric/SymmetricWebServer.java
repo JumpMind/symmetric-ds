@@ -579,7 +579,6 @@ public class SymmetricWebServer {
             setMaxInactiveInterval(10 * 60);
             setLazyLoad(true);
             setDeleteUnrestorableSessions(true);
-            log.info("My session cookie is {}", getSessionCookie());
             setSessionCookie(getSessionCookie() + (httpPort > 0 ? httpPort
              : httpsPort));
         }
