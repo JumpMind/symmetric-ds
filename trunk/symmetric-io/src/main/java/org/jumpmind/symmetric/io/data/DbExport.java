@@ -94,6 +94,8 @@ public class DbExport {
     private String schema;
 
     private String dir;
+    
+    private int maxRows = Integer.MAX_VALUE;
 
     private boolean useQuotedIdentifiers = true;
 
@@ -218,8 +220,12 @@ public class DbExport {
             }
 
             platform.getSqlTemplate().query(sql, new ISqlRowMapper<Object>() {
+                int rows = maxRows;
                 public Object mapRow(Row row) {
-                    writerWrapper.writeRow(row);
+                    if (rows > 0) {
+                       writerWrapper.writeRow(row);
+                       rows--;
+                    }
                     return Boolean.TRUE;
                 }
             });
@@ -380,6 +386,14 @@ public class DbExport {
 
     public boolean isUseJdbcTimestampFormat() {
         return useJdbcTimestampFormat;
+    }
+    
+    public void setMaxRows(int maxRows) {
+        this.maxRows = maxRows;
+    }
+    
+    public int getMaxRows() {
+        return maxRows;
     }
 
     class WriterWrapper {
