@@ -260,11 +260,6 @@ public class SymmetricWebServer {
         // webapp.addServlet(DefaultServlet.class, "/*");
 
         SessionManager sm = new SessionManager();
-        sm.setMaxInactiveInterval(10 * 60);
-        sm.setLazyLoad(true);
-        sm.setDeleteUnrestorableSessions(true);
-        // sm.setSessionCookie(sm.getSessionCookie() + (httpPort > 0 ? httpPort
-        // : securePort));
         webapp.getSessionHandler().setSessionManager(sm);
 
         webapp.getServletContext().getContextHandler()
@@ -580,6 +575,15 @@ public class SymmetricWebServer {
 
     class SessionManager extends HashSessionManager {
 
+        public SessionManager() {
+            setMaxInactiveInterval(10 * 60);
+            setLazyLoad(true);
+            setDeleteUnrestorableSessions(true);
+            log.info("My session cookie is {}", getSessionCookie());
+            setSessionCookie(getSessionCookie() + (httpPort > 0 ? httpPort
+             : httpsPort));
+        }
+        
         @Override
         protected AbstractSession newSession(HttpServletRequest request) {
             return new Session(this, request);
