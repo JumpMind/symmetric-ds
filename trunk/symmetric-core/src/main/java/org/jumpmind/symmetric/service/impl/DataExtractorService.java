@@ -1400,6 +1400,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             this.targetTable = this.reloadSource.getTargetTable();
                             this.requiresLobSelectedFromSource = this.reloadSource
                                     .requiresLobsSelectedFromSource();
+                            
+                            if (data == null) {
+                                data = (Data)next();
+                            }
                         } else {
                             log.warn(
                                     "Could not find trigger router definition for {}:{}.  Skipping reload event with the data id of {}",
