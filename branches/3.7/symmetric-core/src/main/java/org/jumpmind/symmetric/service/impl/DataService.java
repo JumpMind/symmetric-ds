@@ -1388,12 +1388,14 @@ public class DataService extends AbstractService implements IDataService {
                 .getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         List<DataGap> gaps = findDataGapsByStatus(DataGap.Status.GP);
         boolean lastGapExists = false;
+        long maxDataEventId = 0;
         for (DataGap dataGap : gaps) {
             lastGapExists |= dataGap.gapSize() >= maxDataToSelect - 1;
+            maxDataEventId = maxDataEventId < dataGap.getEndId() ? dataGap.getEndId() : maxDataEventId;
         }
 
         if (!lastGapExists) {
-            long maxDataEventId = findMaxDataEventDataId();
+            maxDataEventId = maxDataEventId == 0 ? findMaxDataEventDataId() : maxDataEventId;
             long maxDataId = findMaxDataId();
             if (maxDataEventId > 0) {
                 maxDataEventId++;
@@ -1408,17 +1410,32 @@ public class DataService extends AbstractService implements IDataService {
     public long findMaxDataEventDataId() {
         return sqlTemplate.queryForLong(getSql("selectMaxDataEventDataIdSql"));
     }
-
+    
     public void insertDataGap(DataGap gap) {
+        ISqlTransaction transaction = null;
         try {
-            sqlTemplate.update(getSql("insertDataGapSql"), new Object[] { DataGap.Status.GP.name(),
-                    AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
-                    Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC });
-        } catch (UniqueKeyException ex) {
-            log.warn("A gap already existed for {} to {}.  Updating instead.", gap.getStartId(),
-                    gap.getEndId());
-            updateDataGap(gap, DataGap.Status.GP);
+            transaction = sqlTemplate.startSqlTransaction();
+            insertDataGap(transaction, gap);
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
         }
+    }
+
+    public void insertDataGap(ISqlTransaction transaction, DataGap gap) {
+        transaction.prepareAndExecute(getSql("insertDataGapSql"),
+                new Object[] { DataGap.Status.GP.name(), AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
+                        Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC });
     }
 
     public void updateDataGap(DataGap gap, DataGap.Status status) {
@@ -1429,13 +1446,36 @@ public class DataService extends AbstractService implements IDataService {
                         symmetricDialect.getSqlTypeForIds(), symmetricDialect.getSqlTypeForIds() });
     }
 
+    
+    @Override
     public void deleteDataGap(DataGap gap) {
-        sqlTemplate.update(
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            deleteDataGap(transaction, gap);
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
+    }
+    
+    @Override
+    public void deleteDataGap(ISqlTransaction transaction, DataGap gap) {
+        transaction.prepareAndExecute(
                 getSql("deleteDataGapSql"),
                 new Object[] { gap.getStartId(), gap.getEndId() },
                 new int[] { symmetricDialect.getSqlTypeForIds(),
                         symmetricDialect.getSqlTypeForIds() });
-
     }
 
     public Date findCreateTimeOfEvent(long dataId) {
