@@ -1,0 +1,54 @@
+
+==== External Select
+
+Occasionally, you may find that you need to capture and save away a piece of data present in another table when a trigger is firing. 
+This data is typically needed for the purposes of determining where to 'route' the data to once routing takes place. Each trigger 
+definition contains an optional "external select" field which can be used to specify the data to be captured. Once captured, this 
+data is available during routing in DATA 's external_data field. 
+
+For these cases, place a SQL select statement which returns the data item you need for routing in external_select. 
+
+IMPORTANT: The external select SQL must return a single row, single column 
+
+ifdef::pro[]
+.Sample External Select SQL that returns STORE_ID based on the ORDER_ID captured in the trigger.
+[source, SQL]
+====
+select STORE_ID 
+from order 
+where order_id=$(curTriggerValue).$(curColumnPrefix)order_id
+====
+endif::pro[]
+
+ifndef::pro[]
+.Sample Trigger With External Select SQL that returns STORE_ID based on the ORDER_ID captured in the trigger.
+[source, SQL]
+====
+insert into SYM_TRIGGER
+	(trigger_id,source_table_name,channel_id,external_select, last_update_time,create_time) 
+values ('orderlineitem', 'orderlineitem','orderlineitem',
+	'select STORE_ID from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',
+	current_timestamp, current_timestamp);
+====
+endif::pro[]
+
+.The following variables can be used with the external select
+[cols=".^2,8"]
+|===
+
+|$(curTriggerValue)|Variable to be replaced with the NEW or OLD column alias provided by the trigger context, which is platform specific. 
+For insert and update triggers, the NEW alias is used; for delete triggers, the OLD alias is used. For example, "$(curTriggerValue).COLUMN" 
+becomes ":new.COLUMN" for an insert trigger on Oracle.
+
+|$(curColumnPrefix)|Variable to be replaced with the NEW_ or OLD_ column prefix for platforms that don't support column aliases. This is 
+currently only used by the H2 database. All other platforms will replace the variable with an empty string. For example "$(curColumnPrefix)COLUMN" 
+becomes "NEW_COLUMN" on H2 and "COLUMN" on Oracle.
+
+|===
+
+WARNING: External select SQL statements should be used carefully as they will cause the trigger to run the additional SQL each time the trigger fires.
+
+TIP: Using an external select on the trigger is similar to using the 'subselect' router.  The advantage of this approach over the 'subselect' approach 
+is that it guards against the (somewhat unlikely) possibility that the master Order table row might have been deleted before routing has taken place. 
+This external select solution also is a bit more efficient than the 'subselect' approach.
+		
