@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
@@ -581,6 +582,28 @@ public class RestService {
             @PathVariable("table") String tableName) {
         dropTriggersImpl(getSymmetricEngine(engineName), tableName);
     }
+    
+    /**
+     * Installs and starts a new node
+     * 
+     * @param file
+     *            A file stream that contains the node's properties.
+     */
+    @ApiOperation(value = "Load a configuration file to the single engine")
+    @RequestMapping(value = "engine/install", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public final void postInstall(@RequestParam MultipartFile file) {
+        try {
+            Properties properties = new Properties();
+            properties.load(file.getInputStream());
+            getSymmetricEngineHolder().install(properties);
+        } catch (RuntimeException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }   
 
     /**
      * Uninstalls all SymmetricDS objects from the given node (database) for the
