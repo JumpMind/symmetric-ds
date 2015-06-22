@@ -115,7 +115,6 @@ import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
-import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
@@ -469,8 +468,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             log.warn("Registration attempt failed.  Registration was not open");
         } else if (ex instanceof ConnectionRejectedException) {
             throw (ConnectionRejectedException) ex;
-        } else if (ex instanceof ServiceUnavailableException) {
-            throw (ServiceUnavailableException) ex;            
         } else if (ex instanceof AuthenticationException) {
             log.warn("Could not authenticate with node '{}'",
                     remoteNode != null ? remoteNode.getNodeId() : "?");

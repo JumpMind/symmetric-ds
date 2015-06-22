@@ -106,6 +106,7 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setAutoIncrementUpdateAllowed(false);
         databaseInfo.setRequiresAutoCommitForDdl(true);
 
+        addEscapedCharSequence("'", "''");
     }
 
     @Override

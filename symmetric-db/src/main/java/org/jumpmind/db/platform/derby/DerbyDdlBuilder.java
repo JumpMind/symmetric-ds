@@ -76,6 +76,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);        
+        addEscapedCharSequence("'", "''");
     }
 
     @Override

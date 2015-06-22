@@ -90,10 +90,7 @@ import org.jumpmind.symmetric.statistic.StatisticConstants;
  */
 public class RouterService extends AbstractService implements IRouterService {
 
-    protected  Map<String, Boolean> commonBatchesLastKnownState = new HashMap<String, Boolean>();
-    
-    
-    protected  Map<String, Boolean> defaultRouterOnlyLastKnownState = new HashMap<String, Boolean>();
+    protected  Map<String, Boolean> defaultRouterOnlyLastState = new HashMap<String, Boolean>();
 
     protected transient ExecutorService readThread = null;
 
@@ -327,13 +324,15 @@ public class RouterService extends AbstractService implements IRouterService {
         try {
             final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(
                     false);
+
             for (NodeChannel nodeChannel : channels) {
                 if (nodeChannel.isEnabled()) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
                     dataCount += routeDataForChannel(processInfo,
                             nodeChannel,
-                            sourceNode
-                            , gapDetector);
+                            sourceNode,
+                            producesCommonBatches(nodeChannel.getChannel(), parameterService.getNodeGroupId(), 
+                                    engine.getTriggerRouterService().getTriggerRouters(false)), gapDetector);
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug(
@@ -417,59 +416,26 @@ public class RouterService extends AbstractService implements IRouterService {
             }
         }
 
-        if (!producesCommonBatches.equals(commonBatchesLastKnownState.get(channelId))) {
+        if (!producesCommonBatches.equals(defaultRouterOnlyLastState.get(channelId))) {
             if (producesCommonBatches) {
                 log.info("The '{}' channel is in common batch mode", channelId);
             } else {
                 log.info("The '{}' channel is NOT in common batch mode", channelId);
             }
-            commonBatchesLastKnownState.put(channelId, producesCommonBatches);
+            defaultRouterOnlyLastState.put(channelId, producesCommonBatches);
         }
         return producesCommonBatches;
     }
-    
-    protected boolean onlyDefaultRoutersAssigned(Channel channel, String nodeGroupId, List<TriggerRouter> triggerRouters) {
-        String channelId = channel.getChannelId();
-        Boolean onlyDefaultRoutersAssigned = !Constants.CHANNEL_CONFIG.equals(channelId)
-                && !channel.isFileSyncFlag()
-                && !channel.isReloadFlag() 
-                && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
-        if (onlyDefaultRoutersAssigned && triggerRouters != null) {           
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                if (triggerRouter.getTrigger().getChannelId().equals(channel.getChannelId()) &&
-                        triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
-                        .equals(nodeGroupId) && !"default".equals(triggerRouter.getRouter().getRouterType())) {
-                    onlyDefaultRoutersAssigned = false;
-                } 
-            }         
-        }
-
-        if (!onlyDefaultRoutersAssigned.equals(defaultRouterOnlyLastKnownState.get(channelId))) {
-            if (onlyDefaultRoutersAssigned) {
-                log.info("The '{}' channel for the '{}' node group has only default routers assigned to it.  Change data won't be selected during routing", channelId, nodeGroupId);
-            } 
-            defaultRouterOnlyLastKnownState.put(channelId, onlyDefaultRoutersAssigned);
-        }
-        return onlyDefaultRoutersAssigned;
-    }
 
     protected int routeDataForChannel(ProcessInfo processInfo, final NodeChannel nodeChannel, final Node sourceNode,
-            DataGapDetector gapDetector) {
+            boolean produceCommonBatches, DataGapDetector gapDetector) {
         ChannelRouterContext context = null;
         long ts = System.currentTimeMillis();
         int dataCount = -1;
         try {
-            List<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getTriggerRouters(false);
-            boolean producesCommonBatches = producesCommonBatches(nodeChannel.getChannel(), parameterService.getNodeGroupId(),
-                    triggerRouters);
-            boolean onlyDefaultRoutersAssigned = onlyDefaultRoutersAssigned(nodeChannel.getChannel(),
-                    parameterService.getNodeGroupId(), triggerRouters);
-            
             context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel,
                     symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction());
-            context.setProduceCommonBatches(producesCommonBatches);
-            context.setOnlyDefaultRoutersAssigned(onlyDefaultRoutersAssigned);
-            
+            context.setProduceCommonBatches(produceCommonBatches);
             dataCount = selectDataAndRoute(processInfo, context);
             return dataCount;
         } catch (DelayRoutingException ex) {

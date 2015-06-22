@@ -40,7 +40,6 @@ import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
-import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.web.WebConstants;
 
@@ -253,10 +252,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      * @throws {@link AuthenticationException}
      */
     private void analyzeResponseCode(int code) throws IOException {
-        if (WebConstants.SC_SERVICE_BUSY == code) {
+        if (WebConstants.SC_SERVICE_UNAVAILABLE == code) {
             throw new ConnectionRejectedException();
-        } else if (WebConstants.SC_SERVICE_UNAVAILABLE == code) {
-            throw new ServiceUnavailableException();
         } else if (WebConstants.SC_FORBIDDEN == code) {
             throw new AuthenticationException();
         } else if (WebConstants.SYNC_DISABLED == code) {

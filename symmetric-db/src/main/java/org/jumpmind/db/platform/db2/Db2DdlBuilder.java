@@ -81,6 +81,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setBinaryQuoteStart("blob(X'");
         databaseInfo.setBinaryQuoteEnd("')");
 
+        addEscapedCharSequence("'", "''");
     }
 
     @Override

@@ -82,7 +82,7 @@ public class SymmetricServlet extends HttpServlet {
                         new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                                 req.getRemoteAddr(), req.getQueryString() });
             }
-            ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);
+            ServletUtils.sendError(res, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
 
         } else if (engine.isStarted()) {
             IUriHandler handler = findMatchingHandler(engine, req);
@@ -126,19 +126,13 @@ public class SymmetricServlet extends HttpServlet {
                     "The client node request is being rejected because the server node is currently starting.  Please be patient.  The request was {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
                     new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                             req.getRemoteAddr(), req.getQueryString() });
-            ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);
+            ServletUtils.sendError(res, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         } else if (!engine.isStarted() && !engine.isConfigured()) {
-            log.info(
+            log.warn(
                     "The client node request is being rejected because the server node was not started because it is not configured properly. The request {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
                     new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                             req.getRemoteAddr(), req.getQueryString() });
-            ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);
-        } else {
-            log.debug(
-                    "The client node request is being rejected because the server node is not started. The request {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
-                    new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                            req.getRemoteAddr(), req.getQueryString() });            
-            ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);            
+            ServletUtils.sendError(res, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         }
 
     }

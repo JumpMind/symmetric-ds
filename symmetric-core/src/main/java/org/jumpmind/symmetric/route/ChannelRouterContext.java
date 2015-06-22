@@ -64,7 +64,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private Data lastDataProcessed;
     private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
     private boolean produceCommonBatches = false;
-    private boolean onlyDefaultRoutersAssigned = false;
     private long lastLoadId = -1;
     private long startDataId;   
     private long endDataId;
@@ -258,14 +257,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
         if (isNotBlank(transactionId)) {
             this.transactions.add(transactionId);
         }
-    }
-    
-    public void setOnlyDefaultRoutersAssigned(boolean onlyDefaultRoutersAssigned) {
-        this.onlyDefaultRoutersAssigned = onlyDefaultRoutersAssigned;
-    }
-    
-    public boolean isOnlyDefaultRoutersAssigned() {
-        return onlyDefaultRoutersAssigned;
     }
 
 }

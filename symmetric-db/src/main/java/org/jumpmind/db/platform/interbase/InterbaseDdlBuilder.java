@@ -95,6 +95,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
 
+        addEscapedCharSequence("'", "''");
     }
 
     @Override

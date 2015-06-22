@@ -183,38 +183,29 @@ public class SnapshotUtil {
             IOUtils.closeQuietly(fos);
         }
 
-        String tablePrefix = engine.getTablePrefix();
-        
-        DbExport export = new DbExport(engine.getDatabasePlatform());
-        export.setFormat(Format.CSV);
-        export.setNoCreateInfo(true);
-        
-        extract(export, new File(tmpDir, "identity.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
-        
-        extract(export, new File(tmpDir, "node.csv"),  
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
-        
-        extract(export, new File(tmpDir, "nodesecurity.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
+        fos = null;
+        try {
+            fos = new FileOutputStream(new File(tmpDir, "runtime-data.xml"));
+            DbExport export = new DbExport(engine.getDatabasePlatform());
+            export.setFormat(Format.XML);
+            export.setNoCreateInfo(true);
+            String tablePrefix = engine.getTablePrefix();
+            export.exportTables(
+                    fos,
+                    new String[] {
+                            TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY),
+                            TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE),
+                            TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY),
+                            TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST),
+                            TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST),
+                            TableConstants.getTableName(tablePrefix, TableConstants.SYM_LOCK),
+                            TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION)});
+        } catch (IOException e) {
+            log.warn("Failed to export table definitions", e);
+        } finally {
+            IOUtils.closeQuietly(fos);
+        }
 
-        extract(export, new File(tmpDir, "nodehost.csv"),  
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST));
-        
-        extract(export, new File(tmpDir, "triggerhist.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST));
-        
-        extract(export, new File(tmpDir, "lock.csv"),
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_LOCK));
-        
-        extract(export, new File(tmpDir, "nodecommunication.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION));        
-        
-        extract(export, 5000, new File(tmpDir, "outgoingbatch.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));        
-        
-        extract(export, 5000, new File(tmpDir, "incomingbatch.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));          
-        
         final int THREAD_INDENT_SPACE = 50;
         fwriter = null;
         try {
@@ -326,25 +317,6 @@ public class SnapshotUtil {
             return jarFile;
         } catch (IOException e) {
             throw new IoException("Failed to package snapshot files into archive", e);
-        }
-    }
-    
-    protected static void extract(DbExport export, File file, String... tables) {
-        extract(export, Integer.MAX_VALUE, file, tables);
-    }
-    
-    protected static void extract(DbExport export, int maxRows, File file, String... tables) {
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(file);
-            export.setMaxRows(maxRows);
-            export.exportTables(
-                    fos,
-                    tables);
-        } catch (IOException e) {
-            log.warn("Failed to export table definitions", e);
-        } finally {
-            IOUtils.closeQuietly(fos);
         }
     }
     

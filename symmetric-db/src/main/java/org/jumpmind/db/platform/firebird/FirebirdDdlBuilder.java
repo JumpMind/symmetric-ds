@@ -91,6 +91,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
 
         databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_REPEATABLE_READ);
         
+        addEscapedCharSequence("'", "''");
     }
 
     @Override

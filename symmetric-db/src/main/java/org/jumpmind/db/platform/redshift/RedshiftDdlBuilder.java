@@ -54,6 +54,7 @@ public class RedshiftDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setEmptyStringNulled(false);
 
         addEscapedCharSequence("\\", "\\\\");
+        addEscapedCharSequence("'", "\\'");
         addEscapedCharSequence("\b", "\\b");
         addEscapedCharSequence("\f", "\\f");
         addEscapedCharSequence("\n", "\\n");

@@ -121,7 +121,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
     }
 
-    protected void execute() {        
+    protected void execute() {
+        
         long maxPeekAheadSizeInBytes = (long)(Runtime.getRuntime().maxMemory() * percentOfHeapToUse);
         ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
         ISqlReadCursor<Data> cursor = null;
@@ -364,13 +365,13 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     protected String getSql(String sqlName, Channel channel) {
         String select = engine.getRouterService().getSql(sqlName);
-        if (!channel.isUseOldDataToRoute() || context.isOnlyDefaultRoutersAssigned()) {
+        if (!channel.isUseOldDataToRoute()) {
             select = select.replace("d.old_data", "''");
         }
-        if (!channel.isUseRowDataToRoute() || context.isOnlyDefaultRoutersAssigned()) {
+        if (!channel.isUseRowDataToRoute()) {
             select = select.replace("d.row_data", "''");
         }
-        if (!channel.isUsePkDataToRoute() || context.isOnlyDefaultRoutersAssigned()) {
+        if (!channel.isUsePkDataToRoute()) {
             select = select.replace("d.pk_data", "''");
         }
         return engine.getSymmetricDialect().massageDataExtractionSql(

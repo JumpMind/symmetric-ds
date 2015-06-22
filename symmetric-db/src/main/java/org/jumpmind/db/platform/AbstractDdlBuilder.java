@@ -130,7 +130,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      */
     public AbstractDdlBuilder(String databaseName) {
         this.databaseName = databaseName;
-        addEscapedCharSequence("'", "''");
     }
 
     /**

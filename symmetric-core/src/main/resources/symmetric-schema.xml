@@ -182,12 +182,6 @@
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp of when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp of when a user last updated this entry." />
-        <foreign-key foreignTable="channel" name="fk_ftchid_2_chl">
-            <reference local="channel_id" foreign="channel_id" />
-        </foreign-key>   
-        <foreign-key foreignTable="channel" name="fk_ftrchid_2_chl">
-            <reference local="reload_channel_id" foreign="channel_id" />
-        </foreign-key>                
     </table>
 
     <table name="file_trigger_router" description="Maps a file trigger to a router.">

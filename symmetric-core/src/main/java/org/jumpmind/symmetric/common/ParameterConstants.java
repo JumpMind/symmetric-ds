@@ -41,8 +41,6 @@ final public class ParameterConstants {
 
     private ParameterConstants() {
     }
-    
-    public final static String AUTO_START_ENGINE = "auto.start.engine";
 
     public final static String JDBC_EXECUTE_BATCH_SIZE = "db.jdbc.execute.batch.size";
     public final static String JDBC_READ_STRINGS_AS_BYTES = "db.read.strings.as.bytes";

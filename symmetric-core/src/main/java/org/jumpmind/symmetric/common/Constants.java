@@ -32,8 +32,6 @@ final public class Constants {
     private Constants() {
     }
     
-    public static final String SYSTEM_USER = "system";
-    
     public static final long VIRTUAL_BATCH_FOR_REGISTRATION = IoConstants.IGNORE_TABLES_BATCH;   
     
     public static final String NONE_TOKEN = "$(none)";

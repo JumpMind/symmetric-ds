@@ -1305,23 +1305,24 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * @return The resulting text
      */
     protected String unescape(String text, String unescaped, String escaped) {
+        String result = text;
 
         // we need special handling if the single quote is escaped via a double
         // single quote
-        if (text != null && !"''".equals(text)) {
+        if (result != null) {
             if (escaped.equals("''")) {
-                if ((text.length() > 2) && text.startsWith("'") && text.endsWith("'")) {
-                    text = "'"
-                            + StringUtils.replace(text.substring(1, text.length() - 1),
+                if ((result.length() > 2) && result.startsWith("'") && result.endsWith("'")) {
+                    result = "'"
+                            + StringUtils.replace(result.substring(1, result.length() - 1),
                                     escaped, unescaped) + "'";
                 } else {
-                    text = StringUtils.replace(text, escaped, unescaped);
+                    result = StringUtils.replace(result, escaped, unescaped);
                 }
             } else {
-                text = StringUtils.replace(text, escaped, unescaped);
+                result = StringUtils.replace(result, escaped, unescaped);
             }
         }
-        return text;
+        return result;
     }
     
     public List<String> getTableTypes() {

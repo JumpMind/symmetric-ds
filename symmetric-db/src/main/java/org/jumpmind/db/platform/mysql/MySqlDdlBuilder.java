@@ -111,6 +111,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         // already escaped sequences would be affected
         addEscapedCharSequence("\\", "\\\\");
         addEscapedCharSequence("\0", "\\0");
+        addEscapedCharSequence("'", "\\'");
         addEscapedCharSequence("\"", "\\\"");
         addEscapedCharSequence("\b", "\\b");
         addEscapedCharSequence("\n", "\\n");
