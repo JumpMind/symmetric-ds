@@ -77,7 +77,25 @@ public class JdbcPersistenceManager extends AbstractPersistenceManager {
     public <T> List<T> find(Class<T> clazz, Map<String, Object> conditions) {
         return find(clazz, conditions, null, null, camelCaseToUnderScores(clazz.getSimpleName()));
     }
+    
+    @Override
+    public <T> T map(Map<String, Object> row, Class<T> clazz, String catalogName, String schemaName, String tableName) {
+        try {
+            T object = clazz.newInstance();
+            Table table = findTable(catalogName, schemaName, tableName);
+            LinkedHashMap<String, Column> objectToTableMapping = mapObjectToTable(object, table);
+            Set<String> propertyNames = objectToTableMapping.keySet();
+            for (String propertyName : propertyNames) {
+                Object value = row.get(objectToTableMapping.get(propertyName).getName());
+                BeanUtils.copyProperty(object, propertyName, value);
+            }
+            return object;
+        } catch (Exception e) {
+            throw toRuntimeException(e);
+        }
+    }
 
+    @Override
     public <T> List<T> find(Class<T> clazz, Map<String, Object> conditions, String catalogName,
             String schemaName, String tableName) {
         if (conditions == null || conditions.size() == 0) {
