@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface IPersistenceManager {
+    
+    public <T> T map(Map<String, Object> row, Class<T> clazz, String catalogName, String schemaName, String tableName);
 
     public void refresh(Object object, String catalogName, String schemaName, String tableName);
 
