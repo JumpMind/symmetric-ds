@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import bsh.EvalError;
 import bsh.Interpreter;
+import bsh.ParseException;
 import bsh.TargetError;
 
 public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
@@ -112,12 +113,33 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                     }
             }
         } catch (EvalError e) {
-            String errorMsg = String.format("Beanshell script %s with error %s", new Object[] {
-                    currentScript, e.getErrorText() });
-            log.error(errorMsg);
-            if (isFailOnError) {
-                throw new SymmetricException(errorMsg);
+            if (e instanceof ParseException) {
+                String errorMsg = String
+                        .format("Evaluation error while parsing the following beanshell script:\n\n%s\n\nThe error was on line %d and the error message was: %s",
+                                currentScript, e.getErrorLineNumber(), e.getMessage());
+                log.error(errorMsg, e);
+                if (isFailOnError) {
+                    throw new SymmetricException(errorMsg);
+                }
+
+            } else if (e instanceof TargetError) {
+                Throwable target = ((TargetError) e).getTarget();
+                String errorMsg = String
+                        .format("Evaluation error occured in the following beanshell script:\n\n%s\n\nThe error was on line %d",
+                                currentScript, e.getErrorLineNumber());
+                log.error(errorMsg, target);
+
+                if (isFailOnError) {
+                    if (target instanceof RuntimeException) {
+                        throw (RuntimeException) target;
+                    } else {
+                        throw new SymmetricException(target);
+                    }
+                } else {
+                    log.error("Failed while evaluating script", target);
+                }
             }
+            
         }
     }
 
@@ -164,6 +186,8 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                 interpreter.set(OLD_ + columnName.toUpperCase(), sourceValues.get(columnName));
             }
         }
+        
+        
 
     }
 
