@@ -65,26 +65,19 @@ abstract public class AbstractTransportManager {
         if (StringUtils.isBlank(syncUrl) || syncUrl.startsWith(Constants.PROTOCOL_NONE)) {
             log.debug("Using the registration URL to contact the remote node because the syncURL for the node is blank");
             return registrationUrl;
-        } else if (syncUrl.startsWith(Constants.PROTOCOL_EXT)) {
-            try {
-                URI uri = new URI(syncUrl);
-                ISyncUrlExtension handler = null;
-                if (extensionService != null) {
-                    handler = extensionService.getExtensionPointMap(ISyncUrlExtension.class).get(uri.getHost());
-                }
-                if (handler == null) {
-                    log.error("Could not find a registered extension sync url handler with the name of {} using the url {}", uri.getHost(), syncUrl);
-                    return syncUrl;
-                } else {
-                    return handler.resolveUrl(uri);
-                }
-            } catch (URISyntaxException e) {
-                log.error(e.getMessage(),e);
-                return syncUrl;
-            }
-        } else {
-            return syncUrl;
         }
+        
+        try {
+            URI uri = new URI(syncUrl);
+            
+            for (ISyncUrlExtension handler : extensionService.getExtensionPointList(ISyncUrlExtension.class)) {
+                syncUrl = handler.resolveUrl(uri);
+                uri = new URI(syncUrl);
+            }
+        } catch (URISyntaxException e) {
+            log.error(e.getMessage(),e);
+        }
+        return syncUrl;
     }
 
     protected String getAcknowledgementData(boolean requires13Format, String nodeId,
