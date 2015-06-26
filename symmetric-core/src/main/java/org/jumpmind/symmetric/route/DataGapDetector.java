@@ -26,6 +26,7 @@ import java.util.List;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.NumberMapper;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataGap;
@@ -103,7 +104,12 @@ public class DataGapDetector {
                 Object[] params = new Object[] { dataGap.getStartId(), dataGap.getEndId() };
                 lastDataId = -1;
                 processInfo.setStatus(Status.QUERYING);
+                long queryForIdsTs = System.currentTimeMillis();
                 List<Number> ids = sqlTemplate.query(sql, new NumberMapper(), params);
+                if (System.currentTimeMillis()-queryForIdsTs > Constants.LONG_OPERATION_THRESHOLD) {
+                    log.info("It took longer than {}ms to run the following sql for gap from {} to {}.  {}", 
+                            new Object[] {Constants.LONG_OPERATION_THRESHOLD, dataGap.getStartId(), dataGap.getEndId(), sql});
+                }
                 processInfo.setStatus(Status.PROCESSING);
                 
                 idsFilled += ids.size();
