@@ -97,7 +97,7 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
             Long sequence = (Long) context.get(auditTableName);
             if (sequence == null) {
                 sequence = 1l + template.queryForLong(String.format("select max(%s) from %s",
-                        table.getColumnWithName(COLUMN_AUDIT_ID).getName(), auditTableName));
+                        auditTable.getColumnWithName(COLUMN_AUDIT_ID).getName(), auditTableName));
             } else {
                 sequence = 1l + sequence;
             }            
