@@ -43,12 +43,13 @@ allprojects {
 }
 
 subprojects { subproject ->
-
+    
     apply plugin: 'java'
     apply plugin: 'propdeps'
     apply plugin: 'propdeps-maven'
     apply plugin: 'propdeps-eclipse'
     apply plugin: 'maven'    
+    apply plugin:'license-report'
 
     configurations { deployerJars }
     configurations { testArtifacts.extendsFrom testRuntime }
