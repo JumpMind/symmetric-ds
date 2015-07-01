@@ -116,9 +116,9 @@ insert into sym_load_filter
 	  javax.mail.internet.MimeMessage msg = new 
 	    javax.mail.internet.MimeMessage(session);
 	  msg.setFrom(new javax.mail.internet.InternetAddress
-	    (engine.getParameterService().getString("mail.smtp.from")));
+	    (engine.getParameterService().getString("mail.smtp.from", "automated@mail.com")));
 	  msg.setRecipients(javax.mail.Message.RecipientType.TO, 
-	    engine.getParameterService().getString("mail.smtp.to"));
+	    engine.getParameterService().getString("mail.smtp.to", "notify@mail.com"));
 	  msg.setSubject("SymmetricDS - batch " + batchId + " is in error at node " + targetNodeId);
 	  msg.setSentDate(new java.util.Date());
 	  msg.setText(org.apache.commons.lang.exception.ExceptionUtils.
