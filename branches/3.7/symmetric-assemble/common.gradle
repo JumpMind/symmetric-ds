@@ -122,7 +122,7 @@ subprojects { subproject ->
         commonsCodecVersion = '1.3'
         commonsCollectionVersion = '3.2'
         hamcrestVersion = '1.3'
-        h2Version = '1.4.187'
+        h2Version = '1.3.176'
         derbyVersion = '10.10.2.0'
         mariaDbVersion = '1.1.7'
         postgresqlVersion = '9.2-1002-jdbc4'
