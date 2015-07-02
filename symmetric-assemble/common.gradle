@@ -48,8 +48,11 @@ subprojects { subproject ->
     apply plugin: 'propdeps'
     apply plugin: 'propdeps-maven'
     apply plugin: 'propdeps-eclipse'
-    apply plugin: 'maven'    
-    apply plugin:'license-report'
+    apply plugin: 'maven'  
+    if(JavaVersion.current() >= JavaVersion.VERSION_1_7){
+        apply plugin:'license-report'
+    }
+    
 
     configurations { deployerJars }
     configurations { testArtifacts.extendsFrom testRuntime }
