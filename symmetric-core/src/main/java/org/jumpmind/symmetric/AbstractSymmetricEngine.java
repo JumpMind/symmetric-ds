@@ -608,7 +608,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     groupletService.deleteGrouplet(grouplet);
                 }
                 
-                List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters(true);
+                List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters(false, true);
                 for (TriggerRouter triggerRouter : triggerRouters) {
                     triggerRouterService.deleteTriggerRouter(triggerRouter);
                 }
@@ -618,7 +618,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     fileSyncService.deleteFileTriggerRouter(fileTriggerRouter);
                 }
                 
-                List<Router> routers = triggerRouterService.getRouters();
+                List<Router> routers = triggerRouterService.getRouters(true);
                 for (Router router : routers) {
                     triggerRouterService.deleteRouter(router);    
                 }
@@ -652,7 +652,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
                     parameterService.getTablePrefix(), TableConstants.SYM_ROUTER));
             if (table != null) {
-                List<Router> objects = triggerRouterService.getRouters();
+                List<Router> objects = triggerRouterService.getRouters(true);
                 for (Router router : objects) {
                     triggerRouterService.deleteRouter(router);
                 }

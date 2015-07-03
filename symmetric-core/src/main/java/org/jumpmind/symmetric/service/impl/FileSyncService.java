@@ -903,7 +903,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             fileTriggerRouter.setTargetBaseDir((rs.getString("target_base_dir") == null) ? null
                     : rs.getString("target_base_dir").replace('\\', '/'));
             fileTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(
-                    rs.getString("router_id")));
+                    true, rs.getString("router_id")));
             return fileTriggerRouter;
         }
     }

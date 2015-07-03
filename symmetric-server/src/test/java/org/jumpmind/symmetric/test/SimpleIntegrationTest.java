@@ -520,10 +520,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         logTestRunning();
 
-        // Should not sync when status = null
+        clientPull();
+        
         Date date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
         Order order = new Order("42", 100, "C", date);
         serverTestService.insertOrder(order);
+        
         clientPull();
 
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
@@ -981,7 +983,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void test26Heartbeat() throws Exception {
         logTestRunning();
-        Level previous = setLoggingLevelForTest(Level.DEBUG);
+        Level previous = setLoggingLevelForTest(Level.INFO);
         try {
             final String checkHeartbeatSql = "select max(heartbeat_time) from sym_node_host where node_id='"
                     + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";

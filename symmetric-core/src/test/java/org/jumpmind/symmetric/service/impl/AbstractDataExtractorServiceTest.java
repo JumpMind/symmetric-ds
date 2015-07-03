@@ -50,7 +50,7 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
     @Before
     public void setupForTest() {
         ITriggerRouterService triggerRouterService = getTriggerRouterService();
-        TriggerRouter triggerRouter = triggerRouterService.findTriggerRouterById(TEST_TABLE,
+        TriggerRouter triggerRouter = triggerRouterService.findTriggerRouterById(true, TEST_TABLE,
                 TestConstants.ROUTER_ID_ROOT_2_TEST);
         if (triggerRouter == null) {
             triggerRouter = new TriggerRouter(

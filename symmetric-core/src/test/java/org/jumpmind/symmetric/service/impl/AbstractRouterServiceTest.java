@@ -1178,7 +1178,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
         TriggerRouter trigger = null;
         Set<TriggerRouter> triggerRouters = getTriggerRouterService()
-                .getTriggerRouterForTableForCurrentNode(null, null, tableName, true);
+                .getTriggerRouterForTableForCurrentNode(true, null, null, tableName, true);
         if (triggerRouters == null || triggerRouters.size() == 0) {
             trigger = new TriggerRouter();
             trigger.getTrigger().setSourceTableName(tableName);

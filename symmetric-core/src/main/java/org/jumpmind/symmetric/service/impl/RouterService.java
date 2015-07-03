@@ -459,7 +459,7 @@ public class RouterService extends AbstractService implements IRouterService {
         long ts = System.currentTimeMillis();
         int dataCount = -1;
         try {
-            List<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getTriggerRouters(false);
+            List<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getTriggerRouters(true, false);
             boolean producesCommonBatches = producesCommonBatches(nodeChannel.getChannel(), parameterService.getNodeGroupId(),
                     triggerRouters);
             boolean onlyDefaultRoutersAssigned = onlyDefaultRoutersAssigned(nodeChannel.getChannel(),

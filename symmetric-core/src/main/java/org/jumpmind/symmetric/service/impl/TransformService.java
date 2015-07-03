@@ -30,6 +30,7 @@ import java.util.Map;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
@@ -65,6 +66,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITransformService;
+import org.jumpmind.util.FormatUtils;
 
 public class TransformService extends AbstractService implements ITransformService {
 
@@ -204,6 +206,15 @@ public class TransformService extends AbstractService implements ITransformServi
                         byTransformPoint.put(transformTable.getTransformPoint(), byTableName);
                     }
 
+                    /* Allow for parameterized source and target names */
+                    TypedProperties parameters = parameterService.getAllParameters();
+                    transformTable.setSourceCatalogName(FormatUtils.replaceTokens(transformTable.getSourceCatalogName(), parameters, true));
+                    transformTable.setSourceSchemaName(FormatUtils.replaceTokens(transformTable.getSourceSchemaName(), parameters, true));
+                    transformTable.setSourceTableName(FormatUtils.replaceTokens(transformTable.getSourceTableName(), parameters, true));
+                    transformTable.setTargetCatalogName(FormatUtils.replaceTokens(transformTable.getTargetCatalogName(), parameters, true));
+                    transformTable.setTargetSchemaName(FormatUtils.replaceTokens(transformTable.getTargetSchemaName(), parameters, true));
+                    transformTable.setTargetTableName(FormatUtils.replaceTokens(transformTable.getTargetTableName(), parameters, true));
+                    
                     byTableName.add(transformTable);
                 }
                 lastCacheTimeInMs = System.currentTimeMillis();

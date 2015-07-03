@@ -330,14 +330,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 String triggerId = columnValues.get("TRIGGER_ID");
                 if (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)) {
                     String routerId = columnValues.get("ROUTER_ID");
-                    TriggerRouter tr = triggerRouterService.findTriggerRouterById(triggerId,
+                    TriggerRouter tr = triggerRouterService.findTriggerRouterById(true, triggerId,
                             routerId);
                     if (tr != null) {
                         trigger = tr.getTrigger();
                         lastUpdateTime = tr.getLastUpdateTime();
                     }
                 } else {
-                    trigger = triggerRouterService.getTriggerById(triggerId);
+                    trigger = triggerRouterService.getTriggerById(true, triggerId);
                     if (trigger != null) {
                         lastUpdateTime = trigger.getLastUpdateTime();
                     }
@@ -493,7 +493,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         log.info("About to sync the "
                                 + trigger.getTriggerId()
                                 + " trigger because a change was detected by the config data router");
-                        engine.getTriggerRouterService().syncTrigger(trigger, null, false);
+                        engine.getTriggerRouterService().syncTrigger(trigger.getTriggerId(), null, false);
                     }
                 }
             }
