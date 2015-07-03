@@ -955,7 +955,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             table.setPrimaryKeys(triggerHistory.getParsedPkColumnNames());
         }
 
-        Router router = triggerRouterService.getRouterById(routerId, false);        
+        Router router = triggerRouterService.getRouterById(true, routerId, false);        
         if (router != null && setTargetTableName) {            
             if (router.isUseSourceCatalogSchema()) {
                 table.setCatalog(catalogName);
@@ -1175,7 +1175,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             request.setStatus(ExtractStatus.valueOf(row.getString("status").toUpperCase()));
             request.setCreateTime(row.getDateTime("create_time"));
             request.setLastUpdateTime(row.getDateTime("last_update_time"));
-            request.setTriggerRouter(triggerRouterService.findTriggerRouterById(
+            request.setTriggerRouter(triggerRouterService.findTriggerRouterById(true, 
                     row.getString("trigger_id"), row.getString("router_id")));
             return request;
         }
@@ -1411,7 +1411,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             return next();
                         }
                     } else {
-                        Trigger trigger = triggerRouterService.getTriggerById(
+                        Trigger trigger = triggerRouterService.getTriggerById(true,
                                 triggerHistory.getTriggerId(), false);
                         if (trigger != null) {
                             if (lastTriggerHistory == null || lastTriggerHistory

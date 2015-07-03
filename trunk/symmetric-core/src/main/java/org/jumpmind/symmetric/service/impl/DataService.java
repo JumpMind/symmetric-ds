@@ -111,8 +111,8 @@ public class DataService extends AbstractService implements IDataService {
             INodeService nodeService = engine.getNodeService();
             Node targetNode = nodeService.findNode(request.getTargetNodeId());
             if (targetNode != null) {
-                TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForCurrentNode(
-                        request.getTriggerId(), request.getRouterId(), false);
+                TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForCurrentNode(request.getTriggerId(), 
+                        request.getRouterId(), false);
                 if (triggerRouter != null) {
                     Trigger trigger = triggerRouter.getTrigger();
                     Router router = triggerRouter.getRouter();
@@ -678,8 +678,8 @@ public class DataService extends AbstractService implements IDataService {
                         fileSyncSnapshotHistory.getTriggerId(), parameterService.getNodeGroupId(),
                         targetNode.getNodeGroupId());
                 TriggerRouter fileSyncSnapshotTriggerRouter = triggerRouterService
-                        .getTriggerRouterForCurrentNode(fileSyncSnapshotHistory.getTriggerId(),
-                                routerid, true);
+                        .getTriggerRouterForCurrentNode(fileSyncSnapshotHistory.getTriggerId(), routerid,
+                                true);
 
                 List<Channel> channels = engine.getConfigurationService().getFileSyncChannels();
                 for (Channel channel : channels) {
@@ -748,7 +748,7 @@ public class DataService extends AbstractService implements IDataService {
             String createBy) {
         TriggerHistory history = engine.getTriggerRouterService()
                 .findTriggerHistoryForGenericSync();
-        Trigger trigger = engine.getTriggerRouterService().getTriggerById(history.getTriggerId(),
+        Trigger trigger = engine.getTriggerRouterService().getTriggerById(true, history.getTriggerId(),
                 false);
         String reloadChannelId = getReloadChannelIdForTrigger(trigger, engine
                 .getConfigurationService().getChannels(false));
@@ -776,7 +776,7 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertSqlEvent(ISqlTransaction transaction, TriggerHistory history,
             String channelId, Node targetNode, String sql, boolean isLoad, long loadId,
             String createBy) {
-        Trigger trigger = engine.getTriggerRouterService().getTriggerById(history.getTriggerId(),
+        Trigger trigger = engine.getTriggerRouterService().getTriggerById(true, history.getTriggerId(),
                 false);
         String reloadChannelId = getReloadChannelIdForTrigger(trigger, engine
                 .getConfigurationService().getChannels(false));
@@ -796,7 +796,7 @@ public class DataService extends AbstractService implements IDataService {
             Node targetNode, String script, boolean isLoad, long loadId, String createBy) {
         TriggerHistory history = engine.getTriggerRouterService()
                 .findTriggerHistoryForGenericSync();
-        Trigger trigger = engine.getTriggerRouterService().getTriggerById(history.getTriggerId(),
+        Trigger trigger = engine.getTriggerRouterService().getTriggerById(true, history.getTriggerId(),
                 false);
         String reloadChannelId = getReloadChannelIdForTrigger(trigger, engine
                 .getConfigurationService().getChannels(false));
@@ -853,7 +853,7 @@ public class DataService extends AbstractService implements IDataService {
     public void insertCreateEvent(ISqlTransaction transaction, Node targetNode,
             TriggerHistory triggerHistory, String routerId, boolean isLoad, long loadId, String createBy) {
 
-        Trigger trigger = engine.getTriggerRouterService().getTriggerById(
+        Trigger trigger = engine.getTriggerRouterService().getTriggerById(true,
                 triggerHistory.getTriggerId(), false);
         String reloadChannelId = getReloadChannelIdForTrigger(trigger, engine
                 .getConfigurationService().getChannels(false));
@@ -1027,7 +1027,7 @@ public class DataService extends AbstractService implements IDataService {
         if (isLoad) {
             TriggerHistory history = data.getTriggerHistory();
             if (history != null && channelId == null) {
-                Trigger trigger = engine.getTriggerRouterService().getTriggerById(
+                Trigger trigger = engine.getTriggerRouterService().getTriggerById(true,
                         history.getTriggerId());
                 channelId = getReloadChannelIdForTrigger(trigger, engine.getConfigurationService()
                         .getChannels(false));
@@ -1148,7 +1148,7 @@ public class DataService extends AbstractService implements IDataService {
             return "Trigger for table " + tableName + " does not exist from node "
                     + sourceNode.getNodeGroupId();
         } else {
-            Trigger trigger = triggerRouterService.getTriggerById(triggerHistory.getTriggerId());
+            Trigger trigger = triggerRouterService.getTriggerById(true, triggerHistory.getTriggerId());
             if (trigger != null) {
                 ISqlTransaction transaction = null;
                 try {
@@ -1256,7 +1256,7 @@ public class DataService extends AbstractService implements IDataService {
             for (NodeGroupLink nodeGroupLink : links) {
                 if (nodeGroupLink.getDataEventAction() == NodeGroupLinkAction.P) {
                     Set<TriggerRouter> triggerRouters = engine.getTriggerRouterService()
-                            .getTriggerRouterForTableForCurrentNode(nodeGroupLink, null, null,
+                            .getTriggerRouterForTableForCurrentNode(true, nodeGroupLink, null, null,
                                     tableName, false);
                     if (triggerRouters != null && triggerRouters.size() > 0) {
                         Data data = createData(transaction, triggerRouters.iterator().next()
@@ -1323,7 +1323,7 @@ public class DataService extends AbstractService implements IDataService {
             String tableName, String whereClause) {
         Data data = null;
         Set<TriggerRouter> triggerRouters = engine.getTriggerRouterService()
-                .getTriggerRouterForTableForCurrentNode(catalogName, schemaName, tableName, false);
+                .getTriggerRouterForTableForCurrentNode(true, catalogName, schemaName, tableName, false);
         if (triggerRouters != null && triggerRouters.size() > 0) {
             data = createData(transaction, triggerRouters.iterator().next().getTrigger(),
                     whereClause);

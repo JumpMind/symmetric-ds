@@ -1379,7 +1379,7 @@ public class RestService {
 
             if (nodesToSendTo.size() > 0) {
                 List<TableName> tablesToSend = request.getTablesToSend();
-                List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters(false);
+                List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters(true, false);
                 for (TriggerRouter triggerRouter : triggerRouters) {
                     Trigger trigger = triggerRouter.getTrigger();
                     NodeGroupLink link = triggerRouter.getRouter().getNodeGroupLink();

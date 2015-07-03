@@ -147,7 +147,7 @@ public class SnapshotUtil {
             }
         }
         
-        List<Trigger> triggers = triggerRouterService.getTriggers();
+        List<Trigger> triggers = triggerRouterService.getTriggers(true);
         for (Trigger trigger : triggers) {
             Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(),
                     trigger.getSourceSchemaName(), trigger.getSourceTableName(),

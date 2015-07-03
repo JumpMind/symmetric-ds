@@ -48,7 +48,7 @@ public interface ITriggerRouterService {
     
     public List<TriggerHistory> getActiveTriggerHistories(String tableName);
 
-    public List<TriggerRouter> getTriggerRouters(boolean refreshCache);
+    public List<TriggerRouter> getTriggerRouters(boolean substituteParameters, boolean refreshCache);
     
     /**
      * Return a list of triggers used when extraction configuration data during 
@@ -59,9 +59,7 @@ public interface ITriggerRouterService {
     public List<TriggerRouter> buildTriggerRoutersForSymmetricTables(String version, NodeGroupLink nodeGroupLink, String... tablesToExclude);
     
     public String buildSymmetricTableRouterId(String triggerId, String sourceNodeGroupId, String targetNodeGroupId);
-    
-    public Trigger getTriggerForCurrentNodeById(String triggerId);
-    
+        
     public TriggerRouter getTriggerRouterForCurrentNode(String triggerId, String routerId, boolean refreshCache);
     
     /**
@@ -70,8 +68,6 @@ public interface ITriggerRouterService {
      */
     public List<Trigger> getTriggersForCurrentNode(boolean refreshCache);
     
-    public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId);
-
     /**
      * Returns a map of trigger routers keyed by trigger id.
      * @param refreshCache Indicates that the cache should be refreshed
@@ -85,11 +81,11 @@ public interface ITriggerRouterService {
      */
     public Router getActiveRouterByIdForCurrentNode(String routerId, boolean refreshCache);
     
-    public Router getRouterById(String routerId);
+    public Router getRouterById(boolean substituteParameters, String routerId);
     
-    public Router getRouterById(String routerId, boolean refreshCache);
+    public Router getRouterById(boolean substituteParameters, String routerId, boolean refreshCache);
     
-    public List<Router> getRouters();
+    public List<Router> getRouters(boolean substituteParameters);
     
     /**
      * Get a list of routers for a specific node group link.
@@ -102,12 +98,10 @@ public interface ITriggerRouterService {
     
     public void saveRouter(Router router);
     
-    public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
-    
     /**
      * Get a list of all the triggers that have been defined for the system.
      */
-    public List<Trigger> getTriggers();
+    public List<Trigger> getTriggers(boolean substituteParameters);
     
     public void saveTrigger(Trigger trigger);
 
@@ -130,11 +124,11 @@ public interface ITriggerRouterService {
     
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(String sourceNodeGroupId, String targetNodeGroupId);
 
-    public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(NodeGroupLink link, String catalogName, String schemaName, String tableName, boolean refreshCache);
+    public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(boolean substituteParameters, NodeGroupLink link, String catalogName, String schemaName, String tableName, boolean refreshCache);
     
-    public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(String catalog, String schema, String tableName, boolean refreshCache); 
+    public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(boolean substituteParameters, String catalog, String schema, String tableName, boolean refreshCache); 
 
-    public TriggerRouter findTriggerRouterById(String triggerId, String routerId);
+    public TriggerRouter findTriggerRouterById(boolean substituteParameters, String triggerId, String routerId);
 
     public void inactivateTriggerHistory(TriggerHistory history);
 
@@ -147,9 +141,9 @@ public interface ITriggerRouterService {
     
     public TriggerHistory findTriggerHistory(String catalogName, String schemaName, String tableName);
     
-    public Trigger getTriggerById(String triggerId);
+    public Trigger getTriggerById(boolean substituteParameters, String triggerId);
     
-    public Trigger getTriggerById(String triggerId, boolean refreshCache);
+    public Trigger getTriggerById(boolean substituteParameters, String triggerId, boolean refreshCache);
 
     public void insert(TriggerHistory newAuditRecord);
 
@@ -163,9 +157,9 @@ public interface ITriggerRouterService {
     
     public void saveTriggerRouter(TriggerRouter triggerRouter);
     
-    public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force);
+    public void syncTrigger(String triggerId, ITriggerCreationListener listener, boolean force);
     
-    public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force, boolean verifyTrigger);
+    public void syncTrigger(String triggerId, ITriggerCreationListener listener, boolean force, boolean verifyTrigger);
     
     public void syncTriggers(Table table, boolean genAlways);
     

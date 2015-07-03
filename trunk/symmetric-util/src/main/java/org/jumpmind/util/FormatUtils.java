@@ -85,7 +85,7 @@ public final class FormatUtils {
      *            just replace the key outright.
      * @return The text with the token keys replaced
      */
-    public static String replaceTokens(String text, Map<String, String> replacements,
+    public static String replaceTokens(String text, Map<?, ?> replacements,
             boolean matchUsingPrefixSuffix) {
         if (text != null && replacements != null && replacements.size() > 0) {
             if (matchUsingPrefixSuffix) {
@@ -93,7 +93,7 @@ public final class FormatUtils {
                 StringBuffer buffer = new StringBuffer();
                 while (matcher.find()) {
                     String[] match = matcher.group(1).split("\\|");
-                    String replacement = replacements.get(match[0]);
+                    String replacement = (String)replacements.get(match[0]);
                     if (replacement != null) {
                         matcher.appendReplacement(buffer, "");
                         if (match.length == 2) {
@@ -106,7 +106,7 @@ public final class FormatUtils {
                 text = buffer.toString();
             } else {
                 for (Object key : replacements.keySet()) {
-                    text = text.replaceAll(key.toString(), replacements.get(key));
+                    text = text.replaceAll(key.toString(), (String)replacements.get(key));
                 }
             }
         }

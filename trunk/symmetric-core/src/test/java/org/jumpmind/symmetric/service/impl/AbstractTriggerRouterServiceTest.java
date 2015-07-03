@@ -145,13 +145,13 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
 
     @Test
     public void test04GetRouterById() throws Exception {
-        Router router = getTriggerRouterService().getRouterById("3000");
+        Router router = getTriggerRouterService().getRouterById(true, "3000");
         Assert.assertNotNull(router);
         Assert.assertEquals("3000", router.getRouterId());
         Assert.assertEquals("test-root-group", router.getNodeGroupLink().getSourceNodeGroupId());
         Assert.assertEquals("test-node-group2", router.getNodeGroupLink().getTargetNodeGroupId());
 
-        router = getTriggerRouterService().getRouterById("666");
+        router = getTriggerRouterService().getRouterById(true, "666");
         Assert.assertNull(router);
     }
 
@@ -179,7 +179,7 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
         IParameterService parameterService = getParameterService();
         parameterService.saveParameter(ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED, true, "unittest");
         TriggerRouter triggerRouter = triggerRouterService
-                .getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true)
+                .getTriggerRouterForTableForCurrentNode(true, null, null, TEST_TRIGGERS_TABLE, true)
                 .iterator().next();
 
         Table table = getDbDialect().getPlatform().getTableFromCache(triggerRouter.getTrigger().getSourceTableName(), true);
@@ -216,7 +216,7 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
             getParameterService().saveParameter(
                     ParameterConstants.TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY, true, "test");
             if (!Constants.ALWAYS_TRUE_CONDITION.equals(getDbDialect().getDataHasChangedCondition(
-                    getTriggerRouterService().getTriggers().get(0)))) {
+                    getTriggerRouterService().getTriggers(true).get(0)))) {
                 forceRebuildOfTrigers();
                 insert(INSERT2_VALUES, template, getDbDialect());
                 Assert.assertTrue(template.queryForInt(
@@ -245,7 +245,7 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
         service.syncTriggers();
 
         TriggerRouter triggerRouter = service
-                .getTriggerRouterForTableForCurrentNode(null, null, TEST_TRIGGERS_TABLE, true)
+                .getTriggerRouterForTableForCurrentNode(true, null, null, TEST_TRIGGERS_TABLE, true)
                 .iterator().next();
         assertEquals(
                 jdbcTemplate
