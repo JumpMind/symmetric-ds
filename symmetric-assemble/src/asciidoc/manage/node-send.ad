@@ -5,6 +5,25 @@ BSH Scripts:: Beanshell scripts can be sent to be executed on a target node
 Table Schema:: The schema the source node can be replicated to the target node individually
 Table Data:: Tables can be loaded or reloaded individually
 
+===== Sql Scripts
+
+When sending SQL the following tokens will be replaced at the target node before the SQL is executed.
+
+[source]
+----
+$(catalogName)
+$(schemaName)
+$(tableName)
+$(sourceNodeId)
+$(sourceNodeExternalId)
+$(sourceNodeExternalId)
+$(sourceNodeGroupId)
+$(targetNodeId)
+$(targetNodeExternalId)
+$(targetNodeExternalId)
+$(targetNodeGroupId)
+----
+
 ifdef::pro[]
 image::manage/manage-nodes-send.png[]
 endif::pro[]
