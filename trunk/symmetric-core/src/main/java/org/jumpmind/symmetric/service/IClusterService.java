@@ -49,8 +49,6 @@ public interface IClusterService {
     
     public String getServerId();
     
-    public boolean isClusteringEnabled();
-    
     public Map<String,Lock> findLocks();
     
     public void aquireInfiniteLock(String action);
@@ -58,5 +56,9 @@ public interface IClusterService {
     public void clearInfiniteLock(String action);
     
     public boolean isInfiniteLocked(String action);
+    
+    public boolean lockNodeChannel(String action, String nodeId, String channelId);
+    
+    public void unlockNodeChannel(String action, String nodeId, String channelId);
 
 }

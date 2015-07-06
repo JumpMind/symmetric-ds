@@ -1151,9 +1151,9 @@ public class RestService {
             batchAck.setNetworkMillis(transferTimeInMillis);
             batchAck.setDatabaseMillis(batchResult.getLoadTimeInMillis());
             if (batchResult.getStatus().equalsIgnoreCase("OK")) {
-                batchAck.setOk(true);
+                batchAck.setStatus(OutgoingBatch.Status.OK);
             } else {
-                batchAck.setOk(false);
+                batchAck.setStatus(OutgoingBatch.Status.ER);
                 batchAck.setSqlCode(batchResult.getSqlCode());
                 batchAck.setSqlState(batchResult.getSqlState().substring(0,
                         Math.min(batchResult.getSqlState().length(), 10)));

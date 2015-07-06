@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
@@ -320,11 +321,11 @@ abstract public class AbstractService implements IService {
         long batchIdInError = Long.MAX_VALUE;
         for (BatchAck batchInfo : batchAcks) {
             batchIds.remove(batchInfo.getBatchId());
-            if (!batchInfo.isOk()) {
+            if (batchInfo.getStatus() == Status.ER) {
                 batchIdInError = batchInfo.getBatchId();
             }
             log.debug("Saving ack: {}, {}", batchInfo.getBatchId(),
-                    (batchInfo.isOk() ? "OK" : "ER"));
+                    batchInfo.getStatus());
             acknowledgeService.ack(batchInfo);
         }
 

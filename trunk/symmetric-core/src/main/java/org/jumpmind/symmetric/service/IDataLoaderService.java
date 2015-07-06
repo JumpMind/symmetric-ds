@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
+import org.jumpmind.symmetric.service.impl.DataLoaderService.DataLoaderWorker;
 
 /**
  * This service provides an API to load data into a SymmetricDS node's database
@@ -58,6 +59,8 @@ public interface IDataLoaderService {
     
     public void save(ConflictNodeGroupLink settings);
     
+    public DataLoaderWorker createDataLoaderWorker(Node sourceNode);
+    
     public void clearCache();
 
     public List<IncomingError> getIncomingErrors(long batchId, String nodeId);
@@ -67,5 +70,9 @@ public interface IDataLoaderService {
     public void insertIncomingError(IncomingError incomingError);
     
     public void updateIncomingError(IncomingError incomingError);
+    
+    public void start();
+    
+    public void stop();
 
 }

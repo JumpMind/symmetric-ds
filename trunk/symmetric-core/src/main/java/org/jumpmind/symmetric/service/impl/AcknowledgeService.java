@@ -67,20 +67,20 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         }
 
         if (batch.getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
-            if (batch.isOk()) {
+            if (batch.getStatus() == Status.OK) {
                 registrationService.markNodeAsRegistered(batch.getNodeId());
             }
         } else {
             OutgoingBatch outgoingBatch = outgoingBatchService
                     .findOutgoingBatch(batch.getBatchId(), batch.getNodeId());
-            Status status = batch.isOk() ? Status.OK : Status.ER;
+            Status status = batch.getStatus();
             if (outgoingBatch != null) {
                 // Allow an outside system/user to indicate that a batch
                 // is OK.
                 if (outgoingBatch.getStatus() != Status.OK && 
                         outgoingBatch.getStatus() != Status.IG) {
                     outgoingBatch.setStatus(status);
-                    outgoingBatch.setErrorFlag(!batch.isOk());
+                    outgoingBatch.setErrorFlag(batch.getStatus() == Status.ER);
                 } else {
                     // clearing the error flag in case the user set the batch
                     // status to OK
@@ -100,7 +100,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setSqlState(batch.getSqlState());
                 outgoingBatch.setSqlMessage(batch.getSqlMessage());
 
-                if (!batch.isOk() && batch.getErrorLine() != 0) {
+                if (batch.getStatus() == Status.ER && batch.getErrorLine() != 0) {
                     List<Number> ids = sqlTemplate.query(getSql("selectDataIdSql"),
                             new NumberMapper(), outgoingBatch.getBatchId());
                     if (ids.size() >= batch.getErrorLine()) {

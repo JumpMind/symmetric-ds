@@ -317,12 +317,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect, clusterService);
         this.dataExtractorService = new DataExtractorService(this);
         this.transportManager = new TransportManagerFactory(this).create();
-        this.dataLoaderService = new DataLoaderService(this);
+        this.dataLoaderService = buildDataLoaderService();
         this.registrationService = new RegistrationService(this);
         this.acknowledgeService = new AcknowledgeService(this);
-        this.pushService = new PushService(parameterService, symmetricDialect,
-                dataExtractorService, acknowledgeService, transportManager, nodeService,
-                clusterService, nodeCommunicationService, statisticManager, configurationService, extensionService);
+        this.pushService = buildPushService();
         this.pullService = new PullService(parameterService, symmetricDialect, 
                 nodeService, dataLoaderService, registrationService, clusterService, nodeCommunicationService, 
                 configurationService, extensionService);
@@ -341,6 +339,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             registerHandleToEngine();
         }
 
+    }
+    
+    protected IPushService buildPushService() {
+        return new PushService(this);
+    }
+    
+    protected IDataLoaderService buildDataLoaderService() {
+        return new DataLoaderService(this);
     }
 
     protected IRouterService buildRouterService() {
@@ -559,6 +565,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         log.info("Starting unregistered node [group={}, externalId={}]",
                                 parameterService.getNodeGroupId(), parameterService.getExternalId());
                     }
+                    
+                    pushService.start();
+                    dataLoaderService.start();
 
                     if (startJobs && jobManager != null) {
                         jobManager.startJobs();
@@ -717,6 +726,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         	nodeCommunicationService.stop();
         }
         
+        if (pushService != null) {
+            pushService.stop();
+        }
+        
+        if (dataLoaderService != null) {
+            dataLoaderService.stop();
+        }
+        
         if (statisticManager != null) {
             List<ProcessInfo> infos = statisticManager.getProcessInfos();
             for (ProcessInfo processInfo : infos) {
@@ -764,7 +781,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public RemoteNodeStatuses push() {
         MDC.put("engineName", getEngineName());
-        return pushService.pushData(true);
+        return pushService.push(true);
     }
 
     public void syncTriggers() {

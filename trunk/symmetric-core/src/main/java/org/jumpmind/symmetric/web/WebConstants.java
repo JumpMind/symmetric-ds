@@ -25,6 +25,8 @@ package org.jumpmind.symmetric.web;
  */
 public class WebConstants {
 
+    public final static String MAKE_RESERVATION_PATH = "reserve";
+    
     public static final String HEADER_ACCEPT_CHARSET = "Accept-Charset";
     
     public static final String METHOD_GET = "GET";
@@ -57,11 +59,15 @@ public class WebConstants {
     
     public static final int SC_SERVICE_UNAVAILABLE = 660;
     
+    public static final int SC_CHANNEL_DISABLED = 661;
+    
     public static final int SC_SERVICE_BUSY = 670;
 
     public static final String ACK_BATCH_NAME = "batch-";
 
     public static final String ACK_BATCH_OK = "ok";
+    
+    public static final String ACK_BATCH_LD = "ld";
 
     public static final String ACK_NODE_ID = "nodeId-";
 
@@ -90,6 +96,8 @@ public class WebConstants {
     public static final String SYMMETRIC_VERSION = "symmetricVersion";
     
     public static final String HOST_NAME = "hostName";
+    
+    public static final String CHANNEL_ID = "channelId";
     
     public static final String IP_ADDRESS = "ipAddress";
 

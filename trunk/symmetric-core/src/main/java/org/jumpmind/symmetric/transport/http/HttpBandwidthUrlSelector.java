@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
@@ -70,32 +71,34 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
     }
 
     public String resolveUrl(URI uri) {
-        Map<String, String> params = getParameters(uri);
-        List<SyncUrl> urls = null;
-        if (!cachedUrls.containsKey(uri)) {
-            urls = getUrls(params);
-            cachedUrls.put(uri, urls);
-        } else {
-            urls = cachedUrls.get(uri);
-        }
-
-        boolean initialLoadOnly = isInitialLoadOnly(params);
-        if ((initialLoadOnly && nodeService != null && !nodeService.isDataLoadCompleted()) || !initialLoadOnly) {
-            long ts = System.currentTimeMillis();
-            if (ts - getSampleTTL(params) > lastSampleTs) {
-                for (SyncUrl syncUrl : urls) {
-                    syncUrl.kbps = bandwidthService.getDownloadKbpsFor(syncUrl.url, getSampleSize(params),
-                            getMaxSampleDuration(params));
-                }
-                lastSampleTs = ts;
-                Collections.sort(urls, new BestBandwidthSorter());
+        if (uri.toString().startsWith(Constants.PROTOCOL_EXT)) {
+            Map<String, String> params = getParameters(uri);
+            List<SyncUrl> urls = null;
+            if (!cachedUrls.containsKey(uri)) {
+                urls = getUrls(params);
+                cachedUrls.put(uri, urls);
+            } else {
+                urls = cachedUrls.get(uri);
             }
-            return urls.get(0).url;
-        } else {
-            Collections.sort(urls, new ListOrderSorter());
-            return urls.get(0).url;
+    
+            boolean initialLoadOnly = isInitialLoadOnly(params);
+            if ((initialLoadOnly && nodeService != null && !nodeService.isDataLoadCompleted()) || !initialLoadOnly) {
+                long ts = System.currentTimeMillis();
+                if (ts - getSampleTTL(params) > lastSampleTs) {
+                    for (SyncUrl syncUrl : urls) {
+                        syncUrl.kbps = bandwidthService.getDownloadKbpsFor(syncUrl.url, getSampleSize(params),
+                                getMaxSampleDuration(params));
+                    }
+                    lastSampleTs = ts;
+                    Collections.sort(urls, new BestBandwidthSorter());
+                }
+                return urls.get(0).url;
+            } else {
+                Collections.sort(urls, new ListOrderSorter());
+                return urls.get(0).url;
+            }
         }
-
+        else return uri.toString();
     }
 
     protected long getSampleSize(Map<String, String> params) {

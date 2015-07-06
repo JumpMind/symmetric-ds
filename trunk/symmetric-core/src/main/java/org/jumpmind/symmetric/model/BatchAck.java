@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+
 /**
  * Status of a batch acknowledgment
  */
@@ -36,7 +38,7 @@ public class BatchAck  implements Serializable {
      */
     private String nodeId;
 
-    private boolean isOk;
+    private Status status;
 
     private long errorLine;
 
@@ -58,12 +60,11 @@ public class BatchAck  implements Serializable {
 
     public BatchAck(long batchId) {
         this.batchId = batchId;
-        isOk = true;
     }
 
-    public BatchAck(long batchId, long errorLineNumber) {
+    public BatchAck(Status status, long batchId, long errorLineNumber) {
         this.batchId = batchId;
-        isOk = false;
+        this.status = status;
         errorLine = errorLineNumber;
     }
 
@@ -74,9 +75,13 @@ public class BatchAck  implements Serializable {
     public long getErrorLine() {
         return errorLine;
     }
-
-    public boolean isOk() {
-        return isOk;
+    
+    public Status getStatus() {
+        return status;
+    }
+    
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     public void setBatchId(long batchId) {
@@ -85,10 +90,6 @@ public class BatchAck  implements Serializable {
 
     public void setErrorLine(long errorLine) {
         this.errorLine = errorLine;
-    }
-
-    public void setOk(boolean isOk) {
-        this.isOk = isOk;
     }
 
     public long getByteCount() {

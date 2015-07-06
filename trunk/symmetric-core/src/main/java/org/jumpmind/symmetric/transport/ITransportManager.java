@@ -29,6 +29,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 
 public interface ITransportManager {
 
@@ -46,7 +47,7 @@ public interface ITransportManager {
 
     public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException;
 
-    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String registrationUrl) throws IOException;
+    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String channelId, String registrationUrl) throws IOException;
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException;
     
@@ -59,5 +60,14 @@ public interface ITransportManager {
     public String resolveURL(String url, String registrationUrl);
     
     public int sendCopyRequest(Node local) throws IOException;
+    
+    public String getAcknowledgementData(boolean requires13Format, String nodeId, IncomingBatch batch);
+    
+    public String getAcknowledgementData(boolean requires13Format, String nodeId,
+            List<IncomingBatch> list);
+    
+    public IIncomingTransport getAckStatusTransport(OutgoingBatch batch, Node remote, Node local, String securityToken, String registrationUrl);
+    
+    public void makeReservationTransport(String poolId, String channelId, Node remote, Node local, String securityToken, String registrationUrl);
 
 }

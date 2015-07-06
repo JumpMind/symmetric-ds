@@ -168,6 +168,8 @@ final public class ParameterConstants {
 
     public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
     public final static String DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION = "dataextractor.text.column.expression";
+    
+    @Deprecated
     public final static String OUTGOING_BATCH_MAX_BATCHES_TO_SELECT = "outgoing.batches.max.to.select";
 
     public final static String DBDIALECT_ORACLE_USE_TRANSACTION_VIEW = "oracle.use.transaction.view";
@@ -220,7 +222,6 @@ final public class ParameterConstants {
     public final static String EXTERNAL_ID_IS_UNIQUE = "external.id.is.unique.enabled";
 
     public final static String CLUSTER_SERVER_ID = "cluster.server.id";
-    public final static String CLUSTER_LOCKING_ENABLED = "cluster.lock.enabled";
     public final static String CLUSTER_LOCK_TIMEOUT_MS = "cluster.lock.timeout.ms";
     public final static String LOCK_TIMEOUT_MS = "lock.timeout.ms";
     public final static String LOCK_WAIT_RETRY_MILLIS = "lock.wait.retry.ms";

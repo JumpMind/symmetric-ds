@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
+import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
@@ -39,6 +40,10 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
  * This service provides an API to extract and stream data from a source database.
  */
 public interface IDataExtractorService {
+    
+    public IStagedResource getStagedResource(OutgoingBatch currentBatch);
+    
+    public void extractToStaging(ProcessInfo processInfo, Node targetNode, OutgoingBatch currentBatch);
 
     public void extractConfigurationStandalone(Node node, OutputStream out);
 

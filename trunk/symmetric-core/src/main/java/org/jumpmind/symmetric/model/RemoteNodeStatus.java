@@ -37,29 +37,37 @@ public class RemoteNodeStatus implements Serializable {
     };
 
     private String nodeId;
+    private String channelId;
     private Status status;
     private long dataProcessed;
     private long batchesProcessed;
     private long reloadBatchesProcessed;
     private boolean complete = false;
+    
+    // TODO for the time being this needs to support multiple channels (until everything supports parallel channels)
     private Map<String, Channel> channels;
 
-    public RemoteNodeStatus(String nodeId, Map<String, Channel> channels) {
+    public RemoteNodeStatus(String nodeId, String channelId, Map<String, Channel> channels) {
         this.status = Status.NO_DATA;
+        this.channelId = channelId;
         this.nodeId = nodeId;
         this.channels = channels;
+    }
+
+    public RemoteNodeStatus(String nodeId, Map<String, Channel> channels) {
+        this(nodeId, null, channels);
     }
     
     public boolean failed() {
         return status != Status.NO_DATA && status != Status.DATA_PROCESSED;
     }
+    
+    public String getChannelId() {
+        return channelId;
+    }
 
     public String getNodeId() {
         return nodeId;
-    }
-
-    public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
     }
 
     public Status getStatus() {
@@ -101,7 +109,7 @@ public class RemoteNodeStatus implements Serializable {
     public void updateOutgoingStatus(List<OutgoingBatch> outgoingBatches, List<BatchAck> batches) {
         if (batches != null) {
             for (BatchAck batch : batches) {
-                if (!batch.isOk()) {
+                if (batch.getStatus() == OutgoingBatch.Status.ER) {
                     status = Status.DATA_ERROR;
                 }
             }

@@ -74,12 +74,20 @@ public class ProcessInfoKey implements Serializable {
     private String targetNodeId;
 
     private ProcessType processType;
+    
+    private String channelId;
 
     public ProcessInfoKey(String sourceNodeId, String targetNodeId, ProcessType processType) {
         this.sourceNodeId = sourceNodeId;
         this.targetNodeId = targetNodeId;
         this.processType = processType;
     }
+    
+    public ProcessInfoKey(String sourceNodeId, String targetNodeId, ProcessType processType, String channelId) {
+        this(sourceNodeId, targetNodeId, processType);
+        this.channelId = channelId;
+    }
+
 
     public String getSourceNodeId() {
         return sourceNodeId;
@@ -92,6 +100,10 @@ public class ProcessInfoKey implements Serializable {
     public ProcessType getProcessType() {
         return processType;
     }
+    
+    public String getChannelId() {
+        return channelId;
+    }
 
     @Override
     public int hashCode() {
@@ -100,6 +112,7 @@ public class ProcessInfoKey implements Serializable {
         result = prime * result + ((processType == null) ? 0 : processType.hashCode());
         result = prime * result + ((sourceNodeId == null) ? 0 : sourceNodeId.hashCode());
         result = prime * result + ((targetNodeId == null) ? 0 : targetNodeId.hashCode());
+        result = prime * result + ((channelId == null) ? 0 : channelId.hashCode());
         return result;
     }
 
@@ -112,18 +125,31 @@ public class ProcessInfoKey implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         ProcessInfoKey other = (ProcessInfoKey) obj;
-        if (processType != other.processType)
+        if (processType != other.processType) {
             return false;
+        }
         if (sourceNodeId == null) {
-            if (other.sourceNodeId != null)
+            if (other.sourceNodeId != null) {
                 return false;
-        } else if (!sourceNodeId.equals(other.sourceNodeId))
+            }
+        } else if (!sourceNodeId.equals(other.sourceNodeId)) {
             return false;
+        }
         if (targetNodeId == null) {
-            if (other.targetNodeId != null)
+            if (other.targetNodeId != null) {
                 return false;
-        } else if (!targetNodeId.equals(other.targetNodeId))
+            }
+        } else if (!targetNodeId.equals(other.targetNodeId)) {
             return false;
+        }
+        
+        if (channelId == null) {
+            if (other.channelId != null) {
+                return false;
+            }
+        } else if (!channelId.equals(other.channelId)) {
+            return false;
+        }
         return true;
     }
 

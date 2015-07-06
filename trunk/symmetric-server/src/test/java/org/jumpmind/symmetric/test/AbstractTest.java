@@ -270,6 +270,7 @@ abstract public class AbstractTest {
     }
 
     protected boolean push(String name) {
+        getWebServer(name).getEngine().route();
         int tries = 0;
         boolean push = false;
         boolean lastPush = false;

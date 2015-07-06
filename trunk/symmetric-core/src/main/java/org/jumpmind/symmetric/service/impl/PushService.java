@@ -20,22 +20,38 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import org.apache.commons.lang.StringUtils;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.io.IOUtils;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeCommunication;
-import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
+import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
+import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.OutgoingBatchByNodeChannelCount;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
@@ -45,174 +61,370 @@ import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
-import org.jumpmind.symmetric.service.IExtensionService;
-import org.jumpmind.symmetric.service.INodeCommunicationService;
-import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.transport.ChannelDisabledException;
+import org.jumpmind.symmetric.transport.ConnectionRejectedException;
+import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 
 /**
  * @see IPushService
  */
-public class PushService extends AbstractOfflineDetectorService implements IPushService,
-        INodeCommunicationExecutor {
+public class PushService extends AbstractOfflineDetectorService implements IPushService {
 
-    private IDataExtractorService dataExtractorService;
+    protected ISymmetricEngine engine;
 
-    private IAcknowledgeService acknowledgeService;
+    protected Executor nodeChannelExtractForPushWorker;
 
-    private ITransportManager transportManager;
+    protected Set<NodeChannel> pushWorkersWorking = new HashSet<NodeChannel>();
 
-    private INodeService nodeService;
+    protected Executor nodeChannelTransportForPushWorker;
 
-    private IClusterService clusterService;
-
-    private INodeCommunicationService nodeCommunicationService;
-    
-    private IStatisticManager statisticManager;
-    
-    private IConfigurationService configurationService;
-
-    private Map<String, Date> startTimesOfNodesBeingPushedTo = new HashMap<String, Date>();
-
-    public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
-            ITransportManager transportManager, INodeService nodeService,
-            IClusterService clusterService, INodeCommunicationService nodeCommunicationService, IStatisticManager statisticManager, 
-            IConfigurationService configrationService, IExtensionService extensionService) {
-        super(parameterService, symmetricDialect, extensionService);
-        this.dataExtractorService = dataExtractorService;
-        this.acknowledgeService = acknowledgeService;
-        this.transportManager = transportManager;
-        this.nodeService = nodeService;
-        this.clusterService = clusterService;
-        this.nodeCommunicationService = nodeCommunicationService;
-        this.statisticManager = statisticManager;
-        this.configurationService = configrationService;
+    public PushService(ISymmetricEngine engine) {
+        super(engine.getParameterService(), engine.getSymmetricDialect(), engine.getExtensionService());
+        this.engine = engine;
     }
 
-    public Map<String, Date> getStartTimesOfNodesBeingPushedTo() {
-        return new HashMap<String, Date>(startTimesOfNodesBeingPushedTo);
+    public void start() {
+        nodeChannelExtractForPushWorker = (ThreadPoolExecutor) Executors.newCachedThreadPool(new ThreadFactory() {
+            final AtomicInteger threadNumber = new AtomicInteger(1);
+            final String namePrefix = parameterService.getEngineName().toLowerCase() + "-extract-for-push-";
+
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r);
+                t.setName(namePrefix + threadNumber.getAndIncrement());
+                t.setDaemon(false);
+                if (t.getPriority() != Thread.NORM_PRIORITY) {
+                    t.setPriority(Thread.NORM_PRIORITY);
+                }
+                return t;
+            }
+        });
+
+        nodeChannelTransportForPushWorker = (ThreadPoolExecutor) Executors.newCachedThreadPool(new ThreadFactory() {
+            final AtomicInteger threadNumber = new AtomicInteger(1);
+            final String namePrefix = parameterService.getEngineName().toLowerCase() + "-push-";
+
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r);
+                t.setName(namePrefix + threadNumber.getAndIncrement());
+                t.setDaemon(false);
+                if (t.getPriority() != Thread.NORM_PRIORITY) {
+                    t.setPriority(Thread.NORM_PRIORITY);
+                }
+                return t;
+            }
+        });
     }
 
-    synchronized public RemoteNodeStatuses pushData(boolean force) {
+    public void stop() {
+        log.info("The push service is shutting down");
+        if (nodeChannelExtractForPushWorker != null && nodeChannelExtractForPushWorker instanceof ThreadPoolExecutor) {
+            ((ThreadPoolExecutor) nodeChannelExtractForPushWorker).shutdown();
+        }
+        nodeChannelExtractForPushWorker = null;
+
+        if (nodeChannelTransportForPushWorker != null && nodeChannelTransportForPushWorker instanceof ThreadPoolExecutor) {
+            ((ThreadPoolExecutor) nodeChannelTransportForPushWorker).shutdown();
+        }
+        nodeChannelTransportForPushWorker = null;
+
+    }
+
+    synchronized public RemoteNodeStatuses push(boolean force) {
+        IConfigurationService configurationService = engine.getConfigurationService();
+        IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
+        INodeService nodeService = engine.getNodeService();
+        IClusterService clusterService = engine.getClusterService();
+
+        int availableThreadPairs = parameterService.getInt(ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER);
+        long minimumPeriodBetweenPushesMs = parameterService.getLong(ParameterConstants.PUSH_MINIMUM_PERIOD_MS, -1);
+
         RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
-        
-        Node identity = nodeService.findIdentity(false);
-        if (identity != null && identity.isSyncEnabled()) {
-            long minimumPeriodMs = parameterService.getLong(ParameterConstants.PUSH_MINIMUM_PERIOD_MS, -1);
-            if (force || !clusterService.isInfiniteLocked(ClusterConstants.PUSH)) {
-                    List<NodeCommunication> nodes = nodeCommunicationService
-                            .list(CommunicationType.PUSH);
-                    if (nodes.size() > 0) {
-                        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity
-                                .getNodeId());
-                        if (identitySecurity != null) {
-                            int availableThreads = nodeCommunicationService
-                                    .getAvailableThreads(CommunicationType.PUSH);
-                            for (NodeCommunication nodeCommunication : nodes) {
-                                boolean meetsMinimumTime = true;
-                                if (minimumPeriodMs > 0 && nodeCommunication.getLastLockTime() != null &&
-                                   (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
-                                   meetsMinimumTime = false; 
-                                }
-                                if (availableThreads > 0 && meetsMinimumTime) {
-                                    if (nodeCommunicationService.execute(nodeCommunication, statuses,
-                                            this)) {
-                                        availableThreads--;
-                                    }
-                                }
-                            }
-                        } else {
-                            log.error(
-                                    "Could not find a node security row for '{}'.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data",
-                                    identity.getNodeId());
+
+        Node identityNode = nodeService.findIdentity(false);
+        if (identityNode != null && identityNode.isSyncEnabled()) {
+            List<NodeHost> hosts = nodeService.findNodeHosts(identityNode.getNodeId());
+            int clusterInstanceCount = hosts != null && hosts.size() > 0 ? hosts.size() : 1;
+            NodeSecurity identitySecurity = nodeService.findNodeSecurity(identityNode.getNodeId());
+
+            if (identitySecurity != null && (force || !clusterService.isInfiniteLocked(ClusterConstants.PUSH))) {
+                Iterator<OutgoingBatchByNodeChannelCount> nodeChannels = outgoingBatchService.getOutgoingBatchByNodeChannelCount(
+                        availableThreadPairs * clusterInstanceCount, NodeGroupLinkAction.P, true).iterator();
+
+                // TODO check for availablilty by channel in overall threadpool
+                // based on percentage
+                while (nodeChannels.hasNext() && pushWorkersWorking.size() < availableThreadPairs) {
+                    OutgoingBatchByNodeChannelCount batchCount = nodeChannels.next();
+                    String nodeId = batchCount.getNodeId();
+                    String channelId = batchCount.getChannelId();
+                    Node remoteNode = nodeService.findNode(nodeId);
+                    NodeChannel nodeChannel = configurationService.getNodeChannel(channelId, nodeId, false);
+
+                    if (nodeChannel != null && !nodeChannel.isFileSyncFlag() && !pushWorkersWorking.contains(nodeChannel)) {
+                        boolean meetsMinimumTime = true;
+                        // TODO error backoff logic
+                        if (minimumPeriodBetweenPushesMs > 0 && nodeChannel.getLastExtractTime() != null
+                                && (System.currentTimeMillis() - nodeChannel.getLastExtractTime().getTime()) < minimumPeriodBetweenPushesMs) {
+                            meetsMinimumTime = false;
+                        }
+
+                        if (meetsMinimumTime && clusterService.lockNodeChannel(ClusterConstants.PUSH, nodeId, channelId)) {
+                            NodeChannelExtractForPushWorker worker = new NodeChannelExtractForPushWorker(remoteNode, identityNode,
+                                    identitySecurity, nodeChannel, statuses.add(nodeId, channelId));
+                            pushWorkersWorking.add(nodeChannel);
+                            nodeChannelExtractForPushWorker.execute(worker);
                         }
                     }
-            } else {
-                log.debug("Did not run the push process because it has been stopped");
+                }
             }
         }
         return statuses;
     }
 
-    public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
-        Node node = nodeCommunication.getNode();
-        if (StringUtils.isNotBlank(node.getSyncUrl()) || 
-                !parameterService.isRegistrationServer()) {
+    class NodeChannelExtractForPushWorker implements Runnable {
+
+        RemoteNodeStatus status;
+
+        Node targetNode;
+
+        Node identityNode;
+
+        NodeSecurity identitySecurity;
+
+        NodeChannel nodeChannel;
+
+        public NodeChannelExtractForPushWorker(Node remoteNode, Node identityNode, NodeSecurity identitySecurity, NodeChannel nodeChannel,
+                RemoteNodeStatus status) {
+            this.nodeChannel = nodeChannel;
+            this.status = status;
+            this.identitySecurity = identitySecurity;
+            this.identityNode = identityNode;
+            this.targetNode = remoteNode;
+        }
+
+        @Override
+        public void run() {
+            log.info("Preparing to push for {}", nodeChannel);
+            IDataExtractorService dataExtractorService = engine.getDataExtractorService();
+            IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
+            IClusterService clusterService = engine.getClusterService();
+            IStatisticManager statisticManager = engine.getStatisticManager();
+
+            String channelId = nodeChannel.getChannelId();
+
+            ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identitySecurity.getNodeId(), nodeChannel
+                    .getNodeId(), ProcessType.PUSH_JOB, channelId));
+
+            Exception error = null;
+            NodeChannelTransportForPushWorker pushWorker = null;
             try {
-                startTimesOfNodesBeingPushedTo.put(node.getNodeId(), new Date());
-                long reloadBatchesProcessed = 0;
-                long lastBatchCount = 0;
-                do {
-                    if (lastBatchCount > 0) {
-                        log.info(
-                                "Pushing to {} again because the last push contained reload batches",
-                                node);
+                List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatchesForNodeChannel(targetNode.getNodeId(), nodeChannel);
+                if (batches.size() > 0 && makeReservation(channelId, targetNode, identityNode, identitySecurity)) {
+
+                    Iterator<OutgoingBatch> i = batches.iterator();
+                    while (i.hasNext()) {
+                        OutgoingBatch batch = i.next();
+                        if (OutgoingBatch.Status.inProgress(batch.getStatus())) {
+                            OutgoingBatch.Status updatedStatus = updateBatchStatus(batch, targetNode, identityNode, identitySecurity);
+                            if (updatedStatus == OutgoingBatch.Status.OK) {
+                                i.remove();
+                            }
+                        }
                     }
-                    reloadBatchesProcessed = status.getReloadBatchesProcessed();
-                    log.debug("Push requested for {}", node);
-                    pushToNode(node, status);
-                    if (!status.failed() && status.getBatchesProcessed() > 0 
-                            && status.getBatchesProcessed() != lastBatchCount) {
-                        log.info(
-                                "Pushed data to {}. {} data and {} batches were processed",
-                                new Object[] { node, status.getDataProcessed(),
-                                        status.getBatchesProcessed()});
-                    } else if (status.failed()) {
-                        log.info(
-                                "There was a failure while pushing data to {}. {} data and {} batches were processed",
-                                new Object[] { node, status.getDataProcessed(),
-                                        status.getBatchesProcessed()});                        
+
+                    for (OutgoingBatch batch : batches) {
+                        // TODO used to refresh batch if x seconds had passed
+                        // since querying. is this necessary?
+
+                        dataExtractorService.extractToStaging(processInfo, targetNode, batch);
+
+                        if (pushWorker == null) {
+                            pushWorker = new NodeChannelTransportForPushWorker(targetNode, identityNode, identitySecurity, status);
+                            nodeChannelTransportForPushWorker.execute(pushWorker);
+                        }
+
+                        pushWorker.queueUpSend(batch);
+
                     }
-                    log.debug("Push completed for {}", node);
-                    lastBatchCount = status.getBatchesProcessed();
-                } while (status.getReloadBatchesProcessed() > reloadBatchesProcessed && !status.failed());
+                }
+            } catch (Exception ex) {
+                error = ex;
+                log.error("", ex);
             } finally {
-                startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
+                try {
+                    if (pushWorker != null) {
+                        pushWorker.queueUpSend(new EOM());
+                        pushWorker.waitForComplete();
+                    }
+                } finally {
+                    clusterService.unlockNodeChannel(ClusterConstants.PUSH, nodeChannel.getNodeId(), nodeChannel.getChannelId());
+                    processInfo.setStatus(error == null ? ProcessInfo.Status.OK : ProcessInfo.Status.ERROR);
+                    pushWorkersWorking.remove(nodeChannel);
+                    status.setComplete(true);
+                    log.info("Done pushing for {} ", nodeChannel);
+                }
             }
-        } else {
-            log.warn("Cannot push to node '{}' in the group '{}'.  The sync url is blank",
-                    node.getNodeId(), node.getNodeGroupId());
         }
 
     }
 
-    private void pushToNode(Node remote, RemoteNodeStatus status) {
-        Node identity = nodeService.findIdentity(false);
-        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
-        IOutgoingWithResponseTransport transport = null;
-        ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
-                .getNodeId(), remote.getNodeId(), ProcessType.PUSH_JOB));
+    protected boolean makeReservation(String channelId, Node targetNode, Node identityNode, NodeSecurity identitySecurity) {
+        ITransportManager transportManager = engine.getTransportManager();
         try {
-            transport = transportManager.getPushTransport(remote, identity,
-                    identitySecurity.getNodePassword(), parameterService.getRegistrationUrl());
+            transportManager.makeReservationTransport("push", channelId, targetNode, identityNode, identitySecurity.getNodePassword(),
+                    parameterService.getRegistrationUrl());
+            return true;
+        } catch (ServiceUnavailableException ex) {
+            log.info("Unable to push to {} on the {} channel.  The service is currently unavailable.", targetNode.getNodeId(), channelId);
+            return false;
+        } catch (ConnectionRejectedException ex) {
+            log.info("Unable to push to {} on the {} channel.  The service must be busy.", targetNode.getNodeId(), channelId);
+            return false;
+        } catch (ChannelDisabledException ex) {
+            log.info("Unable to push to {} on the {} channel.  The channel is disabled at the target.", targetNode.getNodeId(), channelId);
+            return false;
+        }
+    }
 
-            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(processInfo, remote, transport);
-            if (extractedBatches.size() > 0) {
-                
-                log.info("Push data sent to {}", remote);
-                
-                List<BatchAck> batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService);
-                status.updateOutgoingStatus(extractedBatches, batchAcks);
-            }
-            
-            if (processInfo.getStatus() != Status.ERROR) {
-                processInfo.setStatus(Status.OK);
-            }
+    protected Status updateBatchStatus(OutgoingBatch batch, Node targetNode, Node identityNode, NodeSecurity identitySecurity) {
+        OutgoingBatch.Status returnStatus = batch.getStatus();
+        ITransportManager transportManager = engine.getTransportManager();
+        IAcknowledgeService acknowledgeService = engine.getAcknowledgeService();
+        IIncomingTransport transport = null;
+        try {
+            transport = transportManager.getAckStatusTransport(batch, targetNode, identityNode, identitySecurity.getNodePassword(),
+                    parameterService.getRegistrationUrl());
+            BufferedReader reader = transport.openReader();
+            String line = null;
+            do {
+                line = reader.readLine();
+                if (line != null) {
+                    log.info("Updating batch status: {}", line);
+                    List<BatchAck> batchAcks = transportManager.readAcknowledgement(line, "");
+                    for (BatchAck batchInfo : batchAcks) {
+                        if (batchInfo.getBatchId() == batch.getBatchId()) {
+                            acknowledgeService.ack(batchInfo);
+                            returnStatus = batchInfo.getStatus();
+                        }
+                    }
+                }
+            } while (line != null);
         } catch (Exception ex) {
-            processInfo.setStatus(Status.ERROR);
-            fireOffline(ex, remote, status);
+            log.warn(String.format("Failed to read the batch status for %s", batch.getNodeBatchId()), ex);
         } finally {
+            transport.close();
+        }
+        return returnStatus;
+    }
+
+    class NodeChannelTransportForPushWorker implements Runnable {
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        LinkedBlockingQueue<OutgoingBatch> sendQueue = new LinkedBlockingQueue<OutgoingBatch>();
+
+        Node targetNode;
+
+        Node identityNode;
+
+        NodeSecurity identitySecurity;
+
+        RemoteNodeStatus status;
+
+        public NodeChannelTransportForPushWorker(Node remoteNode, Node identityNode, NodeSecurity identitySecurity, RemoteNodeStatus status) {
+            this.targetNode = remoteNode;
+            this.identityNode = identityNode;
+            this.identitySecurity = identitySecurity;
+            this.status = status;
+        }
+
+        public void queueUpSend(OutgoingBatch batch) {
             try {
-                transport.close();
-            } catch (Exception e) {
+                sendQueue.put(batch);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
             }
         }
+
+        @Override
+        public void run() {
+            IDataExtractorService dataExtractorService = engine.getDataExtractorService();
+            ITransportManager transportManager = engine.getTransportManager();
+            IAcknowledgeService acknowledgeService = engine.getAcknowledgeService();
+            IOutgoingWithResponseTransport transport = null;
+            OutputStream os = null;
+            List<OutgoingBatch> batchesSent = new ArrayList<OutgoingBatch>();
+            try {
+                OutgoingBatch batch = sendQueue.take();
+                transport = transportManager.getPushTransport(targetNode, identityNode, identitySecurity.getNodePassword(),
+                        batch.getChannelId(), parameterService.getRegistrationUrl());
+                while (!(batch instanceof EOM)) {
+                    log.info("sending batch {}", batch);
+                    batchesSent.add(batch);
+                    IStagedResource resource = dataExtractorService.getStagedResource(batch);
+                    InputStream is = resource.getInputStream();
+                    if (os == null) {
+                        os = transport.openStream();
+                    }
+                    try {
+                        IOUtils.copy(is, os);
+                    } finally {
+                        resource.close();
+                    }
+                    batch = sendQueue.take();
+                }
+
+                BufferedReader reader = transport.readResponse();
+                String line = null;
+                do {
+                    line = reader.readLine();
+                    if (isNotBlank(line)) {
+                        log.info("Received ack info: {}", line);
+                        List<BatchAck> batchAcks = transportManager.readAcknowledgement(line, "");
+                        for (BatchAck batchInfo : batchAcks) {
+                            log.info("Saving ack: {}, {}", batchInfo.getBatchId(), batchInfo.getStatus());
+                            acknowledgeService.ack(batchInfo);
+                        }
+                        status.updateOutgoingStatus(batchesSent, batchAcks);
+                    }
+                } while (line != null);
+
+            } catch (Exception ex) {
+                fireOffline(ex, targetNode, status);
+                log.error("", ex);
+            } finally {
+                close(transport);
+                latch.countDown();
+            }
+        }
+
+        public void waitForComplete() {
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        private void close(IOutgoingWithResponseTransport transport) {
+            try {
+                if (transport != null) {
+                    transport.close();
+                }
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+    class EOM extends OutgoingBatch {
+        private static final long serialVersionUID = 1L;
     }
 
 }

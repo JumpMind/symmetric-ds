@@ -35,6 +35,7 @@ public class OutgoingBatchSummary implements Serializable {
     private int dataCount;
     private OutgoingBatch.Status status;
     private Date oldestBatchCreateTime;
+    private Date latestUpdateTime;
 
     public String getNodeId() {
         return nodeId;
@@ -74,6 +75,14 @@ public class OutgoingBatchSummary implements Serializable {
 
     public void setOldestBatchCreateTime(Date oldestBatchCreateTime) {
         this.oldestBatchCreateTime = oldestBatchCreateTime;
+    }
+    
+    public void setLatestUpdateTime(Date latestUpdateTime) {
+        this.latestUpdateTime = latestUpdateTime;
+    }
+    
+    public Date getLatestUpdateTime() {
+        return latestUpdateTime;
     }
 
 }

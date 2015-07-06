@@ -36,12 +36,8 @@ import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.RegistrationRequiredException;
-import org.jumpmind.symmetric.transport.AuthenticationException;
-import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
-import org.jumpmind.symmetric.transport.ServiceUnavailableException;
-import org.jumpmind.symmetric.transport.SyncDisabledException;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
@@ -178,7 +174,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setReadTimeout(httpTimeout);
             connection.setRequestMethod("HEAD");
 
-            analyzeResponseCode(connection.getResponseCode());
+            SymmetricUtils.analyzeResponseCode(connection.getResponseCode());
         } catch (IOException ex) {
             throw new IoException(ex);
         }
@@ -248,30 +244,10 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         }
     }
 
-    /**
-     * @throws {@link ConnectionRejectedException}
-     * @throws {@link AuthenticationException}
-     */
-    private void analyzeResponseCode(int code) throws IOException {
-        if (WebConstants.SC_SERVICE_BUSY == code) {
-            throw new ConnectionRejectedException();
-        } else if (WebConstants.SC_SERVICE_UNAVAILABLE == code) {
-            throw new ServiceUnavailableException();
-        } else if (WebConstants.SC_FORBIDDEN == code) {
-            throw new AuthenticationException();
-        } else if (WebConstants.SYNC_DISABLED == code) {
-            throw new SyncDisabledException();
-        } else if (WebConstants.REGISTRATION_REQUIRED == code) {
-            throw new RegistrationRequiredException();
-        } else if (200 != code) {
-            throw new IoException("Received an unexpected response code of " + code + " from the server");
-        }
-    }
-
     public BufferedReader readResponse() throws IOException {
         closeWriter(false);
         closeOutputStream(false);
-        analyzeResponseCode(connection.getResponseCode());
+        SymmetricUtils.analyzeResponseCode(connection.getResponseCode());
         this.reader = HttpTransportManager.getReaderFrom(connection);
         return this.reader;
     }

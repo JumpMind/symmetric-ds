@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.transport;
 import java.util.Date;
 import java.util.Map;
 
-import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.Reservation;
 
 public interface IConcurrentConnectionManager {
@@ -53,13 +52,11 @@ public interface IConcurrentConnectionManager {
      * @return true if the connection has been reserved and the node is meant to
      *         proceed with its current operation.
      */
-    public boolean reserveConnection(String nodeId, String poolId, ReservationType reservationRequest);
+    public boolean reserveConnection(String nodeId, String channelId, String poolId, ReservationType reservationRequest);
 
-    public boolean releaseConnection(String nodeId, String poolId);
+    public boolean releaseConnection(String nodeId, String channelId, String poolId);
 
     public int getReservationCount(String poolId);
-
-    public Map<String, Map<String, NodeConnectionStatistics>> getNodeConnectionStatisticsByPoolByNodeId();
 
     public Map<String, Map<String, Reservation>> getActiveReservationsByNodeByPool();
 

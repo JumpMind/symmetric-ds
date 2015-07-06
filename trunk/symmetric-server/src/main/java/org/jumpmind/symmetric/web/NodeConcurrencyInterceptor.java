@@ -27,7 +27,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -40,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * An intercepter that controls access to this node for pushes and pulls. It is
  * configured within symmetric-web.xml
  */
-public class NodeConcurrencyInterceptor implements IInterceptor {
+public class NodeConcurrencyInterceptor extends AbstractHandler implements IInterceptor {
     
     private static Logger log = LoggerFactory.getLogger(NodeConcurrencyInterceptor.class);
 
@@ -61,36 +60,37 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             ServletException {
         String poolId = req.getRequestURI();
         String nodeId = getNodeId(req);
+        String channelId = getChannelId(req);
         String method = req.getMethod();
 
         if (method.equals(WebConstants.METHOD_HEAD) && 
                 ServletUtils.normalizeRequestUri(req).contains("push")) {
-            // I read here:
+            // We read here:
             // http://java.sun.com/j2se/1.5.0/docs/guide/net/http-keepalive.html
             // that keepalive likes to have a known content length. I also read
             // that HEAD is better if no content is going to be returned.
             resp.setContentLength(0);
             if (!concurrentConnectionManager
-                    .reserveConnection(nodeId, poolId, ReservationType.SOFT)) {
+                    .reserveConnection(nodeId, channelId, poolId, ReservationType.SOFT)) {
                 statisticManager.incrementNodesRejected(1);
                 ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
             } else {
                 try {
                     buildSuspendIgnoreResponseHeaders(nodeId, resp);
                 } catch (Exception ex) {
-                    concurrentConnectionManager.releaseConnection(nodeId, poolId);
+                    concurrentConnectionManager.releaseConnection(nodeId, channelId, poolId);
                     log.error("Error building response headers", ex);
                     ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
                 }
             }
             return false;
-        } else if (concurrentConnectionManager.reserveConnection(nodeId, poolId,
+        } else if (concurrentConnectionManager.reserveConnection(nodeId, channelId, poolId,
                 ReservationType.HARD)) {
             try {
                 buildSuspendIgnoreResponseHeaders(nodeId, resp);
                 return true;
             } catch (Exception ex) {
-                concurrentConnectionManager.releaseConnection(nodeId, poolId);
+                concurrentConnectionManager.releaseConnection(nodeId, channelId, poolId);
                 log.error("Error building response headers", ex);
                 ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
                 return false;
@@ -101,22 +101,14 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
             return false;
         }
-    }
-    
-    protected String getNodeId(HttpServletRequest req) {
-        String nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.NODE_ID));
-        if (StringUtils.isBlank(nodeId)) {
-        	// if this is a registration request, we won't have a node id to use. 
-        	nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.EXTERNAL_ID));
-        }
-        return nodeId;
-    }
+    }    
     
     public void after(HttpServletRequest req, HttpServletResponse resp) throws IOException,
             ServletException {
         String poolId = req.getRequestURI();
         String nodeId = getNodeId(req);
-        concurrentConnectionManager.releaseConnection(nodeId, poolId);
+        String channelId = getChannelId(req);
+        concurrentConnectionManager.releaseConnection(nodeId, channelId, poolId);
     }
 
     protected void buildSuspendIgnoreResponseHeaders(final String nodeId, final ServletResponse resp) {

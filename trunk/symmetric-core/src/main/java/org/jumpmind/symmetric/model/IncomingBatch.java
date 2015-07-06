@@ -97,6 +97,11 @@ public class IncomingBatch implements Serializable {
 
     public IncomingBatch() {
     }
+    
+    public IncomingBatch(long batchId, String nodeId) {
+        this.batchId = batchId;
+        this.nodeId = nodeId;
+    }
 
     public IncomingBatch(Batch batch) {
         this.batchId = batch.getBatchId();

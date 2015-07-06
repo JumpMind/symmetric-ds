@@ -391,6 +391,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientTestService.insertOrder(order);
 
         boolean pushedData = clientPush();
+        
+        logger.error("Done pushing data");
 
         assertTrue("Client data was not batched and pushed", pushedData);
 
@@ -398,11 +400,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         IConfigurationService rootConfigurationService = getServer().getConfigurationService();
         IOutgoingBatchService clientOutgoingBatchService = getClient().getOutgoingBatchService();
-
-        NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
-        c.setSuspendEnabled(true);
-        rootConfigurationService.saveNodeChannel(c, true);
 
         date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         order = new Order("102", 100, null, date);
@@ -412,13 +409,20 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertNull(serverTestService.getOrder(order.getOrderId()));
 
         clientTestService.insertOrder(order);
-
-        clientPush();
+        
+        getClient().route();
+        
+        NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
+        c.setSuspendEnabled(true);
+        rootConfigurationService.saveNodeChannel(c, true);
 
         OutgoingBatches batches = clientOutgoingBatchService.getOutgoingBatches(
                 TestConstants.TEST_ROOT_NODE.getNodeId(), false);
 
-        assertEquals("There should be one outgoing batches.", 1, batches.getBatches().size());
+        assertEquals("There should be 1 outgoing batches.", 1, batches.getBatches().size());
+
+        pushedData = clientPush();
 
         assertNull("The order record was synchronized when it should not have been",
                 serverTestService.getOrder(order.getOrderId()));
@@ -433,7 +437,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         batches = clientOutgoingBatchService
                 .getOutgoingBatches(TestConstants.TEST_ROOT_NODE.getNodeId(), false);
 
-        assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
+        assertEquals("There should be no outgoing batches", 1, batches.getBatches().size());
 
         assertNull("The order record was synchronized when it should not have been",
                 serverTestService.getOrder(order.getOrderId()));
@@ -443,9 +447,17 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 TestConstants.TEST_CLIENT_EXTERNAL_ID, false);
         c.setSuspendEnabled(false);
         c.setIgnoreEnabled(false);
-        rootConfigurationService.saveNodeChannel(c, true);
+        rootConfigurationService.saveNodeChannel(c, true);       
 
         clientPush();
+        
+        batches = clientOutgoingBatchService
+                .getOutgoingBatches(TestConstants.TEST_ROOT_NODE.getNodeId(), false);
+
+        assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
+
+        assertNotNull("The order record was synchronized when it should not have been",
+                serverTestService.getOrder(order.getOrderId()));
     }
 
     @Test(timeout = 120000)
