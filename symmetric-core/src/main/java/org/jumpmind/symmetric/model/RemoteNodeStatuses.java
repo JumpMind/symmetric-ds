@@ -68,21 +68,27 @@ public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
         return errorOccurred;
     }
 
-    public RemoteNodeStatus add(String nodeId) {
+    public RemoteNodeStatus add(String nodeId, String channelId) {
         RemoteNodeStatus status = null;
         if (nodeId != null) {
-            status = new RemoteNodeStatus(nodeId, channels);
+            status = new RemoteNodeStatus(nodeId, channelId, channels);
             add(status);
         }
         return status;
     }
+    
+    public RemoteNodeStatus add(String nodeId) {
+        return add(nodeId, null);
+    }
 
     public boolean isComplete() {
-        boolean complete = false;
+        int waitingOn = this.size();
         for (RemoteNodeStatus status : this) {
-            complete |= status.isComplete();
+            if (status.isComplete()) {
+                waitingOn--;
+            }
         }
-        return complete;
+        return waitingOn == 0;
     }
 
     public void waitForComplete(long timeout) {

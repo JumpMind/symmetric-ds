@@ -45,14 +45,19 @@ import org.jumpmind.symmetric.route.ChannelRouterContext;
 import org.jumpmind.symmetric.route.DataGapRouteReader;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.ExtensionService;
 import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
+import org.jumpmind.symmetric.service.impl.PushService;
 import org.jumpmind.symmetric.service.impl.RouterService;
+import org.jumpmind.util.CurrentThreadExecutor;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -140,21 +145,15 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     protected IRouterService buildRouterService() {
         return new AndroidRouterService(this);
     }
-
-    class AndroidRouterService extends RouterService {
-
-        public AndroidRouterService(ISymmetricEngine engine) {
-            super(engine);
-        }
-
-        @Override
-        protected IDataToRouteReader startReading(ChannelRouterContext context) {
-            IDataToRouteReader reader = new DataGapRouteReader(context, engine);
-            // not going to read on a separate thread in android
-            reader.run();
-            return reader;
-        }
-
+    
+    @Override
+    protected IPushService buildPushService() {
+        return new AndroidPushService(this);
+    }
+    
+    @Override
+    protected IDataLoaderService buildDataLoaderService() {
+        return new AndroidDataLoaderService(this);
     }
 
     @Override
@@ -162,6 +161,14 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
             IParameterService parameterService, ISymmetricDialect symmetricDialect) {
         return new AndroidNodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
     }
+    
+    public File snapshot() {
+        return null;
+    }
+    
+    public List<File> listSnapshots() {
+        return new ArrayList<File>(0);
+    }   
 
     class AndroidNodeCommunicationService extends NodeCommunicationService {
 
@@ -211,14 +218,47 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
             return 10;
         }
 
+    }    
+    
+    class AndroidPushService extends PushService {
+        public AndroidPushService(ISymmetricEngine engine) {
+            super(engine);
+        }
+        
+        @Override
+        public void start() {
+            nodeChannelExtractForPushWorker = new CurrentThreadExecutor();
+            nodeChannelTransportForPushWorker = new CurrentThreadExecutor();
+        }
     }
     
-    public File snapshot() {
-        return null;
+    class AndroidDataLoaderService extends DataLoaderService {
+
+        public AndroidDataLoaderService(ISymmetricEngine engine) {
+            super(engine);
+        }
+        
+        @Override
+        public void start() {
+            dataLoadWorkers = new CurrentThreadExecutor();
+        }
+        
     }
     
-    public List<File> listSnapshots() {
-        return new ArrayList<File>(0);
+    class AndroidRouterService extends RouterService {
+
+        public AndroidRouterService(ISymmetricEngine engine) {
+            super(engine);
+        }
+
+        @Override
+        protected IDataToRouteReader startReading(ChannelRouterContext context) {
+            IDataToRouteReader reader = new DataGapRouteReader(context, engine);
+            // not going to read on a separate thread in android
+            reader.run();
+            return reader;
+        }
+
     }
 
 }

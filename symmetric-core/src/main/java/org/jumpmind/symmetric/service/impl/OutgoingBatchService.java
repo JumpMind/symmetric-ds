@@ -26,9 +26,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
@@ -43,10 +45,12 @@ import org.jumpmind.symmetric.ext.IOutgoingBatchFilter;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.OutgoingBatchByNodeChannelCount;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.OutgoingLoadSummary;
@@ -373,7 +377,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         for (NodeChannel channel : channels) {
             List<OutgoingBatch> batchesForChannel = getBatchesForChannelWindows(
-                    batches,
+                    batches.getBatches(),
                     nodeId,
                     channel,
                     configurationService.getNodeGroupChannelWindows(
@@ -397,11 +401,44 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         return batches;
     }
+    
+    public List<OutgoingBatch> getOutgoingBatchesForNodeChannel(String nodeId, NodeChannel nodeChannel) {
+        if (parameterService.is(ParameterConstants.DATA_EXTRACTOR_ENABLED) || nodeChannel.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
+            long ts = System.currentTimeMillis();
+            
+            //final int maxNumberOfBatchesToSelect = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
+            List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
+                    getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchForChannelSql"),
+                    nodeChannel.getMaxBatchToSend(),
+                    new OutgoingBatchMapper(true),
+                    new Object[] { nodeId, nodeChannel.getChannelId(), OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
+                            OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(), OutgoingBatch.Status.LD.name(),
+                            OutgoingBatch.Status.ER.name(), OutgoingBatch.Status.IG.name() }, null);
 
-    public List<OutgoingBatch> getBatchesForChannelWindows(OutgoingBatches batches,
+            long executeTimeInMs = System.currentTimeMillis() - ts;
+            if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
+                log.info("Selecting {} outgoing batch rows for node {} took {} ms", list.size(), nodeId, executeTimeInMs);
+            }
+
+            List<IOutgoingBatchFilter> filters = extensionService.getExtensionPointList(IOutgoingBatchFilter.class);
+
+            list = getBatchesForChannelWindows(list, nodeId, nodeChannel,
+                    configurationService.getNodeGroupChannelWindows(parameterService.getNodeGroupId(), nodeChannel.getChannelId()));
+            if (filters != null) {
+                for (IOutgoingBatchFilter filter : filters) {
+                    list = filter.filter(nodeChannel, list);
+                }
+            }
+            return list;
+        } else {
+            return Collections.emptyList();
+        }
+
+    }
+
+    public List<OutgoingBatch> getBatchesForChannelWindows(List<OutgoingBatch> current,
             String targetNodeId, NodeChannel channel, List<NodeGroupChannelWindow> windows) {
         List<OutgoingBatch> keeping = new ArrayList<OutgoingBatch>();
-        List<OutgoingBatch> current = batches.getBatches();
         if (current != null && current.size() > 0) {
             if (inTimeWindow(windows, targetNodeId)) {
                 int maxBatchesToSend = channel.getMaxBatchToSend();
@@ -470,6 +507,31 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchErrorsSql"), maxRows,
                 new OutgoingBatchMapper(true), null, null));
         return batches;
+    }
+    
+    public List<OutgoingBatchByNodeChannelCount> getOutgoingBatchByNodeChannelCount(int maxRows, NodeGroupLinkAction linkType, boolean readyToSendOnly) {
+        List<OutgoingBatchByNodeChannelCount> forReturn = new ArrayList<OutgoingBatchByNodeChannelCount>();
+        List<OutgoingBatchByNodeChannelCount> allNodeChannels = sqlTemplate.query(getSql("selectPendingOutgoingBatchByChannelCountSql"), maxRows, 
+                new OutgoingBatchByNodeChannelCountMapper(), new Object[] {linkType.name()});
+        if (readyToSendOnly) {
+            Set<String> nodeIdHasReloadsNotInError = new HashSet<String>();
+            for (OutgoingBatchByNodeChannelCount outgoingBatchByNodeChannelCount : allNodeChannels) {
+                if (outgoingBatchByNodeChannelCount.isReloadFlag() && !outgoingBatchByNodeChannelCount.isInError()) {
+                    nodeIdHasReloadsNotInError.add(outgoingBatchByNodeChannelCount.getNodeId());
+                }
+            }
+            
+            for (OutgoingBatchByNodeChannelCount outgoingBatchByNodeChannelCount : allNodeChannels) {
+                if (!nodeIdHasReloadsNotInError.contains(outgoingBatchByNodeChannelCount.getNodeId()) || 
+                        outgoingBatchByNodeChannelCount.isReloadFlag()) {
+                    forReturn.add(outgoingBatchByNodeChannelCount);
+                }  
+            }
+            
+        } else {
+            forReturn.addAll(allNodeChannels);
+        }
+        return forReturn;
     }
     
     public List<String> getNodesInError() {
@@ -594,6 +656,24 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         return loads;
     }
+    
+    class OutgoingBatchByNodeChannelCountMapper implements ISqlRowMapper<OutgoingBatchByNodeChannelCount> {
+        @Override
+        public OutgoingBatchByNodeChannelCount mapRow(Row row) {
+            OutgoingBatchByNodeChannelCount count = new OutgoingBatchByNodeChannelCount();
+            count.setBatchCount(row.getInt("batch_count"));
+            count.setChannelId(row.getString("channel_id"));
+            count.setDataCount(row.getInt("data_event_count"));
+            count.setEarliestCreateTime(row.getDateTime("earliest_create_time"));
+            count.setInError(row.getBoolean("error_flag"));
+            count.setLatestUpdateTime(row.getDateTime("latest_update_time"));
+            count.setMaxSentCount(row.getInt("sent_count"));
+            count.setNodeId(row.getString("node_id"));
+            count.setProcessingOrder(row.getInt("processing_order"));
+            count.setReloadFlag(row.getBoolean("reload_flag"));
+            return count;
+        }
+    }
 
     class OutgoingBatchSummaryMapper implements ISqlRowMapper<OutgoingBatchSummary> {
         public OutgoingBatchSummary mapRow(Row rs) {
@@ -603,6 +683,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             summary.setStatus(Status.valueOf(rs.getString("status")));
             summary.setNodeId(rs.getString("node_id"));
             summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
+            summary.setLatestUpdateTime(rs.getDateTime("latest_update_time"));
             return summary;
         }
     }

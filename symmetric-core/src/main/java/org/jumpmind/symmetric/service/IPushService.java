@@ -20,9 +20,6 @@
  */
 package org.jumpmind.symmetric.service;
 
-import java.util.Date;
-import java.util.Map;
-
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
@@ -40,8 +37,10 @@ public interface IPushService extends IOfflineDetectorService {
      * 
      * @return RemoteNodeStatuses the status of the push attempt(s)
      */
-    public RemoteNodeStatuses pushData(boolean force);
+    public RemoteNodeStatuses push(boolean force);
     
-    public Map<String, Date> getStartTimesOfNodesBeingPushedTo();
+    public void start();
+    
+    public void stop();
 
 }

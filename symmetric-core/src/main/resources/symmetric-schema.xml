@@ -336,6 +336,16 @@
         <column name="created_at_node_id" type="VARCHAR" size="50"  description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />
         <column name="deployment_type" type="VARCHAR" size="50"  description="An indicator as to the type of SymmetricDS software that is running.  Possible values are, but not limited to: engine, standalone, war, professional, mobile" />
     </table>
+    
+    <table name="node_channel_lock" description="This table is used to coordinate communication with other nodes.">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />
+        <column name="channel_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The channel_id of the channel that data changes will flow through." />            
+        <column name="lock_action" type="VARCHAR" size="50" required="true" primaryKey="true" description="The process that needs a lock."/>
+        <column name="lock_time" type="TIMESTAMP" description="The timestamp when this node was locked" />
+        <column name="locking_server_id" type="VARCHAR" size="255" description="The name of the server that currently has a pull lock for the node.  This is typically a host name, but it can be overridden using the -Druntime.symmetric.cluster.server.id=name System property."/>
+        <column name="last_lock_time" type="TIMESTAMP" description="The timestamp when this node was last locked" />
+        <column name="last_locking_server_id" type="VARCHAR" size="255"  description="The server id of the process that last did work on this batch." />
+    </table>
 
     <table name="node_communication" description="This table is used to coordinate communication with other nodes.">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />

@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.io.IoConstants;
@@ -39,6 +40,7 @@ import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfo.Status;
@@ -65,19 +67,17 @@ public class InternalTransportManager extends AbstractTransportManager implement
         this.symmetricEngine = engine;
     }
 
-    public IIncomingTransport getFilePullTransport(Node remote, final Node local,
-            String securityToken, Map<String, String> requestProperties, String registrationUrl)
-            throws IOException {
+    public IIncomingTransport getFilePullTransport(Node remote, final Node local, String securityToken,
+            Map<String, String> requestProperties, String registrationUrl) throws IOException {
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
         runAtClient(remote.getSyncUrl(), null, respOs, new IClientRunnable() {
-            public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
-                    throws Exception {
+            public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception {
                 IOutgoingTransport transport = new InternalOutgoingTransport(respOs, null);
                 ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
-                        new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), local
-                                .getNodeId(), ProcessType.FILE_SYNC_PULL_HANDLER));
+                        new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), local.getNodeId(),
+                                ProcessType.FILE_SYNC_PULL_HANDLER));
                 try {
                     engine.getFileSyncService().sendFiles(processInfo, local, transport);
                     processInfo.setStatus(Status.OK);
@@ -91,22 +91,18 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalIncomingTransport(respIs);
     }
 
-    public IIncomingTransport getPullTransport(Node remote, final Node local, String securityToken,
-            Map<String, String> requestProperties, String registrationUrl) throws IOException {
+    public IIncomingTransport getPullTransport(Node remote, final Node local, String securityToken, Map<String, String> requestProperties,
+            String registrationUrl) throws IOException {
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
-        final ChannelMap suspendIgnoreChannels = symmetricEngine.getConfigurationService()
-                .getSuspendIgnoreChannelLists(remote.getNodeId());
+        final ChannelMap suspendIgnoreChannels = symmetricEngine.getConfigurationService().getSuspendIgnoreChannelLists(remote.getNodeId());
 
         runAtClient(remote.getSyncUrl(), null, respOs, new IClientRunnable() {
-            public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
-                    throws Exception {
-                IOutgoingTransport transport = new InternalOutgoingTransport(respOs,
-                        suspendIgnoreChannels, IoConstants.ENCODING);
+            public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception {
+                IOutgoingTransport transport = new InternalOutgoingTransport(respOs, suspendIgnoreChannels, IoConstants.ENCODING);
                 ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
-                        new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), local
-                                .getNodeId(), ProcessType.PULL_HANDLER));
+                        new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), local.getNodeId(), ProcessType.PULL_HANDLER));
                 try {
                     engine.getDataExtractorService().extract(processInfo, local, transport);
                     processInfo.setStatus(Status.OK);
@@ -120,8 +116,8 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalIncomingTransport(respIs);
     }
 
-    public IOutgoingWithResponseTransport getPushTransport(final Node targetNode, final Node sourceNode,
-            String securityToken, String registrationUrl) throws IOException {
+    public IOutgoingWithResponseTransport getPushTransport(final Node targetNode, final Node sourceNode, String securityToken,
+            String channelId, String registrationUrl) throws IOException {
         final PipedOutputStream pushOs = new PipedOutputStream();
         final PipedInputStream pushIs = new PipedInputStream(pushOs);
 
@@ -129,17 +125,16 @@ public class InternalTransportManager extends AbstractTransportManager implement
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
         runAtClient(targetNode.getSyncUrl(), pushIs, respOs, new IClientRunnable() {
-            public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
-                    throws Exception {
+            public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the push servlet does ...
                 engine.getDataLoaderService().loadDataFromPush(sourceNode, pushIs, respOs);
             }
         });
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);
     }
-    
-    public IOutgoingWithResponseTransport getFilePushTransport(final Node targetNode, final Node sourceNode,
-            String securityToken, String registrationUrl) throws IOException {
+
+    public IOutgoingWithResponseTransport getFilePushTransport(final Node targetNode, final Node sourceNode, String securityToken,
+            String registrationUrl) throws IOException {
         final PipedOutputStream pushOs = new PipedOutputStream();
         final PipedInputStream pushIs = new PipedInputStream(pushOs);
 
@@ -147,24 +142,21 @@ public class InternalTransportManager extends AbstractTransportManager implement
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
         runAtClient(targetNode.getSyncUrl(), pushIs, respOs, new IClientRunnable() {
-            public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
-                    throws Exception {
+            public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the push servlet does ...
                 engine.getFileSyncService().loadFilesFromPush(sourceNode.getNodeId(), is, os);
             }
         });
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);
-    }    
+    }
 
-    public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl)
-            throws IOException {
+    public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl) throws IOException {
 
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
         runAtClient(registrationUrl, null, respOs, new IClientRunnable() {
-            public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
-                    throws Exception {
+            public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the registration servlet does
                 // ...
                 engine.getRegistrationService().registerNode(client, os, false);
@@ -172,19 +164,18 @@ public class InternalTransportManager extends AbstractTransportManager implement
         });
         return new InternalIncomingTransport(respIs);
     }
-    
+
     @Override
     public int sendCopyRequest(Node local) throws IOException {
         return -1;
     }
 
-    public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,
-            String securityToken, String registrationUrl) throws IOException {
+    public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl)
+            throws IOException {
         try {
             if (list != null && list.size() > 0) {
                 ISymmetricEngine remoteEngine = getTargetEngine(remote.getSyncUrl());
-                String ackData = getAcknowledgementData(remote.requires13Compatiblity(),
-                        local.getNodeId(), list);
+                String ackData = getAcknowledgementData(remote.requires13Compatiblity(), local.getNodeId(), list);
                 List<BatchAck> batches = readAcknowledgement(ackData);
                 for (BatchAck batchInfo : batches) {
                     remoteEngine.getAcknowledgeService().ack(batchInfo);
@@ -197,15 +188,14 @@ public class InternalTransportManager extends AbstractTransportManager implement
         }
     }
 
-    public void writeAcknowledgement(OutputStream out, Node remote, List<IncomingBatch> list,
-            Node local, String securityToken) throws IOException {
+    public void writeAcknowledgement(OutputStream out, Node remote, List<IncomingBatch> list, Node local, String securityToken)
+            throws IOException {
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, IoConstants.ENCODING), true);
         pw.println(getAcknowledgementData(remote.requires13Compatiblity(), local.getNodeId(), list));
         pw.close();
     }
 
-    private void runAtClient(final String url, final InputStream is, final OutputStream os,
-            final IClientRunnable runnable) {
+    private void runAtClient(final String url, final InputStream is, final OutputStream os, final IClientRunnable runnable) {
         new Thread() {
             public void run() {
                 try {
@@ -224,11 +214,20 @@ public class InternalTransportManager extends AbstractTransportManager implement
     private ISymmetricEngine getTargetEngine(String url) {
         ISymmetricEngine engine = AbstractSymmetricEngine.findEngineByUrl(url);
         if (engine == null) {
-            throw new NullPointerException(
-                    "Could not find the engine reference for the following url: " + url);
+            throw new NullPointerException("Could not find the engine reference for the following url: " + url);
         } else {
             return engine;
         }
+    }
+
+    @Override
+    public IIncomingTransport getAckStatusTransport(OutgoingBatch batch, Node remote, Node local, String securityToken, String registrationUrl) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void makeReservationTransport(String poolId, String channelId, Node remote, Node local, String securityToken,
+            String registrationUrl) {
     }
 
     interface IClientRunnable {

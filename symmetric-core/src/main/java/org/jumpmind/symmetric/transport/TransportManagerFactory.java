@@ -41,7 +41,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.http.SelfSignedX509TrustManager;
-import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
 
 public class TransportManagerFactory {
 
@@ -98,9 +97,6 @@ public class TransportManagerFactory {
                     ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, false);
             initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts);
             return new HttpTransportManager(symmetricEngine);
-
-        } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
-            return new InternalTransportManager(symmetricEngine);
         } else {
             throw new IllegalStateException("An invalid transport type of " + transport
                     + " was specified.");

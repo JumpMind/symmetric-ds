@@ -28,6 +28,16 @@ public class ClusterServiceSqlMap extends AbstractSqlMap {
 
     public ClusterServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
+        
+        putSql("acquireNodeChannelClusterLockSql",
+                "update $(node_channel_lock) set locking_server_id=?, lock_time=? " +
+                "where lock_action=? and node_id=? and channel_id=? and (lock_time is null or lock_time < ? or locking_server_id=?)");
+        
+        putSql("releaseNodeChannelClusterLockSql",
+                "update $(node_channel_lock) set locking_server_id=null, lock_time=null, last_lock_time=?, last_locking_server_id=? " +
+                "where lock_action=? and locking_server_id=? and node_id=? and channel_id=?");        
+        
+        putSql("insertNodeChannelLockSql", "insert into $(node_channel_lock) (lock_action, node_id, channel_id) values(?,?,?)");
 
         putSql("acquireClusterLockSql",
             "update $(lock) set locking_server_id=?, lock_time=? " +
@@ -65,6 +75,9 @@ public class ClusterServiceSqlMap extends AbstractSqlMap {
         putSql("initLockSql", 
             "update $(lock) set locking_server_id=null, lock_time=null, shared_count=0, shared_enable=0 " +
             "where locking_server_id=?");
+        
+        putSql("initNodeChannelLockSql", 
+                "update $(node_channel_lock) set locking_server_id=null, lock_time=null where locking_server_id=?");        
 
         putSql("insertLockSql", "insert into $(lock) (lock_action, lock_type) values(?,?)");
 

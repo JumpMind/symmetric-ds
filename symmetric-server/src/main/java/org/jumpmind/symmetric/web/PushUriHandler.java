@@ -20,66 +20,140 @@
  */
 package org.jumpmind.symmetric.web;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.data.CsvConstants;
+import org.jumpmind.symmetric.io.data.CsvUtils;
+import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.service.impl.DataLoaderService;
+import org.jumpmind.symmetric.service.impl.DataLoaderService.DataLoaderWorker;
 
 /**
  * Handles data pushes from nodes.
  */
 public class PushUriHandler extends AbstractUriHandler {
 
-    private IDataLoaderService dataLoaderService;
+    ISymmetricEngine engine;
 
-    private IStatisticManager statisticManager;
-    
-    private INodeService nodeService;
-    
-    public PushUriHandler(IParameterService parameterService, IDataLoaderService dataLoaderService,
-            IStatisticManager statisticManager, INodeService nodeService,
-            IInterceptor... interceptors) {
-        super("/push/*", parameterService, interceptors);
-        this.dataLoaderService = dataLoaderService;
-        this.statisticManager = statisticManager;
-        this.nodeService = nodeService;
+    public PushUriHandler(ISymmetricEngine engine, IInterceptor... interceptors) {
+        super("/push/*", engine.getParameterService(), interceptors);
+        this.engine = engine;
     }
 
-    public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
-            ServletException {
-
+    public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
-        log.debug("Push requested for {}", nodeId);
-        InputStream inputStream = createInputStream(req);
-        OutputStream outputStream = res.getOutputStream();
+        Node sourceNode = engine.getNodeService().findNode(nodeId);
+        log.info("About to service push request for {}", nodeId);
 
-        push(nodeId, inputStream, outputStream);
+        IStagingManager stagingManager = engine.getStagingManager();
+        IDataLoaderService dataLoaderService = engine.getDataLoaderService();
+        INodeService nodeService = engine.getNodeService();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(createInputStream(req)));
+
+        // TODO start network process
+        long streamToFileThreshold = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+        String line = reader.readLine();
+        StringBuilder batchPrefix = new StringBuilder();
+        Long batchId = null;
+        BufferedWriter writer = null;
+        DataLoaderWorker worker = null;
+        while (line != null) {
+            if (line.startsWith(CsvConstants.BATCH)) {
+                batchId = getBatchId(line);
+                IStagedResource resource = stagingManager.create(streamToFileThreshold, Constants.STAGING_CATEGORY_INCOMING, nodeId, batchId);
+                writer = resource.getWriter();
+                writer.write(batchPrefix.toString());
+            } else if (line.startsWith(CsvConstants.COMMIT)) { 
+                writer.write(line);
+                writer.close();
+                writer = null;                
+                if (worker == null) {
+                  worker = dataLoaderService.createDataLoaderWorker(sourceNode);
+                }
+                worker.queueUpLoad(new IncomingBatch(batchId, nodeId));
+                batchId = null;
+            }
+            
+            if (batchId == null) {
+                batchPrefix.append(line).append("\n");            
+            } else if (writer != null) {
+                writer.write(line);
+                writer.write("\n");
+            }
+            
+            line = reader.readLine();
+        }
+        
+        Node identityNode = nodeService.getCachedIdentity();
+        
+        PrintWriter resWriter = res.getWriter();
+        if (worker != null) {
+            worker.queueUpLoad(new DataLoaderService.EOM());
+            while (!worker.isComplete()) {
+                String status = "done";
+                IncomingBatch batch = worker.waitForNextBatchToComplete();
+                if (batch == null) {
+                    status = "in progress";
+                    batch = worker.getCurrentlyLoading();
+                }
+                if (batch != null) {
+                    ArrayList<IncomingBatch> list = new ArrayList<IncomingBatch>(1);
+                    list.add(batch);
+                    log.info("sending {} ack ... for {}", status,  batch);
+                    // TODO 13 support
+                    resWriter.write(engine.getTransportManager().getAcknowledgementData(false, identityNode.getNodeId(), list));
+                    resWriter.write("\n");
+                    resWriter.flush();
+                }
+            }
+        }
+
+        reader.close();
 
         res.flushBuffer();
-        log.debug("Push completed for {}", nodeId);
+        log.debug("Done servicing push request for {}", nodeId);
 
     }
 
-    protected void push(String sourceNodeId, InputStream inputStream, OutputStream outputStream) throws IOException {
-        long ts = System.currentTimeMillis();
-        try {
-            Node sourceNode = nodeService.findNode(sourceNodeId);
-            dataLoaderService.loadDataFromPush(sourceNode, inputStream, outputStream);
-        } finally {
-            statisticManager.incrementNodesPushed(1);
-            statisticManager.incrementTotalNodesPushedTime(System.currentTimeMillis() - ts);
+    protected Long getBatchId(String line) {
+        String[] tokens = CsvUtils.tokenizeCsvData(line);
+        if (tokens.length > 1) {
+            return new Long(tokens[1]);
+        } else {
+            return null;
         }
     }
+
+//    protected void push(String sourceNodeId, InputStream inputStream, OutputStream outputStream) throws IOException {
+//        long ts = System.currentTimeMillis();
+//        try {
+//            Node sourceNode = nodeService.findNode(sourceNodeId);
+//            dataLoaderService.loadDataFromPush(sourceNode, inputStream, outputStream);
+//        } finally {
+//            statisticManager.incrementNodesPushed(1);
+//            statisticManager.incrementTotalNodesPushedTime(System.currentTimeMillis() - ts);
+//        }
+//    }
 
     protected InputStream createInputStream(HttpServletRequest req) throws IOException {
         InputStream is = null;
@@ -91,5 +165,5 @@ public class PushUriHandler extends AbstractUriHandler {
         }
         return is;
     }
-    
+
 }

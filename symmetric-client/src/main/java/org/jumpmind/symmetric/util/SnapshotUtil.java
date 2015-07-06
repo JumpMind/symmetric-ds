@@ -438,8 +438,7 @@ public class SnapshotUtil {
             IJobManager jobManager = engine.getJobManager();
             IClusterService clusterService = engine.getClusterService();
             INodeService nodeService = engine.getNodeService();
-            writer.write("Clustering is " + (clusterService.isClusteringEnabled() ? "" : "not ") + 
-                    "enabled and there are " + nodeService.findNodeHosts(nodeService.findIdentityNodeId()).size() +
+            writer.write("There are " + nodeService.findNodeHosts(nodeService.findIdentityNodeId()).size() +
                     " instances in the cluster\n\n");
             writer.write(StringUtils.rightPad("Job Name", 30) + StringUtils.rightPad("Schedule", 20) + 
                     StringUtils.rightPad("Status", 10) + StringUtils.rightPad("Server Id", 30) +

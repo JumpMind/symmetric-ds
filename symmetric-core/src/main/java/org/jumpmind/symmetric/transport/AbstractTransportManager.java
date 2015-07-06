@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.web.WebConstants;
@@ -65,68 +66,66 @@ abstract public class AbstractTransportManager {
         if (StringUtils.isBlank(syncUrl) || syncUrl.startsWith(Constants.PROTOCOL_NONE)) {
             log.debug("Using the registration URL to contact the remote node because the syncURL for the node is blank");
             return registrationUrl;
-        } else if (syncUrl.startsWith(Constants.PROTOCOL_EXT)) {
-            try {
-                URI uri = new URI(syncUrl);
-                ISyncUrlExtension handler = null;
-                if (extensionService != null) {
-                    handler = extensionService.getExtensionPointMap(ISyncUrlExtension.class).get(uri.getHost());
-                }
-                if (handler == null) {
-                    log.error("Could not find a registered extension sync url handler with the name of {} using the url {}", uri.getHost(), syncUrl);
-                    return syncUrl;
-                } else {
-                    return handler.resolveUrl(uri);
-                }
-            } catch (URISyntaxException e) {
-                log.error(e.getMessage(),e);
-                return syncUrl;
-            }
-        } else {
-            return syncUrl;
         }
+        
+        try {
+            URI uri = new URI(syncUrl);
+            
+            for (ISyncUrlExtension handler : extensionService.getExtensionPointList(ISyncUrlExtension.class)) {
+                syncUrl = handler.resolveUrl(uri);
+                uri = new URI(syncUrl);
+            }
+        } catch (URISyntaxException e) {
+            log.error(e.getMessage(),e);
+        }
+        return syncUrl;
     }
 
-    protected String getAcknowledgementData(boolean requires13Format, String nodeId,
-            List<IncomingBatch> list) throws IOException {
+
+    public String getAcknowledgementData(boolean requires13Format, String nodeId, List<IncomingBatch> list) {
+        StringBuilder builder = new StringBuilder();
+        for (IncomingBatch batch : list) {
+            builder.append(getAcknowledgementData(requires13Format, nodeId, batch));
+        }
+        return builder.toString();
+    }
+    
+    public String getAcknowledgementData(boolean requires13Format, String nodeId, IncomingBatch batch) {
         StringBuilder builder = new StringBuilder();
         if (!requires13Format) {
-            for (IncomingBatch batch : list) {
-                long batchId = batch.getBatchId();
-                Object value = null;
-                if (batch.getStatus() == Status.OK) {
-                    value = WebConstants.ACK_BATCH_OK;
-                } else {
-                    value = batch.getFailedRowNumber();
-                }
-                append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);
-                append(builder, WebConstants.ACK_NODE_ID + batchId, nodeId);
-                append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, batch.getNetworkMillis());
-                append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
-                append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId,
-                        batch.getDatabaseMillis());
-                append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
+            long batchId = batch.getBatchId();
+            Object value = null;
+            if (batch.getStatus() == Status.OK) {
+                value = WebConstants.ACK_BATCH_OK;
+            } else if (batch.getStatus() != Status.ER) {
+                value = WebConstants.ACK_BATCH_LD;
+            } else {
+                value = batch.getFailedRowNumber();
+            }
+            append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);
+            append(builder, WebConstants.ACK_NODE_ID + batchId, nodeId);
+            append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, batch.getNetworkMillis());
+            append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
+            append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId, batch.getDatabaseMillis());
+            append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
 
-                if (batch.getIgnoreCount() > 0) {
-                    append(builder, WebConstants.ACK_IGNORE_COUNT + batchId, batch.getIgnoreCount());
-                }
+            if (batch.getIgnoreCount() > 0) {
+                append(builder, WebConstants.ACK_IGNORE_COUNT + batchId, batch.getIgnoreCount());
+            }
 
-                if (batch.getStatus() == Status.ER) {
-                    append(builder, WebConstants.ACK_SQL_STATE + batchId, batch.getSqlState());
-                    append(builder, WebConstants.ACK_SQL_CODE + batchId, batch.getSqlCode());
-                    append(builder, WebConstants.ACK_SQL_MESSAGE + batchId, batch.getSqlMessage());
-                }
+            if (batch.getStatus() == Status.ER) {
+                append(builder, WebConstants.ACK_SQL_STATE + batchId, batch.getSqlState());
+                append(builder, WebConstants.ACK_SQL_CODE + batchId, batch.getSqlCode());
+                append(builder, WebConstants.ACK_SQL_MESSAGE + batchId, batch.getSqlMessage());
             }
         } else {
-            for (IncomingBatch batch : list) {
-                Object value = null;
-                if (batch.getStatus() == Status.OK || batch.getStatus() == Status.IG) {
-                    value = WebConstants.ACK_BATCH_OK;
-                } else {
-                    value = batch.getFailedRowNumber();
-                }
-                append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);
+            Object value = null;
+            if (batch.getStatus() == Status.OK || batch.getStatus() == Status.IG) {
+                value = WebConstants.ACK_BATCH_OK;
+            } else {
+                value = batch.getFailedRowNumber();
             }
+            append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);
         }
         return builder.toString();
     }
@@ -181,14 +180,18 @@ abstract public class AbstractTransportManager {
         batchInfo.setByteCount(getParamAsNum(parameters, WebConstants.ACK_BYTE_COUNT + batchId));
         batchInfo.setIgnored(getParamAsBoolean(parameters, WebConstants.ACK_IGNORE_COUNT + batchId));
         String status = getParam(parameters, WebConstants.ACK_BATCH_NAME + batchId, "").trim();
-        batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK));
-
-        if (!batchInfo.isOk()) {
+        if (status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK)) {
+            batchInfo.setStatus(OutgoingBatch.Status.OK);
+        } else if (status.equalsIgnoreCase(WebConstants.ACK_BATCH_LD)) {
+            batchInfo.setStatus(OutgoingBatch.Status.LD);
+        } else {
+            batchInfo.setStatus(OutgoingBatch.Status.ER);
             batchInfo.setErrorLine(NumberUtils.toLong(status));
             batchInfo.setSqlState(getParam(parameters, WebConstants.ACK_SQL_STATE + batchId));
             batchInfo.setSqlCode((int) getParamAsNum(parameters, WebConstants.ACK_SQL_CODE + batchId));
             batchInfo.setSqlMessage(getParam(parameters, WebConstants.ACK_SQL_MESSAGE + batchId));
         }
+
         return batchInfo;
     }
 

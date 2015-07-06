@@ -231,4 +231,44 @@ public class NodeChannel implements Serializable {
         return this.channel.getLastUpdateTime();
     }
     
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((getNodeId() == null) ? 0 : getNodeId().hashCode());
+        result = prime * result + ((getChannelId() == null) ? 0 : getChannelId().hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        NodeChannel other = (NodeChannel) obj;
+        if (getNodeId() == null) {
+            if (other.getNodeId() != null) {
+                return false;
+            }
+        } else if (!getNodeId().equals(other.getNodeId())) {
+            return false;
+        }
+        if (getChannelId() == null) {
+            if (other.getChannelId() != null) {
+                return false;
+            }
+        } else if (!getChannelId().equals(other.getChannelId())) {
+            return false;
+        }
+        return true;
+    }
+    
+    @Override
+    public String toString() {
+        return getNodeId() + " : " + getChannelId();
+    }
+    
 }

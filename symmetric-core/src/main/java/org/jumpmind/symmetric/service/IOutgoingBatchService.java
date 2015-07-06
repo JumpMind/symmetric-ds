@@ -25,6 +25,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
+import org.jumpmind.symmetric.model.OutgoingBatchByNodeChannelCount;
 import org.jumpmind.symmetric.model.OutgoingLoadSummary;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
@@ -56,6 +59,8 @@ public interface IOutgoingBatchService {
     public OutgoingBatches getOutgoingBatchErrors(int maxRows);
     
     public List<OutgoingBatch> getNextOutgoingBatchForEachNode();
+    
+    public List<OutgoingBatch> getOutgoingBatchesForNodeChannel(String nodeId, NodeChannel nodeChannel);
 
     public boolean isInitialLoadComplete(String nodeId);
     
@@ -80,6 +85,8 @@ public interface IOutgoingBatchService {
     public int countOutgoingBatchesInError(String channelId);
     
     public int countOutgoingBatchesUnsent(String channelId);    
+    
+    public List<OutgoingBatchByNodeChannelCount> getOutgoingBatchByNodeChannelCount(int maxRows, NodeGroupLinkAction linkType, boolean readyToSendOnly);
     
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(OutgoingBatch.Status ... statuses);
     

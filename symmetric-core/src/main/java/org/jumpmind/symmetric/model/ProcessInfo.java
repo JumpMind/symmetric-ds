@@ -97,6 +97,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     public ProcessInfo(ProcessInfoKey key) {
         this.key = key;
         thread = Thread.currentThread();
+        this.currentChannelId = key.getChannelId();
     }
 
     public String getSourceNodeId() {

@@ -43,7 +43,9 @@ import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -65,6 +67,8 @@ import org.jumpmind.util.AppUtils;
 public class ClusterService extends AbstractService implements IClusterService {
 
     private String serverId = null;
+    
+    private Map<String, Map<String, Set<String>>> initializedLockActionsByChannelForNode = new HashMap<String, Map<String,Set<String>>>();
 
     public ClusterService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
@@ -73,10 +77,9 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     public void init() {
-        sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
+        clearAllLocks();
 
         Map<String, Lock> allLocks = findLocks();
-        if (isClusteringEnabled()) {
             for (String action : new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING, PURGE_STATISTICS, SYNCTRIGGERS,
                     PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL, FILE_SYNC_PUSH, FILE_SYNC_TRACKER,
                     INITIAL_LOAD_EXTRACT }) {
@@ -84,7 +87,6 @@ public class ClusterService extends AbstractService implements IClusterService {
                     initLockTable(action, TYPE_CLUSTER);
                 }
             }
-        }
 
         for (String action : new String[] { FILE_SYNC_SHARED }) {
             if (allLocks.get(action) == null) {
@@ -109,9 +111,51 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     public void clearAllLocks() {
         sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
+        sqlTemplate.update(getSql("initNodeChannelLockSql"), new Object[] { getServerId() });
+    }
+    
+    private void initNodeChannelActionLockInitialized(String action, String nodeId, String channelId) {
+        Map<String, Set<String>> nodesByChannel = initializedLockActionsByChannelForNode.get(action);
+        if (nodesByChannel == null) {
+            nodesByChannel = new HashMap<String, Set<String>>();
+            initializedLockActionsByChannelForNode.put(action, nodesByChannel);
+        }
+
+        Set<String> nodeIds = nodesByChannel.get(channelId);
+        if (nodeIds == null) {
+            nodeIds = new HashSet<String>();
+            nodesByChannel.put(channelId, nodeIds);
+        }
+
+        if (!nodeIds.contains(nodeId)) {
+            nodeIds.add(nodeId);
+            try {
+                sqlTemplate.update(getSql("insertNodeChannelLockSql"), action, nodeId, channelId);
+            } catch (UniqueKeyException ex) {
+                log.debug(
+                        "Failed to insert to the node channel lock table for action: {}, node: {}, and channel: {}.  Must be initialized already.",
+                        action, nodeId, channelId);
+            }
+        }
+    }
+    
+    public boolean lockNodeChannel(String action, String nodeId, String channelId) {
+        initNodeChannelActionLockInitialized(action, nodeId, channelId);
+        final Date timeToBreakLock = DateUtils.addMilliseconds(new Date(), 
+                (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
+        return 1 == sqlTemplate.update(getSql("acquireNodeChannelClusterLockSql"), serverId,
+                new Date(), action, nodeId, channelId, timeToBreakLock, serverId);
+    }
+    
+    public void unlockNodeChannel(String action, String nodeId, String channelId) {
+        String lastLockingServerId = serverId.equals(Lock.STOPPED) ? null : serverId;    
+        if (sqlTemplate.update(getSql("releaseNodeChannelClusterLockSql"), new Object[] { new Date(), lastLockingServerId, action, serverId,
+                nodeId, channelId }) == 0) {
+            log.warn("Failed to release lock for action:{} server:{} nodeId:{} channelId:{}", new Object[] {action, getServerId(), nodeId, channelId});
+        }
     }
 
-    public boolean lock(final String action, final String lockType) {
+    public boolean lock(String action, final String lockType) {
         if (lockType.equals(TYPE_CLUSTER)) {
             return lock(action);
         } else if (lockType.equals(TYPE_SHARED)) {
@@ -132,13 +176,9 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     public boolean lock(final String action) {
-        if (isClusteringEnabled()) {
-            final Date timeout = DateUtils.addMilliseconds(new Date(), 
-                    (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
-            return lockCluster(action, timeout, new Date(), getServerId());
-        } else {
-            return true;
-        }
+        final Date timeout = DateUtils.addMilliseconds(new Date(),
+                (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
+        return lockCluster(action, timeout, new Date(), getServerId());
     }
 
     protected boolean lockCluster(String action, Date timeToBreakLock, Date timeLockAcquired,
@@ -256,10 +296,8 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     public void unlock(final String action) {
-        if (isClusteringEnabled()) {
-            if (!unlockCluster(action, getServerId())) {
-                log.warn("Failed to release lock for action:{} server:{}", action, getServerId());
-            }
+        if (!unlockCluster(action, getServerId())) {
+            log.warn("Failed to release lock for action:{} server:{}", action, getServerId());
         }
     }
 
@@ -279,10 +317,6 @@ public class ClusterService extends AbstractService implements IClusterService {
                 new Date(), getServerId(), action, TYPE_EXCLUSIVE }) == 1;
     }
 
-    public boolean isClusteringEnabled() {
-        return parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
-    }
-
     public boolean isInfiniteLocked(String action) {
         Map<String, Lock> locks = findLocks();
         Lock lock = locks.get(action);
@@ -295,16 +329,14 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     public void aquireInfiniteLock(String action) {
-        if (isClusteringEnabled()) {
-            int tries = 600;
-            Date futureTime = DateUtils.addYears(new Date(), 100);
-            while (tries > 0) {
-                if (!lockCluster(action, new Date(), futureTime, Lock.STOPPED)) {
-                    AppUtils.sleep(50);
-                    tries--;
-                } else {
-                    tries = 0;
-                }
+        int tries = 600;
+        Date futureTime = DateUtils.addYears(new Date(), 100);
+        while (tries > 0) {
+            if (!lockCluster(action, new Date(), futureTime, Lock.STOPPED)) {
+                AppUtils.sleep(50);
+                tries--;
+            } else {
+                tries = 0;
             }
         }
     }

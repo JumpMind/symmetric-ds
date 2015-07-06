@@ -1,0 +1,330 @@
+----------------------------------------------------------------
+Mon Nov 03 07:53:08 EST 2014:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0149-75b7-5152-0000040f2ef0 
+on database directory /Users/cshenso/Documents/workspace/symmetric-io/target/rootdbs/root with class loader sun.misc.Launcher$AppClassLoader@39172e08 
+Loaded from file:/Users/cshenso/.m2/repository/org/apache/derby/derby/10.10.2.0/derby-10.10.2.0.jar
+java.vendor=Apple Inc.
+java.runtime.version=1.6.0_65-b14-466.1-11M4716
+user.dir=/Users/cshenso/Documents/workspace/symmetric-io
+os.name=Mac OS X
+os.arch=x86_64
+os.version=10.10
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+Mon Nov 03 07:53:11 EST 2014 Thread[main,5,main] (XID = 840), (SESSIONID = 11), (DATABASE = target/rootdbs/root), (DRDAID = null), Cleanup action starting
+Mon Nov 03 07:53:11 EST 2014 Thread[main,5,main] (XID = 840), (SESSIONID = 11), (DATABASE = target/rootdbs/root), (DRDAID = null), Failed Statement is: null
+ERROR XSLAQ: Cannot create log file at directory /Users/cshenso/Documents/workspace/symmetric-io/target/rootdbs/root/log.
+	at org.apache.derby.iapi.error.StandardException.newException(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.getLogDirectory(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.getLogFileName(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.switchLogFile(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.flush(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.flush(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.FileLogger.flush(Unknown Source)
+	at org.apache.derby.impl.store.raw.xact.Xact.prepareCommit(Unknown Source)
+	at org.apache.derby.impl.store.raw.xact.Xact.commit(Unknown Source)
+	at org.apache.derby.impl.store.raw.xact.Xact.commit(Unknown Source)
+	at org.apache.derby.impl.store.access.RAMTransaction.commit(Unknown Source)
+	at org.apache.derby.impl.sql.conn.GenericLanguageConnectionContext.doCommit(Unknown Source)
+	at org.apache.derby.impl.sql.conn.GenericLanguageConnectionContext.userCommit(Unknown Source)
+	at org.apache.derby.impl.jdbc.TransactionResourceImpl.commit(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedConnection.commitIfNeeded(Unknown Source)
+	at org.apache.derby.impl.jdbc.ConnectionChild.commitIfNeeded(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.executeStatement(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.execute(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.execute(Unknown Source)
+	at org.apache.commons.dbcp.DelegatingStatement.execute(DelegatingStatement.java:264)
+	at org.apache.commons.dbcp.DelegatingStatement.execute(DelegatingStatement.java:264)
+	at org.jumpmind.db.sql.JdbcSqlTemplate$6.execute(JdbcSqlTemplate.java:356)
+	at org.jumpmind.db.sql.JdbcSqlTemplate$6.execute(JdbcSqlTemplate.java:1)
+	at org.jumpmind.db.sql.JdbcSqlTemplate.execute(JdbcSqlTemplate.java:430)
+	at org.jumpmind.db.sql.JdbcSqlTemplate.update(JdbcSqlTemplate.java:343)
+	at org.jumpmind.db.sql.SqlScript.execute(SqlScript.java:107)
+	at org.jumpmind.db.platform.AbstractDatabasePlatform.dropDatabase(AbstractDatabasePlatform.java:149)
+	at org.jumpmind.db.platform.AbstractDatabasePlatform.createDatabase(AbstractDatabasePlatform.java:161)
+	at org.jumpmind.symmetric.io.data.writer.TransformWriterTest.setup(TransformWriterTest.java:44)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:41)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:27)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:236)
+	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:459)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:675)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:382)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:192)
+
+------------  Begin Shutdown Error Stack -------------
+
+ERROR XSLAQ: Cannot create log file at directory /Users/cshenso/Documents/workspace/symmetric-io/target/rootdbs/root/log.
+	at org.apache.derby.iapi.error.StandardException.newException(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.getLogDirectory(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.getLogFileName(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.switchLogFile(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.checkpointWithTran(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.checkpoint(Unknown Source)
+	at org.apache.derby.impl.store.raw.RawStore.stop(Unknown Source)
+	at org.apache.derby.impl.services.monitor.TopService.stop(Unknown Source)
+	at org.apache.derby.impl.services.monitor.TopService.shutdown(Unknown Source)
+	at org.apache.derby.impl.services.monitor.BaseMonitor.shutdown(Unknown Source)
+	at org.apache.derby.impl.db.DatabaseContextImpl.cleanupOnError(Unknown Source)
+	at org.apache.derby.iapi.services.context.ContextManager.cleanupOnError(Unknown Source)
+	at org.apache.derby.impl.jdbc.TransactionResourceImpl.cleanupOnError(Unknown Source)
+	at org.apache.derby.impl.jdbc.TransactionResourceImpl.handleException(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedConnection.handleException(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedConnection.commitIfNeeded(Unknown Source)
+	at org.apache.derby.impl.jdbc.ConnectionChild.commitIfNeeded(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.executeStatement(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.execute(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.execute(Unknown Source)
+	at org.apache.commons.dbcp.DelegatingStatement.execute(DelegatingStatement.java:264)
+	at org.apache.commons.dbcp.DelegatingStatement.execute(DelegatingStatement.java:264)
+	at org.jumpmind.db.sql.JdbcSqlTemplate$6.execute(JdbcSqlTemplate.java:356)
+	at org.jumpmind.db.sql.JdbcSqlTemplate$6.execute(JdbcSqlTemplate.java:1)
+	at org.jumpmind.db.sql.JdbcSqlTemplate.execute(JdbcSqlTemplate.java:430)
+	at org.jumpmind.db.sql.JdbcSqlTemplate.update(JdbcSqlTemplate.java:343)
+	at org.jumpmind.db.sql.SqlScript.execute(SqlScript.java:107)
+	at org.jumpmind.db.platform.AbstractDatabasePlatform.dropDatabase(AbstractDatabasePlatform.java:149)
+	at org.jumpmind.db.platform.AbstractDatabasePlatform.createDatabase(AbstractDatabasePlatform.java:161)
+	at org.jumpmind.symmetric.io.data.writer.TransformWriterTest.setup(TransformWriterTest.java:44)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:41)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:27)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:236)
+	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:459)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:675)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:382)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:192)
+
+
+------------  End Shutdown Error Stack -------------
+
+
+------------  Begin Shutdown Error Stack -------------
+
+ERROR XSLAQ: Cannot create log file at directory /Users/cshenso/Documents/workspace/symmetric-io/target/rootdbs/root/log.
+	at org.apache.derby.iapi.error.StandardException.newException(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.getLogDirectory(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.getLogFileName(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.switchLogFile(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.checkpointWithTran(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.checkpoint(Unknown Source)
+	at org.apache.derby.impl.store.raw.RawStore.stop(Unknown Source)
+	at org.apache.derby.impl.services.monitor.TopService.stop(Unknown Source)
+	at org.apache.derby.impl.services.monitor.TopService.shutdown(Unknown Source)
+	at org.apache.derby.impl.services.monitor.BaseMonitor.shutdown(Unknown Source)
+	at org.apache.derby.impl.db.DatabaseContextImpl.cleanupOnError(Unknown Source)
+	at org.apache.derby.iapi.services.context.ContextManager.cleanupOnError(Unknown Source)
+	at org.apache.derby.impl.jdbc.TransactionResourceImpl.cleanupOnError(Unknown Source)
+	at org.apache.derby.impl.jdbc.TransactionResourceImpl.handleException(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedConnection.handleException(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedConnection.commitIfNeeded(Unknown Source)
+	at org.apache.derby.impl.jdbc.ConnectionChild.commitIfNeeded(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.executeStatement(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.execute(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.execute(Unknown Source)
+	at org.apache.commons.dbcp.DelegatingStatement.execute(DelegatingStatement.java:264)
+	at org.apache.commons.dbcp.DelegatingStatement.execute(DelegatingStatement.java:264)
+	at org.jumpmind.db.sql.JdbcSqlTemplate$6.execute(JdbcSqlTemplate.java:356)
+	at org.jumpmind.db.sql.JdbcSqlTemplate$6.execute(JdbcSqlTemplate.java:1)
+	at org.jumpmind.db.sql.JdbcSqlTemplate.execute(JdbcSqlTemplate.java:430)
+	at org.jumpmind.db.sql.JdbcSqlTemplate.update(JdbcSqlTemplate.java:343)
+	at org.jumpmind.db.sql.SqlScript.execute(SqlScript.java:107)
+	at org.jumpmind.db.platform.AbstractDatabasePlatform.dropDatabase(AbstractDatabasePlatform.java:149)
+	at org.jumpmind.db.platform.AbstractDatabasePlatform.createDatabase(AbstractDatabasePlatform.java:161)
+	at org.jumpmind.symmetric.io.data.writer.TransformWriterTest.setup(TransformWriterTest.java:44)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:41)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:27)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:236)
+	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:459)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:675)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:382)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:192)
+
+
+------------  End Shutdown Error Stack -------------
+
+
+------------  Begin Shutdown Error Stack -------------
+
+ERROR XSLAQ: Cannot create log file at directory /Users/cshenso/Documents/workspace/symmetric-io/target/rootdbs/root/log.
+	at org.apache.derby.iapi.error.StandardException.newException(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.getLogDirectory(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.getLogFileName(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.switchLogFile(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.checkpointWithTran(Unknown Source)
+	at org.apache.derby.impl.store.raw.log.LogToFile.checkpoint(Unknown Source)
+	at org.apache.derby.impl.store.raw.RawStore.stop(Unknown Source)
+	at org.apache.derby.impl.services.monitor.TopService.stop(Unknown Source)
+	at org.apache.derby.impl.services.monitor.TopService.shutdown(Unknown Source)
+	at org.apache.derby.impl.services.monitor.BaseMonitor.shutdown(Unknown Source)
+	at org.apache.derby.impl.db.DatabaseContextImpl.cleanupOnError(Unknown Source)
+	at org.apache.derby.iapi.services.context.ContextManager.cleanupOnError(Unknown Source)
+	at org.apache.derby.impl.jdbc.TransactionResourceImpl.cleanupOnError(Unknown Source)
+	at org.apache.derby.impl.jdbc.TransactionResourceImpl.handleException(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedConnection.handleException(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedConnection.commitIfNeeded(Unknown Source)
+	at org.apache.derby.impl.jdbc.ConnectionChild.commitIfNeeded(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.executeStatement(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.execute(Unknown Source)
+	at org.apache.derby.impl.jdbc.EmbedStatement.execute(Unknown Source)
+	at org.apache.commons.dbcp.DelegatingStatement.execute(DelegatingStatement.java:264)
+	at org.apache.commons.dbcp.DelegatingStatement.execute(DelegatingStatement.java:264)
+	at org.jumpmind.db.sql.JdbcSqlTemplate$6.execute(JdbcSqlTemplate.java:356)
+	at org.jumpmind.db.sql.JdbcSqlTemplate$6.execute(JdbcSqlTemplate.java:1)
+	at org.jumpmind.db.sql.JdbcSqlTemplate.execute(JdbcSqlTemplate.java:430)
+	at org.jumpmind.db.sql.JdbcSqlTemplate.update(JdbcSqlTemplate.java:343)
+	at org.jumpmind.db.sql.SqlScript.execute(SqlScript.java:107)
+	at org.jumpmind.db.platform.AbstractDatabasePlatform.dropDatabase(AbstractDatabasePlatform.java:149)
+	at org.jumpmind.db.platform.AbstractDatabasePlatform.createDatabase(AbstractDatabasePlatform.java:161)
+	at org.jumpmind.symmetric.io.data.writer.TransformWriterTest.setup(TransformWriterTest.java:44)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:41)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:27)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:236)
+	at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:459)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:675)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:382)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:192)
+
+
+------------  End Shutdown Error Stack -------------
+
+----------------------------------------------------------------
+Mon Nov 03 07:53:11 EST 2014:
+Shutting down instance a816c00e-0149-75b7-5152-0000040f2ef0 on database directory /Users/cshenso/Documents/workspace/symmetric-io/target/rootdbs/root with class loader sun.misc.Launcher$AppClassLoader@39172e08 
+---------------
+Stack traces for all live threads:
+Thread name=main id=1 priority=5 state=RUNNABLE isdaemon=false
+	java.lang.Thread.dumpThreads(Native Method)
+	java.lang.Thread.getAllStackTraces(Thread.java:1569)
+	org.apache.derby.iapi.error.ThreadDump.getStackDumpString(Unknown Source)
+	sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	java.lang.reflect.Method.invoke(Method.java:597)
+	org.apache.derby.iapi.error.ExceptionUtil$1.run(Unknown Source)
+	java.security.AccessController.doPrivileged(Native Method)
+	org.apache.derby.iapi.error.ExceptionUtil.dumpThreads(Unknown Source)
+	org.apache.derby.iapi.services.context.ContextManager.cleanupOnError(Unknown Source)
+	org.apache.derby.impl.jdbc.TransactionResourceImpl.cleanupOnError(Unknown Source)
+	org.apache.derby.impl.jdbc.TransactionResourceImpl.handleException(Unknown Source)
+	org.apache.derby.impl.jdbc.EmbedConnection.handleException(Unknown Source)
+	org.apache.derby.impl.jdbc.EmbedConnection.commitIfNeeded(Unknown Source)
+	org.apache.derby.impl.jdbc.ConnectionChild.commitIfNeeded(Unknown Source)
+	org.apache.derby.impl.jdbc.EmbedStatement.executeStatement(Unknown Source)
+	org.apache.derby.impl.jdbc.EmbedStatement.execute(Unknown Source)
+	org.apache.derby.impl.jdbc.EmbedStatement.execute(Unknown Source)
+	org.apache.commons.dbcp.DelegatingStatement.execute(DelegatingStatement.java:264)
+	org.apache.commons.dbcp.DelegatingStatement.execute(DelegatingStatement.java:264)
+	org.jumpmind.db.sql.JdbcSqlTemplate$6.execute(JdbcSqlTemplate.java:356)
+	org.jumpmind.db.sql.JdbcSqlTemplate$6.execute(JdbcSqlTemplate.java:1)
+	org.jumpmind.db.sql.JdbcSqlTemplate.execute(JdbcSqlTemplate.java:430)
+	org.jumpmind.db.sql.JdbcSqlTemplate.update(JdbcSqlTemplate.java:343)
+	org.jumpmind.db.sql.SqlScript.execute(SqlScript.java:107)
+	org.jumpmind.db.platform.AbstractDatabasePlatform.dropDatabase(AbstractDatabasePlatform.java:149)
+	org.jumpmind.db.platform.AbstractDatabasePlatform.createDatabase(AbstractDatabasePlatform.java:161)
+	org.jumpmind.symmetric.io.data.writer.TransformWriterTest.setup(TransformWriterTest.java:44)
+	sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	java.lang.reflect.Method.invoke(Method.java:597)
+	org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)
+	org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:15)
+	org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:41)
+	org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:27)
+	org.junit.runners.ParentRunner.run(ParentRunner.java:236)
+	org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:50)
+	org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+	org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:459)
+	org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:675)
+	org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:382)
+	org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:192)
+
+Thread name=Reference Handler id=2 priority=10 state=WAITING isdaemon=true
+	java.lang.Object.wait(Native Method)
+	java.lang.Object.wait(Object.java:485)
+	java.lang.ref.Reference$ReferenceHandler.run(Reference.java:116)
+
+Thread name=ReaderThread id=10 priority=5 state=RUNNABLE isdaemon=false
+	java.net.SocketInputStream.socketRead0(Native Method)
+	java.net.SocketInputStream.read(SocketInputStream.java:129)
+	sun.nio.cs.StreamDecoder.readBytes(StreamDecoder.java:264)
+	sun.nio.cs.StreamDecoder.implRead(StreamDecoder.java:306)
+	sun.nio.cs.StreamDecoder.read(StreamDecoder.java:158)
+	java.io.InputStreamReader.read(InputStreamReader.java:167)
+	java.io.BufferedReader.fill(BufferedReader.java:136)
+	java.io.BufferedReader.readLine(BufferedReader.java:299)
+	java.io.BufferedReader.readLine(BufferedReader.java:362)
+	org.eclipse.jdt.internal.junit.runner.RemoteTestRunner$ReaderThread.run(RemoteTestRunner.java:135)
+
+Thread name=Timer-1 id=16 priority=5 state=TIMED_WAITING isdaemon=true
+	java.lang.Object.wait(Native Method)
+	java.util.TimerThread.mainLoop(Timer.java:509)
+	java.util.TimerThread.run(Timer.java:462)
+
+Thread name=Timer-0 id=13 priority=5 state=WAITING isdaemon=true
+	java.lang.Object.wait(Native Method)
+	java.lang.Object.wait(Object.java:485)
+	java.util.TimerThread.mainLoop(Timer.java:483)
+	java.util.TimerThread.run(Timer.java:462)
+
+Thread name=Signal Dispatcher id=6 priority=9 state=RUNNABLE isdaemon=true
+
+Thread name=AWT-AppKit id=14 priority=5 state=RUNNABLE isdaemon=true
+
+Thread name=Finalizer id=3 priority=8 state=WAITING isdaemon=true
+	java.lang.Object.wait(Native Method)
+	java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:118)
+	java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:134)
+	java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:171)
+
+Thread name=Abandoned connection cleanup thread id=11 priority=5 state=TIMED_WAITING isdaemon=true
+	java.lang.Object.wait(Native Method)
+	java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:118)
+	com.mysql.jdbc.AbandonedConnectionCleanupThread.run(AbandonedConnectionCleanupThread.java:41)
+
+
+---------------
+
+Cleanup action completed
+----------------------------------------------------------------
+Mon Nov 03 07:53:11 EST 2014:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance c171877d-0149-75b7-5152-0000040f2ef0 
+on database directory /Users/cshenso/Documents/workspace/symmetric-io/target/rootdbs/root with class loader sun.misc.Launcher$AppClassLoader@39172e08 
+Loaded from file:/Users/cshenso/.m2/repository/org/apache/derby/derby/10.10.2.0/derby-10.10.2.0.jar
+java.vendor=Apple Inc.
+java.runtime.version=1.6.0_65-b14-466.1-11M4716
+user.dir=/Users/cshenso/Documents/workspace/symmetric-io
+os.name=Mac OS X
+os.arch=x86_64
+os.version=10.10
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''

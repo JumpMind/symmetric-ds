@@ -78,11 +78,12 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         return stats;
     }
 
-    synchronized public boolean releaseConnection(String nodeId, String poolId) {
+    synchronized public boolean releaseConnection(String nodeId, String channelId, String poolId) {
+        String reservationKey = String.format("%s::%s", nodeId, channelId);
         Map<String, Reservation> reservations = getReservationMap(poolId);
-        Reservation reservation = reservations.remove(nodeId);
+        Reservation reservation = reservations.remove(reservationKey);
         if (reservation != null) {
-            logConnectedTimePeriod(nodeId, reservation.createTime, System.currentTimeMillis(),
+            logConnectedTimePeriod(reservationKey, reservation.createTime, System.currentTimeMillis(),
                     poolId);
             return true;
         } else {
@@ -106,25 +107,26 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         return getReservationMap(poolId).size();
     }
 
-    synchronized public boolean reserveConnection(String nodeId, String poolId,
+    synchronized public boolean reserveConnection(String nodeId, String channelId, String poolId,
             ReservationType reservationRequest) {
+        String reservationKey = String.format("%s::%s", nodeId, channelId);
         Map<String, Reservation> reservations = getReservationMap(poolId);
         int maxPoolSize = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
         long timeout = parameterService.getLong(ParameterConstants.CONCURRENT_RESERVATION_TIMEOUT);
         removeTimedOutReservations(reservations);
-        if (reservations.size() < maxPoolSize || reservations.containsKey(nodeId)
+        if (reservations.size() < maxPoolSize || reservations.containsKey(reservationKey)
                 || whiteList.contains(nodeId)) {
-            Reservation existingReservation = reservations.get(nodeId);
+            Reservation existingReservation = reservations.get(reservationKey);
             if (existingReservation == null
                     || existingReservation.getType() == ReservationType.SOFT) {
-                reservations.put(nodeId, new Reservation(nodeId,
+                reservations.put(reservationKey, new Reservation(reservationKey,
                         reservationRequest == ReservationType.SOFT ? System.currentTimeMillis()
                                 + timeout : Long.MAX_VALUE, reservationRequest));
                 return true;
             } else {
                 log.warn(
-                        "Node '{}' requested a {} connection, but was rejected because it already has one",
-                        nodeId, poolId);
+                        "Node '{}' requested a {} connection for the {} channel, but was rejected because it already has one",
+                        nodeId, poolId, channelId);
                 return false;
             }
         } else {
@@ -162,10 +164,10 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         long currentTime = System.currentTimeMillis();
         String[] keys = reservations.keySet().toArray(new String[reservations.size()]);
         if (keys != null) {
-            for (String nodeId : keys) {
-                Reservation reservation = reservations.get(nodeId);
+            for (String reservationKey : keys) {
+                Reservation reservation = reservations.get(reservationKey);
                 if (reservation.timeToLiveInMs < currentTime) {
-                    reservations.remove(nodeId);
+                    reservations.remove(reservationKey);
                 }
             }
         }

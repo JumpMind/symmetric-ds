@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract public class AbstractUriHandler implements IUriHandler {
+abstract public class AbstractUriHandler extends AbstractHandler implements IUriHandler {
     
     protected final Logger log = LoggerFactory.getLogger(getClass());
     

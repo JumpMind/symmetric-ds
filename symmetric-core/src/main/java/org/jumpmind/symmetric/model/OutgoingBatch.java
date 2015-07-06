@@ -51,6 +51,10 @@ public class OutgoingBatch implements Serializable {
         public String toString() {
             return description;
         }
+        
+        public static boolean inProgress(Status status) {
+            return status != OK && status != RQ && status != RT && status != IG && status != NE;
+        }
     }
 
     private long batchId = -1;
@@ -127,6 +131,11 @@ public class OutgoingBatch implements Serializable {
     private long oldNetworkMillis = 0;
 
     public OutgoingBatch() {
+    }
+    
+    public OutgoingBatch(String nodeId, long batchId, String channelId, Status status) {
+        this(nodeId, channelId, status);
+        this.batchId = batchId;
     }
 
     public OutgoingBatch(String nodeId, String channelId, Status status) {
@@ -207,7 +216,7 @@ public class OutgoingBatch implements Serializable {
     }
 
     public String getNodeBatchId() {
-        return nodeId + "-" + batchId;
+        return String.format("%s-%d", nodeId, batchId);
     }
 
     public long getBatchId() {
@@ -464,7 +473,7 @@ public class OutgoingBatch implements Serializable {
     
     @Override
     public String toString() {
-        return getNodeBatchId();
+        return String.format("%s-%d-%s", nodeId, batchId, channelId);
     }
     
     public void setCreateBy(String createBy) {

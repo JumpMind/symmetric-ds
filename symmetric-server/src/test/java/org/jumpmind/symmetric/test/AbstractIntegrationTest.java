@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractIntegrationTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractIntegrationTest.class);
+    final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static ClientSymmetricEngine client;
 
@@ -142,6 +142,7 @@ public abstract class AbstractIntegrationTest {
     protected boolean clientPush() {
         int tries = 0;
         boolean pushed = false;
+        getClient().getRouterService().routeData(true);
         while (!pushed && tries < 10) {
             RemoteNodeStatuses statuses = getClient().push();
             statuses.waitForComplete(15000);

@@ -24,6 +24,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -245,9 +246,13 @@ public class StagedResource implements IStagedResource {
                 } catch (IOException ex) {
                     throw new IoException(ex);
                 }
+            } else if (memoryBuffer != null && memoryBuffer.length() > 0) {
+                reader = new ByteArrayInputStream(memoryBuffer.toString().getBytes());
+                inputStreams.put(thread, reader);
             } else {
-                throw new IllegalStateException("There is no content to read. "
-                        + file.getAbsolutePath() + " was not found.");
+                throw new IllegalStateException(
+                        "There is no content to read.  Memory buffer was empty and "
+                                + file.getAbsolutePath() + " was not found.");
             }
         }
         return reader;

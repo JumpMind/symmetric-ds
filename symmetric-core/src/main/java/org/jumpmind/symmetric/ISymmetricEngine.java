@@ -115,7 +115,7 @@ public interface ISymmetricEngine {
     /**
      * Will perform a push the same way the {@link PushJob} would have.
      * 
-     * @see IPushService#pushData(boolean)
+     * @see IPushService#push(boolean)
      * @return {@link RemoteNodeStatuses} 
      */
     public RemoteNodeStatuses push();

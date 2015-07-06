@@ -24,16 +24,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
-import java.text.DateFormat;
-import java.text.NumberFormat;
 import java.util.Date;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -42,7 +38,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataExtractorService;
-import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,48 +127,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
             + " clients and 20 concurrent pull clients will be allowed")
     public int getNumfNodeConnectionsPerInstance() {
         return engine.getParameterService().getInt(ParameterConstants.CONCURRENT_WORKERS);
-    }
-
-    @ManagedAttribute(description = "Get connection statistics about indivdual nodes")
-    public String getNodeConcurrencyStatisticsAsText() {
-        String lineFeed = "\n";
-        if (engine.getParameterService().getString(ParameterConstants.JMX_LINE_FEED).equals("html")) {
-            lineFeed = "</br>";
-        }
-        Map<String, Map<String, NodeConnectionStatistics>> stats = engine
-                .getConcurrentConnectionManager().getNodeConnectionStatisticsByPoolByNodeId();
-        StringBuilder out = new StringBuilder();
-        for (String pool : stats.keySet()) {
-            out.append("-------------------------------------------------------------------------------------------------------------------------------");
-            out.append(lineFeed);
-            out.append("  CONNECTION TYPE: ");
-            out.append(pool);
-            out.append(lineFeed);
-            out.append("-------------------------------------------------------------------------------------------------------------------------------");
-            out.append(lineFeed);
-            out.append("             NODE ID             LAST CONNECT TIME      NUMBER OF CONNECTIONS     NUMBER OF REJECTIONS       AVG CONNECTED TIME");
-            out.append(lineFeed);
-            out.append("-------------------------------------------------------------------------------------------------------------------------------");
-            out.append(lineFeed);
-            Map<String, NodeConnectionStatistics> nodeStats = stats.get(pool);
-            for (String nodeId : nodeStats.keySet()) {
-                NodeConnectionStatistics nodeStat = nodeStats.get(nodeId);
-                out.append(StringUtils.leftPad(nodeId, 20));
-                out.append(StringUtils.leftPad(
-                        DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM)
-                                .format(new Date(nodeStat.getLastConnectionTimeMs())), 30));
-                out.append(StringUtils.leftPad(Long.toString(nodeStat.getTotalConnectionCount()),
-                        27));
-                out.append(StringUtils.leftPad(Integer.toString(nodeStat.getNumOfRejections()), 25));
-                out.append(StringUtils.leftPad(
-                        NumberFormat.getIntegerInstance().format(
-                                nodeStat.getTotalConnectionTimeMs()
-                                        / nodeStat.getTotalConnectionCount()), 25));
-            }
-            out.append(lineFeed);
-        }
-        return out.toString();
-    }
+    }   
 
     @ManagedOperation(description = "Clean up both incoming and outgoing resources that are older than the passed in number of milliseconds")
     @ManagedOperationParameters({ @ManagedOperationParameter(name = "timeToLiveInMS", description = "The number of milliseconds old a resource should be before it is cleaned up") })
