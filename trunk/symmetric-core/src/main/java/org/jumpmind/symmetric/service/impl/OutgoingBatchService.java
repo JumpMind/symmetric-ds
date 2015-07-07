@@ -516,14 +516,16 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         if (readyToSendOnly) {
             Set<String> nodeIdHasReloadsNotInError = new HashSet<String>();
             for (OutgoingBatchByNodeChannelCount outgoingBatchByNodeChannelCount : allNodeChannels) {
-                if (outgoingBatchByNodeChannelCount.isReloadFlag() && !outgoingBatchByNodeChannelCount.isInError()) {
+                Channel channel = configurationService.getChannel(outgoingBatchByNodeChannelCount.getChannelId());
+                if (channel.isReloadFlag() && !outgoingBatchByNodeChannelCount.isInError()) {
                     nodeIdHasReloadsNotInError.add(outgoingBatchByNodeChannelCount.getNodeId());
                 }
             }
             
             for (OutgoingBatchByNodeChannelCount outgoingBatchByNodeChannelCount : allNodeChannels) {
+                Channel channel = configurationService.getChannel(outgoingBatchByNodeChannelCount.getChannelId());
                 if (!nodeIdHasReloadsNotInError.contains(outgoingBatchByNodeChannelCount.getNodeId()) || 
-                        outgoingBatchByNodeChannelCount.isReloadFlag()) {
+                        channel.isReloadFlag()) {
                     forReturn.add(outgoingBatchByNodeChannelCount);
                 }  
             }
@@ -669,8 +671,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             count.setLatestUpdateTime(row.getDateTime("latest_update_time"));
             count.setMaxSentCount(row.getInt("sent_count"));
             count.setNodeId(row.getString("node_id"));
-            count.setProcessingOrder(row.getInt("processing_order"));
-            count.setReloadFlag(row.getBoolean("reload_flag"));
             return count;
         }
     }
