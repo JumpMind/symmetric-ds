@@ -39,7 +39,7 @@ public class KeyedCache<K, T> implements Serializable {
     }
 
     public void clear() {
-        lastRefreshTimeMs = Long.MIN_VALUE;
+        lastRefreshTimeMs = 0;
     }
 
     protected void refreshCacheIfNeeded(boolean refreshCache) {
