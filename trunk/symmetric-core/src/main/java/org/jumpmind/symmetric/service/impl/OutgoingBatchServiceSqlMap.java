@@ -103,16 +103,16 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + "select count(*) from $(outgoing_batch) where status != 'OK' and channel_id=?");
         
         putSql("selectPendingOutgoingBatchByChannelCountSql",
-                "select b.node_id, b.channel_id, min(b.create_time) as earliest_create_time, max(b.last_update_time) as latest_update_time, " + 
-                "       processing_order, max(error_flag) as error_flag, max(sent_count) as sent_count, count(*) as batch_count, reload_flag, " +
-                "       sum(data_event_count) as data_event_count " + 
-                "    from $(outgoing_batch) b " + 
-                "           inner join $(channel) c on b.channel_id=c.channel_id " + 
-                "           inner join $(node) n on n.node_id=b.node_id" +
-                "           inner join $(node_group_link) l on n.node_group_id=l.target_node_group_id" +
-                "    where l.data_event_action=? and n.sync_enabled=1 and status in ('NE','SE','QY','LD','ER')" + 
-                "           group by b.node_id, b.channel_id, processing_order, reload_flag" + 
-                "           order by max(error_flag), max(b.last_update_time)");        
+                "select b.node_id, b.channel_id, min(b.create_time) as earliest_create_time, max(b.last_update_time) as latest_update_time,          " + 
+                "       c.processing_order, max(b.error_flag) as error_flag, max(b.sent_count) as sent_count, count(*) as batch_count, c.reload_flag,  " +
+                "       sum(b.data_event_count) as data_event_count                                                                              " + 
+                "    from $(outgoing_batch) b                                                                                                  " + 
+                "           inner join $(channel) c on b.channel_id=c.channel_id                                                               " + 
+                "           inner join $(node) n on n.node_id=b.node_id                                                                        " +
+                "           inner join $(node_group_link) l on n.node_group_id=l.target_node_group_id                                          " +
+                "    where l.data_event_action=? and n.sync_enabled=1 and b.status in ('NE','SE','QY','LD','ER')                                 " + 
+                "           group by b.node_id, b.channel_id, c.processing_order, c.reload_flag                                                    " + 
+                "           order by max(b.error_flag), max(b.last_update_time)                                                                  ");        
 
         putSql("selectOutgoingBatchSummaryByStatusSql",
                 "select count(*) as batches, sum(data_event_count) as data, status, node_id, min(create_time) as oldest_batch_time, max(last_update_time) as latest_update_time "
