@@ -109,7 +109,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 "    from $(outgoing_batch) b                                                                                                          " + 
                 "           inner join $(node) n on n.node_id=b.node_id                                                                                " +
                 "           inner join $(node_group_link) l on n.node_group_id=l.target_node_group_id                                                  " +
-                "    where l.data_event_action=? and n.sync_enabled=1 and b.status in ('NE','SE','QY','LD','ER')                                       " + 
+                "    where l.data_event_action=? and n.sync_enabled=1 and b.status in ('NE','SE','QY','LD','ER','IG')                                       " + 
                 "           group by b.node_id, b.channel_id                                                                                          " + 
                 "           order by max(b.error_flag), max(b.last_update_time)                                                                        ");        
 
