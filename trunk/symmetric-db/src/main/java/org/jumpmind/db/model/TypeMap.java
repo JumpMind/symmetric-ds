@@ -103,6 +103,7 @@ public abstract class TypeMap
 
     public static final String SQLXML = "SQLXML";
     public static final String GEOMETRY  = "GEOMETRY";
+    public static final String GEOGRAPHY  = "GEOGRAPHY";
     public static final String POINT  = "POINT";
     public static final String LINESTRING  = "LINESTRING";
     public static final String POLYGON  = "POLYGON";

@@ -121,7 +121,9 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             sql.append("cast(? as bit varying)").append(",");
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
             sql.append("cast(? as interval)").append(",");
-        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+        } else if (column.getJdbcTypeName() != null && (
+                column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
+                column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("ST_GEOMFROMTEXT(?)").append(",");
         } else {
             super.appendColumnQuestion(sql, column);
@@ -142,7 +144,8 @@ public class PostgreSqlDmlStatement extends DmlStatement {
         } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
             sql.append(quote).append(column.getName()).append(quote)
                   .append(" = cast(? as interval)");
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
+                column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY)) {
             sql.append(quote).append(column.getName()).append(quote)
             .append(" = ST_GEOMFROMTEXT(?)");
         } else {

@@ -398,6 +398,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
             } else if (!(column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase()
                     .contains(TypeMap.GEOMETRY))
+                    && !(column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase()
+                            .contains(TypeMap.GEOGRAPHY))
                     && (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY
                             || type == Types.VARBINARY ||
                     // SQLServer ntext type
