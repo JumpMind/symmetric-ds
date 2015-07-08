@@ -42,7 +42,9 @@ public class OracleDmlStatement extends DmlStatement {
         if (column.isTimestampWithTimezone()) {
             sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
                     .append(",");
-        } else if (name != null && name.toUpperCase().contains(TypeMap.GEOMETRY)) {
+        } else if (name != null && (
+                name.toUpperCase().contains(TypeMap.GEOMETRY) || 
+                name.toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("SYM_WKT2GEOM(?)").append(",");
         } else {
             super.appendColumnQuestion(sql, column);
@@ -54,7 +56,8 @@ public class OracleDmlStatement extends DmlStatement {
         if (column.isTimestampWithTimezone()) {
             sql.append(quote).append(column.getName()).append(quote)
                     .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')");
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
+                column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY)) {
             sql.append(quote).append(column.getName()).append(quote).append(" = ")
                     .append("SYM_WKT2GEOM(?)");
         } else {

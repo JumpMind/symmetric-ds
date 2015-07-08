@@ -88,6 +88,8 @@ abstract public class AbstractTriggerTemplate {
     protected String dateTimeWithLocalTimeZoneColumnTemplate;
 
     protected String geometryColumnTemplate;
+    
+    protected String geographyColumnTemplate;
 
     protected String clobColumnTemplate;
 
@@ -716,7 +718,13 @@ abstract public class AbstractTriggerTemplate {
                 && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY))
                 && StringUtils.isNotBlank(geometryColumnTemplate)) {
             templateToUse = geometryColumnTemplate;
-        } else {
+        } 
+        else if (column.getJdbcTypeName() != null
+                && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))
+                && StringUtils.isNotBlank(geographyColumnTemplate)) {
+            templateToUse = geographyColumnTemplate;
+        } 
+        else {
             switch (column.getMappedTypeCode()) {
                 case Types.TINYINT:
                 case Types.SMALLINT:
