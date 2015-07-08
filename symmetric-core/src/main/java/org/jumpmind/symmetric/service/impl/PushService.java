@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -315,6 +316,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     }
                 }
             } while (line != null);
+        } catch (FileNotFoundException ex) {
+            log.info("Failed to read batch status for {}.  It is probably because the server is not online yet", batch.getNodeBatchId());
         } catch (Exception ex) {
             log.warn(String.format("Failed to read the batch status for %s", batch.getNodeBatchId()), ex);
         } finally {
