@@ -104,7 +104,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoDataWriter;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -208,7 +208,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     @Override
-    public DataLoaderWorker createDataLoaderWorker(ProcessInfoKey.ProcessType processType, String channelId, Node sourceNode) {
+    public DataLoaderWorker createDataLoaderWorker(ProcessType processType, String channelId, Node sourceNode) {
         DataLoaderWorker worker = new DataLoaderWorker(processType, channelId, sourceNode);
         dataLoadWorkers.execute(worker);
         return worker;
@@ -245,7 +245,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         String nodeId = nodeService.findIdentityNodeId();
         if (StringUtils.isNotBlank(nodeId)) {
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(nodeId, nodeId,
-                    ProcessInfoKey.ProcessType.MANUAL_LOAD));
+                    ProcessType.MANUAL_LOAD));
             try {
                 InternalIncomingTransport transport = new InternalIncomingTransport(new BufferedReader(new StringReader(batchData)));
                 List<IncomingBatch> list = loadDataFromTransport(processInfo, nodeService.findIdentity(), transport);
@@ -368,7 +368,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         Node local = nodeService.findIdentity();
         if (local != null) {
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(sourceNode.getNodeId(), local.getNodeId(),
-                    ProcessInfoKey.ProcessType.PUSH_HANDLER));
+                    ProcessType.LOAD_FROM_PUSH));
             try {
                 List<IncomingBatch> batchList = loadDataFromTransport(processInfo, sourceNode, new InternalIncomingTransport(in));
                 logDataReceivedFromPush(sourceNode, batchList);
@@ -1037,9 +1037,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         DataContext ctx = new DataContext();
         
-        ProcessInfoKey.ProcessType processType;
+        ProcessType processType;
 
-        public DataLoaderWorker(ProcessInfoKey.ProcessType processType, String channelId, Node sourceNode) {
+        public DataLoaderWorker(ProcessType processType, String channelId, Node sourceNode) {
             this.identityNode = nodeService.findIdentity();
             this.sourceNode = sourceNode;
             this.processType = processType;

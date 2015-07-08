@@ -33,6 +33,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -42,11 +43,14 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.DataLoaderWorker;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 
 /**
  * Handles data pushes from nodes.
@@ -62,52 +66,73 @@ public class PushUriHandler extends AbstractUriHandler {
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
-        String channelId = ServletUtils.getParameter(req, WebConstants.CHANNEL_ID);
-        Node sourceNode = engine.getNodeService().findNode(nodeId);
+        String channelId = getChannelId(req);
+
         log.info("About to service push request for {}", nodeId);
 
         IStagingManager stagingManager = engine.getStagingManager();
         IDataLoaderService dataLoaderService = engine.getDataLoaderService();
         INodeService nodeService = engine.getNodeService();
+        IStatisticManager statisticManager = engine.getStatisticManager();
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(createInputStream(req)));
+        String identityNodeId = nodeService.findIdentityNodeId();
 
-        // TODO start network process
-        long streamToFileThreshold = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
-        String line = reader.readLine();
-        StringBuilder batchPrefix = new StringBuilder();
-        Long batchId = null;
+        ProcessInfo processInfo = statisticManager
+                .newProcessInfo(new ProcessInfoKey(nodeId, identityNodeId, ProcessType.TRANSFER_FROM, channelId));
+
+        BufferedReader reader = null;
         BufferedWriter writer = null;
         DataLoaderWorker worker = null;
-        while (line != null) {
-            if (line.startsWith(CsvConstants.BATCH)) {
-                batchId = getBatchId(line);
-                IStagedResource resource = stagingManager.create(streamToFileThreshold, Constants.STAGING_CATEGORY_INCOMING, nodeId, batchId);
-                writer = resource.getWriter();
-                writer.write(batchPrefix.toString());
-            } else if (line.startsWith(CsvConstants.COMMIT)) { 
-                writer.write(line);
-                writer.close();
-                writer = null;                
-                if (worker == null) {                    
-                  worker = dataLoaderService.createDataLoaderWorker(ProcessInfoKey.ProcessType.PUSH_HANDLER, channelId, sourceNode);
+
+        try {
+            Node sourceNode = engine.getNodeService().findNode(nodeId);
+
+            processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+
+            reader = new BufferedReader(new InputStreamReader(createInputStream(req)));
+
+            long streamToFileThreshold = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+            String line = reader.readLine();
+            StringBuilder batchPrefix = new StringBuilder();
+            Long batchId = null;
+            while (line != null) {
+                if (line.startsWith(CsvConstants.BATCH)) {
+                    batchId = getBatchId(line);
+                    IStagedResource resource = stagingManager.create(streamToFileThreshold, Constants.STAGING_CATEGORY_INCOMING, nodeId,
+                            batchId);
+                    writer = resource.getWriter();
+                    writer.write(batchPrefix.toString());
+                } else if (line.startsWith(CsvConstants.COMMIT)) {
+                    writer.write(line);
+                    writer.close();
+                    writer = null;
+                    if (worker == null) {
+                        worker = dataLoaderService.createDataLoaderWorker(ProcessType.LOAD_FROM_PUSH, channelId, sourceNode);
+                    }
+                    worker.queueUpLoad(new IncomingBatch(batchId, nodeId));
+                    batchId = null;
                 }
-                worker.queueUpLoad(new IncomingBatch(batchId, nodeId));
-                batchId = null;
+
+                if (batchId == null) {
+                    batchPrefix.append(line).append("\n");
+                } else if (writer != null) {
+                    writer.write(line);
+                    writer.write("\n");
+                }
+
+                line = reader.readLine();
             }
-            
-            if (batchId == null) {
-                batchPrefix.append(line).append("\n");            
-            } else if (writer != null) {
-                writer.write(line);
-                writer.write("\n");
-            }
-            
-            line = reader.readLine();
+
+            processInfo.setStatus(ProcessInfo.Status.OK);
+
+        } catch (RuntimeException ex) {
+            processInfo.setStatus(ProcessInfo.Status.ERROR);
+            throw ex;
+        } finally {
+            IOUtils.closeQuietly(reader);
+            IOUtils.closeQuietly(writer);
         }
-        
-        Node identityNode = nodeService.getCachedIdentity();
-        
+
         PrintWriter resWriter = res.getWriter();
         if (worker != null) {
             worker.queueUpLoad(new DataLoaderService.EOM());
@@ -121,16 +146,14 @@ public class PushUriHandler extends AbstractUriHandler {
                 if (batch != null && !(batch instanceof DataLoaderService.EOM)) {
                     ArrayList<IncomingBatch> list = new ArrayList<IncomingBatch>(1);
                     list.add(batch);
-                    log.info("sending {} ack ... for {}", status,  batch);
+                    log.info("sending {} ack ... for {}", status, batch);
                     // TODO 13 support
-                    resWriter.write(engine.getTransportManager().getAcknowledgementData(false, identityNode.getNodeId(), list));
+                    resWriter.write(engine.getTransportManager().getAcknowledgementData(false, identityNodeId, list));
                     resWriter.write("\n");
                     resWriter.flush();
                 }
             }
         }
-
-        reader.close();
 
         res.flushBuffer();
         log.debug("Done servicing push request for {}", nodeId);

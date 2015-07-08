@@ -26,8 +26,6 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.Date;
 
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
-
 public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Cloneable {
 
     private static final long serialVersionUID = 1L;
@@ -245,11 +243,11 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         switch (key.getProcessType()) {
             case MANUAL_LOAD:
                 return null;
-            case PUSH_JOB:
+            case EXTRACT_FOR_PUSH:
                 return key.getTargetNodeId();
             case PULL_JOB:
                 return key.getSourceNodeId();
-            case PUSH_HANDLER:
+            case LOAD_FROM_PUSH:
                 return key.getSourceNodeId();
             case PULL_HANDLER:
                 return key.getTargetNodeId();

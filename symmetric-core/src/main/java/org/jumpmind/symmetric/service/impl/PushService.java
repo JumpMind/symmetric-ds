@@ -27,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -54,7 +55,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatchByNodeChannelCount;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -220,7 +221,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             String channelId = nodeChannel.getChannelId();
 
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identitySecurity.getNodeId(), nodeChannel
-                    .getNodeId(), ProcessType.PUSH_JOB, channelId));
+                    .getNodeId(), ProcessType.EXTRACT_FOR_PUSH, channelId));
 
             Exception error = null;
             NodeChannelTransportForPushWorker pushWorker = null;
@@ -246,7 +247,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                         dataExtractorService.extractToStaging(processInfo, targetNode, batch);
 
                         if (pushWorker == null) {
-                            pushWorker = new NodeChannelTransportForPushWorker(targetNode, identityNode, identitySecurity, status);
+                            pushWorker = new NodeChannelTransportForPushWorker(channelId, targetNode, identityNode, identitySecurity, status);
                             nodeChannelTransportForPushWorker.execute(pushWorker);
                         }
 
@@ -339,12 +340,15 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         NodeSecurity identitySecurity;
 
         RemoteNodeStatus status;
-
-        public NodeChannelTransportForPushWorker(Node remoteNode, Node identityNode, NodeSecurity identitySecurity, RemoteNodeStatus status) {
+        
+        String channelId;
+        
+        public NodeChannelTransportForPushWorker(String channelId, Node remoteNode, Node identityNode, NodeSecurity identitySecurity, RemoteNodeStatus status) {
             this.targetNode = remoteNode;
             this.identityNode = identityNode;
             this.identitySecurity = identitySecurity;
             this.status = status;
+            this.channelId = channelId;
         }
 
         public void queueUpSend(OutgoingBatch batch) {
@@ -360,6 +364,11 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             IDataExtractorService dataExtractorService = engine.getDataExtractorService();
             ITransportManager transportManager = engine.getTransportManager();
             IAcknowledgeService acknowledgeService = engine.getAcknowledgeService();
+            IStatisticManager statisticManager = engine.getStatisticManager();
+            
+            ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identitySecurity.getNodeId(), targetNode.getNodeId(), 
+                    ProcessType.TRANSFER_TO, channelId));
+
             IOutgoingWithResponseTransport transport = null;
             OutputStream os = null;
             List<OutgoingBatch> batchesSent = new ArrayList<OutgoingBatch>();
@@ -369,6 +378,9 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                         batch.getChannelId(), parameterService.getRegistrationUrl());
                 while (!(batch instanceof EOM)) {
                     log.info("sending batch {}", batch);
+                    processInfo.setCurrentBatchId(batch.getBatchId());
+                    processInfo.setCurrentBatchStartTime(new Date());
+                    processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
                     batchesSent.add(batch);
                     IStagedResource resource = dataExtractorService.getStagedResource(batch);
                     InputStream is = resource.getInputStream();
@@ -382,8 +394,11 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     }
                     batch = sendQueue.take();
                 }
+                
+                processInfo.setStatus(ProcessInfo.Status.OK);
 
                 BufferedReader reader = transport.readResponse();
+                
                 String line = null;
                 do {
                     line = reader.readLine();
@@ -396,9 +411,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                         }
                         status.updateOutgoingStatus(batchesSent, batchAcks);
                     }
-                } while (line != null);
+                } while (line != null);                
 
-            } catch (Exception ex) {
+            } catch (Exception ex) {                
+                processInfo.setStatus(ProcessInfo.Status.ERROR);
                 fireOffline(ex, targetNode, status);
                 log.error("", ex);
             } finally {

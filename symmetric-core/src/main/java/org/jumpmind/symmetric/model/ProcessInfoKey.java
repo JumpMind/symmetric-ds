@@ -26,49 +26,6 @@ public class ProcessInfoKey implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public enum ProcessType {
-        ANY, PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, REST_PULL_HANLDER, ROUTER_JOB, INSERT_LOAD_EVENTS, GAP_DETECT, ROUTER_READER, MANUAL_LOAD, FILE_SYNC_PULL_JOB, FILE_SYNC_PUSH_JOB, FILE_SYNC_PULL_HANDLER, FILE_SYNC_PUSH_HANDLER, INITIAL_LOAD_EXTRACT_JOB;
-
-        public String toString() {
-            switch (this) {
-                case ANY:
-                    return "<Any>";
-                case MANUAL_LOAD:
-                    return "Manual Load";
-                case PUSH_JOB:
-                    return "Database Push";
-                case PULL_JOB:
-                    return "Database Pull";
-                case PUSH_HANDLER:
-                    return "Load From Push";
-                case PULL_HANDLER:
-                    return "Extract For Pull";
-                case ROUTER_JOB:
-                    return "Routing";
-                case ROUTER_READER:
-                    return "Routing Reader";
-                case GAP_DETECT:
-                    return "Gap Detection";
-                case FILE_SYNC_PULL_JOB:
-                    return "File Sync Pull";
-                case FILE_SYNC_PUSH_JOB:
-                    return "File Sync Push";
-                case FILE_SYNC_PULL_HANDLER:
-                    return "Service File Sync Pull";
-                case FILE_SYNC_PUSH_HANDLER:
-                    return "Service File Sync Push";
-                case REST_PULL_HANLDER:
-                    return "REST Pull";
-                case INSERT_LOAD_EVENTS:
-                    return "Inserting Load Events";
-                case INITIAL_LOAD_EXTRACT_JOB:
-                    return "Initial Load Extractor";
-                default:
-                    return name();
-            }
-        }
-    };
-
     private String sourceNodeId;
 
     private String targetNodeId;
