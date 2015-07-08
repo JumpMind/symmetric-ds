@@ -118,9 +118,23 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
                         } else if (ignoreCase) {
                             tableName = tableName.toUpperCase();
                         }
+                        
+                        String schemaName = loadFilter.getTargetSchemaName();
+                        if (StringUtils.isBlank(schemaName)) {
+                            schemaName = FormatUtils.WILDCARD;
+                        } else if (ignoreCase) {
+                            schemaName = schemaName.toUpperCase();
+                        }
+
+                        String catalogName = loadFilter.getTargetCatalogName();
+                        if (StringUtils.isBlank(catalogName)) {
+                            catalogName = FormatUtils.WILDCARD;
+                        } else if (ignoreCase) {
+                            catalogName = catalogName.toUpperCase();
+                        }
+
                         String qualifiedName = Table.getFullyQualifiedTableName(
-                                loadFilter.getTargetCatalogName(),
-                                loadFilter.getTargetSchemaName(), tableName);
+                                catalogName, schemaName, tableName);
                         List<LoadFilter> loadFiltersForTable = loadFiltersByTable.get(qualifiedName);
                         if (loadFiltersForTable == null) {
                             loadFiltersForTable = new ArrayList<LoadFilter>();
