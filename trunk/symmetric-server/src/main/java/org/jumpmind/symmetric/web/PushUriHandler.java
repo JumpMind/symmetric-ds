@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
@@ -61,6 +62,7 @@ public class PushUriHandler extends AbstractUriHandler {
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
+        String channelId = ServletUtils.getParameter(req, WebConstants.CHANNEL_ID);
         Node sourceNode = engine.getNodeService().findNode(nodeId);
         log.info("About to service push request for {}", nodeId);
 
@@ -87,8 +89,8 @@ public class PushUriHandler extends AbstractUriHandler {
                 writer.write(line);
                 writer.close();
                 writer = null;                
-                if (worker == null) {
-                  worker = dataLoaderService.createDataLoaderWorker(sourceNode);
+                if (worker == null) {                    
+                  worker = dataLoaderService.createDataLoaderWorker(ProcessInfoKey.ProcessType.PUSH_HANDLER, channelId, sourceNode);
                 }
                 worker.queueUpLoad(new IncomingBatch(batchId, nodeId));
                 batchId = null;
@@ -116,7 +118,7 @@ public class PushUriHandler extends AbstractUriHandler {
                     status = "in progress";
                     batch = worker.getCurrentlyLoading();
                 }
-                if (batch != null) {
+                if (batch != null && !(batch instanceof DataLoaderService.EOM)) {
                     ArrayList<IncomingBatch> list = new ArrayList<IncomingBatch>(1);
                     list.add(batch);
                     log.info("sending {} ack ... for {}", status,  batch);

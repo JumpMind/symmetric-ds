@@ -208,8 +208,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     @Override
-    public DataLoaderWorker createDataLoaderWorker(Node sourceNode) {
-        DataLoaderWorker worker = new DataLoaderWorker(sourceNode);
+    public DataLoaderWorker createDataLoaderWorker(ProcessInfoKey.ProcessType processType, String channelId, Node sourceNode) {
+        DataLoaderWorker worker = new DataLoaderWorker(processType, channelId, sourceNode);
         dataLoadWorkers.execute(worker);
         return worker;
     }
@@ -1028,16 +1028,22 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         List<IncomingBatch> batchList = new ArrayList<IncomingBatch>();
 
         IncomingBatch currentlyLoading;
+        
+        String channelId;
 
         Node identityNode;
 
         Node sourceNode;
 
         DataContext ctx = new DataContext();
+        
+        ProcessInfoKey.ProcessType processType;
 
-        public DataLoaderWorker(Node sourceNode) {
+        public DataLoaderWorker(ProcessInfoKey.ProcessType processType, String channelId, Node sourceNode) {
             this.identityNode = nodeService.findIdentity();
             this.sourceNode = sourceNode;
+            this.processType = processType;
+            this.channelId = channelId;
 
             ctx.put(Constants.DATA_CONTEXT_ENGINE, engine);
             if (identityNode != null) {
@@ -1062,7 +1068,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         @Override
         public void run() {
             final ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(sourceNode.getNodeId(), identityNode.getNodeId(),
-                    ProcessInfoKey.ProcessType.PUSH_HANDLER));
+                    processType, channelId));
             try {
                 currentlyLoading = toLoadQueue.take();
                 while (!(currentlyLoading instanceof EOM)) {
