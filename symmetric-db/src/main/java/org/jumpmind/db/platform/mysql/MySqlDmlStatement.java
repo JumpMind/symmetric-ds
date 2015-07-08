@@ -36,7 +36,9 @@ public class MySqlDmlStatement extends DmlStatement {
 
     @Override
     protected void appendColumnQuestion(StringBuilder sql, Column column) {
-        if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+        if (column.getJdbcTypeName() != null && 
+                (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)
+                || column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("geomfromtext(?)").append(",");
         } else {
             super.appendColumnQuestion(sql, column);
@@ -45,7 +47,8 @@ public class MySqlDmlStatement extends DmlStatement {
     
     @Override
     protected void appendColumnEquals(StringBuilder sql, Column column) {
-        if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)) {
+        if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)
+            || column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY)) {
             sql.append(quote).append(column.getName()).append(quote).append(" = ")
                     .append("geomfromtext(?)");
         } else {
