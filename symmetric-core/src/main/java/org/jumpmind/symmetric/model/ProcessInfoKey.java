@@ -40,9 +40,9 @@ public class ProcessInfoKey implements Serializable {
                 case PULL_JOB:
                     return "Database Pull";
                 case PUSH_HANDLER:
-                    return "Service Database Push";
+                    return "Load From Push";
                 case PULL_HANDLER:
-                    return "Service Database Pull";
+                    return "Extract For Pull";
                 case ROUTER_JOB:
                     return "Routing";
                 case ROUTER_READER:
