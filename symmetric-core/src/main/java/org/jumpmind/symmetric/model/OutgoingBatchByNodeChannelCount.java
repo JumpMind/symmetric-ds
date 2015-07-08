@@ -19,14 +19,10 @@ public class OutgoingBatchByNodeChannelCount implements Serializable {
     
     int maxSentCount;
     
-    int processingOrder;
-    
     int batchCount;
     
     int dataCount;
         
-    boolean reloadFlag;
-
     public String getNodeId() {
         return nodeId;
     }
@@ -75,14 +71,6 @@ public class OutgoingBatchByNodeChannelCount implements Serializable {
         this.maxSentCount = maxSentCount;
     }
 
-    public int getProcessingOrder() {
-        return processingOrder;
-    }
-
-    public void setProcessingOrder(int processingOrder) {
-        this.processingOrder = processingOrder;
-    }
-
     public int getBatchCount() {
         return batchCount;
     }
@@ -97,14 +85,6 @@ public class OutgoingBatchByNodeChannelCount implements Serializable {
 
     public void setDataCount(int dataCount) {
         this.dataCount = dataCount;
-    }
-    
-    public void setReloadFlag(boolean reloadFlag) {
-        this.reloadFlag = reloadFlag;
-    }
-    
-    public boolean isReloadFlag() {
-        return reloadFlag;
     }
     
     @Override
