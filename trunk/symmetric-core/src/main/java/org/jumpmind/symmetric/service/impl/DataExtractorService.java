@@ -98,6 +98,7 @@ import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoDataWriter;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.Router;
@@ -1025,7 +1026,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     .getBatches();
 
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity.getNodeId(), nodeCommunication.getNodeId(),
-                    ProcessInfoKey.ProcessType.INITIAL_LOAD_EXTRACT_JOB));
+                    ProcessType.INITIAL_LOAD_EXTRACT_JOB));
             try {
                 boolean areBatchesOk = true;
 

@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.DataLoaderWorker;
@@ -60,7 +60,7 @@ public interface IDataLoaderService {
     
     public void save(ConflictNodeGroupLink settings);
     
-    public DataLoaderWorker createDataLoaderWorker(ProcessInfoKey.ProcessType processType, String channelId, Node sourceNode);
+    public DataLoaderWorker createDataLoaderWorker(ProcessType processType, String channelId, Node sourceNode);
     
     public void clearCache();
 

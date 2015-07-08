@@ -73,7 +73,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -563,7 +563,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         if (local != null && sourceNode != null) {
             ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                     new ProcessInfoKey(nodeId, local.getNodeId(),
-                            ProcessInfoKey.ProcessType.FILE_SYNC_PUSH_HANDLER));
+                            ProcessType.FILE_SYNC_PUSH_HANDLER));
             try {
                 List<IncomingBatch> list = processZip(in, nodeId, processInfo);
                 NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
