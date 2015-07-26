@@ -51,7 +51,12 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
     }
-
+    
+    @Override
+    protected Collection<String> readPrimaryKeyNames(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
+        return super.readPrimaryKeyNames(metaData, getTableNamePattern(tableName));
+    } 
+    
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String,Object> values)
             throws SQLException {
@@ -143,6 +148,7 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
+        tableName = getTableNamePattern(tableName);
         // Jaybird is not able to read indices when delimited identifiers are
         // turned on, so we gather the data manually using Firebird's system tables
         @SuppressWarnings("unchecked")

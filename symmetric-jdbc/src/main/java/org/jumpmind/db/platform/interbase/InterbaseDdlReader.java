@@ -53,7 +53,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         setDefaultTablePattern("%");
         setDefaultColumnPattern("%");
     }
-
+    
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
