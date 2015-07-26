@@ -2,3 +2,6 @@
 /target
 /torque
 /velocity.log
+/.gradle/
+/.settings/
+/.classpath
