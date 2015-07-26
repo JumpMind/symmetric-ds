@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -134,7 +133,7 @@ public class DataGapDetector {
                         lastDataId = dataId;
                     }
 
-                    // if we found data in the gap
+                    /* if we found data in the gap */
                     if (lastDataId != -1) {
                         if (!lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
                             dataService.insertDataGap(transaction, new DataGap(lastDataId + dataIdIncrementBy, dataGap.getEndId()));
@@ -144,8 +143,10 @@ public class DataGapDetector {
                         dataService.deleteDataGap(transaction, dataGap);
                         gapsDeleted++;
 
-                        // if we did not find data in the gap and it was not the
-                        // last gap
+                    /*
+                     * if we did not find data in the gap and it was not the
+                     * last gap
+                     */
                     } else if (!lastGap) {
                         if (dataService.countDataInRange(dataGap.getStartId() - 1, dataGap.getEndId() + 1) == 0) {
                             if (symmetricDialect.supportsTransactionViews()) {
