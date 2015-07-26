@@ -157,9 +157,7 @@ public interface ITriggerRouterService {
     
     public void saveTriggerRouter(TriggerRouter triggerRouter);
     
-    public void syncTrigger(String triggerId, ITriggerCreationListener listener, boolean force);
-    
-    public void syncTrigger(String triggerId, ITriggerCreationListener listener, boolean force, boolean verifyTrigger);
+    public void syncTrigger(String triggerId, ITriggerCreationListener listener);
     
     public void syncTriggers(Table table, boolean genAlways);
     

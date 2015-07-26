@@ -579,7 +579,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
         return false;
-    }
+    }    
 
     public TriggerRouter getTriggerRouterForCurrentNode(String triggerId, String routerId, boolean refreshCache) {
         TriggerRouter triggerRouter = null;
@@ -1285,41 +1285,26 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
     }
-
-    public void syncTrigger(String triggerId, ITriggerCreationListener listener, boolean force) {
-        syncTrigger(triggerId, listener, force, true);
-    }
-
-    public void syncTrigger(String triggerId, ITriggerCreationListener listener, boolean force, boolean verifyInDatabase) {
-        Trigger trigger = getTriggerById(true, triggerId);
-        StringBuilder sqlBuffer = new StringBuilder();
+    
+    public void syncTrigger(String triggerId, ITriggerCreationListener listener) {
         clearCache();
-        List<Trigger> triggersForCurrentNode = null;
-        if (verifyInDatabase) {
-            triggersForCurrentNode = getTriggersForCurrentNode(true);
-        } else {
-            triggersForCurrentNode = new ArrayList<Trigger>();
-            triggersForCurrentNode.add(trigger);
-        }
+        Trigger trigger = getTriggerById(true, triggerId, false);
+
+        StringBuilder sqlBuffer = new StringBuilder();
         try {
             if (listener != null) {
                 extensionService.addExtensionPoint(listener);
             }
 
+            List<Trigger> listOfTriggers = getTriggersForCurrentNode(false);
             List<TriggerHistory> allHistories = getActiveTriggerHistories();
-            if (triggersForCurrentNode.contains(triggerId)) {
-                if (!trigger.isSourceTableNameWildCarded()) {
-                    for (TriggerHistory triggerHistory : getActiveTriggerHistories(triggerId)) {
-                        if (!triggerHistory.getFullyQualifiedSourceTableName().equals(trigger.getFullyQualifiedSourceTableName())) {
-                            dropTriggers(triggerHistory, sqlBuffer);
-                        }
-                    }
-                }
-                updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer, force, verifyInDatabase, allHistories, false);
-            } else {
-                for (TriggerHistory triggerHistory : getActiveTriggerHistories(triggerId)) {
+            for (TriggerHistory triggerHistory : allHistories) {
+                if (triggerHistory.getTriggerId().equals(triggerId)) {
                     dropTriggers(triggerHistory, sqlBuffer);
                 }
+            }
+            if (listOfTriggers.contains(trigger)) {
+                updateOrCreateDatabaseTrigger(trigger, listOfTriggers, sqlBuffer, true, false, allHistories, false);
             }
         } finally {
             if (listener != null) {

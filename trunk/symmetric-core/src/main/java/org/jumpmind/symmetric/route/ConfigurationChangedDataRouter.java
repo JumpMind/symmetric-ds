@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.route;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +42,6 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
 import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -325,40 +323,12 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
 
                 ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
-                Trigger trigger = null;
-                Date lastUpdateTime = null;
                 String triggerId = columnValues.get("TRIGGER_ID");
-                if (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)) {
-                    String routerId = columnValues.get("ROUTER_ID");
-                    TriggerRouter tr = triggerRouterService.findTriggerRouterById(true, triggerId,
-                            routerId);
-                    if (tr != null) {
-                        trigger = tr.getTrigger();
-                        lastUpdateTime = tr.getLastUpdateTime();
-                    }
-                } else {
-                    trigger = triggerRouterService.getTriggerById(true, triggerId);
-                    if (trigger != null) {
-                        lastUpdateTime = trigger.getLastUpdateTime();
-                    }
-                }
+                Trigger trigger = triggerRouterService.getTriggerById(true, triggerId);
                 if (trigger != null) {
-                    List<TriggerHistory> histories = triggerRouterService
-                            .getActiveTriggerHistories(trigger);
-                    boolean sync = false;
-                    if (histories != null && histories.size() > 0) {
-                        for (TriggerHistory triggerHistory : histories) {
-                            if (triggerHistory.getCreateTime().before(lastUpdateTime)) {
-                                sync = true;
-                            }
-                        }
-                    } else {
-                        sync = true;
-                    }
-
-                    if (sync) {
                         ((Set<Trigger>) needResync).add(trigger);
-                    }
+                } else {
+                    routingContext.put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
                 }
             }
         } else if (tableMatches(dataMetaData, TableConstants.SYM_ROUTER)
@@ -493,7 +463,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         log.info("About to sync the "
                                 + trigger.getTriggerId()
                                 + " trigger because a change was detected by the config data router");
-                        engine.getTriggerRouterService().syncTrigger(trigger.getTriggerId(), null, false);
+                        engine.getTriggerRouterService().syncTrigger(trigger.getTriggerId(), null);
                     }
                 }
             }
