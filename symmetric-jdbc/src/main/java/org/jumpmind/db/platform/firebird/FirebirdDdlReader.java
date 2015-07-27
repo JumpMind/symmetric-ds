@@ -148,7 +148,6 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
-        tableName = getTableNamePattern(tableName);
         // Jaybird is not able to read indices when delimited identifiers are
         // turned on, so we gather the data manually using Firebird's system tables
         @SuppressWarnings("unchecked")
