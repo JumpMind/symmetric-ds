@@ -253,8 +253,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
                         }
 
+                        Table table = symmetricDialect.getPlatform().getTableFromCache(
+                                triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
+                                triggerHistory.getSourceTableName(), false);
+                        String initialLoadSql = "1=1 order by ";
+                        String quote = symmetricDialect.getPlatform().getDdlBuilder().getDatabaseInfo().getDelimiterToken();
+                        Column[] pkColumns = table.getPrimaryKeyColumns();
+                        for (int j = 0; j < pkColumns.length; j++) {
+                            if (j > 0) {
+                                initialLoadSql += ", "; 
+                            }
+                            initialLoadSql += quote + pkColumns[j].getName() + quote;
+                        }
+
                         if (!triggerRouter.getTrigger().getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
-                            initialLoadEvents.add(new SelectFromTableEvent(targetNode, triggerRouter, triggerHistory, null));
+                            initialLoadEvents.add(new SelectFromTableEvent(targetNode, triggerRouter, triggerHistory, initialLoadSql));
                         } else {
                             Data data = new Data(1, null, targetNode.getNodeId(), DataEventType.INSERT, triggerHistory.getSourceTableName(),
                                     null, triggerHistory, triggerRouter.getTrigger().getChannelId(), null, null);
