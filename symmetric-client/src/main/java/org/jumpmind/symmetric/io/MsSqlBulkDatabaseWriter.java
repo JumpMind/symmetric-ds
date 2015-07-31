@@ -20,8 +20,6 @@
  */
 package org.jumpmind.symmetric.io;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -70,10 +68,10 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 		this.maxRowsBeforeFlush = maxRowsBeforeFlush;
 		this.stagingManager = stagingManager;
 		this.fireTriggers = fireTriggers;
-		if (isNotBlank(fieldTerminator)) {
+		if (fieldTerminator != null && fieldTerminator.length() > 0) {
 		   this.fieldTerminator = fieldTerminator;
 		}
-		if (isNotBlank(rowTerminator)) {
+		if (rowTerminator != null && rowTerminator.length() > 0) {
 		   this.rowTerminator = rowTerminator;
 		}
 		this.uncPath = uncPath;
@@ -205,11 +203,21 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            String schemaSeparator = dbInfo.getSchemaSeparator();
 	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
 	            Connection c = jdbcTransaction.getConnection();
+	            String rowTerminatorString = "";
+                /*
+                 * There seems to be a bug with the SQL server bulk insert when
+                 * you have one row with binary data at the end using \n as the
+                 * row terminator. It works when you leave the row terminator
+                 * out of the bulk insert statement.
+                 */
+                if (!(rowTerminator.equals("\n") || rowTerminator.equals("\r\n"))) {
+                    rowTerminatorString = ", ROWTERMINATOR='" + StringEscapeUtils.escapeJava(rowTerminator) + "'";
+                }
 	            String sql = String.format("BULK INSERT " + 
 	            		this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) + 
 	            		" FROM '" + filename) + "'" +
 	            		" WITH ( FIELDTERMINATOR='"+StringEscapeUtils.escapeJava(fieldTerminator)+"', KEEPIDENTITY" + 
-	            		(fireTriggers ? ", FIRE_TRIGGERS" : "") + ", ROWTERMINATOR='"+StringEscapeUtils.escapeJava(rowTerminator)+"');";
+	            		(fireTriggers ? ", FIRE_TRIGGERS" : "") + rowTerminatorString +");";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
