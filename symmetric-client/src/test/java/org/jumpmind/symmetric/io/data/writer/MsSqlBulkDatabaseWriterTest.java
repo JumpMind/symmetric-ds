@@ -70,7 +70,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
 
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
-        return writeData(new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, null), new TableCsvData(table, data));
+        return writeData(new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, null, "||", "\r\n"), new TableCsvData(table, data));
     }
 
     @Test
@@ -86,7 +86,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
             Column firstColumn = table.getColumn(0);
             table.removeColumn(firstColumn);
             table.addColumn(firstColumn);
-            writeData(new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, null), 
+            writeData(new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, null, "||", "\r\n"), 
                     new TableCsvData(table, data));
             values = (String[]) ArrayUtils.remove(values, values.length - 1);
             values = (String[]) ArrayUtils.add(values, 0, id);
