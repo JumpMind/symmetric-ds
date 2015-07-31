@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.ext;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcUtils;
@@ -66,8 +67,10 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory,
                 100000);
         boolean fireTriggers = parameterService.is("mssql.bulk.load.fire.triggers", false);
         String uncPath = parameterService.getString("mssql.bulk.load.unc.path");
+        String rowTerminator = StringEscapeUtils.unescapeJava(parameterService.getString("mssql.bulk.load.row.terminator", "\\r\\n"));
+        String fieldTerminator = StringEscapeUtils.unescapeJava(parameterService.getString("mssql.bulk.load.field.terminator", "||"));
 		return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(),
-				stagingManager, jdbcExtractor, maxRowsBeforeFlush, fireTriggers, uncPath);
+				stagingManager, jdbcExtractor, maxRowsBeforeFlush, fireTriggers, uncPath, fieldTerminator, rowTerminator);
 	}
 
     public void setSymmetricEngine(ISymmetricEngine engine) {

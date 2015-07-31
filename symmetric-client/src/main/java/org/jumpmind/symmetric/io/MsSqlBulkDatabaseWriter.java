@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.io;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -28,6 +30,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
@@ -45,11 +48,12 @@ import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 
-    protected static final byte[] DELIMITER = "||".getBytes();
     protected NativeJdbcExtractor jdbcExtractor;
     protected int maxRowsBeforeFlush;
     protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
+    protected String rowTerminator = "\r\n";
+    protected String fieldTerminator = "||";
     protected int loadedRows = 0;
     protected boolean fireTriggers;
     protected String uncPath;
@@ -60,12 +64,18 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 
 	public MsSqlBulkDatabaseWriter(IDatabasePlatform platform,
 			IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
-			int maxRowsBeforeFlush, boolean fireTriggers, String uncPath) {
+			int maxRowsBeforeFlush, boolean fireTriggers, String uncPath, String fieldTerminator, String rowTerminator) {
 		super(platform);
 		this.jdbcExtractor = jdbcExtractor;
 		this.maxRowsBeforeFlush = maxRowsBeforeFlush;
 		this.stagingManager = stagingManager;
 		this.fireTriggers = fireTriggers;
+		if (isNotBlank(fieldTerminator)) {
+		   this.fieldTerminator = fieldTerminator;
+		}
+		if (isNotBlank(rowTerminator)) {
+		   this.rowTerminator = rowTerminator;
+		}
 		this.uncPath = uncPath;
 	}
 
@@ -144,7 +154,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                                 out.write(columnData.getBytes());
                             }
                             if (i + 1 < columnNames.length) {
-                                out.write(DELIMITER);
+                                out.write(fieldTerminator.getBytes());
                             }
                         }
                     } else {
@@ -153,12 +163,11 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                                 out.write(parsedData[i].getBytes());
                             }
                             if (i + 1 < parsedData.length) {
-                                out.write(DELIMITER);
+                                out.write(fieldTerminator.getBytes());
                             }
                         }
                     }
-                    out.write('\r');
-                    out.write('\n');
+                    out.write(rowTerminator.getBytes());
                     loadedRows++;
                 } catch (Exception ex) {
                     throw getPlatform().getSqlTemplate().translate(ex);
@@ -199,7 +208,8 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            String sql = String.format("BULK INSERT " + 
 	            		this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) + 
 	            		" FROM '" + filename) + "'" +
-	            		" WITH ( FIELDTERMINATOR='||', KEEPIDENTITY " + (fireTriggers ? ", FIRE_TRIGGERS" : "") + ");";
+	            		" WITH ( FIELDTERMINATOR='"+StringEscapeUtils.escapeJava(fieldTerminator)+"', KEEPIDENTITY" + 
+	            		(fireTriggers ? ", FIRE_TRIGGERS" : "") + ", ROWTERMINATOR='"+StringEscapeUtils.escapeJava(rowTerminator)+"');";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
