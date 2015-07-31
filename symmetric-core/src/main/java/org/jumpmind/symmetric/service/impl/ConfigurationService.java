@@ -606,5 +606,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return this.sqlTemplate.queryForMap(getSql("getRegistrationRedirectSql"),
                 "registrant_external_id", "registration_node_id");
     }
+    
+    @Override
+    public void updateLastExtractTime(NodeChannel channel) {
+        sqlTemplate.update(getSql("updateNodeChannelLastExtractTime"), channel.getLastExtractTime(), channel.getChannelId(), channel.getNodeId());
+    }
 
 }
