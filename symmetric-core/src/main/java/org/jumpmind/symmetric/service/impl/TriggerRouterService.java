@@ -66,6 +66,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -83,6 +84,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private ISequenceService sequenceService;
 
     private IExtensionService extensionService;
+    
+    private IParameterService parameterService;
     
     private Map<String, Router> routersCache;
 
@@ -133,6 +136,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         this.nodeService = engine.getNodeService();
         this.sequenceService = engine.getSequenceService();
         this.extensionService = engine.getExtensionService();
+        this.parameterService = engine.getParameterService();
         engine.getExtensionService().addExtensionPoint(failureListener);
         setSqlMap(new TriggerRouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -158,8 +162,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public List<Trigger> getTriggers() {
-        return sqlTemplate.query("select "
+    	return getTriggers(true);
+    }
+
+    public List<Trigger> getTriggers(boolean replaceTokens) {
+    	List<Trigger> triggers = sqlTemplate.query("select "
                 + getSql("selectTriggersColumnList", "selectTriggersSql"), new TriggerMapper());
+    	if (replaceTokens) {
+    		@SuppressWarnings({ "rawtypes", "unchecked" })
+			Map<String, String> replacements = (Map) parameterService.getAllParameters();
+    		for (Trigger trigger : triggers) {
+        		trigger.setSourceCatalogName(FormatUtils.replaceTokens(trigger.getSourceCatalogName(), replacements, true));
+        		trigger.setSourceSchemaName(FormatUtils.replaceTokens(trigger.getSourceSchemaName(), replacements, true));
+        		trigger.setSourceTableName(FormatUtils.replaceTokens(trigger.getSourceTableName(), replacements, true));
+    		}
+    	}
+    	return triggers;
     }
 
     public boolean isTriggerBeingUsed(String triggerId) {
@@ -794,8 +812,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public List<Router> getRouters() {
-        return sqlTemplate.query(getSql("select ", "selectRoutersColumnList", "selectRoutersSql"),
+    	return getRouters(true);
+    }
+    
+    public List<Router> getRouters(boolean replaceVariables) {
+    	List<Router> routers = sqlTemplate.query(getSql("select ", "selectRoutersColumnList", "selectRoutersSql"),
                 new RouterMapper(configurationService.getNodeGroupLinks(false)));
+    	if (replaceVariables) {
+    		@SuppressWarnings({ "rawtypes", "unchecked" })
+			Map<String, String> replacements = (Map) parameterService.getAllParameters();
+    		for (Router router : routers) {
+    			router.setTargetCatalogName(FormatUtils.replaceTokens(router.getTargetCatalogName(), replacements, true));
+    			router.setTargetSchemaName(FormatUtils.replaceTokens(router.getTargetSchemaName(), replacements, true));
+    			router.setTargetTableName(FormatUtils.replaceTokens(router.getTargetTableName(), replacements, true));
+    		}
+    	}
+    	return routers;
     }
     
     private String getTriggerRouterSql(String sql) {

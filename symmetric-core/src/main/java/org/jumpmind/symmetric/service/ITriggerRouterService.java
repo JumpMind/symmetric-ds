@@ -91,6 +91,8 @@ public interface ITriggerRouterService {
     
     public List<Router> getRouters();
     
+    public List<Router> getRouters(boolean replaceVariables);
+    
     /**
      * Get a list of routers for a specific node group link.
      */
@@ -108,6 +110,8 @@ public interface ITriggerRouterService {
      * Get a list of all the triggers that have been defined for the system.
      */
     public List<Trigger> getTriggers();
+    
+    public List<Trigger> getTriggers(boolean replaceTokens);
     
     public void saveTrigger(Trigger trigger);
 

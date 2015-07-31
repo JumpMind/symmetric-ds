@@ -38,6 +38,8 @@ public interface ITransformService {
     
     public List<TransformTableNodeGroupLink> getTransformTables(boolean includeColumns);
 
+    public List<TransformTableNodeGroupLink> getTransformTables(boolean includeColumns, boolean replaceTokens);
+
     public List<TransformColumn> getTransformColumns();
 
     public List<TransformColumn> getTransformColumnsForTable(String transformId);

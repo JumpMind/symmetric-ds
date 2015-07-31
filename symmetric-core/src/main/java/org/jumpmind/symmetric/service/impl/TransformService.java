@@ -65,6 +65,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITransformService;
+import org.jumpmind.util.FormatUtils;
 
 public class TransformService extends AbstractService implements ITransformService {
 
@@ -75,6 +76,8 @@ public class TransformService extends AbstractService implements ITransformServi
     private IConfigurationService configurationService;
     
     private IExtensionService extensionService;
+    
+    private IParameterService parameterService;
 
     private Date lastUpdateTime;
 
@@ -83,6 +86,7 @@ public class TransformService extends AbstractService implements ITransformServi
         super(parameterService, symmetricDialect);
         this.configurationService = configurationService;
         this.extensionService = extensionService;
+        this.parameterService = parameterService;
         
         addColumnTransform(ParameterColumnTransform.NAME, new ParameterColumnTransform(parameterService));
         addColumnTransform(VariableColumnTransform.NAME, new VariableColumnTransform());
@@ -185,7 +189,7 @@ public class TransformService extends AbstractService implements ITransformServi
 
                 byByLinkByTransformPoint = new HashMap<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>>();
 
-                List<TransformTableNodeGroupLink> transforms = getTransformTablesFromDB(true);
+                List<TransformTableNodeGroupLink> transforms = getTransformTablesFromDB(true, true);
 
                 for (TransformTableNodeGroupLink transformTable : transforms) {
                     NodeGroupLink nodeGroupLink = transformTable.getNodeGroupLink();
@@ -214,7 +218,7 @@ public class TransformService extends AbstractService implements ITransformServi
         return byByLinkByTransformPoint;
     }
 
-    private List<TransformTableNodeGroupLink> getTransformTablesFromDB(boolean includeColumns) {
+    private List<TransformTableNodeGroupLink> getTransformTablesFromDB(boolean includeColumns, boolean replaceTokens) {
         List<TransformTableNodeGroupLink> transforms = sqlTemplate.query(
                 getSql("selectTransformTable"), new TransformTableMapper());
         if (includeColumns) {
@@ -228,6 +232,18 @@ public class TransformService extends AbstractService implements ITransformServi
                 }
             }
         }
+        if (replaceTokens) {
+    		@SuppressWarnings({ "rawtypes", "unchecked" })
+			Map<String, String> replacements = (Map) parameterService.getAllParameters();
+        	for (TransformTableNodeGroupLink transform : transforms) {
+        		transform.setSourceCatalogName(FormatUtils.replaceTokens(transform.getSourceCatalogName(), replacements, true));
+        		transform.setSourceSchemaName(FormatUtils.replaceTokens(transform.getSourceSchemaName(), replacements, true));
+        		transform.setSourceTableName(FormatUtils.replaceTokens(transform.getSourceTableName(), replacements, true));
+        		transform.setTargetCatalogName(FormatUtils.replaceTokens(transform.getTargetCatalogName(), replacements, true));
+        		transform.setTargetSchemaName(FormatUtils.replaceTokens(transform.getTargetSchemaName(), replacements, true));
+        		transform.setTargetTableName(FormatUtils.replaceTokens(transform.getTargetTableName(), replacements, true));
+        	}
+        }
         return transforms;
     }
 
@@ -238,7 +254,11 @@ public class TransformService extends AbstractService implements ITransformServi
     }
 
     public List<TransformTableNodeGroupLink> getTransformTables(boolean includeColumns) {
-        return this.getTransformTablesFromDB(includeColumns);
+        return this.getTransformTablesFromDB(includeColumns, true);
+    }
+
+    public List<TransformTableNodeGroupLink> getTransformTables(boolean includeColumns, boolean replaceTokens) {
+        return this.getTransformTablesFromDB(includeColumns, replaceTokens);
     }
 
     public List<TransformColumn> getTransformColumns() {
