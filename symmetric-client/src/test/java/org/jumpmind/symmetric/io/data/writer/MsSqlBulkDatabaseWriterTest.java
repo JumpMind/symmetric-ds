@@ -46,7 +46,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
 
     protected static IStagingManager stagingManager;
     
-    protected static final String uncPath = "\\\\192.168.42.121\\bulkloaddir";
+    protected static final String uncPath = null;
 
     @BeforeClass
     public static void setup() throws Exception {
