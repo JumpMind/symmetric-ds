@@ -45,6 +45,8 @@ import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtracto
 public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest {
 
     protected static IStagingManager stagingManager;
+    
+    protected static final String uncPath = "\\\\192.168.42.121\\bulkloaddir";
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -52,7 +54,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
                 .equals("net.sourceforge.jtds.jdbc.Driver")) {
             platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
             platform.createDatabase(platform.readDatabaseFromXml("/testBulkWriter.xml", true), true, false);
-            stagingManager = new StagingManager("tmp");
+            stagingManager = new StagingManager("target/tmp");
         }
     }
 
@@ -70,7 +72,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
 
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
-        return writeData(new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, null, "||", "\r\n"), new TableCsvData(table, data));
+        return writeData(new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, uncPath, null, null), new TableCsvData(table, data));
     }
 
     @Test
@@ -86,7 +88,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
             Column firstColumn = table.getColumn(0);
             table.removeColumn(firstColumn);
             table.addColumn(firstColumn);
-            writeData(new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, null, "||", "\r\n"), 
+            writeData(new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, uncPath, null, null), 
                     new TableCsvData(table, data));
             values = (String[]) ArrayUtils.remove(values, values.length - 1);
             values = (String[]) ArrayUtils.add(values, 0, id);
