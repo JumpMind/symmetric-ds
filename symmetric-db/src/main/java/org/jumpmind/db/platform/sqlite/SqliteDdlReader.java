@@ -113,8 +113,11 @@ public class SqliteDdlReader implements IDdlReader {
                 List<IndexColumn> indexColumns = platform.getSqlTemplate().query(
                         "pragma index_info(" + index.getName() + ")", INDEX_COLUMN_MAPPER);
                 for (IndexColumn indexColumn : indexColumns) {
-                    index.addColumn(indexColumn);
-                    indexColumn.setColumn(table.getColumnWithName(indexColumn.getName()));
+                    /* Ignore auto index columns */
+                    if (!indexColumn.getName().startsWith("sqlite_autoindex_")) {
+                        index.addColumn(indexColumn);
+                        indexColumn.setColumn(table.getColumnWithName(indexColumn.getName()));
+                    }
                 }
 
                 if (!(index.hasAllPrimaryKeys() && index.getName().toLowerCase()
