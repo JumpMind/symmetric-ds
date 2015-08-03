@@ -21,7 +21,6 @@ package org.jumpmind.db.model;
 
 import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPLTZ;
 import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPTZ;
-import static org.jumpmind.db.model.ColumnTypes.MSSQL_SQL_VARIANT;
 
 import java.sql.Types;
 import java.util.HashMap;
@@ -159,7 +158,6 @@ public abstract class TypeMap
         registerJdbcType(Types.VARCHAR,       VARCHAR,       JdbcTypeCategoryEnum.TEXTUAL);
         registerJdbcType(ORACLE_TIMESTAMPTZ,  TIMESTAMPTZ,   JdbcTypeCategoryEnum.DATETIME);
         registerJdbcType(ORACLE_TIMESTAMPLTZ, TIMESTAMPLTZ,   JdbcTypeCategoryEnum.DATETIME);
-        registerJdbcType(MSSQL_SQL_VARIANT, BLOB,   JdbcTypeCategoryEnum.BINARY);
 
         // only available in JDK 1.4 and above:
         if (PlatformUtils.supportsJava14JdbcTypes())
