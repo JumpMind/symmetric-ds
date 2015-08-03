@@ -2035,7 +2035,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 || defaultValueStr.toUpperCase().startsWith("TIME '")
                 || defaultValueStr.toUpperCase().startsWith("TIMESTAMP '")
                 || defaultValueStr.toUpperCase().startsWith("INTERVAL '")
-                ));
+                )) &&
+                !(defaultValueStr.toUpperCase().startsWith("N'") && defaultValueStr.endsWith("'"));
 
         if (shouldUseQuotes) {
             // characters are only escaped when within a string literal

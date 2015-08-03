@@ -202,6 +202,9 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                     defaultValue = defaultValue.substring(0, defaultValue.length() - 1);
                 }
             } else if (TypeMap.isTextType(column.getMappedTypeCode())) {
+                if (defaultValue.startsWith("N'") && defaultValue.endsWith("'")) {
+                    defaultValue = defaultValue.substring(2, defaultValue.length()-1);
+                }
                 defaultValue = unescape(defaultValue, "'", "''");
             }
 
