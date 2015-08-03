@@ -221,14 +221,11 @@ public class RouterService extends AbstractService implements IRouterService {
                                 boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
                                 boolean initialLoadQueued = security.isInitialLoadEnabled();
                                 boolean registered = security.getRegistrationTime() != null;
-                                boolean parent = identity.getNodeId().equals(
-                                        security.getCreatedAtNodeId())
-                                        || engine.getConfigurationService().isMasterToMaster();
                                 if (thisMySecurityRecord && reverseLoadQueued
                                         && (reverseLoadFirst || !initialLoadQueued)) {
                                     sendReverseInitialLoad();
                                 } else if (!thisMySecurityRecord && registered && initialLoadQueued
-                                        && parent && (!reverseLoadFirst || !reverseLoadQueued)) {
+                                        &&  (!reverseLoadFirst || !reverseLoadQueued)) {
                                     long ts = System.currentTimeMillis();
                                     engine.getDataService().insertReloadEvents(
                                             engine.getNodeService().findNode(security.getNodeId()),
@@ -281,7 +278,7 @@ public class RouterService extends AbstractService implements IRouterService {
         List<NodeSecurity> securities = nodeService.findNodeSecurityWithLoadEnabled();
         for (NodeSecurity nodeSecurity : securities) {
             if (((!nodeSecurity.getNodeId().equals(me)
-                    && me.equals(nodeSecurity.getCreatedAtNodeId()) && nodeSecurity
+                    && nodeSecurity
                         .isInitialLoadEnabled())
                     || (!nodeSecurity.getNodeId().equals(me) && configurationService
                             .isMasterToMaster()) || (nodeSecurity.getNodeId().equals(me) && nodeSecurity
