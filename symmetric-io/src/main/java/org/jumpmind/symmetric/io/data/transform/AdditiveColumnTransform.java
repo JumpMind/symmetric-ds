@@ -123,7 +123,10 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
                 Column targetCol = table.getColumnWithName(keyNames[i]);
                 if (targetCol != null) {
                     columns.add(targetCol);
-                    keyValuesList.add(sourceValues.get(keyNames[i]));
+                    String value = sourceValues.get(keyNames[i]);
+                    if (value != null) {
+                        keyValuesList.add(value);
+                    }
                     if (addedFirstKey) {
                         sql.append("and ");
                     } else {
@@ -132,7 +135,11 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
                     sql.append(quote);
                     sql.append(keyNames[i]);
                     sql.append(quote);
-                    sql.append("=? ");
+                    if (value == null) {
+                       sql.append("is null ");
+                    } else {
+                       sql.append("=? ");
+                    }
                 }
             }
 
