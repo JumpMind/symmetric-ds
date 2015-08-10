@@ -102,27 +102,6 @@
                     </execution>                    
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.db.torque</groupId>
-                <artifactId>torque-maven-plugin</artifactId>
-                <version>3.3-RC2</version>
-                <configuration>
-                    <outputFormat>docbook</outputFormat>
-                    <targetDatabase>symmetric</targetDatabase>
-                    <outputDir>${docbook.build}</outputDir>
-                    <schemaDir>${basedir}/../symmetric-core/src/main/resources</schemaDir>
-                    <templatePath>${basedir}/src/torque</templatePath>
-                    <useClasspath>false</useClasspath>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>documentation</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
     <profiles>
