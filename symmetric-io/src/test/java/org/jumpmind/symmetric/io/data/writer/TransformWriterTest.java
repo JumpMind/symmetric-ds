@@ -28,28 +28,8 @@ import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.AbstractWriterTest;
-import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.BinaryLeftColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ClarionDateTimeColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsKeyColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.JavaColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.LeftColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.MathColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.TransformColumn;
-import org.jumpmind.symmetric.io.data.transform.TransformPoint;
-import org.jumpmind.symmetric.io.data.transform.TransformTable;
-import org.jumpmind.symmetric.io.data.transform.ValueMapColumnTransform;
+import org.jumpmind.symmetric.io.data.*;
+import org.jumpmind.symmetric.io.data.transform.*;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -81,8 +61,8 @@ public class TransformWriterTest extends AbstractWriterTest {
     public void testTableNameChange() {
         mockWriter.reset();
         Table table = new Table("s1", new Column("id"));
-        writeData(getTransformWriter(), new TableCsvData(table, new CsvData(DataEventType.INSERT,
-                new String[] { "66" }), new CsvData(DataEventType.INSERT, new String[] { "77" })));
+        writeData(getTransformWriter(), new TableCsvData(table, new CsvData(DataEventType.INSERT, new String[]{"66"}),
+           new CsvData(DataEventType.INSERT, new String[]{"77"})));
         List<CsvData> datas = mockWriter.writtenDatas.get(table.getFullyQualifiedTableName());
         Assert.assertNull(datas);
         datas = mockWriter.writtenDatas.get("t1");
@@ -95,8 +75,8 @@ public class TransformWriterTest extends AbstractWriterTest {
     public void testAddColumn() {
         mockWriter.reset();
         Table table = new Table("s2", new Column("id"));
-        writeData(getTransformWriter(), new TableCsvData(table, new CsvData(DataEventType.INSERT,
-                new String[] { "2" }), new CsvData(DataEventType.INSERT, new String[] { "1" })));
+        writeData(getTransformWriter(), new TableCsvData(table, new CsvData(DataEventType.INSERT, new String[]{"2"}),
+           new CsvData(DataEventType.INSERT, new String[]{"1"})));
         List<CsvData> datas = mockWriter.writtenDatas.get(table.getFullyQualifiedTableName());
         Assert.assertNull(datas);
         datas = mockWriter.writtenDatas.get("t2");
@@ -107,6 +87,25 @@ public class TransformWriterTest extends AbstractWriterTest {
         Assert.assertEquals("added", datas.get(1).getParsedData(CsvData.ROW_DATA)[1]);
 
     }
+
+    @Test
+    public void testUpdateActionBeanShellScript() throws Exception {
+        mockWriter.reset();
+        Table table = new Table("s3", new Column("id"));
+        writeData(getTransformWriter(), new TableCsvData(table,
+           new CsvData(DataEventType.UPDATE, new String[]{"1"}),
+           new CsvData(DataEventType.UPDATE, new String[]{"2"}),
+           new CsvData(DataEventType.UPDATE, new String[]{"3"}),
+           new CsvData(DataEventType.UPDATE, new String[]{"4"}),
+           new CsvData(DataEventType.UPDATE, new String[]{"5"})));
+        List<CsvData> datas = mockWriter.writtenDatas.get("t3");
+        Assert.assertEquals(4, datas.size());
+        Assert.assertEquals(DataEventType.INSERT, datas.get(0).getDataEventType());
+        Assert.assertEquals(DataEventType.DELETE, datas.get(1).getDataEventType());
+        Assert.assertEquals(DataEventType.UPDATE, datas.get(2).getDataEventType());
+        Assert.assertEquals(DataEventType.UPDATE, datas.get(3).getDataEventType());
+    }
+
 
     @Test
     public void testSimpleTableBeanShellMapping() throws Exception {
@@ -125,11 +124,17 @@ public class TransformWriterTest extends AbstractWriterTest {
     }
 
     protected TransformWriter getTransformWriter() {
+        TransformTable transformTable3 =
+           new TransformTable("s3", "t3", TransformPoint.LOAD, new TransformColumn("id", "id", true));
+        transformTable3.setUpdateActionBeanScript("switch (id) { case \"1\": return \"INS_ROW\"; case \"2\": "
+           + "return \"DEL_ROW\"; case \"3\": return \"UPD_ROW\"; case \"4\": return \"NONE\"; case \"5\": "
+           + "return \"UPDATE_COL\"; }");
         return new TransformWriter(platform, TransformPoint.LOAD, mockWriter, buildDefaultColumnTransforms(), new TransformTable[] {
-                new TransformTable("s1", "t1", TransformPoint.LOAD, new TransformColumn("id", "id",
-                        true)),
-                new TransformTable("s2", "t2", TransformPoint.LOAD, new TransformColumn("id", "id",
-                        true), new TransformColumn(null, "col2", false, "const", "added")) });
+                new TransformTable("s1", "t1", TransformPoint.LOAD, new TransformColumn("id", "id", true)),
+                new TransformTable("s2", "t2", TransformPoint.LOAD, new TransformColumn("id", "id", true),
+                   new TransformColumn(null, "col2", false, "const", "added")),
+                transformTable3
+        });
     }
     
     public static Map<String, IColumnTransform<?>> buildDefaultColumnTransforms() {

@@ -20,15 +20,26 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import bsh.Interpreter;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.*;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
+import org.jumpmind.util.Context;
+import org.slf4j.*;
 
 public class TransformTable implements Cloneable {
+
+    final String INTERPRETER_KEY = String.format("%s.BshInterpreter", getClass().getName());
+
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+
+    /*
+     * Static context object used to maintain objects in memory for reference between BSH transforms.
+    */
+    private static Map<String, Object> bshContext = new HashMap<String, Object>();
 
     protected String transformId;
     protected String sourceCatalogName;
@@ -40,7 +51,9 @@ public class TransformTable implements Cloneable {
     protected TransformPoint transformPoint;
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
-    protected DeleteAction deleteAction = DeleteAction.DEL_ROW;
+    protected String updateActionBeanScript = null;
+    protected TargetDmlAction updateAction = TargetDmlAction.UPDATE_COL;
+    protected TargetDmlAction deleteAction = TargetDmlAction.DEL_ROW;
     protected ColumnPolicy columnPolicy = ColumnPolicy.IMPLIED;
     protected boolean updateFirst = false;
     protected int transformOrder = 0;
@@ -198,11 +211,79 @@ public class TransformTable implements Cloneable {
         }
     }
 
-    public void setDeleteAction(DeleteAction deleteAction) {
+    public void setUpdateActionBeanScript(String updateAction) {
+        try {
+            this.updateActionBeanScript = null;
+            this.updateAction = TargetDmlAction.valueOf(updateAction);
+        }
+        catch (IllegalArgumentException e) {
+            //looks like a bean-shell-script
+            this.updateActionBeanScript = updateAction;
+        }
+    }
+
+    public TargetDmlAction evaluateTargetDmlAction(DataContext dataContext, TransformedData transformedData) {
+        if (updateActionBeanScript != null) {
+            Interpreter interpreter = getInterpreter(dataContext);
+            Map<String, String> sourceValues = transformedData.getSourceValues();
+
+            try {
+                interpreter.set("sourceDmlType", transformedData.getSourceDmlType());
+                interpreter.set("sourceDmlTypeString", transformedData.getSourceDmlType().toString());
+                interpreter.set("transformedData", transformedData);
+                CsvData csvData = dataContext.getData();
+                if (csvData != null) {
+                    interpreter.set("externalData", csvData.getAttribute("externalData"));
+                }
+                else {
+                    interpreter.set("externalData", null);
+                }
+                for (String columnName : sourceValues.keySet()) {
+                    interpreter.set(columnName.toUpperCase(), sourceValues.get(columnName));
+                    interpreter.set(columnName, sourceValues.get(columnName));
+                }
+                if (transformedData.getOldSourceValues() != null) {
+                    for (Map.Entry<String, String> oldColumn : transformedData.getOldSourceValues().entrySet()) {
+                        interpreter.set("OLD_" + oldColumn.getKey(), oldColumn.getValue());
+                        interpreter.set("OLD_" + oldColumn.getKey().toUpperCase(), oldColumn.getValue());
+                    }
+                }
+                String transformExpression = updateActionBeanScript;
+                String methodName = String.format("transform_%d()", Math.abs(transformExpression.hashCode()));
+                if (dataContext.get(methodName) == null) {
+                    //create  BSH-Method if not exists in Context
+                    interpreter.set("context", dataContext);
+                    interpreter.set("bshContext", bshContext);
+                    interpreter.eval(String.format("%s {\n%s\n}", methodName, transformExpression));
+                    dataContext.put(methodName, Boolean.TRUE);
+                }
+                //call BSH-Method
+                Object result = interpreter.eval(methodName);
+                //evaluate Result of BSH-Script
+                updateAction = TargetDmlAction.valueOf((String) result);
+            }
+            catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+        return updateAction;
+    }
+
+    protected Interpreter getInterpreter(Context context) {
+        Interpreter interpreter = (Interpreter) context.get(INTERPRETER_KEY);
+        if (interpreter == null) {
+            interpreter = new Interpreter();
+            context.put(INTERPRETER_KEY, interpreter);
+        }
+        return interpreter;
+    }
+
+
+    public void setDeleteAction(TargetDmlAction deleteAction) {
         this.deleteAction = deleteAction;
     }
 
-    public DeleteAction getDeleteAction() {
+    public TargetDmlAction getDeleteAction() {
         return deleteAction;
     }
 

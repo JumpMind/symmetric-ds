@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.transform.DeleteAction;
+import org.jumpmind.symmetric.io.data.transform.TargetDmlAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IgnoreColumnException;
 import org.jumpmind.symmetric.io.data.transform.IgnoreRowException;
@@ -314,27 +314,42 @@ public class TransformWriter extends NestedDataWriter {
             // perform a transformation if there are columns defined for
             // transformation
             if (data.getColumnNames().length > 0) {
-                if (data.getTargetDmlType() != DataEventType.DELETE) {
-                    persistData = true;
-                } else {
-                    // handle the delete action
-                    DeleteAction deleteAction = transformation.getDeleteAction();
-                    switch (deleteAction) {
+                TargetDmlAction targetAction = null;
+                switch (data.getTargetDmlType()) {
+                    case INSERT:
+                    case UPDATE:
+                        targetAction = transformation.evaluateTargetDmlAction(context, data);
+                        break;
+                    case DELETE:
+                        targetAction = transformation.getDeleteAction();
+                        break;
+                    default:
+                        persistData = true;
+                }
+                if (targetAction != null) {
+                    // how to handle the update/delete action on target..
+                    switch (targetAction) {
                         case DEL_ROW:
                             data.setTargetDmlType(DataEventType.DELETE);
                             persistData = true;
                             break;
                         case UPDATE_COL:
+                        case UPD_ROW:
                             data.setTargetDmlType(DataEventType.UPDATE);
+                            persistData = true;
+                            break;
+                        case INS_ROW:
+                            data.setTargetDmlType(DataEventType.INSERT);
                             persistData = true;
                             break;
                         case NONE:
                         default:
                             if (log.isDebugEnabled()) {
                                 log.debug(
-                                        "The {} transformation is not configured to delete row.  Not sending the delete through.",
-                                        transformation.getTransformId());
+                                   "The {} transformation is not configured to delete row.  Not sending the delete through.",
+                                   transformation.getTransformId());
                             }
+                            break;
                     }
                 }
             }

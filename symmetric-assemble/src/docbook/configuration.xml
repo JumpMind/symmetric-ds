@@ -1243,6 +1243,27 @@ column.</listitem>
 </listitem>
 
 <listitem>
+update_action: When a source operation of Update takes place, there are
+three possible ways to handle the transformation at the target. The
+options include:
+<itemizedlist>
+<listitem>NONE - The update results in no target changes.</listitem>
+
+<listitem>DEL_ROW - The update results in a delete of the row
+as specified by the pk columns defined in the transformation
+configuration.</listitem>
+
+<listitem>UPDATE_COL - The update results in an Update
+operation on the target which updates the specific rows and columns
+based on the defined transformation.</listitem>
+
+<listitem>BeanShell Script Transform ('bsh'):
+	script code which returns one of the above items.
+	you can use COLUMN variables inside the script.</listitem>
+</itemizedlist>
+</listitem>
+
+<listitem>
 delete_action: When a source operation of Delete takes place, there are
 three possible ways to handle the transformation at the target. The
 options include:
