@@ -140,6 +140,8 @@ final public class Constants {
     public static final String PROTOCOL_HTTP = "http";
     
     public static final String PROTOCOL_INTERNAL = "internal";
+    
+    public static final String PROTOCOL_FILE = "file";
 
     public static final String PROTOCOL_EXT = "ext";
     

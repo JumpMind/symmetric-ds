@@ -383,6 +383,33 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } 
     }
 
+    public List<IncomingBatch> loadDataFromOfflineTransport(Node remote, RemoteNodeStatus status, IIncomingTransport transport) throws IOException {
+        Node local = nodeService.findIdentity();
+        ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
+                .getNodeId(), local.getNodeId(), ProcessType.PULL_JOB));
+        List<IncomingBatch> list = null;
+        try {
+            list = loadDataFromTransport(processInfo, remote, transport);
+            if (list.size() > 0) {
+                processInfo.setStatus(ProcessInfo.Status.ACKING);
+                status.updateIncomingStatus(list);
+            }
+
+            if (containsError(list)) {
+                processInfo.setStatus(ProcessInfo.Status.ERROR);
+            } else {
+                processInfo.setStatus(ProcessInfo.Status.OK);
+            }
+        } catch (RuntimeException e) {
+            processInfo.setStatus(ProcessInfo.Status.ERROR);
+            throw e;
+        } catch (IOException e) {
+            processInfo.setStatus(ProcessInfo.Status.ERROR);
+            throw e;
+        }
+        return list;
+    }
+
     /**
      * Load database from input stream and return a list of batch statuses. This
      * is used for a pull request that responds with data, and the
