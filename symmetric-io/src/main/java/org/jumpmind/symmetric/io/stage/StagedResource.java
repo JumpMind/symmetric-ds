@@ -155,7 +155,9 @@ public class StagedResource implements IStagedResource {
                     this.file = newFile;
                 }
             }
-        } else if (memoryBuffer != null && state == State.DONE) {
+        } 
+        
+        if (memoryBuffer != null && state == State.DONE) {
             this.memoryBuffer.setLength(0);
             this.memoryBuffer = null;
         }
