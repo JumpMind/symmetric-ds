@@ -77,6 +77,8 @@ public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilt
                     databaseWriterFilters.add(new BshDatabaseWriterFilter(engine, entry.getValue()));
                 } else if (entry.getKey().equals(LoadFilterType.JAVA)) {
                     databaseWriterFilters.add(new JavaDatabaseWriterFilter(engine, entry.getValue()));
+                } else if (entry.getKey().equals(LoadFilterType.SQL)) {
+                    databaseWriterFilters.add(new SQLDatabaseWriterFilter(engine, entry.getValue()));
                 }
             }
         }
