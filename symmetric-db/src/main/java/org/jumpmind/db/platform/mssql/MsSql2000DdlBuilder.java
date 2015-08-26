@@ -743,6 +743,12 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         if (sqlType.indexOf("datetimeoffset") >= 0) {
             sqlType.setLength(0);
             sqlType.append("datetimeoffset");
+        } else if (sqlType.toString().equalsIgnoreCase("varchar")) {
+            sqlType.setLength(0);
+            sqlType.append("varchar(max)");
+        } else if (sqlType.toString().equalsIgnoreCase("varbinary")) {
+            sqlType.setLength(0);
+            sqlType.append("varbinary(max)");
         }
     }
 }
