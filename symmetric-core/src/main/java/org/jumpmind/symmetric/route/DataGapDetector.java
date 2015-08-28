@@ -21,7 +21,9 @@
 package org.jumpmind.symmetric.route;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -97,6 +99,7 @@ public class DataGapDetector {
             int newGapsInserted = 0;
             int rangeChecked = 0;
             int gapsDeleted = 0;
+            Set<DataGap> gapCheck = new HashSet<DataGap>(gaps);
             for (final DataGap dataGap : gaps) {
                 final boolean lastGap = dataGap.equals(gaps.get(gaps.size() - 1));
                 String sql = routerService.getSql("selectDistinctDataIdFromDataEventUsingGapsSql");
@@ -123,11 +126,19 @@ public class DataGapDetector {
                         processInfo.incrementCurrentDataCount();
                         if (lastDataId == -1 && dataGap.getStartId() + dataIdIncrementBy <= dataId) {
                             // there was a new gap at the start
-                            dataService.insertDataGap(transaction, new DataGap(dataGap.getStartId(), dataId - 1));
+                            DataGap newGap = new DataGap(dataGap.getStartId(), dataId - 1);
+                            if (!gapCheck.contains(newGap)) {
+                                dataService.insertDataGap(transaction, newGap);
+                                gapCheck.add(newGap);
+                            }
                             newGapsInserted++;
                         } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId && lastDataId != dataId) {
                             // found a gap somewhere in the existing gap
-                            dataService.insertDataGap(transaction, new DataGap(lastDataId + 1, dataId - 1));
+                            DataGap newGap = new DataGap(lastDataId + 1, dataId - 1);
+                            if (!gapCheck.contains(newGap)) {
+                                dataService.insertDataGap(transaction, newGap);
+                                gapCheck.add(newGap);
+                            }
                             newGapsInserted++;
                         }
                         lastDataId = dataId;
@@ -136,7 +147,11 @@ public class DataGapDetector {
                     // if we found data in the gap
                     if (lastDataId != -1) {
                         if (!lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
-                            dataService.insertDataGap(transaction, new DataGap(lastDataId + dataIdIncrementBy, dataGap.getEndId()));
+                            DataGap newGap = new DataGap(lastDataId + dataIdIncrementBy, dataGap.getEndId());
+                            if (!gapCheck.contains(newGap)) {
+                                dataService.insertDataGap(transaction, newGap);
+                                gapCheck.add(newGap);
+                            }
                             newGapsInserted++;
                         }
 
@@ -209,8 +224,12 @@ public class DataGapDetector {
             }
 
             if (lastDataId != -1) {
-                dataService
-                        .insertDataGap(new DataGap(lastDataId + 1, lastDataId + maxDataToSelect));
+                DataGap newGap = new DataGap(lastDataId + 1, lastDataId + maxDataToSelect);
+                if (!gapCheck.contains(newGap)) {
+                    dataService.insertDataGap(newGap);
+                    gapCheck.add(newGap);
+                }
+
             }
 
             long updateTimeInMs = System.currentTimeMillis() - ts;
