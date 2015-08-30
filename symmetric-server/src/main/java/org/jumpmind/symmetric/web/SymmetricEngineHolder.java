@@ -221,7 +221,7 @@ public class SymmetricEngineHolder {
         ServerSymmetricEngine engine = null;
         try {
             engine = new ServerSymmetricEngine(propertiesFile != null ? new File(propertiesFile)
-                    : null, springContext);
+                    : null, springContext, this);
             engine.setDeploymentType(deploymentType);
             synchronized (this) {
                 if (!engines.containsKey(engine.getEngineName())) {
