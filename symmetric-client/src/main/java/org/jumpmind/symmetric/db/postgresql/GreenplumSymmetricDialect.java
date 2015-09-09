@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.db.postgresql;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class GreenplumSymmetricDialect extends PostgreSqlSymmetricDialect {
@@ -28,6 +29,18 @@ public class GreenplumSymmetricDialect extends PostgreSqlSymmetricDialect {
     public GreenplumSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new GreenplumTriggerTemplate(this);
+    }
+    
+    @Override
+    public void createRequiredDatabaseObjects() {
+    }
+    
+    @Override
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+    }
+    
+    @Override
+    public void disableSyncTriggers(ISqlTransaction transaction) {
     }
     
 }
