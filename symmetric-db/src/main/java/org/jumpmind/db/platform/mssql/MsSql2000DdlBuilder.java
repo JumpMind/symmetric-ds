@@ -749,6 +749,12 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         } else if (sqlType.toString().equalsIgnoreCase("varbinary")) {
             sqlType.setLength(0);
             sqlType.append("varbinary(max)");
+        } else if (sqlType.toString().equalsIgnoreCase("nvarchar")) {
+            sqlType.setLength(0);
+            sqlType.append("nvarchar(max)");
+        } else if (sqlType.toString().equalsIgnoreCase("nvarbinary")) {
+            sqlType.setLength(0);
+            sqlType.append("nvarbinary(max)");            
         }
     }
 }
