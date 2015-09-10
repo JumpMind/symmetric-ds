@@ -42,8 +42,7 @@ import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 public class OracleBulkDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware,
         IBuiltInExtensionPoint {
 
-    private String procedurePrefix;
-    private int maxRowsBeforeFlush;
+    private ISymmetricEngine engine;
     private NativeJdbcExtractor jdbcExtractor;
 
     public OracleBulkDataLoaderFactory() {
@@ -58,14 +57,14 @@ public class OracleBulkDataLoaderFactory implements IDataLoaderFactory, ISymmetr
             TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), procedurePrefix,
+        int maxRowsBeforeFlush = engine.getParameterService().getInt(
+                "oracle.bulk.load.max.rows.before.flush", 1000);
+        return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), engine.getTablePrefix(),
                 jdbcExtractor, maxRowsBeforeFlush);
     }
 
     public void setSymmetricEngine(ISymmetricEngine engine) {
-        this.procedurePrefix = engine.getTablePrefix();
-        this.maxRowsBeforeFlush = engine.getParameterService().getInt(
-                "oracle.bulk.load.max.rows.before.flush", 1000);
+        this.engine = engine;
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
