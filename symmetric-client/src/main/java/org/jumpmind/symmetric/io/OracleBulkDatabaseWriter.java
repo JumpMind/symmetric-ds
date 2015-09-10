@@ -176,6 +176,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
             failureMessage.append(batch.getNodeBatchId());
             failureMessage.append(".  The last flushed line number of the batch was ");
             failureMessage.append(statistics.get(batch).get(DataWriterStatisticConstants.LINENUMBER));
+            failureMessage.append("\n");
                         
             for (List<Object> row : rowArrays) {
                 failureMessage.append(StringUtils.abbreviate(Arrays.toString(row.toArray(new Object[row.size()])), CsvData.MAX_DATA_SIZE_TO_PRINT_TO_LOG));
