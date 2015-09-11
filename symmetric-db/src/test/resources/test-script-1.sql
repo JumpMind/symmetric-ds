@@ -47,3 +47,8 @@ class A {
   int x, y = 0;
 }
 ');
+insert into test (col) values('<!--
+<test></test>
+-->');
+insert into test (col1,col2) values('<!--', -- test
+'<test></test>');

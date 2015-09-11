@@ -51,6 +51,11 @@ public class SqlScriptReaderTest {
                 "  int x, y = 0;\n" + 
                 "}\n" + 
                 "')",sql);
+        assertEquals("insert into test (col) values('<!--\n" + 
+                "<test></test>\n" + 
+                "-->')", reader.readSqlStatement());
+        assertEquals("insert into test (col1,col2) values('<!--', \n" + 
+        "'<test></test>')", reader.readSqlStatement());
         assertNull(reader.readSqlStatement());
         reader.close();
     }
