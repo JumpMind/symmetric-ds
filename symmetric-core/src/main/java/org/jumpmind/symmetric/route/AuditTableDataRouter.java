@@ -116,7 +116,7 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
 
     protected Table toAuditTable(Table table) {
         Table auditTable = table.copy();
-        String tableName = table.getName();
+        String tableName =  engine.getDatabasePlatform().alterCaseToMatchDatabaseDefaultCase(table.getName());
         if (!FormatUtils.isMixedCase(tableName)) {
             tableName = tableName.toUpperCase();
         }
@@ -134,7 +134,6 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
         }
         auditTable.removeAllForeignKeys();
         auditTable.removeAllIndices();
-        engine.getDatabasePlatform().alterCaseToMatchDatabaseDefaultCase(auditTable);
         return auditTable;
     }
 

@@ -257,6 +257,12 @@ public class DbExport {
                     db.addTable(newTable);
                 }
             }
+            else if (addDropTable) {
+                for (Table table : tables) {
+                    Table newTable = (Table) table.clone();
+                    db.addTable(newTable);
+                }
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -482,6 +488,13 @@ public class DbExport {
                         write(target.createTables(getDatabase(table), addDropTable));
                     } else if (format == Format.XML) {
                         DatabaseXmlUtil.write(table, writer);
+                    }
+                }
+                else if (addDropTable) {
+                    if (format == Format.SQL) {
+                        IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(compatible
+                            .toString().toLowerCase());
+                        write(target.dropTables(getDatabase(table)));
                     }
                 }
 
