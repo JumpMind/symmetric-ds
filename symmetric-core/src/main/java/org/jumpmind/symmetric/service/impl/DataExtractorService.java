@@ -1064,8 +1064,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * in the background.
      */
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
-        long ts = System.currentTimeMillis();
         List<ExtractRequest> requests = getExtractRequestsForNode(nodeCommunication.getNodeId());
+        long ts = System.currentTimeMillis();
         /*
          * Process extract requests until it has taken longer than 30 seconds, and then
          * allow the process to return so progress status can be seen.
