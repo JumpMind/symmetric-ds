@@ -29,6 +29,8 @@ public class ClusterConstants {
     public static final String ROUTE = "ROUTE";
     public static final String PUSH = "PUSH";
     public static final String PULL = "PULL";
+    public static final String OFFLINE_PUSH = "OFFLINE_PUSH";
+    public static final String OFFLINE_PULL = "OFFLINE_PULL";
     public static final String REFRESH_CACHE = "REFRESH_CACHE";
     public static final String PURGE_OUTGOING = "PURGE_OUTGOING";
     public static final String PURGE_INCOMING = "PURGE_INCOMING";

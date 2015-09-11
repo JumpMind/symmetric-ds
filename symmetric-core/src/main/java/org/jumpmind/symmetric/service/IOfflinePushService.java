@@ -18,29 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.db.postgresql;
+package org.jumpmind.symmetric.service;
 
-import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 
-public class GreenplumSymmetricDialect extends PostgreSqlSymmetricDialect {
+/**
+ * Service API that is responsible for pushing data to the list of configured
+ * {@link Node}s that are configured to {@link NodeGroupLinkAction#P}
+ */
+public interface IOfflinePushService extends IOfflineDetectorService {
 
-    public GreenplumSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
-        super(parameterService, platform);
-        this.triggerTemplate = new GreenplumTriggerTemplate(this);
-    }
-    
-    @Override
-    public void createRequiredDatabaseObjects() {
-    }
-    
-    @Override
-    public void enableSyncTriggers(ISqlTransaction transaction) {
-    }
-    
-    @Override
-    public void disableSyncTriggers(ISqlTransaction transaction) {
-    }
-    
+    public RemoteNodeStatuses pushData(boolean force);
+
 }

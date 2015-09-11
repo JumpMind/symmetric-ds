@@ -65,6 +65,12 @@ final public class ParameterConstants {
     public final static String PUSH_MINIMUM_PERIOD_MS = "push.period.minimum.ms";
     public final static String PUSH_LOCK_TIMEOUT_MS = "push.lock.timeout.ms";
 
+    public final static String OFFLINE_PULL_THREAD_COUNT_PER_SERVER = "offline.pull.thread.per.server.count";
+    public final static String OFFLINE_PULL_LOCK_TIMEOUT_MS = "offline.pull.lock.timeout.ms";
+
+    public final static String OFFLINE_PUSH_THREAD_COUNT_PER_SERVER = "offline.push.thread.per.server.count";
+    public final static String OFFLINE_PUSH_LOCK_TIMEOUT_MS = "offline.push.lock.timeout.ms";
+
     public final static String FILE_PULL_THREAD_COUNT_PER_SERVER = "file.pull.thread.per.server.count";
     public final static String FILE_PULL_MINIMUM_PERIOD_MS = "file.pull.period.minimum.ms";
     public final static String FILE_PULL_LOCK_TIMEOUT_MS = "file.pull.lock.timeout.ms";
@@ -241,6 +247,14 @@ final public class ParameterConstants {
     public final static String WEB_BATCH_URI_HANDLER_ENABLE = "web.batch.servlet.enable";
 
     public final static String NODE_COPY_MODE_ENABLED = "node.copy.mode.enabled";
+
+    public final static String NODE_OFFLINE = "node.offline";
+    public final static String NODE_OFFLINE_INCOMING_DIR = "node.offline.incoming.dir";
+    public final static String NODE_OFFLINE_INCOMING_ACCEPT_ALL = "node.offline.incoming.accept.all";
+    public final static String NODE_OFFLINE_OUTGOING_DIR = "node.offline.outgoing.dir";
+    public final static String NODE_OFFLINE_ERROR_DIR = "node.offline.error.dir";
+    public final static String NODE_OFFLINE_ARCHIVE_DIR = "node.offline.archive.dir";
+    
     public final static String OFFLINE_NODE_DETECTION_PERIOD_MINUTES = "offline.node.detection.period.minutes";
     public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC = "heartbeat.sync.on.push.period.sec";
     public final static String HEARTBEAT_JOB_PERIOD_MS = "job.heartbeat.period.time.ms";

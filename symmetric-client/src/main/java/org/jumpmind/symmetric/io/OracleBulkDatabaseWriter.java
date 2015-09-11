@@ -33,6 +33,7 @@ import oracle.jdbc.internal.OracleCallableStatement;
 import oracle.sql.ARRAY;
 import oracle.sql.ArrayDescriptor;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -170,6 +171,18 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
             }
 
         } catch (SQLException ex) {
+            StringBuilder failureMessage = new StringBuilder();
+            failureMessage.append("Failed to flush the following data set from batch ");
+            failureMessage.append(batch.getNodeBatchId());
+            failureMessage.append(".  The last flushed line number of the batch was ");
+            failureMessage.append(statistics.get(batch).get(DataWriterStatisticConstants.LINENUMBER));
+            failureMessage.append("\n");
+                        
+            for (List<Object> row : rowArrays) {
+                failureMessage.append(StringUtils.abbreviate(Arrays.toString(row.toArray(new Object[row.size()])), CsvData.MAX_DATA_SIZE_TO_PRINT_TO_LOG));
+                failureMessage.append("\n");
+            }
+            log.info(failureMessage.toString());
             throw platform.getSqlTemplate().translate(ex);
         } finally {
             lastEventType = null;

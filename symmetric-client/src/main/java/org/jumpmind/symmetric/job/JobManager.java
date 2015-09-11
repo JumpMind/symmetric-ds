@@ -50,6 +50,8 @@ public class JobManager implements IJobManager {
         this.jobs.add(new RouterJob(engine, taskScheduler));
         this.jobs.add(new PushJob(engine, taskScheduler));
         this.jobs.add(new PullJob(engine, taskScheduler));
+        this.jobs.add(new OfflinePushJob(engine, taskScheduler));
+        this.jobs.add(new OfflinePullJob(engine, taskScheduler));
         this.jobs.add(new OutgoingPurgeJob(engine, taskScheduler));
         this.jobs.add(new IncomingPurgeJob(engine, taskScheduler));
         this.jobs.add(new StatisticFlushJob(engine, taskScheduler));

@@ -81,6 +81,8 @@ import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOfflinePullService;
+import org.jumpmind.symmetric.service.IOfflinePushService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPullService;
@@ -106,6 +108,8 @@ import org.jumpmind.symmetric.service.impl.IncomingBatchService;
 import org.jumpmind.symmetric.service.impl.LoadFilterService;
 import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
 import org.jumpmind.symmetric.service.impl.NodeService;
+import org.jumpmind.symmetric.service.impl.OfflinePullService;
+import org.jumpmind.symmetric.service.impl.OfflinePushService;
 import org.jumpmind.symmetric.service.impl.OutgoingBatchService;
 import org.jumpmind.symmetric.service.impl.ParameterService;
 import org.jumpmind.symmetric.service.impl.PullService;
@@ -166,6 +170,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IConcurrentConnectionManager concurrentConnectionManager;
 
     protected ITransportManager transportManager;
+    
+    protected ITransportManager offlineTransportManager;
 
     protected IClusterService clusterService;
 
@@ -197,6 +203,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected IPullService pullService;
 
+    protected IOfflinePushService offlinePushService;
+
+    protected IOfflinePullService offlinePullService;
+    
     protected IJobManager jobManager;
 
     protected ISequenceService sequenceService;
@@ -317,6 +327,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect, clusterService);
         this.dataExtractorService = new DataExtractorService(this);
         this.transportManager = new TransportManagerFactory(this).create();
+        this.offlineTransportManager = new TransportManagerFactory(this).create(Constants.PROTOCOL_FILE);
         this.dataLoaderService = new DataLoaderService(this);
         this.registrationService = new RegistrationService(this);
         this.acknowledgeService = new AcknowledgeService(this);
@@ -326,6 +337,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.pullService = new PullService(parameterService, symmetricDialect, 
                 nodeService, dataLoaderService, registrationService, clusterService, nodeCommunicationService, 
                 configurationService, extensionService);
+        this.offlinePushService = new OfflinePushService(parameterService, symmetricDialect,
+                dataExtractorService, acknowledgeService, offlineTransportManager, nodeService,
+                clusterService, nodeCommunicationService, statisticManager, configurationService, extensionService);
+        this.offlinePullService = new OfflinePullService(parameterService, symmetricDialect, 
+                nodeService, dataLoaderService, clusterService, nodeCommunicationService, 
+                configurationService, extensionService, offlineTransportManager);
         this.fileSyncService = new FileSyncService(this);
         this.jobManager = createJobManager();
 
@@ -967,6 +984,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return this.pushService;
     }
 
+    public IOfflinePullService getOfflinePullService() {
+        return this.offlinePullService;
+    }
+
+    public IOfflinePushService getOfflinePushService() {
+        return this.offlinePushService;
+    }
+
     public IRouterService getRouterService() {
         return this.routerService;
     }
@@ -1009,6 +1034,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public ITransportManager getTransportManager() {
         return transportManager;
+    }
+
+    public ITransportManager getOfflineTransportManager() {
+        return offlineTransportManager;
     }
 
     public IExtensionService getExtensionService() {

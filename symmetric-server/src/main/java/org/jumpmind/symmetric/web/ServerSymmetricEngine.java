@@ -32,6 +32,8 @@ import org.springframework.context.ApplicationContext;
 public class ServerSymmetricEngine extends ClientSymmetricEngine {
 
     protected List<IUriHandler> uriHandlers;
+    
+    protected SymmetricEngineHolder engineHolder;
 
     public ServerSymmetricEngine(File propertiesFile) {
         super(propertiesFile);
@@ -39,6 +41,15 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
     
     public ServerSymmetricEngine(File propertiesFile, ApplicationContext springContext) {
         super(propertiesFile, springContext);
+    }
+    
+    public ServerSymmetricEngine(File propertiesFile, ApplicationContext springContext, SymmetricEngineHolder engineHolder) {
+        super(propertiesFile, springContext);
+        this.engineHolder = engineHolder;
+    }
+    
+    public SymmetricEngineHolder getEngineHolder() {
+        return engineHolder;
     }
     
     @Override

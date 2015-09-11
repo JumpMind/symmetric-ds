@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
+import org.jumpmind.symmetric.transport.IIncomingTransport;
 
 /**
  * This service provides an API to load data into a SymmetricDS node's database
@@ -45,7 +46,9 @@ public interface IDataLoaderService {
     public void loadDataFromPull(Node sourceNode, RemoteNodeStatus status) throws IOException;
 
     public void loadDataFromPush(Node sourceNode, InputStream in, OutputStream out) throws IOException;
-        
+
+    public List<IncomingBatch> loadDataFromOfflineTransport(Node remote, RemoteNodeStatus status, IIncomingTransport transport) throws IOException;
+
     public List<String> getAvailableDataLoaderFactories();
         
     public List<IncomingBatch> loadDataBatch(String batchData);

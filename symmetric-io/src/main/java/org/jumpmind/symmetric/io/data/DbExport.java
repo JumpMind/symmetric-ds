@@ -170,6 +170,9 @@ public class DbExport {
                 tables[i] = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
                         tables[i].getName());
             }
+            
+            /* make a copy so if we zero out catalog and schema we don't effect the original */
+            tables[i] = tables[i].copy();
         }
 
         WriterWrapper writerWrapper = null;
@@ -468,7 +471,7 @@ public class DbExport {
                             && table.getCatalog().equals(platform.getDefaultCatalog())) {
                         table.setCatalog(null);
                     }
-                    if (table.getSchema() != null
+                    if (table.getCatalog() == null && table.getSchema() != null
                             && table.getSchema().equals(platform.getDefaultSchema())) {
                         table.setSchema(null);
                     }

@@ -40,9 +40,11 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.DatabaseParameter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -119,13 +121,18 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         switch (communicationType) {
             case PULL:
             case FILE_PULL:
-                nodesToCommunicateWith = nodeService.findNodesToPull();
+                nodesToCommunicateWith = removeOfflineNodes(nodeService.findNodesToPull());
                 break;
             case FILE_PUSH:
             case PUSH:
-                nodesToCommunicateWith = nodeService.findNodesToPushTo();
+                nodesToCommunicateWith = removeOfflineNodes(nodeService.findNodesToPushTo());
                 break;
-
+            case OFFLN_PUSH:
+                nodesToCommunicateWith = getNodesToCommunicateWithOffline(CommunicationType.PUSH);
+                break;
+            case OFFLN_PULL:
+                nodesToCommunicateWith = getNodesToCommunicateWithOffline(CommunicationType.PULL);
+                break;
             default:
                 nodesToCommunicateWith = new ArrayList<Node>(0);
                 break;
@@ -168,7 +175,65 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 it.remove();
             }
         }
+
         return communicationRows;
+    }
+
+    protected List<Node> removeOfflineNodes(List<Node> nodes) {
+        if (parameterService.is(ParameterConstants.NODE_OFFLINE)) {
+            nodes.clear();
+        } else {
+            List<DatabaseParameter> parms = parameterService.getDatabaseParametersFor(ParameterConstants.NODE_OFFLINE);
+            for (DatabaseParameter parm : parms) {
+                Iterator<Node> iter = nodes.iterator();
+                while (iter.hasNext()) {
+                    Node node = iter.next();
+                    if ((parm.getNodeGroupId().equals(ParameterConstants.ALL) || parm.getNodeGroupId().equals(node.getNodeGroupId()) &&
+                            (parm.getExternalId().equals(ParameterConstants.ALL) || parm.getExternalId().equals(node.getExternalId())))) {
+                        iter.remove();
+                    }
+                }
+            }
+        }
+        return nodes;
+    }
+
+    protected List<Node> getNodesToCommunicateWithOffline(CommunicationType communicationType) {
+        List<Node> nodesToCommunicateWith = null;
+        if (parameterService.is(ParameterConstants.NODE_OFFLINE) || 
+                (communicationType.equals(CommunicationType.PULL) && parameterService.is(ParameterConstants.NODE_OFFLINE_INCOMING_ACCEPT_ALL))) {            
+            if (communicationType.equals(CommunicationType.PUSH)) {
+                nodesToCommunicateWith = nodeService.findTargetNodesFor(NodeGroupLinkAction.W);
+                nodesToCommunicateWith.addAll(nodeService.findNodesToPushTo());
+            } else if (communicationType.equals(CommunicationType.PULL)) {
+                nodesToCommunicateWith = nodeService.findSourceNodesFor(NodeGroupLinkAction.P);
+                nodesToCommunicateWith.addAll(nodeService.findNodesToPull());
+            }
+        } else {
+            List<DatabaseParameter> parms = parameterService.getDatabaseParametersFor(ParameterConstants.NODE_OFFLINE);
+            nodesToCommunicateWith = new ArrayList<Node>(parms.size());
+            if (parms.size() > 0) {
+                List<Node> sourceNodes = null;
+                if (communicationType.equals(CommunicationType.PUSH)) {
+                    sourceNodes = nodeService.findTargetNodesFor(NodeGroupLinkAction.W);
+                    sourceNodes.addAll(nodeService.findNodesToPushTo());
+                } else if (communicationType.equals(CommunicationType.PULL)) {
+                    sourceNodes = nodeService.findSourceNodesFor(NodeGroupLinkAction.P);
+                    sourceNodes.addAll(nodeService.findNodesToPull());
+                }
+                if (sourceNodes != null && sourceNodes.size() > 0) {
+                    for (DatabaseParameter parm : parms) {
+                        for (Node node : sourceNodes) {
+                            if ((parm.getNodeGroupId().equals(ParameterConstants.ALL) || parm.getNodeGroupId().equals(node.getNodeGroupId()) &&
+                                    (parm.getExternalId().equals(ParameterConstants.ALL) || parm.getExternalId().equals(node.getExternalId())))) {
+                                nodesToCommunicateWith.add(node);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return nodesToCommunicateWith;
     }
 
     public boolean delete(NodeCommunication nodeCommunication) {
@@ -205,6 +270,12 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 break;
             case PUSH:
                 threadCountParameter = ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER;
+                break;
+            case OFFLN_PULL:
+                threadCountParameter = ParameterConstants.OFFLINE_PULL_THREAD_COUNT_PER_SERVER;
+                break;
+            case OFFLN_PUSH:
+                threadCountParameter = ParameterConstants.OFFLINE_PUSH_THREAD_COUNT_PER_SERVER;
                 break;
             case FILE_PULL:
                 threadCountParameter = ParameterConstants.FILE_PUSH_THREAD_COUNT_PER_SERVER;
@@ -278,6 +349,12 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 break;
             case PUSH:
                 parameter = ParameterConstants.PUSH_LOCK_TIMEOUT_MS;
+                break;
+            case OFFLN_PULL:
+                parameter = ParameterConstants.OFFLINE_PULL_LOCK_TIMEOUT_MS;
+                break;
+            case OFFLN_PUSH:
+                parameter = ParameterConstants.OFFLINE_PUSH_LOCK_TIMEOUT_MS;
                 break;
             case FILE_PULL:
                 parameter = ParameterConstants.FILE_PULL_LOCK_TIMEOUT_MS;

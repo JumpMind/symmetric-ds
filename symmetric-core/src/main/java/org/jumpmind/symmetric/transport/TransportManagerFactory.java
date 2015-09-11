@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
+import org.jumpmind.symmetric.transport.file.FileTransportManager;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.http.SelfSignedX509TrustManager;
 import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
@@ -88,8 +89,11 @@ public class TransportManagerFactory {
     }
 
     public ITransportManager create() {
-        String transport = symmetricEngine.getParameterService().getString(
-                ParameterConstants.TRANSPORT_TYPE);
+        return create(symmetricEngine.getParameterService().getString(
+                ParameterConstants.TRANSPORT_TYPE));
+    }
+
+    public ITransportManager create(String transport) {
         if (Constants.PROTOCOL_HTTP.equalsIgnoreCase(transport)) {
             String httpSslVerifiedServerNames = symmetricEngine.getParameterService().getString(
                     ServerConstants.HTTPS_VERIFIED_SERVERS);
@@ -98,7 +102,8 @@ public class TransportManagerFactory {
                     ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, false);
             initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts);
             return new HttpTransportManager(symmetricEngine);
-
+        } else if (Constants.PROTOCOL_FILE.equalsIgnoreCase(transport)) {
+            return new FileTransportManager(symmetricEngine);
         } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
             return new InternalTransportManager(symmetricEngine);
         } else {

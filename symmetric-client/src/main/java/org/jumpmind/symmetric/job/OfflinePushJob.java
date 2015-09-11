@@ -18,29 +18,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.db.postgresql;
+package org.jumpmind.symmetric.job;
 
-import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.service.ClusterConstants;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-public class GreenplumSymmetricDialect extends PostgreSqlSymmetricDialect {
+/*
+ * Background job that is responsible for pushing data to linked nodes.
+ */
+public class OfflinePushJob extends AbstractJob {
 
-    public GreenplumSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
-        super(parameterService, platform);
-        this.triggerTemplate = new GreenplumTriggerTemplate(this);
+    public OfflinePushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.offline.push", true, engine.getParameterService().is("start.offline.push.job"), engine,
+                taskScheduler);
     }
-    
+
     @Override
-    public void createRequiredDatabaseObjects() {
+    public void doJob(boolean force) throws Exception {
+        if (engine != null) {
+            engine.getOfflinePushService().pushData(force).getDataProcessedCount();
+        }
     }
-    
-    @Override
-    public void enableSyncTriggers(ISqlTransaction transaction) {
+
+    public String getClusterLockName() {
+        return ClusterConstants.OFFLINE_PUSH;
     }
-    
-    @Override
-    public void disableSyncTriggers(ISqlTransaction transaction) {
-    }
-    
+
 }

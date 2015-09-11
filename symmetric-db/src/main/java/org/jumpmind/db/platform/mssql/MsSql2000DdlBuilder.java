@@ -740,5 +740,21 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         if (identityIndex > 0) {
             sqlType.replace(identityIndex, sqlType.length(), "");
         }
+        if (sqlType.indexOf("datetimeoffset") >= 0) {
+            sqlType.setLength(0);
+            sqlType.append("datetimeoffset");
+        } else if (sqlType.toString().equalsIgnoreCase("varchar")) {
+            sqlType.setLength(0);
+            sqlType.append("varchar(max)");
+        } else if (sqlType.toString().equalsIgnoreCase("varbinary")) {
+            sqlType.setLength(0);
+            sqlType.append("varbinary(max)");
+        } else if (sqlType.toString().equalsIgnoreCase("nvarchar")) {
+            sqlType.setLength(0);
+            sqlType.append("nvarchar(max)");
+        } else if (sqlType.toString().equalsIgnoreCase("nvarbinary")) {
+            sqlType.setLength(0);
+            sqlType.append("nvarbinary(max)");            
+        }
     }
 }
