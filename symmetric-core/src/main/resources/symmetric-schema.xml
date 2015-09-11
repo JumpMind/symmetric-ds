@@ -213,7 +213,7 @@
 
     <table name="grouplet_link" description="This tables defines nodes belong to a grouplet based on their external.id">
         <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
-        <column name="external_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Provides a means to select the nodes that belong to a grouplet. " />
+        <column name="external_id" type="VARCHAR" size="255" required="true" primaryKey="true"  description="Provides a means to select the nodes that belong to a grouplet. " />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
@@ -316,7 +316,7 @@
     <table name="node" description="Representation of an instance of SymmetricDS that synchronizes data with one or more additional nodes. Each node has a unique identifier (nodeId) that is used when communicating, as well as a domain-specific identifier (externalId) that provides context within the local system.">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
         <column name="node_group_id" type="VARCHAR" size="50" required="true" description="The node group that this node belongs to, such as 'store'." />
-        <column name="external_id" type="VARCHAR" size="50" required="true" description="A domain-specific identifier for context within the local system. For example, the retail store number. "/>
+        <column name="external_id" type="VARCHAR" size="255" required="true" description="A domain-specific identifier for context within the local system. For example, the retail store number. "/>
         <column name="sync_enabled" type="BOOLEANINT" size="1" default="0" description="Indicates whether this node should be sent synchronization. Disabled nodes are ignored by the triggers, so no entries are made in data_event for the node."/>
         <column name="sync_url" type="VARCHAR" size="255" description="The URL to contact the node for synchronization." />
         <column name="schema_version" type="VARCHAR" size="50" description="The version of the database schema this node manages. Useful for specifying synchronization by version. "/>
@@ -558,7 +558,7 @@
     </table>
 
     <table name="parameter" description="Provides a way to manage most SymmetricDS settings in the database.">
-        <column name="external_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Target the parameter at a specific external id. To target all nodes, use the value of 'ALL.'" />
+        <column name="external_id" type="VARCHAR" size="255" required="true" primaryKey="true" description="Target the parameter at a specific external id. To target all nodes, use the value of 'ALL.'" />
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Target the parameter at a specific node group id. To target all groups, use the value of 'ALL.'"/>
         <column name="param_key" type="VARCHAR" size="80" required="true" primaryKey="true" description="The name of the parameter."/>
         <column name="param_value" type="LONGVARCHAR" description="The value of the parameter." />
@@ -568,13 +568,13 @@
     </table>
 
     <table name="registration_redirect" description="Provides a way for a centralized registration server to redirect registering nodes to their prospective parent node in a multi-tiered deployment." >
-        <column name="registrant_external_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Maps the external id of a registration request to a different parent node." />
+        <column name="registrant_external_id" type="VARCHAR" size="255" required="true" primaryKey="true"  description="Maps the external id of a registration request to a different parent node." />
         <column name="registration_node_id" type="VARCHAR" size="50" required="true"  description="The node_id of the node that a registration request should be redirected to." />
     </table>
 
     <table name="registration_request" description="Audits when a node registers or attempts to register.">
         <column name="node_group_id" primaryKey="true" required="true" type="VARCHAR" size="50" description="The node group that this node belongs to, such as 'store'." />
-        <column name="external_id" primaryKey="true" required="true"  type="VARCHAR" size="50" description="A domain-specific identifier for context within the local system. For example, the retail store number. "/>
+        <column name="external_id" primaryKey="true" required="true"  type="VARCHAR" size="255" description="A domain-specific identifier for context within the local system. For example, the retail store number. "/>
         <column name="status" type="CHAR" size="2"  required="true"  description="The current status of the registration attempt.  Valid statuses are NR (not registered), IG (ignored), OK (sucessful)" />
         <column name="host_name" type="VARCHAR" size="60" required="true"  description="The host name of a workstation or server. If more than one instance of SymmetricDS runs on the same server, then this value can be a 'server id' specified by -Druntime.symmetric.cluster.server.id" />
         <column name="ip_address" type="VARCHAR" size="50" required="true"  description="The ip address for the host." />
