@@ -43,7 +43,7 @@ public class ClusterServiceSqlMap extends AbstractSqlMap {
             "update $(lock) set shared_enable=0 where lock_action=? and lock_type=?");
 
         putSql("acquireExclusiveLockSql",
-            "update $(lock) set lock_type=?, locking_server_id=?, lock_time=? " +
+            "update $(lock) set lock_type=?, locking_server_id=?, lock_time=?, shared_count=0 " +
             "where lock_action=? and ((lock_type=? and shared_count = 0) or lock_time is null or lock_time < ?)");
 
         putSql("releaseClusterLockSql",
@@ -55,7 +55,7 @@ public class ClusterServiceSqlMap extends AbstractSqlMap {
             "shared_enable=(case when shared_count = 1 then 0 else shared_enable end), " +
             "locking_server_id = (case when shared_count = 1 then null else locking_server_id end), " +
             "lock_time = (case when shared_count = 1 then null else lock_time end), " +
-            "shared_count=shared_count-1 " +
+            "shared_count=(case when shared_count > 1 then shared_count-1 else 0 end) " +
             "where lock_action=? and lock_type=?");
 
         putSql("releaseExclusiveLockSql",
