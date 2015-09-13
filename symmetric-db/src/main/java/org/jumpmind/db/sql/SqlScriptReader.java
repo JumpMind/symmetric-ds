@@ -42,12 +42,22 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
 
     private boolean usePrefixSuffixForReplacementTokens = false;
 
+    private boolean stripOutBlockComments = false;
+
     public SqlScriptReader(Reader in) {
         super(in);
     }
 
     public void setUsePrefixSuffixForReplacementTokens(boolean usePrefixSuffixForReplacementTokens) {
         this.usePrefixSuffixForReplacementTokens = usePrefixSuffixForReplacementTokens;
+    }
+
+    public void setStripOutBlockComments(boolean stripOutBlockComments) {
+        this.stripOutBlockComments = stripOutBlockComments;
+    }
+
+    public boolean isStripOutBlockComments() {
+        return stripOutBlockComments;
     }
 
     public boolean isUsePrefixSuffixForReplacementTokens() {
@@ -124,6 +134,7 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
         boolean inLiteral = false;
         boolean inLineComment = false;
         boolean inBlockComment = false;
+        int skipNextCount = 0;
 
         StringBuilder commentsRemoved = new StringBuilder();
         char prev = '\0';
@@ -143,16 +154,19 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
 
             if (inBlockComment && isBlockCommentEnd(prev, cur)) {
                 inBlockComment = false;
-            }
+                skipNextCount = 2;
+            } 
 
-            if (!inBlockComment && !inLineComment) {
+            if (!inBlockComment && !inLineComment && skipNextCount == 0) {
                 commentsRemoved.append(prev);
+            } else if (skipNextCount > 0) {
+                skipNextCount--;
             }
 
             prev = cur;
         }
-        
-        if (!inBlockComment && !inLineComment) {
+
+        if (!inBlockComment && !inLineComment && skipNextCount == 0) {
             commentsRemoved.append(prev);
         }
 
@@ -168,17 +182,15 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
     }
 
     private final boolean isBlockCommentStart(char prev, char cur) {
-        return (prev == '/' && cur == '*');
+        return stripOutBlockComments && (prev == '/' && cur == '*');
     }
 
     private final boolean isBlockCommentEnd(char prev, char cur) {
         return (prev == '*' && cur == '/');
     }
-    
+
     private final boolean switchLiteral(char prev, char cur, boolean inLiteral) {
-        return (prev =='\'' && !inLiteral || (inLiteral && cur != '\'' && prev == '\'')) ||
-                (prev =='"') ||
-                (prev =='`');
+        return (prev == '\'' && !inLiteral || (inLiteral && cur != '\'' && prev == '\'')) || (prev == '"') || (prev == '`');
     }
 
     private final boolean checkStatementEnds(String s) {

@@ -56,6 +56,10 @@ public class SqlScriptReaderTest {
                 "-->')", reader.readSqlStatement());
         assertEquals("insert into test (col1,col2) values('<!--', \n" + 
         "'<test></test>')", reader.readSqlStatement());
+        assertEquals("select col1 /* test */, col2 /* col2 */ from rubixcube", reader.readSqlStatement());
+        reader.setStripOutBlockComments(true);
+        String statement = reader.readSqlStatement();
+        assertEquals("select col1 , col2  from rubixcube", statement);
         assertNull(reader.readSqlStatement());
         reader.close();
     }

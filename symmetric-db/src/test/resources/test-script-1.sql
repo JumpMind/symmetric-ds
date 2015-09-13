@@ -52,3 +52,5 @@ insert into test (col) values('<!--
 -->');
 insert into test (col1,col2) values('<!--', -- test
 '<test></test>');
+select col1 /* test */, col2 /* col2 */ from rubixcube;
+select col1 /* test */, col2 /* col2 */ from rubixcube;
