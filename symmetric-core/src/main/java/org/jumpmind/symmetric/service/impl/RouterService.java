@@ -715,6 +715,8 @@ public class RouterService extends AbstractService implements IRouterService {
                                     triggerRouter);
                             context.incrementStat(System.currentTimeMillis() - ts,
                                     ChannelRouterContext.STAT_DATA_ROUTER_MS);
+                        } catch (DelayRoutingException ex) {
+                            throw ex;
                         } catch (RuntimeException ex) {
                             StringBuilder failureMessage = new StringBuilder(
                                     "Failed to route data: ");
