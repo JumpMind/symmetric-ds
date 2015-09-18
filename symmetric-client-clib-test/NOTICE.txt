@@ -81,3 +81,24 @@ license include:
 If you feel like you really have to purchase a license for SQLite, Hwaci,
 the company that employs the architect and principal developers of SQLite,
 will sell you one.
+
+=========================================================================
+==  Lib CSV                                                            ==
+=========================================================================
+This product links to software developed by Robert Gamble
+(rgamble@users.sourceforge.net) for the libcsv project
+(https://sourceforge.net/projects/libcsv/).
+
+Copyright (C) 2013 Robert Gamble.
+All rights reserved.
+
+=========================================================================
+==  CUnit                                                              ==
+=========================================================================
+This product links to software developed by Anil Kumar 
+<aksaharan@yahoo.com> and Jerry St.Clair <jds2@users.sourceforge.net>
+for the CUnit project (http://cunit.sourceforge.net/).
+
+Copyright (C) 2004 -2005, Anil Kumar <aksaharan@yahoo.com> and
+Jerry St.Clair <jds2@users.sourceforge.net>.
+All rights reserved.

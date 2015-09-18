@@ -81,3 +81,13 @@ license include:
 If you feel like you really have to purchase a license for SQLite, Hwaci,
 the company that employs the architect and principal developers of SQLite,
 will sell you one.
+
+=========================================================================
+==  LibCSV                                                             ==
+=========================================================================
+This product links to software developed by Robert Gamble
+(rgamble@users.sourceforge.net) for the libcsv project
+(https://sourceforge.net/projects/libcsv/).
+
+Copyright (C) 2013 Robert Gamble
+All rights reserved.

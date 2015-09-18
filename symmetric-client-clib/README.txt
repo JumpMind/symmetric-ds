@@ -44,10 +44,13 @@ Required software for compile/runtime:
 Dependency: Curl
 License: MIT/X derivate license
 Website: http://curl.haxx.se/libcurl/
-Install: sudo apt-get install libcurl4-gnutls-dev
+APT: sudo apt-get install libcurl4-gnutls-dev
 
 Dependency: SQLite
 License: Public Domain
 Website: https://www.sqlite.org/
-Install: sudo apt-get install sqlite3 libsqlite3 libsqlite3-dev
+APT: sudo apt-get install sqlite3 libsqlite3 libsqlite3-dev
 
+Dependency: LibCSV
+License: LGPL v2
+APT: https://sourceforge.net/projects/libcsv/

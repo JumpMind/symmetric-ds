@@ -27,10 +27,24 @@ the shared library.
 # LD_LIBRARY_PATH=../../symmetric-client-clib/Debug/ ./symclient_test
 
 
-Required software for testing:
-------------------------------
-
+Required software for compile/runtime:
+--------------------------------------
 Dependency: CUnit library
 License: LGPL version 2
 Download: http://cunit.sourceforge.net/
-Install: sudo apt-get install libcunit1 libcunit1-dev
+APT: sudo apt-get install libcunit1 libcunit1-dev
+
+Dependency: Curl
+License: MIT/X derivate license
+Website: http://curl.haxx.se/libcurl/
+APT: sudo apt-get install libcurl4-gnutls-dev
+
+Dependency: SQLite
+License: Public Domain
+Website: https://www.sqlite.org/
+APT: sudo apt-get install sqlite3 libsqlite3 libsqlite3-dev
+
+Dependency: LibCSV
+License: LGPL v2
+Website: https://sourceforge.net/projects/libcsv/
+APT:
