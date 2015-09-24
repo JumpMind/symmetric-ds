@@ -126,7 +126,7 @@ public class TransformWriterTest extends AbstractWriterTest {
     protected TransformWriter getTransformWriter() {
         TransformTable transformTable3 =
            new TransformTable("s3", "t3", TransformPoint.LOAD, new TransformColumn("id", "id", true));
-        transformTable3.setUpdateActionBeanScript("switch (id) { case \"1\": return \"INS_ROW\"; case \"2\": "
+        transformTable3.setUpdateAction("switch (id) { case \"1\": return \"INS_ROW\"; case \"2\": "
            + "return \"DEL_ROW\"; case \"3\": return \"UPD_ROW\"; case \"4\": return \"NONE\"; case \"5\": "
            + "return \"UPDATE_COL\"; }");
         return new TransformWriter(platform, TransformPoint.LOAD, mockWriter, buildDefaultColumnTransforms(), new TransformTable[] {

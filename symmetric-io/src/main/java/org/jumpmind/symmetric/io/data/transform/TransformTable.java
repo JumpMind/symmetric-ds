@@ -51,8 +51,7 @@ public class TransformTable implements Cloneable {
     protected TransformPoint transformPoint;
     protected List<TransformColumn> transformColumns;
     protected List<TransformColumn> primaryKeyColumns;
-    protected String updateActionBeanScript = null;
-    protected TargetDmlAction updateAction = TargetDmlAction.UPDATE_COL;
+    protected String updateAction = TargetDmlAction.UPDATE_COL.name();
     protected TargetDmlAction deleteAction = TargetDmlAction.DEL_ROW;
     protected ColumnPolicy columnPolicy = ColumnPolicy.IMPLIED;
     protected boolean updateFirst = false;
@@ -210,20 +209,23 @@ public class TransformTable implements Cloneable {
             primaryKeyColumns.add(column);
         }
     }
-
-    public void setUpdateActionBeanScript(String updateAction) {
-        try {
-            this.updateActionBeanScript = null;
-            this.updateAction = TargetDmlAction.valueOf(updateAction);
-        }
-        catch (IllegalArgumentException e) {
-            //looks like a bean-shell-script
-            this.updateActionBeanScript = updateAction;
-        }
+    
+    public void setUpdateAction(String updateAction) {
+        this.updateAction = updateAction;
+    }
+    
+    public String getUpdateAction() {
+        return updateAction;
     }
 
     public TargetDmlAction evaluateTargetDmlAction(DataContext dataContext, TransformedData transformedData) {
-        if (updateActionBeanScript != null) {
+        TargetDmlAction action = null;
+        try {
+            action = TargetDmlAction.valueOf(updateAction);
+        } catch (Exception ex) {
+            
+        }
+        if (action == null) {
             Interpreter interpreter = getInterpreter(dataContext);
             Map<String, String> sourceValues = transformedData.getSourceValues();
 
@@ -248,7 +250,7 @@ public class TransformTable implements Cloneable {
                         interpreter.set("OLD_" + oldColumn.getKey().toUpperCase(), oldColumn.getValue());
                     }
                 }
-                String transformExpression = updateActionBeanScript;
+                String transformExpression = updateAction;
                 String methodName = String.format("transform_%d()", Math.abs(transformExpression.hashCode()));
                 if (dataContext.get(methodName) == null) {
                     //create  BSH-Method if not exists in Context
@@ -260,13 +262,13 @@ public class TransformTable implements Cloneable {
                 //call BSH-Method
                 Object result = interpreter.eval(methodName);
                 //evaluate Result of BSH-Script
-                updateAction = TargetDmlAction.valueOf((String) result);
+                action = TargetDmlAction.valueOf((String) result);
             }
             catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
         }
-        return updateAction;
+        return action;
     }
 
     protected Interpreter getInterpreter(Context context) {

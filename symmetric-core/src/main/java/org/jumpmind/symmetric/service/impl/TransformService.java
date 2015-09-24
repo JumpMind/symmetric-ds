@@ -284,7 +284,7 @@ public class TransformService extends AbstractService implements ITransformServi
                     .getTargetCatalogName(), transformTable.getTargetSchemaName(), transformTable
                     .getTargetTableName(), transformTable.getTransformPoint().toString(),
                     transformTable.isUpdateFirst() ? 1 : 0, transformTable.getDeleteAction()
-                            .toString(), transformTable.getTransformOrder(), transformTable
+                            .toString(), transformTable.getUpdateAction(), transformTable.getTransformOrder(), transformTable
                             .getColumnPolicy().toString(), transformTable.getLastUpdateTime(),
                     transformTable.getLastUpdateBy(), transformTable.getTransformId()) == 0) {
                 transformTable.setCreateTime(new Date());
@@ -296,7 +296,7 @@ public class TransformService extends AbstractService implements ITransformServi
                         transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
                         transformTable.getTransformPoint().toString(), transformTable
                                 .isUpdateFirst() ? 1 : 0, transformTable.getDeleteAction()
-                                .toString(), transformTable.getTransformOrder(), transformTable
+                                .toString(), transformTable.getUpdateAction(), transformTable.getTransformOrder(), transformTable
                                 .getColumnPolicy().toString(), transformTable.getLastUpdateTime(),
                         transformTable.getLastUpdateBy(), transformTable.getCreateTime(),
                         transformTable.getTransformId());
@@ -401,7 +401,7 @@ public class TransformService extends AbstractService implements ITransformServi
             table.setTransformOrder(rs.getInt("transform_order"));
             table.setUpdateFirst(rs.getBoolean("update_first"));
             table.setColumnPolicy(ColumnPolicy.valueOf(rs.getString("column_policy")));
-            table.setUpdateActionBeanScript(rs.getString("update_action"));
+            table.setUpdateAction(rs.getString("update_action"));
             table.setDeleteAction(TargetDmlAction.valueOf(rs.getString("delete_action")));
             table.setCreateTime(rs.getDateTime("create_time"));
             table.setLastUpdateBy(rs.getString("last_update_by"));
