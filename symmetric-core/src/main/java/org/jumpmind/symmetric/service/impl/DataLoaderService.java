@@ -387,7 +387,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public List<IncomingBatch> loadDataFromOfflineTransport(Node remote, RemoteNodeStatus status, IIncomingTransport transport) throws IOException {
         Node local = nodeService.findIdentity();
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
-                .getNodeId(), local.getNodeId(), ProcessType.PULL_JOB));
+                .getNodeId(), local.getNodeId(), ProcessType.OFFLINE_PULL));
         List<IncomingBatch> list = null;
         try {
             list = loadDataFromTransport(processInfo, remote, transport);
