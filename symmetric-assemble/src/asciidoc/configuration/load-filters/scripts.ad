@@ -29,15 +29,15 @@ Handle Error Script:: A script to execute if data cannot be processed.
 .Variables available within scripts
 [cols="3,^1,^1,5"]
 |===
-|Variable|BSH|JAVA|Description
+|Variable|BSH|SQL|JAVA|Description
 
-|engine|X||The Symmetric engine object.
-|COLUMN_NAME|X||The source values for the row being inserted, updated or deleted.
-|OLD_COLUMN_NAME|X||The old values for the row being inserted, updated or deleted.
-|context|X|X|The data context object for the data being inserted, updated or deleted. .
-|table|X|X|The table object for the table being inserted, updated or deleted.
-|data|X|X|The `CsvData` object for the data change.
-|error|X|X|`java.lang.Exception`
+|engine|X|||The Symmetric engine object.
+|COLUMN_NAME|X|X||The source values for the row being inserted, updated or deleted.
+|OLD_COLUMN_NAME|X|X||The old values for the row being inserted, updated or deleted.
+|context|X||X|The data context object for the data being inserted, updated or deleted. .
+|table|X||X|The table object for the table being inserted, updated or deleted.
+|data|X||X|The `CsvData` object for the data change.
+|error|X||X|`java.lang.Exception`
 
 |===
 

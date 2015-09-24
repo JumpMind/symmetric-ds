@@ -20,8 +20,8 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
-public enum DeleteAction {
+public enum TargetDmlAction {
 
-    NONE, UPDATE_COL, DEL_ROW;    
+    NONE, UPDATE_COL, INS_ROW, UPD_ROW, DEL_ROW;
     
 }

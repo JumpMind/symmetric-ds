@@ -24,7 +24,7 @@
         <version.h2>1.3.176</version.h2>
         <version.sqlite>3.7.15-M1</version.sqlite>
         <version.postgresql>9.2-1002-jdbc4</version.postgresql>
-        <version.mysql>5.1.30</version.mysql>        
+        <version.mysql>5.1.30</version.mysql>
         <version.mariadb>1.1.7</version.mariadb>
         <version.slf4j>1.7.7</version.slf4j>
         <version.powermock>1.5.3</version.powermock>
@@ -52,10 +52,17 @@
         </snapshotRepository>
     </distributionManagement>
     <repositories>
-        <repository>
-            <id>releases</id>
-            <url>http://repository.codehaus.org</url>
-        </repository>    
+       <repository>
+          <id>Nexus</id>
+          <name>Maven2 Repository from AntzSystem GmbH</name>
+          <url>http://ferrari.onesty-tech.loc:8888/nexus/content/groups/public</url>
+       </repository>
+       <repository>
+          <id>codehaus-mule-repo</id>
+          <name>codehaus-mule-repo</name>
+          <url>https://repository-master.mulesoft.org/nexus/content/groups/public/</url>
+          <layout>default</layout>
+       </repository>
         <repository>
             <id>java.net</id>
             <url>http://download.java.net/maven/glassfish</url>
@@ -356,10 +363,10 @@
                         <exclude>**/org/jumpmind/db/platform/db2/Db2DatabasePlatform.java                                   </exclude>
                         <exclude>**/org/jumpmind/db/platform/hsqldb/HsqlDbDatabasePlatform.java                             </exclude>
                         <exclude>**/org/jumpmind/db/platform/hsqldb/package.html                                            </exclude>
-                        <exclude>**/org/jumpmind/db/platform/hsqldb/HsqlDbDdlReader.java                                    </exclude>                        
+                        <exclude>**/org/jumpmind/db/platform/hsqldb/HsqlDbDdlReader.java                                    </exclude>
                      </excludes>
                  </configuration>
-            </plugin>                
+            </plugin>
             <plugin>
                 <artifactId>maven-eclipse-plugin</artifactId>
                 <version>2.9</version>
@@ -389,7 +396,7 @@
                       <version>1.0</version>
                     </signature>
                 </configuration>
-            </plugin>             
+            </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3.2</version>
@@ -405,13 +412,13 @@
                     <archive>
                         <manifestEntries>
                             <Project-Group>${project.groupId}</Project-Group>
-                            <Project-Artifact>${project.artifactId}</Project-Artifact>                            
+                            <Project-Artifact>${project.artifactId}</Project-Artifact>
                             <Build-Time>${maven.build.timestamp}</Build-Time>
                             <Build-Version>${project.version}</Build-Version>
                             <Build-Number>${BUILD_NUMBER}</Build-Number>
                             <Build-Job>${JOB_NAME}</Build-Job>
                         </manifestEntries>
-                    </archive>                
+                    </archive>
                     <outputDirectory>${basedir}/target</outputDirectory>
                 </configuration>
             </plugin>
@@ -446,23 +453,23 @@
                         </property>
                     </systemProperties>
                     <additionalClasspathElements>
-                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/ojdbc6.jar 
+                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/ojdbc6.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/ojdbc5.jar 
+                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/ojdbc5.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/ojdbc14.jar 
+                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/ojdbc14.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/db2jcc.jar 
+                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/db2jcc.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/ifxjdbc.jar 
+                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/ifxjdbc.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/ifxlang.jar 
+                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/ifxlang.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/interclient.jar 
+                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/interclient.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/sqljdbc4.jar 
+                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/sqljdbc4.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/jconn4.jar 
+                        <additionalClasspathElement> ${user.home}/.symmetricds/lib/jconn4.jar
                         </additionalClasspathElement>
                     </additionalClasspathElements>
                 </configuration>
@@ -552,28 +559,28 @@
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-oracle</artifactId>
-                <version>3.7.0-SNAPSHOT</version>                
-            </dependency>        
+                <version>3.7.0-SNAPSHOT</version>
+            </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-postgres</artifactId>
-                <version>3.7.0-SNAPSHOT</version>                
-            </dependency>        
+                <version>3.7.0-SNAPSHOT</version>
+            </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-mssql</artifactId>
-                <version>3.7.0-SNAPSHOT</version>                
+                <version>3.7.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-mongo</artifactId>
-                <version>3.7.0-SNAPSHOT</version>                
-            </dependency>                    
+                <version>3.7.0-SNAPSHOT</version>
+            </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-ftp</artifactId>
-                <version>3.7.0-SNAPSHOT</version>                
-            </dependency>                
+                <version>3.7.0-SNAPSHOT</version>
+            </dependency>
             <dependency>
                 <groupId>org.jumpmind.symmetric</groupId>
                 <artifactId>symmetric-core</artifactId>
@@ -605,7 +612,7 @@
                 <groupId>javax.mail</groupId>
                 <artifactId>mail</artifactId>
                 <version>1.4.5</version>
-            </dependency>            
+            </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
@@ -625,7 +632,7 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>jul-to-slf4j</artifactId>
                 <version>${version.slf4j}</version>
-            </dependency>            
+            </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
@@ -658,7 +665,7 @@
                         <groupId>javax.jms</groupId>
                         <artifactId>jms</artifactId>
                     </exclusion>
-                </exclusions>                
+                </exclusions>
             </dependency>
             <!-- Spring Framework -->
             <dependency>
@@ -796,7 +803,7 @@
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
                 <version>1.9.2</version>
-            </dependency>                    
+            </dependency>
             <dependency>
                 <groupId>commons-dbcp</groupId>
                 <artifactId>commons-dbcp</artifactId>
@@ -912,12 +919,12 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${version.mysql}</version>
-            </dependency>     
+            </dependency>
             <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongo-java-driver</artifactId>
                 <version>2.12.3</version>
-            </dependency>                   
+            </dependency>
             <dependency>
                 <groupId>org.mariadb.jdbc</groupId>
                 <artifactId>mariadb-java-client</artifactId>
@@ -932,8 +939,13 @@
                 <groupId>org.jumpmind.symmetric.jdbc</groupId>
                 <artifactId>ojdbc</artifactId>
                 <version>11.2.0.3</version>
-            </dependency>                    
-            <dependency>
+            </dependency>
+           <dependency>
+              <groupId>com.oracle</groupId>
+              <artifactId>ojdbc</artifactId>
+              <version>11.2.0.4</version>
+           </dependency>
+           <dependency>
                 <groupId>net.sourceforge.jtds</groupId>
                 <artifactId>jtds</artifactId>
                 <version>1.2.4</version>

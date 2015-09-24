@@ -135,11 +135,18 @@
 			<artifactId>postgresql</artifactId>
 			<scope>provided</scope>
 		</dependency>
+<!--
         <dependency>
             <groupId>org.jumpmind.symmetric.jdbc</groupId>
             <artifactId>ojdbc</artifactId>
             <scope>provided</scope>
         </dependency>        
+-->
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc</artifactId>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.jtds</groupId>
 			<artifactId>jtds</artifactId>

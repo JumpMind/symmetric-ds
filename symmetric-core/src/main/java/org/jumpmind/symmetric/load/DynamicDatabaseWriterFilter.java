@@ -77,6 +77,8 @@ public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilt
                     databaseWriterFilters.add(new BshDatabaseWriterFilter(engine, entry.getValue()));
                 } else if (entry.getKey().equals(LoadFilterType.JAVA)) {
                     databaseWriterFilters.add(new JavaDatabaseWriterFilter(engine, entry.getValue()));
+                } else if (entry.getKey().equals(LoadFilterType.SQL)) {
+                    databaseWriterFilters.add(new SQLDatabaseWriterFilter(engine, entry.getValue()));
                 }
             }
         }
@@ -123,28 +125,21 @@ public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilt
                 foundFilters = lookupFilters(foundFilters, 
                         table.getCatalog(), FormatUtils.WILDCARD, FormatUtils.WILDCARD);
                 
-                foundFilters = lookupFilters(foundFilters, 
+                foundFilters = lookupFilters(foundFilters,
                         FormatUtils.WILDCARD, FormatUtils.WILDCARD, FormatUtils.WILDCARD);
             }
 
-            String tableName = null;
-            if (isIgnoreCase()) {
-                tableName = table.getName().toUpperCase();
-            } else {
-                tableName = table.getName();
-            }
+            foundFilters = lookupFilters(foundFilters,
+                    FormatUtils.WILDCARD, FormatUtils.WILDCARD, table.getName());
             
             foundFilters = lookupFilters(foundFilters, 
-                    FormatUtils.WILDCARD, FormatUtils.WILDCARD, tableName);
-            
-            foundFilters = lookupFilters(foundFilters, 
-                    FormatUtils.WILDCARD, table.getSchema(), tableName);
+                    FormatUtils.WILDCARD, table.getSchema(), table.getName());
 
             foundFilters = lookupFilters(foundFilters, 
-                    table.getCatalog(), FormatUtils.WILDCARD, tableName);
+                    table.getCatalog(), FormatUtils.WILDCARD, table.getName());
 
             foundFilters = lookupFilters(foundFilters, 
-                    table.getCatalog(), table.getSchema(), tableName);
+                    table.getCatalog(), table.getSchema(), table.getName());
 
             if (foundFilters != null) {
                 for (LoadFilter filter : foundFilters) {
@@ -159,8 +154,12 @@ public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilt
     }
     
     private List<LoadFilter> lookupFilters(List<LoadFilter> foundFilters, String catalogName, String schemaName, String tableName) {
-        List<LoadFilter> filters = loadFilters.get(Table.getFullyQualifiedTableName(catalogName,
-                schemaName, tableName));
+        String fullyQualifiedTableName = Table.getFullyQualifiedTableName(catalogName, schemaName, tableName);
+        if (isIgnoreCase()) {
+            fullyQualifiedTableName = fullyQualifiedTableName.toUpperCase();
+        }
+        List<LoadFilter> filters = loadFilters.get(
+                fullyQualifiedTableName);
         if (filters != null) {
             if (foundFilters == null) {
                 foundFilters = new ArrayList<LoadFilter>();
