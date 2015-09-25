@@ -66,7 +66,7 @@ import org.jumpmind.symmetric.db.postgresql.GreenplumSymmetricDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlSymmetricDialect;
 import org.jumpmind.symmetric.db.redshift.RedshiftSymmetricDialect;
 import org.jumpmind.symmetric.db.sqlanywhere.SqlAnywhereSymmetricDialect;
-import org.jumpmind.symmetric.db.sqlite.SqliteSymmetricDialect;
+import org.jumpmind.symmetric.db.sqlite.SqliteJdbcSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,7 +149,7 @@ public class JdbcSymmetricDialectFactory {
         } else if (platform instanceof InterbaseDatabasePlatform) {
             dialect = new InterbaseSymmetricDialect(parameterService, platform);
         } else if (platform instanceof SqliteDatabasePlatform) {
-            dialect = new SqliteSymmetricDialect(parameterService, platform);
+            dialect = new SqliteJdbcSymmetricDialect(parameterService, platform);
         } else {
             throw new DbNotSupportedException();
         }
