@@ -1,17 +1,28 @@
 package org.jumpmind.symmetric.load;
 
-import bsh.TargetError;
-import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.*;
-import org.jumpmind.symmetric.*;
-import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.io.data.*;
-import org.jumpmind.symmetric.model.*;
-import org.jumpmind.util.*;
-
-import java.util.*;
-
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.Row;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.LoadFilter;
+import org.jumpmind.util.FormatUtils;
+import org.jumpmind.util.LinkedCaseInsensitiveMap;
+
+import bsh.TargetError;
 
 /**
  * User: Markus Schulz <msc@antzsystem.de>
@@ -23,7 +34,19 @@ public class SQLDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
 	protected static final ISqlRowMapper<Boolean> lookupColumnRowMapper = new ISqlRowMapper<Boolean>() {
 		@Override
 		public Boolean mapRow(Row row) {
-			return Boolean.TRUE.equals(row.values().iterator().next());
+		    boolean result = false;
+		    Iterator<Object> i = row.values().iterator();
+		    if (i.hasNext()) {
+		        Object val = i.next();
+		        if (val instanceof Boolean) {
+		            result = (Boolean)val;
+		        } else if (val instanceof Number) {
+		            result = ((Number)val).intValue() > 0;
+		        } else if (val instanceof String) {		            
+		            result = !((String)val).equals("0") && !((String)val).equalsIgnoreCase("false");
+		        }
+		    }
+			return result;
 		}
 	};
 
