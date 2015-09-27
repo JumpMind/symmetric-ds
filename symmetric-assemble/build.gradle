@@ -323,4 +323,4 @@ task releaseSymmetric {
     dependsOn publishDoc
 }
 
-task wrapper(type: Wrapper) { gradleVersion = '2.2.1' }
+task wrapper(type: Wrapper) { gradleVersion = '2.7' }
