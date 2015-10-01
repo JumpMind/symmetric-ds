@@ -4,18 +4,24 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../src/util/ArrayBuilder.c \
+../src/util/List.c \
+../src/util/Map.c \
 ../src/util/Properties.c \
+../src/util/StringArray.c \
 ../src/util/StringBuilder.c 
 
 OBJS += \
-./src/util/ArrayBuilder.o \
+./src/util/List.o \
+./src/util/Map.o \
 ./src/util/Properties.o \
+./src/util/StringArray.o \
 ./src/util/StringBuilder.o 
 
 C_DEPS += \
-./src/util/ArrayBuilder.d \
+./src/util/List.d \
+./src/util/Map.d \
 ./src/util/Properties.d \
+./src/util/StringArray.d \
 ./src/util/StringBuilder.d 
 
 

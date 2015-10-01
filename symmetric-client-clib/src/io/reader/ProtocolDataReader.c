@@ -22,73 +22,74 @@
 
 static void SymProtocolDataReader_parse_field(void *data, size_t size, void *userData) {
     SymProtocolDataReader *this = (SymProtocolDataReader *) userData;
-    this->fields->addn(this->fields, data, size);
+    if (!this->isError) {
+        this->fields->addn(this->fields, data, size);
+    }
 }
 
 static void SymProtocolDataReader_parse_line(int eol, void *userData) {
     SymProtocolDataReader *this = (SymProtocolDataReader *) userData;
     SymBatch *batch = this->batch;
-    SymTable *table = this->table;
-    SymCsvData *csvData = this->csvData;
-    SymArrayBuilder *fields = this->fields;
+    SymStringArray *fields = this->fields;
 
-    if (fields->size > 0) {
+    if (!this->isError && fields->size > 0) {
         char *token = fields->get(fields, 0);
         if (strcmp(token, SYM_CSV_INSERT) == 0) {
-            char **rowData = fields->to_array_range(fields, 1, fields->size);
-            int sizeRowData = fields->size - 1;
-            csvData->reset(csvData);
+            SymCsvData *csvData = SymCsvData_new(NULL);
+            csvData->rowData = fields->subarray(fields, 1, fields->size);
             csvData->dataEventType = SYM_DATA_EVENT_INSERT;
-            csvData->set_array(&csvData->rowData, &csvData->sizeRowData, rowData, sizeRowData);
-            this->writer->write(this->writer, csvData);
-            SymArrayBuilder_destroy_array(rowData, sizeRowData);
+            this->isError = !this->writer->write(this->writer, csvData);
+            csvData->destroy(csvData);
         } else if (strcmp(token, SYM_CSV_OLD) == 0) {
-            csvData->reset(csvData);
-            char **oldData = fields->to_array_range(fields, 1, fields->size);
-            int sizeOldData = fields->size - 1;
-            csvData->set_array(&csvData->oldData, &csvData->sizeOldData, oldData, sizeOldData);
-            SymArrayBuilder_destroy_array(oldData, sizeOldData);
+            if (this->oldData != NULL) {
+                this->oldData->destroy(this->oldData);
+            }
+            this->oldData = fields->subarray(fields, 1, fields->size);
         } else if (strcmp(token, SYM_CSV_UPDATE) == 0) {
-            char **rowData = fields->to_array_range(fields, 1, fields->size);
-            int sizeRowData = fields->size - 1;
-            char **pkData = fields->to_array_range(fields, 1, table->sizeKeys + 1);
-            int sizePkData = table->sizeKeys;
+            SymCsvData *csvData = SymCsvData_new(NULL);
+            csvData->rowData = fields->subarray(fields, 1, fields->size);
+            csvData->pkData = fields->subarray(fields, 1, this->keys->size + 1);
+            csvData->oldData = this->oldData;
             csvData->dataEventType = SYM_DATA_EVENT_UPDATE;
-            csvData->set_array(&csvData->rowData, &csvData->sizeRowData, rowData, sizeRowData);
-            csvData->set_array(&csvData->pkData, &csvData->sizePkData, pkData, sizePkData);
-            this->writer->write(this->writer, csvData);
-            SymArrayBuilder_destroy_array(rowData, sizeRowData);
-            SymArrayBuilder_destroy_array(pkData, sizePkData);
+            this->isError = !this->writer->write(this->writer, csvData);
+            csvData->destroy(csvData);
+            this->oldData = NULL;
         } else if (strcmp(token, SYM_CSV_DELETE) == 0) {
-            char **pkData = fields->to_array_range(fields, 1, fields->size);
-            int sizePkData = fields->size - 1;
-            csvData->reset(csvData);
+            SymCsvData *csvData = SymCsvData_new(NULL);
+            csvData->pkData = fields->subarray(fields, 1, fields->size);
             csvData->dataEventType = SYM_DATA_EVENT_DELETE;
-            csvData->set_array(&csvData->pkData, &csvData->sizePkData, pkData, sizePkData);
-            csvData->sizePkData = sizePkData;
-            this->writer->write(this->writer, csvData);
-            SymArrayBuilder_destroy_array(pkData, sizePkData);
+            this->isError = !this->writer->write(this->writer, csvData);
+            csvData->destroy(csvData);
         } else if (strcmp(token, SYM_CSV_CATALOG) == 0) {
-            table->set(&table->catalog, fields->get(fields, 1));
+            SymStringBuilder_copy_to_field(&this->catalog, fields->get(fields, 1));
         } else if (strcmp(token, SYM_CSV_SCHEMA) == 0) {
-            table->set(&table->schema, fields->get(fields, 1));
+            SymStringBuilder_copy_to_field(&this->schema, fields->get(fields, 1));
         } else if (strcmp(token, SYM_CSV_TABLE) == 0) {
-            table->set(&table->name, fields->get(fields, 1));
-            this->writer->start_table(this->writer, table);
+            char *tableName = fields->get(fields, 1);
+            this->table = (SymTable *) this->parsedTables->get(this->parsedTables, tableName);
+            if (this->table) {
+                this->writer->start_table(this->writer, this->table);
+            } else {
+                this->table = SymTable_new_with_fullname(NULL, this->catalog, this->schema, tableName);
+            }
         } else if (strcmp(token, SYM_CSV_KEYS) == 0) {
-            char **keys = fields->to_array_range(fields, 1, fields->size);
-            int sizeKeys = fields->size - 1;
-            table->set_array(&table->keys, &table->sizeKeys, keys, sizeKeys);
-            SymArrayBuilder_destroy_array(keys, sizeKeys);
+            this->keys = fields->subarray(fields, 1, fields->size);
         } else if (strcmp(token, SYM_CSV_COLUMNS) == 0) {
-            char **columns = fields->to_array_range(fields, 1, fields->size);
-            int sizeColumns = fields->size - 1;
-            table->set_array(&table->columns, &table->sizeColumns, columns, sizeColumns);
-            SymArrayBuilder_destroy_array(columns, sizeColumns);
+            this->table->columns = SymList_new(NULL);
+            int i, isPrimary;
+            for (i = 1; i < this->fields->size; i++) {
+                isPrimary = this->keys->contains(this->keys, this->fields->array[i]);
+                this->table->columns->add(this->table->columns, SymColumn_new(NULL, this->fields->array[i], isPrimary));
+            }
+            this->parsedTables->put(this->parsedTables, this->table->name, this->table, sizeof(SymTable));
+            //SymTable *poop = (SymTable *) this->parsedTables->get(this->parsedTables, this->table->name);
+            //printf("%s", poop->to_string(poop));
+            //printf("\n");
+            this->writer->start_table(this->writer, this->table);
         } else if (strcmp(token, SYM_CSV_NODEID) == 0) {
-            batch->set(&batch->sourceNodeId, fields->get(fields, 1));
+            SymStringBuilder_copy_to_field(&batch->sourceNodeId, fields->get(fields, 1));
         } else if (strcmp(token, SYM_CSV_CHANNEL) == 0) {
-            batch->set(&batch->channelId, fields->get(fields, 1));
+            SymStringBuilder_copy_to_field(&batch->channelId, fields->get(fields, 1));
         } else if (strcmp(token, SYM_CSV_BATCH) == 0) {
             batch->batchId = atol(fields->get(fields, 1));
             this->writer->start_batch(this->writer, batch);
@@ -97,16 +98,17 @@ static void SymProtocolDataReader_parse_line(int eol, void *userData) {
         } else if (strcmp(token, SYM_CSV_IGNORE) == 0) {
             batch->isIgnore = 1;
         } else if (strcmp(token, SYM_CSV_SQL) == 0) {
-            char **rowData = fields->to_array_range(fields, 1, fields->size);
-            int sizeRowData = fields->size - 1;
-            csvData->reset(csvData);
+            SymCsvData *csvData = SymCsvData_new(NULL);
+            csvData->rowData = fields->subarray(fields, 1, fields->size);
             csvData->dataEventType = SYM_DATA_EVENT_SQL;
-            csvData->set_array(&csvData->rowData, &csvData->sizeRowData, rowData, sizeRowData);
-            this->writer->write(this->writer, csvData);
-            SymArrayBuilder_destroy_array(rowData, sizeRowData);
+            this->isError = !this->writer->write(this->writer, csvData);
+            csvData->destroy(csvData);
         }
+        if (this->isError) {
+            this->writer->end_batch(this->writer, batch);
+        }
+        fields->reset(fields);
     }
-    fields->reset(fields);
 }
 
 void SymProtocolDataReader_open(SymProtocolDataReader *this) {
@@ -118,6 +120,9 @@ size_t SymProtocolDataReader_process(SymProtocolDataReader *this, char *data, si
     size_t length = size * count;
     if (csv_parse(this->csvParser, data, length, SymProtocolDataReader_parse_field, SymProtocolDataReader_parse_line, this) != length) {
         fprintf(stderr, "Error from CSV parser: %s\n", csv_strerror(csv_error(this->csvParser)));
+        return 0;
+    }
+    if (this->isError) {
         return 0;
     }
     return length;
@@ -133,8 +138,7 @@ void SymProtocolDataReader_destroy(SymProtocolDataReader *this) {
     free(this->csvParser);
     this->fields->destroy(this->fields);
     this->batch->destroy(this->batch);
-    this->table->destroy(this->table);
-    this->csvData->destroy(this->csvData);
+    this->parsedTables->destroy(this->parsedTables);
     free(this);
 }
 
@@ -145,11 +149,10 @@ SymProtocolDataReader * SymProtocolDataReader_new(SymProtocolDataReader *this, c
     this->targetNodeId = targetNodeId;
     this->writer = writer;
     this->csvParser = (struct csv_parser *) calloc(1, sizeof(struct csv_parser));
-    this->fields = SymArrayBuilder_new();
+    this->fields = SymStringArray_new_with_size(NULL, 1024, 1024);
     this->batch = SymBatch_new(NULL);
-    this->batch->set(&(this->batch->targetNodeId), targetNodeId);
-    this->table = SymTable_new(NULL);
-    this->csvData = SymCsvData_new(NULL);
+    this->batch->targetNodeId = SymStringBuilder_copy(targetNodeId);
+    this->parsedTables = SymMap_new(NULL, 100);
 
     SymDataReader *super = &this->super;
     super->open = (void *) &SymProtocolDataReader_open;

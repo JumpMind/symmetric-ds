@@ -24,11 +24,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sqlite3.h>
-#include "db/DatabasePlatform.h"
+#include "db/platform/DatabasePlatform.h"
+#include "db/platform/sqlite/SqliteDdlReader.h"
+#include "db/sqlite/SqliteSqlTemplate.h"
 
 typedef struct {
     SymDatabasePlatform super;
     sqlite3 *db;
+    SymSqlTemplate *sqlTemplate;
 } SymSqlitePlatform;
 
 SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties *properties);

@@ -20,11 +20,6 @@
  */
 #include "io/data/Batch.h"
 
-void SymBatch_set(char **strField, char *str) {
-    free(*strField);
-    *strField = SymStringBuilder_copy(str);
-}
-
 void SymBatch_destroy(SymBatch *this) {
     free(this->channelId);
     free(this->sourceNodeId);
@@ -36,7 +31,6 @@ SymBatch * SymBatch_new(SymBatch *this) {
     if (this == NULL) {
         this = (SymBatch *) calloc(1, sizeof(SymBatch));
     }
-    this->set = (void *) &SymBatch_set;
     this->destroy = (void *) &SymBatch_destroy;
     return this;
 }

@@ -18,15 +18,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_DATABASE_PLATFORM_FACTORY_H
-#define SYM_DATABASE_PLATFORM_FACTORY_H
+#ifndef SYM_DATABASE_INFO_H
+#define SYM_DATABASE_INFO_H
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <util/Properties.h>
-#include "db/DatabasePlatform.h"
-#include "db/SqlitePlatform.h"
 
-SymDatabasePlatform * SymDatabasePlatformFactory_create(SymProperties *properties);
+typedef struct {
+    char *delimiterToken;
+    char *catalogSeparator;
+    char *schemaSeparator;
+} SymDatabaseInfo;
 
 #endif

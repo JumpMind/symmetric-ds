@@ -18,33 +18,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_DATABASE_PLATFORM_H
-#define SYM_DATABASE_PLATFORM_H
+#ifndef SYM_SQL_TRANSACTION_H
+#define SYM_SQL_TRANSACTION_H
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <util/Properties.h>
-#include "service/ParameterService.h"
-
-#define SYM_DATABASE_SQLITE "sqlite"
-#define SYM_DATABASE_UNDEFINED "undefined"
+#include "util/List.h"
+#include "util/StringArray.h"
 
 typedef struct {
-    SymProperties *properties;
-    char *name;
-    char *version;
-    int (*execute_sql)(
-            void *this,                                     /* SymDatabasePlatform object */
-            const char *sql,                                /* SQL to execute */
-            int (*callback)(void*, int, char **, char **),  /* Callback function */
-            void *arg,                                      /* 1st argument to callback */
-            char **errorMessage                             /* Error message written here */
-    );
-    int (*table_exists)(void *this, char *tableName);
-    void (*free)(void *data);
+    int (*query_for_int)(void *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
+    char * (*query_for_string)(void *this, char *sql, SymStringArray *argss, SymList *sqlTypes, int *error);
+    void (*query)(void *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *callback);
+    int (*update)(void *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
+    void (*prepare)(void *this, char *sql);
+    int (*add_row)(void *this, SymStringArray *args, SymList *sqlTypes);
+    void (*commit)(void *this);
+    void (*rollback)(void *this);
+    void (*close)(void *this);
     void (*destroy)(void *this);
-} SymDatabasePlatform;
+} SymSqlTransaction;
 
-SymDatabasePlatform * SymDatabasePlatform_new(SymDatabasePlatform *this, SymProperties *properties);
+SymSqlTransaction * SymSqlTransaction_new(SymSqlTransaction *this);
 
 #endif

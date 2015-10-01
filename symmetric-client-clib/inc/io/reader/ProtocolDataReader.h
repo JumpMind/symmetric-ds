@@ -30,18 +30,25 @@
 #include "io/writer/DataWriter.h"
 #include "model/Node.h"
 #include "transport/IncomingTransport.h"
-#include "util/ArrayBuilder.h"
+#include "util/StringArray.h"
+#include "util/Map.h"
 #include "io/data/CsvConstants.h"
+#include "io/data/CsvData.h"
 
 typedef struct {
     SymDataReader super;
     char *targetNodeId;
     SymDataWriter *writer;
     struct csv_parser *csvParser;
-    SymArrayBuilder *fields;
+    SymStringArray *fields;
     SymBatch *batch;
     SymTable *table;
-    SymCsvData *csvData;
+    char *catalog;
+    char *schema;
+    SymStringArray *oldData;
+    SymStringArray *keys;
+    SymMap *parsedTables;
+    unsigned short isError;
 } SymProtocolDataReader;
 
 SymProtocolDataReader * SymProtocolDataReader_new(SymProtocolDataReader *this, char *targetNodeId, SymDataWriter *writer);

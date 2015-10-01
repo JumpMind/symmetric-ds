@@ -25,11 +25,13 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "libsymclient.h"
 
 int SymEngineTest_CUnit();
 int SymPropertiesTest_CUnit();
 int SymStringBuilderTest_CUnit();
+int SymMapTest_CUnit();
 
 #endif

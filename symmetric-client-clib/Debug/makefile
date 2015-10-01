@@ -16,6 +16,10 @@ RM := rm -rf
 -include src/io/writer/subdir.mk
 -include src/io/reader/subdir.mk
 -include src/io/data/subdir.mk
+-include src/db/sqlite/subdir.mk
+-include src/db/sql/subdir.mk
+-include src/db/platform/sqlite/subdir.mk
+-include src/db/platform/subdir.mk
 -include src/db/model/subdir.mk
 -include src/db/subdir.mk
 -include src/core/subdir.mk

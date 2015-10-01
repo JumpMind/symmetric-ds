@@ -25,10 +25,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <util/Properties.h>
-#include "db/DatabasePlatformFactory.h"
+#include "db/platform/DatabasePlatformFactory.h"
 #include "db/SymDialectFactory.h"
 #include "db/SymDialect.h"
-#include "db/SqliteDialect.h"
+#include "db/sqlite/SqliteDialect.h"
 #include "service/TriggerRouterService.h"
 #include "service/ParameterService.h"
 #include "service/PullService.h"

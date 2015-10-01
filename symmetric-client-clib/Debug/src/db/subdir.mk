@@ -4,26 +4,14 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../src/db/DatabasePlatform.c \
-../src/db/DatabasePlatformFactory.c \
-../src/db/SqliteDialect.c \
-../src/db/SqlitePlatform.c \
 ../src/db/SymDialect.c \
 ../src/db/SymDialectFactory.c 
 
 OBJS += \
-./src/db/DatabasePlatform.o \
-./src/db/DatabasePlatformFactory.o \
-./src/db/SqliteDialect.o \
-./src/db/SqlitePlatform.o \
 ./src/db/SymDialect.o \
 ./src/db/SymDialectFactory.o 
 
 C_DEPS += \
-./src/db/DatabasePlatform.d \
-./src/db/DatabasePlatformFactory.d \
-./src/db/SqliteDialect.d \
-./src/db/SqlitePlatform.d \
 ./src/db/SymDialect.d \
 ./src/db/SymDialectFactory.d 
 

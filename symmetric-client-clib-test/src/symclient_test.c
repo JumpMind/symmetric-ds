@@ -25,7 +25,10 @@ int main() {
         return CU_get_error();
     }
 
-    if (SymEngineTest_CUnit() != CUE_SUCCESS ||
+    if (
+            SymEngineTest_CUnit() != CUE_SUCCESS ||
+            //SymMapTest_CUnit() != CUE_SUCCESS ||
+            //SymListTest_CUnit() != CUE_SUCCESS ||
             //SymStringBuilderTest_CUnit() != CUE_SUCCESS ||
             //SymPropertiesTest_CUnit() != CUE_SUCCESS) {
             1==0) {

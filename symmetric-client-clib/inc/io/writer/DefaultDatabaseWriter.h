@@ -26,12 +26,24 @@
 #include "io/writer/DataWriter.h"
 #include "io/data/Batch.h"
 #include "db/model/Table.h"
+#include "db/platform/DatabasePlatform.h"
 #include "io/data/CsvData.h"
+#include "util/StringArray.h"
+#include "db/sql/DmlStatement.h"
+#include "db/sql/SqlTemplate.h"
+#include "db/sql/SqlTransaction.h"
 
 typedef struct {
     SymDataWriter super;
+    SymDatabasePlatform *platform;
+    SymSqlTransaction *sqlTransaction;
+    SymBatch *batch;
+    SymTable *sourceTable;
+    SymTable *targetTable;
+    SymDmlStatement *dmlStatement;
+    unsigned short isError;
 } SymDefaultDatabaseWriter;
 
-SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter *this);
+SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter *this, SymDatabasePlatform *platform);
 
 #endif

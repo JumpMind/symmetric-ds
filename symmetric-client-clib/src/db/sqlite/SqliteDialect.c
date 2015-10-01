@@ -18,15 +18,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "db/SqliteDialect.h"
+#include "db/sqlite/SqliteDialect.h"
 
 static int create_if_missing(SymDialect *super, char *tableName, char *createSql) {
+    // TODO: re-implement this using ddl reader
     if (!super->platform->table_exists(super->platform, tableName)) {
         char *errorMessage;
         printf("DDL applied: %s\n", tableName);
         if (super->platform->execute_sql(super->platform, createSql, NULL, NULL, &errorMessage)) {
             fprintf(stderr, "Error creating %s table: %s\n", tableName, errorMessage);
-            super->platform->free(errorMessage);
+            free(errorMessage);
             return 1;
         }
     }
@@ -40,6 +41,7 @@ int SymSqliteDialect_init_tables(SymDialect *super) {
     create_if_missing(super, "sym_data_event", CREATE_SYM_DATA_EVENT);
     create_if_missing(super, "sym_incoming_batch", CREATE_SYM_INCOMING_BATCH);
     create_if_missing(super, "sym_node", CREATE_SYM_NODE);
+    create_if_missing(super, "sym_node_security", CREATE_SYM_NODE_SECURITY);
     create_if_missing(super, "sym_node_group", CREATE_SYM_NODE_GROUP);
     create_if_missing(super, "sym_node_group_link", CREATE_SYM_NODE_GROUP_LINK);
     create_if_missing(super, "sym_node_host", CREATE_SYM_NODE_HOST);

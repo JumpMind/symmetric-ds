@@ -23,32 +23,28 @@
 char * SymProperties_get(SymProperties *this, char *key, char *defaultValue) {
     int i;
     for (i = 0; i < this->index; i++) {
-        if (strcmp(this->list[i]->key, key) == 0) {
-            return this->list[i]->value;
+        if (strcmp(this->propArray[i].key, key) == 0) {
+            return this->propArray[i].value;
         }
     }
     return defaultValue;
 }
 
 void SymProperties_put(SymProperties *this, char *key, char *value) {
-    SymProperty *property = (SymProperty *) calloc(1, sizeof(SymProperty));
-    property->key = key;
-    property->value = value;
-    this->list[this->index++] = property;
+    this->propArray[this->index].key = key;
+    this->propArray[this->index].value = value;
+    this->index++;
 }
 
 void SymProperties_put_all(SymProperties *this, SymProperties *properties) {
     int i;
     for (i = 0; i < properties->index; i++) {
-        this->put(this, properties->list[i]->key, properties->list[i]->value);
+        this->put(this, properties->propArray[i].key, properties->propArray[i].value);
     }
 }
 
 void SymProperties_destroy(SymProperties *this) {
-    while (this->index > 0) {
-        free(this->list[--(this->index)]);
-    }
-    free(this->list);
+    free(this->propArray);
     free(this);
 }
 
@@ -56,8 +52,7 @@ SymProperties * SymProperties_new(SymProperties *this) {
     if (this == NULL) {
         this = (SymProperties *) calloc(1, sizeof(SymProperties));
     }
-    this->list = (SymProperty **) calloc(1, sizeof(SymProperty *));
-    this->list[0] = (SymProperty *) calloc(255, sizeof(SymProperty));
+    this->propArray = (SymProperty *) calloc(255, sizeof(SymProperty));
     this->get = (void *) &SymProperties_get;
     this->put = (void *) &SymProperties_put;
     this->put_all = (void *) &SymProperties_put_all;

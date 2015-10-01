@@ -23,20 +23,29 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "util/List.h"
+#include "util/StringBuilder.h"
+#include "db/model/Column.h"
 
-typedef struct {
+typedef struct SymTable {
     char *catalog;
     char *schema;
     char *name;
-    char **keys;
-    char **columns;
-    int sizeKeys;
-    int sizeColumns;
-    void (*set)(char **strField, char *str);
-    void (*set_array)(char ***arrayField, int *sizeField, char **array, int sizeArray);
-    void (*destroy)(void *this);
+    SymList *columns;
+    struct SymTable * (*copy_and_filter_columns)(struct SymTable *this, struct SymTable *source, unsigned short setPrimaryKeys);
+    void (*copy_column_types_from)(struct SymTable *this, struct SymTable *source);
+    SymColumn * (*find_column)(struct SymTable *this, char *name, unsigned short caseSensitive);
+    char * (*to_string)(struct SymTable *this);
+    void (*destroy)(struct SymTable *this);
 } SymTable;
 
 SymTable * SymTable_new(SymTable *this);
+
+SymTable * SymTable_new_with_name(SymTable *this, char *name);
+
+SymTable * SymTable_new_with_fullname(SymTable *this, char *catalog, char *schema, char *name);
+
+char * SymTable_get_full_table_name(SymTable *this, char *delimiterToken, char *catalogSeparator, char *schemaSeparator);
 
 #endif

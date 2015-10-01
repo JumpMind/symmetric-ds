@@ -21,19 +21,20 @@
 #ifndef SYM_STRING_BUILDER_H
 #define SYM_STRING_BUILDER_H
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
 
 #define SYM_STRING_BUILDER_SIZE 255
 
-typedef struct {
+typedef struct SymStringBuilder {
     char *str;
     int pos;
     int size;
-    void (*append)(void *this, const char *src);
-    void (*appendn)(void *this, const char *src, int length);
-    void (*appendf)(void *this, const char *fmt, ...);
+    struct SymStringBuilder * (*append)(void *this, const char *src);
+    struct SymStringBuilder * (*appendn)(void *this, const char *src, int length);
+    struct SymStringBuilder * (*appendf)(void *this, const char *fmt, ...);
     char * (*to_string)(void * this);
     void (*reset)(void * this);
     void (*destroy)(void * this);
@@ -47,5 +48,7 @@ SymStringBuilder * SymStringBuilder_new_with_size(int size);
 SymStringBuilder * SymStringBuilder_new_with_string(char *str);
 
 char * SymStringBuilder_copy(char *str);
+
+void SymStringBuilder_copy_to_field(char **strField, char *str);
 
 #endif

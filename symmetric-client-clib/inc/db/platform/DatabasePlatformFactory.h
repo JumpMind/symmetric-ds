@@ -18,15 +18,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "db/DatabasePlatformFactory.h"
+#ifndef SYM_DATABASE_PLATFORM_FACTORY_H
+#define SYM_DATABASE_PLATFORM_FACTORY_H
 
-SymDatabasePlatform * SymDatabasePlatformFactory_create(SymProperties *properties) {
-    SymDatabasePlatform *platform = NULL;
-    char *url = properties->get(properties, SYM_PARAMETER_DB_URL, SYM_DATABASE_SQLITE);
-    if (strncmp(url, SYM_DATABASE_SQLITE, strlen(SYM_DATABASE_SQLITE)) == 0) {
-        platform = (SymDatabasePlatform *) SymSqlitePlatform_new(NULL, properties);
-    } else {
-        fprintf(stderr, "Could not find platform for database URL '%s'\n", url);
-    }
-    return platform;
-}
+#include <stdio.h>
+#include <stdlib.h>
+#include <util/Properties.h>
+#include "db/platform/DatabasePlatform.h"
+#include "db/platform/sqlite/SqlitePlatform.h"
+
+SymDatabasePlatform * SymDatabasePlatformFactory_create(SymProperties *properties);
+
+#endif

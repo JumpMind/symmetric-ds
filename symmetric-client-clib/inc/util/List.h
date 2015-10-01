@@ -18,42 +18,43 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_ARRAY_BUILDER_H
-#define SYM_ARRAY_BUILDER_H
+#ifndef SYM_LIST_H
+#define SYM_LIST_H
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
 
 typedef struct {
-    char *str;
+    void *object;
     void *previous;
     void *next;
-} SymArrayItem;
+} SymListItem;
 
 typedef struct {
-    SymArrayItem *head;
-    SymArrayItem *tail;
     int size;
-    void (*add)(void *this, char *src);
-    void (*addn)(void *this, const char *src, int length);
-    char * (*get)(void *this, int index);
-    char * (*to_string)(void *this, int index);
-    char ** (*to_array)(void *this);
-    char ** (*to_array_range)(void *this, int startIndex, int endIndex);
-    void (*reset)(void *this);
+    int index;
+    SymListItem *currentItem;
+    unsigned short (*has_next)(void *this);
+    void * (*next)(void *this);
     void (*destroy)(void *this);
-    void (*destroy_array)(char **array, int size);
-} SymArrayBuilder;
+} SymIterator;
 
-SymArrayBuilder * SymArrayBuilder_new();
+typedef struct {
+    SymListItem *head;
+    SymListItem *tail;
+    int size;
+    void (*add)(void *this, void *object);
+    void * (*get)(void *this, int index);
+    SymIterator * (*iterator)(void *this);
+    SymIterator * (*iterator_from_index)(void *this, int startIndex);
+    void (*reset)(void *this);
+    void (*reset_all)(void *this, void *destroy_object(void * object));
+    void (*destroy)(void *this);
+    void (*destroy_all)(void *this, void *destroy_object(void * object));
+} SymList;
 
-SymArrayBuilder * SymArrayBuilder_new_with_size(int size);
-
-SymArrayBuilder * SymArrayBuilder_new_with_string(char *str);
-
-void SymArrayBuilder_destroy_array(char **array, int size);
-
-char ** SymArrayBuilder_copy_array(char **array, int size);
+SymList * SymList_new(SymList *this);
 
 #endif

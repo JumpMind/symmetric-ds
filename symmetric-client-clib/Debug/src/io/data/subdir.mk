@@ -5,15 +5,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../src/io/data/Batch.c \
-../src/io/data/CsvData.c 
+../src/io/data/CsvData.c \
+../src/io/data/DataContext.c 
 
 OBJS += \
 ./src/io/data/Batch.o \
-./src/io/data/CsvData.o 
+./src/io/data/CsvData.o \
+./src/io/data/DataContext.o 
 
 C_DEPS += \
 ./src/io/data/Batch.d \
-./src/io/data/CsvData.d 
+./src/io/data/CsvData.d \
+./src/io/data/DataContext.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

@@ -4,14 +4,20 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../src/util/ListTest.c \
+../src/util/MapTest.c \
 ../src/util/PropertiesTest.c \
 ../src/util/StringBuilderTest.c 
 
 OBJS += \
+./src/util/ListTest.o \
+./src/util/MapTest.o \
 ./src/util/PropertiesTest.o \
 ./src/util/StringBuilderTest.o 
 
 C_DEPS += \
+./src/util/ListTest.d \
+./src/util/MapTest.d \
 ./src/util/PropertiesTest.d \
 ./src/util/StringBuilderTest.d 
 

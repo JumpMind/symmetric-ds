@@ -18,32 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "db/DatabasePlatform.h"
+#include "db/platform/DdlReader.h"
 
-int SymDatabasePlatform_table_exists(SymDatabasePlatform *this) {
-    return 0;
+void SymDdlReader_destroy(SymDdlReader *this) {
 }
 
-int SymDatabasePlatform_execute_sql(SymDatabasePlatform *this) {
-    return 0;
-}
-
-void SymDatabasePlatform_free(SymDatabasePlatform *this) {
-}
-
-void SymDatabasePlatform_destroy(SymDatabasePlatform *this) {
-    free(this);
-}
-
-SymDatabasePlatform * SymDatabasePlatform_new(SymDatabasePlatform *this, SymProperties *properties) {
-    if (this == NULL) {
-        this = (SymDatabasePlatform *) calloc(1, sizeof(SymDatabasePlatform));
+SymDdlReader * SymDdlReader_new(SymDdlReader *this) {
+    if (this != NULL) {
+        this->destroy = (void *) &SymDdlReader_destroy;
     }
-    this->name = SYM_DATABASE_UNDEFINED;
-    this->properties = properties;
-    this->execute_sql = (void *) &SymDatabasePlatform_execute_sql;
-    this->table_exists = (void *) &SymDatabasePlatform_table_exists;
-    this->free = (void *) &SymDatabasePlatform_free;
-    this->destroy = (void *) &SymDatabasePlatform_destroy;
     return this;
 }

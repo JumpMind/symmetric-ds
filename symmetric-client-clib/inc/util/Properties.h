@@ -30,7 +30,7 @@ typedef struct {
 } SymProperty;
 
 typedef struct {
-    SymProperty **list;
+    SymProperty *propArray;
     int index;
     char * (*get)(void *this, char *key, char *defaultValue);
     void (*put)(void *this, char *key, char *value);

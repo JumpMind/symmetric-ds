@@ -28,6 +28,7 @@ SymNode * SymNode_new(SymNode *this) {
     if (this == NULL) {
         this = (SymNode *) calloc(1, sizeof(SymNode));
     }
+    this->symmetricVersion = SYM_VERSION;
     this->destroy = (void *) &SymNode_destroy;
     return this;
 }

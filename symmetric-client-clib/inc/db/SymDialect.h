@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <util/Properties.h>
-#include "db/DatabasePlatform.h"
+#include "db/platform/DatabasePlatform.h"
 
 typedef struct {
     SymDatabasePlatform *platform;

@@ -20,19 +20,16 @@
  */
 #include "io/data/CsvData.h"
 
-void SymCsvData_set_array(char ***arrayField, int *sizeField, char **array, int sizeArray) {
-    SymArrayBuilder_destroy_array(*arrayField, *sizeField);
-    *arrayField = SymArrayBuilder_copy_array(array, sizeArray);
-    *sizeField = sizeArray;
-}
-
 void SymCsvData_reset(SymCsvData *this) {
-    SymArrayBuilder_destroy_array(this->rowData, this->sizeRowData);
-    SymArrayBuilder_destroy_array(this->pkData, this->sizePkData);
-    SymArrayBuilder_destroy_array(this->oldData, this->sizeOldData);
-    this->sizeRowData = 0;
-    this->sizePkData = 0;
-    this->sizeOldData = 0;
+    if (this->rowData) {
+        this->rowData->destroy(this->rowData);
+    }
+    if (this->oldData) {
+        this->oldData->destroy(this->oldData);
+    }
+    if (this->pkData) {
+        this->pkData->destroy(this->pkData);
+    }
 }
 
 void SymCsvData_destroy(SymCsvData *this) {
@@ -44,17 +41,7 @@ SymCsvData * SymCsvData_new(SymCsvData *this) {
     if (this == NULL) {
         this = (SymCsvData *) calloc(1, sizeof(SymCsvData));
     }
-    this->set_array = (void *) &SymCsvData_set_array;
     this->reset = (void *) &SymCsvData_reset;
     this->destroy = (void *) &SymCsvData_destroy;
-    return this;
-}
-
-SymCsvData * SymCsvData_new_with_settings(SymCsvData *this, SymDataEventType dataEventType, char **rowData, char **pkData, char **oldData,
-        int sizeRowData, int sizePkData, int sizeOldData) {
-    this = SymCsvData_new(this);
-    this->rowData = SymArrayBuilder_copy_array(rowData, sizeRowData);
-    this->pkData = SymArrayBuilder_copy_array(pkData, sizePkData);
-    this->oldData = SymArrayBuilder_copy_array(oldData, sizeOldData);
     return this;
 }

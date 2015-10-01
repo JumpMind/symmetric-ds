@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "util/StringBuilder.h"
 
 typedef struct {
     long batchId;
@@ -31,7 +32,6 @@ typedef struct {
     int initialLoad;
     char *channelId;
     unsigned short isIgnore;
-    void (*set)(char **strField, char *str);
     void (*destroy)(void *this);
 } SymBatch;
 

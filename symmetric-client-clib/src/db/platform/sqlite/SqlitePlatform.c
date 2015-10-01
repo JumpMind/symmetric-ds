@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "db/SqlitePlatform.h"
+#include "db/platform/sqlite/SqlitePlatform.h"
 
 static int table_exists_cb(void *exists, int argc, char **argv, char **columName) {
     *((int *) exists) = argc > 0;
@@ -41,14 +41,16 @@ int SymSqlitePlatform_execute_sql(SymDatabasePlatform *super,
     return sqlite3_exec(this->db, sql, callback, arg, errorMessage);
 }
 
-void SymSqlitePlatform_free(void *data) {
-    sqlite3_free(data);
+SymSqliteSqlTemplate * SymSqlitePlatform_get_sql_template(SymSqlitePlatform *this) {
+    return (SymSqliteSqlTemplate *) this->sqlTemplate;
 }
 
 void SymSqlitePlatform_destroy(SymDatabasePlatform *super) {
     printf("Closing SQLite database\n");
     SymSqlitePlatform *this = (SymSqlitePlatform *) super;
     sqlite3_close(this->db);
+    this->sqlTemplate->destroy(this->sqlTemplate);
+    free(super->ddlReader);
     free(this);
 }
 
@@ -56,13 +58,16 @@ SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties
     if (this == NULL) {
         this = (SymSqlitePlatform *) calloc(1, sizeof(SymSqlitePlatform));
     }
-    SymDatabasePlatform_new(&this->super, properties);
-    SymDatabasePlatform *super = &this->super;
+    SymDatabasePlatform *super = SymDatabasePlatform_new(&this->super);
+    super->databaseInfo.catalogSeparator = ".";
+    super->databaseInfo.schemaSeparator = ".";
+    super->databaseInfo.delimiterToken = "\"";
+    super->ddlReader = (SymDdlReader *) SymSqliteDdlReader_new(NULL, (SymDatabasePlatform *) this);
     super->name = SYM_DATABASE_SQLITE;
     super->version = (char *) sqlite3_libversion();
     super->execute_sql = (void *) &SymSqlitePlatform_execute_sql;
     super->table_exists = (void *) &SymSqlitePlatform_table_exists;
-    super->free = (void *) &SymSqlitePlatform_free;
+    super->get_sql_template = (void *) &SymSqlitePlatform_get_sql_template;
     super->destroy = (void *) &SymSqlitePlatform_destroy;
 
     printf("The IDatabasePlatform being used is SymSqlitePlatform\n");
@@ -79,6 +84,7 @@ SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties
         sqlite3_close(this->db);
         return NULL;
     }
+    this->sqlTemplate = (SymSqlTemplate *) SymSqliteSqlTemplate_new(NULL, this->db);
 
     printf("Detected database '%s', version '%s'\n", super->name, super->version);
 

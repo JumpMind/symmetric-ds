@@ -20,7 +20,7 @@
  */
 #include "util/StringBuilder.h"
 
-void SymStringBuilder_appendn(SymStringBuilder *this, const char *src, int length) {
+SymStringBuilder * SymStringBuilder_appendn(SymStringBuilder *this, const char *src, int length) {
     int sdiff = length - (this->size - this->pos) + 1;
     if (sdiff > 0) {
         this->size = this->size + sdiff;
@@ -28,30 +28,35 @@ void SymStringBuilder_appendn(SymStringBuilder *this, const char *src, int lengt
     }
     memcpy(this->str + this->pos, src, length);
     this->pos += length;
-    this->str[this->pos] = NULL;
+    this->str[this->pos] = '\0';
+    return this;
 }
 
-void SymStringBuilder_append(SymStringBuilder *this, const char *src) {
-    if (src != NULL) {
-        SymStringBuilder_appendn(this, src, strlen(src));
+SymStringBuilder * SymStringBuilder_append(SymStringBuilder *this, const char *src) {
+    if (src == NULL) {
+        src = "(null)";
     }
+    return SymStringBuilder_appendn(this, src, strlen(src));
 }
 
-void SymStringBuilder_appendf(SymStringBuilder *this, const char *fmt, ...) {
-    char *str;
+SymStringBuilder * SymStringBuilder_appendf(SymStringBuilder *this, const char *fmt, ...) {
     va_list arglist;
-
     va_start(arglist, fmt);
-    vsprintf(&str, fmt, arglist);
+    int sizeNeeded = vsnprintf(NULL, 0, fmt, arglist) + 1;
     va_end(arglist);
 
-    if (str) {
-        SymStringBuilder_append(this, str);
-        free(str);
-    }
+    char *str = malloc(sizeNeeded + 1);
+    va_start(arglist, fmt);
+    vsprintf(str, fmt, arglist);
+    va_end(arglist);
+
+    SymStringBuilder_appendn(this, str, sizeNeeded);
+    free(str);
+    return this;
 }
 
 char * SymStringBuilder_to_string(SymStringBuilder *this) {
+    // TODO: this should return a copy
     return this->str;
 }
 
@@ -78,6 +83,11 @@ char * SymStringBuilder_copy(char *str) {
         return strcpy((char *) calloc(strlen(str) + 1, sizeof(char)), str);
     }
     return NULL;
+}
+
+void SymStringBuilder_copy_to_field(char **strField, char *str) {
+    free(*strField);
+    *strField = SymStringBuilder_copy(str);
 }
 
 SymStringBuilder * SymStringBuilder_new() {

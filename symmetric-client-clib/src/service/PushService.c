@@ -21,8 +21,7 @@
 #include "service/PushService.h"
 
 SymRemoteNodeStatus * SymPushService_push_data(SymPushService *this) {
-    SymRemoteNodeStatus remoteNodeStatuses[0];
-    return remoteNodeStatuses;
+    return NULL;
 }
 
 void SymPushService_destroy(SymPushService *this) {

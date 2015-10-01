@@ -21,7 +21,7 @@
 #include "transport/http/HttpTransportManager.h"
 
 static void append(SymStringBuilder *sb, char *name, char *value) {
-    if (strstr(sb->to_string(sb), SYM_WEB_CONSTANTS_QUERY) == NULL) {
+    if (strstr(sb->str, SYM_WEB_CONSTANTS_QUERY) == NULL) {
         sb->append(sb, SYM_WEB_CONSTANTS_QUERY);
     } else {
         sb->append(sb, SYM_WEB_CONSTANTS_AND);
@@ -42,6 +42,7 @@ static char * build_url(char *action, SymNode *remote, SymNode *local, char *sec
     sb->append(sb, action);
     append(sb, SYM_WEB_CONSTANTS_NODE_ID, local->nodeId);
     append(sb, SYM_WEB_CONSTANTS_SECURITY_TOKEN, securityToken);
+    // TODO: get hostname/ip address
     //append(sb, SYM_WEB_CONSTANTS_HOST_NAME, "todo-host");
     //append(sb, SYM_WEB_CONSTANTS_IP_ADDRESS, "todo-ipapddr");
     return sb->destroy_and_return(sb);
@@ -57,6 +58,7 @@ static char * build_registration_url(SymNode *local, char *registrationUrl) {
     append(sb, SYM_WEB_CONSTANTS_DATABASE_TYPE, local->databaseType);
     append(sb, SYM_WEB_CONSTANTS_DATABASE_VERSION, local->databaseVersion);
     append(sb, SYM_WEB_CONSTANTS_SYMMETRIC_VERSION, local->symmetricVersion);
+    // TODO: get hostname/ip address
     //append(sb, SYM_WEB_CONSTANTS_HOST_NAME, "todo-host");
     //append(sb, SYM_WEB_CONSTANTS_IP_ADDRESS, "todo-ipaddr");
     return sb->destroy_and_return(sb);

@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../src/db/model/Column.c \
 ../src/db/model/Table.c 
 
 OBJS += \
+./src/db/model/Column.o \
 ./src/db/model/Table.o 
 
 C_DEPS += \
+./src/db/model/Column.d \
 ./src/db/model/Table.d 
 
 

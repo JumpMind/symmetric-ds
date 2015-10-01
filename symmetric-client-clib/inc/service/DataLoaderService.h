@@ -32,7 +32,7 @@
 #include "model/RemoteNodeStatus.h"
 #include "io/reader/ProtocolDataReader.h"
 #include "io/writer/DefaultDatabaseWriter.h"
-#include "db/DatabasePlatform.h"
+#include "db/platform/DatabasePlatform.h"
 
 typedef struct {
     SymParameterService *parameterService;

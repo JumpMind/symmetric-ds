@@ -20,7 +20,7 @@
  */
 #ifndef LIB_SYM_CLIENT_H
 #define LIB_SYM_CLIENT_H
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -32,12 +32,15 @@
 #include "model/NodeSecurity.h"
 #include "model/OutgoingBatch.h"
 #include "model/RemoteNodeStatus.h"
+#include "db/model/Table.h"
+#include "db/model/Column.h"
 #include "service/TriggerRouterService.h"
 #include "service/PullService.h"
 #include "service/PushService.h"
 #include "service/ParameterService.h"
 #include "util/StringBuilder.h"
 #include "util/Properties.h"
+#include "util/Map.h"
 #include "common/Constants.h"
 
 typedef unsigned short _boolean;

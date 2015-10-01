@@ -27,7 +27,7 @@ void SymStringBuilderTest_test1() {
     sb->append(sb, ",bonjour");
     sb->append(sb, ",guten tag");
     sb->append(sb, ",ciao");
-    CU_ASSERT(strcmp(sb->to_string(sb), "hello,hola,salute,bonjour,guten tag,ciao") == 0);
+    CU_ASSERT(strcmp(sb->str, "hello,hola,salute,bonjour,guten tag,ciao") == 0);
     sb->destroy(sb);
 }
 
@@ -35,7 +35,7 @@ void SymStringBuilderTest_test2() {
     SymStringBuilder *sb = SymStringBuilder_new_with_size(1);
     sb->append(sb, "como ");
     sb->append(sb, "t'allez-vous");
-    CU_ASSERT(strcmp(sb->to_string(sb), "como t'allez-vous") == 0);
+    CU_ASSERT(strcmp(sb->str, "como t'allez-vous") == 0);
     sb->destroy(sb);
 }
 
@@ -44,7 +44,7 @@ void SymStringBuilderTest_test3() {
     sb->append(sb, "1");
     sb->append(sb, "2");
     sb->append(sb, "3");
-    CU_ASSERT(strcmp(sb->to_string(sb), "123") == 0);
+    CU_ASSERT(strcmp(sb->str, "123") == 0);
     sb->destroy(sb);
 }
 

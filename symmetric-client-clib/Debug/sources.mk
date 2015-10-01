@@ -16,6 +16,10 @@ SUBDIRS := \
 src/core \
 src/db \
 src/db/model \
+src/db/platform \
+src/db/platform/sqlite \
+src/db/sql \
+src/db/sqlite \
 src/io/data \
 src/io/reader \
 src/io/writer \

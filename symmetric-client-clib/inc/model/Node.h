@@ -23,6 +23,8 @@
 
 #include <stdlib.h>
 
+#define SYM_VERSION "3.7.0"
+
 typedef struct {
     char *nodeId;
     char *nodeGroupId;

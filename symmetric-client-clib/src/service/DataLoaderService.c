@@ -43,7 +43,7 @@ static void send_ack(SymDataLoaderService *this, SymNode *remote, SymNode *local
 
 static SymIncomingBatch ** load_data_from_transport(SymDataLoaderService *this, SymNode *remote, SymIncomingTransport *transport, int *error) {
     // TODO:
-    SymDataWriter *writer = (SymDataWriter *) SymDefaultDatabaseWriter_new(NULL);
+    SymDataWriter *writer = (SymDataWriter *) SymDefaultDatabaseWriter_new(NULL, this->platform);
     SymDataReader *reader = (SymDataReader *) SymProtocolDataReader_new(NULL, remote->nodeId, writer);
 
     long rc = transport->process(transport, reader);

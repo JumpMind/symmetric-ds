@@ -31,8 +31,8 @@ typedef struct {
     void (*open)(void *this);
     void (*close)(void *this);
     void (*start_batch)(void *this, SymBatch *batch);
-    int (*start_table)(void *this, SymTable *table);
-    void (*write)(void *this, SymCsvData *data);
+    unsigned short (*start_table)(void *this, SymTable *table);
+    unsigned short (*write)(void *this, SymCsvData *data);
     void (*end_table)(void *this, SymTable *table);
     void (*end_batch)(void *this, SymBatch *batch);
     void (*destroy)(void *this);
