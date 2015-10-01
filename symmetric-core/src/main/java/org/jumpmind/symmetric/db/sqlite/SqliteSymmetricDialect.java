@@ -25,9 +25,12 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.AppUtils;
+
+import com.mysql.jdbc.StringUtils;
 
 public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
 
@@ -41,13 +44,21 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
     
+    String sqliteFunctionToOverride;
+    
     public SqliteSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new SqliteTriggerTemplate(this);
+        
+        sqliteFunctionToOverride = parameterService.getString(ParameterConstants.SQLITE_TRIGGER_FUNCTION_TO_USE);
     }
     
     @Override
     public void createRequiredDatabaseObjects() {
+    	if(!StringUtils.isNullOrEmpty(sqliteFunctionToOverride)){
+    		return;
+    	}
+    	
         String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
         try {
             platform.getSqlTemplate().queryForInt("select count(*) from " + contextTableName);
@@ -68,26 +79,47 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
 
     public void cleanDatabase() {
     }
-
+    
+    protected void setSqliteFunctionResult(ISqlTransaction transaction, final String name, final String result) {
+        
+    }
     
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
-        transaction.prepareAndExecute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
-            SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1" });
-        if (nodeId != null) {
+    	if(StringUtils.isNullOrEmpty(sqliteFunctionToOverride)){
+    		String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
             transaction.prepareAndExecute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
-                SYNC_TRIGGERS_DISABLED_NODE_VARIABLE, nodeId });
-        }
+                SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1" });
+            if (nodeId != null) {
+                transaction.prepareAndExecute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
+                    SYNC_TRIGGERS_DISABLED_NODE_VARIABLE, nodeId });
+            }
+    	}else{
+	    	String node = "";
+	    	if(nodeId != null){
+	    		node = ":" + nodeId;
+	    	}
+	    	
+	    	setSqliteFunctionResult(transaction, sqliteFunctionToOverride, "DISABLED" + node);
+    	}
+
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
-        transaction.prepareAndExecute("delete from " + contextTableName);
+    	if(StringUtils.isNullOrEmpty(sqliteFunctionToOverride)){
+    		String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
+            transaction.prepareAndExecute("delete from " + contextTableName);
+    	}else{
+    		setSqliteFunctionResult(transaction, sqliteFunctionToOverride, "ENABLED");
+    	}
     }
 
     public String getSyncTriggersExpression() {
-        String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
-        return "(not exists (select context_value from "+contextTableName+" where id = 'sync_triggers_disabled'))";
+        if(StringUtils.isNullOrEmpty(sqliteFunctionToOverride)){
+        	String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
+        	return "(not exists (select context_value from "+contextTableName+" where id = 'sync_triggers_disabled'))";
+    	}else{
+    		return "("+sqliteFunctionToOverride+"() not like 'DISABLED%')";
+    	}
     }
     
 

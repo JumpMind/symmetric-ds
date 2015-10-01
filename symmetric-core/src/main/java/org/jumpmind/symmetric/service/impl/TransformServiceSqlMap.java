@@ -38,7 +38,7 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  target_table_name,                                          " + 
 "  transform_point,                                            " + 
 "  transform_order,                                            " + 
-"  update_first, delete_action, column_policy,                 " +
+"  update_first, update_action, delete_action, column_policy,  " +
 "  last_update_time, last_update_by, create_time               " + 
 "  from                                                        " + 
 "  $(transform_table) order by transform_order                 " + 
@@ -81,8 +81,9 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  target_table_name=?,       " + 
 "  transform_point=?,         " + 
 "  update_first=?,            " + 
-"  delete_action=?,           " + 
-"  transform_order=?,         " + 
+"  delete_action=?,           " +
+"  update_action=?,           " +
+"  transform_order=?,         " +
 "  column_policy=?,           " +
 "  last_update_time=?,        " +
 "  last_update_by=?           " +
@@ -111,9 +112,9 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  (source_node_group_id, target_node_group_id, source_catalog_name,   " + 
 "  source_schema_name, source_table_name,                              " + 
 "  target_catalog_name, target_schema_name, target_table_name,         " + 
-"  transform_point, update_first, delete_action, transform_order,      " + 
+"  transform_point, update_first, delete_action, update_action, transform_order,      " +
 "  column_policy, last_update_time, last_update_by, create_time, transform_id)                                        " + 
-"  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                           " );
+"  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)                           " );
 
         putSql("insertTransformColumnSql" ,"" + 
 "insert into $(transform_column)              " + 

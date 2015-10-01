@@ -42,6 +42,7 @@ import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
@@ -58,8 +59,8 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected List<List<Object>> rowArrays = new ArrayList<List<Object>>();
 
     public OracleBulkDatabaseWriter(IDatabasePlatform platform, String procedurePrefix,
-            NativeJdbcExtractor jdbcExtractor, int maxRowsBeforeFlush) {
-        super(platform);
+            NativeJdbcExtractor jdbcExtractor, int maxRowsBeforeFlush, DatabaseWriterSettings settings) {
+        super(platform, settings);
         this.procedurePrefix = procedurePrefix;
         this.jdbcExtractor = jdbcExtractor;
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
@@ -89,23 +90,26 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
             case INSERT:
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-                Object[] rowData = platform.getObjectValues(batch.getBinaryEncoding(),
-                        getRowData(data, CsvData.ROW_DATA), targetTable.getColumns());
-                for (int i = 0; i < rowData.length; i++) {
+                if (filterBefore(data)) {
+                    Object[] rowData = platform.getObjectValues(batch.getBinaryEncoding(), getRowData(data, CsvData.ROW_DATA),
+                            targetTable.getColumns());
+                    for (int i = 0; i < rowData.length; i++) {
 
-                    List<Object> columnList = null;
-                    if (rowArrays.size() > i) {
-                        columnList = rowArrays.get(i);
-                    } else {
-                        columnList = new ArrayList<Object>();
-                        rowArrays.add(columnList);
-                    }
-                    columnList.add(rowData[i]);
+                        List<Object> columnList = null;
+                        if (rowArrays.size() > i) {
+                            columnList = rowArrays.get(i);
+                        } else {
+                            columnList = new ArrayList<Object>();
+                            rowArrays.add(columnList);
+                        }
+                        columnList.add(rowData[i]);
 
-                    if (columnList.size() >= maxRowsBeforeFlush) {
-                        requiresFlush = true;
+                        if (columnList.size() >= maxRowsBeforeFlush) {
+                            requiresFlush = true;
+                        }
                     }
-                }                
+                    uncommittedCount++;
+                }
                 break;
             case UPDATE:
                 super.write(data);
@@ -121,6 +125,8 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
         if (requiresFlush) {
             flush();
         }
+        
+        checkForEarlyCommit();
     }
 
     protected void flush() {

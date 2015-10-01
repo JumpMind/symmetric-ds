@@ -198,6 +198,8 @@ This transform copies the left most number of bytes specified.
 This transformation determines the target column value by using a query, contained in transform expression 
 to lookup the value in another table. The query must return a single row, and the first column of the query 
 is used as the value. Your query references source column names by prefixing with a colon (e.g., :MY_COLUMN).
+Additional you can reference old values with :OLD_COLUMN and previously transformed columns (see transform order) with
+:TRM_COLUMN.
 
 ifndef::pro[]
 [source, SQL]

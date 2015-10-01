@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
+import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 
 /**
@@ -63,6 +64,9 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         if (isOffline(error)) {
             log.warn("Could not communicate with {} at {} because: {}", new Object[] {remoteNode, syncUrl, cause.getMessage()});
             status.setStatus(Status.OFFLINE);
+        } else if (isServiceUnavailable(error)) {
+            log.info("{} at {} was unavailable", new Object[] {remoteNode, syncUrl});            
+            status.setStatus(Status.OFFLINE);            
         } else if (isBusy(error)) {
             log.info("{} at {} was busy", new Object[] {remoteNode, syncUrl});            
             status.setStatus(Status.BUSY);
@@ -138,6 +142,16 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             Throwable cause = ExceptionUtils.getRootCause(ex);
             offline = ex instanceof ConnectionRejectedException || 
                     cause instanceof ConnectionRejectedException;
+        }
+        return offline;
+    }
+    
+    protected boolean isServiceUnavailable(Exception ex){
+        boolean offline = false;
+        if (ex != null) {
+            Throwable cause = ExceptionUtils.getRootCause(ex);
+            offline = ex instanceof ServiceUnavailableException || 
+                    cause instanceof ServiceUnavailableException;
         }
         return offline;
     }

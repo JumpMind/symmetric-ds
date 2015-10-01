@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransfor
 import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.DeleteAction;
+import org.jumpmind.symmetric.io.data.transform.TargetDmlAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.JavaColumnTransform;
@@ -284,7 +284,7 @@ public class TransformService extends AbstractService implements ITransformServi
                     .getTargetCatalogName(), transformTable.getTargetSchemaName(), transformTable
                     .getTargetTableName(), transformTable.getTransformPoint().toString(),
                     transformTable.isUpdateFirst() ? 1 : 0, transformTable.getDeleteAction()
-                            .toString(), transformTable.getTransformOrder(), transformTable
+                            .toString(), transformTable.getUpdateAction(), transformTable.getTransformOrder(), transformTable
                             .getColumnPolicy().toString(), transformTable.getLastUpdateTime(),
                     transformTable.getLastUpdateBy(), transformTable.getTransformId()) == 0) {
                 transformTable.setCreateTime(new Date());
@@ -296,7 +296,7 @@ public class TransformService extends AbstractService implements ITransformServi
                         transformTable.getTargetSchemaName(), transformTable.getTargetTableName(),
                         transformTable.getTransformPoint().toString(), transformTable
                                 .isUpdateFirst() ? 1 : 0, transformTable.getDeleteAction()
-                                .toString(), transformTable.getTransformOrder(), transformTable
+                                .toString(), transformTable.getUpdateAction(), transformTable.getTransformOrder(), transformTable
                                 .getColumnPolicy().toString(), transformTable.getLastUpdateTime(),
                         transformTable.getLastUpdateBy(), transformTable.getCreateTime(),
                         transformTable.getTransformId());
@@ -381,8 +381,8 @@ public class TransformService extends AbstractService implements ITransformServi
         public TransformTableNodeGroupLink mapRow(Row rs) {
             TransformTableNodeGroupLink table = new TransformTableNodeGroupLink();
             table.setTransformId(rs.getString("transform_id"));
-            table.setNodeGroupLink(configurationService.getNodeGroupLinkFor(
-                    rs.getString("source_node_group_id"), rs.getString("target_node_group_id"), false));
+            table.setNodeGroupLink(configurationService
+               .getNodeGroupLinkFor(rs.getString("source_node_group_id"), rs.getString("target_node_group_id"), false));
             table.setSourceCatalogName(rs.getString("source_catalog_name"));
             table.setSourceSchemaName(rs.getString("source_schema_name"));
             table.setSourceTableName(rs.getString("source_table_name"));
@@ -401,7 +401,8 @@ public class TransformService extends AbstractService implements ITransformServi
             table.setTransformOrder(rs.getInt("transform_order"));
             table.setUpdateFirst(rs.getBoolean("update_first"));
             table.setColumnPolicy(ColumnPolicy.valueOf(rs.getString("column_policy")));
-            table.setDeleteAction(DeleteAction.valueOf(rs.getString("delete_action")));
+            table.setUpdateAction(rs.getString("update_action"));
+            table.setDeleteAction(TargetDmlAction.valueOf(rs.getString("delete_action")));
             table.setCreateTime(rs.getDateTime("create_time"));
             table.setLastUpdateBy(rs.getString("last_update_by"));
             table.setLastUpdateTime(rs.getDateTime("last_update_time"));

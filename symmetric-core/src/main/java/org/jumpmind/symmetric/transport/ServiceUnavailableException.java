@@ -20,14 +20,9 @@
  */
 package org.jumpmind.symmetric.transport;
 
-import java.io.IOException;
 
-public class TransportException extends OfflineException {
+public class ServiceUnavailableException extends OfflineException {
 
-    private static final long serialVersionUID = -6127189404858972114L;
-
-    public TransportException(IOException ex) {
-        super(ex.getMessage(), ex);
-    }
+    private static final long serialVersionUID = 3770259092569043530L;
 
 }

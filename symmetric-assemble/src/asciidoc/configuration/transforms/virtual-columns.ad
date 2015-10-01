@@ -22,7 +22,7 @@ ifndef::pro[]
 ----
 insert into SYM_TRANSFORM_TABLE (
 	transform_id, source_node_group_id, target_node_group_id, transform_point, source_table_name,
-	target_table_name, delete_action, transform_order, column_policy, update_first,
+	target_table_name, update_action, delete_action, transform_order, column_policy, update_first,
 	last_update_by, last_update_time, create_time
 ) values (
 	'extractStoreItemSellingPriceTransform', 'store', 'corp', 'EXTRACT', 'ITEM_SELLING_PRICE',
@@ -35,7 +35,7 @@ insert into SYM_TRANSFORM_TABLE (
 ----
 insert into SYM_TRANSFORM_TABLE (
 	transform_id, source_node_group_id, target_node_group_id, transform_point, source_table_name,
-	target_table_name, delete_action, transform_order, column_policy, update_first,
+	target_table_name, update_action, delete_action, transform_order, column_policy, update_first,
 	last_update_by, last_update_time, create_time
 ) values (
 	'loadCorpItemSellingPriceTransform', 'corp', 'store', 'LOAD', 'ITEM_SELLING_PRICE',

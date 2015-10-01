@@ -280,7 +280,7 @@
 
     <table name="load_filter" description="A table that allows you to dynamically define filters using bsh.">
         <column name="load_filter_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The id of the load filter." />
-        <column name="load_filter_type" type="VARCHAR" size="10" required="true" description="The type of load filter.  Currently 'bsh'.  May add 'sql' in the future." />
+        <column name="load_filter_type" type="VARCHAR" size="10" required="true" description="The type of load filter.  Possible values include: BSH, JAVA, SQL" />
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" description="The source node group for the filter." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" description="The destination node group for the filter." />
         <column name="target_catalog_name" type="VARCHAR" size="255"  description="Optional name for the catalog the configured table is in." />
@@ -656,6 +656,7 @@
         <column name="target_schema_name" type="VARCHAR" size="255" description="Optional name of the schema a target table is in. Only use this if the target table is not in the default schema." />
         <column name="target_table_name" type="VARCHAR" size="255" description="The name of the target table." />
         <column name="update_first" type="BOOLEANINT" size="1" default="0" description="If true, the target actions are attempted as updates first, regardless of whether the source operation was an insert or an update."/>
+        <column name="update_action" type="VARCHAR" size="255" required="false" default="UPDATE_COL" description="An action to take upon update of a row. Possible values are: DEL_ROW, UPD_ROW, INS_ROW or NONE." />
         <column name="delete_action" type="VARCHAR" size="10" required="true" description="An action to take upon delete of a row. Possible values are: DEL_ROW, UPDATE_COL, or NONE." />
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
         <column name="column_policy" type="VARCHAR" size="10" default="SPECIFIED" required="true" description="Specifies whether all columns need to be specified or whether they are implied.  Possible values are SPECIFIED or IMPLIED." />
