@@ -25,9 +25,9 @@
 #include <stdlib.h>
 #include "db/model/Table.h"
 
-typedef struct {
-    SymTable * (*read_table)(void *this, char *catalog, char *schema, char *tableName);
-    void (*destroy)(void *this);
+typedef struct SymDdlReader {
+    SymTable * (*readTable)(struct SymDdlReader *this, char *catalog, char *schema, char *tableName);
+    void (*destroy)(struct SymDdlReader *this);
 } SymDdlReader;
 
 SymDdlReader * SymDdlReader_new(SymDdlReader *this);

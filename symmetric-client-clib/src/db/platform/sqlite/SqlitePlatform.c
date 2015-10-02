@@ -20,28 +20,28 @@
  */
 #include "db/platform/sqlite/SqlitePlatform.h"
 
-static int table_exists_cb(void *exists, int argc, char **argv, char **columName) {
+static int SymSqlitePlatform_tableExistsCallback(void *exists, int argc, char **argv, char **columName) {
     *((int *) exists) = argc > 0;
     return 0;
 }
 
-int SymSqlitePlatform_table_exists(SymDatabasePlatform *super, char *tableName) {
+int SymSqlitePlatform_tableExists(SymDatabasePlatform *super, char *tableName) {
     int exists = 0;
     char sql[100];
     SymSqlitePlatform *this = (SymSqlitePlatform *) super;
     snprintf(sql, 100, "pragma table_info('%s')", tableName);
-    sqlite3_exec(this->db, sql, &table_exists_cb, &exists, NULL);
+    sqlite3_exec(this->db, sql, &SymSqlitePlatform_tableExistsCallback, &exists, NULL);
     return exists;
 }
 
-int SymSqlitePlatform_execute_sql(SymDatabasePlatform *super,
+int SymSqlitePlatform_executeSql(SymDatabasePlatform *super,
         const char *sql, int (*callback)(void*, int, char **, char **),
         void *arg, char **errorMessage) {
     SymSqlitePlatform *this = (SymSqlitePlatform *) super;
     return sqlite3_exec(this->db, sql, callback, arg, errorMessage);
 }
 
-SymSqliteSqlTemplate * SymSqlitePlatform_get_sql_template(SymSqlitePlatform *this) {
+SymSqliteSqlTemplate * SymSqlitePlatform_getSqlTemplate(SymSqlitePlatform *this) {
     return (SymSqliteSqlTemplate *) this->sqlTemplate;
 }
 
@@ -65,9 +65,9 @@ SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties
     super->ddlReader = (SymDdlReader *) SymSqliteDdlReader_new(NULL, (SymDatabasePlatform *) this);
     super->name = SYM_DATABASE_SQLITE;
     super->version = (char *) sqlite3_libversion();
-    super->execute_sql = (void *) &SymSqlitePlatform_execute_sql;
-    super->table_exists = (void *) &SymSqlitePlatform_table_exists;
-    super->get_sql_template = (void *) &SymSqlitePlatform_get_sql_template;
+    super->executeSql = (void *) &SymSqlitePlatform_executeSql;
+    super->tableExists = (void *) &SymSqlitePlatform_tableExists;
+    super->getSqlTemplate = (void *) &SymSqlitePlatform_getSqlTemplate;
     super->destroy = (void *) &SymSqlitePlatform_destroy;
 
     printf("The IDatabasePlatform being used is SymSqlitePlatform\n");

@@ -27,10 +27,10 @@
 #include "db/model/Table.h"
 #include "util/List.h"
 
-typedef struct {
+typedef struct SymSqliteDdlReader {
     SymDdlReader super;
     SymDatabasePlatform *platform;
-    void (*destroy)(void *this);
+    void (*destroy)(struct SymSqliteDdlReader *this);
 } SymSqliteDdlReader;
 
 SymSqliteDdlReader * SymSqliteDdlReader_new(SymSqliteDdlReader *this, SymDatabasePlatform *platform);

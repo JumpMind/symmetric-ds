@@ -20,7 +20,7 @@
  */
 #include "transport/http/HttpIncomingTransport.h"
 
-static char * strerror_http(long rc) {
+static char * SymHttpIncomingTransport_strerror_http(long rc) {
     if (rc == SYM_TRANSPORT_OK) {
         return "OK";
     } else if (rc == SYM_TRANSPORT_REGISTRATION_NOT_OPEN) {
@@ -37,7 +37,7 @@ static char * strerror_http(long rc) {
     return "Unknown Error";
 }
 
-static size_t write_callback(char *data, size_t size, size_t count, SymDataReader *reader) {
+static size_t SymHttpIncomingTransport_writeCallback(char *data, size_t size, size_t count, SymDataReader *reader) {
     return reader->process(reader, data, size, count);
 }
 
@@ -47,7 +47,7 @@ long SymHttpIncomingTransport_process(SymHttpIncomingTransport *this, SymDataRea
     CURL *curl = curl_easy_init();
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, this->url);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, SymHttpIncomingTransport_writeCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, reader);
         reader->open(reader);
         rc = curl_easy_perform(curl);
@@ -63,13 +63,13 @@ long SymHttpIncomingTransport_process(SymHttpIncomingTransport *this, SymDataRea
     if (rc == CURLE_OK) {
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
         if (httpCode != SYM_TRANSPORT_OK) {
-            fprintf(stderr, "HTTP response code of %ld, %s\n", httpCode, strerror_http(httpCode));
+            fprintf(stderr, "HTTP response code of %ld, %s\n", httpCode, SymHttpIncomingTransport_strerror_http(httpCode));
         }
     }
     return httpCode;
 }
 
-char * SymHttpIncomingTransport_get_url(SymHttpIncomingTransport *this) {
+char * SymHttpIncomingTransport_getUrl(SymHttpIncomingTransport *this) {
     return this->url;
 }
 
@@ -83,7 +83,7 @@ SymHttpIncomingTransport * SymHttpIncomingTransport_new(SymHttpIncomingTransport
         this = (SymHttpIncomingTransport *) calloc(1, sizeof(SymHttpIncomingTransport));
     }
     SymIncomingTransport *super = &this->super;
-    super->get_url = (void *) &SymHttpIncomingTransport_get_url;
+    super->getUrl = (void *) &SymHttpIncomingTransport_getUrl;
     super->process = (void *) &SymHttpIncomingTransport_process;
     super->destroy = (void *) &SymHttpIncomingTransport_destroy;
 

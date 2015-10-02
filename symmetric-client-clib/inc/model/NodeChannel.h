@@ -21,7 +21,7 @@
 #ifndef SYM_NODE_CHANNEL_H
 #define SYM_NODE_CHANNEL_H
 
-typedef struct {
+typedef struct SymNodeChannel {
 } SymNodeChannel;
 
 #endif

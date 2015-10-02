@@ -26,14 +26,14 @@
 #include <util/Properties.h>
 #include "db/platform/DatabasePlatform.h"
 
-typedef struct {
+typedef struct SymDialect {
     SymDatabasePlatform *platform;
-    int (*init_tables)(void *this);
-    int (*drop_tables)(void *this);
-    int (*create_trigger)(void *this);
-    int (*remove_trigger)(void *this);
-    int (*get_initial_load_sql)(void *this);
-    void (*destroy)(void *this);
+    int (*initTables)(struct SymDialect *this);
+    int (*dropTables)(struct SymDialect *this);
+    int (*createTrigger)(struct SymDialect *this);
+    int (*removeTrigger)(struct SymDialect *this);
+    int (*getInitialLoadSql)(struct SymDialect *this);
+    void (*destroy)(struct SymDialect *this);
 } SymDialect;
 
 SymDialect * SymDialect_new(SymDialect *this, SymDatabasePlatform *platform);

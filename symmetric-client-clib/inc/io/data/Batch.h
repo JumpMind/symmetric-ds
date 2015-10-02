@@ -25,14 +25,14 @@
 #include <stdlib.h>
 #include "util/StringBuilder.h"
 
-typedef struct {
+typedef struct SymBatch {
     long batchId;
     char *sourceNodeId;
     char *targetNodeId;
     int initialLoad;
     char *channelId;
     unsigned short isIgnore;
-    void (*destroy)(void *this);
+    void (*destroy)(struct SymBatch *this);
 } SymBatch;
 
 SymBatch * SymBatch_new(SymBatch *this);

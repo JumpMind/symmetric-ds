@@ -35,7 +35,7 @@
 #define SYM_REMOTE_NODE_STATUS_DATA_ERROR 7
 #define SYM_REMOTE_NODE_STATUS_UNKNOWN_ERROR 8
 
-typedef struct {
+typedef struct SymRemoteNodeStatus {
     char *nodeId;
     int status;
     long dataProcessed;
@@ -43,8 +43,8 @@ typedef struct {
     long reloadBatchesProcessed;
     int complete;
     int failed;
-    void (*update_incoming_status)(void *this, SymIncomingBatch **incomingBatches);
-    void (*destroy)(void *this);
+    void (*updateIncomingStatus)(struct SymRemoteNodeStatus *this, SymIncomingBatch **incomingBatches);
+    void (*destroy)(struct SymRemoteNodeStatus *this);
 } SymRemoteNodeStatus;
 
 SymRemoteNodeStatus * SymRemoteNodeStatus_new(SymRemoteNodeStatus *this);

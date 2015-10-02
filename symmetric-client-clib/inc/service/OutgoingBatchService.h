@@ -23,12 +23,12 @@
 
 #include <stdio.h>
 #include "model/OutgoingBatch.h"
+#include "util/List.h"
 
-typedef struct {
+typedef struct SymOutgoingBatchService {
+    SymOutgoingBatch * (*findOutgoingBatch)(struct SymOutgoingBatchService *this, long batchId, char *nodeId);
+    SymList * (*getOutgoingBatches)(struct SymOutgoingBatchService *this, char *nodeId);
+    void (*updateOutgoingBatch)(struct SymOutgoingBatchService *this, SymOutgoingBatch *outgoingBatch);
 } SymOutgoingBatchService;
-
-SymOutgoingBatch * SymOutgoingBatchService_find_outgoing_batch(SymOutgoingBatchService *this, long batchId, char *nodeId);
-SymOutgoingBatch * SymOutgoingBatchService_get_outgoing_batches(SymOutgoingBatchService *this, char *nodeId);
-void SymOutgoingBatchService_update_outgoing_batch(SymOutgoingBatchService *this, SymOutgoingBatch *outgoingBatch);
 
 #endif

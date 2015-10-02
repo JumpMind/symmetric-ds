@@ -23,10 +23,9 @@
 
 #include <stdio.h>
 
-typedef struct {
+typedef struct SymPurgeService {
+    int (*purgeOutgoing)(struct SymPurgeService *this);
+    int (*purgeIncoming)(struct SymPurgeService *this);
 } SymPurgeService;
-
-int SymPurgeService_purge_outgoing(SymPurgeService *this);
-int SymPurgeService_purge_incoming(SymPurgeService *this);
 
 #endif

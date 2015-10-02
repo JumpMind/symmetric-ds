@@ -20,32 +20,34 @@
  */
 #include <db/sqlite/SqliteSqlTemplate.h>
 
-SymList * SymSqliteSqlTemplate_query(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *map_row(SymRow *row)) {
-    sqlite3_stmt *stmt;
+static void SymSqliteSqlTemplate_prepare(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, sqlite3_stmt **stmt) {
     printf("Preparing %s\n", sql);
-    int rc = sqlite3_prepare_v2(this->db, sql, -1, &stmt, NULL);
+    int rc = sqlite3_prepare_v2(this->db, sql, -1, stmt, NULL);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Failed to prepare query: %s\n", sql);
         fprintf(stderr, "SQL Exception: %s\n", sqlite3_errmsg(this->db));
-    }
-
-    // TODO: do we need to convert to sqlType and bind correctly?
-    printf("Binding [");
-    int i;
-    for (i = 0; args != NULL && i < args->size; i++) {
-        //if (argLengths != NULL) {
-        //    sqlite3_bind_text(stmt, i + 1, args[i], argLengths[i], SQLITE_STATIC);
-        //} else {
-        sqlite3_bind_text(stmt, i + 1, args->get(args, i), -1, SQLITE_STATIC);
-
-        if (i > 0) {
-            printf(",");
+        *error = rc;
+    } else {
+        // TODO: do we need to convert to sqlType and bind correctly?
+        printf("Binding [");
+        int i;
+        for (i = 0; args != NULL && i < args->size; i++) {
+            // TODO: pass argLengths instead of -1
+            sqlite3_bind_text(*stmt, i + 1, args->get(args, i), -1, SQLITE_STATIC);
+            if (i > 0) {
+                printf(",");
+            }
+            printf("%s", args->get(args, i));
         }
-        printf("%s", args->get(args, i));
+        printf("]\n");
     }
-    printf("]\n");
+}
 
+SymList * SymSqliteSqlTemplate_query(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *map_row(SymRow *row)) {
+    sqlite3_stmt *stmt;
+    SymSqliteSqlTemplate_prepare(this, sql, args, sqlTypes, error, &stmt);
     SymList *list = SymList_new(NULL);
+    int rc;
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
         int i, type, size, columnCount = sqlite3_column_count(stmt);
         SymRow *row = SymRow_new(NULL, columnCount);
@@ -72,29 +74,19 @@ SymList * SymSqliteSqlTemplate_query(SymSqliteSqlTemplate *this, char *sql, SymS
     return list;
 }
 
-static SymRow * SymSqliteSqlTemplate_row_mapper(SymRow *row) {
+static SymRow * SymSqliteSqlTemplate_rowMapper(SymRow *row) {
+    // TODO: clone the row
     return row;
 }
 
-SymRow * SymSqliteSqlTemplate_query_for_list(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
-    return (SymRow *) SymSqliteSqlTemplate_query(this, sql, args, sqlTypes, error, (void *) SymSqliteSqlTemplate_row_mapper);
+SymRow * SymSqliteSqlTemplate_queryForList(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
+    return (SymRow *) SymSqliteSqlTemplate_query(this, sql, args, sqlTypes, error, (void *) SymSqliteSqlTemplate_rowMapper);
 }
 
-int SymSqliteSqlTemplate_query_for_int(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
+int SymSqliteSqlTemplate_queryForInt(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
+    int rc;
     sqlite3_stmt *stmt;
-    int rc = sqlite3_prepare_v2(this->db, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to prepare query: %s\n", sql);
-        fprintf(stderr, "SQL Exception: %s\n", sqlite3_errmsg(this->db));
-    }
-
-    int i;
-    for (i = 0; args != NULL && i < args->size; i++) {
-        //if (argLengths != NULL) {
-        //    sqlite3_bind_text(stmt, i + 1, args[i], argLengths[i], SQLITE_STATIC);
-        //} else {
-        sqlite3_bind_text(stmt, i + 1, args->get(args, i), -1, SQLITE_STATIC);
-    }
+    SymSqliteSqlTemplate_prepare(this, sql, args, sqlTypes, &rc, &stmt);
 
     int value = 0;
     if ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
@@ -108,25 +100,14 @@ int SymSqliteSqlTemplate_query_for_int(SymSqliteSqlTemplate *this, char *sql, Sy
     return value;
 }
 
-char * SymSqliteSqlTemplate_query_for_string(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
+char * SymSqliteSqlTemplate_queryForString(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
+    int rc;
     sqlite3_stmt *stmt;
-    int rc = sqlite3_prepare_v2(this->db, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to prepare query: %s\n", sql);
-        fprintf(stderr, "SQL Exception: %s\n", sqlite3_errmsg(this->db));
-    }
-
-    int i;
-    for (i = 0; args != NULL && i < args->size; i++) {
-        //if (argLengths != NULL) {
-        //    sqlite3_bind_text(stmt, i + 1, args[i], argLengths[i], SQLITE_STATIC);
-        //} else {
-        sqlite3_bind_text(stmt, i + 1, args->get(args, i), -1, SQLITE_STATIC);
-    }
+    SymSqliteSqlTemplate_prepare(this, sql, args, sqlTypes, &rc, &stmt);
 
     char *value = NULL;
     if ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        value = (char *) sqlite3_column_text(stmt, 0);
+        value = SymStringBuilder_copy((char *) sqlite3_column_text(stmt, 0));
     } else {
         fprintf(stderr, "Failed to execute query: %s\n", sql);
         fprintf(stderr, "SQL Exception: %s\n", sqlite3_errmsg(this->db));
@@ -137,21 +118,9 @@ char * SymSqliteSqlTemplate_query_for_string(SymSqliteSqlTemplate *this, char *s
 }
 
 int SymSqliteSqlTemplate_update(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
+    int rc;
     sqlite3_stmt *stmt;
-    printf("Executing: %s\n", sql);
-    int rc = sqlite3_prepare_v2(this->db, sql, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to prepare statement: %s\n", sql);
-        fprintf(stderr, "SQL Exception: %s\n", sqlite3_errmsg(this->db));
-    }
-
-    int i;
-    for (i = 0; args != NULL && i < args->size; i++) {
-        //if (argLengths != NULL) {
-        //    sqlite3_bind_text(stmt, i + 1, args[i], argLengths[i], SQLITE_STATIC);
-        //} else {
-        sqlite3_bind_text(stmt, i + 1, args->get(args, i), -1, SQLITE_STATIC);
-    }
+    SymSqliteSqlTemplate_prepare(this, sql, args, sqlTypes, &rc, &stmt);
 
     rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
@@ -163,7 +132,7 @@ int SymSqliteSqlTemplate_update(SymSqliteSqlTemplate *this, char *sql, SymString
     return sqlite3_changes(this->db);
 }
 
-SymSqlTransaction * SymSqliteSqlTemplate_start_sql_transaction(SymSqliteSqlTemplate *this) {
+SymSqlTransaction * SymSqliteSqlTemplate_startSqlTransaction(SymSqliteSqlTemplate *this) {
     return (SymSqlTransaction *) SymSqliteSqlTransaction_new(NULL, this);
 }
 
@@ -177,12 +146,12 @@ SymSqliteSqlTemplate * SymSqliteSqlTemplate_new(SymSqliteSqlTemplate *this, sqli
     }
     this->db = db;
     SymSqlTemplate *super = (SymSqlTemplate *) this;
-    super->query_for_int = (void *) &SymSqliteSqlTemplate_query_for_int;
-    super->query_for_string = (void *) &SymSqliteSqlTemplate_query_for_string;
-    super->query_for_list = (void *) &SymSqliteSqlTemplate_query_for_list;
+    super->queryForInt = (void *) &SymSqliteSqlTemplate_queryForInt;
+    super->queryForString = (void *) &SymSqliteSqlTemplate_queryForString;
+    super->queryForList = (void *) &SymSqliteSqlTemplate_queryForList;
     super->query = (void *) &SymSqliteSqlTemplate_query;
     super->update = (void *) &SymSqliteSqlTemplate_update;
-    super->start_sql_transaction = (void *) &SymSqliteSqlTemplate_start_sql_transaction;
+    super->startSqlTransaction = (void *) &SymSqliteSqlTemplate_startSqlTransaction;
     this->destroy = (void *) &SymSqliteSqlTemplate_destroy;
     return this;
 }

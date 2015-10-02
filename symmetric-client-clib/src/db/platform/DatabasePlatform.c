@@ -20,19 +20,19 @@
  */
 #include "db/platform/DatabasePlatform.h"
 
-SymTable * SymDatabasePlatform_get_table_from_cache(SymDatabasePlatform *this, char *catalog, char *schema, char *tableName, unsigned int forceReread) {
+SymTable * SymDatabasePlatform_getTableFromCache(SymDatabasePlatform *this, char *catalog, char *schema, char *tableName, unsigned int forceReread) {
     // TODO: need a hash table and caching of Table objects
-    return this->read_table_from_database(this, catalog, schema, tableName);
+    return this->readTableFromDatabase(this, catalog, schema, tableName);
 }
 
-SymTable * SymDatabasePlatform_read_table_from_database(SymDatabasePlatform *this, char *catalog, char *schema, char *tableName) {
+SymTable * SymDatabasePlatform_readTableFromDatabase(SymDatabasePlatform *this, char *catalog, char *schema, char *tableName) {
     if (catalog == NULL) {
         catalog = this->defaultCatalog;
     }
     if (schema == NULL) {
         schema = this->defaultSchema;
     }
-    SymTable *table = this->ddlReader->read_table(this->ddlReader, catalog, schema, tableName);
+    SymTable *table = this->ddlReader->readTable(this->ddlReader, catalog, schema, tableName);
     return table;
 }
 
@@ -41,8 +41,8 @@ void SymDatabasePlatform_destroy(SymDatabasePlatform *this) {
 
 SymDatabasePlatform * SymDatabasePlatform_new(SymDatabasePlatform *this) {
     if (this != NULL) {
-        this->get_table_from_cache = (void *) &SymDatabasePlatform_get_table_from_cache;
-        this->read_table_from_database = (void *) &SymDatabasePlatform_read_table_from_database;
+        this->getTableFromCache = (void *) &SymDatabasePlatform_getTableFromCache;
+        this->readTableFromDatabase = (void *) &SymDatabasePlatform_readTableFromDatabase;
         this->destroy = (void *) &SymDatabasePlatform_destroy;
     }
     return this;

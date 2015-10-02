@@ -24,9 +24,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct {
-    int (*sync_triggers)(void *this);
-    void (*destroy)(void *this);
+typedef struct SymTriggerRouterService {
+    int (*syncTriggers)(struct SymTriggerRouterService *this);
+    void (*destroy)(struct SymTriggerRouterService *this);
 } SymTriggerRouterService;
 
 SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService * this);

@@ -36,7 +36,7 @@ void SymProperties_put(SymProperties *this, char *key, char *value) {
     this->index++;
 }
 
-void SymProperties_put_all(SymProperties *this, SymProperties *properties) {
+void SymProperties_putAll(SymProperties *this, SymProperties *properties) {
     int i;
     for (i = 0; i < properties->index; i++) {
         this->put(this, properties->propArray[i].key, properties->propArray[i].value);
@@ -55,7 +55,7 @@ SymProperties * SymProperties_new(SymProperties *this) {
     this->propArray = (SymProperty *) calloc(255, sizeof(SymProperty));
     this->get = (void *) &SymProperties_get;
     this->put = (void *) &SymProperties_put;
-    this->put_all = (void *) &SymProperties_put_all;
+    this->putAll = (void *) &SymProperties_putAll;
     this->destroy = (void *) &SymProperties_destroy;
     return this;
 }

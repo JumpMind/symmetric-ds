@@ -28,12 +28,12 @@
 #include "service/DataLoaderService.h"
 #include "service/RegistrationService.h"
 
-typedef struct {
+typedef struct SymPullService {
     SymNodeService *nodeService;
     SymDataLoaderService *dataLoaderService;
     SymRegistrationService *registrationService;
-    SymRemoteNodeStatus * (*pull_data)(void *this);
-    void (*destroy)(void *this);
+    SymRemoteNodeStatus * (*pullData)(struct SymPullService *this);
+    void (*destroy)(struct SymPullService *this);
 } SymPullService;
 
 SymPullService * SymPullService_new(SymPullService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,

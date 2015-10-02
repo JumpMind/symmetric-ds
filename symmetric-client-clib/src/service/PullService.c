@@ -22,17 +22,17 @@
 
 // TODO: should be SymRemoteNodeStatuses
 
-SymRemoteNodeStatus * SymPullService_pull_data(SymPullService *this) {
-    SymNode *identity = this->nodeService->find_identity(this->nodeService);
+SymRemoteNodeStatus * SymPullService_pullData(SymPullService *this) {
+    SymNode *identity = this->nodeService->findIdentity(this->nodeService);
     if (identity == NULL) {
-        this->registrationService->register_with_server(this->registrationService);
-        identity = this->nodeService->find_identity(this->nodeService);
+        this->registrationService->registerWithServer(this->registrationService);
+        identity = this->nodeService->findIdentity(this->nodeService);
     }
     if (identity->syncEnabled) {
-        SymNode **nodes = this->nodeService->find_nodes_to_pull(this->nodeService);
-        int index = 0;
-        for (; nodes[index] != NULL; index++) {
-            SymNode *node = nodes[index];
+        SymList *nodes = this->nodeService->findNodesToPull(this->nodeService);
+        SymIterator *iter = nodes->iterator(nodes);
+        while (iter->hasNext(iter)) {
+            SymNode *node = (SymNode *) iter->next(iter);
             SymRemoteNodeStatus *status = SymRemoteNodeStatus_new(NULL);
             status->nodeId = node->nodeId;
 
@@ -47,7 +47,7 @@ SymRemoteNodeStatus * SymPullService_pull_data(SymPullService *this) {
                     printf("Immediate pull requested while in reload mode\n");
                 }
 
-                this->dataLoaderService->load_data_from_pull(this->dataLoaderService, node, status);
+                this->dataLoaderService->loadDataFromPull(this->dataLoaderService, node, status);
 
                 if (!status->failed && (status->dataProcessed > 0 || status->batchesProcessed > 0)) {
                     printf("Pull data received from %s:%s:%s.  %lu rows and %lu batches were processed\n",
@@ -56,9 +56,11 @@ SymRemoteNodeStatus * SymPullService_pull_data(SymPullService *this) {
                     printf("There was a failure while pulling data from %s:%s:%s.  %lu rows and %lu batches were processed\n",
                             node->nodeGroupId, node->externalId, node->nodeId, status->dataProcessed, status->batchesProcessed);
                 }
-            } while (this->nodeService->is_dataload_started(this->nodeService) && !status->failed
+            } while (this->nodeService->isDataloadStarted(this->nodeService) && !status->failed
                     && status->batchesProcessed > batchesProcessedCount);
         }
+        iter->destroy(iter);
+        nodes->destroy(nodes);
     }
     identity->destroy(identity);
     return NULL;
@@ -76,7 +78,7 @@ SymPullService * SymPullService_new(SymPullService *this, SymNodeService *nodeSe
     this->nodeService = nodeService;
     this->dataLoaderService = dataLoaderService;
     this->registrationService = registrationService;
-    this->pull_data = (void *) &SymPullService_pull_data;
+    this->pullData = (void *) &SymPullService_pullData;
     this->destroy = (void *) &SymPullService_destroy;
     return this;
 }

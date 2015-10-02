@@ -26,33 +26,33 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-typedef struct {
+typedef struct SymListItem {
     void *object;
-    void *previous;
-    void *next;
+    struct SymListItem *previous;
+    struct SymListItem *next;
 } SymListItem;
 
-typedef struct {
+typedef struct SymIterator {
     int size;
     int index;
     SymListItem *currentItem;
-    unsigned short (*has_next)(void *this);
-    void * (*next)(void *this);
-    void (*destroy)(void *this);
+    unsigned short (*hasNext)(struct SymIterator *this);
+    void * (*next)(struct SymIterator *this);
+    void (*destroy)(struct SymIterator *this);
 } SymIterator;
 
-typedef struct {
+typedef struct SymList {
     SymListItem *head;
     SymListItem *tail;
     int size;
-    void (*add)(void *this, void *object);
-    void * (*get)(void *this, int index);
-    SymIterator * (*iterator)(void *this);
-    SymIterator * (*iterator_from_index)(void *this, int startIndex);
-    void (*reset)(void *this);
-    void (*reset_all)(void *this, void *destroy_object(void * object));
-    void (*destroy)(void *this);
-    void (*destroy_all)(void *this, void *destroy_object(void * object));
+    void (*add)(struct SymList *this, void *object);
+    void * (*get)(struct SymList *this, int index);
+    SymIterator * (*iterator)(struct SymList *this);
+    SymIterator * (*iteratorFromIndex)(struct SymList *this, int startIndex);
+    void (*reset)(struct SymList *this);
+    void (*resetAll)(struct SymList *this, void *destroy_object(void * object));
+    void (*destroy)(struct SymList *this);
+    void (*destroyAll)(struct SymList *this, void *destroy_object(void * object));
 } SymList;
 
 SymList * SymList_new(SymList *this);

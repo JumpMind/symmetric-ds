@@ -24,21 +24,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "util/Map.h"
+#include "util/StringBuilder.h"
 
-typedef struct {
+typedef struct SymRowEntry {
     char *value;
     int sqlType;
     int size;
 } SymRowEntry;
 
-typedef struct {
+typedef struct SymRow {
     SymMap *map;
-    void (*put)(void *this, char *columnName, char *value, int sqlType, int size);
-    char * (*get_string)(void *this, char *columnName);
-    int (*get_int)(void *this, char *columnName);
-    int (*get_size)(void *this, char *columnName);
-    int (*get_sql_type)(void *this, char *columnName);
-    void (*destroy)(void *this);
+    void (*put)(struct SymRow *this, char *columnName, char *value, int sqlType, int size);
+    char * (*getString)(struct SymRow *this, char *columnName);
+    char * (*getStringNew)(struct SymRow *this, char *columnName);
+    int (*getInt)(struct SymRow *this, char *columnName);
+    int (*getSize)(struct SymRow *this, char *columnName);
+    int (*getSqlType)(struct SymRow *this, char *columnName);
+    void (*destroy)(struct SymRow *this);
 } SymRow;
 
 SymRow * SymRow_new(SymRow *this, int columnCount);

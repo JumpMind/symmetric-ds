@@ -21,13 +21,13 @@
 #include "db/sql/DmlStatement.h"
 
 static void append_table_name(SymDmlStatement *this, SymStringBuilder *sb) {
-    sb->append(sb, SymTable_get_full_table_name(this->table, this->databaseInfo->delimiterToken, this->databaseInfo->catalogSeparator,
+    sb->append(sb, SymTable_getFullTableName(this->table, this->databaseInfo->delimiterToken, this->databaseInfo->catalogSeparator,
             this->databaseInfo->schemaSeparator));
 }
 
 static void append_columns(SymDmlStatement *this, SymStringBuilder *sb) {
     SymIterator *iter = this->table->columns->iterator(this->table->columns);
-    while (iter->has_next(iter)) {
+    while (iter->hasNext(iter)) {
         SymColumn *column = (SymColumn *) iter->next(iter);
         if (iter->index > 0) {
             sb->append(sb, ", ");
@@ -41,7 +41,7 @@ static void append_columns(SymDmlStatement *this, SymStringBuilder *sb) {
 
 static void append_column_questions(SymDmlStatement *this, SymStringBuilder *sb) {
     SymIterator *iter = this->table->columns->iterator(this->table->columns);
-    while (iter->has_next(iter)) {
+    while (iter->hasNext(iter)) {
         iter->next(iter);
         if (iter->index > 0) {
             sb->append(sb, ", ");
@@ -52,19 +52,19 @@ static void append_column_questions(SymDmlStatement *this, SymStringBuilder *sb)
 }
 
 static void build_insert(SymDmlStatement *this) {
-    SymStringBuilder *sb = SymStringBuilder_new_with_string("insert into ");
+    SymStringBuilder *sb = SymStringBuilder_newWithString("insert into ");
     append_table_name(this, sb);
     sb->append(sb, " (");
     append_columns(this, sb);
     sb->append(sb, ") values (");
     append_column_questions(this, sb);
     sb->append(sb, ")");
-    this->sql = sb->destroy_and_return(sb);
+    this->sql = sb->destroyAndReturn(sb);
 }
 
 static void append_columns_equals_set(SymDmlStatement *this, SymStringBuilder *sb) {
     SymIterator *iter = this->table->columns->iterator(this->table->columns);
-    while (iter->has_next(iter)) {
+    while (iter->hasNext(iter)) {
         SymColumn *column = (SymColumn *) iter->next(iter);
         if (iter->index > 0) {
             sb->append(sb, ", ");
@@ -79,7 +79,7 @@ static void append_columns_equals_set(SymDmlStatement *this, SymStringBuilder *s
 
 static void append_columns_equals(SymDmlStatement *this, SymStringBuilder *sb) {
     SymIterator *iter = this->table->columns->iterator(this->table->columns);
-    while (iter->has_next(iter)) {
+    while (iter->hasNext(iter)) {
         SymColumn *column = (SymColumn *) iter->next(iter);
         if (iter->index > 0) {
             sb->append(sb, " and ");
@@ -97,36 +97,36 @@ static void append_columns_equals(SymDmlStatement *this, SymStringBuilder *sb) {
 }
 
 static void build_update(SymDmlStatement *this) {
-    SymStringBuilder *sb = SymStringBuilder_new_with_string("update ");
+    SymStringBuilder *sb = SymStringBuilder_newWithString("update ");
     append_table_name(this, sb);
     sb->append(sb, " set ");
     append_columns_equals_set(this, sb);
     sb->append(sb, " where ");
     append_columns_equals(this, sb);
-    this->sql = sb->destroy_and_return(sb);
+    this->sql = sb->destroyAndReturn(sb);
 }
 
 static void build_delete(SymDmlStatement *this) {
-    SymStringBuilder *sb = SymStringBuilder_new_with_string("delete from ");
+    SymStringBuilder *sb = SymStringBuilder_newWithString("delete from ");
     append_table_name(this, sb);
     sb->append(sb, " where ");
     append_columns_equals(this, sb);
-    this->sql = sb->destroy_and_return(sb);
+    this->sql = sb->destroyAndReturn(sb);
 }
 
 static void build_select(SymDmlStatement *this) {
-    SymStringBuilder *sb = SymStringBuilder_new_with_string("select ");
+    SymStringBuilder *sb = SymStringBuilder_newWithString("select ");
     append_columns(this, sb);
     sb->append(sb, " from ");
     append_table_name(this, sb);
     sb->append(sb, " where ");
     append_columns_equals(this, sb);
-    this->sql = sb->destroy_and_return(sb);
+    this->sql = sb->destroyAndReturn(sb);
 }
 
 static void build_sql_types_list(SymList *sqlTypes, SymList *columns, int isPrimaryKey) {
     SymIterator *iter = columns->iterator(columns);
-    while (iter->has_next(iter)) {
+    while (iter->hasNext(iter)) {
         SymColumn *column = (SymColumn *) iter->next(iter);
         if (column->isPrimaryKey == isPrimaryKey) {
             columns->add(columns, &column->sqlType);

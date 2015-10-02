@@ -24,11 +24,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct {
-    FILE * (*open)(void *this);
-    void (*close)(void *this);
-    int (*is_open)(void *this);
-    void (*destroy)(void *this);
+typedef struct SymOutgoingTransport {
+    FILE * (*open)(struct SymOutgoingTransport *this);
+    void (*close)(struct SymOutgoingTransport *this);
+    int (*isOpen)(struct SymOutgoingTransport *this);
+    void (*destroy)(struct SymOutgoingTransport *this);
 } SymOutgoingTransport;
 
 #endif

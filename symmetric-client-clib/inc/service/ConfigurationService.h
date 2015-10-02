@@ -23,10 +23,10 @@
 
 #include <stdio.h>
 #include "model/NodeChannel.h"
+#include "util/List.h"
 
-typedef struct {
+typedef struct SymConfigurationService {
+    SymList * (*getNodeChannels)(struct SymConfigurationService *this);
 } SymConfigurationService;
-
-SymNodeChannel* SymNodeService_get_node_channels(SymConfigurationService *);
 
 #endif

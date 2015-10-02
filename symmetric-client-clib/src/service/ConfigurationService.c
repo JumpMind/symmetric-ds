@@ -20,7 +20,7 @@
  */
 #include "service/ConfigurationService.h"
 
-SymNodeChannel* SymNodeService_get_node_channels(SymConfigurationService *this) {
+SymNodeChannel* SymNodeService_getNodeChannels(SymConfigurationService *this) {
     printf("SymNodeService_get_node_channels\n");
     return NULL;
 }

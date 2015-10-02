@@ -14,13 +14,13 @@ typedef struct {
 } SymMapEntry;
 
 
-typedef struct {
+typedef struct SymMap {
     int size;
     SymMapEntry **table;
-    void (*put)(void *this, char *key, void *value, int size);
-    void * (*get)(void *this, char *key);
-    int (*get_bytes_size)(void *this, char *key);
-    void (*destroy)(void *this);
+    void (*put)(struct SymMap *this, char *key, void *value, int size);
+    void * (*get)(struct SymMap *this, char *key);
+    int (*getBytesSize)(struct SymMap *this, char *key);
+    void (*destroy)(struct SymMap *this);
 } SymMap;
 
 SymMap *SymMap_new(SymMap *this, int size);

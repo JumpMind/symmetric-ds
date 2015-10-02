@@ -40,7 +40,7 @@
 #include "transport/TransportManager.h"
 #include "common/Constants.h"
 
-typedef struct {
+typedef struct SymEngine {
     SymProperties *properties;
     SymDialect *dialect;
     SymDatabasePlatform *platform;
@@ -53,11 +53,11 @@ typedef struct {
     SymPullService *pullService;
     SymNodeService *nodeService;
 
-    unsigned short (*start)(void *this);
-    unsigned short (*stop)(void *this);
-    unsigned short (*uninstall)(void *this);
-    unsigned short (*sync_triggers)(void *this);
-    void (*destroy)(void *this);
+    unsigned short (*start)(struct SymEngine *this);
+    unsigned short (*stop)(struct SymEngine *this);
+    unsigned short (*uninstall)(struct SymEngine *this);
+    unsigned short (*syncTriggers)(struct SymEngine *this);
+    void (*destroy)(struct SymEngine *this);
 } SymEngine;
 
 SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties);

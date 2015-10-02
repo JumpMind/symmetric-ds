@@ -33,7 +33,7 @@
 #include "db/sql/SqlTemplate.h"
 #include "db/sql/SqlTransaction.h"
 
-typedef struct {
+typedef struct SymDefaultDatabaseWriter {
     SymDataWriter super;
     SymDatabasePlatform *platform;
     SymSqlTransaction *sqlTransaction;

@@ -20,21 +20,21 @@
  */
 #include "service/RegistrationService.h"
 
-void SymRegistrationService_register_with_server(SymRegistrationService *this) {
-    unsigned short isRegistered = this->is_registered_with_server(this);
+void SymRegistrationService_registerWithServer(SymRegistrationService *this) {
+    unsigned short isRegistered = this->isRegisteredWithServer(this);
 
-    if (!this->is_registered_with_server(this)) {
+    if (!this->isRegisteredWithServer(this)) {
 
-        int maxNumberAttempts = this->parameterService->get_int(this->parameterService, SYM_PARAMETER_REGISTRATION_NUMBER_OF_ATTEMPTS, -1);
+        int maxNumberAttempts = this->parameterService->getInt(this->parameterService, SYM_PARAMETER_REGISTRATION_NUMBER_OF_ATTEMPTS, -1);
         SymRemoteNodeStatus *status = SymRemoteNodeStatus_new(NULL);
 
         while (!isRegistered && (maxNumberAttempts < 0 || maxNumberAttempts > 0)) {
 
-            this->dataLoaderService->load_data_from_registration(this->dataLoaderService, status);
+            this->dataLoaderService->loadDataFromRegistration(this->dataLoaderService, status);
             maxNumberAttempts--;
 
             if (isRegistered) {
-                SymNode *node = this->nodeService->find_identity(this->nodeService);
+                SymNode *node = this->nodeService->findIdentity(this->nodeService);
                 if (node != NULL) {
                     printf("Successfully registered node [id=%s]\n", node->nodeId);
                     // TODO: this->dataService->heartbeat(this->dataService);
@@ -54,7 +54,7 @@ void SymRegistrationService_register_with_server(SymRegistrationService *this) {
         }
 
         if (!isRegistered) {
-            int maxNumberAttempts = this->parameterService->get_int(this->parameterService, SYM_PARAMETER_REGISTRATION_NUMBER_OF_ATTEMPTS, -1);
+            int maxNumberAttempts = this->parameterService->getInt(this->parameterService, SYM_PARAMETER_REGISTRATION_NUMBER_OF_ATTEMPTS, -1);
             printf("Failed after trying to register %d times.", maxNumberAttempts);
         }
 
@@ -62,8 +62,8 @@ void SymRegistrationService_register_with_server(SymRegistrationService *this) {
     }
 }
 
-unsigned short SymRegistrationService_is_registered_with_server(SymRegistrationService *this) {
-    SymNode *identity = this->nodeService->find_identity(this->nodeService);
+unsigned short SymRegistrationService_isRegisteredWithServer(SymRegistrationService *this) {
+    SymNode *identity = this->nodeService->findIdentity(this->nodeService);
     unsigned short isRegistered = identity != NULL;
     if (identity != NULL) {
         identity->destroy(identity);
@@ -83,8 +83,8 @@ SymRegistrationService * SymRegistrationService_new(SymRegistrationService *this
     this->nodeService = nodeService;
     this->dataLoaderService = dataLoaderService;
     this->parameterService = parameterService;
-    this->is_registered_with_server = (void *) &SymRegistrationService_is_registered_with_server;
-    this->register_with_server = (void *) &SymRegistrationService_register_with_server;
+    this->isRegisteredWithServer = (void *) &SymRegistrationService_isRegisteredWithServer;
+    this->registerWithServer = (void *) &SymRegistrationService_registerWithServer;
     this->destroy = (void *) &SymRegistrationService_destroy;
     return this;
 }

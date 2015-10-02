@@ -20,14 +20,14 @@
  */
 #include "db/model/Column.h"
 
-char * SymColumn_to_string(SymColumn *this) {
-    SymStringBuilder *sb = SymStringBuilder_new_with_string("Column [name=");
+char * SymColumn_toString(SymColumn *this) {
+    SymStringBuilder *sb = SymStringBuilder_newWithString("Column [name=");
     sb->append(sb, this->name);
     sb->append(sb, "; type=")->appendf(sb, "%d", this->sqlType);
     sb->append(sb, "; required=")->appendf(sb, "%d", this->isRequired);
     sb->append(sb, "; pk=")->appendf(sb, "%d", this->isPrimaryKey);
     sb->append(sb, "]");
-    return sb->destroy_and_return(sb);
+    return sb->destroyAndReturn(sb);
 }
 
 void SymColumn_destroy(SymColumn *this) {
@@ -41,7 +41,7 @@ SymColumn * SymColumn_new(SymColumn *this, char *name, unsigned short isPrimaryK
     }
     this->name = SymStringBuilder_copy(name);
     this->isPrimaryKey = isPrimaryKey;
-    this->to_string = (void *) &SymColumn_to_string;
+    this->toString = (void *) &SymColumn_toString;
     this->destroy = (void *) &SymColumn_destroy;
     return this;
 }

@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include "transport/OutgoingTransport.h"
 
-typedef struct {
+typedef struct SymHttpOutgoingTransport {
     SymOutgoingTransport super;
     char *url;
     FILE *outputStream;

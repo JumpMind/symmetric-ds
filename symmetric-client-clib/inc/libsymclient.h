@@ -43,11 +43,4 @@
 #include "util/Map.h"
 #include "common/Constants.h"
 
-typedef unsigned short _boolean;
-
-typedef struct {
-    const size_t size;
-    void (*destroy)(void *this);
-} SymObject;
-
 #endif

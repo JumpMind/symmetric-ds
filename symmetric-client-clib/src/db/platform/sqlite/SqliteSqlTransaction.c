@@ -20,12 +20,12 @@
  */
 #include <db/sqlite/SqliteSqlTransaction.h>
 
-int SymSqliteSqlTransaction_query_for_int(SymSqliteSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
-    return this->sqlTemplate->query_for_int(this->sqlTemplate, sql, args, sqlTypes, error);
+int SymSqliteSqlTransaction_queryForInt(SymSqliteSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
+    return this->sqlTemplate->queryForInt(this->sqlTemplate, sql, args, sqlTypes, error);
 }
 
-char * SymSqliteSqlTransaction_query_for_string(SymSqliteSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
-    return this->sqlTemplate->query_for_string(this->sqlTemplate, sql, args, sqlTypes, error);
+char * SymSqliteSqlTransaction_queryForString(SymSqliteSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
+    return this->sqlTemplate->queryForString(this->sqlTemplate, sql, args, sqlTypes, error);
 }
 
 void SymSqliteSqlTransaction_query(SymSqliteSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *callback) {
@@ -51,7 +51,7 @@ void SymSqliteSqlTransaction_prepare(SymSqliteSqlTransaction *this, char *sql) {
     }
 }
 
-int SymSqliteSqlTransaction_add_row(SymSqliteSqlTransaction *this, SymStringArray *args, SymList *sqlTypes) {
+int SymSqliteSqlTransaction_addRow(SymSqliteSqlTransaction *this, SymStringArray *args, SymList *sqlTypes) {
     // TODO: do we need to convert to sqlType and bind correctly?
 
     sqlite3_reset(this->stmt);
@@ -114,12 +114,12 @@ SymSqliteSqlTransaction * SymSqliteSqlTransaction_new(SymSqliteSqlTransaction *t
     this->sqlTemplate = (SymSqlTemplate *) sqlTemplate;
     this->db = sqlTemplate->db;
     SymSqlTransaction *super = (SymSqlTransaction *) this;
-    super->query_for_int = (void *) &SymSqliteSqlTransaction_query_for_int;
-    super->query_for_string = (void *) &SymSqliteSqlTransaction_query_for_string;
+    super->queryForInt = (void *) &SymSqliteSqlTransaction_queryForInt;
+    super->queryForString = (void *) &SymSqliteSqlTransaction_queryForString;
     super->query = (void *) &SymSqliteSqlTransaction_query;
     super->update = (void *) &SymSqliteSqlTransaction_update;
     super->prepare = (void *) &SymSqliteSqlTransaction_prepare;
-    super->add_row = (void *) &SymSqliteSqlTransaction_add_row;
+    super->addRow = (void *) &SymSqliteSqlTransaction_addRow;
     super->commit = (void *) &SymSqliteSqlTransaction_commit;
     super->rollback = (void *) &SymSqliteSqlTransaction_rollback;
     super->close = (void *) &SymSqliteSqlTransaction_close;

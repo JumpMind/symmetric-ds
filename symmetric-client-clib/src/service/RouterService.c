@@ -20,7 +20,7 @@
  */
 #include "service/RouterService.h"
 
-long SymRouterService_route_data(SymRouterService *this) {
+long SymRouterService_routeData(SymRouterService *this) {
     printf("SymRouterService_route_data\n");
     return 0;
 }

@@ -20,16 +20,16 @@
  */
 #include "service/OutgoingBatchService.h"
 
-SymOutgoingBatch* SymOutgoingBatchService_find_outgoing_batch(SymOutgoingBatchService *this, long batchId, char *nodeId) {
+SymOutgoingBatch* SymOutgoingBatchService_findOutgoingBatch(SymOutgoingBatchService *this, long batchId, char *nodeId) {
     printf("SymOutgoingBatchService_find_outgoing_batch\n");
     return NULL;
 }
 
-SymOutgoingBatch* SymOutgoingBatchService_get_outgoing_batches(SymOutgoingBatchService *this, char *nodeId) {
+SymOutgoingBatch* SymOutgoingBatchService_getOutgoingBatches(SymOutgoingBatchService *this, char *nodeId) {
     printf("SymOutgoingBatchService_get_outgoing_batches\n");
     return NULL;
 }
 
-void SymOutgoingBatchService_update_outgoing_batch(SymOutgoingBatchService *this, SymOutgoingBatch *outgoingBatch) {
+void SymOutgoingBatchService_updateOutgoingBatch(SymOutgoingBatchService *this, SymOutgoingBatch *outgoingBatch) {
     printf("SymOutgoingBatchService_update_outgoing_batch\n");
 }

@@ -20,14 +20,14 @@
  */
 #include "io/reader/ProtocolDataReader.h"
 
-static void SymProtocolDataReader_parse_field(void *data, size_t size, void *userData) {
+static void SymProtocolDataReader_parseField(void *data, size_t size, void *userData) {
     SymProtocolDataReader *this = (SymProtocolDataReader *) userData;
     if (!this->isError) {
         this->fields->addn(this->fields, data, size);
     }
 }
 
-static void SymProtocolDataReader_parse_line(int eol, void *userData) {
+static void SymProtocolDataReader_parseLine(int eol, void *userData) {
     SymProtocolDataReader *this = (SymProtocolDataReader *) userData;
     SymBatch *batch = this->batch;
     SymStringArray *fields = this->fields;
@@ -61,16 +61,16 @@ static void SymProtocolDataReader_parse_line(int eol, void *userData) {
             this->isError = !this->writer->write(this->writer, csvData);
             csvData->destroy(csvData);
         } else if (strcmp(token, SYM_CSV_CATALOG) == 0) {
-            SymStringBuilder_copy_to_field(&this->catalog, fields->get(fields, 1));
+            SymStringBuilder_copyToField(&this->catalog, fields->get(fields, 1));
         } else if (strcmp(token, SYM_CSV_SCHEMA) == 0) {
-            SymStringBuilder_copy_to_field(&this->schema, fields->get(fields, 1));
+            SymStringBuilder_copyToField(&this->schema, fields->get(fields, 1));
         } else if (strcmp(token, SYM_CSV_TABLE) == 0) {
             char *tableName = fields->get(fields, 1);
             this->table = (SymTable *) this->parsedTables->get(this->parsedTables, tableName);
             if (this->table) {
-                this->writer->start_table(this->writer, this->table);
+                this->writer->startTable(this->writer, this->table);
             } else {
-                this->table = SymTable_new_with_fullname(NULL, this->catalog, this->schema, tableName);
+                this->table = SymTable_newWithFullname(NULL, this->catalog, this->schema, tableName);
             }
         } else if (strcmp(token, SYM_CSV_KEYS) == 0) {
             this->keys = fields->subarray(fields, 1, fields->size);
@@ -82,19 +82,16 @@ static void SymProtocolDataReader_parse_line(int eol, void *userData) {
                 this->table->columns->add(this->table->columns, SymColumn_new(NULL, this->fields->array[i], isPrimary));
             }
             this->parsedTables->put(this->parsedTables, this->table->name, this->table, sizeof(SymTable));
-            //SymTable *poop = (SymTable *) this->parsedTables->get(this->parsedTables, this->table->name);
-            //printf("%s", poop->to_string(poop));
-            //printf("\n");
-            this->writer->start_table(this->writer, this->table);
+            this->writer->startTable(this->writer, this->table);
         } else if (strcmp(token, SYM_CSV_NODEID) == 0) {
-            SymStringBuilder_copy_to_field(&batch->sourceNodeId, fields->get(fields, 1));
+            SymStringBuilder_copyToField(&batch->sourceNodeId, fields->get(fields, 1));
         } else if (strcmp(token, SYM_CSV_CHANNEL) == 0) {
-            SymStringBuilder_copy_to_field(&batch->channelId, fields->get(fields, 1));
+            SymStringBuilder_copyToField(&batch->channelId, fields->get(fields, 1));
         } else if (strcmp(token, SYM_CSV_BATCH) == 0) {
             batch->batchId = atol(fields->get(fields, 1));
-            this->writer->start_batch(this->writer, batch);
+            this->writer->startBatch(this->writer, batch);
         } else if (strcmp(token, SYM_CSV_COMMIT) == 0) {
-            this->writer->end_batch(this->writer, batch);
+            this->writer->endBatch(this->writer, batch);
         } else if (strcmp(token, SYM_CSV_IGNORE) == 0) {
             batch->isIgnore = 1;
         } else if (strcmp(token, SYM_CSV_SQL) == 0) {
@@ -105,7 +102,7 @@ static void SymProtocolDataReader_parse_line(int eol, void *userData) {
             csvData->destroy(csvData);
         }
         if (this->isError) {
-            this->writer->end_batch(this->writer, batch);
+            this->writer->endBatch(this->writer, batch);
         }
         fields->reset(fields);
     }
@@ -118,7 +115,7 @@ void SymProtocolDataReader_open(SymProtocolDataReader *this) {
 
 size_t SymProtocolDataReader_process(SymProtocolDataReader *this, char *data, size_t size, size_t count) {
     size_t length = size * count;
-    if (csv_parse(this->csvParser, data, length, SymProtocolDataReader_parse_field, SymProtocolDataReader_parse_line, this) != length) {
+    if (csv_parse(this->csvParser, data, length, SymProtocolDataReader_parseField, SymProtocolDataReader_parseLine, this) != length) {
         fprintf(stderr, "Error from CSV parser: %s\n", csv_strerror(csv_error(this->csvParser)));
         return 0;
     }
@@ -129,7 +126,7 @@ size_t SymProtocolDataReader_process(SymProtocolDataReader *this, char *data, si
 }
 
 void SymProtocolDataReader_close(SymProtocolDataReader *this) {
-    csv_fini(this->csvParser, SymProtocolDataReader_parse_field, SymProtocolDataReader_parse_line, this);
+    csv_fini(this->csvParser, SymProtocolDataReader_parseField, SymProtocolDataReader_parseLine, this);
     this->writer->close(this->writer);
 }
 
@@ -149,7 +146,7 @@ SymProtocolDataReader * SymProtocolDataReader_new(SymProtocolDataReader *this, c
     this->targetNodeId = targetNodeId;
     this->writer = writer;
     this->csvParser = (struct csv_parser *) calloc(1, sizeof(struct csv_parser));
-    this->fields = SymStringArray_new_with_size(NULL, 1024, 1024);
+    this->fields = SymStringArray_newWithSize(NULL, 1024, 1024);
     this->batch = SymBatch_new(NULL);
     this->batch->targetNodeId = SymStringBuilder_copy(targetNodeId);
     this->parsedTables = SymMap_new(NULL, 100);

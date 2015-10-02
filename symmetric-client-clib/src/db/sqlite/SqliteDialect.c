@@ -22,10 +22,10 @@
 
 static int create_if_missing(SymDialect *super, char *tableName, char *createSql) {
     // TODO: re-implement this using ddl reader
-    if (!super->platform->table_exists(super->platform, tableName)) {
+    if (!super->platform->tableExists(super->platform, tableName)) {
         char *errorMessage;
         printf("DDL applied: %s\n", tableName);
-        if (super->platform->execute_sql(super->platform, createSql, NULL, NULL, &errorMessage)) {
+        if (super->platform->executeSql(super->platform, createSql, NULL, NULL, &errorMessage)) {
             fprintf(stderr, "Error creating %s table: %s\n", tableName, errorMessage);
             free(errorMessage);
             return 1;
@@ -34,7 +34,7 @@ static int create_if_missing(SymDialect *super, char *tableName, char *createSql
     return 0;
 }
 
-int SymSqliteDialect_init_tables(SymDialect *super) {
+int SymSqliteDialect_initTables(SymDialect *super) {
     printf("Checking if SymmetricDS tables need created or altered\n");
     create_if_missing(super, "sym_channel", CREATE_SYM_CHANNEL);
     create_if_missing(super, "sym_data", CREATE_SYM_DATA);
@@ -57,19 +57,19 @@ int SymSqliteDialect_init_tables(SymDialect *super) {
     return 0;
 }
 
-int SymSqliteDialect_drop_tables(SymDialect *super) {
+int SymSqliteDialect_dropTables(SymDialect *super) {
     return 0;
 }
 
-int SymSqliteDialect_create_trigger(SymDialect *super) {
+int SymSqliteDialect_createTrigger(SymDialect *super) {
     return 0;
 }
 
-int SymSqliteDialect_remove_trigger(SymDialect *super) {
+int SymSqliteDialect_removeTrigger(SymDialect *super) {
     return 0;
 }
 
-int SymSqliteDialect_get_initial_load_sql(SymDialect *super) {
+int SymSqliteDialect_getInitialLoadSql(SymDialect *super) {
     return 0;
 }
 
@@ -84,11 +84,11 @@ SymSqliteDialect * SymSqliteDialect_new(SymSqliteDialect *this, SymDatabasePlatf
     }
     SymDialect_new(&this->super, platform);
     SymDialect *super = &this->super;
-    super->init_tables = (void *) &SymSqliteDialect_init_tables;
-    super->drop_tables = (void *) &SymSqliteDialect_drop_tables;
-    super->create_trigger = (void *) &SymSqliteDialect_create_trigger;
-    super->remove_trigger = (void *) &SymSqliteDialect_remove_trigger;
-    super->get_initial_load_sql = (void *) &SymSqliteDialect_get_initial_load_sql;
+    super->initTables = (void *) &SymSqliteDialect_initTables;
+    super->dropTables = (void *) &SymSqliteDialect_dropTables;
+    super->createTrigger = (void *) &SymSqliteDialect_createTrigger;
+    super->removeTrigger = (void *) &SymSqliteDialect_removeTrigger;
+    super->getInitialLoadSql = (void *) &SymSqliteDialect_getInitialLoadSql;
     super->destroy = (void *) &SymSqliteDialect_destroy;
 
     printf("The DbDialect being used is SymSqliteDialect\n");

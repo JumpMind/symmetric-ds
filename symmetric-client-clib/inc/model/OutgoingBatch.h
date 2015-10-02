@@ -21,7 +21,7 @@
 #ifndef SYM_OUTGOING_BATCH_H
 #define SYM_OUTGOING_BATCH_H
 
-typedef struct {
+typedef struct SymOutgoingBatch {
 } SymOutgoingBatch;
 
 #endif

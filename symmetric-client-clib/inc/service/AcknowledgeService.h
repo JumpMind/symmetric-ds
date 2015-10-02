@@ -24,9 +24,8 @@
 #include <stdio.h>
 #include "model/BatchAck.h"
 
-typedef struct {
+typedef struct SymAcknowledgeService {
+    void (*ack)(struct SymAcknowledgeService *this, SymBatchAck *batchAck);
 } SymAcknowledgeService;
-
-void SymAcknowledgeService_ack(SymAcknowledgeService *, SymBatchAck *);
 
 #endif

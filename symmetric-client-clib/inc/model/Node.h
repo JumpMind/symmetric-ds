@@ -25,7 +25,7 @@
 
 #define SYM_VERSION "3.7.0"
 
-typedef struct {
+typedef struct SymNode {
     char *nodeId;
     char *nodeGroupId;
     char *externalId;
@@ -39,7 +39,7 @@ typedef struct {
     int batchToSendCount;
     int batchInErrorCount;
     char *deploymentType;
-    void (*destroy)(void *this);
+    void (*destroy)(struct SymNode *this);
 } SymNode;
 
 SymNode * SymNode_new(SymNode *this);

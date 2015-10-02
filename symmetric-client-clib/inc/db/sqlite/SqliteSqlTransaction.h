@@ -28,14 +28,14 @@
 #include "db/sqlite/SqliteSqlTemplate.h"
 #include "util/List.h"
 
-typedef struct {
+typedef struct SymSqliteSqlTransaction {
     SymSqlTransaction super;
     SymSqlTemplate *sqlTemplate;
     sqlite3 *db;
     sqlite3_stmt *stmt;
     char *sql;
     unsigned short inTransaction;
-    void (*destroy)(void *this);
+    void (*destroy)(struct SymSqliteSqlTransaction *this);
 } SymSqliteSqlTransaction;
 
 SymSqliteSqlTransaction * SymSqliteSqlTransaction_new(SymSqliteSqlTransaction *this, SymSqliteSqlTemplate *sqlTemplate);

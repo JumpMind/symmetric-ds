@@ -23,11 +23,10 @@
 
 #include <stdio.h>
 
-typedef struct {
+typedef struct SymSequenceService {
+    void (*init)(struct SymSequenceService *this);
+    long (*nextVal)(struct SymSequenceService *this, char *name);
+    long (*currVal)(struct SymSequenceService *this, char *name);
 } SymSequenceService;
-
-long SymSequenceService_next_val(SymSequenceService *, char * name);
-long SymSequenceService_curr_val(SymSequenceService *, char * name);
-void SymSequenceService_init(SymSequenceService *);
 
 #endif

@@ -20,7 +20,7 @@
  */
 #include "model/RemoteNodeStatus.h"
 
-void SymRemoteNodeStatus_update_incoming_status(SymRemoteNodeStatus *this, SymIncomingBatch **incomingBatches) {
+void SymRemoteNodeStatus_updateIncomingStatus(SymRemoteNodeStatus *this, SymIncomingBatch **incomingBatches) {
     if (incomingBatches != NULL) {
         int i = 0;
         for (; incomingBatches[i] != NULL; i++) {
@@ -47,6 +47,6 @@ SymRemoteNodeStatus * SymRemoteNodeStatus_new(SymRemoteNodeStatus *this) {
         this = (SymRemoteNodeStatus *) calloc(1, sizeof(SymRemoteNodeStatus));
     }
     this->destroy = (void *) &SymRemoteNodeStatus_destroy;
-    this->update_incoming_status = (void *) &SymRemoteNodeStatus_update_incoming_status;
+    this->updateIncomingStatus = (void *) &SymRemoteNodeStatus_updateIncomingStatus;
     return this;
 }
