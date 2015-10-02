@@ -20,6 +20,7 @@
 <listEntry value="4"/>
 </listAttribute>
 <mapAttribute key="org.eclipse.debug.core.environmentVariables">
+<mapEntry key="DYLD_LIBRARY_PATH" value="/usr/local/lib:/usr/lib:../symmetric-client-clib/Debug:/usr/local/lib"/>
 <mapEntry key="LD_LIBRARY_PATH" value="../symmetric-client-clib/Debug:/usr/local/lib"/>
 </mapAttribute>
 <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
