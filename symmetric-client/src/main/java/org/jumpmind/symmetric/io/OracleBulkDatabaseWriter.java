@@ -92,7 +92,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                 if (filterBefore(data)) {
                     Object[] rowData = platform.getObjectValues(batch.getBinaryEncoding(), getRowData(data, CsvData.ROW_DATA),
-                            targetTable.getColumns());
+                            targetTable.getColumns(), false, writerSettings.isFitToColumn());
                     for (int i = 0; i < rowData.length; i++) {
 
                         List<Object> columnList = null;
@@ -216,8 +216,13 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
 
     protected String getMappedType(int typeCode) {
         switch (typeCode) {
+            case Types.CLOB:
             case Types.CHAR:
+            case Types.NCHAR:
             case Types.VARCHAR:
+            case Types.NVARCHAR:
+            case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
                 return "varchar(4000)";
             case Types.DATE:
             case Types.TIME:
@@ -244,8 +249,13 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
 
     protected String getTypeName(int typeCode) {
         switch (typeCode) {
+            case Types.CLOB:
             case Types.CHAR:
+            case Types.NCHAR:
             case Types.VARCHAR:
+            case Types.NVARCHAR:
+            case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
                 return String.format("%s_%s_t", procedurePrefix, "varchar").toUpperCase();
             case Types.DATE:
             case Types.TIME:
@@ -274,7 +284,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
         // TODO support BLOB and CLOBs in bulk load. For now, remove them
         while (iterator.hasNext()) {
             Column column = (Column) iterator.next();
-            if (column.getMappedTypeCode() == Types.CLOB || column.getMappedTypeCode() == Types.BLOB
+            if (column.getMappedTypeCode() == Types.BLOB
                     || column.getMappedTypeCode() == Types.VARBINARY) {
                 iterator.remove();
             }
