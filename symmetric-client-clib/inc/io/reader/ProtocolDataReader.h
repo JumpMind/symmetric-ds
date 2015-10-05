@@ -35,7 +35,7 @@
 #include "io/data/CsvConstants.h"
 #include "io/data/CsvData.h"
 
-typedef struct {
+typedef struct SymProtocolDataReader {
     SymDataReader super;
     char *targetNodeId;
     SymDataWriter *writer;

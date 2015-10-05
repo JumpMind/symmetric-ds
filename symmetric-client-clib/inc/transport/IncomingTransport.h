@@ -32,10 +32,10 @@
 #define SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE 503
 #define SYM_TRANSPORT_SC_FORBIDDEN 403
 
-typedef struct {
-    char * (*get_url)(void *this);
-    long (*process)(void *this, SymDataReader *reader);
-    void (*destroy)(void *this);
+typedef struct SymIncomingTransport {
+    char * (*getUrl)(struct SymIncomingTransport *this);
+    long (*process)(struct SymIncomingTransport *this, SymDataReader *reader);
+    void (*destroy)(struct SymIncomingTransport *this);
 } SymIncomingTransport;
 
 #endif

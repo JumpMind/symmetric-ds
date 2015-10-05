@@ -58,7 +58,7 @@ void SymMapTest_test2() {
 
 void SymMapTest_test3() {
     char *columnNames[] = { "id", "name", "description", "create_time" };
-    SymTable *table = SymTable_new_with_fullname(NULL, "mydb", "dbo", "table1");
+    SymTable *table = SymTable_newWithFullname(NULL, "mydb", "dbo", "table1");
     table->columns = SymList_new(NULL);
     int i;
     for (i = 0; i < 4; i++) {
@@ -74,7 +74,7 @@ void SymMapTest_test3() {
         CU_ASSERT(out->columns != NULL);
         if (out->columns) {
             SymIterator *iter = out->columns->iterator(out->columns);
-            while (iter->has_next(iter)) {
+            while (iter->hasNext(iter)) {
                 SymColumn *column = (SymColumn *) iter->next(iter);
                 CU_ASSERT(column->name != NULL);
                 if (column->name) {

@@ -21,7 +21,7 @@
 #include "symclient_test.h"
 
 void SymStringBuilderTest_test1() {
-    SymStringBuilder *sb = SymStringBuilder_new_with_string("hello");
+    SymStringBuilder *sb = SymStringBuilder_newWithString("hello");
     sb->append(sb, ",hola");
     sb->append(sb, ",salute");
     sb->append(sb, ",bonjour");
@@ -32,7 +32,7 @@ void SymStringBuilderTest_test1() {
 }
 
 void SymStringBuilderTest_test2() {
-    SymStringBuilder *sb = SymStringBuilder_new_with_size(1);
+    SymStringBuilder *sb = SymStringBuilder_newWithSize(1);
     sb->append(sb, "como ");
     sb->append(sb, "t'allez-vous");
     CU_ASSERT(strcmp(sb->str, "como t'allez-vous") == 0);
@@ -53,7 +53,7 @@ void SymStringBuilderTest_test4() {
     sb->append(sb, "1");
     sb->append(sb, "2");
     sb->append(sb, "3");
-    char *value = sb->destroy_and_return(sb);
+    char *value = sb->destroyAndReturn(sb);
     CU_ASSERT(strcmp(value, "123") == 0);
     free(value);
 }

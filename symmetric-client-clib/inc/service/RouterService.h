@@ -23,9 +23,8 @@
 
 #include <stdio.h>
 
-typedef struct {
+typedef struct SymRouterService {
+    long (*routeData)(struct SymRouterService *this);
 } SymRouterService;
-
-long SymRouterService_route_data(SymRouterService *);
 
 #endif

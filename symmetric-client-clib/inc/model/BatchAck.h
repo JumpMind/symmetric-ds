@@ -21,7 +21,7 @@
 #ifndef SYM_BATCH_ACK_H
 #define SYM_BATCH_ACK_H
 
-typedef struct {
+typedef struct SymBatchAck {
     long batchId;
 } SymBatchAck;
 

@@ -48,21 +48,21 @@
 
 #define SYM_PARAMETER_PARAMETER_REFRESH_PERIOD_IN_MS "parameter.reload.timeout.ms"
 
-typedef struct {
+typedef struct SymParameterService {
     SymProperties *parameters;
     SymProperties *properties;
     time_t lastTimeParameterWereCached;
     long cacheTimeoutInMs;
-    char * (*get_registration_url)(void *this);
-    char * (*get_sync_url)(void *this);
-    char * (*get_external_id)(void *this);
-    char * (*get_node_group_id)(void *this);
-    char * (*get_string)(void *this, char *name, char *defaultValue);
-    long (*get_long)(void *this, char *name, long defaultValue);
-    int (*get_int)(void *this, char *name, int defaultValue);
-    void (*save_parameter)(void *this, char *externalId, char *nodeGroupId, char *name, char *value, char *lastUpdatedBy);
-    void (*delete_parameter)(void *this, char *externalId, char *nodeGroupId, char *name);
-    void (*destroy)(void *this);
+    char * (*getRegistrationUrl)(struct SymParameterService *this);
+    char * (*getSyncUrl)(struct SymParameterService *this);
+    char * (*getExternalId)(struct SymParameterService *this);
+    char * (*getNodeGroupId)(struct SymParameterService *this);
+    char * (*getString)(struct SymParameterService *this, char *name, char *defaultValue);
+    long (*getLong)(struct SymParameterService *this, char *name, long defaultValue);
+    int (*getInt)(struct SymParameterService *this, char *name, int defaultValue);
+    void (*saveParameter)(struct SymParameterService *this, char *externalId, char *nodeGroupId, char *name, char *value, char *lastUpdatedBy);
+    void (*deleteParameter)(struct SymParameterService *this, char *externalId, char *nodeGroupId, char *name);
+    void (*destroy)(struct SymParameterService *this);
 } SymParameterService;
 
 SymParameterService * SymParameterService_new(SymParameterService * this, SymProperties *properties);

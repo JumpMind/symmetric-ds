@@ -28,7 +28,7 @@
 #include "db/platform/sqlite/SqliteDdlReader.h"
 #include "db/sqlite/SqliteSqlTemplate.h"
 
-typedef struct {
+typedef struct SymSqlitePlatform {
     SymDatabasePlatform super;
     sqlite3 *db;
     SymSqlTemplate *sqlTemplate;

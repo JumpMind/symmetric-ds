@@ -105,7 +105,7 @@ void * SymMap_get(SymMap *this, char *key) {
     }
 }
 
-int SymMap_get_bytes_size(SymMap *this, char *key) {
+int SymMap_getBytesSize(SymMap *this, char *key) {
     int hash = SymMap_hash(this, key);
 
     SymMapEntry *entry = this->table[hash];
@@ -130,7 +130,7 @@ SymMap * SymMap_new(SymMap *this, int size) {
         this = malloc(sizeof(SymMap));
     }
     this->get = (void *) &SymMap_get;
-    this->get_bytes_size = (void *) &SymMap_get_bytes_size;
+    this->getBytesSize = (void *) &SymMap_getBytesSize;
     this->put = (void *) &SymMap_put;
     this->destroy = (void *) &SymMap_destroy;
 

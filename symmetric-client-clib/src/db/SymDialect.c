@@ -20,26 +20,6 @@
  */
 #include "db/SymDialect.h"
 
-int SymDialect_init_tables(SymDialect *this) {
-    return 0;
-}
-
-int SymDialect_drop_tables(SymDialect *this) {
-    return 0;
-}
-
-int SymDialect_create_trigger(SymDialect *this) {
-    return 0;
-}
-
-int SymDialect_remove_trigger(SymDialect *this) {
-    return 0;
-}
-
-int SymDialect_get_initial_load_sql(SymDialect *this) {
-    return 0;
-}
-
 void SymDialect_destroy(SymDialect *this) {
     free(this);
 }
@@ -49,11 +29,6 @@ SymDialect * SymDialect_new(SymDialect *this, SymDatabasePlatform *platform) {
         this = (SymDialect *) calloc(1, sizeof(SymDialect));
     }
     this->platform = platform;
-    this->init_tables = (void *) &SymDialect_init_tables;
-    this->drop_tables = (void *) &SymDialect_drop_tables;
-    this->create_trigger = (void *) &SymDialect_create_trigger;
-    this->remove_trigger = (void *) &SymDialect_remove_trigger;
-    this->get_initial_load_sql = (void *) &SymDialect_get_initial_load_sql;
     this->destroy = (void *) &SymDialect_destroy;
     return this;
 }

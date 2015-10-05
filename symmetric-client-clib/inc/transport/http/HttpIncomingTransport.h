@@ -28,7 +28,7 @@
 #include "model/Node.h"
 #include "transport/IncomingTransport.h"
 
-typedef struct {
+typedef struct SymHttpIncomingTransport {
     SymIncomingTransport super;
     char *url;
 } SymHttpIncomingTransport;

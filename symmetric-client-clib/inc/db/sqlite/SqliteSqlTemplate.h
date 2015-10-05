@@ -27,11 +27,12 @@
 #include "db/sql/SqlTemplate.h"
 #include "util/List.h"
 #include "util/StringArray.h"
+#include "util/StringBuilder.h"
 
-typedef struct {
+typedef struct SymSqliteSqlTemplate {
     SymSqlTemplate super;
     sqlite3 *db;
-    void (*destroy)(void *this);
+    void (*destroy)(struct SymSqliteSqlTemplate *this);
 } SymSqliteSqlTemplate;
 
 SymSqliteSqlTemplate * SymSqliteSqlTemplate_new(SymSqliteSqlTemplate *this, sqlite3 *db);

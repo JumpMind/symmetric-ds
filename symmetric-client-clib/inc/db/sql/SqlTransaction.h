@@ -26,17 +26,17 @@
 #include "util/List.h"
 #include "util/StringArray.h"
 
-typedef struct {
-    int (*query_for_int)(void *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
-    char * (*query_for_string)(void *this, char *sql, SymStringArray *argss, SymList *sqlTypes, int *error);
-    void (*query)(void *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *callback);
-    int (*update)(void *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
-    void (*prepare)(void *this, char *sql);
-    int (*add_row)(void *this, SymStringArray *args, SymList *sqlTypes);
-    void (*commit)(void *this);
-    void (*rollback)(void *this);
-    void (*close)(void *this);
-    void (*destroy)(void *this);
+typedef struct SymSqlTransaction {
+    int (*queryForInt)(struct SymSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
+    char * (*queryForString)(struct SymSqlTransaction *this, char *sql, SymStringArray *argss, SymList *sqlTypes, int *error);
+    void (*query)(struct SymSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *callback);
+    int (*update)(struct SymSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
+    void (*prepare)(struct SymSqlTransaction *this, char *sql);
+    int (*addRow)(struct SymSqlTransaction *this, SymStringArray *args, SymList *sqlTypes);
+    void (*commit)(struct SymSqlTransaction *this);
+    void (*rollback)(struct SymSqlTransaction *this);
+    void (*close)(struct SymSqlTransaction *this);
+    void (*destroy)(struct SymSqlTransaction *this);
 } SymSqlTransaction;
 
 SymSqlTransaction * SymSqlTransaction_new(SymSqlTransaction *this);

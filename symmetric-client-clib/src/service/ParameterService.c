@@ -20,49 +20,49 @@
  */
 #include "service/ParameterService.h"
 
-static void get_database_parameters(SymParameterService *this, char *externalId, char *nodeGroupId) {
+static void getDatabaseParameters(SymParameterService *this, char *externalId, char *nodeGroupId) {
 }
 
-static void reread_database_parameters(SymParameterService *this) {
+static void rereadDatabaseParameters(SymParameterService *this) {
     if (this->parameters != NULL) {
         this->parameters->destroy(this->parameters);
     }
     this->parameters = SymProperties_new(NULL);
-    this->parameters->put_all(this->parameters, this->properties);
-    get_database_parameters(this, SYM_PARAMETER_ALL, SYM_PARAMETER_ALL);
-    get_database_parameters(this, SYM_PARAMETER_ALL, this->properties->get(this->properties, SYM_PARAMETER_GROUP_ID, NULL));
-    get_database_parameters(this, this->properties->get(this->properties, SYM_PARAMETER_EXTERNAL_ID, NULL),
+    this->parameters->putAll(this->parameters, this->properties);
+    getDatabaseParameters(this, SYM_PARAMETER_ALL, SYM_PARAMETER_ALL);
+    getDatabaseParameters(this, SYM_PARAMETER_ALL, this->properties->get(this->properties, SYM_PARAMETER_GROUP_ID, NULL));
+    getDatabaseParameters(this, this->properties->get(this->properties, SYM_PARAMETER_EXTERNAL_ID, NULL),
             this->properties->get(this->properties, SYM_PARAMETER_GROUP_ID, NULL));
 }
 
-static SymProperties * get_parameters(SymParameterService *this) {
+static SymProperties * getParameters(SymParameterService *this) {
     time_t now = time(NULL);
     if (this->parameters == NULL || (this->cacheTimeoutInMs > 0 && this->lastTimeParameterWereCached < (now - (this->cacheTimeoutInMs / 1000)))) {
-        reread_database_parameters(this);
+        rereadDatabaseParameters(this);
         this->lastTimeParameterWereCached = now;
-        this->cacheTimeoutInMs = this->get_long(this, SYM_PARAMETER_PARAMETER_REFRESH_PERIOD_IN_MS, 60000);
+        this->cacheTimeoutInMs = this->getLong(this, SYM_PARAMETER_PARAMETER_REFRESH_PERIOD_IN_MS, 60000);
     }
     return this->parameters;
 }
 
-char* SymParameterService_get_registration_url(SymParameterService *this) {
-    return this->get_string(this, SYM_PARAMETER_REGISTRATION_URL, NULL);
+char* SymParameterService_getRegistrationUrl(SymParameterService *this) {
+    return this->getString(this, SYM_PARAMETER_REGISTRATION_URL, NULL);
 }
 
-char* SymParameterService_get_sync_url(SymParameterService *this) {
-    return this->get_string(this, SYM_PARAMETER_SYNC_URL, NULL);
+char* SymParameterService_getSyncUrl(SymParameterService *this) {
+    return this->getString(this, SYM_PARAMETER_SYNC_URL, NULL);
 }
 
-char * SymParameterService_get_external_id(SymParameterService *this) {
-    return this->get_string(this, SYM_PARAMETER_EXTERNAL_ID, NULL);
+char * SymParameterService_getExternalId(SymParameterService *this) {
+    return this->getString(this, SYM_PARAMETER_EXTERNAL_ID, NULL);
 }
 
-char * SymParameterService_get_node_group_id(SymParameterService *this) {
-    return this->get_string(this, SYM_PARAMETER_GROUP_ID, NULL);
+char * SymParameterService_getNodeGroupId(SymParameterService *this) {
+    return this->getString(this, SYM_PARAMETER_GROUP_ID, NULL);
 }
 
-char * SymParameterService_get_string(SymParameterService *this, char *name, char *defaultValue) {
-    SymProperties *prop = get_parameters(this);
+char * SymParameterService_getString(SymParameterService *this, char *name, char *defaultValue) {
+    SymProperties *prop = getParameters(this);
     char *value = prop->get(prop, name, NULL);
     if (value == NULL) {
         value = defaultValue;
@@ -70,29 +70,29 @@ char * SymParameterService_get_string(SymParameterService *this, char *name, cha
     return value;
 }
 
-long SymParameterService_get_long(SymParameterService *this, char *name, long defaultValue) {
+long SymParameterService_getLong(SymParameterService *this, char *name, long defaultValue) {
     long value = defaultValue;
-    char *stringValue = this->get_string(this, name, NULL);
+    char *stringValue = this->getString(this, name, NULL);
     if (stringValue != NULL) {
         value = atol(stringValue);
     }
     return value;
 }
 
-int SymParameterService_get_int(SymParameterService *this, char *name, int defaultValue) {
+int SymParameterService_getInt(SymParameterService *this, char *name, int defaultValue) {
     int value = defaultValue;
-    char *stringValue = this->get_string(this, name, NULL);
+    char *stringValue = this->getString(this, name, NULL);
     if (stringValue != NULL) {
         value = atoi(stringValue);
     }
     return value;
 }
 
-void SymParameterService_save_parameter(SymParameterService *this, char *externalId, char *nodeGroupId,
+void SymParameterService_saveParameter(SymParameterService *this, char *externalId, char *nodeGroupId,
         char *name, char *value, char *lastUpdatedBy) {
 }
 
-void SymParameterService_delete_parameter(SymParameterService *this, char *externalId, char *nodeGroupId, char *name) {
+void SymParameterService_deleteParameter(SymParameterService *this, char *externalId, char *nodeGroupId, char *name) {
 }
 
 void SymParameterService_destroy(SymParameterService *this) {
@@ -105,15 +105,15 @@ SymParameterService * SymParameterService_new(SymParameterService *this, SymProp
         this = (SymParameterService *) calloc(1, sizeof(SymParameterService));
     }
     this->properties = properties;
-    this->get_registration_url = (void *) &SymParameterService_get_registration_url;
-    this->get_sync_url = (void *) &SymParameterService_get_sync_url;
-    this->get_external_id = (void *) &SymParameterService_get_external_id;
-    this->get_node_group_id = (void *) &SymParameterService_get_node_group_id;
-    this->get_string = (void *) &SymParameterService_get_string;
-    this->get_long = (void *) &SymParameterService_get_long;
-    this->get_int = (void *) &SymParameterService_get_int;
-    this->save_parameter = (void *) &SymParameterService_save_parameter;
-    this->delete_parameter = (void *) &SymParameterService_delete_parameter;
+    this->getRegistrationUrl = (void *) &SymParameterService_getRegistrationUrl;
+    this->getSyncUrl = (void *) &SymParameterService_getSyncUrl;
+    this->getExternalId = (void *) &SymParameterService_getExternalId;
+    this->getNodeGroupId = (void *) &SymParameterService_getNodeGroupId;
+    this->getString = (void *) &SymParameterService_getString;
+    this->getLong = (void *) &SymParameterService_getLong;
+    this->getInt = (void *) &SymParameterService_getInt;
+    this->saveParameter = (void *) &SymParameterService_saveParameter;
+    this->deleteParameter = (void *) &SymParameterService_deleteParameter;
     this->destroy = (void *) &SymParameterService_destroy;
     return this;
 }

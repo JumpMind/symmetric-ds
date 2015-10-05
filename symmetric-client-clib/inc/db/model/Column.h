@@ -30,11 +30,12 @@ typedef struct SymColumn {
     unsigned short isPrimaryKey;
     unsigned short isRequired;
     int sqlType;
-    char * (*to_string)(struct SymColumn *this);
-    void (*destroy)(void *this);
+    char * (*toString)(struct SymColumn *this);
+    void (*destroy)(struct SymColumn *this);
 } SymColumn;
 
 SymColumn * SymColumn_new(SymColumn *this, char *name, unsigned short isPrimaryKey);
+
 void SymColumn_destroy(SymColumn *this);
 
 #endif

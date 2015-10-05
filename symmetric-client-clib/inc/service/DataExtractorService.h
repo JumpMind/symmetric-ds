@@ -24,9 +24,8 @@
 #include <stdio.h>
 #include "model/Node.h"
 
-typedef struct {
+typedef struct SymDataExtractorService {
+    void (*extract)(struct SymDataExtractorService *this, SymNode *node);
 } SymDataExtractorService;
-
-void SymDataExtractorService_extract(SymDataExtractorService *, SymNode *);
 
 #endif

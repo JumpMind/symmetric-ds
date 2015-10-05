@@ -28,7 +28,7 @@
 #define SYM_INCOMING_BATCH_STATUS_LOADING "LD"
 #define SYM_INCOMING_BATCH_STATUS_IGNORED "IG"
 
-typedef struct {
+typedef struct SymIncomingBatch {
     long batchId;
     char *nodeId;
     char *channelId;
@@ -53,8 +53,8 @@ typedef struct {
     long lastUpdatedTime;
     long createTime;
     int retry;
-    void (*destroy)(void * this);
-    void (*destroy_all)(void ** list);
+    void (*destroy)(struct SymIncomingBatch *this);
+    void (*destroyAll)(void **list);
 } SymIncomingBatch;
 
 SymIncomingBatch * SymIncomingBatch_new(SymIncomingBatch *this);

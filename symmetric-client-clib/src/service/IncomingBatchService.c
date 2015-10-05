@@ -20,15 +20,15 @@
  */
 #include "service/IncomingBatchService.h"
 
-int SymIncomingBatch_acquire_incoming_batch(SymIncomingBatch *this) {
+int SymIncomingBatch_acquireIncomingBatch(SymIncomingBatch *this) {
     printf("SymIncomingBatch_acquire_incoming_batch\n");
     return 0;
 }
 
-void SymIncomingBatch_update_incoming_batch(SymIncomingBatch *this) {
+void SymIncomingBatch_updateIncomingBatch(SymIncomingBatch *this) {
     printf("SymIncomingBatch_update_incoming_batch\n");
 }
 
-void SymIncomingBatch_delete_incoming_batch(SymIncomingBatch *this) {
+void SymIncomingBatch_deleteIncomingBatch(SymIncomingBatch *this) {
     printf("SymIncomingBatch_delete_incoming_batch\n");
 }

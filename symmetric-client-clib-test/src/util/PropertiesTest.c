@@ -57,7 +57,7 @@ void SymPropertiesTest_test3() {
     prop->put(prop, SYM_PARAMETER_DB_PASSWORD, dbPassword);
 
     SymProperties *prop2 = SymProperties_new(NULL);
-    prop2->put_all(prop2, prop);
+    prop2->putAll(prop2, prop);
 
     CU_ASSERT(strcmp(prop2->get(prop, SYM_PARAMETER_DB_USER, NOT_FOUND), dbUser) == 0);
     CU_ASSERT(strcmp(prop2->get(prop, SYM_PARAMETER_DB_PASSWORD, NOT_FOUND), dbPassword) == 0);

@@ -31,7 +31,7 @@
 #include "util/StringBuilder.h"
 #include "web/WebConstants.h"
 
-typedef struct {
+typedef struct SymHttpTransportManager {
     SymTransportManager super;
 } SymHttpTransportManager;
 

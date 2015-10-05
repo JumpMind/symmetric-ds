@@ -27,11 +27,11 @@
 #include "db/model/Table.h"
 #include "io/data/CsvData.h"
 
-typedef struct {
-    void (*open)(void *this);
-    size_t (*process)(void *this, char *data, size_t size, size_t count);
-    void (*close)(void *this);
-    void (*destroy)(void *this);
+typedef struct SymDataReader {
+    void (*open)(struct SymDataReader *this);
+    size_t (*process)(struct SymDataReader *this, char *data, size_t size, size_t count);
+    void (*close)(struct SymDataReader *this);
+    void (*destroy)(struct SymDataReader *this);
 } SymDataReader;
 
 SymDataReader * SymDataReader_new(SymDataReader *this);

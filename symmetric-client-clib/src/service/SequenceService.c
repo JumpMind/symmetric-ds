@@ -20,12 +20,12 @@
  */
 #include "service/SequenceService.h"
 
-long SymSequenceService_next_val(SymSequenceService *this, char * name) {
+long SymSequenceService_nextVal(SymSequenceService *this, char * name) {
     printf("SymSequenceService_next_val\n");
     return 0;
 }
 
-long SymSequenceService_curr_val(SymSequenceService *this, char * name) {
+long SymSequenceService_currVal(SymSequenceService *this, char * name) {
     printf("SymSequenceService_curr_val\n");
     return 0;
 }

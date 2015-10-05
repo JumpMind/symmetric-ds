@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include "db/SymDialect.h"
 
-typedef struct {
+typedef struct SymSqliteDialect {
     SymDialect super;
 } SymSqliteDialect;
 

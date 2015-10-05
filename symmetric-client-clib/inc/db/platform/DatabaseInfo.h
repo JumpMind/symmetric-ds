@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct {
+typedef struct SymDatabaseInfo {
     char *delimiterToken;
     char *catalogSeparator;
     char *schemaSeparator;

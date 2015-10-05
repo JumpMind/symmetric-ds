@@ -24,10 +24,9 @@
 #include <stdio.h>
 #include "model/IncomingBatch.h"
 
-typedef struct {
+typedef struct SymIncomingBatchService {
+    unsigned short (*acquireIncomingBatch)(struct SymIncomingBatchService *this, SymIncomingBatch *incomingBatch);
+    void (*updateIncomingBatch)(struct SymIncomingBatchService *this, SymIncomingBatch *incomingBatch);
 } SymIncomingBatchService;
-
-int SymIncomingBatch_acquire_incoming_batch(SymIncomingBatch *);
-void SymIncomingBatch_update_incoming_batch(SymIncomingBatch *);
 
 #endif

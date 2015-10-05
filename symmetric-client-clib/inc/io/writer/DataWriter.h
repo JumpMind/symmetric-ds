@@ -27,15 +27,15 @@
 #include "db/model/Table.h"
 #include "io/data/CsvData.h"
 
-typedef struct {
-    void (*open)(void *this);
-    void (*close)(void *this);
-    void (*start_batch)(void *this, SymBatch *batch);
-    unsigned short (*start_table)(void *this, SymTable *table);
-    unsigned short (*write)(void *this, SymCsvData *data);
-    void (*end_table)(void *this, SymTable *table);
-    void (*end_batch)(void *this, SymBatch *batch);
-    void (*destroy)(void *this);
+typedef struct SymDataWriter {
+    void (*open)(struct SymDataWriter *this);
+    void (*close)(struct SymDataWriter *this);
+    void (*startBatch)(struct SymDataWriter *this, SymBatch *batch);
+    unsigned short (*startTable)(struct SymDataWriter *this, SymTable *table);
+    unsigned short (*write)(struct SymDataWriter *this, SymCsvData *data);
+    void (*endTable)(struct SymDataWriter *this, SymTable *table);
+    void (*endBatch)(struct SymDataWriter *this, SymBatch *batch);
+    void (*destroy)(struct SymDataWriter *this);
 } SymDataWriter;
 
 SymDataWriter * SymDataWriter_new(SymDataWriter *this);

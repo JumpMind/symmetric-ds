@@ -20,7 +20,7 @@
  */
 #include "db/platform/sqlite/SqliteDdlReader.h"
 
-static int SymSqliteDdlReader_to_sql_type(char *type) {
+static int SymSqliteDdlReader_toSqlType(char *type) {
     int sqlType;
     if (type == NULL) {
         type = "TEXT";
@@ -53,22 +53,22 @@ static int SymSqliteDdlReader_to_sql_type(char *type) {
     return sqlType;
 }
 
-static void * SymSqliteDdlReader_column_mapper(SymRow *row) {
-    char *name = row->get_string(row, "name");
-    int isPrimaryKey = row->get_int(row, "pk");
+static void * SymSqliteDdlReader_columnMapper(SymRow *row) {
+    char *name = row->getString(row, "name");
+    int isPrimaryKey = row->getInt(row, "pk");
     SymColumn *column = SymColumn_new(NULL, name, isPrimaryKey);
-    column->isRequired = row->get_int(row, "notnull");
-    column->sqlType = SymSqliteDdlReader_to_sql_type(row->get_string(row, "type"));
+    column->isRequired = row->getInt(row, "notnull");
+    column->sqlType = SymSqliteDdlReader_toSqlType(row->getString(row, "type"));
     return column;
 }
 
-SymTable * SymSqliteDdlReader_read_table(SymSqliteDdlReader *this, char *catalog, char *schema, char *tableName) {
+SymTable * SymSqliteDdlReader_readTable(SymSqliteDdlReader *this, char *catalog, char *schema, char *tableName) {
     SymTable *table = NULL;
-    SymSqlTemplate *sqlTemplate = this->platform->get_sql_template(this->platform);
-    SymStringBuilder *sql = SymStringBuilder_new_with_string("pragma table_info(");
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymStringBuilder *sql = SymStringBuilder_newWithString("pragma table_info(");
     sql->append(sql, tableName)->append(sql, ")");
     int error;
-    SymList *columns = sqlTemplate->query(sqlTemplate, sql->str, NULL, NULL, &error, SymSqliteDdlReader_column_mapper);
+    SymList *columns = sqlTemplate->query(sqlTemplate, sql->str, NULL, NULL, &error, SymSqliteDdlReader_columnMapper);
     if (columns && columns->size > 0) {
         table = SymTable_new(NULL);
         table->name = tableName;
@@ -89,7 +89,7 @@ SymSqliteDdlReader * SymSqliteDdlReader_new(SymSqliteDdlReader *this, SymDatabas
         this = (SymSqliteDdlReader *) calloc(1, sizeof(SymSqliteDdlReader));
     }
     SymDdlReader *super = SymDdlReader_new(&this->super);
-    super->read_table = (void *) &SymSqliteDdlReader_read_table;
+    super->readTable = (void *) &SymSqliteDdlReader_readTable;
     this->platform = platform;
     this->destroy = (void *) &SymSqliteDdlReader_destroy;
     return this;

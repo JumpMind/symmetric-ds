@@ -33,14 +33,14 @@
 
 #define HTTP_OK 200
 
-typedef struct {
+typedef struct SymTransportManager {
     SymParameterService *parameterService;
-    int (*send_acknowledgement)(void *this, SymNode *remote, SymIncomingBatch **batches, SymNode *local, char *securityToken, char *registrationUrl);
-    SymBatchAck ** (*read_acknowledgement)(void *this, char *parameterString1, char *parameterString2);
-    SymIncomingTransport * (*get_pull_transport)(void *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl);
-    SymOutgoingTransport * (*get_push_transport)(void *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl);
-    SymIncomingTransport * (*get_register_transport)(void *this, SymNode *local, char *registrationUrl);
-    void (*destroy)(void *this);
+    int (*sendAcknowledgement)(struct SymTransportManager *this, SymNode *remote, SymIncomingBatch **batches, SymNode *local, char *securityToken, char *registrationUrl);
+    SymBatchAck ** (*readAcknowledgement)(struct SymTransportManager *this, char *parameterString1, char *parameterString2);
+    SymIncomingTransport * (*getPullTransport)(struct SymTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl);
+    SymOutgoingTransport * (*getPushTransport)(struct SymTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl);
+    SymIncomingTransport * (*getRegisterTransport)(struct SymTransportManager *this, SymNode *local, char *registrationUrl);
+    void (*destroy)(struct SymTransportManager *this);
 } SymTransportManager;
 
 #endif

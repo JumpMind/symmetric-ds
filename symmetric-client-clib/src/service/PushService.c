@@ -20,7 +20,7 @@
  */
 #include "service/PushService.h"
 
-SymRemoteNodeStatus * SymPushService_push_data(SymPushService *this) {
+SymRemoteNodeStatus * SymPushService_pushData(SymPushService *this) {
     return NULL;
 }
 
@@ -32,7 +32,7 @@ SymPushService * SymPushService_new(SymPushService *this) {
     if (this == NULL) {
         this = (SymPushService *) calloc(1, sizeof(SymPushService));
     }
-    this->push_data = (void *) &SymPushService_push_data;
+    this->pushData = (void *) &SymPushService_pushData;
     this->destroy = (void *) &SymPushService_destroy;
     return this;
 }

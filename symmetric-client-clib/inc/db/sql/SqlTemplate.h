@@ -47,14 +47,14 @@ typedef enum {
     SYM_SQL_TYPE_SQLXML
 } SymSqlType;
 
-typedef struct {
-    int (*query_for_int)(void *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
-    char * (*query_for_string)(void *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
-    SymList * (*query_for_list)(void *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
-    void * (*query)(void *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *map_row(SymRow *row));
-    int (*update)(void *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
-    SymSqlTransaction * (*start_sql_transaction)(void *this);
-    void (*destroy)(void *this);
+typedef struct SymSqlTemplate {
+    int (*queryForInt)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
+    char * (*queryForString)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
+    SymList * (*queryForList)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
+    void * (*query)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *map_row(SymRow *row));
+    int (*update)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
+    SymSqlTransaction * (*startSqlTransaction)(struct SymSqlTemplate *this);
+    void (*destroy)(struct SymSqlTemplate *this);
 } SymSqlTemplate;
 
 SymSqlTemplate * SymSqlTemplate_new(SymSqlTemplate *this);

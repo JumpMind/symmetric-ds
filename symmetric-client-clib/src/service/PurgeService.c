@@ -20,12 +20,12 @@
  */
 #include "service/PurgeService.h"
 
-int SymPurgeService_purge_outgoing(SymPurgeService *this) {
+int SymPurgeService_purgeOutgoing(SymPurgeService *this) {
     printf("SymPurgeService_purge_outgoing\n");
     return 0;
 }
 
-int SymPurgeService_purge_incoming(SymPurgeService *this) {
+int SymPurgeService_purgeIncoming(SymPurgeService *this) {
     printf("SymPurgeService_purge_incoming\n");
     return 0;
 }

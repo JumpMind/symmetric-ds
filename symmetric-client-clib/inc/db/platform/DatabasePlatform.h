@@ -33,7 +33,7 @@
 #define SYM_DATABASE_SQLITE "sqlite"
 #define SYM_DATABASE_UNDEFINED "undefined"
 
-typedef struct {
+typedef struct SymDatabasePlatform {
     SymProperties *properties;
     char *name;
     char *version;
@@ -41,13 +41,13 @@ typedef struct {
     char *defaultSchema;
     SymDatabaseInfo databaseInfo;
     SymDdlReader *ddlReader;
-    int (*execute_sql)(void *this, const char *sql,
+    int (*executeSql)(struct SymDatabasePlatform *this, const char *sql,
             int (*callback)(void *userData, int sizeColumns, char **columnNames, char **columnValues),
             void *userData, char **errorMessage);
-    int (*table_exists)(void *this, char *tableName);
-    SymSqlTemplate * (*get_sql_template)(void *this);
-    SymTable * (*get_table_from_cache)(void *this, char *catalog, char *schema, char *tableName, unsigned int forceReread);
-    SymTable * (*read_table_from_database)(void *this, char *catalog, char *schema, char *tableName);
+    int (*tableExists)(struct SymDatabasePlatform *this, char *tableName);
+    SymSqlTemplate * (*getSqlTemplate)(struct SymDatabasePlatform *this);
+    SymTable * (*getTableFromCache)(struct SymDatabasePlatform *this, char *catalog, char *schema, char *tableName, unsigned int forceReread);
+    SymTable * (*readTableFromDatabase)(struct SymDatabasePlatform *this, char *catalog, char *schema, char *tableName);
     void (*destroy)(void *this);
 } SymDatabasePlatform;
 

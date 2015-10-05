@@ -25,9 +25,9 @@
 #include <stdlib.h>
 #include "model/RemoteNodeStatus.h"
 
-typedef struct {
-    SymRemoteNodeStatus * (*push_data)(void *this);
-    void (*destroy)(void *);
+typedef struct SymPushService {
+    SymRemoteNodeStatus * (*pushData)(struct SymPushService *this);
+    void (*destroy)(struct SymPushService *);
 } SymPushService;
 
 SymPushService * SymPushService_new(SymPushService *this);

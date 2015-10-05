@@ -31,14 +31,14 @@ typedef enum {
     SYM_DML_TYPE_INSERT, SYM_DML_TYPE_UPDATE, SYM_DML_TYPE_DELETE, SYM_DML_TYPE_SELECT
 } SymDmlType;
 
-typedef struct {
+typedef struct SymDmlStatement {
     SymDmlType dmlType;
     SymTable *table;
     SymDatabaseInfo *databaseInfo;
     SymList *nullKeyIndicators;
     char *sql;
     SymList *sqlTypes;
-    void (*destroy)(void *this);
+    void (*destroy)(struct SymDmlStatement *this);
 } SymDmlStatement;
 
 SymDmlStatement * SymDmlStatement_new(SymDmlStatement *this, SymDmlType dmlType, SymTable *table, SymList *nullKeyIndicators,

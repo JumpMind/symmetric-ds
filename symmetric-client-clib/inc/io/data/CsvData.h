@@ -39,8 +39,8 @@ typedef struct SymCsvData {
     SymStringArray *oldData;
     SymStringArray *pkData;
 
-    void (*reset)(void *this);
-    void (*destroy)(void *this);
+    void (*reset)(struct SymCsvData *this);
+    void (*destroy)(struct SymCsvData *this);
 } SymCsvData;
 
 SymCsvData * SymCsvData_new(SymCsvData *this);

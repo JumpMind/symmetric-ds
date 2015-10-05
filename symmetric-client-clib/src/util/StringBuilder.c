@@ -85,22 +85,22 @@ char * SymStringBuilder_copy(char *str) {
     return NULL;
 }
 
-void SymStringBuilder_copy_to_field(char **strField, char *str) {
+void SymStringBuilder_copyToField(char **strField, char *str) {
     free(*strField);
     *strField = SymStringBuilder_copy(str);
 }
 
 SymStringBuilder * SymStringBuilder_new() {
-    return SymStringBuilder_new_with_size(SYM_STRING_BUILDER_SIZE);
+    return SymStringBuilder_newWithSize(SYM_STRING_BUILDER_SIZE);
 }
 
-SymStringBuilder * SymStringBuilder_new_with_string(char *str) {
-    SymStringBuilder *sb = SymStringBuilder_new_with_size(strlen(str) + 1);
+SymStringBuilder * SymStringBuilder_newWithString(char *str) {
+    SymStringBuilder *sb = SymStringBuilder_newWithSize(strlen(str) + 1);
     sb->append(sb, str);
     return sb;
 }
 
-SymStringBuilder * SymStringBuilder_new_with_size(int size) {
+SymStringBuilder * SymStringBuilder_newWithSize(int size) {
     SymStringBuilder *this = (SymStringBuilder *) calloc(1, sizeof(SymStringBuilder));
     this->size = size + 255;
     this->str = (char *) calloc(size + 255, sizeof(char));
@@ -109,8 +109,8 @@ SymStringBuilder * SymStringBuilder_new_with_size(int size) {
     this->append = (void *) &SymStringBuilder_append;
     this->appendn = (void *) &SymStringBuilder_appendn;
     this->appendf = (void *) &SymStringBuilder_appendf;
-    this->to_string = (void *) &SymStringBuilder_to_string;
+    this->toString = (void *) &SymStringBuilder_to_string;
     this->destroy = (void *) &SymStringBuilder_destroy;
-    this->destroy_and_return = (void *) &SymStringBuilder_destroy_and_return;
+    this->destroyAndReturn = (void *) &SymStringBuilder_destroy_and_return;
     return this;
 }

@@ -34,14 +34,14 @@
 #include "io/writer/DefaultDatabaseWriter.h"
 #include "db/platform/DatabasePlatform.h"
 
-typedef struct {
+typedef struct SymDataLoaderService {
     SymParameterService *parameterService;
     SymNodeService *nodeService;
     SymTransportManager *transportManager;
     SymDatabasePlatform *platform;
-    void (*load_data_from_pull)(void *this, SymNode *remote, SymRemoteNodeStatus *status);
-    void (*load_data_from_registration)(void *this, SymRemoteNodeStatus *status);
-    void (*destroy)(void *this);
+    void (*loadDataFromPull)(struct SymDataLoaderService *this, SymNode *remote, SymRemoteNodeStatus *status);
+    void (*loadDataFromRegistration)(struct SymDataLoaderService *this, SymRemoteNodeStatus *status);
+    void (*destroy)(struct SymDataLoaderService *this);
 } SymDataLoaderService;
 
 SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService,

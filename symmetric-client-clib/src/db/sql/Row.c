@@ -30,7 +30,7 @@ void SymRow_put(SymRow *this, char *columnName, void *value, int sqlType, int si
     this->map->put(this->map, columnName, &entry, sizeof(SymRowEntry));
 }
 
-char * SymRow_get_string(SymRow *this, char *columnName) {
+char * SymRow_getString(SymRow *this, char *columnName) {
     char *value = NULL;
     SymRowEntry *entry = (SymRowEntry *) this->map->get(this->map, columnName);
     if (entry != NULL) {
@@ -39,16 +39,20 @@ char * SymRow_get_string(SymRow *this, char *columnName) {
     return value;
 }
 
-int SymRow_get_int(SymRow *this, char *columnName) {
+char * SymRow_getStringNew(SymRow *this, char *columnName) {
+    return SymStringBuilder_copy(this->getString(this, columnName));
+}
+
+int SymRow_getInt(SymRow *this, char *columnName) {
     int value = 0;
-    char *str = SymRow_get_string(this, columnName);
+    char *str = SymRow_getString(this, columnName);
     if (str != NULL) {
         value = atoi(str);
     }
     return value;
 }
 
-int SymRow_get_size(SymRow *this, char *columnName) {
+int SymRow_getSize(SymRow *this, char *columnName) {
     int value = 0;
     SymRowEntry *entry = (SymRowEntry *) this->map->get(this->map, columnName);
     if (entry != NULL) {
@@ -57,7 +61,7 @@ int SymRow_get_size(SymRow *this, char *columnName) {
     return value;
 }
 
-int SymRow_get_sql_type(SymRow *this, char *columnName) {
+int SymRow_getSqlType(SymRow *this, char *columnName) {
     int value = 0;
     SymRowEntry *entry = (SymRowEntry *) this->map->get(this->map, columnName);
     if (entry != NULL) {
@@ -86,10 +90,11 @@ SymRow * SymRow_new(SymRow *this, int columnCount) {
     }
     this->map = SymMap_new(NULL, columnCount);
     this->put = (void *) &SymRow_put;
-    this->get_int = (void *) &SymRow_get_int;
-    this->get_string = (void *) &SymRow_get_string;
-    this->get_size = (void *) &SymRow_get_size;
-    this->get_sql_type = (void *) &SymRow_get_sql_type;
+    this->getInt = (void *) &SymRow_getInt;
+    this->getString = (void *) &SymRow_getString;
+    this->getStringNew = (void *) &SymRow_getStringNew;
+    this->getSize = (void *) &SymRow_getSize;
+    this->getSqlType = (void *) &SymRow_getSqlType;
     this->destroy = (void *) &SymRow_destroy;
     return this;
 }

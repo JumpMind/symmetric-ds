@@ -23,7 +23,7 @@
 
 #include <stdlib.h>
 
-typedef struct {
+typedef struct SymNodeSecurity {
     char *nodeId;
     char *nodePassword;
     int registrationEnabled;
@@ -37,7 +37,7 @@ typedef struct {
     long revInitialLoadId;
     char *revInitialLoadCreateBy;
     char *createdAtNodeId;
-    void (*destroy)(void *this);
+    void (*destroy)(struct SymNodeSecurity *this);
 } SymNodeSecurity;
 
 SymNodeSecurity * SymNodeSecurity_new(SymNodeSecurity *this);

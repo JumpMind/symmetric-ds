@@ -41,6 +41,13 @@ void SymStringArray_add(SymStringArray *this, char *src) {
     SymStringArray_addn(this, src, size);
 }
 
+void SymStringArray_add_all(SymStringArray *this, SymStringArray *stringArray) {
+    int i;
+    for (i = 0; i < stringArray->size; i++) {
+        SymStringArray_add(this, stringArray->array[i]);
+    }
+}
+
 void * SymStringArray_get(SymStringArray *this, int index) {
     return this->array[index];
 }
@@ -56,7 +63,7 @@ unsigned short SymStringArray_contains(SymStringArray *this, char *findStr) {
 }
 
 SymStringArray * SymStringArray_subarray(SymStringArray *this, int startIndex, int endIndex) {
-    SymStringArray *strArray = SymStringArray_new_with_size(NULL, endIndex - startIndex, this->sizeIncrement);
+    SymStringArray *strArray = SymStringArray_newWithSize(NULL, endIndex - startIndex, this->sizeIncrement);
     int i;
     for (i = startIndex; i < endIndex; i++) {
         strArray->add(strArray, this->array[i]);
@@ -91,10 +98,10 @@ void SymStringArray_destroy(SymStringArray *this) {
 }
 
 SymStringArray * SymStringArray_new(SymStringArray *this) {
-    return SymStringArray_new_with_size(this, SYM_STRING_ARRAY_SIZE_INITIAL, SYM_STRING_ARRAY_SIZE_INCREMENT);
+    return SymStringArray_newWithSize(this, SYM_STRING_ARRAY_SIZE_INITIAL, SYM_STRING_ARRAY_SIZE_INCREMENT);
 }
 
-SymStringArray * SymStringArray_new_with_size(SymStringArray *this, int sizeInitial, int sizeIncrement) {
+SymStringArray * SymStringArray_newWithSize(SymStringArray *this, int sizeInitial, int sizeIncrement) {
     if (this == NULL) {
         this = (SymStringArray *) calloc(1, sizeof(SymStringArray));
     }
@@ -103,6 +110,7 @@ SymStringArray * SymStringArray_new_with_size(SymStringArray *this, int sizeInit
     this->array = (char **) malloc(this->sizeAllocated * sizeof(char *));
     this->add = (void *) &SymStringArray_add;
     this->addn = (void *) &SymStringArray_addn;
+    this->addAll = (void *) &SymStringArray_add_all;
     this->get = (void *) &SymStringArray_get;
     this->contains = (void *) &SymStringArray_contains;
     this->subarray = (void *) &SymStringArray_subarray;

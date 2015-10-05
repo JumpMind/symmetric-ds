@@ -37,9 +37,9 @@ void SymEngineTest_test1() {
 
     SymEngine *engine = SymEngine_new(NULL, prop);
     CU_ASSERT(engine->start(engine) == 0);
-    CU_ASSERT(engine->sync_triggers(engine) == 0);
+    CU_ASSERT(engine->syncTriggers(engine) == 0);
 
-    engine->pullService->pull_data(engine->pullService);
+    engine->pullService->pullData(engine->pullService);
 
     CU_ASSERT(engine->stop(engine) == 0);
     engine->destroy(engine);

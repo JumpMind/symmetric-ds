@@ -25,16 +25,28 @@
 #include <stdlib.h>
 #include "model/Node.h"
 #include "model/NodeSecurity.h"
+#include "db/platform/DatabasePlatform.h"
+#include "util/List.h"
 
-typedef struct {
-    SymNode * (*find_identity)(void *this);
-    SymNodeSecurity * (*find_node_security)(void *this, char *nodeId);
-    SymNode ** (*find_nodes_to_pull)(void *this);
-    SymNode ** (*find_nodes_to_push_to)(void *this);
-    int (*is_dataload_started)(void *this);
-    void (*destroy)(void *);
+typedef struct SymNodeService {
+    SymDatabasePlatform *platform;
+
+    SymNode * (*findIdentity)(struct SymNodeService *this);
+    SymNodeSecurity * (*findNodeSecurity)(struct SymNodeService *this, char *nodeId);
+    SymList * (*findNodesToPull)(struct SymNodeService *this);
+    SymList * (*findNodesToPushTo)(struct SymNodeService *this);
+    unsigned short (*isDataloadStarted)(struct SymNodeService *this);
+    void (*destroy)(struct SymNodeService *);
 } SymNodeService;
 
-SymNodeService * SymNodeService_new(SymNodeService *this);
+SymNodeService * SymNodeService_new(SymNodeService *this, SymDatabasePlatform *platform);
+
+#define SYM_SQL_SELECT_NODE_PREFIX "select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, \
+c.sync_url, c.schema_version, c.database_type, \
+c.database_version, c.symmetric_version, c.created_at_node_id, c.heartbeat_time, c.timezone_offset, \
+c.batch_to_send_count, c.batch_in_error_count, c.deployment_type \
+from sym_node c "
+
+#define SYM_SQL_FIND_NODE_IDENTITY "inner join sym_node_identity i on c.node_id = i.node_id"
 
 #endif

@@ -29,13 +29,13 @@ typedef struct {
     char *value;
 } SymProperty;
 
-typedef struct {
+typedef struct SymProperties {
     SymProperty *propArray;
     int index;
-    char * (*get)(void *this, char *key, char *defaultValue);
-    void (*put)(void *this, char *key, char *value);
-    void (*put_all)(void *this, void *properties);
-    void (*destroy)(void *this);
+    char * (*get)(struct SymProperties *this, char *key, char *defaultValue);
+    void (*put)(struct SymProperties *this, char *key, char *value);
+    void (*putAll)(struct SymProperties *this, void *properties);
+    void (*destroy)(struct SymProperties *this);
 } SymProperties;
 
 SymProperties * SymProperties_new(SymProperties *);

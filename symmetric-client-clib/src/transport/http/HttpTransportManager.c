@@ -31,7 +31,7 @@ static void append(SymStringBuilder *sb, char *name, char *value) {
     sb->append(sb, value);
 }
 
-static char * build_url(char *action, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
+static char * buildUrl(char *action, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
     SymStringBuilder *sb = SymStringBuilder_new();
     if (strcmp(remote->syncUrl, "") == 0) {
         sb->append(sb, registrationUrl);
@@ -45,11 +45,11 @@ static char * build_url(char *action, SymNode *remote, SymNode *local, char *sec
     // TODO: get hostname/ip address
     //append(sb, SYM_WEB_CONSTANTS_HOST_NAME, "todo-host");
     //append(sb, SYM_WEB_CONSTANTS_IP_ADDRESS, "todo-ipapddr");
-    return sb->destroy_and_return(sb);
+    return sb->destroyAndReturn(sb);
 }
 
-static char * build_registration_url(SymNode *local, char *registrationUrl) {
-    SymStringBuilder *sb = SymStringBuilder_new_with_string(registrationUrl);
+static char * buildRegistrationUrl(SymNode *local, char *registrationUrl) {
+    SymStringBuilder *sb = SymStringBuilder_newWithString(registrationUrl);
     sb->append(sb, "/registration");
     append(sb, SYM_WEB_CONSTANTS_NODE_GROUP_ID, local->nodeGroupId);
     append(sb, SYM_WEB_CONSTANTS_EXTERNAL_ID, local->externalId);
@@ -61,10 +61,10 @@ static char * build_registration_url(SymNode *local, char *registrationUrl) {
     // TODO: get hostname/ip address
     //append(sb, SYM_WEB_CONSTANTS_HOST_NAME, "todo-host");
     //append(sb, SYM_WEB_CONSTANTS_IP_ADDRESS, "todo-ipaddr");
-    return sb->destroy_and_return(sb);
+    return sb->destroyAndReturn(sb);
 }
 
-static char * get_acknowledgement_data(SymIncomingBatch **batches) {
+static char * getAcknowledgementData(SymIncomingBatch **batches) {
     SymStringBuilder *sb = SymStringBuilder_new();
     int i;
     for (i = 0; batches[i] != NULL; i++) {
@@ -79,10 +79,10 @@ static char * get_acknowledgement_data(SymIncomingBatch **batches) {
             sb->appendf(sb, "%l", batches[i]->failedRowNumber);
         }
     }
-    return sb->destroy_and_return(sb);
+    return sb->destroyAndReturn(sb);
 }
 
-static int send_message(char *url, char *postData) {
+static int sendMessage(char *url, char *postData) {
     long httpResponseCode = -1;
     CURL *curl = curl_easy_init();
     if (curl) {
@@ -104,14 +104,14 @@ static int send_message(char *url, char *postData) {
     return httpResponseCode;
 }
 
-int SymHttpTransportManager_send_acknowledgement(SymHttpTransportManager *this, SymNode *remote, SymIncomingBatch **batches, SymNode *local, char *securityToken, char *registrationUrl) {
+int SymHttpTransportManager_sendAcknowledgement(SymHttpTransportManager *this, SymNode *remote, SymIncomingBatch **batches, SymNode *local, char *securityToken, char *registrationUrl) {
     long httpResponseCode = 0;
     if (batches[0] != NULL) {
-        char *url = build_url("ack", remote, local, securityToken, registrationUrl);
-        char *ackData = get_acknowledgement_data(batches);
-        SymStringBuilder *sb = SymStringBuilder_new_with_string(url);
+        char *url = buildUrl("ack", remote, local, securityToken, registrationUrl);
+        char *ackData = getAcknowledgementData(batches);
+        SymStringBuilder *sb = SymStringBuilder_newWithString(url);
         sb->append(sb, ackData);
-        send_message(url, ackData);
+        sendMessage(url, ackData);
         sb->destroy(sb);
         free(ackData);
         free(url);
@@ -119,20 +119,20 @@ int SymHttpTransportManager_send_acknowledgement(SymHttpTransportManager *this, 
     return httpResponseCode;
 }
 
-SymBatchAck * SymHttpTransportManager_read_acknowledgement(SymHttpTransportManager *this, char *parameterString1, char *parameterString2) {
+SymBatchAck * SymHttpTransportManager_readAcknowledgement(SymHttpTransportManager *this, char *parameterString1, char *parameterString2) {
     return NULL;
 }
 
-SymHttpIncomingTransport * SymHttpTransportManager_get_pull_transport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
-    return SymHttpIncomingTransport_new(NULL, build_url("pull", remote, local, securityToken, registrationUrl));
+SymHttpIncomingTransport * SymHttpTransportManager_getPullTransport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
+    return SymHttpIncomingTransport_new(NULL, buildUrl("pull", remote, local, securityToken, registrationUrl));
 }
 
-SymHttpOutgoingTransport * SymHttpTransportManager_get_push_transport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
-    return SymHttpOutgoingTransport_new(NULL, build_url("push", remote, local, securityToken, registrationUrl));
+SymHttpOutgoingTransport * SymHttpTransportManager_getPushTransport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
+    return SymHttpOutgoingTransport_new(NULL, buildUrl("push", remote, local, securityToken, registrationUrl));
 }
 
-SymHttpIncomingTransport * SymHttpTransportManager_get_register_transport(SymHttpTransportManager *this, SymNode *local, char *registrationUrl) {
-    return SymHttpIncomingTransport_new(NULL, build_registration_url(local, registrationUrl));
+SymHttpIncomingTransport * SymHttpTransportManager_getRegisterTransport(SymHttpTransportManager *this, SymNode *local, char *registrationUrl) {
+    return SymHttpIncomingTransport_new(NULL, buildRegistrationUrl(local, registrationUrl));
 }
 
 void SymHttpTransportManager_destroy(SymTransportManager *this) {
@@ -144,11 +144,11 @@ SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *t
         this = (SymHttpTransportManager *) calloc(1, sizeof(SymHttpTransportManager));
     }
     SymTransportManager *super = &this->super;
-    super->send_acknowledgement = (void *) &SymHttpTransportManager_send_acknowledgement;
-    super->read_acknowledgement = (void *) &SymHttpTransportManager_read_acknowledgement;
-    super->get_pull_transport = (void *) &SymHttpTransportManager_get_pull_transport;
-    super->get_push_transport = (void *) &SymHttpTransportManager_get_push_transport;
-    super->get_register_transport = (void *) &SymHttpTransportManager_get_register_transport;
+    super->sendAcknowledgement = (void *) &SymHttpTransportManager_sendAcknowledgement;
+    super->readAcknowledgement = (void *) &SymHttpTransportManager_readAcknowledgement;
+    super->getPullTransport = (void *) &SymHttpTransportManager_getPullTransport;
+    super->getPushTransport = (void *) &SymHttpTransportManager_getPushTransport;
+    super->getRegisterTransport = (void *) &SymHttpTransportManager_getRegisterTransport;
     super->destroy = (void *) &SymHttpTransportManager_destroy;
     return this;
 }

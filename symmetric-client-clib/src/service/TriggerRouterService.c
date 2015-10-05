@@ -20,7 +20,7 @@
  */
 #include <service/TriggerRouterService.h>
 
-int SymTriggerRouterService_sync_triggers(SymTriggerRouterService *this) {
+int SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this) {
     printf("SymTriggerRouterService_sync_triggers\n");
     return 0;
 }
@@ -33,7 +33,7 @@ SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService *t
     if (this == NULL) {
         this = (SymTriggerRouterService*) calloc(1, sizeof(SymTriggerRouterService));
     }
-    this->sync_triggers = (void *) &SymTriggerRouterService_sync_triggers;
+    this->syncTriggers = (void *) &SymTriggerRouterService_syncTriggers;
     this->destroy = (void *) &SymTriggerRouterService_destroy;
     return this;
 }

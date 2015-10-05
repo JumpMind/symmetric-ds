@@ -41,7 +41,7 @@ void * SymList_get(SymList *this, int index) {
     return item->object;
 }
 
-unsigned short SymIterator_has_next(SymIterator *this) {
+unsigned short SymIterator_hasNext(SymIterator *this) {
     return this->index + 1 < this->size && this->currentItem != NULL;
 }
 
@@ -56,26 +56,26 @@ void SymIterator_destroy(SymIterator *this) {
     free(this);
 }
 
-SymIterator * SymList_iterator_from_index(SymList *this, int startIndex) {
+SymIterator * SymList_iteratorFromIndex(SymList *this, int startIndex) {
     SymIterator *iter = (SymIterator *) calloc(1, sizeof(SymIterator));
     iter->size = this->size;
     iter->index = -1;
     iter->currentItem = this->head;
-    iter->has_next = (void *) &SymIterator_has_next;
+    iter->hasNext = (void *) &SymIterator_hasNext;
     iter->next = (void *) &SymIterator_next;
     iter->destroy = (void *) &SymIterator_destroy;
 
-    while (startIndex-- > 0 && iter->has_next(iter)) {
+    while (startIndex-- > 0 && iter->hasNext(iter)) {
         iter->next(iter);
     }
     return iter;
 }
 
 SymIterator * SymList_iterator(SymList *this) {
-    return SymList_iterator_from_index(this, 0);
+    return SymList_iteratorFromIndex(this, 0);
 }
 
-void SymList_reset_all(SymList *this, void *destroy_object(void * object)) {
+void SymList_resetAll(SymList *this, void *destroy_object(void * object)) {
     SymListItem *item = this->head;
     while (item != NULL) {
         if (destroy_object != NULL) {
@@ -90,7 +90,7 @@ void SymList_reset_all(SymList *this, void *destroy_object(void * object)) {
 }
 
 void SymList_reset(SymList *this) {
-    SymList_reset_all(this, NULL);
+    SymList_resetAll(this, NULL);
 }
 
 void SymList_destroy(SymList *this) {
@@ -98,8 +98,8 @@ void SymList_destroy(SymList *this) {
     free(this);
 }
 
-void SymList_destroy_all(SymList *this, void *destroy_object(void * object)) {
-    SymList_reset_all(this, destroy_object);
+void SymList_destroyAll(SymList *this, void *destroy_object(void * object)) {
+    SymList_resetAll(this, destroy_object);
     free(this);
 }
 
@@ -110,10 +110,10 @@ SymList * SymList_new(SymList *this) {
     this->add = (void *) &SymList_add;
     this->get = (void *) &SymList_get;
     this->iterator = (void *) &SymList_iterator;
-    this->iterator_from_index = (void *) &SymList_iterator_from_index;
+    this->iteratorFromIndex = (void *) &SymList_iteratorFromIndex;
     this->reset = (void *) &SymList_reset;
-    this->reset_all = (void *) &SymList_reset_all;
+    this->resetAll = (void *) &SymList_resetAll;
     this->destroy = (void *) &SymList_destroy;
-    this->destroy_all = (void *) &SymList_destroy_all;
+    this->destroyAll = (void *) &SymList_destroyAll;
     return this;
 }

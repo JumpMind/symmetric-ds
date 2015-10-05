@@ -20,18 +20,18 @@
  */
 #include "core/SymEngine.h"
 
-static unsigned short is_configured(SymEngine *this) {
+static unsigned short SymEngine_isConfigured(SymEngine *this) {
     unsigned short isConfigured = 1;
 
-    if (this->parameterService->get_registration_url(this->parameterService) == NULL) {
+    if (this->parameterService->getRegistrationUrl(this->parameterService) == NULL) {
         printf("Please set the %s for the node\n", SYM_PARAMETER_REGISTRATION_URL);
         isConfigured = 0;
     }
-    if (this->parameterService->get_node_group_id(this->parameterService) == NULL) {
+    if (this->parameterService->getNodeGroupId(this->parameterService) == NULL) {
         printf("Please set the %s for the node\n", SYM_PARAMETER_GROUP_ID);
         isConfigured = 0;
     }
-    if (this->parameterService->get_external_id(this->parameterService) == NULL) {
+    if (this->parameterService->getExternalId(this->parameterService) == NULL) {
         printf("Please set the %s for the node\n", SYM_PARAMETER_EXTERNAL_ID);
         isConfigured = 0;
     }
@@ -42,17 +42,17 @@ static unsigned short is_configured(SymEngine *this) {
 unsigned short SymEngine_start(SymEngine *this) {
     unsigned short isStarted = 0;
 	printf("About to start SymmetricDS\n");
-    this->dialect->init_tables(this->dialect);
+    this->dialect->initTables(this->dialect);
 
-    if (is_configured(this)) {
-        SymNode *node = this->nodeService->find_identity(this->nodeService);
+    if (SymEngine_isConfigured(this)) {
+        SymNode *node = this->nodeService->findIdentity(this->nodeService);
 
         if (node != NULL) {
-            if (strcmp(node->externalId, this->parameterService->get_external_id(this->parameterService)) != 0 ||
-                    strcmp(node->nodeGroupId, this->parameterService->get_node_group_id(this->parameterService)) != 0) {
+            if (strcmp(node->externalId, this->parameterService->getExternalId(this->parameterService)) != 0 ||
+                    strcmp(node->nodeGroupId, this->parameterService->getNodeGroupId(this->parameterService)) != 0) {
                 printf("The configured state does not match recorded database state.  The recorded external id is %s while the configured external id is %s. The recorded node group id is %s while the configured node group id is %s",
-                        node->externalId, this->parameterService->get_external_id(this->parameterService),
-                        node->nodeGroupId, this->parameterService->get_node_group_id(this->parameterService));
+                        node->externalId, this->parameterService->getExternalId(this->parameterService),
+                        node->nodeGroupId, this->parameterService->getNodeGroupId(this->parameterService));
             } else {
                 printf("Starting registered node [group=%s, id=%s, externalId=%s]\n", node->nodeGroupId, node->nodeId, node->externalId);
 
@@ -62,8 +62,8 @@ unsigned short SymEngine_start(SymEngine *this) {
             }
             node->destroy(node);
         } else {
-            printf("Starting unregistered node [group=%s, externalId=%s]\n", this->parameterService->get_node_group_id(this->parameterService),
-                    this->parameterService->get_external_id(this->parameterService));
+            printf("Starting unregistered node [group=%s, externalId=%s]\n", this->parameterService->getNodeGroupId(this->parameterService),
+                    this->parameterService->getExternalId(this->parameterService));
         }
 
         printf("Started SymmetricDS\n");
@@ -73,8 +73,8 @@ unsigned short SymEngine_start(SymEngine *this) {
     }
 
     printf("SymmetricDS: type=%s, name=, version=%s, groupId=%s, externalId=%s, databaseName=%s, databaseVersion=%s, driverName=, driverVersion=\n",
-            SYM_DEPLOYMENT_TYPE, SYM_VERSION, this->parameterService->get_node_group_id(this->parameterService),
-                this->parameterService->get_external_id(this->parameterService),
+            SYM_DEPLOYMENT_TYPE, SYM_VERSION, this->parameterService->getNodeGroupId(this->parameterService),
+                this->parameterService->getExternalId(this->parameterService),
                 this->platform->name, this->platform->version);
 	return isStarted;
 }
@@ -82,13 +82,13 @@ unsigned short SymEngine_start(SymEngine *this) {
 unsigned short SymEngine_stop(SymEngine *this) {
 	printf("Stopping\n");
     printf("Stopping SymmetricDS externalId=%s version=%s database=%s",
-            this->parameterService->get_external_id(this->parameterService), SYM_VERSION, this->platform->name);
+            this->parameterService->getExternalId(this->parameterService), SYM_VERSION, this->platform->name);
 
 	return 0;
 }
 
-unsigned short SymEngine_sync_triggers(SymEngine *this) {
-    return this->triggerRouterService->sync_triggers(this->triggerRouterService->sync_triggers);
+unsigned short SymEngine_syncTriggers(SymEngine *this) {
+    return this->triggerRouterService->syncTriggers(this->triggerRouterService->syncTriggers);
 }
 
 unsigned short SymEngine_uninstall(SymEngine *this) {
@@ -113,7 +113,7 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->start = (void *) &SymEngine_start;
     this->stop = (void *) &SymEngine_stop;
     this->uninstall = (void *) &SymEngine_uninstall;
-    this->sync_triggers = (void *) &SymEngine_sync_triggers;
+    this->syncTriggers = (void *) &SymEngine_syncTriggers;
     this->destroy = (void *) &SymEngine_destroy;
 
     this->properties = properties;
@@ -123,7 +123,7 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->parameterService = SymParameterService_new(NULL, properties);
     this->triggerRouterService = SymTriggerRouterService_new(NULL);
     this->transportManager = SymTransportManagerFactory_create(SYM_PROTOCOL_HTTP, this->parameterService);
-    this->nodeService = SymNodeService_new(NULL);
+    this->nodeService = SymNodeService_new(NULL, this->platform);
     this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform);
     this->registrationService = SymRegistrationService_new(NULL, this->nodeService, this->dataLoaderService, this->parameterService);
     this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService);
