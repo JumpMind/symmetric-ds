@@ -91,7 +91,75 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
     public <T> List<T> find(Class<T> clazz, Map<String, Object> conditions) {
         return find(clazz, conditions, null, null, camelCaseToUnderScores(clazz.getSimpleName()));
     }
+    
+    @Override
+    public <T> int count(Class<T> clazz, Map<String, Object> conditions) {
+        return count(clazz, null,  null, camelCaseToUnderScores(clazz.getSimpleName()), conditions);
+    }
+    
+    @Override
+    public <T> int count(Class<T> clazz, String catalogName, String schemaName, String tableName, Map<String, Object> conditions) {
+        if (conditions == null || conditions.size() == 0) {
+            return count(catalogName, schemaName, tableName);
+        } else {
+            try {
+                Table table = findTable(catalogName, schemaName, tableName);
 
+                T object = clazz.newInstance();
+
+                LinkedHashMap<String, Column> objectToTableMapping = mapObjectToTable(object, table);
+                LinkedHashMap<String, Object> objectValuesByColumnName = new LinkedHashMap<String, Object>();
+
+                Column[] keys = new Column[conditions.size()];
+
+                Set<String> keyPropertyNames = conditions.keySet();
+                boolean[] nullKeyValues = new boolean[conditions.size()];
+                int index = 0;
+                for (String propertyName : keyPropertyNames) {
+                    Column column = objectToTableMapping.get(propertyName);
+                    if (column != null) {
+                        keys[index] = column;
+                        nullKeyValues[index] = conditions.get(propertyName) == null;
+                        objectValuesByColumnName
+                                .put(column.getName(), conditions.get(propertyName));
+                        index++;
+                    } else {
+                        throw new IllegalStateException(
+                                "Could not find a database column that maps to the " + propertyName
+                                        + " property on " + clazz.getName()
+                                        + ".  Make sure the property is defined on the class and "
+                                        + "the matching column is defined in the database table");
+                    }
+                }
+
+                DmlStatement statement = databasePlatform.createDmlStatement(DmlType.COUNT,
+                        table.getCatalog(), table.getSchema(), table.getName(), keys, keys,
+                        nullKeyValues, null);
+                String sql = statement.getSql();
+                Object[] values = statement.getValueArray(objectValuesByColumnName);
+
+                return databasePlatform.getSqlTemplate().queryForInt(sql, values);
+            } catch (Exception e) {
+                throw toRuntimeException(e);
+            }
+        }
+
+    }
+    
+    @Override
+    public int count(String catalogName, String schemaName, String tableName) {
+        try {
+            Table table = findTable(catalogName, schemaName, tableName);
+            DmlStatement statement = databasePlatform.createDmlStatement(DmlType.COUNT,
+                    table.getCatalog(), table.getSchema(), table.getName(), null, null, null,
+                    null);            
+            String sql = statement.getSql();
+            return databasePlatform.getSqlTemplate().queryForInt(sql);
+        } catch (Exception e) {
+            throw toRuntimeException(e);
+        }
+    }    
+    
     public <T> List<T> find(Class<T> clazz, Map<String, Object> conditions, String catalogName,
             String schemaName, String tableName) {
         if (conditions == null || conditions.size() == 0) {

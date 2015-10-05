@@ -1,4 +1,4 @@
-package org.jumpmind.db.persist;
+package org.jumpmind.db.sql;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -9,7 +9,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.sql.Types;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -19,6 +21,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.SqlPersistenceManager;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BasicDataSourceFactory;
@@ -29,15 +32,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class JdbcPersistenceManagerTest {
+public class SqlPersistenceManagerTest {
 
-    JdbcPersistenceManager manager;
+    SqlPersistenceManager manager;
 
     Table testTableA;
 
     @Before
     public void setup() throws Exception {
-        manager = new JdbcPersistenceManager(createDatabasePlatform());
+        manager = new SqlPersistenceManager(createDatabasePlatform());
 
         testTableA = new Table("A");
         testTableA.addColumn(new Column("ID", true, Types.INTEGER, -1, -1));
@@ -137,6 +140,25 @@ public class JdbcPersistenceManagerTest {
         assertEquals(60, a60.getId());
         assertEquals("Test", a60.getNote());
         assertNotNull(a60.getLastUpdateTime());
+    }
+    
+    @Test
+    public void testCount() {
+        for (int i = 0; i < 100; i++) {
+            manager.save(new A(i + 1, new Date(), "Test"));
+        }        
+        assertEquals(100, manager.count(A.class, null));
+    }
+    
+    @Test
+    public void testCountWhere() {
+        for (int i = 0; i < 100; i++) {
+            manager.save(new A(i + 1, new Date(), "Test"));
+        }        
+        
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("id", 1);
+        assertEquals(1, manager.count(A.class, params));
     }
 
     protected Row getRow(int id) {
