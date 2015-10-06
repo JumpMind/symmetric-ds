@@ -33,6 +33,7 @@ Dependency: CUnit library
 License: LGPL version 2
 Download: http://cunit.sourceforge.net/
 APT: sudo apt-get install libcunit1 libcunit1-dev
+Homebrew: brew install cunit
 
 Dependency: Curl
 License: MIT/X derivate license
