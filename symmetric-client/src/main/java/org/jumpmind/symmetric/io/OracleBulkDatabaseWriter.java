@@ -217,6 +217,8 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected String getMappedType(int typeCode) {
         switch (typeCode) {
             case Types.CLOB:
+            case Types.NCLOB:
+                return "clob";
             case Types.CHAR:
             case Types.NCHAR:
             case Types.VARCHAR:
@@ -250,6 +252,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected String getTypeName(int typeCode) {
         switch (typeCode) {
             case Types.CLOB:
+            case Types.NCLOB:
             case Types.CHAR:
             case Types.NCHAR:
             case Types.VARCHAR:
