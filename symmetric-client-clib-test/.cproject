@@ -30,6 +30,7 @@
 								<option id="gnu.c.compiler.option.include.paths.2045825320" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/symmetric-client-clib/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/include"/>
 								</option>
 								<option id="gnu.c.compiler.option.dialect.std.2132055142" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1137142382" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -37,6 +38,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.302598522" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug">
 								<option id="gnu.c.link.option.paths.1556608360" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/symmetric-client-clib/Debug}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib"/>
 								</option>
 								<option id="gnu.c.link.option.libs.856008563" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="symclient"/>
