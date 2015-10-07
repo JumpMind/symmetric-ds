@@ -112,12 +112,15 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
                 }
                 break;
             case UPDATE:
+                flush();
                 super.write(data);
                 break;
             case DELETE:
+                flush();
                 super.write(data);
                 break;
             default:
+                flush();
                 super.write(data);
                 break;
         }
