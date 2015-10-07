@@ -108,7 +108,7 @@ SymList * SymNodeService_findNodesToPushTo(SymNodeService *this) {
     return this->findSourceNodesFor(this, SYM_NODE_GROUP_LINK_PUSH);
 }
 
-SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char nodeGroupLinkAction) {
+SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char *nodeGroupLinkAction) {
     SymList *nodes = NULL;
     SymNode *node = this->findIdentity(this);
     if (node != NULL) {
@@ -117,7 +117,7 @@ SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char nodeGroup
         SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
         sb->append(sb, SYM_SQL_FIND_NODES_WHO_TARGET_ME);
         SymStringArray *args = SymStringArray_new(NULL);
-        args->add(args, node->nodeGroupId)->add(args, &nodeGroupLinkAction);
+        args->add(args, node->nodeGroupId)->add(args, nodeGroupLinkAction);
 
         nodes = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymNodeService_nodeMapper);
         args->destroy(args);

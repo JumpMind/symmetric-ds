@@ -90,13 +90,13 @@ unsigned short SymIncomingBatchService_acquireIncomingBatch(SymIncomingBatchServ
                     || strcmp(existingBatch->status, SYM_INCOMING_BATCH_STATUS_LOADING) == 0
                     || !this->parameterService->is(this->parameterService, SYM_PARAMETER_INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED, 1)) {
                 okayToProcess = 1;
-                SymStringBuilder_copyToField(&existingBatch->status, SYM_INCOMING_BATCH_STATUS_LOADING);
+                existingBatch->status = SYM_INCOMING_BATCH_STATUS_LOADING;
                 printf("Retrying batch %s-%ld", batch->nodeId, batch->batchId);
             } else if (strcmp(existingBatch->status, SYM_INCOMING_BATCH_STATUS_IGNORED) == 0) {
                 okayToProcess = 0;
-                SymStringBuilder_copyToField(&batch->status, SYM_INCOMING_BATCH_STATUS_OK);
+                batch->status = SYM_INCOMING_BATCH_STATUS_OK;
                 batch->ignoreCount++;
-                SymStringBuilder_copyToField(&existingBatch->status, SYM_INCOMING_BATCH_STATUS_OK);
+                existingBatch->status = SYM_INCOMING_BATCH_STATUS_OK;
                 existingBatch->ignoreCount++;
                 printf("Ignoring batch %s-%ld", batch->nodeId, batch->batchId);
             } else {

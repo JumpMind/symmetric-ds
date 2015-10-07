@@ -24,9 +24,9 @@
 #include <stdlib.h>
 #include "util/Date.h"
 
-#define SYM_NODE_GROUP_LINK_PUSH 'P'
-#define SYM_NODE_GROUP_LINK_WAIT_FOR_PULL 'W'
-#define SYM_NODE_GROUP_LINK_ROUTE 'R'
+#define SYM_NODE_GROUP_LINK_PUSH "P"
+#define SYM_NODE_GROUP_LINK_WAIT_FOR_PULL "W"
+#define SYM_NODE_GROUP_LINK_ROUTE "R"
 
 typedef struct SymNodeGroupLink {
     char *sourceNodeGroupId;

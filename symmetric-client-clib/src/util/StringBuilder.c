@@ -42,10 +42,10 @@ SymStringBuilder * SymStringBuilder_append(SymStringBuilder *this, const char *s
 SymStringBuilder * SymStringBuilder_appendf(SymStringBuilder *this, const char *fmt, ...) {
     va_list arglist;
     va_start(arglist, fmt);
-    int sizeNeeded = vsnprintf(NULL, 0, fmt, arglist) + 1;
+    int sizeNeeded = vsnprintf(NULL, 0, fmt, arglist);
     va_end(arglist);
 
-    char *str = malloc(sizeNeeded + 1);
+    char *str = malloc(sizeNeeded);
     va_start(arglist, fmt);
     vsprintf(str, fmt, arglist);
     va_end(arglist);
