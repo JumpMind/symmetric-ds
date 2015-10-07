@@ -34,11 +34,15 @@ void SymList_add(SymList *this, void *object) {
 }
 
 void * SymList_get(SymList *this, int index) {
-    SymListItem *item = this->head;
-    while (item != NULL && index-- > 0) {
-        item = item->next;
+    void *object = NULL;
+    if (index < this->size) {
+        SymListItem *item = this->head;
+        while (item != NULL && index-- > 0) {
+            item = item->next;
+        }
+        object = item->object;
     }
-    return item->object;
+    return object;
 }
 
 unsigned short SymIterator_hasNext(SymIterator *this) {

@@ -24,18 +24,10 @@ void SymIncomingBatch_destroy(SymIncomingBatch *this) {
     free(this);
 }
 
-void SymIncomingBatch_destroyAll(SymIncomingBatch **list) {
-    int i = 0;
-    for (; list[i] != NULL; i++) {
-        list[i]->destroy(list[i]);
-    }
-}
-
 SymIncomingBatch * SymIncomingBatch_new(SymIncomingBatch *this) {
     if (this == NULL) {
         this = (SymIncomingBatch *) calloc(1, sizeof(SymIncomingBatch));
     }
     this->destroy = (void *) &SymIncomingBatch_destroy;
-    this->destroyAll = (void *) &SymIncomingBatch_destroyAll;
     return this;
 }

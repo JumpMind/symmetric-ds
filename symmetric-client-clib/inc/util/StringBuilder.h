@@ -36,6 +36,7 @@ typedef struct SymStringBuilder {
     struct SymStringBuilder * (*appendn)(struct SymStringBuilder *this, const char *src, int length);
     struct SymStringBuilder * (*appendf)(struct SymStringBuilder *this, const char *fmt, ...);
     char * (*toString)(struct SymStringBuilder * this);
+    char * (*substring)(struct SymStringBuilder *this, int startIndex, int endIndex);
     void (*reset)(struct SymStringBuilder * this);
     void (*destroy)(struct SymStringBuilder * this);
     char * (*destroyAndReturn)(struct SymStringBuilder * this);

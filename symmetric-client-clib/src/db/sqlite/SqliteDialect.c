@@ -34,7 +34,7 @@ static int create_if_missing(SymDialect *super, char *tableName, char *createSql
     return 0;
 }
 
-int SymSqliteDialect_initTables(SymDialect *super) {
+int SymSqliteDialect_initTablesAndDatabaseObjects(SymDialect *super) {
     printf("Checking if SymmetricDS tables need created or altered\n");
     create_if_missing(super, "sym_channel", CREATE_SYM_CHANNEL);
     create_if_missing(super, "sym_data", CREATE_SYM_DATA);
@@ -57,19 +57,25 @@ int SymSqliteDialect_initTables(SymDialect *super) {
     return 0;
 }
 
-int SymSqliteDialect_dropTables(SymDialect *super) {
+int SymSqliteDialect_dropTablesAndDatabaseObjects(SymSqliteDialect *this) {
     return 0;
 }
 
-int SymSqliteDialect_createTrigger(SymDialect *super) {
+void SymSqliteDialect_disableSyncTriggers(SymSqliteDialect *this, SymSqlTransaction *transaction, char *nodeId) {
+}
+
+void SymSqliteDialect_enableSyncTriggers(SymSqliteDialect *this, SymSqlTransaction *transaction) {
+}
+
+int SymSqliteDialect_createTrigger(SymSqliteDialect *this) {
     return 0;
 }
 
-int SymSqliteDialect_removeTrigger(SymDialect *super) {
+int SymSqliteDialect_removeTrigger(SymSqliteDialect *this) {
     return 0;
 }
 
-int SymSqliteDialect_getInitialLoadSql(SymDialect *super) {
+int SymSqliteDialect_getInitialLoadSql(SymSqliteDialect *this) {
     return 0;
 }
 
@@ -84,8 +90,10 @@ SymSqliteDialect * SymSqliteDialect_new(SymSqliteDialect *this, SymDatabasePlatf
     }
     SymDialect_new(&this->super, platform);
     SymDialect *super = &this->super;
-    super->initTables = (void *) &SymSqliteDialect_initTables;
-    super->dropTables = (void *) &SymSqliteDialect_dropTables;
+    super->initTablesAndDatabaseObjects = (void *) &SymSqliteDialect_initTablesAndDatabaseObjects;
+    super->dropTablesAndDatabaseObjects = (void *) &SymSqliteDialect_dropTablesAndDatabaseObjects;
+    super->enableSyncTriggers = (void *) &SymSqliteDialect_enableSyncTriggers;
+    super->disableSyncTriggers = (void *) &SymSqliteDialect_disableSyncTriggers;
     super->createTrigger = (void *) &SymSqliteDialect_createTrigger;
     super->removeTrigger = (void *) &SymSqliteDialect_removeTrigger;
     super->getInitialLoadSql = (void *) &SymSqliteDialect_getInitialLoadSql;

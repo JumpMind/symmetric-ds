@@ -33,18 +33,23 @@
 #include "io/reader/ProtocolDataReader.h"
 #include "io/writer/DefaultDatabaseWriter.h"
 #include "db/platform/DatabasePlatform.h"
+#include "db/SymDialect.h"
+#include "util/List.h"
+#include "service/IncomingBatchService.h"
 
 typedef struct SymDataLoaderService {
     SymParameterService *parameterService;
     SymNodeService *nodeService;
     SymTransportManager *transportManager;
     SymDatabasePlatform *platform;
+    SymDialect *dialect;
+    SymIncomingBatchService *incomingBatchService;
     void (*loadDataFromPull)(struct SymDataLoaderService *this, SymNode *remote, SymRemoteNodeStatus *status);
     void (*loadDataFromRegistration)(struct SymDataLoaderService *this, SymRemoteNodeStatus *status);
     void (*destroy)(struct SymDataLoaderService *this);
 } SymDataLoaderService;
 
-SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService,
-        SymNodeService *nodeService, SymTransportManager *transportManager, SymDatabasePlatform *platform);
+SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService, SymNodeService *nodeService,
+        SymTransportManager *transportManager, SymDatabasePlatform *platform, SymDialect *dialect, SymIncomingBatchService *incomingBatchService);
 
 #endif

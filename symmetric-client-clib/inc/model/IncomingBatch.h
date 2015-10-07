@@ -22,6 +22,7 @@
 #define SYM_INCOMING_BATCH_H
 
 #include <stdlib.h>
+#include "util/Date.h"
 
 #define SYM_INCOMING_BATCH_STATUS_OK "OK"
 #define SYM_INCOMING_BATCH_STATUS_ERROR "ER"
@@ -50,13 +51,14 @@ typedef struct SymIncomingBatch {
     int sqlCode;
     char *sqlMessage;
     char *lastUpdatedHostName;
-    long lastUpdatedTime;
-    long createTime;
+    SymDate *lastUpdatedTime;
+    SymDate *createTime;
     int retry;
     void (*destroy)(struct SymIncomingBatch *this);
-    void (*destroyAll)(void **list);
 } SymIncomingBatch;
 
 SymIncomingBatch * SymIncomingBatch_new(SymIncomingBatch *this);
+
+void SymIncomingBatch_destroy(SymIncomingBatch *this);
 
 #endif

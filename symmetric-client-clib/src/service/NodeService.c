@@ -20,12 +20,19 @@
  */
 #include "service/NodeService.h"
 
-static void * SymNodeService_node_mapper(SymRow *row) {
+static SymDataLoadStatus * SymNodeService_dataLoadStatusMapper(SymRow *row) {
+    SymDataLoadStatus *status = SymDataLoadStatus_new();
+    status->initialLoadEnabled = row->getInt(row, "initial_load_enabled");
+    status->initialLoadTime = row->getDate(row, "initial_load_time");
+    return status;
+}
+
+static SymNode * SymNodeService_nodeMapper(SymRow *row) {
     SymNode *node = SymNode_new(NULL);
     node->nodeId = row->getStringNew(row, "node_id");
     node->nodeGroupId = row->getStringNew(row, "node_group_id");
     node->externalId = row->getStringNew(row, "external_id");
-    node->syncEnabled = row->getInt(row, "sync_enabled");
+    node->syncEnabled = row->getBoolean(row, "sync_enabled");
     node->syncUrl = row->getString(row, "sync_url");
     node->schemaVersion = row->getStringNew(row, "schema_version");
     node->databaseType = row->getStringNew(row, "database_type");
@@ -38,38 +45,111 @@ static void * SymNodeService_node_mapper(SymRow *row) {
     return node;
 }
 
+static SymNodeSecurity * SymNodeService_nodeSecurityMapper(SymRow * row) {
+    SymNodeSecurity *nodeSecurity = SymNodeSecurity_new(NULL);
+    nodeSecurity->nodeId = row->getStringNew(row, "node_id");
+    nodeSecurity->nodePassword = row->getStringNew(row, "node_password");
+    nodeSecurity->registrationEnabled = row->getBoolean(row, "registration_enabled");
+    nodeSecurity->registrationTime = row->getDate(row, "registration_time");
+    nodeSecurity->initialLoadEnabled = row->getBoolean(row, "initial_load_enabled");
+    nodeSecurity->initialLoadTime = row->getDate(row, "initial_load_time");
+    nodeSecurity->createdAtNodeId = row->getStringNew(row, "created_at_node_id");
+    nodeSecurity->revInitialLoadEnabled = row->getBoolean(row, "rev_initial_load_enabled");
+    nodeSecurity->revInitialLoadTime = row->getDate(row, "rev_initial_load_time");
+    nodeSecurity->initialLoadId = row->getLong(row, "initial_load_id");
+    nodeSecurity->initialLoadCreateBy = row->getStringNew(row, "initial_load_create_by");
+    nodeSecurity->revInitialLoadId = row->getLong(row, "rev_initial_load_id");
+    nodeSecurity->revInitialLoadCreateBy = row->getStringNew(row, "rev_initial_load_create_by");
+    return nodeSecurity;
+}
+
+void SymDataLoadStatus_destroy(SymDataLoadStatus *this) {
+    this->initialLoadTime->destroy(this->initialLoadTime);
+    free(this);
+}
+
+SymDataLoadStatus * SymDataLoadStatus_new() {
+    SymDataLoadStatus *this = calloc(1, sizeof(SymDataLoadStatus));
+    this->destroy = (void *) &SymDataLoadStatus_destroy;
+    return this;
+}
+
 SymNode * SymNodeService_findIdentity(SymNodeService *this) {
-    SymNode *node = NULL;
     int error;
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
     SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
     sb->append(sb, SYM_SQL_FIND_NODE_IDENTITY);
-    SymList *nodes = sqlTemplate->query(sqlTemplate, sb->str, NULL, NULL, &error, SymNodeService_node_mapper);
+
+    SymList *nodes = sqlTemplate->query(sqlTemplate, sb->str, NULL, NULL, &error, (void *) SymNodeService_nodeMapper);
+    SymNode *node = nodes->get(nodes, 0);
     sb->destroy(sb);
-    if (nodes->size > 0) {
-        node = nodes->get(nodes, 0);
-    }
     return node;
 }
 
 SymNodeSecurity * SymNodeService_findNodeSecurity(SymNodeService *this, char *nodeId) {
-    printf("SymNodeService_find_node_security\n");
-    return NULL;
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, nodeId);
+
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    int error;
+    SymList *nodes = sqlTemplate->query(sqlTemplate, SYM_SQL_FIND_NODE_SECURITY, args, NULL, &error, (void *) SymNodeService_nodeSecurityMapper);
+
+    SymNodeSecurity *nodeSecurity = (SymNodeSecurity *) nodes->get(nodes, 0);
+    args->destroy(args);
+    nodes->destroy(nodes);
+    return nodeSecurity;
 }
 
 SymList * SymNodeService_findNodesToPull(SymNodeService *this) {
-    SymList *list = SymList_new(NULL);
-    return list;
+    return this->findSourceNodesFor(this, SYM_NODE_GROUP_LINK_WAIT_FOR_PULL);
 }
 
 SymList * SymNodeService_findNodesToPushTo(SymNodeService *this) {
-    printf("SymNodeService_find_nodes_to_push_to\n");
-    return NULL;
+    return this->findSourceNodesFor(this, SYM_NODE_GROUP_LINK_PUSH);
 }
 
-int SymNodeService_isDataloadStarted(SymNodeService *this) {
-    printf("SymNodeService_is_dataload_started\n");
-    return 0;
+SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char nodeGroupLinkAction) {
+    SymList *nodes = NULL;
+    SymNode *node = this->findIdentity(this);
+    if (node != NULL) {
+        int error;
+        SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+        SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
+        sb->append(sb, SYM_SQL_FIND_NODES_WHO_TARGET_ME);
+        SymStringArray *args = SymStringArray_new(NULL);
+        args->add(args, node->nodeGroupId)->add(args, &nodeGroupLinkAction);
+
+        nodes = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymNodeService_nodeMapper);
+        args->destroy(args);
+        sb->destroy(sb);
+    } else {
+        nodes = SymList_new(NULL);
+    }
+    return nodes;
+}
+
+unsigned short SymNodeService_isDataloadStarted(SymNodeService *this) {
+    return this->getNodeStatus(this) ==  SYM_NODE_STATUS_DATA_LOAD_STARTED;
+}
+
+unsigned short SymNodeService_isDataloadCompleted(SymNodeService *this) {
+    return this->getNodeStatus(this) ==  SYM_NODE_STATUS_DATA_LOAD_COMPLETED;
+}
+
+int SymNodeService_getNodeStatus(SymNodeService *this) {
+    int error, status = SYM_NODE_STATUS_DATA_LOAD_NOT_STARTED;
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymList *loadStatuses = sqlTemplate->query(sqlTemplate, SYM_SQL_GET_DATALOAD_STATUS, NULL, NULL, &error, (void *) SymNodeService_dataLoadStatusMapper);
+    if (loadStatuses->size > 0) {
+        SymDataLoadStatus *loadStatus = (SymDataLoadStatus *) loadStatuses->get(loadStatuses, 0);
+        if (loadStatus->initialLoadEnabled == 1) {
+            status = SYM_NODE_STATUS_DATA_LOAD_STARTED;
+        } else if (loadStatus->initialLoadTime != NULL) {
+            status = SYM_NODE_STATUS_DATA_LOAD_COMPLETED;
+        }
+    }
+    loadStatuses->destroy(loadStatuses);
+    return status;
 }
 
 void SymNodeService_destroy(SymNodeService *this) {
@@ -85,7 +165,10 @@ SymNodeService * SymNodeService_new(SymNodeService *this, SymDatabasePlatform *p
     this->findNodeSecurity = (void *) &SymNodeService_findNodeSecurity;
     this->findNodesToPull = (void *) &SymNodeService_findNodesToPull;
     this->findNodesToPushTo = (void *) &SymNodeService_findNodesToPushTo;
+    this->findSourceNodesFor = (void *) &SymNodeService_findSourceNodesFor;
     this->isDataloadStarted = (void *) &SymNodeService_isDataloadStarted;
+    this->isDataloadCompleted = (void *) &SymNodeService_isDataloadCompleted;
+    this->getNodeStatus = (void *) &SymNodeService_getNodeStatus;
     this->destroy = (void *) &SymNodeService_destroy;
     return this;
 }

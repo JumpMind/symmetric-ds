@@ -58,6 +58,28 @@ void SymStringBuilderTest_test4() {
     free(value);
 }
 
+void SymStringBuilderTest_test_char() {
+    char mychar = 'D';
+    SymStringBuilder *sb = SymStringBuilder_new();
+    sb->append(sb, "S");
+    sb->append(sb, &mychar);
+    sb->append(sb, "S");
+    char *value = sb->destroyAndReturn(sb);
+    CU_ASSERT(strcmp(value, "SDS") == 0);
+    free(value);
+}
+
+void SymStringBuilderTest_test_long() {
+    long batchId = -9999;
+    SymStringBuilder *sb = SymStringBuilder_new();
+    sb->append(sb, "batch-");
+    sb->appendf(sb, "%ld", batchId);
+    sb->append(sb, "=OK");
+    char *value = sb->destroyAndReturn(sb);
+    CU_ASSERT(strcmp(value, "batchId--9999=OK") == 0);
+    free(value);
+}
+
 int SymStringBuilderTest_CUnit() {
     CU_pSuite suite = CU_add_suite("SymStringBuilderTest", NULL, NULL);
     if (suite == NULL) {
@@ -67,7 +89,9 @@ int SymStringBuilderTest_CUnit() {
     if (CU_add_test(suite, "SymStringBuilderTest_test1", SymStringBuilderTest_test1) == NULL ||
             CU_add_test(suite, "SymStringBuilderTest_test2", SymStringBuilderTest_test2) == NULL ||
             CU_add_test(suite, "SymStringBuilderTest_test3", SymStringBuilderTest_test3) == NULL ||
-            CU_add_test(suite, "SymStringBuilderTest_test4", SymStringBuilderTest_test4) == NULL) {
+            CU_add_test(suite, "SymStringBuilderTest_test4", SymStringBuilderTest_test4) == NULL ||
+            CU_add_test(suite, "SymStringBuilderTest_test_char", SymStringBuilderTest_test_char) == NULL ||
+            CU_add_test(suite, "SymStringBuilderTest_test_long", SymStringBuilderTest_test_long) == NULL) {
         return CUE_NOTEST;
     }
     return CUE_SUCCESS;

@@ -32,18 +32,25 @@
 #include "db/sql/DmlStatement.h"
 #include "db/sql/SqlTemplate.h"
 #include "db/sql/SqlTransaction.h"
+#include "db/SymDialect.h"
+#include "model/IncomingBatch.h"
+#include "service/IncomingBatchService.h"
 
 typedef struct SymDefaultDatabaseWriter {
     SymDataWriter super;
+    SymIncomingBatchService *incomingBatchService;
     SymDatabasePlatform *platform;
+    SymDialect *dialect;
     SymSqlTransaction *sqlTransaction;
     SymBatch *batch;
     SymTable *sourceTable;
     SymTable *targetTable;
     SymDmlStatement *dmlStatement;
+    SymIncomingBatch *incomingBatch;
     unsigned short isError;
 } SymDefaultDatabaseWriter;
 
-SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter *this, SymDatabasePlatform *platform);
+SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter *this, SymIncomingBatchService *incomingBatchService,
+        SymDatabasePlatform *platform, SymDialect *dialect);
 
 #endif

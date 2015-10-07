@@ -20,16 +20,14 @@
  */
 #include "model/RemoteNodeStatus.h"
 
-void SymRemoteNodeStatus_updateIncomingStatus(SymRemoteNodeStatus *this, SymIncomingBatch **incomingBatches) {
-    if (incomingBatches != NULL) {
-        int i = 0;
-        for (; incomingBatches[i] != NULL; i++) {
-            SymIncomingBatch *incomingBatch = incomingBatches[i];
-            this->dataProcessed += incomingBatch->statementCount;
-            this->batchesProcessed++;
-            if (strcmp(incomingBatch->status, SYM_INCOMING_BATCH_STATUS_ERROR) == 0) {
-                this->status = SYM_REMOTE_NODE_STATUS_DATA_ERROR;
-            }
+void SymRemoteNodeStatus_updateIncomingStatus(SymRemoteNodeStatus *this, SymList *incomingBatches) {
+    SymIterator *iter = incomingBatches->iterator(incomingBatches);
+    while (iter->hasNext(iter)) {
+        SymIncomingBatch *incomingBatch = (SymIncomingBatch *) iter->next(iter);
+        this->dataProcessed += incomingBatch->statementCount;
+        this->batchesProcessed++;
+        if (strcmp(incomingBatch->status, SYM_INCOMING_BATCH_STATUS_ERROR) == 0) {
+            this->status = SYM_REMOTE_NODE_STATUS_DATA_ERROR;
         }
     }
 

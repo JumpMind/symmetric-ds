@@ -52,6 +52,33 @@ int SymRow_getInt(SymRow *this, char *columnName) {
     return value;
 }
 
+unsigned short SymRow_getBoolean(SymRow *this, char *columnName) {
+    unsigned short value = 0;
+    char *str = SymRow_getString(this, columnName);
+    if (str != NULL) {
+        value = atoi(str);
+    }
+    return value;
+}
+
+int SymRow_getLong(SymRow *this, char *columnName) {
+    long value = 0;
+    char *str = SymRow_getString(this, columnName);
+    if (str != NULL) {
+        value = atol(str);
+    }
+    return value;
+}
+
+SymDate * SymRow_getDate(SymRow *this, char *columnName) {
+    SymDate *date = NULL;
+    char *str = SymRow_getString(this, columnName);
+    if (str != NULL) {
+        date = SymDate_new(str);
+    }
+    return date;
+}
+
 int SymRow_getSize(SymRow *this, char *columnName) {
     int value = 0;
     SymRowEntry *entry = (SymRowEntry *) this->map->get(this->map, columnName);
@@ -91,8 +118,11 @@ SymRow * SymRow_new(SymRow *this, int columnCount) {
     this->map = SymMap_new(NULL, columnCount);
     this->put = (void *) &SymRow_put;
     this->getInt = (void *) &SymRow_getInt;
+    this->getLong = (void *) &SymRow_getLong;
     this->getString = (void *) &SymRow_getString;
     this->getStringNew = (void *) &SymRow_getStringNew;
+    this->getBoolean = (void *) &SymRow_getBoolean;
+    this->getDate = (void *) &SymRow_getDate;
     this->getSize = (void *) &SymRow_getSize;
     this->getSqlType = (void *) &SymRow_getSqlType;
     this->destroy = (void *) &SymRow_destroy;

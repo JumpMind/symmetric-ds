@@ -18,25 +18,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_HTTP_TRANSPORT_MANAGER_H
-#define SYM_HTTP_TRANSPORT_MANAGER_H
+#ifndef SYM_NODE_GROUP_LINK_H
+#define SYM_NODE_GROU_LINK_H
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <curl/curl.h>
-#include "transport/TransportManager.h"
-#include "transport/http/HttpIncomingTransport.h"
-#include "transport/http/HttpOutgoingTransport.h"
-#include "util/StringBuilder.h"
-#include "util/List.h"
-#include "util/AppUtils.h"
-#include "web/WebConstants.h"
+#include "util/Date.h"
 
-typedef struct SymHttpTransportManager {
-    SymTransportManager super;
-} SymHttpTransportManager;
+#define SYM_NODE_GROUP_LINK_PUSH 'P'
+#define SYM_NODE_GROUP_LINK_WAIT_FOR_PULL 'W'
+#define SYM_NODE_GROUP_LINK_ROUTE 'R'
 
-SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *this, SymParameterService *parameterService);
+typedef struct SymNodeGroupLink {
+    char *sourceNodeGroupId;
+    char *targetNodeGroupId;
+    char dataEventAction;
+    unsigned short syncConfigEnabled;
+    SymDate *createTime;
+    SymDate *lastUpdateTime;
+    char *lastUpdateBy;
+    void (*destroy)(struct SymNode *this);
+} SymNodeGroupLink;
+
+SymNodeGroupLink * SymNodeGroupLink_new(SymNodeGroupLink *this);
 
 #endif

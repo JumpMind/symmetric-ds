@@ -20,7 +20,7 @@
  */
 #include "util/StringArray.h"
 
-void SymStringArray_addn(SymStringArray *this, char *src, int size) {
+SymStringArray * SymStringArray_addn(SymStringArray *this, char *src, int size) {
     if (this->size == this->sizeAllocated) {
         this->sizeAllocated += this->sizeIncrement;
         this->array = realloc(this->array, this->sizeAllocated);
@@ -31,24 +31,51 @@ void SymStringArray_addn(SymStringArray *this, char *src, int size) {
         str[size] = '\0';
     }
     this->array[this->size++] = str;
+    return this;
 }
 
-void SymStringArray_add(SymStringArray *this, char *src) {
+SymStringArray * SymStringArray_add(SymStringArray *this, char *src) {
     int size = 0;
     if (src) {
         size = strlen(src);
     }
     SymStringArray_addn(this, src, size);
+    return this;
 }
 
-void SymStringArray_add_all(SymStringArray *this, SymStringArray *stringArray) {
+SymStringArray * SymStringArray_addf(SymStringArray *this, const char *fmt, ...) {
+    va_list arglist;
+    va_start(arglist, fmt);
+    int sizeNeeded = vsnprintf(NULL, 0, fmt, arglist) + 1;
+    va_end(arglist);
+
+    char *str = malloc(sizeNeeded + 1);
+    va_start(arglist, fmt);
+    vsprintf(str, fmt, arglist);
+    va_end(arglist);
+
+    SymStringArray_addn(this, str, sizeNeeded);
+    free(str);
+    return this;
+}
+
+SymStringArray * SymStringArray_addInt(SymStringArray *this, int value) {
+    return this->addf(this, "%d", value);
+}
+
+SymStringArray * SymStringArray_addLong(SymStringArray *this, long value) {
+    return this->addf(this, "%ld", value);
+}
+
+SymStringArray * SymStringArray_add_all(SymStringArray *this, SymStringArray *stringArray) {
     int i;
     for (i = 0; i < stringArray->size; i++) {
         SymStringArray_add(this, stringArray->array[i]);
     }
+    return this;
 }
 
-void * SymStringArray_get(SymStringArray *this, int index) {
+char * SymStringArray_get(SymStringArray *this, int index) {
     return this->array[index];
 }
 
@@ -110,6 +137,9 @@ SymStringArray * SymStringArray_newWithSize(SymStringArray *this, int sizeInitia
     this->array = (char **) malloc(this->sizeAllocated * sizeof(char *));
     this->add = (void *) &SymStringArray_add;
     this->addn = (void *) &SymStringArray_addn;
+    this->addf = (void *) &SymStringArray_addf;
+    this->addInt = (void *) &SymStringArray_addInt;
+    this->addLong = (void *) &SymStringArray_addLong;
     this->addAll = (void *) &SymStringArray_add_all;
     this->get = (void *) &SymStringArray_get;
     this->contains = (void *) &SymStringArray_contains;

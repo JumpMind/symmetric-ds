@@ -88,6 +88,15 @@ int SymParameterService_getInt(SymParameterService *this, char *name, int defaul
     return value;
 }
 
+unsigned short SymParameterService_is(SymParameterService *this, char *name, unsigned short defaultValue) {
+    unsigned short value = defaultValue;
+    char *stringValue = this->getString(this, name, NULL);
+    if (stringValue != NULL) {
+        value = atoi(stringValue);
+    }
+    return value;
+}
+
 void SymParameterService_saveParameter(SymParameterService *this, char *externalId, char *nodeGroupId,
         char *name, char *value, char *lastUpdatedBy) {
 }
@@ -112,6 +121,7 @@ SymParameterService * SymParameterService_new(SymParameterService *this, SymProp
     this->getString = (void *) &SymParameterService_getString;
     this->getLong = (void *) &SymParameterService_getLong;
     this->getInt = (void *) &SymParameterService_getInt;
+    this->is = (void *) &SymParameterService_is;
     this->saveParameter = (void *) &SymParameterService_saveParameter;
     this->deleteParameter = (void *) &SymParameterService_deleteParameter;
     this->destroy = (void *) &SymParameterService_destroy;

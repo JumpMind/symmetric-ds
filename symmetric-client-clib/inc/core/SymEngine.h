@@ -31,11 +31,12 @@
 #include "db/sqlite/SqliteDialect.h"
 #include "service/TriggerRouterService.h"
 #include "service/ParameterService.h"
-#include "service/PullService.h"
 #include "service/PushService.h"
 #include "service/NodeService.h"
-#include "service/DataLoaderService.h"
+#include "service/PullService.h"
 #include "service/RegistrationService.h"
+#include "service/DataLoaderService.h"
+#include "service/IncomingBatchService.h"
 #include "transport/TransportManagerFactory.h"
 #include "transport/TransportManager.h"
 #include "common/Constants.h"
@@ -52,6 +53,7 @@ typedef struct SymEngine {
     SymPushService *pushService;
     SymPullService *pullService;
     SymNodeService *nodeService;
+    SymIncomingBatchService *incomingBatchService;
 
     unsigned short (*start)(struct SymEngine *this);
     unsigned short (*stop)(struct SymEngine *this);

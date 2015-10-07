@@ -18,25 +18,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_HTTP_TRANSPORT_MANAGER_H
-#define SYM_HTTP_TRANSPORT_MANAGER_H
+#ifndef SYM_DATE_H
+#define SYM_DATE_H
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <curl/curl.h>
-#include "transport/TransportManager.h"
-#include "transport/http/HttpIncomingTransport.h"
-#include "transport/http/HttpOutgoingTransport.h"
+#include <time.h>
 #include "util/StringBuilder.h"
-#include "util/List.h"
-#include "util/AppUtils.h"
-#include "web/WebConstants.h"
 
-typedef struct SymHttpTransportManager {
-    SymTransportManager super;
-} SymHttpTransportManager;
+#define SYM_DATE_FORMAT "%F %T"
 
-SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *this, SymParameterService *parameterService);
+typedef struct SymDate {
+    char *dateTimeString;
+    time_t time;
+    void (*destroy)(struct SymDate *this);
+} SymDate;
+
+SymDate * SymDate_new();
+
+SymDate * SymDate_newWithString(char *dateTimeString);
+
+SymDate * SymDate_newWithTime(time_t time);
 
 #endif

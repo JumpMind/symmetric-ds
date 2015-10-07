@@ -22,18 +22,19 @@
 #define SYM_NODE_SECURITY_H
 
 #include <stdlib.h>
+#include "util/Date.h"
 
 typedef struct SymNodeSecurity {
     char *nodeId;
     char *nodePassword;
     int registrationEnabled;
-    int registrationTime;
+    SymDate *registrationTime;
     int initialLoadEnabled;
-    int initialLoadTime;
+    SymDate *initialLoadTime;
     long initialLoadId;
     char *initialLoadCreateBy;
     int revInitialLoadEnabled;
-    int revInitialLoadTime;
+    SymDate *revInitialLoadTime;
     long revInitialLoadId;
     char *revInitialLoadCreateBy;
     char *createdAtNodeId;

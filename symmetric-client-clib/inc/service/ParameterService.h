@@ -48,6 +48,9 @@
 
 #define SYM_PARAMETER_PARAMETER_REFRESH_PERIOD_IN_MS "parameter.reload.timeout.ms"
 
+#define SYM_PARAMETER_INCOMING_BATCH_RECORD_OK_ENABLED "incoming.batches.record.ok.enabled"
+#define SYM_PARAMETER_INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED "incoming.batches.skip.duplicates"
+
 typedef struct SymParameterService {
     SymProperties *parameters;
     SymProperties *properties;
@@ -60,6 +63,7 @@ typedef struct SymParameterService {
     char * (*getString)(struct SymParameterService *this, char *name, char *defaultValue);
     long (*getLong)(struct SymParameterService *this, char *name, long defaultValue);
     int (*getInt)(struct SymParameterService *this, char *name, int defaultValue);
+    unsigned short (*is)(struct SymParameterService *this, char *name, unsigned short defaultValue);
     void (*saveParameter)(struct SymParameterService *this, char *externalId, char *nodeGroupId, char *name, char *value, char *lastUpdatedBy);
     void (*deleteParameter)(struct SymParameterService *this, char *externalId, char *nodeGroupId, char *name);
     void (*destroy)(struct SymParameterService *this);

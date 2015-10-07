@@ -25,6 +25,13 @@
 
 #define SYM_VERSION "3.7.0"
 
+typedef enum SymNodeStatus {
+    SYM_NODE_STATUS_DATA_LOAD_NOT_STARTED,
+    SYM_NODE_STATUS_DATA_LOAD_STARTED,
+    SYM_NODE_STATUS_DATA_LOAD_COMPLETED,
+    SYM_NODE_STATUS_UNKNOWN
+} SymNodeStatus;
+
 typedef struct SymNode {
     char *nodeId;
     char *nodeGroupId;

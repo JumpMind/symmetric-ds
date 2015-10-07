@@ -55,9 +55,16 @@ SymStringBuilder * SymStringBuilder_appendf(SymStringBuilder *this, const char *
     return this;
 }
 
-char * SymStringBuilder_to_string(SymStringBuilder *this) {
+char * SymStringBuilder_toString(SymStringBuilder *this) {
     // TODO: this should return a copy
     return this->str;
+}
+
+char * SymStringBuilder_substring(SymStringBuilder *this, int startIndex, int endIndex) {
+    int size = endIndex - startIndex + 1;
+    char *str = (char *) malloc(size * sizeof(char));
+    str[size] = '\0';
+    return memcpy(str, str + startIndex, endIndex - startIndex);
 }
 
 void SymStringBuilder_reset(SymStringBuilder *this) {
@@ -109,7 +116,8 @@ SymStringBuilder * SymStringBuilder_newWithSize(int size) {
     this->append = (void *) &SymStringBuilder_append;
     this->appendn = (void *) &SymStringBuilder_appendn;
     this->appendf = (void *) &SymStringBuilder_appendf;
-    this->toString = (void *) &SymStringBuilder_to_string;
+    this->toString = (void *) &SymStringBuilder_toString;
+    this->substring = (void *) &SymStringBuilder_substring;
     this->destroy = (void *) &SymStringBuilder_destroy;
     this->destroyAndReturn = (void *) &SymStringBuilder_destroy_and_return;
     return this;

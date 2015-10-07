@@ -21,7 +21,7 @@
 #include "service/DataLoaderService.h"
 
 static void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *remote, SymNode *local, SymNodeSecurity *localSecurity,
-        SymIncomingBatch **incomingBatches) {
+        SymList *incomingBatches) {
     int sendAck = -1;
     int numberOfStatusSendRetries = this->parameterService->getInt(this->parameterService,
             SYM_PARAMETER_DATA_LOADER_NUM_OF_ACK_RETRIES, 5);
@@ -29,10 +29,10 @@ static void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *re
     int sleepSeconds = this->parameterService->getInt(this->parameterService, SYM_PARAMETER_DATA_LOADER_TIME_BETWEEN_ACK_RETRIES, 5);
 
     int i = 0;
-    for (; i < numberOfStatusSendRetries && sendAck != HTTP_OK; i++) {
+    for (; i < numberOfStatusSendRetries && sendAck != SYM_TRANSPORT_OK; i++) {
         sendAck = this->transportManager->sendAcknowledgement(this->transportManager,
                     remote, incomingBatches, local, localSecurity->nodePassword, registrationUrl);
-        if (sendAck != 0) {
+        if (sendAck != SYM_TRANSPORT_OK) {
             printf("Ack was not sent successfully on try number %d.\n", i + 1);
             if (i < numberOfStatusSendRetries - 1) {
                 sleep(sleepSeconds);
@@ -41,16 +41,18 @@ static void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *re
     }
 }
 
-static SymIncomingBatch ** SymDataLoaderService_loadDataFromTransport(SymDataLoaderService *this, SymNode *remote, SymIncomingTransport *transport, int *error) {
+static SymList * SymDataLoaderService_loadDataFromTransport(SymDataLoaderService *this, SymNode *remote, SymIncomingTransport *transport, int *error) {
     // TODO:
-    SymDataWriter *writer = (SymDataWriter *) SymDefaultDatabaseWriter_new(NULL, this->platform);
+    SymDataWriter *writer = (SymDataWriter *) SymDefaultDatabaseWriter_new(NULL, this->incomingBatchService, this->platform, this->dialect);
     SymDataReader *reader = (SymDataReader *) SymProtocolDataReader_new(NULL, remote->nodeId, writer);
 
     long rc = transport->process(transport, reader);
+    printf("Transport rc = %ld\n" , rc);
 
+    SymList *batchesProcessed = writer->batchesProcessed;
     reader->destroy(reader);
     writer->destroy(writer);
-    return NULL;
+    return batchesProcessed;
 }
 
 void SymDataLoaderService_loadDataFromRegistration(SymDataLoaderService *this, SymRemoteNodeStatus *status) {
@@ -70,8 +72,8 @@ void SymDataLoaderService_loadDataFromRegistration(SymDataLoaderService *this, S
     remote->syncUrl = registrationUrl;
 
     int error = 0;
-    SymIncomingBatch **incomingBatches = SymDataLoaderService_loadDataFromTransport(this, remote, transport, &error);
-    if (incomingBatches != NULL) {
+    SymList *incomingBatches = SymDataLoaderService_loadDataFromTransport(this, remote, transport, &error);
+    if (incomingBatches->size > 0) {
         status->updateIncomingStatus(status, incomingBatches);
         local->destroy(local);
         local = this->nodeService->findIdentity(this->nodeService);
@@ -80,8 +82,8 @@ void SymDataLoaderService_loadDataFromRegistration(SymDataLoaderService *this, S
             SymDataLoaderService_sendAck(this, remote, local, localSecurity, incomingBatches);
             localSecurity->destroy(localSecurity);
         }
-        incomingBatches[0]->destroyAll((void **) incomingBatches);
     }
+    SymList_destroyAll(incomingBatches, (void *) SymIncomingBatch_destroy);
 
     local->destroy(local);
     remote->destroy(remote);
@@ -99,12 +101,13 @@ void SymDataLoaderService_loadDataFromPull(SymDataLoaderService *this, SymNode *
                     localSecurity->nodePassword, NULL, registrationUrl);
 
         int error = 0;
-        SymIncomingBatch **incomingBatches = SymDataLoaderService_loadDataFromTransport(this, remote, transport, &error);
-        if (incomingBatches != NULL) {
+        SymList *incomingBatches = SymDataLoaderService_loadDataFromTransport(this, remote, transport, &error);
+        if (incomingBatches->size > 0) {
             status->updateIncomingStatus(status, incomingBatches);
             SymDataLoaderService_sendAck(this, remote, local, localSecurity, incomingBatches);
-            incomingBatches[0]->destroyAll((void **) incomingBatches);
         }
+        SymList_destroyAll(incomingBatches, (void *) SymIncomingBatch_destroy);
+
         if (error == 1) {
             printf("Node information missing on the server.  Attempting to re-register.\n");
             this->loadDataFromRegistration(this, status);
@@ -120,8 +123,8 @@ void SymDataLoaderService_destroy(SymDataLoaderService *this) {
     free(this);
 }
 
-SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService,
-        SymNodeService *nodeService, SymTransportManager *transportManager, SymDatabasePlatform *platform) {
+SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService, SymNodeService *nodeService,
+        SymTransportManager *transportManager, SymDatabasePlatform *platform, SymDialect *dialect, SymIncomingBatchService *incomingBatchService) {
     if (this == NULL) {
         this = (SymDataLoaderService *) calloc(1, sizeof(SymDataLoaderService));
     }
@@ -129,9 +132,12 @@ SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymP
     this->nodeService = nodeService;
     this->transportManager = transportManager;
     this->platform = platform;
+    this->dialect = dialect;
+    this->incomingBatchService = incomingBatchService;
 
     this->loadDataFromPull = (void *) &SymDataLoaderService_loadDataFromPull;
     this->loadDataFromRegistration = (void *) &SymDataLoaderService_loadDataFromRegistration;
     this->destroy = (void *) &SymDataLoaderService_destroy;
     return this;
 }
+

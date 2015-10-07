@@ -42,7 +42,7 @@ static unsigned short SymEngine_isConfigured(SymEngine *this) {
 unsigned short SymEngine_start(SymEngine *this) {
     unsigned short isStarted = 0;
 	printf("About to start SymmetricDS\n");
-    this->dialect->initTables(this->dialect);
+    this->dialect->initTablesAndDatabaseObjects(this->dialect);
 
     if (SymEngine_isConfigured(this)) {
         SymNode *node = this->nodeService->findIdentity(this->nodeService);
@@ -124,7 +124,9 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->triggerRouterService = SymTriggerRouterService_new(NULL);
     this->transportManager = SymTransportManagerFactory_create(SYM_PROTOCOL_HTTP, this->parameterService);
     this->nodeService = SymNodeService_new(NULL, this->platform);
-    this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform);
+    this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
+    this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform,
+            this->dialect, this->incomingBatchService);
     this->registrationService = SymRegistrationService_new(NULL, this->nodeService, this->dataLoaderService, this->parameterService);
     this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService);
     this->pushService = SymPushService_new(NULL);

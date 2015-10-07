@@ -26,8 +26,10 @@
 #include "io/data/Batch.h"
 #include "db/model/Table.h"
 #include "io/data/CsvData.h"
+#include "util/List.h"
 
 typedef struct SymDataWriter {
+    SymList *batchesProcessed;
     void (*open)(struct SymDataWriter *this);
     void (*close)(struct SymDataWriter *this);
     void (*startBatch)(struct SymDataWriter *this, SymBatch *batch);

@@ -21,19 +21,26 @@
 #include "io/writer/DefaultDatabaseWriter.h"
 
 void SymDefaultDatabaseWriter_open(SymDefaultDatabaseWriter *this) {
-    printf("open\n");
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
     this->sqlTransaction = sqlTemplate->startSqlTransaction(sqlTemplate);
 }
 
 void SymDefaultDatabaseWriter_startBatch(SymDefaultDatabaseWriter *this, SymBatch *batch) {
-    printf("start batch %ld\n", batch->batchId);
     this->batch = batch;
     this->isError = 0;
+
+    // IDataProcessorListener.beforeBatchStarted
+    // TODO: if batchId < 0, remove outgoing configuration batches
+    this->incomingBatch = SymIncomingBatch_new(NULL);
+    this->incomingBatch->batchId = batch->batchId;
+    SymDataWriter *super = (SymDataWriter *) &this->super;
+    super->batchesProcessed->add(super->batchesProcessed, this->incomingBatch);
+
+    // IDataProcessorListener.afterBatchStarted
+    this->dialect->disableSyncTriggers(this->dialect, this->sqlTransaction, batch->sourceNodeId);
 }
 
 unsigned short SymDefaultDatabaseWriter_startTable(SymDefaultDatabaseWriter *this, SymTable *table) {
-    printf("start table %s\n", table->name);
     this->dmlStatement = NULL;
     this->sourceTable = table;
 
@@ -54,7 +61,6 @@ unsigned short SymDefaultDatabaseWriter_requiresNewStatement(SymDefaultDatabaseW
 }
 
 void SymDefaultDatabaseWriter_insert(SymDefaultDatabaseWriter *this, SymCsvData *data) {
-    printf("insert\n");
     if (SymDefaultDatabaseWriter_requiresNewStatement(this, SYM_DML_TYPE_INSERT, data)) {
         if (this->dmlStatement) {
             this->sqlTransaction->close(this->sqlTransaction);
@@ -130,16 +136,40 @@ unsigned short SymDefaultDatabaseWriter_write(SymDefaultDatabaseWriter *this, Sy
 }
 
 void SymDefaultDatabaseWriter_endTable(SymDefaultDatabaseWriter *this, SymTable *table) {
-    printf("end table %s\n", table->name);
 }
 
 void SymDefaultDatabaseWriter_endBatch(SymDefaultDatabaseWriter *this, SymBatch *batch) {
-    printf("end batch %ld\n", batch->batchId);
+    // IDataProcessorListener.beforeBatchEnd
+    this->dialect->enableSyncTriggers(this->dialect, this->sqlTransaction);
+
     this->dmlStatement = NULL;
+    if (batch->isIgnore) {
+        this->incomingBatch->ignoreCount++;
+    }
+
     if (!this->isError) {
         this->sqlTransaction->commit(this->sqlTransaction);
+
+        // IDataProcessorListener.batchSuccessful
+        // TODO: update batch statistics
+        this->incomingBatch->status = SYM_INCOMING_BATCH_STATUS_OK;
+        if (this->incomingBatchService->isRecordOkBatchesEnabled(this->incomingBatchService)) {
+            this->incomingBatchService->updateIncomingBatch(this->incomingBatchService, this->incomingBatch);
+        } else if (this->incomingBatch->retry) {
+            this->incomingBatchService->deleteIncomingBatch(this->incomingBatchService, this->incomingBatch);
+        }
     } else {
         this->sqlTransaction->rollback(this->sqlTransaction);
+
+        // IDataProcessorListener.batchInError
+        // TODO: update batch statistics
+        // TODO: update batch sql code, state, message
+
+        if (this->incomingBatchService->isRecordOkBatchesEnabled(this->incomingBatchService) || this->incomingBatch->retry) {
+            this->incomingBatchService->updateIncomingBatch(this->incomingBatchService, this->incomingBatch);
+        } else {
+            this->incomingBatchService->insertIncomingBatch(this->incomingBatchService, this->incomingBatch);
+        }
     }
 }
 
@@ -152,12 +182,16 @@ void SymDefaultDatabaseWriter_destroy(SymDefaultDatabaseWriter *this) {
     free(this);
 }
 
-SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter *this, SymDatabasePlatform *platform) {
+SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter *this, SymIncomingBatchService *incomingBatchService,
+        SymDatabasePlatform *platform, SymDialect *dialect) {
     if (this == NULL) {
         this = (SymDefaultDatabaseWriter *) calloc(1, sizeof(SymDefaultDatabaseWriter));
     }
     SymDataWriter *super = &this->super;
+    this->incomingBatchService = incomingBatchService;
     this->platform = platform;
+    this->dialect = dialect;
+    super->batchesProcessed = SymList_new(NULL);
     super->open = (void *) &SymDefaultDatabaseWriter_open;
     super->startBatch = (void *) &SymDefaultDatabaseWriter_startBatch;
     super->startTable = (void *) &SymDefaultDatabaseWriter_startTable;

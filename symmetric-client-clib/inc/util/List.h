@@ -57,4 +57,6 @@ typedef struct SymList {
 
 SymList * SymList_new(SymList *this);
 
+void SymList_destroyAll(SymList *this, void *destroy_object(void * object));
+
 #endif

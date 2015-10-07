@@ -42,9 +42,8 @@ static char * buildUrl(char *action, SymNode *remote, SymNode *local, char *secu
     sb->append(sb, action);
     append(sb, SYM_WEB_CONSTANTS_NODE_ID, local->nodeId);
     append(sb, SYM_WEB_CONSTANTS_SECURITY_TOKEN, securityToken);
-    // TODO: get hostname/ip address
-    //append(sb, SYM_WEB_CONSTANTS_HOST_NAME, "todo-host");
-    //append(sb, SYM_WEB_CONSTANTS_IP_ADDRESS, "todo-ipapddr");
+    append(sb, SYM_WEB_CONSTANTS_HOST_NAME, SymAppUtils_getHostName());
+    append(sb, SYM_WEB_CONSTANTS_IP_ADDRESS, SymAppUtils_getIpAddress());
     return sb->destroyAndReturn(sb);
 }
 
@@ -58,32 +57,34 @@ static char * buildRegistrationUrl(SymNode *local, char *registrationUrl) {
     append(sb, SYM_WEB_CONSTANTS_DATABASE_TYPE, local->databaseType);
     append(sb, SYM_WEB_CONSTANTS_DATABASE_VERSION, local->databaseVersion);
     append(sb, SYM_WEB_CONSTANTS_SYMMETRIC_VERSION, local->symmetricVersion);
-    // TODO: get hostname/ip address
-    //append(sb, SYM_WEB_CONSTANTS_HOST_NAME, "todo-host");
-    //append(sb, SYM_WEB_CONSTANTS_IP_ADDRESS, "todo-ipaddr");
+    append(sb, SYM_WEB_CONSTANTS_HOST_NAME, SymAppUtils_getHostName());
+    append(sb, SYM_WEB_CONSTANTS_IP_ADDRESS, SymAppUtils_getIpAddress());
     return sb->destroyAndReturn(sb);
 }
 
-static char * getAcknowledgementData(SymIncomingBatch **batches) {
+static char * getAcknowledgementData(SymList *batches) {
     SymStringBuilder *sb = SymStringBuilder_new();
-    int i;
-    for (i = 0; batches[i] != NULL; i++) {
+    SymIterator *iter = batches->iterator(batches);
+    while (iter->hasNext(iter)) {
+        SymIncomingBatch *batch = (SymIncomingBatch *) iter->next(iter);
         sb->append(sb, SYM_WEB_CONSTANTS_ACK_BATCH_NAME);
-        sb->appendf(sb, "%l", batches[i]->batchId);
+        sb->appendf(sb, "%ld", batch->batchId);
         sb->append(sb, SYM_WEB_CONSTANTS_EQUALS);
 
-        if (strcmp(batches[i]->status, SYM_INCOMING_BATCH_STATUS_OK) == 0 ||
-                strcmp(batches[i]->status, SYM_INCOMING_BATCH_STATUS_IGNORED) == 0) {
+        if (strcmp(batch->status, SYM_INCOMING_BATCH_STATUS_OK) == 0 ||
+                strcmp(batch->status, SYM_INCOMING_BATCH_STATUS_IGNORED) == 0) {
             sb->append(sb, SYM_WEB_CONSTANTS_ACK_BATCH_OK);
         } else {
-            sb->appendf(sb, "%l", batches[i]->failedRowNumber);
+            sb->appendf(sb, "%ld", batch->failedRowNumber);
         }
     }
+    iter->destroy(iter);
     return sb->destroyAndReturn(sb);
 }
 
 static int sendMessage(char *url, char *postData) {
     long httpResponseCode = -1;
+    printf("Sending message '%s' to URL '%s'\n", postData, url);
     CURL *curl = curl_easy_init();
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -104,9 +105,9 @@ static int sendMessage(char *url, char *postData) {
     return httpResponseCode;
 }
 
-int SymHttpTransportManager_sendAcknowledgement(SymHttpTransportManager *this, SymNode *remote, SymIncomingBatch **batches, SymNode *local, char *securityToken, char *registrationUrl) {
+int SymHttpTransportManager_sendAcknowledgement(SymHttpTransportManager *this, SymNode *remote, SymList *batches, SymNode *local, char *securityToken, char *registrationUrl) {
     long httpResponseCode = 0;
-    if (batches[0] != NULL) {
+    if (batches->size > 0) {
         char *url = buildUrl("ack", remote, local, securityToken, registrationUrl);
         char *ackData = getAcknowledgementData(batches);
         SymStringBuilder *sb = SymStringBuilder_newWithString(url);

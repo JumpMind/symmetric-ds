@@ -28,8 +28,10 @@
 
 typedef struct SymDialect {
     SymDatabasePlatform *platform;
-    int (*initTables)(struct SymDialect *this);
-    int (*dropTables)(struct SymDialect *this);
+    int (*initTablesAndDatabaseObjects)(struct SymDialect *this);
+    int (*dropTablesAndDatabaseObjects)(struct SymDialect *this);
+    void (*disableSyncTriggers)(struct SymDialect *this, SymSqlTransaction *transaction, char *nodeId);
+    void (*enableSyncTriggers)(struct SymDialect *this, SymSqlTransaction *transaction);
     int (*createTrigger)(struct SymDialect *this);
     int (*removeTrigger)(struct SymDialect *this);
     int (*getInitialLoadSql)(struct SymDialect *this);

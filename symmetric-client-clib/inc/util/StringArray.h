@@ -34,9 +34,12 @@ typedef struct SymStringArray {
     int size;
     int sizeAllocated;
     int sizeIncrement;
-    void (*add)(struct SymStringArray *this, char *src);
-    void (*addn)(struct SymStringArray *this, char *src, int size);
-    void (*addAll)(struct SymStringArray *this, struct SymStringArray *stringArray);
+    struct SymStringArray * (*add)(struct SymStringArray *this, char *src);
+    struct SymStringArray * (*addn)(struct SymStringArray *this, char *src, int size);
+    struct SymStringArray * (*addf)(struct SymStringArray *this, const char *fmt, ...);
+    struct SymStringArray * (*addInt)(struct SymStringArray *this, int value);
+    struct SymStringArray * (*addLong)(struct SymStringArray *this, long value);
+    struct SymStringArray * (*addAll)(struct SymStringArray *this, struct SymStringArray *stringArray);
     char * (*get)(struct SymStringArray *this, int index);
     unsigned short (*contains)(struct SymStringArray *this, char *findStr);
     struct SymStringArray * (*subarray)(struct SymStringArray *this, int startIndex, int endIndex);

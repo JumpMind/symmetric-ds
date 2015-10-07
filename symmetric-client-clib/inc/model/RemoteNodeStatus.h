@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "model/IncomingBatch.h"
+#include "util/List.h"
 
 #define SYM_REMOTE_NODE_STATUS_OFFLINE 0
 #define SYM_REMOTE_NODE_STATUS_BUSY 1
@@ -43,7 +44,7 @@ typedef struct SymRemoteNodeStatus {
     long reloadBatchesProcessed;
     int complete;
     int failed;
-    void (*updateIncomingStatus)(struct SymRemoteNodeStatus *this, SymIncomingBatch **incomingBatches);
+    void (*updateIncomingStatus)(struct SymRemoteNodeStatus *this, SymList *incomingBatches);
     void (*destroy)(struct SymRemoteNodeStatus *this);
 } SymRemoteNodeStatus;
 
