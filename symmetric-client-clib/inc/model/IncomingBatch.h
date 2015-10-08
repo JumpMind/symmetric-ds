@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include "util/Date.h"
+#include "io/data/Batch.h"
 
 #define SYM_INCOMING_BATCH_STATUS_OK "OK"
 #define SYM_INCOMING_BATCH_STATUS_ERROR "ER"
@@ -58,6 +59,8 @@ typedef struct SymIncomingBatch {
 } SymIncomingBatch;
 
 SymIncomingBatch * SymIncomingBatch_new(SymIncomingBatch *this);
+
+SymIncomingBatch * SymIncomingBatch_newWithBatch(SymIncomingBatch *this, SymBatch *batch);
 
 void SymIncomingBatch_destroy(SymIncomingBatch *this);
 
