@@ -19,6 +19,7 @@
  * under the License.
  */
 #include <db/sqlite/SqliteSqlTransaction.h>
+#include "common/Log.h"
 
 int SymSqliteSqlTransaction_queryForInt(SymSqliteSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
     return this->sqlTemplate->queryForInt(this->sqlTemplate, sql, args, sqlTypes, error);
@@ -42,12 +43,12 @@ static void SymSqliteSqlTransaction_requireTransaction(SymSqliteSqlTransaction *
 void SymSqliteSqlTransaction_prepare(SymSqliteSqlTransaction *this, char *sql) {
     this->sql = sql;
     SymSqliteSqlTransaction_requireTransaction(this);
-    printf("Preparing %s\n", sql);
+    SymLog_debug("Preparing %s", sql);
     int rc = sqlite3_prepare_v2(this->db, sql, -1, &this->stmt, NULL);
 
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to prepare statement: %s\n", sql);
-        fprintf(stderr, "SQL Exception: %s\n", sqlite3_errmsg(this->db));
+    	SymLog_error("Failed to prepare statement: %s", sql);
+    	SymLog_error("SQL Exception: %s", sqlite3_errmsg(this->db));
     }
 }
 
@@ -74,8 +75,8 @@ int SymSqliteSqlTransaction_addRow(SymSqliteSqlTransaction *this, SymStringArray
 
     int rc = sqlite3_step(this->stmt);
     if (rc != SQLITE_DONE) {
-        fprintf(stderr, "Failed to execute statement: %s\n", this->sql);
-        fprintf(stderr, "SQL Exception: %s\n", sqlite3_errmsg(this->db));
+    	SymLog_error("Failed to execute statement: %s", this->sql);
+    	SymLog_error("SQL Exception: %s", sqlite3_errmsg(this->db));
     }
     return sqlite3_changes(this->db);
 }

@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "transport/http/HttpIncomingTransport.h"
+#include "common/Log.h"
 
 static char * SymHttpIncomingTransport_strerror_http(long rc) {
     if (rc == SYM_TRANSPORT_OK) {
@@ -52,18 +53,18 @@ long SymHttpIncomingTransport_process(SymHttpIncomingTransport *this, SymDataRea
         reader->open(reader);
         rc = curl_easy_perform(curl);
         if (rc != CURLE_OK) {
-            fprintf(stderr, "Error %d from curl, cannot retrieve %s\n", rc, this->url);
-            fprintf(stderr, "%s\n", curl_easy_strerror(rc));
+        	SymLog_error("Error %d from curl, cannot retrieve %s", rc, this->url);
+        	SymLog_error("%s", curl_easy_strerror(rc));
         }
         curl_easy_cleanup(curl);
         reader->close(reader);
     } else {
-        fprintf(stderr, "Error cannot initialize curl\n");
+    	SymLog_error("Error cannot initialize curl");
     }
     if (rc == CURLE_OK) {
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
         if (httpCode != SYM_TRANSPORT_OK) {
-            fprintf(stderr, "HTTP response code of %ld, %s\n", httpCode, SymHttpIncomingTransport_strerror_http(httpCode));
+        	SymLog_error("HTTP response code of %ld, %s", httpCode, SymHttpIncomingTransport_strerror_http(httpCode));
         }
     }
     return httpCode;

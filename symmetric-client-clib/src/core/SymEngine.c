@@ -19,20 +19,22 @@
  * under the License.
  */
 #include "core/SymEngine.h"
+#include "common/ParameterConstants.h"
+#include "common/Log.h"
 
 static unsigned short SymEngine_isConfigured(SymEngine *this) {
     unsigned short isConfigured = 1;
 
     if (this->parameterService->getRegistrationUrl(this->parameterService) == NULL) {
-        printf("Please set the %s for the node\n", SYM_PARAMETER_REGISTRATION_URL);
+        SymLog_warn("Please set the %s for the node", SYM_PARAMETER_REGISTRATION_URL);
         isConfigured = 0;
     }
     if (this->parameterService->getNodeGroupId(this->parameterService) == NULL) {
-        printf("Please set the %s for the node\n", SYM_PARAMETER_GROUP_ID);
+    	SymLog_warn("Please set the %s for the node", SYM_PARAMETER_GROUP_ID);
         isConfigured = 0;
     }
     if (this->parameterService->getExternalId(this->parameterService) == NULL) {
-        printf("Please set the %s for the node\n", SYM_PARAMETER_EXTERNAL_ID);
+    	SymLog_warn("Please set the %s for the node", SYM_PARAMETER_EXTERNAL_ID);
         isConfigured = 0;
     }
 
@@ -41,7 +43,9 @@ static unsigned short SymEngine_isConfigured(SymEngine *this) {
 
 unsigned short SymEngine_start(SymEngine *this) {
     unsigned short isStarted = 0;
-	printf("About to start SymmetricDS\n");
+
+    SymLog_info("About to start SymmetricDS");
+
     this->dialect->initTablesAndDatabaseObjects(this->dialect);
 
     if (SymEngine_isConfigured(this)) {
@@ -50,29 +54,35 @@ unsigned short SymEngine_start(SymEngine *this) {
         if (node != NULL) {
             if (strcmp(node->externalId, this->parameterService->getExternalId(this->parameterService)) != 0 ||
                     strcmp(node->nodeGroupId, this->parameterService->getNodeGroupId(this->parameterService)) != 0) {
-                printf("The configured state does not match recorded database state.  The recorded external id is %s while the configured external id is %s. The recorded node group id is %s while the configured node group id is %s",
+            	SymLog_error("The configured state does not match recorded database state.  The recorded external id is %s while the configured external id is %s. The recorded node group id is %s while the configured node group id is %s",
                         node->externalId, this->parameterService->getExternalId(this->parameterService),
                         node->nodeGroupId, this->parameterService->getNodeGroupId(this->parameterService));
             } else {
-                printf("Starting registered node [group=%s, id=%s, externalId=%s]\n", node->nodeGroupId, node->nodeId, node->externalId);
+            	SymLog_info("Starting registered node [group=%s, id=%s, externalId=%s]", node->nodeGroupId, node->nodeId, node->externalId);
 
-                // TODO: if AUTO_SYNC_TRIGGERS_AT_STARTUP
+            	// TODO
+//                if (this->parameterService->is(this->parameterService, AUTO_SYNC_TRIGGERS_AT_STARTUP, 0)) {
+//                	this->triggerRouterService->syncTriggers(this->triggerRouterService, NULL, 0);
+//                }
+//                else {
+//                	SymLog_info("%s is turned off.", AUTO_SYNC_TRIGGERS_AT_STARTUP);
+//                }
 
                 // TODO: if HEARTBEAT_SYNC_ON_STARTUP
             }
             node->destroy(node);
         } else {
-            printf("Starting unregistered node [group=%s, externalId=%s]\n", this->parameterService->getNodeGroupId(this->parameterService),
+        	SymLog_info("Starting unregistered node [group=%s, externalId=%s]", this->parameterService->getNodeGroupId(this->parameterService),
                     this->parameterService->getExternalId(this->parameterService));
         }
 
-        printf("Started SymmetricDS\n");
+        SymLog_info("Started SymmetricDS");
         isStarted = 1;
     } else {
-        printf("Did not start SymmetricDS.  It has not been configured properly\n");
+    	SymLog_error("Did not start SymmetricDS.  It has not been configured properly");
     }
 
-    printf("SymmetricDS: type=%s, name=, version=%s, groupId=%s, externalId=%s, databaseName=%s, databaseVersion=%s, driverName=, driverVersion=\n",
+    SymLog_info("SymmetricDS: type=%s, name=, version=%s, groupId=%s, externalId=%s, databaseName=%s, databaseVersion=%s, driverName=, driverVersion=",
             SYM_DEPLOYMENT_TYPE, SYM_VERSION, this->parameterService->getNodeGroupId(this->parameterService),
                 this->parameterService->getExternalId(this->parameterService),
                 this->platform->name, this->platform->version);
@@ -80,19 +90,19 @@ unsigned short SymEngine_start(SymEngine *this) {
 }
 
 unsigned short SymEngine_stop(SymEngine *this) {
-	printf("Stopping\n");
-    printf("Stopping SymmetricDS externalId=%s version=%s database=%s",
+	SymLog_info("Stopping\n");
+	SymLog_info("Stopping SymmetricDS externalId=%s version=%s database=%s",
             this->parameterService->getExternalId(this->parameterService), SYM_VERSION, this->platform->name);
 
 	return 0;
 }
 
 unsigned short SymEngine_syncTriggers(SymEngine *this) {
-    return this->triggerRouterService->syncTriggers(this->triggerRouterService->syncTriggers);
+    return this->triggerRouterService->syncTriggers(this->triggerRouterService, NULL, 0);
 }
 
 unsigned short SymEngine_uninstall(SymEngine *this) {
-	printf("Un-installing\n");
+	SymLog_warn("Un-installing");
 	return 0;
 }
 

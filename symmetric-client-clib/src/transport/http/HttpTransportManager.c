@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "transport/http/HttpTransportManager.h"
+#include "common/Log.h"
 
 static void append(SymStringBuilder *sb, char *name, char *value) {
     if (strstr(sb->str, SYM_WEB_CONSTANTS_QUERY) == NULL) {
@@ -84,7 +85,7 @@ static char * getAcknowledgementData(SymList *batches) {
 
 static int sendMessage(char *url, char *postData) {
     long httpResponseCode = -1;
-    printf("Sending message '%s' to URL '%s'\n", postData, url);
+    SymLog_info("Sending message '%s' to URL '%s'", postData, url);
     CURL *curl = curl_easy_init();
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -93,8 +94,8 @@ static int sendMessage(char *url, char *postData) {
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(postData));
         CURLcode rc = curl_easy_perform(curl);
         if (rc != CURLE_OK) {
-            fprintf(stderr, "Error %d, cannot retrieve %s\n", rc, url);
-            fprintf(stderr, "%s", curl_easy_strerror(rc));
+        	SymLog_error("Error %d, cannot retrieve %s", rc, url);
+        	SymLog_error("%s", curl_easy_strerror(rc));
         } else {
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpResponseCode);
         }

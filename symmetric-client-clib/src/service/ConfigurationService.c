@@ -19,8 +19,9 @@
  * under the License.
  */
 #include "service/ConfigurationService.h"
+#include "common/Log.h"
 
 SymNodeChannel* SymNodeService_getNodeChannels(SymConfigurationService *this) {
-    printf("SymNodeService_get_node_channels\n");
+	SymLog_info("SymNodeService_get_node_channels");
     return NULL;
 }

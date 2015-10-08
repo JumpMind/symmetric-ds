@@ -18,15 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "db/SymDialectFactory.h"
-#include "common/Log.h"
 
-SymDialect * SymDialectFactory_create(SymDatabasePlatform *platform) {
-    SymDialect *dialect = NULL;
-    if (strcmp(platform->name, SYM_DATABASE_SQLITE) == 0) {
-        dialect = (SymDialect *) SymSqliteDialect_new(NULL, platform);
-    } else {
-    	SymLog_error("Could not find dialect for platform '%s'", platform->name);
-    }
-    return dialect;
-}
+typedef enum {DEBUG, INFO, WARN, ERROR} LogLevel;
+
+#define SymLog_debug(M, ...) SymLog_log(0, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#define SymLog_info(M, ...) SymLog_log(1, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#define SymLog_warn(M, ...) SymLog_log(2, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#define SymLog_error(M, ...) SymLog_log(3, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
+
+void SymLog_log(LogLevel logLevel, char *functionName, char *filename, int lineNumber, char* message, ...);

@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "service/IncomingBatchService.h"
+#include "common/Log.h"
 
 static SymIncomingBatch * SymIncomingBatchService_mapIncomingBatch(SymRow *row) {
     SymIncomingBatch *batch = SymIncomingBatch_new(NULL);
@@ -91,14 +92,14 @@ unsigned short SymIncomingBatchService_acquireIncomingBatch(SymIncomingBatchServ
                     || !this->parameterService->is(this->parameterService, SYM_PARAMETER_INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED, 1)) {
                 okayToProcess = 1;
                 existingBatch->status = SYM_INCOMING_BATCH_STATUS_LOADING;
-                printf("Retrying batch %s-%ld", batch->nodeId, batch->batchId);
+                SymLog_info("Retrying batch %s-%ld", batch->nodeId, batch->batchId);
             } else if (strcmp(existingBatch->status, SYM_INCOMING_BATCH_STATUS_IGNORED) == 0) {
                 okayToProcess = 0;
                 batch->status = SYM_INCOMING_BATCH_STATUS_OK;
                 batch->ignoreCount++;
                 existingBatch->status = SYM_INCOMING_BATCH_STATUS_OK;
                 existingBatch->ignoreCount++;
-                printf("Ignoring batch %s-%ld", batch->nodeId, batch->batchId);
+                SymLog_info("Ignoring batch %s-%ld", batch->nodeId, batch->batchId);
             } else {
                 okayToProcess = 0;
                 SymStringBuilder_copyToField(&batch->status, existingBatch->status);
@@ -109,7 +110,7 @@ unsigned short SymIncomingBatchService_acquireIncomingBatch(SymIncomingBatchServ
                 batch->skipCount = existingBatch->skipCount + 1;
                 batch->statementCount = existingBatch->statementCount;
                 existingBatch->skipCount++;
-                printf("Skipping batch %s-%ld", batch->nodeId, batch->batchId);
+                SymLog_info("Skipping batch %s-%ld", batch->nodeId, batch->batchId);
             }
             this->updateIncomingBatch(this, existingBatch);
             existingBatch->destroy(existingBatch);

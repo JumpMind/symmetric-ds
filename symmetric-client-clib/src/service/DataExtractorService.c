@@ -19,7 +19,8 @@
  * under the License.
  */
 #include "service/DataExtractorService.h"
+#include "common/Log.h"
 
 void SymDataExtractorService_extract(SymDataExtractorService *this, SymNode *node) {
-    printf("SymDataExtractorService_extract\n");
+	SymLog_info("SymDataExtractorService_extract");
 }

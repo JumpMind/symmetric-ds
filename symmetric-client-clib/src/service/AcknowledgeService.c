@@ -19,7 +19,8 @@
  * under the License.
  */
 #include "service/AcknowledgeService.h"
+#include "common/Log.h"
 
 void SymAcknowledgeService_ack(SymAcknowledgeService *this, SymBatchAck *batchAck) {
-    printf("SymAcknowledgeService_ack\n");
+	SymLog_info("SymAcknowledgeService_ack");
 }

@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "io/writer/DefaultDatabaseWriter.h"
+#include "common/Log.h"
 
 void SymDefaultDatabaseWriter_open(SymDefaultDatabaseWriter *this) {
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
@@ -75,7 +76,7 @@ void SymDefaultDatabaseWriter_insert(SymDefaultDatabaseWriter *this, SymCsvData 
 }
 
 void SymDefaultDatabaseWriter_update(SymDefaultDatabaseWriter *this, SymCsvData *data) {
-    printf("update\n");
+	SymLog_debug("update");
     if (SymDefaultDatabaseWriter_requiresNewStatement(this, SYM_DML_TYPE_UPDATE, data)) {
         if (this->dmlStatement) {
             this->sqlTransaction->close(this->sqlTransaction);
@@ -94,7 +95,7 @@ void SymDefaultDatabaseWriter_update(SymDefaultDatabaseWriter *this, SymCsvData 
 }
 
 void SymDefaultDatabaseWriter_delete(SymDefaultDatabaseWriter *this, SymCsvData *data) {
-    printf("delete\n");
+	SymLog_debug("delete");
     if (SymDefaultDatabaseWriter_requiresNewStatement(this, SYM_DML_TYPE_DELETE, data)) {
         if (this->dmlStatement) {
             this->sqlTransaction->close(this->sqlTransaction);
@@ -174,7 +175,7 @@ void SymDefaultDatabaseWriter_endBatch(SymDefaultDatabaseWriter *this, SymBatch 
 }
 
 void SymDefaultDatabaseWriter_close(SymDefaultDatabaseWriter *this) {
-    printf("close\n");
+	SymLog_debug("close");
     this->sqlTransaction->close(this->sqlTransaction);
 }
 

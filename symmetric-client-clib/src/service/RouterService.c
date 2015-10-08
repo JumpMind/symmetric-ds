@@ -19,8 +19,9 @@
  * under the License.
  */
 #include "service/RouterService.h"
+#include "common/Log.h"
 
 long SymRouterService_routeData(SymRouterService *this) {
-    printf("SymRouterService_route_data\n");
+	SymLog_info("SymRouterService_route_data");
     return 0;
 }

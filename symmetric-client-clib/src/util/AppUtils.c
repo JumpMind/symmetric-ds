@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "util/AppUtils.h"
+#include "common/Log.h"
 
 char * SymAppUtils_getHostName() {
     char *name = (char *) calloc(SYM_MAX_HOSTNAME, sizeof(char));
@@ -38,7 +39,7 @@ char * SymAppUtils_getIpAddress() {
                 if ((rc = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), ipaddr, NI_MAXHOST, NULL, 0, NI_NUMERICHOST)) == 0) {
                     break;
                 } else {
-                    printf("getnameinfo() failed: %s\n", gai_strerror(rc));
+                	SymLog_warn("getnameinfo() failed: %s", gai_strerror(rc));
                 }
             }
         }

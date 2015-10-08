@@ -23,9 +23,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "db/model/Table.h"
+#include "service/ParameterService.h"
 
 typedef struct SymTriggerRouterService {
-    int (*syncTriggers)(struct SymTriggerRouterService *this);
+	SymParameterService *parameterService;
+
+	int (*syncTriggers)(struct SymTriggerRouterService *this, SymStringBuilder *sqlBuffer, unsigned short force);
+    int (*syncTriggers_withTable)(struct SymTriggerRouterService *this, SymTable *table, unsigned short force);
     void (*destroy)(struct SymTriggerRouterService *this);
 } SymTriggerRouterService;
 

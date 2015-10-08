@@ -19,9 +19,21 @@
  * under the License.
  */
 #include <service/TriggerRouterService.h>
+#include "common/ParameterConstants.h"
+#include "common/Log.h"
 
-int SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this) {
-    printf("SymTriggerRouterService_sync_triggers\n");
+int SymTriggerRouterService_syncTriggers (SymTriggerRouterService *this, SymStringBuilder *sqlBuffer, unsigned short force) {
+	SymLog_info("SymTriggerRouterService_syncTriggers_withTable");
+    return 0;
+}
+
+int SymTriggerRouterService_syncTriggers_withTable(SymTriggerRouterService *this, SymTable *table, unsigned short force) {
+
+	// TODO
+
+	unsigned short ignoreCase = this->parameterService->is(this->parameterService, AUTO_SYNC_TRIGGERS_AT_STARTUP, 0);
+
+	SymLog_info("SymTriggerRouterService_syncTriggers_withTable");
     return 0;
 }
 
