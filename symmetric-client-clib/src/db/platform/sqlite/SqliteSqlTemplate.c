@@ -30,17 +30,23 @@ static void SymSqliteSqlTemplate_prepare(SymSqliteSqlTemplate *this, char *sql, 
         *error = rc;
     } else {
         // TODO: do we need to convert to sqlType and bind correctly?
-        printf("Binding [");
+
+    	SymStringBuilder *buff = SymStringBuilder_new();
+    	buff->append(buff, "Binding [");
         int i;
         for (i = 0; args != NULL && i < args->size; i++) {
             // TODO: pass argLengths instead of -1
             sqlite3_bind_text(*stmt, i + 1, args->get(args, i), -1, SQLITE_STATIC);
             if (i > 0) {
-                printf(",");
+            	buff->append(buff, ",");
             }
-            printf("%s", args->get(args, i));
+            buff->appendf(buff, "%s", args->get(args, i));
         }
-        printf("]\n");
+        buff->append(buff, "]");
+
+        SymLog_debug(buff->toString(buff));
+
+        buff->destroy(buff);
     }
 }
 

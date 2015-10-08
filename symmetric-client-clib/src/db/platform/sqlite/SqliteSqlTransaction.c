@@ -56,7 +56,10 @@ int SymSqliteSqlTransaction_addRow(SymSqliteSqlTransaction *this, SymStringArray
     // TODO: do we need to convert to sqlType and bind correctly?
 
     sqlite3_reset(this->stmt);
-    printf("Add Row [");
+
+    SymStringBuilder *buff = SymStringBuilder_new();
+
+    buff->append(buff, "Add Row [");
     int i;
     for (i = 0; args != NULL && i < args->size; i++) {
         char *arg = args->get(args, i);
@@ -67,11 +70,14 @@ int SymSqliteSqlTransaction_addRow(SymSqliteSqlTransaction *this, SymStringArray
         }
 
         if (i > 0) {
-            printf(",");
+        	buff->append(buff, ",");
         }
-        printf("%s", arg);
+        buff->appendf(buff, "%s", arg);
     }
-    printf("]\n");
+    buff->append(buff, "]");
+
+    SymLog_debug(buff->toString(buff));
+    buff->destroy(buff);
 
     int rc = sqlite3_step(this->stmt);
     if (rc != SQLITE_DONE) {

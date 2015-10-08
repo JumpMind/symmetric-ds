@@ -75,10 +75,10 @@ void SymLog_log(LogLevel logLevel, char *functionName, char *fileName, int lineN
 	messageBuffer->append(messageBuffer, levelDescription);
 	messageBuffer->append(messageBuffer, "] [");
 	messageBuffer->append(messageBuffer, functionName);
-	messageBuffer->append(messageBuffer, " ");
-	messageBuffer->append(messageBuffer, fileName);
-	messageBuffer->append(messageBuffer, ":");
-	messageBuffer->appendInt(messageBuffer, lineNumber);
+//	messageBuffer->append(messageBuffer, " ");
+//	messageBuffer->append(messageBuffer, fileName);
+//	messageBuffer->append(messageBuffer, ":");
+//	messageBuffer->appendInt(messageBuffer, lineNumber);
 	messageBuffer->append(messageBuffer, "] ");
     va_list varargs;
     va_start(varargs, message);
