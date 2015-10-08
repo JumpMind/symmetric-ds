@@ -21,10 +21,9 @@
 
 @echo off
 
-set OLDCD=%CD%
-cd /D %~dp0..
-set SYM_HOME=%CD%
-cd "%OLDCD%"
+pushd %~dp0..
+for /f "delims=" %%i in ('cd') do set SYM_HOME=%%i
+popd
 
 set SYM_OPTIONS=-Dfile.encoding=utf-8 ^
 -Duser.language=en ^
