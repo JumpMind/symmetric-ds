@@ -35,6 +35,8 @@ typedef struct SymStringBuilder {
     struct SymStringBuilder * (*append)(struct SymStringBuilder *this, const char *src);
     struct SymStringBuilder * (*appendn)(struct SymStringBuilder *this, const char *src, int length);
     struct SymStringBuilder * (*appendf)(struct SymStringBuilder *this, const char *fmt, ...);
+    struct SymStringBuilder * (*appendfv)(struct SymStringBuilder *this, const char *fmt, va_list varargs);
+    struct SymStringBuilder * (*appendInt)(struct SymStringBuilder *this, int number);
     char * (*toString)(struct SymStringBuilder * this);
     char * (*substring)(struct SymStringBuilder *this, int startIndex, int endIndex);
     void (*reset)(struct SymStringBuilder * this);

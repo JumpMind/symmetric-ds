@@ -39,20 +39,33 @@ SymStringBuilder * SymStringBuilder_append(SymStringBuilder *this, const char *s
     return SymStringBuilder_appendn(this, src, strlen(src));
 }
 
-SymStringBuilder * SymStringBuilder_appendf(SymStringBuilder *this, const char *fmt, ...) {
-    va_list arglist;
-    va_start(arglist, fmt);
-    int sizeNeeded = vsnprintf(NULL, 0, fmt, arglist);
-    va_end(arglist);
+SymStringBuilder * SymStringBuilder_appendfv(SymStringBuilder *this, const char *fmt, va_list arglist) {
+	va_list copy;
+
+	va_copy(copy, arglist);
+    int sizeNeeded = vsnprintf(NULL, 0, fmt, copy);
+	va_end(copy);
 
     char *str = malloc(sizeNeeded);
-    va_start(arglist, fmt);
     vsprintf(str, fmt, arglist);
-    va_end(arglist);
 
     SymStringBuilder_appendn(this, str, sizeNeeded);
     free(str);
     return this;
+}
+
+SymStringBuilder * SymStringBuilder_appendf(SymStringBuilder *this, const char *fmt, ...) {
+    va_list arglist;
+    va_start(arglist, fmt);
+    SymStringBuilder *result = SymStringBuilder_appendfv(this, fmt, arglist);
+    va_end(arglist);
+    return result;
+}
+
+SymStringBuilder * SymStringBuilder_appendInt(SymStringBuilder *this, int number) {
+	char numberAsString[15];
+	sprintf(numberAsString, "%d", number);
+	return SymStringBuilder_append(this, numberAsString);
 }
 
 char * SymStringBuilder_toString(SymStringBuilder *this) {
@@ -116,6 +129,8 @@ SymStringBuilder * SymStringBuilder_newWithSize(int size) {
     this->append = (void *) &SymStringBuilder_append;
     this->appendn = (void *) &SymStringBuilder_appendn;
     this->appendf = (void *) &SymStringBuilder_appendf;
+    this->appendfv = (void *) &SymStringBuilder_appendfv;
+    this->appendInt = (void *) &SymStringBuilder_appendInt;
     this->toString = (void *) &SymStringBuilder_toString;
     this->substring = (void *) &SymStringBuilder_substring;
     this->destroy = (void *) &SymStringBuilder_destroy;
