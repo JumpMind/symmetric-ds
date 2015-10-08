@@ -21,8 +21,9 @@
 #include "util/AppUtils.h"
 
 char * SymAppUtils_getHostName() {
-    char *name = (char *) calloc(SYM_MAX_HOSTNAME, sizeof(char));
-    gethostname(name, SYM_MAX_HOSTNAME);
+    int numBytes = SYM_MAX_HOSTNAME * sizeof(char);
+    char *name = (char *) malloc(numBytes);
+    gethostname(name, numBytes);
     return name;
 }
 
