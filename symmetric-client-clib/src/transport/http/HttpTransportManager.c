@@ -112,7 +112,7 @@ int SymHttpTransportManager_sendAcknowledgement(SymHttpTransportManager *this, S
         char *ackData = getAcknowledgementData(batches);
         SymStringBuilder *sb = SymStringBuilder_newWithString(url);
         sb->append(sb, ackData);
-        sendMessage(url, ackData);
+        httpResponseCode = sendMessage(url, ackData);
         sb->destroy(sb);
         free(ackData);
         free(url);
