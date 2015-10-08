@@ -89,6 +89,7 @@ void SymLog_log(LogLevel logLevel, char *functionName, char *fileName, int lineN
 
 	printf("%s", messageBuffer->toString(messageBuffer));
 
+	messageBuffer->destroy(messageBuffer);
 	free(logTimestamp);
 }
 
