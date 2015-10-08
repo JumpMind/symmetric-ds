@@ -67,6 +67,9 @@ static char * getAcknowledgementData(SymList *batches) {
     SymIterator *iter = batches->iterator(batches);
     while (iter->hasNext(iter)) {
         SymIncomingBatch *batch = (SymIncomingBatch *) iter->next(iter);
+        if (iter->index > 0) {
+            sb->append(sb, SYM_WEB_CONSTANTS_AND);
+        }
         sb->append(sb, SYM_WEB_CONSTANTS_ACK_BATCH_NAME);
         sb->appendf(sb, "%ld", batch->batchId);
         sb->append(sb, SYM_WEB_CONSTANTS_EQUALS);
