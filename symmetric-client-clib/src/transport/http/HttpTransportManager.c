@@ -68,6 +68,9 @@ static char * getAcknowledgementData(SymList *batches) {
     SymIterator *iter = batches->iterator(batches);
     while (iter->hasNext(iter)) {
         SymIncomingBatch *batch = (SymIncomingBatch *) iter->next(iter);
+        if (iter->index > 0) {
+            sb->append(sb, SYM_WEB_CONSTANTS_AND);
+        }
         sb->append(sb, SYM_WEB_CONSTANTS_ACK_BATCH_NAME);
         sb->appendf(sb, "%ld", batch->batchId);
         sb->append(sb, SYM_WEB_CONSTANTS_EQUALS);
@@ -113,7 +116,7 @@ int SymHttpTransportManager_sendAcknowledgement(SymHttpTransportManager *this, S
         char *ackData = getAcknowledgementData(batches);
         SymStringBuilder *sb = SymStringBuilder_newWithString(url);
         sb->append(sb, ackData);
-        sendMessage(url, ackData);
+        httpResponseCode = sendMessage(url, ackData);
         sb->destroy(sb);
         free(ackData);
         free(url);

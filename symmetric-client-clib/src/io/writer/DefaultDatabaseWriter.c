@@ -32,10 +32,12 @@ void SymDefaultDatabaseWriter_startBatch(SymDefaultDatabaseWriter *this, SymBatc
 
     // IDataProcessorListener.beforeBatchStarted
     // TODO: if batchId < 0, remove outgoing configuration batches
-    this->incomingBatch = SymIncomingBatch_new(NULL);
-    this->incomingBatch->batchId = batch->batchId;
+    this->incomingBatch = SymIncomingBatch_newWithBatch(NULL, batch);
     SymDataWriter *super = (SymDataWriter *) &this->super;
     super->batchesProcessed->add(super->batchesProcessed, this->incomingBatch);
+    if (!this->incomingBatchService->acquireIncomingBatch(this->incomingBatchService, this->incomingBatch)) {
+        // TODO: how to handle when incoming batch is not acquired
+    }
 
     // IDataProcessorListener.afterBatchStarted
     this->dialect->disableSyncTriggers(this->dialect, this->sqlTransaction, batch->sourceNodeId);

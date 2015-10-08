@@ -129,7 +129,7 @@ static void build_sql_types_list(SymList *sqlTypes, SymList *columns, int isPrim
     while (iter->hasNext(iter)) {
         SymColumn *column = (SymColumn *) iter->next(iter);
         if (column->isPrimaryKey == isPrimaryKey) {
-            columns->add(columns, &column->sqlType);
+            sqlTypes->add(sqlTypes, &column->sqlType);
         }
     }
     iter->destroy(iter);

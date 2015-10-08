@@ -32,6 +32,7 @@ void SymRegistrationService_registerWithServer(SymRegistrationService *this) {
         while (!isRegistered && (maxNumberAttempts < 0 || maxNumberAttempts > 0)) {
 
             this->dataLoaderService->loadDataFromRegistration(this->dataLoaderService, status);
+            isRegistered = status->status == SYM_REMOTE_NODE_STATUS_DATA_PROCESSED;
             maxNumberAttempts--;
 
             if (isRegistered) {

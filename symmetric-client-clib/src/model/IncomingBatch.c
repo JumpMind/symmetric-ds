@@ -31,3 +31,12 @@ SymIncomingBatch * SymIncomingBatch_new(SymIncomingBatch *this) {
     this->destroy = (void *) &SymIncomingBatch_destroy;
     return this;
 }
+
+SymIncomingBatch * SymIncomingBatch_newWithBatch(SymIncomingBatch *this, SymBatch *batch) {
+    this = SymIncomingBatch_new(this);
+    this->batchId = batch->batchId;
+    this->nodeId = batch->sourceNodeId;
+    this->channelId = batch->channelId;
+    this->status = SYM_INCOMING_BATCH_STATUS_LOADING;
+    return this;
+}
