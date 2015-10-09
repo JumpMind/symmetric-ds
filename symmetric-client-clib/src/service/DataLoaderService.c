@@ -67,7 +67,7 @@ void SymDataLoaderService_loadDataFromRegistration(SymDataLoaderService *this, S
 
     char *registrationUrl = this->parameterService->getRegistrationUrl(this->parameterService);
     SymIncomingTransport *transport = this->transportManager->getRegisterTransport(this->transportManager, local, registrationUrl);
-    SymLog_info("Using registration URL of %s\n", transport->getUrl(transport));
+    SymLog_info("Using registration URL of %s", transport->getUrl(transport));
 
     SymNode *remote = SymNode_new(NULL);
     remote->syncUrl = registrationUrl;

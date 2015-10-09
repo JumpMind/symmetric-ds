@@ -58,10 +58,10 @@ char *generateTimestamp() {
 void SymLog_log(LogLevel logLevel, const char *functionName, const char *fileName, int lineNumber, const char* message, ...) {
 	FILE *destination;
 	if (logLevel <= INFO) {
-		destination = stdin;
+		destination = stdout;
 	}
 	else {
-		destination = stdout;
+		destination = stderr;
 	}
 
 	char* levelDescription = logLevelDescription(logLevel);
@@ -87,7 +87,11 @@ void SymLog_log(LogLevel logLevel, const char *functionName, const char *fileNam
 
 	messageBuffer->append(messageBuffer, "\n");
 
-	printf("%s", messageBuffer->toString(messageBuffer));
+	fprintf(destination, "%s", messageBuffer->toString(messageBuffer));
+
+	// stdout may not flush before stderr does.
+	// Do this to keep log messages more or less in order.
+	fflush(destination);
 
 	messageBuffer->destroy(messageBuffer);
 	free(logTimestamp);

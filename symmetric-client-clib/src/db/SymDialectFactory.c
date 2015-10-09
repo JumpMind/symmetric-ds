@@ -23,6 +23,11 @@
 
 SymDialect * SymDialectFactory_create(SymDatabasePlatform *platform) {
     SymDialect *dialect = NULL;
+
+    if (platform == NULL) {
+    	SymLog_error("No Database platform provided. (platform == NULL)");
+    }
+
     if (strcmp(platform->name, SYM_DATABASE_SQLITE) == 0) {
         dialect = (SymDialect *) SymSqliteDialect_new(NULL, platform);
     } else {
