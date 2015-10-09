@@ -18,19 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_CONFIGURATION_SERVICE_H
-#define SYM_CONFIGURATION_SERVICE_H
+#include "model/Trigger.h"
 
-#include <stdio.h>
-#include "model/NodeChannel.h"
-#include "util/List.h"
 
-typedef struct SymConfigurationService {
-    SymList * (*getNodeChannels)(struct SymConfigurationService *this);
-    SymList * (*clearCache)(struct SymConfigurationService *this);
-    SymList * (*destroy)(struct SymConfigurationService *this);
-} SymConfigurationService;
+void SymTrigger_destroy(SymTrigger *this) {
+    free(this);
+}
 
-SymConfigurationService * SymConfigurationService_new(SymConfigurationService *this);
-
-#endif
+SymTrigger * SymTrigger_new(SymTrigger *this) {
+    if (this == NULL) {
+        this = (SymTrigger *) calloc(1, sizeof(SymTrigger));
+    }
+    this->destroy = (void *) &SymTrigger_destroy;
+    return this;
+}

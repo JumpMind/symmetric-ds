@@ -18,19 +18,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_CONFIGURATION_SERVICE_H
-#define SYM_CONFIGURATION_SERVICE_H
+#include "model/TriggerRouter.h"
 
-#include <stdio.h>
-#include "model/NodeChannel.h"
-#include "util/List.h"
+void SymTriggerRouter_destroy(SymTriggerRouter *this) {
+    free(this);
+}
 
-typedef struct SymConfigurationService {
-    SymList * (*getNodeChannels)(struct SymConfigurationService *this);
-    SymList * (*clearCache)(struct SymConfigurationService *this);
-    SymList * (*destroy)(struct SymConfigurationService *this);
-} SymConfigurationService;
-
-SymConfigurationService * SymConfigurationService_new(SymConfigurationService *this);
-
-#endif
+SymTriggerRouter * SymTriggerRouter_new(SymTriggerRouter *this) {
+    if (this == NULL) {
+        this = (SymTriggerRouter *) calloc(1, sizeof(SymTriggerRouter));
+    }
+    this->destroy = (void *) &SymTriggerRouter_destroy;
+    return this;
+}

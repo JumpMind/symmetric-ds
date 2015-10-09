@@ -81,7 +81,7 @@ SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties
 
     if (sqlite3_open_v2(filename, &this->db,
             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_URI, NULL)) {
-    	SymLog_info("Can't open database: %s", sqlite3_errmsg(this->db));
+    	SymLog_error("Can't open database: %s", sqlite3_errmsg(this->db));
         sqlite3_close(this->db);
         return NULL;
     }

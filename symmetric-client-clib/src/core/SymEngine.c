@@ -52,6 +52,7 @@ unsigned short SymEngine_start(SymEngine *this) {
         SymNode *node = this->nodeService->findIdentity(this->nodeService);
 
         if (node != NULL) {
+
             if (strcmp(node->externalId, this->parameterService->getExternalId(this->parameterService)) != 0 ||
                     strcmp(node->nodeGroupId, this->parameterService->getNodeGroupId(this->parameterService)) != 0) {
             	SymLog_error("The configured state does not match recorded database state.  The recorded external id is %s while the configured external id is %s. The recorded node group id is %s while the configured node group id is %s",
@@ -60,13 +61,12 @@ unsigned short SymEngine_start(SymEngine *this) {
             } else {
             	SymLog_info("Starting registered node [group=%s, id=%s, externalId=%s]", node->nodeGroupId, node->nodeId, node->externalId);
 
-            	// TODO
-//                if (this->parameterService->is(this->parameterService, AUTO_SYNC_TRIGGERS_AT_STARTUP, 0)) {
-//                	this->triggerRouterService->syncTriggers(this->triggerRouterService, NULL, 0);
-//                }
-//                else {
-//                	SymLog_info("%s is turned off.", AUTO_SYNC_TRIGGERS_AT_STARTUP);
-//                }
+                if (this->parameterService->is(this->parameterService, AUTO_SYNC_TRIGGERS_AT_STARTUP, 1)) {
+                	this->triggerRouterService->syncTriggers(this->triggerRouterService, NULL, 0);
+                }
+                else {
+                	SymLog_info("%s is turned off.", AUTO_SYNC_TRIGGERS_AT_STARTUP);
+                }
 
                 // TODO: if HEARTBEAT_SYNC_ON_STARTUP
             }
@@ -90,7 +90,6 @@ unsigned short SymEngine_start(SymEngine *this) {
 }
 
 unsigned short SymEngine_stop(SymEngine *this) {
-	SymLog_info("Stopping\n");
 	SymLog_info("Stopping SymmetricDS externalId=%s version=%s database=%s",
             this->parameterService->getExternalId(this->parameterService), SYM_VERSION, this->platform->name);
 
@@ -130,8 +129,10 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->platform = SymDatabasePlatformFactory_create(properties);
     this->dialect = SymDialectFactory_create(this->platform);
 
+    this->configurationService = SymConfigurationService_new(NULL);
+
     this->parameterService = SymParameterService_new(NULL, properties);
-    this->triggerRouterService = SymTriggerRouterService_new(NULL);
+    this->triggerRouterService = SymTriggerRouterService_new(NULL, this->parameterService, this->platform, this->configurationService);
     this->transportManager = SymTransportManagerFactory_create(SYM_PROTOCOL_HTTP, this->parameterService);
     this->nodeService = SymNodeService_new(NULL, this->platform);
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);

@@ -19,7 +19,7 @@
  * under the License.
  */
 #ifndef SYM_NODE_GROUP_LINK_H
-#define SYM_NODE_GROU_LINK_H
+#define SYM_NODE_GROUP_LINK_H
 
 #include <stdlib.h>
 #include "util/Date.h"

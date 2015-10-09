@@ -21,7 +21,28 @@
 #include "service/ConfigurationService.h"
 #include "common/Log.h"
 
-SymNodeChannel* SymNodeService_getNodeChannels(SymConfigurationService *this) {
-	SymLog_info("SymNodeService_get_node_channels");
+SymNodeChannel* SymConfigurationService_getNodeChannels(SymConfigurationService *this) {
+	SymLog_info("SymConfigurationService_getNodeChannels");
     return NULL;
 }
+
+void SymConfigurationService_clearCache(SymConfigurationService *this) {
+	// TODO
+}
+
+void SymConfigurationService_destroy(SymConfigurationService * this) {
+    free(this);
+}
+
+SymConfigurationService * SymConfigurationService_new(SymConfigurationService *this) {
+    if (this == NULL) {
+        this = (SymConfigurationService *) calloc(1, sizeof(SymConfigurationService));
+    }
+    this->getNodeChannels = (void *) &SymConfigurationService_getNodeChannels;
+    this->clearCache = (void *) &SymConfigurationService_clearCache;
+    this->destroy = (void *) &SymConfigurationService_destroy;
+
+    return this;
+}
+
+
