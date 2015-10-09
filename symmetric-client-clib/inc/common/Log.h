@@ -26,4 +26,4 @@ typedef enum {DEBUG, INFO, WARN, ERROR} LogLevel;
 #define SymLog_warn(M, ...) SymLog_log(2, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
 #define SymLog_error(M, ...) SymLog_log(3, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
 
-void SymLog_log(LogLevel logLevel, char *functionName, char *filename, int lineNumber, char* message, ...);
+void SymLog_log(LogLevel logLevel, const char *functionName, const char *filename, int lineNumber, const char* message, ...);

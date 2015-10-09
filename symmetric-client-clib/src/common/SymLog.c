@@ -55,7 +55,7 @@ char *generateTimestamp() {
 }
 
 /** This is the central place where all logging funnels through. */
-void SymLog_log(LogLevel logLevel, char *functionName, char *fileName, int lineNumber, char* message, ...) {
+void SymLog_log(LogLevel logLevel, const char *functionName, const char *fileName, int lineNumber, const char* message, ...) {
 	FILE *destination;
 	if (logLevel <= INFO) {
 		destination = stdin;
