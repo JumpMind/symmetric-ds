@@ -101,7 +101,7 @@ unsigned short SymIncomingBatchService_acquireIncomingBatch(SymIncomingBatchServ
                 printf("Ignoring batch %s-%ld", batch->nodeId, batch->batchId);
             } else {
                 okayToProcess = 0;
-                SymStringBuilder_copyToField(&batch->status, existingBatch->status);
+                batch->status = existingBatch->status;
                 batch->byteCount = existingBatch->byteCount;
                 batch->databaseMillis = existingBatch->databaseMillis;
                 batch->networkMillis = existingBatch->networkMillis;
