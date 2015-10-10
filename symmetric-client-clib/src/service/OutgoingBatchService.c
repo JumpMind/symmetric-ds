@@ -19,17 +19,18 @@
  * under the License.
  */
 #include "service/OutgoingBatchService.h"
+#include "common/Log.h"
 
 SymOutgoingBatch* SymOutgoingBatchService_findOutgoingBatch(SymOutgoingBatchService *this, long batchId, char *nodeId) {
-    printf("SymOutgoingBatchService_find_outgoing_batch\n");
+    SymLog_info("SymOutgoingBatchService_find_outgoing_batch");
     return NULL;
 }
 
 SymOutgoingBatch* SymOutgoingBatchService_getOutgoingBatches(SymOutgoingBatchService *this, char *nodeId) {
-    printf("SymOutgoingBatchService_get_outgoing_batches\n");
+    SymLog_info("SymOutgoingBatchService_get_outgoing_batches");
     return NULL;
 }
 
 void SymOutgoingBatchService_updateOutgoingBatch(SymOutgoingBatchService *this, SymOutgoingBatch *outgoingBatch) {
-    printf("SymOutgoingBatchService_update_outgoing_batch\n");
+    SymLog_info("SymOutgoingBatchService_update_outgoing_batch");
 }

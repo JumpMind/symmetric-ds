@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "service/RegistrationService.h"
+#include "common/Log.h"
 
 void SymRegistrationService_registerWithServer(SymRegistrationService *this) {
     unsigned short isRegistered = this->isRegisteredWithServer(this);
@@ -37,26 +38,26 @@ void SymRegistrationService_registerWithServer(SymRegistrationService *this) {
             if (isRegistered) {
                 SymNode *node = this->nodeService->findIdentity(this->nodeService);
                 if (node != NULL) {
-                    printf("Successfully registered node [id=%s]\n", node->nodeId);
+                	SymLog_info("Successfully registered node [id=%s]\n", node->nodeId);
                     // TODO: this->dataService->heartbeat(this->dataService);
                     node->destroy(node);
                 } else {
-                    printf("Node identity is missing after registration.  The registration server may be misconfigured or have an error\n");
+                    SymLog_error("Node identity is missing after registration.  The registration server may be misconfigured or have an error");
                     isRegistered = 0;
                 }
             }
 
             if (!isRegistered && maxNumberAttempts != 0) {
                 unsigned int sleepTimeInSec = 5;
-                printf("Could not register.  Sleeping before attempting again.\n");
-                printf("Sleeping for %d seconds\n", sleepTimeInSec);
+                SymLog_debug("Could not register.  Sleeping before attempting again.");
+                SymLog_debug("Sleeping for %d seconds", sleepTimeInSec);
                 sleep(sleepTimeInSec);
             }
         }
 
         if (!isRegistered) {
             int maxNumberAttempts = this->parameterService->getInt(this->parameterService, SYM_PARAMETER_REGISTRATION_NUMBER_OF_ATTEMPTS, -1);
-            printf("Failed after trying to register %d times.", maxNumberAttempts);
+            SymLog_error("Failed after trying to register %d times.", maxNumberAttempts);
         }
 
         status->destroy(status);

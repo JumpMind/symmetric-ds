@@ -19,13 +19,19 @@
  * under the License.
  */
 #include "db/SymDialectFactory.h"
+#include "common/Log.h"
 
 SymDialect * SymDialectFactory_create(SymDatabasePlatform *platform) {
     SymDialect *dialect = NULL;
+
+    if (platform == NULL) {
+    	SymLog_error("No Database platform provided. (platform == NULL)");
+    }
+
     if (strcmp(platform->name, SYM_DATABASE_SQLITE) == 0) {
         dialect = (SymDialect *) SymSqliteDialect_new(NULL, platform);
     } else {
-        fprintf(stderr, "Could not find dialect for platform '%s'\n", platform->name);
+    	SymLog_error("Could not find dialect for platform '%s'", platform->name);
     }
     return dialect;
 }

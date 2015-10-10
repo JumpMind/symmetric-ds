@@ -36,6 +36,10 @@ SymTable * SymDatabasePlatform_readTableFromDatabase(SymDatabasePlatform *this, 
     return table;
 }
 
+void SymDatabasePlatform_resetCachedTableModel(SymDatabasePlatform *this) {
+	// TODO: implement along with caching.
+}
+
 void SymDatabasePlatform_destroy(SymDatabasePlatform *this) {
 }
 
@@ -43,6 +47,7 @@ SymDatabasePlatform * SymDatabasePlatform_new(SymDatabasePlatform *this) {
     if (this != NULL) {
         this->getTableFromCache = (void *) &SymDatabasePlatform_getTableFromCache;
         this->readTableFromDatabase = (void *) &SymDatabasePlatform_readTableFromDatabase;
+        this->resetCachedTableModel = (void *)&SymDatabasePlatform_resetCachedTableModel;
         this->destroy = (void *) &SymDatabasePlatform_destroy;
     }
     return this;

@@ -19,14 +19,15 @@
  * under the License.
  */
 #include "db/sqlite/SqliteDialect.h"
+#include "common/Log.h"
 
 static int create_if_missing(SymDialect *super, char *tableName, char *createSql) {
     // TODO: re-implement this using ddl reader
     if (!super->platform->tableExists(super->platform, tableName)) {
         char *errorMessage;
-        printf("DDL applied: %s\n", tableName);
+        SymLog_info("DDL applied: %s", tableName);
         if (super->platform->executeSql(super->platform, createSql, NULL, NULL, &errorMessage)) {
-            fprintf(stderr, "Error creating %s table: %s\n", tableName, errorMessage);
+        	SymLog_error("Error creating %s table: %s", tableName, errorMessage);
             free(errorMessage);
             return 1;
         }
@@ -35,7 +36,7 @@ static int create_if_missing(SymDialect *super, char *tableName, char *createSql
 }
 
 int SymSqliteDialect_initTablesAndDatabaseObjects(SymDialect *super) {
-    printf("Checking if SymmetricDS tables need created or altered\n");
+	SymLog_info("Checking if SymmetricDS tables need created or altered");
     create_if_missing(super, "sym_channel", CREATE_SYM_CHANNEL);
     create_if_missing(super, "sym_data", CREATE_SYM_DATA);
     create_if_missing(super, "sym_data_event", CREATE_SYM_DATA_EVENT);
@@ -53,7 +54,7 @@ int SymSqliteDialect_initTablesAndDatabaseObjects(SymDialect *super) {
     create_if_missing(super, "sym_trigger", CREATE_SYM_TRIGGER);
     create_if_missing(super, "sym_trigger_hist", CREATE_SYM_TRIGGER_HIST);
     create_if_missing(super, "sym_trigger_router", CREATE_SYM_TRIGGER_ROUTER);
-    printf("Done with auto update of SymmetricDS tables\n");
+    SymLog_info("Done with auto update of SymmetricDS tables");
     return 0;
 }
 
@@ -99,7 +100,7 @@ SymSqliteDialect * SymSqliteDialect_new(SymSqliteDialect *this, SymDatabasePlatf
     super->getInitialLoadSql = (void *) &SymSqliteDialect_getInitialLoadSql;
     super->destroy = (void *) &SymSqliteDialect_destroy;
 
-    printf("The DbDialect being used is SymSqliteDialect\n");
+    SymLog_info("The DbDialect being used is SymSqliteDialect");
 
     return this;
 }

@@ -19,13 +19,14 @@
  * under the License.
  */
 #include "service/PurgeService.h"
+#include "common/Log.h"
 
 int SymPurgeService_purgeOutgoing(SymPurgeService *this) {
-    printf("SymPurgeService_purge_outgoing\n");
+    SymLog_info("SymPurgeService_purge_outgoing");
     return 0;
 }
 
 int SymPurgeService_purgeIncoming(SymPurgeService *this) {
-    printf("SymPurgeService_purge_incoming\n");
+	SymLog_info("SymPurgeService_purge_incoming");
     return 0;
 }

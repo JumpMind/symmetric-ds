@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "db/platform/DatabasePlatformFactory.h"
+#include "common/Log.h"
 
 SymDatabasePlatform * SymDatabasePlatformFactory_create(SymProperties *properties) {
     SymDatabasePlatform *platform = NULL;
@@ -26,7 +27,7 @@ SymDatabasePlatform * SymDatabasePlatformFactory_create(SymProperties *propertie
     if (strncmp(url, SYM_DATABASE_SQLITE, strlen(SYM_DATABASE_SQLITE)) == 0) {
         platform = (SymDatabasePlatform *) SymSqlitePlatform_new(NULL, properties);
     } else {
-        fprintf(stderr, "Could not find platform for database URL '%s'\n", url);
+        SymLog_error("Could not find platform for database URL '%s'", url);
     }
     return platform;
 }

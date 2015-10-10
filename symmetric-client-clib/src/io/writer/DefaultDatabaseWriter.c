@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "io/writer/DefaultDatabaseWriter.h"
+#include "common/Log.h"
 
 void SymDefaultDatabaseWriter_open(SymDefaultDatabaseWriter *this) {
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
@@ -219,7 +220,7 @@ void SymDefaultDatabaseWriter_endBatch(SymDefaultDatabaseWriter *this, SymBatch 
 }
 
 void SymDefaultDatabaseWriter_close(SymDefaultDatabaseWriter *this) {
-    printf("close\n");
+	SymLog_debug("close");
     this->sqlTransaction->close(this->sqlTransaction);
 }
 

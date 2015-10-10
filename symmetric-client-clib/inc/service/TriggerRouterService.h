@@ -23,12 +23,59 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "db/model/Table.h"
+#include "service/ParameterService.h"
+#include "service/ConfigurationService.h"
+#include "db/platform/DatabasePlatform.h"
+#include "util/Map.h"
+#include "util/List.h"
+
+typedef struct SymTriggerSelector {
+    SymList* triggers;
+    struct SymList * (*select)(struct SymTriggerSelector *this);
+    void (*destroy)(struct SymTriggerSelector * this);
+} SymTriggerSelector;
+
+SymTriggerSelector * SymTriggerSelector_new(SymTriggerSelector *this, SymList *triggers);
+
+
+typedef struct SymTriggerRoutersCache {
+	SymMap* triggerRoutersByTriggerId;
+	SymMap* routersByRouterId;
+	void (*destroy)(struct SymTriggerSelector * this);
+} SymTriggerRoutersCache;
+
+SymTriggerRoutersCache * SymTriggerRoutersCache_new(SymTriggerRoutersCache *this);
+
 
 typedef struct SymTriggerRouterService {
-    int (*syncTriggers)(struct SymTriggerRouterService *this);
+	long routersCacheTime;
+	SymMap* routersCache;
+
+    SymList* triggerRoutersCache;
+    long triggerRouterPerNodeCacheTime;
+
+    SymMap* triggersCache;
+    long triggersCacheTime;
+    long triggerRoutersCacheTime;
+
+    SymMap* triggerRouterCacheByNodeGroupId;
+
+    long triggerRouterPerChannelCacheTime;
+
+	SymParameterService *parameterService;
+    SymConfigurationService *configurationService;
+	SymDatabasePlatform *platform;
+
+	int (*syncTriggers)(struct SymTriggerRouterService *this, SymStringBuilder *sqlBuffer, unsigned short force);
+    int (*syncTriggersWithTable)(struct SymTriggerRouterService *this, SymTable *table, unsigned short force);
+    void (*clearCache)(struct SymTriggerRouterService *this);
+    SymMap* (*getTriggerRoutersForCurrentNode)(struct SymTriggerRouterService *this, unsigned short refreshCache);
+    SymList* (*getTriggersForCurrentNode)(struct SymTriggerRouterService *this, unsigned short refreshCache);
+    SymTriggerRoutersCache* (*getTriggerRoutersCacheForCurrentNode)(struct SymTriggerRouterService *this, unsigned short refreshCache);
     void (*destroy)(struct SymTriggerRouterService *this);
 } SymTriggerRouterService;
 
-SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService * this);
+SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService * this, SymParameterService *parameterService, SymDatabasePlatform *platform, SymConfigurationService *configurationService);
 
 #endif

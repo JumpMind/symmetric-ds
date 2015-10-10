@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "db/platform/sqlite/SqlitePlatform.h"
+#include "common/Log.h"
 
 static int SymSqlitePlatform_tableExistsCallback(void *exists, int argc, char **argv, char **columName) {
     *((int *) exists) = argc > 0;
@@ -46,7 +47,7 @@ SymSqliteSqlTemplate * SymSqlitePlatform_getSqlTemplate(SymSqlitePlatform *this)
 }
 
 void SymSqlitePlatform_destroy(SymDatabasePlatform *super) {
-    printf("Closing SQLite database\n");
+	SymLog_info("Closing SQLite database");
     SymSqlitePlatform *this = (SymSqlitePlatform *) super;
     sqlite3_close(this->db);
     this->sqlTemplate->destroy(this->sqlTemplate);
@@ -70,23 +71,23 @@ SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties
     super->getSqlTemplate = (void *) &SymSqlitePlatform_getSqlTemplate;
     super->destroy = (void *) &SymSqlitePlatform_destroy;
 
-    printf("The IDatabasePlatform being used is SymSqlitePlatform\n");
+    SymLog_info("The IDatabasePlatform being used is SymSqlitePlatform");
 
     char filename[100];
     char *url = properties->get(properties, SYM_PARAMETER_DB_URL, SYM_DATABASE_SQLITE);
     url += strlen(SYM_DATABASE_SQLITE) + 1;
     strncpy(filename, url, 100);
-    printf("Opening SQLite database at %s\n", filename);
+    SymLog_info("Opening SQLite database at %s", filename);
 
     if (sqlite3_open_v2(filename, &this->db,
             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_URI, NULL)) {
-        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(this->db));
+    	SymLog_error("Can't open database: %s", sqlite3_errmsg(this->db));
         sqlite3_close(this->db);
         return NULL;
     }
     this->sqlTemplate = (SymSqlTemplate *) SymSqliteSqlTemplate_new(NULL, this->db);
 
-    printf("Detected database '%s', version '%s'\n", super->name, super->version);
+    SymLog_info("Detected database '%s', version '%s'", super->name, super->version);
 
     return this;
 }

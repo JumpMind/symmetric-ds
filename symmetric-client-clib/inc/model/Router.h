@@ -18,19 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_CONFIGURATION_SERVICE_H
-#define SYM_CONFIGURATION_SERVICE_H
+#ifndef INC_MODEL_ROUTER_H_
+#define INC_MODEL_ROUTER_H_
 
-#include <stdio.h>
-#include "model/NodeChannel.h"
-#include "util/List.h"
+#include <stdlib.h>
 
-typedef struct SymConfigurationService {
-    SymList * (*getNodeChannels)(struct SymConfigurationService *this);
-    SymList * (*clearCache)(struct SymConfigurationService *this);
-    SymList * (*destroy)(struct SymConfigurationService *this);
-} SymConfigurationService;
 
-SymConfigurationService * SymConfigurationService_new(SymConfigurationService *this);
+typedef struct SymRouter {
+    char *routerId;
+    void (*destroy)(struct SymRouter *this);
+} SymRouter;
 
-#endif
+SymRouter * SymRouter_new(SymRouter *this);
+
+#endif /* INC_MODEL_ROUTER_H_ */

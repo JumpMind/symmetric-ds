@@ -19,17 +19,18 @@
  * under the License.
  */
 #include "service/SequenceService.h"
+#include "common/Log.h"
 
 long SymSequenceService_nextVal(SymSequenceService *this, char * name) {
-    printf("SymSequenceService_next_val\n");
+	SymLog_info("SymSequenceService_next_val");
     return 0;
 }
 
 long SymSequenceService_currVal(SymSequenceService *this, char * name) {
-    printf("SymSequenceService_curr_val\n");
+	SymLog_info("SymSequenceService_curr_val");
     return 0;
 }
 
 void SymSequenceService_init(SymSequenceService *this) {
-    printf("SymSequenceService_init\n");
+	SymLog_info("SymSequenceService_init");
 }

@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "service/PullService.h"
+#include "common/Log.h"
 
 // TODO: should be SymRemoteNodeStatuses
 
@@ -42,18 +43,18 @@ SymRemoteNodeStatus * SymPullService_pullData(SymPullService *this) {
                 batchesProcessedCount = status->batchesProcessed;
                 pullCount++;
 
-                printf("Pull requested for %s:%s:%s\n", node->nodeGroupId, node->externalId, node->nodeId);
+                SymLog_debug("Pull requested for %s:%s:%s", node->nodeGroupId, node->externalId, node->nodeId);
                 if (pullCount > 1) {
-                    printf("Immediate pull requested while in reload mode\n");
+                	SymLog_info("Immediate pull requested while in reload mode\n");
                 }
 
                 this->dataLoaderService->loadDataFromPull(this->dataLoaderService, node, status);
 
                 if (!status->failed && (status->dataProcessed > 0 || status->batchesProcessed > 0)) {
-                    printf("Pull data received from %s:%s:%s.  %lu rows and %lu batches were processed\n",
+                	SymLog_info("Pull data received from %s:%s:%s.  %lu rows and %lu batches were processed",
                             node->nodeGroupId, node->externalId, node->nodeId, status->dataProcessed, status->batchesProcessed);
                 } else if (status->failed) {
-                    printf("There was a failure while pulling data from %s:%s:%s.  %lu rows and %lu batches were processed\n",
+                    SymLog_info("There was a failure while pulling data from %s:%s:%s.  %lu rows and %lu batches were processed",
                             node->nodeGroupId, node->externalId, node->nodeId, status->dataProcessed, status->batchesProcessed);
                 }
             } while (this->nodeService->isDataloadStarted(this->nodeService) && !status->failed

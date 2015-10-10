@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "io/reader/ProtocolDataReader.h"
+#include "common/Log.h"
 
 static void SymProtocolDataReader_parseField(void *data, size_t size, void *userData) {
     SymProtocolDataReader *this = (SymProtocolDataReader *) userData;
@@ -116,7 +117,7 @@ void SymProtocolDataReader_open(SymProtocolDataReader *this) {
 size_t SymProtocolDataReader_process(SymProtocolDataReader *this, char *data, size_t size, size_t count) {
     size_t length = size * count;
     if (csv_parse(this->csvParser, data, length, SymProtocolDataReader_parseField, SymProtocolDataReader_parseLine, this) != length) {
-        fprintf(stderr, "Error from CSV parser: %s\n", csv_strerror(csv_error(this->csvParser)));
+    	SymLog_error("Error from CSV parser: %s", csv_strerror(csv_error(this->csvParser)));
         return 0;
     }
     if (this->isError) {

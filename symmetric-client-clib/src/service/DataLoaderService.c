@@ -19,6 +19,7 @@
  * under the License.
  */
 #include "service/DataLoaderService.h"
+#include "common/Log.h"
 
 static void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *remote, SymNode *local, SymNodeSecurity *localSecurity,
         SymList *incomingBatches) {
@@ -33,7 +34,7 @@ static void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *re
         sendAck = this->transportManager->sendAcknowledgement(this->transportManager,
                     remote, incomingBatches, local, localSecurity->nodePassword, registrationUrl);
         if (sendAck != SYM_TRANSPORT_OK) {
-            printf("Ack was not sent successfully on try number %d.\n", i + 1);
+            SymLog_warn("Ack was not sent successfully on try number %d.", i + 1);
             if (i < numberOfStatusSendRetries - 1) {
                 sleep(sleepSeconds);
             }
@@ -47,7 +48,7 @@ static SymList * SymDataLoaderService_loadDataFromTransport(SymDataLoaderService
     SymDataReader *reader = (SymDataReader *) SymProtocolDataReader_new(NULL, remote->nodeId, writer);
 
     long rc = transport->process(transport, reader);
-    printf("Transport rc = %ld\n" , rc);
+    SymLog_debug("Transport rc = %ld" , rc);
 
     SymList *batchesProcessed = writer->batchesProcessed;
     reader->destroy(reader);
@@ -66,7 +67,7 @@ void SymDataLoaderService_loadDataFromRegistration(SymDataLoaderService *this, S
 
     char *registrationUrl = this->parameterService->getRegistrationUrl(this->parameterService);
     SymIncomingTransport *transport = this->transportManager->getRegisterTransport(this->transportManager, local, registrationUrl);
-    printf("Using registration URL of %s\n", transport->getUrl(transport));
+    SymLog_info("Using registration URL of %s", transport->getUrl(transport));
 
     SymNode *remote = SymNode_new(NULL);
     remote->syncUrl = registrationUrl;
@@ -109,7 +110,7 @@ void SymDataLoaderService_loadDataFromPull(SymDataLoaderService *this, SymNode *
         SymList_destroyAll(incomingBatches, (void *) SymIncomingBatch_destroy);
 
         if (error == 1) {
-            printf("Node information missing on the server.  Attempting to re-register.\n");
+        	SymLog_warn("Node information missing on the server.  Attempting to re-register.");
             this->loadDataFromRegistration(this, status);
         }
 

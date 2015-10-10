@@ -18,19 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_CONFIGURATION_SERVICE_H
-#define SYM_CONFIGURATION_SERVICE_H
 
-#include <stdio.h>
-#include "model/NodeChannel.h"
-#include "util/List.h"
+typedef enum {DEBUG, INFO, WARN, ERROR} LogLevel;
 
-typedef struct SymConfigurationService {
-    SymList * (*getNodeChannels)(struct SymConfigurationService *this);
-    SymList * (*clearCache)(struct SymConfigurationService *this);
-    SymList * (*destroy)(struct SymConfigurationService *this);
-} SymConfigurationService;
+#define SymLog_debug(M, ...) SymLog_log(0, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#define SymLog_info(M, ...) SymLog_log(1, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#define SymLog_warn(M, ...) SymLog_log(2, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#define SymLog_error(M, ...) SymLog_log(3, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
 
-SymConfigurationService * SymConfigurationService_new(SymConfigurationService *this);
-
-#endif
+void SymLog_log(LogLevel logLevel, const char *functionName, const char *filename, int lineNumber, const char* message, ...);
