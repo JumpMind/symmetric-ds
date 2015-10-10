@@ -79,18 +79,21 @@ static void append_columns_equals_set(SymDmlStatement *this, SymStringBuilder *s
 
 static void append_columns_equals(SymDmlStatement *this, SymStringBuilder *sb) {
     SymIterator *iter = this->table->columns->iterator(this->table->columns);
+    int count = 0;
     while (iter->hasNext(iter)) {
         SymColumn *column = (SymColumn *) iter->next(iter);
-        if (iter->index > 0) {
-            sb->append(sb, " and ");
-        }
-        sb->append(sb, this->databaseInfo->delimiterToken);
-        sb->append(sb, column->name);
-        sb->append(sb, this->databaseInfo->delimiterToken);
-        if (this->nullKeyIndicators != NULL && this->nullKeyIndicators->get(this->nullKeyIndicators, iter->index)) {
-            sb->append(sb, " is NULL");
-        } else {
-            sb->append(sb, " = ?");
+        if (column->isPrimaryKey) {
+            if (count++ > 0) {
+                sb->append(sb, " and ");
+            }
+            sb->append(sb, this->databaseInfo->delimiterToken);
+            sb->append(sb, column->name);
+            sb->append(sb, this->databaseInfo->delimiterToken);
+            if (this->nullKeyIndicators != NULL && this->nullKeyIndicators->get(this->nullKeyIndicators, iter->index)) {
+                sb->append(sb, " is NULL");
+            } else {
+                sb->append(sb, " = ?");
+            }
         }
     }
     iter->destroy(iter);
