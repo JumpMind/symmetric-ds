@@ -24,7 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "model/IncomingBatch.h"
+#include "model/Channel.h"
 #include "util/List.h"
+#include "util/Map.h"
 
 #define SYM_REMOTE_NODE_STATUS_OFFLINE 0
 #define SYM_REMOTE_NODE_STATUS_BUSY 1
@@ -37,6 +39,7 @@
 #define SYM_REMOTE_NODE_STATUS_UNKNOWN_ERROR 8
 
 typedef struct SymRemoteNodeStatus {
+    SymMap *channels;
     char *nodeId;
     int status;
     long dataProcessed;
@@ -48,6 +51,6 @@ typedef struct SymRemoteNodeStatus {
     void (*destroy)(struct SymRemoteNodeStatus *this);
 } SymRemoteNodeStatus;
 
-SymRemoteNodeStatus * SymRemoteNodeStatus_new(SymRemoteNodeStatus *this);
+SymRemoteNodeStatus * SymRemoteNodeStatus_new(SymRemoteNodeStatus *this, char *nodeId, SymMap *channels);
 
 #endif

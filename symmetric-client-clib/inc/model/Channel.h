@@ -18,29 +18,39 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_PULL_SERVICE_H
-#define SYM_PULL_SERVICE_H
+#ifndef SYM_CHANNEL_H
+#define SYM_CHANNEL_H
 
-#include <stdio.h>
 #include <stdlib.h>
-#include "model/RemoteNodeStatus.h"
-#include "model/RemoteNodeStatuses.h"
-#include "service/NodeService.h"
-#include "service/DataLoaderService.h"
-#include "service/RegistrationService.h"
-#include "service/ConfigurationService.h"
-#include "util/Map.h"
+#include "util/Date.h"
 
-typedef struct SymPullService {
-    SymNodeService *nodeService;
-    SymDataLoaderService *dataLoaderService;
-    SymRegistrationService *registrationService;
-    SymConfigurationService *configurationService;
-    SymRemoteNodeStatuses * (*pullData)(struct SymPullService *this);
-    void (*destroy)(struct SymPullService *this);
-} SymPullService;
+#define SYM_CHANNEL_DEFAULT_BATCH_ALGORITHM "default"
+#define SYM_CHANNEL_DEFAULT_DATALOADER_TYPE "default"
 
-SymPullService * SymPullService_new(SymPullService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,
-        SymRegistrationService *registrationService, SymConfigurationService *configurationService);
+typedef struct SymChannel {
+    char *channelId;
+    int processingOrder;
+    int maxBatchSize;
+    int maxBatchToSend;
+    int maxDataToRoute;
+    unsigned int enabled;
+    unsigned int useOldDataToRoute;
+    unsigned int useRowDataToRoute;
+    unsigned int usePkDataToRoute;
+    unsigned int containsBigLob;
+    char *batchAlgorithm;
+    long extractPeriodMillis;
+    char *dataLoaderType;
+    SymDate *createTime;
+    SymDate *lastUpdateTime;
+    char *lastUpdateBy;
+    unsigned int reloadFlag;
+    unsigned int fileSyncFlag;
+    void (*destroy)(struct SymChannel *this);
+} SymChannel;
+
+SymChannel * SymChannel_new(SymChannel *this);
+
+void SymChannel_destroy(SymChannel *this);
 
 #endif

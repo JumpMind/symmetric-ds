@@ -27,7 +27,8 @@ void SymRegistrationService_registerWithServer(SymRegistrationService *this) {
     if (!this->isRegisteredWithServer(this)) {
 
         int maxNumberAttempts = this->parameterService->getInt(this->parameterService, SYM_PARAMETER_REGISTRATION_NUMBER_OF_ATTEMPTS, -1);
-        SymRemoteNodeStatus *status = SymRemoteNodeStatus_new(NULL);
+        SymMap *channels = this->configurationService->getChannels(this->configurationService, 0);
+        SymRemoteNodeStatus *status = SymRemoteNodeStatus_new(NULL, NULL, channels);
 
         while (!isRegistered && (maxNumberAttempts < 0 || maxNumberAttempts > 0)) {
 
@@ -60,6 +61,7 @@ void SymRegistrationService_registerWithServer(SymRegistrationService *this) {
             SymLog_error("Failed after trying to register %d times.", maxNumberAttempts);
         }
 
+        channels->destroy(channels);
         status->destroy(status);
     }
 }
@@ -78,13 +80,14 @@ void SymRegistrationService_destroy(SymRegistrationService *this) {
 }
 
 SymRegistrationService * SymRegistrationService_new(SymRegistrationService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,
-        SymParameterService *parameterService) {
+        SymParameterService *parameterService, SymConfigurationService *configurationService) {
     if (this == NULL) {
         this = (SymRegistrationService *) calloc(1, sizeof(SymRegistrationService));
     }
     this->nodeService = nodeService;
     this->dataLoaderService = dataLoaderService;
     this->parameterService = parameterService;
+    this->configurationService = configurationService;
     this->isRegisteredWithServer = (void *) &SymRegistrationService_isRegisteredWithServer;
     this->registerWithServer = (void *) &SymRegistrationService_registerWithServer;
     this->destroy = (void *) &SymRegistrationService_destroy;

@@ -21,9 +21,33 @@
 #include "service/PullService.h"
 #include "common/Log.h"
 
-// TODO: should be SymRemoteNodeStatuses
+void SymPullService_execute(SymPullService *this, SymNode *node, SymRemoteNodeStatus *status) {
+    int pullCount = 0;
+    long batchesProcessedCount = 0;
+    do {
+        batchesProcessedCount = status->batchesProcessed;
+        pullCount++;
 
-SymRemoteNodeStatus * SymPullService_pullData(SymPullService *this) {
+        SymLog_debug("Pull requested for %s:%s:%s", node->nodeGroupId, node->externalId, node->nodeId);
+        if (pullCount > 1) {
+            SymLog_info("Immediate pull requested while in reload mode\n");
+        }
+
+        this->dataLoaderService->loadDataFromPull(this->dataLoaderService, node, status);
+
+        if (!status->failed && (status->dataProcessed > 0 || status->batchesProcessed > 0)) {
+            SymLog_info("Pull data received from %s:%s:%s.  %lu rows and %lu batches were processed",
+                    node->nodeGroupId, node->externalId, node->nodeId, status->dataProcessed, status->batchesProcessed);
+        } else if (status->failed) {
+            SymLog_info("There was a failure while pulling data from %s:%s:%s.  %lu rows and %lu batches were processed",
+                    node->nodeGroupId, node->externalId, node->nodeId, status->dataProcessed, status->batchesProcessed);
+        }
+    } while (this->nodeService->isDataloadStarted(this->nodeService) && !status->failed
+            && status->batchesProcessed > batchesProcessedCount);
+}
+
+SymRemoteNodeStatuses * SymPullService_pullData(SymPullService *this) {
+    SymRemoteNodeStatuses *statuses = NULL;
     SymNode *identity = this->nodeService->findIdentity(this->nodeService);
     if (identity == NULL) {
         this->registrationService->registerWithServer(this->registrationService);
@@ -31,40 +55,19 @@ SymRemoteNodeStatus * SymPullService_pullData(SymPullService *this) {
     }
     if (identity->syncEnabled) {
         SymList *nodes = this->nodeService->findNodesToPull(this->nodeService);
+        SymMap *channels = this->configurationService->getChannels(this->configurationService, 0);
+        statuses = SymRemoteNodeStatuses_new(NULL, channels);
         SymIterator *iter = nodes->iterator(nodes);
         while (iter->hasNext(iter)) {
             SymNode *node = (SymNode *) iter->next(iter);
-            SymRemoteNodeStatus *status = SymRemoteNodeStatus_new(NULL);
-            status->nodeId = node->nodeId;
-
-            int pullCount = 0;
-            long batchesProcessedCount = 0;
-            do {
-                batchesProcessedCount = status->batchesProcessed;
-                pullCount++;
-
-                SymLog_debug("Pull requested for %s:%s:%s", node->nodeGroupId, node->externalId, node->nodeId);
-                if (pullCount > 1) {
-                	SymLog_info("Immediate pull requested while in reload mode\n");
-                }
-
-                this->dataLoaderService->loadDataFromPull(this->dataLoaderService, node, status);
-
-                if (!status->failed && (status->dataProcessed > 0 || status->batchesProcessed > 0)) {
-                	SymLog_info("Pull data received from %s:%s:%s.  %lu rows and %lu batches were processed",
-                            node->nodeGroupId, node->externalId, node->nodeId, status->dataProcessed, status->batchesProcessed);
-                } else if (status->failed) {
-                    SymLog_info("There was a failure while pulling data from %s:%s:%s.  %lu rows and %lu batches were processed",
-                            node->nodeGroupId, node->externalId, node->nodeId, status->dataProcessed, status->batchesProcessed);
-                }
-            } while (this->nodeService->isDataloadStarted(this->nodeService) && !status->failed
-                    && status->batchesProcessed > batchesProcessedCount);
+            SymRemoteNodeStatus *status = statuses->add(statuses, node->nodeId);
+            SymPullService_execute(this, node, status);
         }
         iter->destroy(iter);
         nodes->destroy(nodes);
     }
     identity->destroy(identity);
-    return NULL;
+    return statuses;
 }
 
 void SymPullService_destroy(SymPullService *this) {
@@ -72,13 +75,14 @@ void SymPullService_destroy(SymPullService *this) {
 }
 
 SymPullService * SymPullService_new(SymPullService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,
-        SymRegistrationService *registrationService) {
+        SymRegistrationService *registrationService, SymConfigurationService *configurationService) {
     if (this == NULL) {
         this = (SymPullService *) calloc(1, sizeof(SymPullService));
     }
     this->nodeService = nodeService;
     this->dataLoaderService = dataLoaderService;
     this->registrationService = registrationService;
+    this->configurationService = configurationService;
     this->pullData = (void *) &SymPullService_pullData;
     this->destroy = (void *) &SymPullService_destroy;
     return this;

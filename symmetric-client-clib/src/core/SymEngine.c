@@ -129,7 +129,7 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->platform = SymDatabasePlatformFactory_create(properties);
     this->dialect = SymDialectFactory_create(this->platform);
 
-    this->configurationService = SymConfigurationService_new(NULL);
+    this->configurationService = SymConfigurationService_new(NULL, this->platform);
 
     this->parameterService = SymParameterService_new(NULL, properties);
     this->triggerRouterService = SymTriggerRouterService_new(NULL, this->parameterService, this->platform, this->configurationService);
@@ -138,8 +138,9 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
     this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform,
             this->dialect, this->incomingBatchService);
-    this->registrationService = SymRegistrationService_new(NULL, this->nodeService, this->dataLoaderService, this->parameterService);
-    this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService);
+    this->registrationService = SymRegistrationService_new(NULL, this->nodeService, this->dataLoaderService, this->parameterService,
+            this->configurationService);
+    this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
     this->pushService = SymPushService_new(NULL);
 
     return this;

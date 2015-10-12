@@ -18,29 +18,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_PULL_SERVICE_H
-#define SYM_PULL_SERVICE_H
+#ifndef SYM_REMOTE_NODE_STATUSES_H
+#define SYM_REMOTE_NODE_STATUSES_H
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "model/RemoteNodeStatus.h"
-#include "model/RemoteNodeStatuses.h"
-#include "service/NodeService.h"
-#include "service/DataLoaderService.h"
-#include "service/RegistrationService.h"
-#include "service/ConfigurationService.h"
+#include "util/List.h"
 #include "util/Map.h"
 
-typedef struct SymPullService {
-    SymNodeService *nodeService;
-    SymDataLoaderService *dataLoaderService;
-    SymRegistrationService *registrationService;
-    SymConfigurationService *configurationService;
-    SymRemoteNodeStatuses * (*pullData)(struct SymPullService *this);
-    void (*destroy)(struct SymPullService *this);
-} SymPullService;
+typedef struct SymRemoteNodeStatuses {
+    SymMap *channels;
+    SymList *nodes;
+    unsigned int (*wasDataProcessed)(struct SymRemoteNodeStatuses *this);
+    unsigned int (*wasBatchProcessed)(struct SymRemoteNodeStatuses *this);
+    long (*getDataProcessedCount)(struct SymRemoteNodeStatuses *this);
+    unsigned int (*errorOccurred)(struct SymRemoteNodeStatuses *this);
+    SymRemoteNodeStatus * (*add)(struct SymRemoteNodeStatuses *this, char *nodeId);
+    unsigned int (*isComplete)(struct SymRemoteNodeStatuses *this);
+    void (*destroy)(struct SymRemoteNodeStatuses *this);
+} SymRemoteNodeStatuses;
 
-SymPullService * SymPullService_new(SymPullService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,
-        SymRegistrationService *registrationService, SymConfigurationService *configurationService);
+SymRemoteNodeStatuses * SymRemoteNodeStatuses_new(SymRemoteNodeStatuses *this, SymMap *channels);
 
 #endif

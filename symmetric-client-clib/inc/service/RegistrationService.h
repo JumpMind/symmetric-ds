@@ -26,18 +26,20 @@
 #include <unistd.h>
 #include "service/NodeService.h"
 #include "service/DataLoaderService.h"
+#include "service/ConfigurationService.h"
 #include "model/Node.h"
 
 typedef struct SymRegistrationService {
     SymNodeService *nodeService;
     SymDataLoaderService *dataLoaderService;
     SymParameterService *parameterService;
+    SymConfigurationService *configurationService;
     void (*registerWithServer)(struct SymRegistrationService *this);
     unsigned short (*isRegisteredWithServer)(struct SymRegistrationService *this);
     void (*destroy)(struct SymRegistrationService *this);
 } SymRegistrationService;
 
 SymRegistrationService * SymRegistrationService_new(SymRegistrationService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,
-        SymParameterService *parameterService);
+        SymParameterService *parameterService, SymConfigurationService *configurationService);
 
 #endif

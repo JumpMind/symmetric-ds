@@ -22,15 +22,27 @@
 #define SYM_CONFIGURATION_SERVICE_H
 
 #include <stdio.h>
+#include "db/platform/DatabasePlatform.h"
 #include "model/NodeChannel.h"
+#include "model/Channel.h"
 #include "util/List.h"
+#include "util/Map.h"
 
 typedef struct SymConfigurationService {
+    SymDatabasePlatform *platform;
     SymList * (*getNodeChannels)(struct SymConfigurationService *this);
+    SymMap * (*getChannels)(struct SymConfigurationService *this, unsigned int refreshCache);
     SymList * (*clearCache)(struct SymConfigurationService *this);
     SymList * (*destroy)(struct SymConfigurationService *this);
 } SymConfigurationService;
 
-SymConfigurationService * SymConfigurationService_new(SymConfigurationService *this);
+SymConfigurationService * SymConfigurationService_new(SymConfigurationService *this, SymDatabasePlatform *platform);
+
+#define SYM_SQL_SELECT_CHANNEL "select c.channel_id, c.processing_order, c.max_batch_size, c.enabled, \
+c.max_batch_to_send, c.max_data_to_route, c.use_old_data_to_route, \
+c.use_row_data_to_route, c.use_pk_data_to_route, c.contains_big_lob, \
+c.batch_algorithm, c.extract_period_millis, c.data_loader_type, \
+c.last_update_time, c.last_update_by, c.create_time, c.reload_flag, c.file_sync_flag \
+from sym_channel c order by c.processing_order asc, c.channel_id"
 
 #endif

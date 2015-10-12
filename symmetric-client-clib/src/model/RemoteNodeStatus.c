@@ -26,6 +26,11 @@ void SymRemoteNodeStatus_updateIncomingStatus(SymRemoteNodeStatus *this, SymList
         SymIncomingBatch *incomingBatch = (SymIncomingBatch *) iter->next(iter);
         this->dataProcessed += incomingBatch->statementCount;
         this->batchesProcessed++;
+        SymChannel *channel = this->channels->get(this->channels, incomingBatch->channelId);
+        if (channel != NULL && channel->reloadFlag) {
+            this->reloadBatchesProcessed++;
+        }
+
         if (strcmp(incomingBatch->status, SYM_INCOMING_BATCH_STATUS_ERROR) == 0) {
             this->status = SYM_REMOTE_NODE_STATUS_DATA_ERROR;
         }
@@ -40,10 +45,12 @@ void SymRemoteNodeStatus_destroy(SymRemoteNodeStatus *this) {
     free(this);
 }
 
-SymRemoteNodeStatus * SymRemoteNodeStatus_new(SymRemoteNodeStatus *this) {
+SymRemoteNodeStatus * SymRemoteNodeStatus_new(SymRemoteNodeStatus *this, char *nodeId, SymMap *channels) {
     if (this == NULL) {
         this = (SymRemoteNodeStatus *) calloc(1, sizeof(SymRemoteNodeStatus));
     }
+    this->nodeId = nodeId;
+    this->channels = channels;
     this->destroy = (void *) &SymRemoteNodeStatus_destroy;
     this->updateIncomingStatus = (void *) &SymRemoteNodeStatus_updateIncomingStatus;
     return this;
