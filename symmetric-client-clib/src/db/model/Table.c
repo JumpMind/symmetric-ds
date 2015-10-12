@@ -32,6 +32,34 @@ char * SymTable_getFullTableName(SymTable *this, char *delimiterToken, char *cat
     return sb->destroyAndReturn(sb);
 }
 
+static int SymTable_calculateHashcodeForColumns(int prime, SymList *cols) {
+    int result = 1;
+    SymIterator *iter = cols->iterator(cols);
+    while (iter->hasNext(iter)) {
+        SymColumn *col = (SymColumn *) iter->next(iter);
+        result = prime * result + SymStringBuilder_hashCode(col->name);
+        result = prime * result + col->sqlType;
+    }
+    iter->destroy(iter);
+    return result;
+}
+
+int SymTable_calculateTableHashcode(SymTable *this) {
+    int prime = 31;
+    int result = 1;
+    result = prime * result + SymStringBuilder_hashCode(this->name);
+    result = prime * result + SymTable_calculateHashcodeForColumns(prime, this->columns);
+    return result;
+}
+
+char * SymTable_getTableKey(SymTable *this) {
+    char *name = SymTable_getFullTableName(this, "", ".", ".");
+    SymStringBuilder *sb = SymStringBuilder_newWithString(name);
+    sb->append(sb, "-")->appendf(sb, "%d", SymTable_calculateTableHashcode(this));
+    free(name);
+    return sb->destroyAndReturn(sb);
+}
+
 SymColumn * SymTable_findColumn(SymTable *this, char *name, unsigned short caseSensitive) {
     SymColumn *column = NULL;
     SymIterator *iter = this->columns->iterator(this->columns);
@@ -117,6 +145,8 @@ SymTable * SymTable_new(SymTable *this) {
     this->copyColumnTypesFrom = (void *) &SymTable_copyColumnTypesFrom;
     this->findColumn = (void *) &SymTable_findColumn;
     this->toString = (void *) &SymTable_toString;
+    this->calculateTableHashcode = (void *) &SymTable_calculateTableHashcode;
+    this->getTableKey = (void *) &SymTable_getTableKey;
     this->destroy = (void *) &SymTable_destroy;
     return this;
 }

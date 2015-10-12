@@ -37,6 +37,8 @@ typedef struct SymTable {
     void (*copyColumnTypesFrom)(struct SymTable *this, struct SymTable *source);
     SymColumn * (*findColumn)(struct SymTable *this, char *name, unsigned short caseSensitive);
     char * (*toString)(struct SymTable *this);
+    int (*calculateTableHashcode)(struct SymTable *this);
+    char * (*getTableKey)(struct SymTable *this);
     void (*destroy)(struct SymTable *this);
 } SymTable;
 
