@@ -21,7 +21,6 @@
 #ifndef SYM_CONSTANTS_H
 #define SYM_CONSTANTS_H
 
-#define SYM_VERSION "3.7.0"
 #define SYM_DEPLOYMENT_TYPE "cclient"
 
 #endif
