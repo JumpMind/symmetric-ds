@@ -22,23 +22,23 @@
 
 static char* logLevelDescription(SymLogLevel logLevel) {
 	switch (logLevel) {
-	case DEBUG:
-		return SYM_LOG_LEVEL_DEBUG;
-	case INFO:
-		return SYM_LOG_LEVEL_INFO;
-	case WARN:
-		return SYM_LOG_LEVEL_WARN;
-	case ERROR:
-		return SYM_LOG_LEVEL_ERROR;
+	case SYM_LOG_LEVEL_DEBUG:
+		return SYM_LOG_LEVEL_DESC_DEBUG;
+	case SYM_LOG_LEVEL_INFO:
+		return SYM_LOG_LEVEL_DESC_INFO;
+	case SYM_LOG_LEVEL_WARN:
+		return SYM_LOG_LEVEL_DESC_WARN;
+	case SYM_LOG_LEVEL_ERROR:
+		return SYM_LOG_LEVEL_DESC_ERROR;
 	default:
-		return SYM_LOG_LEVEL_UNKNOWN;
+		return SYM_LOG_LEVEL_DESC_UNKNOWN;
 	}
 }
 
 /** This is the central place where all logging funnels through. */
 void SymLog_log(SymLogLevel logLevel, const char *functionName, const char *fileName, int lineNumber, const char* message, ...) {
 	FILE *destination;
-	if (logLevel <= INFO) {
+	if (logLevel <= SYM_LOG_LEVEL_INFO) {
 		destination = stdout;
 	}
 	else {
@@ -63,7 +63,7 @@ void SymLog_log(SymLogLevel logLevel, const char *functionName, const char *file
 	messageBuffer->append(messageBuffer, "] ");
     va_list varargs;
     va_start(varargs, message);
-	messageBuffer->appendfv(messageBuffer, message, varargs);
+    messageBuffer->appendfv(messageBuffer, message, varargs);
     va_end(varargs);
 	messageBuffer->append(messageBuffer, "\n");
 

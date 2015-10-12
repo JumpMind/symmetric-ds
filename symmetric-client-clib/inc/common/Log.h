@@ -24,17 +24,17 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <time.h>
 #include "util/StringBuilder.h"
 #include "util/Date.h"
-#include <time.h>
 
-typedef enum {DEBUG, INFO, WARN, ERROR} SymLogLevel;
+typedef enum {SYM_LOG_LEVEL_DEBUG, SYM_LOG_LEVEL_INFO, SYM_LOG_LEVEL_WARN, SYM_LOG_LEVEL_ERROR} SymLogLevel;
 
-#define SYM_LOG_LEVEL_DEBUG "DEBUG"
-#define SYM_LOG_LEVEL_INFO "INFO"
-#define SYM_LOG_LEVEL_WARN "WARN"
-#define SYM_LOG_LEVEL_ERROR "ERROR"
-#define SYM_LOG_LEVEL_UNKNOWN "UNKNOWN"
+#define SYM_LOG_LEVEL_DESC_DEBUG "DEBUG"
+#define SYM_LOG_LEVEL_DESC_INFO "INFO"
+#define SYM_LOG_LEVEL_DESC_WARN "WARN"
+#define SYM_LOG_LEVEL_DESC_ERROR "ERROR"
+#define SYM_LOG_LEVEL_DESC_UNKNOWN "UNKNOWN"
 
 #define SymLog_debug(M, ...) SymLog_log(0, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
 #define SymLog_info(M, ...) SymLog_log(1, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
