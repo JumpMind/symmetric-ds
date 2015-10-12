@@ -43,18 +43,24 @@ void SymDefaultDatabaseWriter_startBatch(SymDefaultDatabaseWriter *this, SymBatc
     this->dialect->disableSyncTriggers(this->dialect, this->sqlTransaction, batch->sourceNodeId);
 }
 
+static SymTable * SymDefaultDatabaseWriter_lookupTableAtTarget(SymDefaultDatabaseWriter *this, SymTable *sourceTable) {
+    char *tableKey = sourceTable->getTableKey(sourceTable);
+    SymTable *table = this->targetTables->get(this->targetTables, tableKey);
+    if (table == NULL) {
+        SymTable *targetTable = this->platform->getTableFromCache(this->platform, sourceTable->catalog, sourceTable->schema, sourceTable->name, 0);
+        if (targetTable) {
+            table = targetTable->copyAndFilterColumns(targetTable, sourceTable, 1);
+            this->targetTables->put(this->targetTables, tableKey, targetTable, sizeof(SymTable));
+        }
+    }
+    free(tableKey);
+    return table;
+}
+
 unsigned short SymDefaultDatabaseWriter_startTable(SymDefaultDatabaseWriter *this, SymTable *table) {
     this->dmlStatement = NULL;
     this->sourceTable = table;
-
-    SymTable *targetTable = this->platform->getTableFromCache(this->platform, table->catalog, table->schema, table->name, 0);
-
-    if (targetTable) {
-        // TODO: cache the filtered table
-        this->targetTable = targetTable->copyAndFilterColumns(targetTable, table, 1);
-    } else {
-        this->targetTable = table;
-    }
+    this->targetTable = SymDefaultDatabaseWriter_lookupTableAtTarget(this, table);
     return 1;
 }
 
@@ -158,6 +164,7 @@ void SymDefaultDatabaseWriter_sql(SymDefaultDatabaseWriter *this, SymCsvData *da
 }
 
 unsigned short SymDefaultDatabaseWriter_write(SymDefaultDatabaseWriter *this, SymCsvData *data) {
+    // TODO: check if this->targetTable and if ignore missing tables is on
     switch (data->dataEventType) {
     case SYM_DATA_EVENT_INSERT:
         if (SymDefaultDatabaseWriter_insert(this, data) == 0) {
@@ -225,6 +232,7 @@ void SymDefaultDatabaseWriter_close(SymDefaultDatabaseWriter *this) {
 }
 
 void SymDefaultDatabaseWriter_destroy(SymDefaultDatabaseWriter *this) {
+    this->targetTables->destroy(this->targetTables);
     free(this);
 }
 
@@ -237,6 +245,7 @@ SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter
     this->incomingBatchService = incomingBatchService;
     this->platform = platform;
     this->dialect = dialect;
+    this->targetTables = SymMap_new(NULL, 50);
     super->batchesProcessed = SymList_new(NULL);
     super->open = (void *) &SymDefaultDatabaseWriter_open;
     super->startBatch = (void *) &SymDefaultDatabaseWriter_startBatch;

@@ -29,6 +29,7 @@
 #include "db/platform/DatabasePlatform.h"
 #include "io/data/CsvData.h"
 #include "util/StringArray.h"
+#include "util/Map.h"
 #include "db/sql/DmlStatement.h"
 #include "db/sql/SqlTemplate.h"
 #include "db/sql/SqlTransaction.h"
@@ -45,6 +46,7 @@ typedef struct SymDefaultDatabaseWriter {
     SymBatch *batch;
     SymTable *sourceTable;
     SymTable *targetTable;
+    SymMap *targetTables;
     SymDmlStatement *dmlStatement;
     SymIncomingBatch *incomingBatch;
     unsigned short isError;
