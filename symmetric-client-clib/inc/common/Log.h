@@ -24,7 +24,6 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include "common/Log.h"
 #include "util/StringBuilder.h"
 #include "util/Date.h"
 #include <time.h>
