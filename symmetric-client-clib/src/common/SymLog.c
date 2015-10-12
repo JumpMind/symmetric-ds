@@ -18,44 +18,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- 
-#include <stdio.h>
-#include <stdarg.h>
 #include "common/Log.h"
-#include "util/StringBuilder.h"
-#include <time.h>
 
-char* logLevelDescription(LogLevel logLevel) {
+static char* logLevelDescription(SymLogLevel logLevel) {
 	switch (logLevel) {
 	case DEBUG:
-		return "DEBUG";
+		return SYM_LOG_LEVEL_DEBUG;
 	case INFO:
-		return "INFO";
+		return SYM_LOG_LEVEL_INFO;
 	case WARN:
-		return "WARN";
+		return SYM_LOG_LEVEL_WARN;
 	case ERROR:
-		return "ERROR";
+		return SYM_LOG_LEVEL_ERROR;
 	default:
-		return "<UNKNOWN>";
+		return SYM_LOG_LEVEL_UNKNOWN;
 	}
 }
 
-char *generateTimestamp() {
-	int TIMESTAMP_LENGTH = 26;
-    time_t timer;
-    char* buffer = malloc(TIMESTAMP_LENGTH);
-    // char buffer[26];
-    struct tm* tm_info;
-
-    time(&timer);
-    tm_info = localtime(&timer);
-
-    strftime(buffer, TIMESTAMP_LENGTH, "%Y-%m-%dT%H:%M:%S", tm_info);
-    return buffer;
-}
-
 /** This is the central place where all logging funnels through. */
-void SymLog_log(LogLevel logLevel, const char *functionName, const char *fileName, int lineNumber, const char* message, ...) {
+void SymLog_log(SymLogLevel logLevel, const char *functionName, const char *fileName, int lineNumber, const char* message, ...) {
 	FILE *destination;
 	if (logLevel <= INFO) {
 		destination = stdout;
@@ -68,9 +49,9 @@ void SymLog_log(LogLevel logLevel, const char *functionName, const char *fileNam
 
 	SymStringBuilder *messageBuffer = SymStringBuilder_new();
 
-	char* logTimestamp = generateTimestamp();
+	SymDate *date = SymDate_new();
 
-	messageBuffer->append(messageBuffer, logTimestamp);
+	messageBuffer->append(messageBuffer, date->dateTimeString);
 	messageBuffer->append(messageBuffer, " [");
 	messageBuffer->append(messageBuffer, levelDescription);
 	messageBuffer->append(messageBuffer, "] [");
@@ -84,7 +65,6 @@ void SymLog_log(LogLevel logLevel, const char *functionName, const char *fileNam
     va_start(varargs, message);
 	messageBuffer->appendfv(messageBuffer, message, varargs);
     va_end(varargs);
-
 	messageBuffer->append(messageBuffer, "\n");
 
 	fprintf(destination, "%s", messageBuffer->toString(messageBuffer));
@@ -93,7 +73,7 @@ void SymLog_log(LogLevel logLevel, const char *functionName, const char *fileNam
 	// Do this to keep log messages more or less in order.
 	fflush(destination);
 
+	date->destroy(date);
 	messageBuffer->destroy(messageBuffer);
-	free(logTimestamp);
 }
 

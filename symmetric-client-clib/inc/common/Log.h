@@ -19,11 +19,29 @@
  * under the License.
  */
 
-typedef enum {DEBUG, INFO, WARN, ERROR} LogLevel;
+#ifndef SYM_LOG_H
+#define SYM_LOG_H
+
+#include <stdio.h>
+#include <stdarg.h>
+#include "common/Log.h"
+#include "util/StringBuilder.h"
+#include "util/Date.h"
+#include <time.h>
+
+typedef enum {DEBUG, INFO, WARN, ERROR} SymLogLevel;
+
+#define SYM_LOG_LEVEL_DEBUG "DEBUG"
+#define SYM_LOG_LEVEL_INFO "INFO"
+#define SYM_LOG_LEVEL_WARN "WARN"
+#define SYM_LOG_LEVEL_ERROR "ERROR"
+#define SYM_LOG_LEVEL_UNKNOWN "UNKNOWN"
 
 #define SymLog_debug(M, ...) SymLog_log(0, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
 #define SymLog_info(M, ...) SymLog_log(1, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
 #define SymLog_warn(M, ...) SymLog_log(2, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
 #define SymLog_error(M, ...) SymLog_log(3, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
 
-void SymLog_log(LogLevel logLevel, const char *functionName, const char *filename, int lineNumber, const char* message, ...);
+void SymLog_log(SymLogLevel logLevel, const char *functionName, const char *filename, int lineNumber, const char* message, ...);
+
+#endif
