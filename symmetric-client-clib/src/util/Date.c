@@ -57,6 +57,7 @@ SymDate * SymDate_newWithString(char *dateTimeString) {
 
 SymDate * SymDate_newWithTime(time_t time) {
     SymDate *this = (SymDate *) calloc(1, sizeof(SymDate));
+    this->destroy = (void *) &SymDate_destroy;
     this->dateTimeString = calloc(24, sizeof(char));
     this->time = time;
     struct tm *timeInfo = localtime(&time);
