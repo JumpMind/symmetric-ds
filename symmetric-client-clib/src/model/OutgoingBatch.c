@@ -18,17 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_DATA_EXTRACTOR_SERVICE_H
-#define SYM_DATA_EXTRACTOR_SERVICE_H
+#include "model/OutgoingBatch.h"
 
-#include <stdio.h>
-#include "model/Node.h"
-#include "transport/OutgoingTransport.h"
-#include "util/List.h"
+long SymOutgoingBatch_totalEventCount(SymOutgoingBatch *this) {
+    return this->insertEventCount + this->updateEventCount + this->deleteEventCount + this->otherEventCount;
+}
 
-typedef struct SymDataExtractorService {
-    SymList * (*extract)(struct SymDataExtractorService *this, SymNode *node, SymOutgoingTransport *transport);
-    void (*destroy)(struct SymDataExtractorService *this);
-} SymDataExtractorService;
+void SymOutgoingBatch_destroy(SymOutgoingBatch *this) {
+    free(this);
+}
 
-#endif
+SymOutgoingBatch * SymOutgoingBatch_new(SymOutgoingBatch *this) {
+    if (this == NULL) {
+        this = (SymOutgoingBatch *) calloc(1, sizeof(SymOutgoingBatch));
+    }
+    this->batchId = -1;
+    this->loadId = -1;
+    this->status = SYM_OUGOING_BATCH_ROUTING;
+    this->totalEventCount = &SymOutgoingBatch_totalEventCount;
+    this->destroy = (void *) SymOutgoingBatch_destroy;
+    return this;
+}

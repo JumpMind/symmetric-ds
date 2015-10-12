@@ -138,10 +138,12 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
     this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform,
             this->dialect, this->incomingBatchService);
+    this->dataExtractorService = SymDataExtractorService_new(NULL);
     this->registrationService = SymRegistrationService_new(NULL, this->nodeService, this->dataLoaderService, this->parameterService,
             this->configurationService);
     this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
-    this->pushService = SymPushService_new(NULL);
+    this->pushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
+            this->configurationService);
 
     return this;
 }

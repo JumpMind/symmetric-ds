@@ -21,7 +21,58 @@
 #ifndef SYM_OUTGOING_BATCH_H
 #define SYM_OUTGOING_BATCH_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include "util/Date.h"
+
+#define SYM_OUGOING_BATCH_OK "OK"
+#define SYM_OUGOING_BATCH_ERROR "ER"
+#define SYM_OUGOING_BATCH_REQUEST "RQ"
+#define SYM_OUGOING_BATCH_NEW "NE"
+#define SYM_OUGOING_BATCH_QUERYING "QY"
+#define SYM_OUGOING_BATCH_SENDING "SE"
+#define SYM_OUGOING_BATCH_LOADING "LD"
+#define SYM_OUGOING_BATCH_ROUTING "RT"
+#define SYM_OUGOING_BATCH_IGNORED "IG"
+
 typedef struct SymOutgoingBatch {
+    long batchId;
+    char *nodeId;
+    char *channelId;
+    long loadId;
+    char *status;
+    unsigned short loadFlag;
+    unsigned short errorFlag;
+    unsigned short extractJobFlag;
+    unsigned short commonFlag;
+    long routerMillis;
+    long networkMillis;
+    long filterMillis;
+    long loadMillis;
+    long extractMillis;
+    long byteCount;
+    long sentCount;
+    long extractCount;
+    long loadCount;
+    long ignoreCount;
+    long dataEventCount;
+    long reloadEventCount;
+    long insertEventCount;
+    long updateEventCount;
+    long deleteEventCount;
+    long otherEventCount;
+    long failedDataId;
+    char *sqlState;
+    int sqlCode;
+    char *sqlMessage;
+    char *lastUpdatedHostName;
+    SymDate *lastUpdatedTime;
+    SymDate *createTime;
+    char *createBy;
+    long (*totalEventCount)(struct SymOutgoingBatch *this);
+    void (*destroy)(struct SymOutgoingBatch *this);
 } SymOutgoingBatch;
+
+SymOutgoingBatch * SymOutgoingBatch_new(SymOutgoingBatch *this);
 
 #endif

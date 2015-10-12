@@ -26,13 +26,42 @@ void SymRemoteNodeStatus_updateIncomingStatus(SymRemoteNodeStatus *this, SymList
         SymIncomingBatch *incomingBatch = (SymIncomingBatch *) iter->next(iter);
         this->dataProcessed += incomingBatch->statementCount;
         this->batchesProcessed++;
-        SymChannel *channel = this->channels->get(this->channels, incomingBatch->channelId);
-        if (channel != NULL && channel->reloadFlag) {
-            this->reloadBatchesProcessed++;
-        }
-
         if (strcmp(incomingBatch->status, SYM_INCOMING_BATCH_STATUS_ERROR) == 0) {
             this->status = SYM_REMOTE_NODE_STATUS_DATA_ERROR;
+        }
+    }
+
+    if (this->status != SYM_REMOTE_NODE_STATUS_DATA_ERROR && this->dataProcessed > 0) {
+        this->status = SYM_REMOTE_NODE_STATUS_DATA_PROCESSED;
+    }
+}
+
+void SymRemoteNodeStatus_updateOutgoingStatus(SymRemoteNodeStatus *this, SymList *outgoingBatches, SymList *batchAcks) {
+    if (batchAcks) {
+        SymIterator *iter = batchAcks->iterator(batchAcks);
+        while (iter->hasNext(iter)) {
+            SymBatchAck *batchAck = (SymBatchAck *) iter->next(iter);
+            if (batchAck->isOk) {
+                this->status = SYM_REMOTE_NODE_STATUS_DATA_ERROR;
+            }
+        }
+        iter->destroy(iter);
+    }
+
+    if (outgoingBatches) {
+        SymIterator *iter = outgoingBatches->iterator(outgoingBatches);
+        while (iter->hasNext(iter)) {
+            SymOutgoingBatch *batch = (SymOutgoingBatch *) iter->next(iter);
+            this->batchesProcessed++;
+            this->dataProcessed += batch->totalEventCount(batch);
+            SymChannel *channel = this->channels->get(this->channels, batch->channelId);
+            if (channel && channel->reloadFlag) {
+                this->reloadBatchesProcessed++;
+            }
+
+            if (strcmp(batch->status, SYM_OUGOING_BATCH_ERROR) == 0) {
+                this->status = SYM_REMOTE_NODE_STATUS_DATA_ERROR;
+            }
         }
     }
 

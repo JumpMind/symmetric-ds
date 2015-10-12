@@ -34,7 +34,7 @@ typedef struct SymRemoteNodeStatuses {
     unsigned int (*wasBatchProcessed)(struct SymRemoteNodeStatuses *this);
     long (*getDataProcessedCount)(struct SymRemoteNodeStatuses *this);
     unsigned int (*errorOccurred)(struct SymRemoteNodeStatuses *this);
-    SymRemoteNodeStatus * (*add)(struct SymRemoteNodeStatuses *this, char *nodeId);
+    struct SymRemoteNodeStatus * (*add)(struct SymRemoteNodeStatuses *this, char *nodeId);
     unsigned int (*isComplete)(struct SymRemoteNodeStatuses *this);
     void (*destroy)(struct SymRemoteNodeStatuses *this);
 } SymRemoteNodeStatuses;

@@ -24,7 +24,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "model/IncomingBatch.h"
+#include "model/OutgoingBatch.h"
 #include "model/Channel.h"
+#include "model/RemoteNodeStatus.h"
+#include "model/RemoteNodeStatuses.h"
+#include "model/BatchAck.h"
 #include "util/List.h"
 #include "util/Map.h"
 
@@ -48,6 +52,7 @@ typedef struct SymRemoteNodeStatus {
     int complete;
     int failed;
     void (*updateIncomingStatus)(struct SymRemoteNodeStatus *this, SymList *incomingBatches);
+    void (*updateOutgoingStatus)(struct SymRemoteNodeStatus *this, SymList *outgoingBatches, SymList *batchAcks);
     void (*destroy)(struct SymRemoteNodeStatus *this);
 } SymRemoteNodeStatus;
 

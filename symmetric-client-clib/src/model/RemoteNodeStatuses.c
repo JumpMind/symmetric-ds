@@ -23,7 +23,7 @@
 unsigned int SymRemoteNodeStatuses_wasDataProcessed(SymRemoteNodeStatuses *this) {
     unsigned int dataProcessed = 0;
     SymIterator *iter = this->nodes->iterator(this->nodes);
-    while (iter->hasNext(this)) {
+    while (iter->hasNext(iter)) {
         SymRemoteNodeStatus *status = (SymRemoteNodeStatus *) iter->next(iter);
         dataProcessed |= status->dataProcessed > 0;
     }
@@ -33,7 +33,7 @@ unsigned int SymRemoteNodeStatuses_wasDataProcessed(SymRemoteNodeStatuses *this)
 unsigned int SymRemoteNodeStatuses_wasBatchProcessed(SymRemoteNodeStatuses *this) {
     unsigned int batchProcessed = 0;
     SymIterator *iter = this->nodes->iterator(this->nodes);
-    while (iter->hasNext(this)) {
+    while (iter->hasNext(iter)) {
         SymRemoteNodeStatus *status = (SymRemoteNodeStatus *) iter->next(iter);
         batchProcessed |= status->batchesProcessed > 0;
     }
@@ -43,7 +43,7 @@ unsigned int SymRemoteNodeStatuses_wasBatchProcessed(SymRemoteNodeStatuses *this
 long SymRemoteNodeStatuses_getDataProcessedCount(SymRemoteNodeStatuses *this) {
     long dataProcessed = this->nodes->size > 0 ? 0 : -1L;
     SymIterator *iter = this->nodes->iterator(this->nodes);
-    while (iter->hasNext(this)) {
+    while (iter->hasNext(iter)) {
         SymRemoteNodeStatus *status = (SymRemoteNodeStatus *) iter->next(iter);
         dataProcessed += status->dataProcessed;
     }
@@ -53,7 +53,7 @@ long SymRemoteNodeStatuses_getDataProcessedCount(SymRemoteNodeStatuses *this) {
 unsigned int SymRemoteNodeStatuses_errorOccurred(SymRemoteNodeStatuses *this) {
     unsigned int errorOccurred = 0;
     SymIterator *iter = this->nodes->iterator(this->nodes);
-    while (iter->hasNext(this)) {
+    while (iter->hasNext(iter)) {
         SymRemoteNodeStatus *status = (SymRemoteNodeStatus *) iter->next(iter);
         errorOccurred |= status->failed;
     }
@@ -69,7 +69,7 @@ SymRemoteNodeStatus * SymRemoteNodeStatuses_add(SymRemoteNodeStatuses *this, cha
 unsigned int SymRemoteNodeStatuses_isComplete(SymRemoteNodeStatuses *this) {
     unsigned int complete = 0;
     SymIterator *iter = this->nodes->iterator(this->nodes);
-    while (iter->hasNext(this)) {
+    while (iter->hasNext(iter)) {
         SymRemoteNodeStatus *status = (SymRemoteNodeStatus *) iter->next(iter);
         complete |= status->complete;
     }
