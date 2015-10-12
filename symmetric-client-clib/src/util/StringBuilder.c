@@ -110,6 +110,17 @@ void SymStringBuilder_copyToField(char **strField, char *str) {
     *strField = SymStringBuilder_copy(str);
 }
 
+int SymStringBuilder_hashCode(char *value) {
+    unsigned long int hash;
+    unsigned int i;
+    int len = strlen(value);
+    for (i = 0, hash = 0; i < len; i++) {
+        hash = hash << 8;
+        hash += value[i];
+    }
+    return hash;
+}
+
 SymStringBuilder * SymStringBuilder_new() {
     return SymStringBuilder_newWithSize(SYM_STRING_BUILDER_SIZE);
 }

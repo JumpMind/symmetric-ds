@@ -50,6 +50,8 @@ SymStringBuilder * SymStringBuilder_newWithSize(int size);
 
 SymStringBuilder * SymStringBuilder_newWithString(char *str);
 
+int SymStringBuilder_hashCode(char *value);
+
 char * SymStringBuilder_copy(char *str);
 
 void SymStringBuilder_copyToField(char **strField, char *str);
