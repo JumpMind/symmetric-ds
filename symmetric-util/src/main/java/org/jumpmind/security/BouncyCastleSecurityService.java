@@ -67,7 +67,7 @@ public class BouncyCastleSecurityService extends SecurityService {
     public PKCS10CertificationRequest generateRequest(KeyPair pair) throws Exception {
         return new PKCS10CertificationRequest("SHA256withRSA", new X500Principal(
                 "CN=Requested Test Certificate"), pair.getPublic(), null, pair.getPrivate());
-    }
+    }    
 
     @Override
     public void installDefaultSslCert(String host) {
@@ -75,7 +75,7 @@ public class BouncyCastleSecurityService extends SecurityService {
             Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
             try {
-                KeyStore keyStore = getKeyStore(getKeyStorePassword());
+                KeyStore keyStore = getKeyStore();
                 KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(
                         getKeyStorePassword().toCharArray());
                 String alias = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS,

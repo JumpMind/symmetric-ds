@@ -360,8 +360,6 @@ public class SymmetricWebServer {
 
     protected Connector[] getConnectors(Server server, int port, int securePort, Mode mode) {
         ArrayList<Connector> connectors = new ArrayList<Connector>();
-        String keyStoreFile = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
-        String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE, SecurityConstants.KEYSTORE_TYPE);
 
         HttpConfiguration httpConfig = new HttpConfiguration();
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
@@ -386,13 +384,14 @@ public class SymmetricWebServer {
             String keyStorePassword = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
             keyStorePassword = (keyStorePassword != null) ? keyStorePassword : SecurityConstants.KEYSTORE_PASSWORD;
             SslContextFactory sslConnectorFactory = new SslContextFactory();
-            sslConnectorFactory.setKeyStorePath(keyStoreFile);
             sslConnectorFactory.setKeyManagerPassword(keyStorePassword);
             /* Prevent POODLE attack */
             sslConnectorFactory.addExcludeProtocols("SSLv3");
             sslConnectorFactory.setCertAlias(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS,
                     SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
-            sslConnectorFactory.setKeyStoreType(keyStoreType);
+            sslConnectorFactory.setKeyStore(securityService.getKeyStore());
+            sslConnectorFactory.setTrustStore(securityService.getTrustStore());
+            
 
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             httpsConfig.addCustomizer(new SecureRequestCustomizer());
