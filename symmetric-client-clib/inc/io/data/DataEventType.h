@@ -18,21 +18,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYMCLIENT_TEST_H
-#define SYMCLIENT_TEST_H
+#ifndef INC_IO_DATA_DATAEVENTTYPE_H_
+#define INC_IO_DATA_DATAEVENTTYPE_H_
 
-#include <CUnit/Basic.h>
+#include "db/sql/DmlStatement.h"
 
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
+typedef enum {
+    SYM_DATA_EVENT_INSERT,
+    SYM_DATA_EVENT_UPDATE,
+    SYM_DATA_EVENT_DELETE,
+    SYM_DATA_EVENT_RELOAD,
+    SYM_DATA_EVENT_SQL,
+    SYM_DATA_EVENT_CREATE,
+    SYM_DATA_EVENT_BSH,
+    SYM_DATA_EVENT_UNKNOWN,
 
-#include "libsymclient.h"
+} SymDataEventType;
 
-int SymEngineTest_CUnit();
-int SymPropertiesTest_CUnit();
-int SymStringBuilderTest_CUnit();
-int SymMapTest_CUnit();
-int SymListTest_CUnit();
+#define SYM_DATA_EVENT_INSERT_CODE "I"
+#define SYM_DATA_EVENT_UPDATE_CODE "U"
+#define SYM_DATA_EVENT_DELETE_CODE "D"
+#define SYM_DATA_EVENT_RELOAD_CODE "R"
+#define SYM_DATA_EVENT_SQL_CODE "S"
+#define SYM_DATA_EVENT_CREATE_CODE "C"
+#define SYM_DATA_EVENT_BSH_CODE "B"
 
-#endif
+unsigned short isDml(SymDataEventType dataEventType);
+SymDmlType getDmlType(SymDataEventType dataEventType);
+SymDataEventType getEventType(char *code);
+
+#endif /* INC_IO_DATA_DATAEVENTTYPE_H_ */

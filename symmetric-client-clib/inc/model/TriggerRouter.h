@@ -23,9 +23,21 @@
 
 #include <stdlib.h>
 #include "model/Trigger.h"
+#include "model/Router.h"
+#include "util/Date.h"
 
 typedef struct SymTriggerRouter {
+    unsigned short enabled;
+    int initialLoadOrder;
+    char *initialLoadSelect;
+    char *initialLoadDeleteStmt;
+    int initialLoadBatchCount;
 	SymTrigger *trigger;
+	SymRouter *router;
+	SymDate *createTime;
+	SymDate *lastUpdateTime;
+	char *lastUpdateBy;
+	unsigned short pingBackEnabled;
     void (*destroy)(struct SymTriggerRouter *this);
 } SymTriggerRouter;
 

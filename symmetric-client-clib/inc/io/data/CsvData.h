@@ -24,10 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "util/StringArray.h"
-
-typedef enum {
-    SYM_DATA_EVENT_INSERT, SYM_DATA_EVENT_UPDATE, SYM_DATA_EVENT_DELETE, SYM_DATA_EVENT_SQL
-} SymDataEventType;
+#include "io/data/DataEventType.h"
 
 typedef enum {
     SYM_CSV_ROW_DATA, SYM_CSV_OLD_DATA, SYM_CSV_PK_DATA
