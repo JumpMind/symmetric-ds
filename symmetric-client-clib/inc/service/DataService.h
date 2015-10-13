@@ -23,17 +23,30 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "db/platform/DatabasePlatform.h"
+#include "service/TriggerRouterService.h"
 #include "model/Data.h"
 #include "io/data/Batch.h"
 #include "util/List.h"
+#include "util/StringBuilder.h"
+#include "common/Log.h"
 
 typedef struct SymDataService {
     SymDatabasePlatform *platform;
+    SymTriggerRouterService *triggerRouterService;
     SymData * (*selectDataFor)(struct SymDataService *this, SymBatch *batch);
     void (*destroy)(struct SymDataService *this);
 } SymDataService;
 
-SymDataService * SymDataService_new(SymDataService *this, SymDatabasePlatform *platform);
+SymDataService * SymDataService_new(SymDataService *this, SymDatabasePlatform *platform, SymTriggerRouterService *triggerRouterService);
+
+#define SYM_SQL_SELECT_EVENT_DATA_TO_EXTRACT \
+"select d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data, \
+d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list, e.router_id \
+from sym_data d \
+inner join sym_data_event e on d.data_id = e.data_id \
+inner join sym_outgoing_batch o on o.batch_id = e.batch_id \
+where o.batch_id = ? and o.node_id = ?"
 
 #endif

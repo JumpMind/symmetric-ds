@@ -22,7 +22,13 @@
 #include "common/Log.h"
 
 SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode *node, SymOutgoingTransport *transport) {
-	SymLog_info("SymDataExtractorService_extract");
+    /*
+	SymNode *nodeIdentity = this->nodeService->findIdentity(this->nodeService);
+	SymOutgoingBatch *outgoingBatch;
+	SymProtocolDataWriter *writer = SymProtocolDataWriter_new(NULL, node);
+	SymExtractDataReader *reader = SymExtractDataReader_new(NULL, outgoingBatch, nodeIdentity->nodeId, node->nodeId);
+	transport->process(transport, writer);
+*/
 	return NULL;
 }
 
@@ -30,10 +36,11 @@ void SymDataExtractorService_destroy(SymDataExtractorService *this) {
     free(this);
 }
 
-SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this) {
+SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this, SymNodeService *nodeService) {
     if (this == NULL) {
         this = (SymDataExtractorService *) calloc(1, sizeof(SymDataExtractorService));
     }
+    this->nodeService = nodeService;
     this->extract = (void *) &SymDataExtractorService_extract;
     this->destroy = (void *) &SymDataExtractorService_destroy;
     return this;

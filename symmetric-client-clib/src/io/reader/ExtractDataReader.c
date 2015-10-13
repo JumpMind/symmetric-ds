@@ -18,32 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_DATA_H
-#define SYM_DATA_H
+#include "io/reader/ExtractDataReader.h"
 
-#include "io/data/CsvData.h"
-#include "model/TriggerHistory.h"
-#include "util/Date.h"
+void SymExtractDataReader_destroy(SymExtractDataReader *this) {
+    free(this);
+}
 
-typedef struct SymData {
-    long dataId;
-    char *rowData;
-    char *oldData;
-    char *pkData;
-    char *channelId;
-    char *transactionId;
-    char *tableName;
-    char *eventType;
-    char *sourceNodeId;
-    char *externalData;
-    char *nodeList;
-    SymDate *createTime;
-    char *routerId;
-    int triggerHistId;
-    SymTriggerHistory *triggerHistory;
-    void (*destroy)(struct SymData *this);
-} SymData;
-
-SymData * SymData_new(SymData *this);
-
-#endif
+SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymOutgoingBatch *outgoingBatch, char *sourceNodeId, char *targetNodeId) {
+    if (this == NULL) {
+        this = (SymExtractDataReader *) calloc(1, sizeof(SymExtractDataReader));
+    }
+    SymDataReader *super = &this->super;
+    //super->open = (void *) &SymProtocolDataReader_open;
+    //super->close = (void *) &SymProtocolDataReader_close;
+    //super->process = (void *) &SymProtocolDataReader_process;
+    super->destroy = (void *) &SymExtractDataReader_destroy;
+    return this;
+}

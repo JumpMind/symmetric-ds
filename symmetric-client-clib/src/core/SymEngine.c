@@ -139,7 +139,8 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->outgoingBatchService = SymOutgoingBatchService_new(NULL, this->platform);
     this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform,
             this->dialect, this->incomingBatchService);
-    this->dataExtractorService = SymDataExtractorService_new(NULL);
+    this->dataService = SymDataService_new(NULL, this->platform, this->triggerRouterService);
+    this->dataExtractorService = SymDataExtractorService_new(NULL, this->nodeService);
     this->registrationService = SymRegistrationService_new(NULL, this->nodeService, this->dataLoaderService, this->parameterService,
             this->configurationService);
     this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);

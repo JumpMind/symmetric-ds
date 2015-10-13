@@ -18,32 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_DATA_H
-#define SYM_DATA_H
+#ifndef SYM_EXTRACT_DATA_READER_H
+#define SYM_EXTRACT_DATA_READER_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "model/OutgoingBatch.h"
+#include "io/reader/DataReader.h"
+#include "io/data/CsvConstants.h"
 #include "io/data/CsvData.h"
-#include "model/TriggerHistory.h"
-#include "util/Date.h"
 
-typedef struct SymData {
-    long dataId;
-    char *rowData;
-    char *oldData;
-    char *pkData;
-    char *channelId;
-    char *transactionId;
-    char *tableName;
-    char *eventType;
-    char *sourceNodeId;
-    char *externalData;
-    char *nodeList;
-    SymDate *createTime;
-    char *routerId;
-    int triggerHistId;
-    SymTriggerHistory *triggerHistory;
-    void (*destroy)(struct SymData *this);
-} SymData;
+typedef struct SymExtractDataReader {
+    SymDataReader super;
+} SymExtractDataReader;
 
-SymData * SymData_new(SymData *this);
+SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymOutgoingBatch *outgoingBatch, char *sourceNodeId, char *targetNodeId);
 
 #endif

@@ -23,14 +23,20 @@
 
 #include <stdio.h>
 #include "model/Node.h"
+#include "model/OutgoingBatch.h"
+#include "service/NodeService.h"
+#include "transport/TransportManager.h"
 #include "transport/OutgoingTransport.h"
+#include "io/writer/ProtocolDataWriter.h"
+#include "io/reader/ExtractDataReader.h"
 #include "util/List.h"
 
 typedef struct SymDataExtractorService {
+    SymNodeService *nodeService;
     SymList * (*extract)(struct SymDataExtractorService *this, SymNode *node, SymOutgoingTransport *transport);
     void (*destroy)(struct SymDataExtractorService *this);
 } SymDataExtractorService;
 
-SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this);
+SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this, SymNodeService *nodeService);
 
 #endif
