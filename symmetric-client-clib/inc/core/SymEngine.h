@@ -38,6 +38,7 @@
 #include "service/DataLoaderService.h"
 #include "service/DataExtractorService.h"
 #include "service/IncomingBatchService.h"
+#include "service/OutgoingBatchService.h"
 #include "service/ConfigurationService.h"
 #include "transport/TransportManagerFactory.h"
 #include "transport/TransportManager.h"
@@ -57,6 +58,7 @@ typedef struct SymEngine {
     SymPullService *pullService;
     SymNodeService *nodeService;
     SymIncomingBatchService *incomingBatchService;
+    SymIncomingBatchService *outgoingBatchService;
     SymConfigurationService *configurationService;
 
     unsigned short (*start)(struct SymEngine *this);
