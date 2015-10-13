@@ -35,7 +35,6 @@
 typedef struct SymTransportManager {
     SymParameterService *parameterService;
     int (*sendAcknowledgement)(struct SymTransportManager *this, SymNode *remote, SymList *batches, SymNode *local, char *securityToken, char *registrationUrl);
-    SymBatchAck ** (*readAcknowledgement)(struct SymTransportManager *this, char *parameterString1, char *parameterString2);
     SymIncomingTransport * (*getPullTransport)(struct SymTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl);
     SymOutgoingTransport * (*getPushTransport)(struct SymTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl);
     SymIncomingTransport * (*getRegisterTransport)(struct SymTransportManager *this, SymNode *local, char *registrationUrl);

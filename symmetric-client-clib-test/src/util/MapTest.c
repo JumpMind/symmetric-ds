@@ -20,12 +20,18 @@
  */
 #include "symclient_test.h"
 
-static void SymMapTest_test_stringmap(int keySize, char **keys, char **values, int mapSize) {
+static SymMap * SymMapTest_test_createStringMap(int keySize, char **keys, char **values, int mapSize) {
     SymMap *map = SymMap_new(NULL, mapSize);
     int i;
     for (i = 0; i < keySize; i++) {
         map->put(map, keys[i], values[i], strlen(values[i]));
     }
+    return map;
+}
+
+static void SymMapTest_test_stringmap(int keySize, char **keys, char **values, int mapSize) {
+    int i;
+    SymMap *map = SymMapTest_test_createStringMap(keySize, keys, values, mapSize);
 
     for (i = 0; i < keySize; i++) {
         char *out = (char *) map->get(map, keys[i]);
@@ -89,6 +95,200 @@ void SymMapTest_test3() {
     map->destroy(map);
 }
 
+unsigned short SymMapTest_stringListContains(SymList * list, char * string) {
+	int i;
+	for (i = 0; i < list->size; i++) {
+		if (strcmp(list->get(list, i), string) == 0) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+unsigned short SymMapTest_entryListContainsKey(SymList * entryList, char * string) {
+	int i;
+	for (i = 0; i < entryList->size; i++) {
+		if (strcmp(((SymMapEntry*)entryList->get(entryList, i))->key, string) == 0) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+unsigned short SymMapTest_entryListContainsValue(SymList * entryList, char * string) {
+	int i;
+	for (i = 0; i < entryList->size; i++) {
+		if (strcmp(((SymMapEntry*)entryList->get(entryList, i))->value, string) == 0) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+void SymMapTest_testValuesEmpty() {
+    SymMap *map = SymMap_new(NULL, 100);
+    SymList *valuesList = map->values(map);
+
+    CU_ASSERT(valuesList->size == 0);
+
+    map->destroy(map);
+}
+
+void SymMapTest_testValuesSingleValue() {
+    SymMap *map = SymMap_new(NULL, 100);
+    map->put(map, "key1", "value1", sizeof(char*));
+    SymList *valuesList = map->values(map);
+
+    CU_ASSERT(strcmp(valuesList->get(valuesList, 0), "value1") == 0);
+    map->destroy(map);
+}
+
+
+void SymMapTest_testValuesMultiValue() {
+
+	int KEY_COUNT = 5;
+
+    char *keys[] = { "key3", "key2", "key1", "key5", "key4" };
+    char *values[] = { "value3", "value2", "value1", "value5", "value4" };
+
+    SymMap *maps[] = {
+    		SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 1),
+			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 4),
+			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 8),
+			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 100)
+    };
+
+    int i;
+    for (i = 0; i < 4; i++) {
+    	SymMap *map = maps[i];
+	    SymList *valueList = map->values(map);
+
+	    CU_ASSERT(valueList->size == KEY_COUNT);
+
+	    CU_ASSERT(SymMapTest_stringListContains(valueList, "NOT FOUND VALUE") == 0);
+	    CU_ASSERT(SymMapTest_stringListContains(valueList, "value1"));
+	    CU_ASSERT(SymMapTest_stringListContains(valueList, "value2"));
+	    CU_ASSERT(SymMapTest_stringListContains(valueList, "value3"));
+	    CU_ASSERT(SymMapTest_stringListContains(valueList, "value4"));
+	    CU_ASSERT(SymMapTest_stringListContains(valueList, "value5"));
+
+	    map->destroy(map);
+    }
+}
+
+void SymMapTest_testEntriesEmpty() {
+    SymMap *map = SymMap_new(NULL, 100);
+    SymList *entryList = map->entries(map);
+
+    CU_ASSERT(entryList->size == 0);
+
+    map->destroy(map);
+}
+
+void SymMapTest_testEntriesSingleValue() {
+    SymMap *map = SymMap_new(NULL, 100);
+    map->put(map, "key1", "value1", sizeof(char*));
+    SymList *entryList = map->entries(map);
+
+    CU_ASSERT(strcmp(((SymMapEntry*)entryList->get(entryList, 0))->key, "key1") == 0);
+    CU_ASSERT(strcmp(((SymMapEntry*)entryList->get(entryList, 0))->value, "value1") == 0);
+    map->destroy(map);
+}
+
+
+void SymMapTest_testEntriesMultiValue() {
+
+	int KEY_COUNT = 5;
+
+    char *keys[] = { "key3", "key2", "key1", "key5", "key4" };
+    char *values[] = { "value3", "value2", "value1", "value5", "value4" };
+
+    SymMap *maps[] = {
+    		SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 1),
+			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 4),
+			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 8),
+			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 100)
+    };
+
+    int i;
+    for (i = 0; i < 4; i++) {
+    	SymMap *map = maps[i];
+    	SymList *entryList = map->entries(map);
+
+	    CU_ASSERT(entryList->size == KEY_COUNT);
+
+	    CU_ASSERT(SymMapTest_entryListContainsKey(entryList, "NOT FOUND KEY") == 0);
+	    CU_ASSERT(SymMapTest_entryListContainsValue(entryList, "NOT FOUND VALUE") == 0);
+	    CU_ASSERT(SymMapTest_entryListContainsKey(entryList, "key1"));
+	    CU_ASSERT(SymMapTest_entryListContainsValue(entryList, "value1"));
+	    CU_ASSERT(SymMapTest_entryListContainsKey(entryList, "key2"));
+	    CU_ASSERT(SymMapTest_entryListContainsValue(entryList, "value2"));
+	    CU_ASSERT(SymMapTest_entryListContainsKey(entryList, "key3"));
+	    CU_ASSERT(SymMapTest_entryListContainsValue(entryList, "value3"));
+	    CU_ASSERT(SymMapTest_entryListContainsKey(entryList, "key4"));
+	    CU_ASSERT(SymMapTest_entryListContainsValue(entryList, "value4"));
+	    CU_ASSERT(SymMapTest_entryListContainsKey(entryList, "key5"));
+	    CU_ASSERT(SymMapTest_entryListContainsValue(entryList, "value5"));
+
+	    map->destroy(map);
+    }
+}
+
+
+void SymMapTest_testKeysEmpty() {
+    SymMap *map = SymMap_new(NULL, 100);
+    SymStringArray *keyList = map->keys(map);
+
+    CU_ASSERT(keyList->size == 0);
+
+    map->destroy(map);
+}
+
+void SymMapTest_testKeysSingleValue() {
+    SymMap *map = SymMap_new(NULL, 100);
+    map->put(map, "key1", "value1", sizeof(char*));
+    SymStringArray *keyList = map->keys(map);
+
+    CU_ASSERT(strcmp(keyList->get(keyList, 0), "key1") == 0);
+    map->destroy(map);
+}
+
+void SymMapTest_testKeysMultiValue() {
+
+	int KEY_COUNT = 5;
+
+    char *keys[] = { "key3", "key2", "key1", "key5", "key4" };
+    char *values[] = { "value3", "value2", "value1", "value5", "value4" };
+
+    SymMap *maps[] = {
+    		SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 1),
+			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 4),
+			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 8),
+			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 100)
+    };
+
+    int i;
+    for (i = 0; i < 4; i++) {
+    	SymMap *map = maps[i];
+    	SymStringArray *keyList = map->keys(map);
+
+	    CU_ASSERT(keyList->size == KEY_COUNT);
+
+	    CU_ASSERT(keyList->contains(keyList, "NOT FOUND VALUE") == 0);
+	    CU_ASSERT(keyList->contains(keyList, "key1"));
+	    CU_ASSERT(keyList->contains(keyList, "key2"));
+	    CU_ASSERT(keyList->contains(keyList, "key3"));
+	    CU_ASSERT(keyList->contains(keyList, "key4"));
+	    CU_ASSERT(keyList->contains(keyList, "key5"));
+
+	    map->destroy(map);
+    }
+}
+
+
 int SymMapTest_CUnit() {
     CU_pSuite suite = CU_add_suite("SymMapTest", NULL, NULL);
     if (suite == NULL) {
@@ -97,7 +297,18 @@ int SymMapTest_CUnit() {
 
     if (CU_add_test(suite, "SymMapTest_test1", SymMapTest_test1) == NULL ||
             CU_add_test(suite, "SymMapTest_test2", SymMapTest_test2) == NULL ||
-            CU_add_test(suite, "SymMapTest_test3", SymMapTest_test3) == NULL) {
+            CU_add_test(suite, "SymMapTest_test3", SymMapTest_test3) == NULL ||
+			CU_add_test(suite, "SymMapTest_testValuesEmpty", SymMapTest_testValuesEmpty) == NULL ||
+			CU_add_test(suite, "SymMapTest_testValuesSingleValue", SymMapTest_testValuesSingleValue) == NULL ||
+			CU_add_test(suite, "SymMapTest_testValuesMultiValue", SymMapTest_testValuesMultiValue) == NULL ||
+			CU_add_test(suite, "SymMapTest_testEntriesEmpty", SymMapTest_testEntriesEmpty) == NULL ||
+			CU_add_test(suite, "SymMapTest_testEntriesSingleValue", SymMapTest_testEntriesSingleValue) == NULL ||
+			CU_add_test(suite, "SymMapTest_testEntriesMultiValue", SymMapTest_testEntriesMultiValue) == NULL ||
+			CU_add_test(suite, "SymMapTest_testKeysEmpty", SymMapTest_testKeysEmpty) == NULL ||
+			CU_add_test(suite, "SymMapTest_testKeysSingleValue", SymMapTest_testKeysSingleValue) == NULL ||
+			CU_add_test(suite, "SymMapTest_testKeysMultiValue", SymMapTest_testKeysMultiValue) == NULL
+
+			) {
         return CUE_NOTEST;
     }
     return CUE_SUCCESS;

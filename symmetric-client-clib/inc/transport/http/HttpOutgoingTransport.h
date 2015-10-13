@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "transport/OutgoingTransport.h"
+#include "util/List.h"
 
 typedef struct SymHttpOutgoingTransport {
     SymOutgoingTransport super;

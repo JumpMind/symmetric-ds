@@ -20,62 +20,98 @@
  */
 #include "service/PushService.h"
 
-SymRemoteNodeStatus * SymPushService_pushData(SymPushService *this) {
-    return NULL;
+void SymPushService_pushToNode(SymPushService *this, SymNode *remote, SymRemoteNodeStatus *status) {
+    // TODO: Node identity = nodeService.findIdentity(false);
+    SymNode *identity = this->nodeService->findIdentity(this->nodeService);
+    SymNodeSecurity *identitySecurity = this->nodeService->findNodeSecurity(this->nodeService, identity->nodeId);
+    SymOutgoingTransport *transport = this->transportManager->getPushTransport(this->transportManager, remote, identity, identitySecurity->nodePassword,
+            this->parameterService->getRegistrationUrl(this->parameterService));
+    SymList *extractedBatches = this->dataExtractorService->extract(this->dataExtractorService, remote, transport);
+    if (extractedBatches->size > 0) {
+        SymLog_info("Push data sent to %s:%s:%s", remote->nodeGroupId, remote->externalId, remote->nodeId);
+
+        // TODO: read acknowledgement
+        //SymList *batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService);
+        //status->updateOutgoingStatus(status, extractedBatches, batchAcks);
+        //batchAcks->destroy(batchAcks);
+    }
+    extractedBatches->destroy(extractedBatches);
+    transport->close(transport);
+    transport->destroy(transport);
+    identity->destroy(identity);
+    identitySecurity->destroy(identitySecurity);
 }
 
-SymRemoteNodeStatus * pushData(SymPushService *this, unsigned int force) {
-/*
-    RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
 
-    Node identity = nodeService.findIdentity(false);
-    if (identity != null && identity.isSyncEnabled()) {
-        long minimumPeriodMs = parameterService.getLong(ParameterConstants.PUSH_MINIMUM_PERIOD_MS, -1);
-        if (force || !clusterService.isInfiniteLocked(ClusterConstants.PUSH)) {
-                List<NodeCommunication> nodes = nodeCommunicationService
-                        .list(CommunicationType.PUSH);
-                if (nodes.size() > 0) {
-                    NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity
-                            .getNodeId());
-                    if (identitySecurity != null) {
-                        int availableThreads = nodeCommunicationService
-                                .getAvailableThreads(CommunicationType.PUSH);
-                        for (NodeCommunication nodeCommunication : nodes) {
-                            boolean meetsMinimumTime = true;
-                            if (minimumPeriodMs > 0 && nodeCommunication.getLastLockTime() != null &&
-                               (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
-                               meetsMinimumTime = false;
-                            }
-                            if (availableThreads > 0 && meetsMinimumTime) {
-                                if (nodeCommunicationService.execute(nodeCommunication, statuses,
-                                        this)) {
-                                    availableThreads--;
-                                }
-                            }
-                        }
-                    } else {
-                        log.error(
-                                "Could not find a node security row for '{}'.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data",
-                                identity.getNodeId());
-                    }
-                }
-        } else {
-            log.debug("Did not run the push process because it has been stopped");
+void SymPushService_execute(SymPushService *this, SymNode *node, SymRemoteNodeStatus *status) {
+    long reloadBatchesProcessed = 0;
+    long lastBatchCount = 0;
+    do {
+        if (lastBatchCount > 0) {
+            SymLog_info("Pushing to %s:%s:%s again because the last push contained reload batches",
+                    node->nodeGroupId, node->externalId, node->nodeId);
         }
+        reloadBatchesProcessed = status->reloadBatchesProcessed;
+        SymLog_debug("Push requested for %s:%s:%s", node->nodeGroupId, node->externalId, node->nodeId);
+        SymPushService_pushToNode(this, node, status);
+        if (!status->failed && status->batchesProcessed > 0
+                && status->batchesProcessed != lastBatchCount) {
+            SymLog_info("Pushed data to %s:%s:%s. %ld data and %ld batches were processed",
+                    node->nodeGroupId, node->externalId, node->nodeId, status->dataProcessed, status->batchesProcessed);
+        } else if (status->failed) {
+            SymLog_info("There was a failure while pushing data to %s:%s:%s. {} data and {} batches were processed",
+                    node->nodeGroupId, node->externalId, node->nodeId, status->dataProcessed, status->batchesProcessed);
+        }
+        SymLog_debug("Push completed for %s:%s:%s", node->nodeGroupId, node->externalId, node->nodeId);
+        lastBatchCount = status->batchesProcessed;
+    } while (status->reloadBatchesProcessed > reloadBatchesProcessed && !status->failed);
+}
+
+SymRemoteNodeStatuses * SymPushService_pushData(SymPushService *this, unsigned int force) {
+    SymMap *channels = this->configurationService->getChannels(this->configurationService, 0);
+    SymRemoteNodeStatuses *statuses = SymRemoteNodeStatuses_new(NULL, channels);
+    SymNode *identity = this->nodeService->findIdentity(this->nodeService);
+    if (identity) {
+        if (identity->syncEnabled) {
+            SymList *nodes = this->nodeService->findNodesToPushTo(this->nodeService);
+            if (nodes->size > 0) {
+                SymNodeSecurity *identitySecurity = this->nodeService->findNodeSecurity(this->nodeService, identity->nodeId);
+                if (identitySecurity) {
+                    statuses = SymRemoteNodeStatuses_new(NULL, channels);
+                    SymIterator *iter = nodes->iterator(nodes);
+                    while (iter->hasNext(iter)) {
+                        SymNode *node = (SymNode *) iter->next(iter);
+                        SymRemoteNodeStatus *status = statuses->add(statuses, node->nodeId);
+                        SymPushService_execute(this, node, status);
+                    }
+                    identitySecurity->destroy(identitySecurity);
+                    iter->destroy(iter);
+                } else {
+                    SymLog_error("Could not find a node security row for '%s'.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data",
+                            identity->nodeId);
+                }
+            }
+            nodes->destroy(nodes);
+        }
+        identity->destroy(identity);
     }
     return statuses;
-*/
-    return NULL;
 }
 
 void SymPushService_destroy(SymPushService *this) {
     free(this);
 }
 
-SymPushService * SymPushService_new(SymPushService *this) {
+SymPushService * SymPushService_new(SymPushService *this, SymNodeService *nodeService, SymDataExtractorService *dataExtractorService,
+        SymTransportManager *transportManager, SymParameterService *parameterService, SymConfigurationService *configurationService) {
     if (this == NULL) {
         this = (SymPushService *) calloc(1, sizeof(SymPushService));
     }
+    this->nodeService = nodeService;
+    this->dataExtractorService = dataExtractorService;
+    this->transportManager = transportManager;
+    this->parameterService = parameterService;
+    this->configurationService = configurationService;
     this->pushData = (void *) &SymPushService_pushData;
     this->destroy = (void *) &SymPushService_destroy;
     return this;

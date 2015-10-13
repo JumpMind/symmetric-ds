@@ -21,6 +21,20 @@
 #include "service/DataExtractorService.h"
 #include "common/Log.h"
 
-void SymDataExtractorService_extract(SymDataExtractorService *this, SymNode *node) {
+SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode *node, SymOutgoingTransport *transport) {
 	SymLog_info("SymDataExtractorService_extract");
+	return NULL;
+}
+
+void SymDataExtractorService_destroy(SymDataExtractorService *this) {
+    free(this);
+}
+
+SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this) {
+    if (this == NULL) {
+        this = (SymDataExtractorService *) calloc(1, sizeof(SymDataExtractorService));
+    }
+    this->extract = (void *) &SymDataExtractorService_extract;
+    this->destroy = (void *) &SymDataExtractorService_destroy;
+    return this;
 }

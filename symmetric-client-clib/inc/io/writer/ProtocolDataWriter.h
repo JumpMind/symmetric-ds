@@ -18,27 +18,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_REMOTE_NODE_STATUSES_H
-#define SYM_REMOTE_NODE_STATUSES_H
+#ifndef SYM_PROTOCOL_DATA_WRITER_H
+#define SYM_PROTOCOL_DATA_WRITER_H
 
+#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include "model/RemoteNodeStatus.h"
+#include "io/data/Batch.h"
+#include "db/model/Table.h"
+#include "io/data/CsvData.h"
+#include "io/writer/DataWriter.h"
 #include "util/List.h"
-#include "util/Map.h"
 
-typedef struct SymRemoteNodeStatuses {
-    SymMap *channels;
-    SymList *nodes;
-    unsigned int (*wasDataProcessed)(struct SymRemoteNodeStatuses *this);
-    unsigned int (*wasBatchProcessed)(struct SymRemoteNodeStatuses *this);
-    long (*getDataProcessedCount)(struct SymRemoteNodeStatuses *this);
-    unsigned int (*errorOccurred)(struct SymRemoteNodeStatuses *this);
-    struct SymRemoteNodeStatus * (*add)(struct SymRemoteNodeStatuses *this, char *nodeId);
-    unsigned int (*isComplete)(struct SymRemoteNodeStatuses *this);
-    void (*destroy)(struct SymRemoteNodeStatuses *this);
-} SymRemoteNodeStatuses;
+typedef struct SymProtocolDataWriter {
+    SymDataWriter super;
+    char *sourceNodeId;
+} SymProtocolDataWriter;
 
-SymRemoteNodeStatuses * SymRemoteNodeStatuses_new(SymRemoteNodeStatuses *this, SymMap *channels);
+SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId);
 
 #endif

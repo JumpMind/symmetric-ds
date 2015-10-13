@@ -23,6 +23,17 @@
 
 typedef struct SymBatchAck {
     long batchId;
+    char *nodeId;
+    unsigned short isOk;
+    long errorLine;
+    long networkMillis;
+    long filterMillis;
+    long databaseMillis;
+    long byteCount;
+    char *sqlState;
+    int sqlCode;
+    unsigned short ignored;
+    char *sqlMessage;
 } SymBatchAck;
 
 #endif

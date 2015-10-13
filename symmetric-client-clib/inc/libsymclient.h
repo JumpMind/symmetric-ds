@@ -42,5 +42,6 @@
 #include "util/Properties.h"
 #include "util/Map.h"
 #include "common/Constants.h"
+#include "common/Log.h"
 
 #endif
