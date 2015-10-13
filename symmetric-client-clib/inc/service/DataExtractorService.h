@@ -31,4 +31,6 @@ typedef struct SymDataExtractorService {
     void (*destroy)(struct SymDataExtractorService *this);
 } SymDataExtractorService;
 
+SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this);
+
 #endif

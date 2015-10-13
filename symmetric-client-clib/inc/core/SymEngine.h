@@ -58,7 +58,7 @@ typedef struct SymEngine {
     SymPullService *pullService;
     SymNodeService *nodeService;
     SymIncomingBatchService *incomingBatchService;
-    SymIncomingBatchService *outgoingBatchService;
+    SymOutgoingBatchService *outgoingBatchService;
     SymConfigurationService *configurationService;
 
     unsigned short (*start)(struct SymEngine *this);

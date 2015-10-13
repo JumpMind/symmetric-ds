@@ -20,6 +20,10 @@
  */
 #include "transport/http/HttpOutgoingTransport.h"
 
+SymList * SymHttpOutgoingTransport_readAcks(SymHttpOutgoingTransport *this) {
+    return NULL;
+}
+
 void SymHttpOutgoingTransport_destroy(SymHttpOutgoingTransport *this) {
     free(this->url);
     free(this);

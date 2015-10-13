@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "model/OutgoingBatch.h"
+#include "db/platform/DatabasePlatform.h"
 #include "util/List.h"
 
 typedef struct SymOutgoingBatchService {

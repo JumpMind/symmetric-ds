@@ -21,7 +21,7 @@
 #include "service/OutgoingBatchService.h"
 #include "common/Log.h"
 
-SymOutgoingBatch SymOutgoingBatchService_outgoingBatchMapper(SymRow *row) {
+SymOutgoingBatch * SymOutgoingBatchService_outgoingBatchMapper(SymRow *row) {
     SymOutgoingBatch *batch = SymOutgoingBatch_new(NULL);
     batch->nodeId = row->getStringNew(row, "node_id");
     batch->status = row->getStringNew(row, "status");
@@ -66,7 +66,7 @@ void SymOutgoingBatchService_insertOutgoingBatch(SymOutgoingBatchService *this, 
     args->addLong(args, batch->batchId)->add(args, batch->nodeId)->add(args, batch->channelId);
     args->add(args, batch->status)->addInt(args, batch->loadId)->addInt(args, batch->extractJobFlag);
     args->addInt(args, batch->loadFlag)->addInt(args, batch->commonFlag)->addLong(args, batch->reloadEventCount);
-    args->add(args, batch->otherEventCount)->add(args, batch->lastUpdatedHostName)->add(args, batch->createBy);
+    args->addLong(args, batch->otherEventCount)->add(args, batch->lastUpdatedHostName)->add(args, batch->createBy);
 
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
     int error;
@@ -81,7 +81,7 @@ SymOutgoingBatch * SymOutgoingBatchService_findOutgoingBatch(SymOutgoingBatchSer
     args->add(args, nodeId);
 
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
-    SymStringBuilder sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_OUTGOING_BATCH_PREFIX);
+    SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_OUTGOING_BATCH_PREFIX);
     sb->append(sb, SYM_SQL_FIND_OUTGOING_BATCH);
     int error;
     SymList *batches = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymOutgoingBatchService_outgoingBatchMapper);

@@ -124,10 +124,6 @@ int SymHttpTransportManager_sendAcknowledgement(SymHttpTransportManager *this, S
     return httpResponseCode;
 }
 
-SymBatchAck * SymHttpTransportManager_readAcknowledgement(SymHttpTransportManager *this, char *parameterString1, char *parameterString2) {
-    return NULL;
-}
-
 SymHttpIncomingTransport * SymHttpTransportManager_getPullTransport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
     return SymHttpIncomingTransport_new(NULL, buildUrl("pull", remote, local, securityToken, registrationUrl));
 }
@@ -150,7 +146,6 @@ SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *t
     }
     SymTransportManager *super = &this->super;
     super->sendAcknowledgement = (void *) &SymHttpTransportManager_sendAcknowledgement;
-    super->readAcknowledgement = (void *) &SymHttpTransportManager_readAcknowledgement;
     super->getPullTransport = (void *) &SymHttpTransportManager_getPullTransport;
     super->getPushTransport = (void *) &SymHttpTransportManager_getPushTransport;
     super->getRegisterTransport = (void *) &SymHttpTransportManager_getRegisterTransport;

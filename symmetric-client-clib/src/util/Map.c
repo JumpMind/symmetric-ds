@@ -108,7 +108,8 @@ void * SymMap_get(SymMap *this, char *key) {
 SymStringArray * SymMap_keys(SymMap *this) {
 	SymList *entries = this->entries(this);
 	SymStringArray *keys = SymStringArray_new(NULL);
-	for (int i = 0; i < entries->size; i++) {
+	int i;
+	for (i = 0; i < entries->size; i++) {
 		keys->add(keys, ((SymMapEntry *)entries->get(entries, i))->key);
 	}
 
@@ -118,7 +119,8 @@ SymStringArray * SymMap_keys(SymMap *this) {
 SymList * SymMap_values(SymMap *this) {
 	SymList *entries = this->entries(this);
 	SymList *values = SymList_new(NULL);
-	for (int i = 0; i < entries->size; i++) {
+	int i;
+	for (i = 0; i < entries->size; i++) {
 		values->add(values, ((SymMapEntry *)entries->get(entries, i))->value);
 	}
 
