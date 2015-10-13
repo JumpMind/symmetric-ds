@@ -21,6 +21,13 @@
 #ifndef SYM_TRIGGER_HISTORY_H
 #define SYM_TRIGGER_HISTORY_H
 
+#define SYM_TRIGGER_REBUILD_REASON_NEW_TRIGGERS "N"
+#define SYM_TRIGGER_REBUILD_REASON_TABLE_SCHEMA_CHANGED "S"
+#define SYM_TRIGGER_REBUILD_REASON_TABLE_SYNC_CONFIGURATION_CHANGED "C"
+#define SYM_TRIGGER_REBUILD_REASON_FORCED "F"
+#define SYM_TRIGGER_REBUILD_REASON_TRIGGERS_MISSING "T"
+#define SYM_TRIGGER_REBUILD_REASON_TRIGGER_TEMPLATE_CHANGED "E"
+
 typedef struct SymTriggerHistory {
     int triggerHistoryId;
     char *triggerId;
@@ -37,6 +44,10 @@ typedef struct SymTriggerHistory {
     char *nameForDeleteTrigger;
     char *errorMessage;
     SymDate *inactiveTime;
+    int tableHash;
+    long triggerRowHash;
+    long triggerTemplateHash;
+    char *lastTriggerBuildReason;
 } SymTriggerHistory;
 
 #endif
