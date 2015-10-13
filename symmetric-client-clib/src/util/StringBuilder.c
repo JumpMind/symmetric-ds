@@ -46,7 +46,9 @@ SymStringBuilder * SymStringBuilder_appendfv(SymStringBuilder *this, const char 
     int sizeNeeded = vsnprintf(NULL, 0, fmt, copy);
 	va_end(copy);
 
-    char *str = malloc(sizeNeeded);
+	// +1 to make allowance for the terminating NULL.
+	// Fixes segfault on some platforms (e.g. Linux).
+    char *str = malloc(sizeNeeded+1);
     vsprintf(str, fmt, arglist);
 
     SymStringBuilder_appendn(this, str, sizeNeeded);
