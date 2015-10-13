@@ -96,7 +96,8 @@ void SymMapTest_test3() {
 }
 
 unsigned short SymMapTest_stringListContains(SymList * list, char * string) {
-	for (int i = 0; i < list->size; i++) {
+	int i;
+	for (i = 0; i < list->size; i++) {
 		if (strcmp(list->get(list, i), string) == 0) {
 			return 1;
 		}
@@ -106,7 +107,8 @@ unsigned short SymMapTest_stringListContains(SymList * list, char * string) {
 }
 
 unsigned short SymMapTest_entryListContainsKey(SymList * entryList, char * string) {
-	for (int i = 0; i < entryList->size; i++) {
+	int i;
+	for (i = 0; i < entryList->size; i++) {
 		if (strcmp(((SymMapEntry*)entryList->get(entryList, i))->key, string) == 0) {
 			return 1;
 		}
@@ -116,7 +118,8 @@ unsigned short SymMapTest_entryListContainsKey(SymList * entryList, char * strin
 }
 
 unsigned short SymMapTest_entryListContainsValue(SymList * entryList, char * string) {
-	for (int i = 0; i < entryList->size; i++) {
+	int i;
+	for (i = 0; i < entryList->size; i++) {
 		if (strcmp(((SymMapEntry*)entryList->get(entryList, i))->value, string) == 0) {
 			return 1;
 		}
@@ -158,7 +161,8 @@ void SymMapTest_testValuesMultiValue() {
 			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 100)
     };
 
-    for (int i = 0; i < 4; i++) {
+    int i;
+    for (i = 0; i < 4; i++) {
     	SymMap *map = maps[i];
 	    SymList *valueList = map->values(map);
 
@@ -209,7 +213,8 @@ void SymMapTest_testEntriesMultiValue() {
 			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 100)
     };
 
-    for (int i = 0; i < 4; i++) {
+    int i;
+    for (i = 0; i < 4; i++) {
     	SymMap *map = maps[i];
     	SymList *entryList = map->entries(map);
 
@@ -265,7 +270,8 @@ void SymMapTest_testKeysMultiValue() {
 			SymMapTest_test_createStringMap(KEY_COUNT, keys, values, 100)
     };
 
-    for (int i = 0; i < 4; i++) {
+    int i;
+    for (i = 0; i < 4; i++) {
     	SymMap *map = maps[i];
     	SymStringArray *keyList = map->keys(map);
 
