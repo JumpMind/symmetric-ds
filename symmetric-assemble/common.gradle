@@ -36,11 +36,37 @@ allprojects {
         }
     }
     
+    eclipse.project.file.withXml { provider ->
+      ignoreDerivedResources(provider.asNode())
+    }
+    
     ext {
         majorMinorVersion = version.substring(0, version.indexOf(".", version.indexOf(".")+ 1))
     }
     
 }
+
+def ignoreDerivedResources(projectDescription, directories = ["build", "target", "test-output"]) {
+  def count = directories.count { file(it).exists() }
+  if (count > 0) {
+    def filter = projectDescription
+      .appendNode("filteredResources")
+      .appendNode("filter")
+    filter.appendNode("id", System.currentTimeMillis().toString().trim())
+    filter.appendNode("type", "26")
+    filter.appendNode("name")
+    def matcher = filter.appendNode("matcher")
+    matcher.appendNode("id", "org.eclipse.ui.ide.orFilterMatcher")
+    def arguments = matcher.appendNode("arguments")
+    directories.each {
+      if (file(it).exists()) {
+        def dirMatcher = arguments.appendNode("matcher")
+        dirMatcher.appendNode("id", "org.eclipse.ui.ide.multiFilter")
+        dirMatcher.appendNode("arguments", "1.0-projectRelativePath-matches-false-false-${it}")
+      }
+    }
+  }
+}  
 
 subprojects { subproject ->
 
