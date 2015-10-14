@@ -27,13 +27,15 @@
 #include "db/model/Table.h"
 #include "io/data/CsvData.h"
 #include "io/writer/DataWriter.h"
+#include "io/reader/DataReader.h"
 #include "util/List.h"
 
 typedef struct SymProtocolDataWriter {
     SymDataWriter super;
     char *sourceNodeId;
+    SymDataReader *reader;
 } SymProtocolDataWriter;
 
-SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId);
+SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId, SymDataReader *reader);
 
 #endif

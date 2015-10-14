@@ -136,7 +136,7 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->transportManager = SymTransportManagerFactory_create(SYM_PROTOCOL_HTTP, this->parameterService);
     this->nodeService = SymNodeService_new(NULL, this->platform);
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
-    this->outgoingBatchService = SymOutgoingBatchService_new(NULL, this->platform);
+    this->outgoingBatchService = SymOutgoingBatchService_new(NULL, this->platform, this->parameterService);
     this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform,
             this->dialect, this->incomingBatchService);
     this->dataService = SymDataService_new(NULL, this->platform, this->triggerRouterService);

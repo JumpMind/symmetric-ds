@@ -51,6 +51,8 @@
 #define SYM_PARAMETER_INCOMING_BATCH_RECORD_OK_ENABLED "incoming.batches.record.ok.enabled"
 #define SYM_PARAMETER_INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED "incoming.batches.skip.duplicates"
 
+#define SYM_OUTGOING_BATCH_MAX_BATCHES_TO_SELECT "outgoing.batches.max.to.select"
+
 typedef struct SymParameterService {
     SymProperties *parameters;
     SymProperties *properties;

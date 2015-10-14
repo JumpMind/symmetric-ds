@@ -22,20 +22,20 @@
 
 SymData * SymDataService_dataMapper(SymRow *row) {
     SymData *data = SymData_new(NULL);
-    data->dataId = row->getLong(row, "DATA_ID");
-    data->rowData = row->getString(row, "ROW_DATA");
-    data->oldData = row->getString(row, "OLD_DATA");
-    data->pkData = row->getString(row, "PK_DATA");
-    data->channelId = row->getString(row, "CHANNEL_ID");
-    data->transactionId = row->getString(row, "TRANSACTION_ID");
-    data->tableName = row->getString(row, "TABLE_NAME");
-    data->eventType = row->getString(row, "EVENT_TYPE");
-    data->sourceNodeId = row->getString(row, "SOURCE_NODE_ID");
-    data->externalData = row->getString(row, "EXTERNAL_DATA");
-    data->nodeList = row->getString(row, "NODE_LIST");
-    data->createTime = row->getDate(row, "CREATE_TIME");
-    data->routerId = row->getString(row, "ROUTER_ID");
-    data->triggerHistId = row->getInt(row, "TRIGGER_HIST_ID");
+    data->dataId = row->getLong(row, "data_id");
+    data->rowData = row->getString(row, "row_data");
+    data->oldData = row->getString(row, "old_data");
+    data->pkData = row->getString(row, "pk_data");
+    data->channelId = row->getString(row, "channel_id");
+    data->transactionId = row->getString(row, "transaction_id");
+    data->tableName = row->getString(row, "table_name");
+    data->eventType = row->getString(row, "event_type");
+    data->sourceNodeId = row->getString(row, "source_node_id");
+    data->externalData = row->getString(row, "external_data");
+    data->nodeList = row->getString(row, "node_list");
+    data->createTime = row->getDate(row, "create_time");
+    data->routerId = row->getString(row, "router_id");
+    data->triggerHistId = row->getInt(row, "trigger_hist_id");
 
     // TODO: add triggerHistory
     /*
@@ -54,15 +54,22 @@ SymData * SymDataService_dataMapper(SymRow *row) {
     */
     return data;
 }
-SymData * SymDataService_selectDataFor(SymDataService *this, SymBatch *batch) {
+SymList * SymDataService_selectDataFor(SymDataService *this, SymBatch *batch) {
     SymStringBuilder *sb = SymStringBuilder_new(SYM_SQL_SELECT_EVENT_DATA_TO_EXTRACT);
     sb->append(sb, " order by d.data_id asc");
+
     SymStringArray *args = SymStringArray_new(NULL);
     args->addLong(args, batch->batchId)->add(args, batch->targetNodeId);
 
+    int error;
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymList *list = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymDataService_dataMapper);
 
+    args->destroy(args);
     sb->destroy(sb);
-    return NULL;
+
+    // TODO: return SymSqlReadCursor instead
+    return list;
 }
 
 void SymDataService_destroy(SymDataService *this) {

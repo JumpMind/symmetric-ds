@@ -23,4 +23,6 @@
 
 #define SYM_DEPLOYMENT_TYPE "cclient"
 
+#define SYM_LONG_OPERATION_THRESHOLD 30000
+
 #endif
