@@ -33,12 +33,13 @@ typedef struct SymTrigger {
     char *channelId;
     char *reloadChannelId;
     unsigned short syncOnUpdate;
+    unsigned short syncOnInsert;
     unsigned short syncOnDelete;
     unsigned short syncOnIncomingBatch;
-    unsigned short useStreamLogs;
-    unsigned short useCaptureLogs;
+    unsigned short useStreamLobs;
+    unsigned short useCaptureLobs;
     unsigned short useCaptureOldData;
-    unsigned short *useHandleKeyUpdates;
+    unsigned short useHandleKeyUpdates;
     char *nameForInsertTrigger;
     char *nameForUpdateTrigger;
     char *nameForDeleteTrigger;
@@ -50,6 +51,7 @@ typedef struct SymTrigger {
     char *customOnInsertText;
     char *customOnDeleteText;
     char *excludedColumnNames;
+    char *syncKeyNames;
     /**
      * This is a SQL expression that creates a unique id which the sync process
      * can use to 'group' events together and commit together.

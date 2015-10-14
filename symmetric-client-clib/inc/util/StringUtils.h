@@ -26,5 +26,6 @@
 char *Sym_trim(char *str);
 char *Sym_toUpperCase(char *str);
 char *Sym_toLowerCase(char *str);
+unsigned short Sym_isBlank(char *str);
 
 #endif /* INC_UTIL_STRINGUTILS_H_ */

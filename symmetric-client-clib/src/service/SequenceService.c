@@ -34,3 +34,19 @@ long SymSequenceService_currVal(SymSequenceService *this, char * name) {
 void SymSequenceService_init(SymSequenceService *this) {
 	SymLog_info("SymSequenceService_init");
 }
+
+void SymSequenceService_destroy(SymSequenceService *this) {
+    free(this);
+}
+
+SymSequenceService * SymSequenceService_new(SymSequenceService *this) {
+    if (this == NULL) {
+        this = (SymSequenceService *) calloc(1, sizeof(SymSequenceService));
+    }
+
+    this->nextVal = (void *) &SymSequenceService_nextVal;
+    this->currVal = (void *) &SymSequenceService_currVal;
+    this->init = (void *) &SymSequenceService_init;
+    this->destroy = (void *) &SymSequenceService_destroy;
+    return this;
+}
