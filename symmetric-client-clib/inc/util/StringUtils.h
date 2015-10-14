@@ -18,22 +18,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYMCLIENT_TEST_H
-#define SYMCLIENT_TEST_H
-
-#include <CUnit/Basic.h>
+#ifndef INC_UTIL_STRINGUTILS_H_
+#define INC_UTIL_STRINGUTILS_H_
 
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
 
-#include "libsymclient.h"
+char *Sym_trim(char *str);
+char *Sym_toUpperCase(char *str);
+char *Sym_toLowerCase(char *str);
 
-int SymEngineTest_CUnit();
-int SymPropertiesTest_CUnit();
-int SymStringBuilderTest_CUnit();
-int SymMapTest_CUnit();
-int SymListTest_CUnit();
-int SymStringUtilsTest_CUnit();
-
-#endif
+#endif /* INC_UTIL_STRINGUTILS_H_ */

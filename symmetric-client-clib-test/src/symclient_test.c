@@ -30,7 +30,8 @@ int main() {
             //SymMapTest_CUnit() != CUE_SUCCESS ||
             //SymListTest_CUnit() != CUE_SUCCESS ||
             //SymStringBuilderTest_CUnit() != CUE_SUCCESS ||
-            //SymPropertiesTest_CUnit() != CUE_SUCCESS) {
+            //SymPropertiesTest_CUnit() != CUE_SUCCESS ||
+            //SymStringUtilsTest_CUnit() != CUE_SUCCESS ||
             1==0) {
         CU_cleanup_registry();
         return CU_get_error();
