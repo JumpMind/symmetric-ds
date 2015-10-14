@@ -22,9 +22,43 @@
 #define INC_MODEL_TRIGGER_H_
 
 #include <stdlib.h>
+#include "util/Date.h"
 
 
 typedef struct SymTrigger {
+    char *triggerId;
+    char *sourceTableName;
+    char *sourceSchemaName;
+    char *sourceCatalogName;
+    char *channelId;
+    char *reloadChannelId;
+    unsigned short syncOnUpdate;
+    unsigned short syncOnDelete;
+    unsigned short syncOnIncomingBatch;
+    unsigned short useStreamLogs;
+    unsigned short useCaptureLogs;
+    unsigned short useCaptureOldData;
+    unsigned short *useHandleKeyUpdates;
+    char *nameForInsertTrigger;
+    char *nameForUpdateTrigger;
+    char *nameForDeleteTrigger;
+    char *syncOnUpdateCondition;
+    char *syncOnInsertCondition;
+    char *syncOnDeleteCondition;
+    char *channelExpression;
+    char *customOnUpdateText;
+    char *customOnInsertText;
+    char *customOnDeleteText;
+    char *excludedColumnNames;
+    /**
+     * This is a SQL expression that creates a unique id which the sync process
+     * can use to 'group' events together and commit together.
+     */
+    char *txIdExpression;
+    char *externalSelect;
+    SymDate *createTime;
+    SymDate *lastUpdateTime;
+    char *lastUpdateBy;
 
     void (*destroy)(struct SymTrigger *this);
 } SymTrigger;

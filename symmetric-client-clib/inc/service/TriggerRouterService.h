@@ -74,7 +74,6 @@ typedef struct SymTriggerRouterService {
 	SymParameterService *parameterService;
     SymConfigurationService *configurationService;
 	SymDatabasePlatform *platform;
-	SymSqlTemplate *sqlTemplate;
 
 	unsigned short (*refreshFromDatabase)(struct SymTriggerRouterService *this);
 	SymList* (*getTriggers)(struct SymTriggerRouterService *this, unsigned short replaceTokens);
