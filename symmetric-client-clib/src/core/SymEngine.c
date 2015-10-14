@@ -62,7 +62,7 @@ unsigned short SymEngine_start(SymEngine *this) {
             	SymLog_info("Starting registered node [group=%s, id=%s, externalId=%s]", node->nodeGroupId, node->nodeId, node->externalId);
 
                 if (this->parameterService->is(this->parameterService, AUTO_SYNC_TRIGGERS_AT_STARTUP, 1)) {
-                	this->triggerRouterService->syncTriggers(this->triggerRouterService, NULL, 0);
+                	this->triggerRouterService->syncTriggers(this->triggerRouterService, 0);
                 }
                 else {
                 	SymLog_info("%s is turned off.", AUTO_SYNC_TRIGGERS_AT_STARTUP);
@@ -96,8 +96,8 @@ unsigned short SymEngine_stop(SymEngine *this) {
 	return 0;
 }
 
-unsigned short SymEngine_syncTriggers(SymEngine *this) {
-    return this->triggerRouterService->syncTriggers(this->triggerRouterService, NULL, 0);
+void SymEngine_syncTriggers(SymEngine *this) {
+    this->triggerRouterService->syncTriggers(this->triggerRouterService, 0);
 }
 
 unsigned short SymEngine_uninstall(SymEngine *this) {
@@ -129,10 +129,13 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->platform = SymDatabasePlatformFactory_create(properties);
     this->dialect = SymDialectFactory_create(this->platform);
 
+    this->sequenceService = SymSequenceService_new(NULL);
+
     this->configurationService = SymConfigurationService_new(NULL, this->platform);
 
     this->parameterService = SymParameterService_new(NULL, properties);
-    this->triggerRouterService = SymTriggerRouterService_new(NULL, this->parameterService, this->platform, this->configurationService);
+    this->triggerRouterService = SymTriggerRouterService_new(NULL, this->configurationService,
+            this->sequenceService, this->parameterService, this->platform);
     this->transportManager = SymTransportManagerFactory_create(SYM_PROTOCOL_HTTP, this->parameterService);
     this->nodeService = SymNodeService_new(NULL, this->platform);
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
