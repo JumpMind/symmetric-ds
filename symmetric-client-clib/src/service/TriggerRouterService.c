@@ -348,13 +348,14 @@ SymList * SymTriggerRouterService_getTriggerRouters(SymTriggerRouterService *thi
 }
 
 SymList * SymTriggerRouterService_getAllTriggerRoutersForCurrentNode(SymTriggerRouterService *this, char *sourceNodeGroupId) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
 
     char *triggerRouterSql = this->getTriggerRouterSql(this, "activeTriggersForSourceNodeGroupSql");
 
     SymStringArray *args = SymStringArray_new(NULL);
     args->add(args, sourceNodeGroupId);
     int error;
-    SymList* triggers = this->sqlTemplate->query(this->sqlTemplate, triggerRouterSql, args, NULL, &error, (void *) SymTriggerRouterService_triggerRouterMapper);
+    SymList* triggers = sqlTemplate->query(sqlTemplate, triggerRouterSql, args, NULL, &error, (void *) SymTriggerRouterService_triggerRouterMapper);
     args->destroy(args);
 
     SymList *triggerRouters =

@@ -22,10 +22,28 @@
 #define INC_MODEL_ROUTER_H_
 
 #include <stdlib.h>
-
+#include "model/NodeGroupLink.h"
 
 typedef struct SymRouter {
     char *routerId;
+    SymNodeGroupLink *nodeGroupLink;
+    char *routerType;
+
+    /**
+     * Default to routing all data to all nodes.
+     */
+    char *routerExpression;
+    unsigned short syncOnUpdate;
+    unsigned short syncOnInsert;
+    unsigned short syncOnDelete;
+    char *targetCatalogName;
+    char *targetSchemaName;
+    char *targetTableName;
+    unsigned short useSourceCatalogSchema;
+    SymDate *createTime;
+    SymDate *lastUpdateTime;
+    char *lastUpdateBy;
+
     void (*destroy)(struct SymRouter *this);
 } SymRouter;
 
