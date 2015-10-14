@@ -33,6 +33,14 @@ void SymList_add(SymList *this, void *object) {
     this->size++;
 }
 
+void SymList_addAll(SymList *this, SymList *source) {
+    SymListItem *item = source->head;
+    while (item != NULL) {
+        this->add(this, item->object);
+        item = item->next;
+    }
+}
+
 void * SymList_get(SymList *this, int index) {
     void *object = NULL;
     if (index < this->size) {
@@ -112,6 +120,7 @@ SymList * SymList_new(SymList *this) {
         this = (SymList *) calloc(1, sizeof(SymList));
     }
     this->add = (void *) &SymList_add;
+    this->addAll = (void *) &SymList_addAll;
     this->get = (void *) &SymList_get;
     this->iterator = (void *) &SymList_iterator;
     this->iteratorFromIndex = (void *) &SymList_iteratorFromIndex;
