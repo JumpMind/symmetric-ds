@@ -22,13 +22,12 @@
 #include "common/Log.h"
 
 SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode *node, SymOutgoingTransport *transport) {
-    /*
 	SymNode *nodeIdentity = this->nodeService->findIdentity(this->nodeService);
-	SymOutgoingBatch *outgoingBatch;
-	SymProtocolDataWriter *writer = SymProtocolDataWriter_new(NULL, node);
-	SymExtractDataReader *reader = SymExtractDataReader_new(NULL, outgoingBatch, nodeIdentity->nodeId, node->nodeId);
-	transport->process(transport, writer);
-*/
+
+
+	//SymExtractDataReader *reader = SymExtractDataReader_new(NULL, outgoingBatch, nodeIdentity->nodeId, node->nodeId);
+    //SymProtocolDataWriter *writer = SymProtocolDataWriter_new(NULL, node, reader);
+	//transport->process(transport, writer);
 	return NULL;
 }
 

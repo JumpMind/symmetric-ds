@@ -93,9 +93,38 @@ SymOutgoingBatch * SymOutgoingBatchService_findOutgoingBatch(SymOutgoingBatchSer
     return batch;
 }
 
-SymOutgoingBatch* SymOutgoingBatchService_getOutgoingBatches(SymOutgoingBatchService *this, char *nodeId) {
-    SymLog_info("SymOutgoingBatchService_get_outgoing_batches");
-    return NULL;
+SymOutgoingBatches * SymOutgoingBatchService_getOutgoingBatches(SymOutgoingBatchService *this, char *nodeId) {
+    time_t ts = time(NULL);
+
+    SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_OUTGOING_BATCH_PREFIX);
+    sb->append(sb, SYM_SQL_SELECT_OUTGOING_BATCH);
+
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, nodeId)->add(args, SYM_OUGOING_BATCH_REQUEST)->add(args, SYM_OUGOING_BATCH_NEW);
+    args->add(args, SYM_OUGOING_BATCH_QUERYING)->add(args, SYM_OUGOING_BATCH_SENDING)->add(args, SYM_OUGOING_BATCH_LOADING);
+    args->add(args, SYM_OUGOING_BATCH_ERROR)->add(args, SYM_OUGOING_BATCH_IGNORED);
+
+    // TODO: sqlTemplate->queryWithLimit with limit on results
+    //int maxNumberOfBatchesToSelect = this->parameterService->getInt(this->parameterService, SYM_OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
+    int error;
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymList *list = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymOutgoingBatchService_outgoingBatchMapper);
+
+    SymOutgoingBatches *batches = SymOutgoingBatches_newWithList(NULL, list);
+
+    // TODO: sort channels by processing order and errors, and filter batches for only active channels
+
+    // TODO: filter batches with channel window
+
+    time_t executeTimeInMs = (time(NULL) - ts) * 1000;
+    if (executeTimeInMs > SYM_LONG_OPERATION_THRESHOLD) {
+        SymLog_info("Selecting %d outgoing batch rows for node %s took %ld ms", list->size, nodeId, executeTimeInMs);
+    }
+
+    sb->destroy(sb);
+    args->destroy(args);
+    list->destroy(list);
+    return batches;
 }
 
 void SymOutgoingBatchService_updateOutgoingBatch(SymOutgoingBatchService *this, SymOutgoingBatch *batch) {
@@ -125,11 +154,12 @@ void SymOutgoingBatchService_destroy(SymOutgoingBatchService *this) {
     free(this);
 }
 
-SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *this, SymDatabasePlatform *platform) {
+SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *this, SymDatabasePlatform *platform, SymParameterService *parameterService) {
     if (this == NULL) {
         this = (SymOutgoingBatchService *) calloc(1, sizeof(SymOutgoingBatchService));
     }
     this->platform = platform;
+    this->parameterService = parameterService;
     this->findOutgoingBatch = (void *) &SymOutgoingBatchService_findOutgoingBatch;
     this->getOutgoingBatches = (void *) &SymOutgoingBatchService_getOutgoingBatches;
     this->updateOutgoingBatch = (void *) &SymOutgoingBatchService_updateOutgoingBatch;

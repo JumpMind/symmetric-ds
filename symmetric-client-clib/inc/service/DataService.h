@@ -35,7 +35,7 @@
 typedef struct SymDataService {
     SymDatabasePlatform *platform;
     SymTriggerRouterService *triggerRouterService;
-    SymData * (*selectDataFor)(struct SymDataService *this, SymBatch *batch);
+    SymList * (*selectDataFor)(struct SymDataService *this, SymBatch *batch);
     void (*destroy)(struct SymDataService *this);
 } SymDataService;
 

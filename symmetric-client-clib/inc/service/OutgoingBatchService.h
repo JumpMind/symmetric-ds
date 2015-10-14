@@ -23,19 +23,27 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "model/OutgoingBatch.h"
+#include "model/OutgoingBatches.h"
 #include "db/platform/DatabasePlatform.h"
+#include "service/ParameterService.h"
 #include "util/List.h"
+#include "util/StringBuilder.h"
+#include "util/StringArray.h"
+#include "util/AppUtils.h"
+#include "common/Constants.h"
 
 typedef struct SymOutgoingBatchService {
     SymDatabasePlatform *platform;
+    SymParameterService *parameterService;
     SymOutgoingBatch * (*findOutgoingBatch)(struct SymOutgoingBatchService *this, long batchId, char *nodeId);
-    SymList * (*getOutgoingBatches)(struct SymOutgoingBatchService *this, char *nodeId);
+    SymOutgoingBatches * (*getOutgoingBatches)(struct SymOutgoingBatchService *this, char *nodeId);
     void (*updateOutgoingBatch)(struct SymOutgoingBatchService *this, SymOutgoingBatch *outgoingBatch);
     void (*destroy)(struct SymOutgoingBatchService *this);
 } SymOutgoingBatchService;
 
-SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *this, SymDatabasePlatform *platform);
+SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *this, SymDatabasePlatform *platform, SymParameterService *parameterService);
 
 #define SYM_SQL_INSERT_OUTGOING_BATCH \
 "insert into sym_outgoing_batch \
@@ -60,5 +68,7 @@ b.failed_data_id, b.last_update_hostname, b.last_update_time, b.create_time, b.b
 from sym_outgoing_batch b" 
 
 #define SYM_SQL_FIND_OUTGOING_BATCH "where batch_id = ? and node_id = ?"
+
+#define SYM_SQL_SELECT_OUTGOING_BATCH "where node_id = ? and status in (?, ?, ?, ?, ?, ?, ?) order by batch_id asc"
 
 #endif

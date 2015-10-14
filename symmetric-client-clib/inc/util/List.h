@@ -46,6 +46,7 @@ typedef struct SymList {
     SymListItem *tail;
     int size;
     void (*add)(struct SymList *this, void *object);
+    void (*addAll)(struct SymList *this, struct SymList *source);
     void * (*get)(struct SymList *this, int index);
     SymIterator * (*iterator)(struct SymList *this);
     SymIterator * (*iteratorFromIndex)(struct SymList *this, int startIndex);

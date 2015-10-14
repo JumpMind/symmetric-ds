@@ -67,7 +67,7 @@ SymStringArray * SymStringArray_addLong(SymStringArray *this, long value) {
     return this->addf(this, "%ld", value);
 }
 
-SymStringArray * SymStringArray_add_all(SymStringArray *this, SymStringArray *stringArray) {
+SymStringArray * SymStringArray_addAll(SymStringArray *this, SymStringArray *stringArray) {
     int i;
     for (i = 0; i < stringArray->size; i++) {
         SymStringArray_add(this, stringArray->array[i]);
@@ -140,7 +140,7 @@ SymStringArray * SymStringArray_newWithSize(SymStringArray *this, int sizeInitia
     this->addf = (void *) &SymStringArray_addf;
     this->addInt = (void *) &SymStringArray_addInt;
     this->addLong = (void *) &SymStringArray_addLong;
-    this->addAll = (void *) &SymStringArray_add_all;
+    this->addAll = (void *) &SymStringArray_addAll;
     this->get = (void *) &SymStringArray_get;
     this->contains = (void *) &SymStringArray_contains;
     this->subarray = (void *) &SymStringArray_subarray;

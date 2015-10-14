@@ -47,11 +47,12 @@ void SymProtocolDataWriter_destroy(SymProtocolDataWriter *this) {
     free(this);
 }
 
-SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId) {
+SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId, SymDataReader *reader) {
     if (this == NULL) {
         this = (SymProtocolDataWriter *) calloc(1, sizeof(SymProtocolDataWriter));
     }
     this->sourceNodeId = sourceNodeId;
+    this->reader = reader;
     SymDataWriter *super = &this->super;
     super->open = (void *) &SymProtocolDataWriter_open;
     super->close = (void *) &SymProtocolDataWriter_close;

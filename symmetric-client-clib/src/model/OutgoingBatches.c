@@ -18,24 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_PROTOCOL_DATA_WRITER_H
-#define SYM_PROTOCOL_DATA_WRITER_H
+#include "model/OutgoingBatches.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "io/data/Batch.h"
-#include "db/model/Table.h"
-#include "io/data/CsvData.h"
-#include "io/writer/DataWriter.h"
-#include "io/reader/DataReader.h"
-#include "util/List.h"
+void SymOutgoingBatches_destroy(SymOutgoingBatches *this) {
+    this->batches->destroy(this->batches);
+    free(this);
+}
 
-typedef struct SymProtocolDataWriter {
-    SymDataWriter super;
-    char *sourceNodeId;
-    SymDataReader *reader;
-} SymProtocolDataWriter;
+SymOutgoingBatches * SymOutgoingBatches_new(SymOutgoingBatches *this) {
+    if (this == NULL) {
+        this = (SymOutgoingBatches *) calloc(1, sizeof(SymOutgoingBatches));
+    }
+    this->batches = SymList_new(NULL);
+    this->destroy = (void *) SymOutgoingBatches_destroy;
+    return this;
+}
 
-SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId, SymDataReader *reader);
-
-#endif
+SymOutgoingBatches * SymOutgoingBatches_newWithList(SymOutgoingBatches *this, SymList *list) {
+    this = SymOutgoingBatches_new(this);
+    this->batches->addAll(this->batches, list);
+    return this;
+}

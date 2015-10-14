@@ -18,24 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_PROTOCOL_DATA_WRITER_H
-#define SYM_PROTOCOL_DATA_WRITER_H
+#ifndef SYM_OUTGOING_BATCHES_H
+#define SYM_OUTGOING_BATCHES_H
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "io/data/Batch.h"
-#include "db/model/Table.h"
-#include "io/data/CsvData.h"
-#include "io/writer/DataWriter.h"
-#include "io/reader/DataReader.h"
+#include "model/OutgoingBatch.h"
 #include "util/List.h"
 
-typedef struct SymProtocolDataWriter {
-    SymDataWriter super;
-    char *sourceNodeId;
-    SymDataReader *reader;
-} SymProtocolDataWriter;
+typedef struct SymOutgoingBatches {
+    SymList *batches;
+    void (*destroy)(struct SymOutgoingBatches *this);
+} SymOutgoingBatches;
 
-SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId, SymDataReader *reader);
+SymOutgoingBatches * SymOutgoingBatches_new(SymOutgoingBatches *this);
+
+SymOutgoingBatches * SymOutgoingBatches_newWithList(SymOutgoingBatches *this, SymList *list);
 
 #endif
