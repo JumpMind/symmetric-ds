@@ -25,18 +25,25 @@
 #include "model/Node.h"
 #include "model/OutgoingBatch.h"
 #include "service/NodeService.h"
+#include "service/OutgoingBatchService.h"
+#include "service/ParameterService.h"
 #include "transport/TransportManager.h"
 #include "transport/OutgoingTransport.h"
+#include "io/data/DataProcessor.h"
 #include "io/writer/ProtocolDataWriter.h"
 #include "io/reader/ExtractDataReader.h"
 #include "util/List.h"
+#include "common/Log.h"
 
 typedef struct SymDataExtractorService {
     SymNodeService *nodeService;
+    SymOutgoingBatchService *outgoingBatchService;
+    SymParameterService *parameterService;
     SymList * (*extract)(struct SymDataExtractorService *this, SymNode *node, SymOutgoingTransport *transport);
     void (*destroy)(struct SymDataExtractorService *this);
 } SymDataExtractorService;
 
-SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this, SymNodeService *nodeService);
+SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this, SymNodeService *nodeService, SymOutgoingBatchService *outgoingBatchService,
+        SymParameterService *parameterService);
 
 #endif

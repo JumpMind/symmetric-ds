@@ -18,25 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_PROTOCOL_DATA_WRITER_H
-#define SYM_PROTOCOL_DATA_WRITER_H
+#include "model/NodeGroupLink.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "io/data/Batch.h"
-#include "db/model/Table.h"
-#include "io/data/CsvData.h"
-#include "io/data/DataProcessor.h"
-#include "io/reader/DataReader.h"
-#include "util/List.h"
-#include "common/Log.h"
 
-typedef struct SymProtocolDataWriter {
-    SymDataProcessor super;
-    char *sourceNodeId;
-    SymDataReader *reader;
-} SymProtocolDataWriter;
+void SymNodeGroupLink_destroy(SymNodeGroupLink *this) {
+    free(this);
+}
 
-SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId, SymDataReader *reader);
-
-#endif
+SymNodeGroupLink * SymNodeGroupLink_new(SymNodeGroupLink *this) {
+    if (this == NULL) {
+        this = (SymNodeGroupLink *) calloc(1, sizeof(SymNodeGroupLink));
+    }
+    this->destroy = (void *) &SymNodeGroupLink_destroy;
+    return this;
+}

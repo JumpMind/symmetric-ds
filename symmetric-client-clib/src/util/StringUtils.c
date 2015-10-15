@@ -100,3 +100,7 @@ unsigned short Sym_isBlank(char *str) {
 
     return 1;
 }
+
+unsigned short Sym_isNotBlank(char *str) {
+    return ! Sym_isBlank(str);
+}

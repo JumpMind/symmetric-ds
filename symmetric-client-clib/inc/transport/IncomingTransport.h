@@ -23,18 +23,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "io/reader/DataReader.h"
-
-#define SYM_TRANSPORT_OK 200
-#define SYM_TRANSPORT_REGISTRATION_NOT_OPEN 656
-#define SYM_TRANSPORT_REGISTRATION_REQUIRED 657
-#define SYM_TRANSPORT_SYNC_DISABLED 658
-#define SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE 503
-#define SYM_TRANSPORT_SC_FORBIDDEN 403
+#include "io/data/DataProcessor.h"
 
 typedef struct SymIncomingTransport {
     char * (*getUrl)(struct SymIncomingTransport *this);
-    long (*process)(struct SymIncomingTransport *this, SymDataReader *reader);
+    long (*process)(struct SymIncomingTransport *this, SymDataProcessor *processor);
     void (*destroy)(struct SymIncomingTransport *this);
 } SymIncomingTransport;
 

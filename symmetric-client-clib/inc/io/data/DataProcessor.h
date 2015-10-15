@@ -18,25 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_PROTOCOL_DATA_WRITER_H
-#define SYM_PROTOCOL_DATA_WRITER_H
+#ifndef SYM_DATA_PROCESSOR_H
+#define SYM_DATA_PROCESSOR_H
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "io/data/Batch.h"
-#include "db/model/Table.h"
-#include "io/data/CsvData.h"
-#include "io/data/DataProcessor.h"
-#include "io/reader/DataReader.h"
 #include "util/List.h"
-#include "common/Log.h"
 
-typedef struct SymProtocolDataWriter {
-    SymDataProcessor super;
-    char *sourceNodeId;
-    SymDataReader *reader;
-} SymProtocolDataWriter;
+typedef struct SymDataProcessor {
+    void (*open)(struct SymDataProcessor *this);
+    size_t (*process)(struct SymDataProcessor *this, char *data, size_t size, size_t count);
+    SymList * (*getBatchesProcessed)(struct SymDataProcessor *this);
+    void (*close)(struct SymDataProcessor *this);
+    void (*destroy)(struct SymDataProcessor *this);
+} SymDataProcessor;
 
-SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId, SymDataReader *reader);
+SymDataProcessor * SymDataProcessor_new(SymDataProcessor *this);
 
 #endif

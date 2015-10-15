@@ -36,7 +36,6 @@ void SymPushService_pushToNode(SymPushService *this, SymNode *remote, SymRemoteN
         //batchAcks->destroy(batchAcks);
     }
     extractedBatches->destroy(extractedBatches);
-    transport->close(transport);
     transport->destroy(transport);
     identity->destroy(identity);
     identitySecurity->destroy(identitySecurity);

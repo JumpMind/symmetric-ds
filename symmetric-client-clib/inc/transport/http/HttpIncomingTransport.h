@@ -26,7 +26,9 @@
 #include <curl/curl.h>
 #include <util/Properties.h>
 #include "model/Node.h"
+#include "transport/http/HttpTransportManager.h"
 #include "transport/IncomingTransport.h"
+#include "common/Log.h"
 
 typedef struct SymHttpIncomingTransport {
     SymIncomingTransport super;

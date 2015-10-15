@@ -32,6 +32,13 @@
 #include "transport/OutgoingTransport.h"
 #include "util/List.h"
 
+#define SYM_TRANSPORT_OK 200
+#define SYM_TRANSPORT_REGISTRATION_NOT_OPEN 656
+#define SYM_TRANSPORT_REGISTRATION_REQUIRED 657
+#define SYM_TRANSPORT_SYNC_DISABLED 658
+#define SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE 503
+#define SYM_TRANSPORT_SC_FORBIDDEN 403
+
 typedef struct SymTransportManager {
     SymParameterService *parameterService;
     int (*sendAcknowledgement)(struct SymTransportManager *this, SymNode *remote, SymList *batches, SymNode *local, char *securityToken, char *registrationUrl);

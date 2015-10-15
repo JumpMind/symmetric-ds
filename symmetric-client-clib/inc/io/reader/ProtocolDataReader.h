@@ -26,7 +26,7 @@
 #include <string.h>
 #include <curl/curl.h>
 #include <csv.h>
-#include "io/reader/DataReader.h"
+#include "io/data/DataProcessor.h"
 #include "io/writer/DataWriter.h"
 #include "model/Node.h"
 #include "transport/IncomingTransport.h"
@@ -36,7 +36,7 @@
 #include "io/data/CsvData.h"
 
 typedef struct SymProtocolDataReader {
-    SymDataReader super;
+    SymDataProcessor super;
     char *targetNodeId;
     SymDataWriter *writer;
     struct csv_parser *csvParser;

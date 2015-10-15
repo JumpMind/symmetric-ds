@@ -20,6 +20,10 @@
  */
 #include "model/OutgoingBatches.h"
 
+unsigned short SymOutgoingBatches_containsBatches(SymOutgoingBatches *this) {
+    return this->batches && this->batches->size > 0;
+}
+
 void SymOutgoingBatches_destroy(SymOutgoingBatches *this) {
     this->batches->destroy(this->batches);
     free(this);
@@ -30,6 +34,7 @@ SymOutgoingBatches * SymOutgoingBatches_new(SymOutgoingBatches *this) {
         this = (SymOutgoingBatches *) calloc(1, sizeof(SymOutgoingBatches));
     }
     this->batches = SymList_new(NULL);
+    this->containsBatches = (void *) &SymOutgoingBatches_containsBatches;
     this->destroy = (void *) SymOutgoingBatches_destroy;
     return this;
 }

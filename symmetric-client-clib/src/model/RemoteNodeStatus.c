@@ -59,7 +59,7 @@ void SymRemoteNodeStatus_updateOutgoingStatus(SymRemoteNodeStatus *this, SymList
                 this->reloadBatchesProcessed++;
             }
 
-            if (strcmp(batch->status, SYM_OUGOING_BATCH_ERROR) == 0) {
+            if (strcmp(batch->status, SYM_OUTGOING_BATCH_ERROR) == 0) {
                 this->status = SYM_REMOTE_NODE_STATUS_DATA_ERROR;
             }
         }

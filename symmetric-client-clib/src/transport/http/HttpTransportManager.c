@@ -136,6 +136,23 @@ SymHttpIncomingTransport * SymHttpTransportManager_getRegisterTransport(SymHttpT
     return SymHttpIncomingTransport_new(NULL, buildRegistrationUrl(local, registrationUrl));
 }
 
+char * SymHttpTransportManager_strerror(long rc) {
+    if (rc == SYM_TRANSPORT_OK) {
+        return "OK";
+    } else if (rc == SYM_TRANSPORT_REGISTRATION_NOT_OPEN) {
+        return "Registration Not Open";
+    } else if (rc == SYM_TRANSPORT_REGISTRATION_REQUIRED) {
+        return "Registration Required";
+    } else if (rc == SYM_TRANSPORT_SYNC_DISABLED) {
+        return "Sync Disabled";
+    } else if (rc == SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE) {
+        return "Service Unavailable";
+    } else if (rc == SYM_TRANSPORT_SC_FORBIDDEN) {
+        return "Forbidden, Authentication Required";
+    }
+    return "Unknown Error";
+}
+
 void SymHttpTransportManager_destroy(SymTransportManager *this) {
     free(this);
 }

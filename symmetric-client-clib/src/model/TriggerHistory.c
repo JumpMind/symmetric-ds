@@ -18,25 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_PROTOCOL_DATA_WRITER_H
-#define SYM_PROTOCOL_DATA_WRITER_H
+#include "model/TriggerHistory.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "io/data/Batch.h"
-#include "db/model/Table.h"
-#include "io/data/CsvData.h"
-#include "io/data/DataProcessor.h"
-#include "io/reader/DataReader.h"
-#include "util/List.h"
-#include "common/Log.h"
 
-typedef struct SymProtocolDataWriter {
-    SymDataProcessor super;
-    char *sourceNodeId;
-    SymDataReader *reader;
-} SymProtocolDataWriter;
+void SymTriggerHistory_destroy(SymTriggerHistory *this) {
+    free(this);
+}
 
-SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId, SymDataReader *reader);
-
-#endif
+SymTriggerHistory * SymTriggerHistory_new(SymTriggerHistory *this) {
+    if (this == NULL) {
+        this = (SymTriggerHistory *) calloc(1, sizeof(SymTriggerHistory));
+    }
+    this->destroy = (void *) &SymTriggerHistory_destroy;
+    return this;
+}
