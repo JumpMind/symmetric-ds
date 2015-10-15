@@ -100,9 +100,9 @@ SymOutgoingBatches * SymOutgoingBatchService_getOutgoingBatches(SymOutgoingBatch
     sb->append(sb, SYM_SQL_SELECT_OUTGOING_BATCH);
 
     SymStringArray *args = SymStringArray_new(NULL);
-    args->add(args, nodeId)->add(args, SYM_OUGOING_BATCH_REQUEST)->add(args, SYM_OUGOING_BATCH_NEW);
-    args->add(args, SYM_OUGOING_BATCH_QUERYING)->add(args, SYM_OUGOING_BATCH_SENDING)->add(args, SYM_OUGOING_BATCH_LOADING);
-    args->add(args, SYM_OUGOING_BATCH_ERROR)->add(args, SYM_OUGOING_BATCH_IGNORED);
+    args->add(args, nodeId)->add(args, SYM_OUTGOING_BATCH_REQUEST)->add(args, SYM_OUTGOING_BATCH_NEW);
+    args->add(args, SYM_OUTGOING_BATCH_QUERYING)->add(args, SYM_OUTGOING_BATCH_SENDING)->add(args, SYM_OUTGOING_BATCH_LOADING);
+    args->add(args, SYM_OUTGOING_BATCH_ERROR)->add(args, SYM_OUTGOING_BATCH_IGNORED);
 
     // TODO: sqlTemplate->queryWithLimit with limit on results
     //int maxNumberOfBatchesToSelect = this->parameterService->getInt(this->parameterService, SYM_OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);

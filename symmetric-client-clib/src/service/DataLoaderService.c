@@ -45,13 +45,13 @@ static void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *re
 static SymList * SymDataLoaderService_loadDataFromTransport(SymDataLoaderService *this, SymNode *remote, SymIncomingTransport *transport, int *error) {
     // TODO:
     SymDataWriter *writer = (SymDataWriter *) SymDefaultDatabaseWriter_new(NULL, this->incomingBatchService, this->platform, this->dialect);
-    SymDataReader *reader = (SymDataReader *) SymProtocolDataReader_new(NULL, remote->nodeId, writer);
+    SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataReader_new(NULL, remote->nodeId, writer);
 
-    long rc = transport->process(transport, reader);
+    long rc = transport->process(transport, processor);
     SymLog_debug("Transport rc = %ld" , rc);
 
-    SymList *batchesProcessed = writer->batchesProcessed;
-    reader->destroy(reader);
+    SymList *batchesProcessed = processor->batchesProcessed;
+    processor->destroy(processor);
     writer->destroy(writer);
     return batchesProcessed;
 }

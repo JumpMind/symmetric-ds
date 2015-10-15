@@ -19,52 +19,34 @@
  * under the License.
  */
 #include "transport/http/HttpIncomingTransport.h"
-#include "common/Log.h"
 
-static char * SymHttpIncomingTransport_strerror_http(long rc) {
-    if (rc == SYM_TRANSPORT_OK) {
-        return "OK";
-    } else if (rc == SYM_TRANSPORT_REGISTRATION_NOT_OPEN) {
-        return "Registration Not Open";
-    } else if (rc == SYM_TRANSPORT_REGISTRATION_REQUIRED) {
-        return "Registration Required";
-    } else if (rc == SYM_TRANSPORT_SYNC_DISABLED) {
-        return "Sync Disabled";
-    } else if (rc == SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE) {
-        return "Service Unavailable";
-    } else if (rc == SYM_TRANSPORT_SC_FORBIDDEN) {
-        return "Forbidden, Authentication Required";
-    }
-    return "Unknown Error";
+static size_t SymHttpIncomingTransport_writeCallback(char *data, size_t size, size_t count, SymDataProcessor *processor) {
+    return processor->process(processor, data, size, count);
 }
 
-static size_t SymHttpIncomingTransport_writeCallback(char *data, size_t size, size_t count, SymDataReader *reader) {
-    return reader->process(reader, data, size, count);
-}
-
-long SymHttpIncomingTransport_process(SymHttpIncomingTransport *this, SymDataReader *reader) {
+long SymHttpIncomingTransport_process(SymHttpIncomingTransport *this, SymDataProcessor *processor) {
     long httpCode = 0;
     CURLcode rc = CURLE_FAILED_INIT;
     CURL *curl = curl_easy_init();
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, this->url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, SymHttpIncomingTransport_writeCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, reader);
-        reader->open(reader);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, processor);
+        processor->open(processor);
         rc = curl_easy_perform(curl);
         if (rc != CURLE_OK) {
         	SymLog_error("Error %d from curl, cannot retrieve %s", rc, this->url);
         	SymLog_error("%s", curl_easy_strerror(rc));
         }
         curl_easy_cleanup(curl);
-        reader->close(reader);
+        processor->close(processor);
     } else {
     	SymLog_error("Error cannot initialize curl");
     }
     if (rc == CURLE_OK) {
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
         if (httpCode != SYM_TRANSPORT_OK) {
-        	SymLog_error("HTTP response code of %ld, %s", httpCode, SymHttpIncomingTransport_strerror_http(httpCode));
+        	SymLog_error("HTTP response code of %ld, %s", httpCode, SymHttpTransportManager_strerror(httpCode));
         }
     }
     return httpCode;

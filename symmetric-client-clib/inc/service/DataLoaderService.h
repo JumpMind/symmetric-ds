@@ -30,6 +30,7 @@
 #include "transport/IncomingTransport.h"
 #include "model/Node.h"
 #include "model/RemoteNodeStatus.h"
+#include "io/data/DataProcessor.h"
 #include "io/reader/ProtocolDataReader.h"
 #include "io/writer/DefaultDatabaseWriter.h"
 #include "db/platform/DatabasePlatform.h"

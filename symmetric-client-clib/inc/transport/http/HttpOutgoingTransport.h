@@ -23,13 +23,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <curl/curl.h>
+#include "transport/http/HttpTransportManager.h"
 #include "transport/OutgoingTransport.h"
 #include "util/List.h"
 
 typedef struct SymHttpOutgoingTransport {
     SymOutgoingTransport super;
     char *url;
-    FILE *outputStream;
 } SymHttpOutgoingTransport;
 
 SymHttpOutgoingTransport * SymHttpOutgoingTransport_new(SymHttpOutgoingTransport *this, char *url);

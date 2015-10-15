@@ -29,7 +29,6 @@
 #include "util/List.h"
 
 typedef struct SymDataWriter {
-    SymList *batchesProcessed;
     void (*open)(struct SymDataWriter *this);
     void (*close)(struct SymDataWriter *this);
     void (*startBatch)(struct SymDataWriter *this, SymBatch *batch);

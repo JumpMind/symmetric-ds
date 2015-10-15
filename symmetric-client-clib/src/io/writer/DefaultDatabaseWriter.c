@@ -34,7 +34,6 @@ void SymDefaultDatabaseWriter_startBatch(SymDefaultDatabaseWriter *this, SymBatc
     // TODO: if batchId < 0, remove outgoing configuration batches
     this->incomingBatch = SymIncomingBatch_newWithBatch(NULL, batch);
     SymDataWriter *super = (SymDataWriter *) &this->super;
-    super->batchesProcessed->add(super->batchesProcessed, this->incomingBatch);
     if (!this->incomingBatchService->acquireIncomingBatch(this->incomingBatchService, this->incomingBatch)) {
         this->isError = 1;
     }
@@ -246,7 +245,6 @@ SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter
     this->platform = platform;
     this->dialect = dialect;
     this->targetTables = SymMap_new(NULL, 50);
-    super->batchesProcessed = SymList_new(NULL);
     super->open = (void *) &SymDefaultDatabaseWriter_open;
     super->startBatch = (void *) &SymDefaultDatabaseWriter_startBatch;
     super->startTable = (void *) &SymDefaultDatabaseWriter_startTable;

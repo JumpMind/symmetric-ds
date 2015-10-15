@@ -20,6 +20,24 @@
  */
 #include "io/reader/ExtractDataReader.h"
 
+void SymExtractDataReader_open(SymExtractDataReader *this) {
+}
+
+SymBatch * SymExtractDataReader_nextBatch(SymExtractDataReader *this) {
+    return NULL;
+}
+
+SymTable * SymExtractDataReader_nextTable(SymExtractDataReader *this) {
+    return NULL;
+}
+
+SymCsvData * SymExtractDataReader_nextData(SymExtractDataReader *this) {
+    return NULL;
+}
+
+void SymExtractDataReader_close(SymExtractDataReader *this) {
+}
+
 void SymExtractDataReader_destroy(SymExtractDataReader *this) {
     free(this);
 }
@@ -29,9 +47,11 @@ SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymO
         this = (SymExtractDataReader *) calloc(1, sizeof(SymExtractDataReader));
     }
     SymDataReader *super = &this->super;
-    //super->open = (void *) &SymProtocolDataReader_open;
-    //super->close = (void *) &SymProtocolDataReader_close;
-    //super->process = (void *) &SymProtocolDataReader_process;
+    super->open = (void *) &SymExtractDataReader_open;
+    super->close = (void *) &SymExtractDataReader_close;
+    super->nextBatch = (void *) &SymExtractDataReader_nextBatch;
+    super->nextTable = (void *) &SymExtractDataReader_nextTable;
+    super->nextData = (void *) &SymExtractDataReader_nextData;
     super->destroy = (void *) &SymExtractDataReader_destroy;
     return this;
 }

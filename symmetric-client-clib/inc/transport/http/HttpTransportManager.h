@@ -39,4 +39,6 @@ typedef struct SymHttpTransportManager {
 
 SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *this, SymParameterService *parameterService);
 
+char * SymHttpTransportManager_strerror(long rc);
+
 #endif
