@@ -26,7 +26,9 @@
 #include "model/OutgoingBatch.h"
 #include "service/NodeService.h"
 #include "service/OutgoingBatchService.h"
+#include "service/DataService.h"
 #include "service/ParameterService.h"
+#include "service/TriggerRouterService.h"
 #include "transport/TransportManager.h"
 #include "transport/OutgoingTransport.h"
 #include "io/data/DataProcessor.h"
@@ -38,12 +40,14 @@
 typedef struct SymDataExtractorService {
     SymNodeService *nodeService;
     SymOutgoingBatchService *outgoingBatchService;
+    SymDataService *dataService;
+    SymTriggerRouterService *triggerRouterService;
     SymParameterService *parameterService;
     SymList * (*extract)(struct SymDataExtractorService *this, SymNode *node, SymOutgoingTransport *transport);
     void (*destroy)(struct SymDataExtractorService *this);
 } SymDataExtractorService;
 
 SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this, SymNodeService *nodeService, SymOutgoingBatchService *outgoingBatchService,
-        SymParameterService *parameterService);
+        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymParameterService *parameterService);
 
 #endif

@@ -37,6 +37,6 @@ typedef struct SymBatch {
 
 SymBatch * SymBatch_new(SymBatch *this);
 
-SymBatch * SymBatch_new_with_settings(SymBatch *this, long batchId, char *channelId, char *sourceNodeId, char *targetNodeId);
+SymBatch * SymBatch_newWithSettings(SymBatch *this, long batchId, char *channelId, char *sourceNodeId, char *targetNodeId);
 
 #endif

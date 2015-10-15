@@ -65,7 +65,7 @@ b.reload_event_count, b.insert_event_count, b.update_event_count, b.delete_event
 b.ignore_count, b.router_millis, b.network_millis, b.filter_millis, b.load_millis, b.extract_millis, b.sql_state, b.sql_code, \
 b.sql_message, \
 b.failed_data_id, b.last_update_hostname, b.last_update_time, b.create_time, b.batch_id, b.extract_job_flag, b.load_flag, b.error_flag, b.common_flag, b.load_id, b.create_by \
-from sym_outgoing_batch b" 
+from sym_outgoing_batch b "
 
 #define SYM_SQL_FIND_OUTGOING_BATCH "where batch_id = ? and node_id = ?"
 

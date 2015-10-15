@@ -149,6 +149,10 @@ char * SymHttpTransportManager_strerror(long rc) {
         return "Service Unavailable";
     } else if (rc == SYM_TRANSPORT_SC_FORBIDDEN) {
         return "Forbidden, Authentication Required";
+    } else if (rc == SYM_TRANSPORT_SC_ACCESS_DENIED) {
+        return "Access Denied";
+    } else if (rc == SYM_TRANSPORT_SC_SERVICE_BUSY) {
+        return "Service Busy";
     }
     return "Unknown Error";
 }

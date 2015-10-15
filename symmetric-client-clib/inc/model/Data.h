@@ -46,4 +46,6 @@ typedef struct SymData {
 
 SymData * SymData_new(SymData *this);
 
+void SymData_destroy(SymData *this);
+
 #endif

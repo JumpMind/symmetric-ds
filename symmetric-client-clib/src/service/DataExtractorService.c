@@ -22,7 +22,8 @@
 
 static SymList * SymDataExtractorService_extractOutgoingBatch(SymDataExtractorService *this, SymNode *sourceNode, SymNode *targetNode,
         SymOutgoingTransport *transport, SymOutgoingBatch *outgoingBatch) {
-    SymDataReader *reader = (SymDataReader *) SymExtractDataReader_new(NULL, outgoingBatch, sourceNode->nodeId, targetNode->nodeId);
+    SymDataReader *reader = (SymDataReader *) SymExtractDataReader_new(NULL, outgoingBatch, sourceNode->nodeId, targetNode->nodeId, this->dataService,
+            this->triggerRouterService);
     SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataWriter_new(NULL, sourceNode->nodeId, reader);
     long rc = transport->process(transport, processor);
     SymLog_debug("Transport rc = %ld" , rc);
@@ -33,8 +34,7 @@ static SymList * SymDataExtractorService_extractOutgoingBatch(SymDataExtractorSe
 }
 
 SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode *targetNode, SymOutgoingTransport *transport) {
-
-    SymList *processedBatches = SymList_new(NULL);
+    SymList *processedBatches = NULL;
     SymOutgoingBatches *batches = this->outgoingBatchService->getOutgoingBatches(this->outgoingBatchService, targetNode->nodeId);
 
     if (batches->containsBatches(batches)) {
@@ -49,7 +49,7 @@ SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode
 
         while (iter->hasNext(iter)) {
             SymOutgoingBatch *batch = (SymOutgoingBatch *) iter->next(iter);
-            SymDataExtractorService_extractOutgoingBatch(this, nodeIdentity, targetNode, transport, batch);
+            processedBatches = SymDataExtractorService_extractOutgoingBatch(this, nodeIdentity, targetNode, transport, batch);
 
             if (strcmp(batch->status, SYM_OUTGOING_BATCH_OK) == 0) {
                 batch->loadCount++;
@@ -70,7 +70,6 @@ SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode
         }
         iter->destroy(iter);
     }
-
 	return processedBatches;
 }
 
@@ -79,12 +78,13 @@ void SymDataExtractorService_destroy(SymDataExtractorService *this) {
 }
 
 SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this, SymNodeService *nodeService, SymOutgoingBatchService *outgoingBatchService,
-        SymParameterService *parameterService) {
+        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymParameterService *parameterService) {
     if (this == NULL) {
         this = (SymDataExtractorService *) calloc(1, sizeof(SymDataExtractorService));
     }
     this->nodeService = nodeService;
     this->outgoingBatchService = outgoingBatchService;
+    this->dataService = dataService;
     this->parameterService = parameterService;
     this->extract = (void *) &SymDataExtractorService_extract;
     this->destroy = (void *) &SymDataExtractorService_destroy;
