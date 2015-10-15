@@ -47,6 +47,7 @@ SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymO
         this = (SymExtractDataReader *) calloc(1, sizeof(SymExtractDataReader));
     }
     SymDataReader *super = &this->super;
+    super->batchesProcessed = SymList_new(NULL);
     super->open = (void *) &SymExtractDataReader_open;
     super->close = (void *) &SymExtractDataReader_close;
     super->nextBatch = (void *) &SymExtractDataReader_nextBatch;

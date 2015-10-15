@@ -26,9 +26,9 @@
 #include "util/List.h"
 
 typedef struct SymDataProcessor {
-    SymList *batchesProcessed;
     void (*open)(struct SymDataProcessor *this);
     size_t (*process)(struct SymDataProcessor *this, char *data, size_t size, size_t count);
+    SymList * (*getBatchesProcessed)(struct SymDataProcessor *this);
     void (*close)(struct SymDataProcessor *this);
     void (*destroy)(struct SymDataProcessor *this);
 } SymDataProcessor;

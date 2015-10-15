@@ -28,6 +28,10 @@ size_t SymProtocolDataWriter_process(SymProtocolDataWriter *this,  char *data, s
     return length;
 }
 
+SymList * SymProtocolDataWriter_getBatchesProcessed(SymProtocolDataWriter *this) {
+    return this->reader->batchesProcessed;
+}
+
 void SymProtocolDataWriter_close(SymProtocolDataWriter *this) {
 }
 
@@ -45,6 +49,7 @@ SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, c
     super->open = (void *) &SymProtocolDataWriter_open;
     super->close = (void *) &SymProtocolDataWriter_close;
     super->process = (void *) &SymProtocolDataWriter_process;
+    super->getBatchesProcessed = (void *) &SymProtocolDataWriter_getBatchesProcessed;
     super->destroy = (void *) &SymProtocolDataWriter_destroy;
     return this;
 }

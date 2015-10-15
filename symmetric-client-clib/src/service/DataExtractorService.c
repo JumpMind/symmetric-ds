@@ -26,7 +26,7 @@ static SymList * SymDataExtractorService_extractOutgoingBatch(SymDataExtractorSe
     SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataWriter_new(NULL, sourceNode->nodeId, reader);
     long rc = transport->process(transport, processor);
     SymLog_debug("Transport rc = %ld" , rc);
-    SymList *batchesProcessed = processor->batchesProcessed;
+    SymList *batchesProcessed = processor->getBatchesProcessed(processor);
     reader->destroy(reader);
     processor->destroy(processor);
     return batchesProcessed;

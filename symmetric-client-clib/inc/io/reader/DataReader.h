@@ -28,6 +28,7 @@
 #include "io/data/CsvData.h"
 
 typedef struct SymDataReader {
+    SymList *batchesProcessed;
     void (*open)(struct SymDataReader *this);
     SymBatch * (*nextBatch)(struct SymDataReader *this);
     SymTable * (*nextTable)(struct SymDataReader *this);

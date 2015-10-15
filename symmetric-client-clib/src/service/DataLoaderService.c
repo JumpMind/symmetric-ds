@@ -50,7 +50,7 @@ static SymList * SymDataLoaderService_loadDataFromTransport(SymDataLoaderService
     long rc = transport->process(transport, processor);
     SymLog_debug("Transport rc = %ld" , rc);
 
-    SymList *batchesProcessed = processor->batchesProcessed;
+    SymList *batchesProcessed = processor->getBatchesProcessed(processor);
     processor->destroy(processor);
     writer->destroy(writer);
     return batchesProcessed;

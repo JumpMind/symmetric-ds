@@ -30,7 +30,6 @@ static void SymProtocolDataReader_parseField(void *data, size_t size, void *user
 
 static void SymProtocolDataReader_parseLine(int eol, void *userData) {
     SymProtocolDataReader *this = (SymProtocolDataReader *) userData;
-    SymDataProcessor *super = &this->super;
     SymBatch *batch = this->batch;
     SymStringArray *fields = this->fields;
 
@@ -91,7 +90,6 @@ static void SymProtocolDataReader_parseLine(int eol, void *userData) {
             SymStringBuilder_copyToField(&batch->channelId, fields->get(fields, 1));
         } else if (strcmp(token, SYM_CSV_BATCH) == 0) {
             batch->batchId = atol(fields->get(fields, 1));
-            super->batchesProcessed->add(super->batchesProcessed, this->batch);
             this->writer->startBatch(this->writer, batch);
         } else if (strcmp(token, SYM_CSV_COMMIT) == 0) {
             this->writer->endBatch(this->writer, batch);
@@ -128,6 +126,10 @@ size_t SymProtocolDataReader_process(SymProtocolDataReader *this, char *data, si
     return length;
 }
 
+SymList * SymProtocolDataReader_getBatchesProcessed(SymProtocolDataReader *this) {
+    return this->writer->batchesProcessed;
+}
+
 void SymProtocolDataReader_close(SymProtocolDataReader *this) {
     csv_fini(this->csvParser, SymProtocolDataReader_parseField, SymProtocolDataReader_parseLine, this);
     this->writer->close(this->writer);
@@ -155,10 +157,10 @@ SymProtocolDataReader * SymProtocolDataReader_new(SymProtocolDataReader *this, c
     this->parsedTables = SymMap_new(NULL, 100);
 
     SymDataProcessor *super = &this->super;
-    super->batchesProcessed = SymList_new(NULL);
     super->open = (void *) &SymProtocolDataReader_open;
     super->close = (void *) &SymProtocolDataReader_close;
     super->process = (void *) &SymProtocolDataReader_process;
+    super->getBatchesProcessed = (void *) &SymProtocolDataReader_getBatchesProcessed;
     super->destroy = (void *) &SymProtocolDataReader_destroy;
     return this;
 }
