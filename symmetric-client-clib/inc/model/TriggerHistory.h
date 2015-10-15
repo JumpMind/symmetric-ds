@@ -22,6 +22,7 @@
 #define SYM_TRIGGER_HISTORY_H
 
 #include "util/Date.h"
+#include "util/StringArray.h"
 
 #define SYM_TRIGGER_REBUILD_REASON_NEW_TRIGGERS "N"
 #define SYM_TRIGGER_REBUILD_REASON_TABLE_SCHEMA_CHANGED "S"
