@@ -105,7 +105,7 @@ SymList * SymNodeService_findNodesToPull(SymNodeService *this) {
 }
 
 SymList * SymNodeService_findNodesToPushTo(SymNodeService *this) {
-    return this->findSourceNodesFor(this, SYM_NODE_GROUP_LINK_PUSH);
+    return this->findTargetNodesFor(this, SYM_NODE_GROUP_LINK_PUSH);
 }
 
 SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char *nodeGroupLinkAction) {
@@ -116,6 +116,26 @@ SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char *nodeGrou
         SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
         SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
         sb->append(sb, SYM_SQL_FIND_NODES_WHO_TARGET_ME);
+        SymStringArray *args = SymStringArray_new(NULL);
+        args->add(args, node->nodeGroupId)->add(args, nodeGroupLinkAction);
+
+        nodes = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymNodeService_nodeMapper);
+        args->destroy(args);
+        sb->destroy(sb);
+    } else {
+        nodes = SymList_new(NULL);
+    }
+    return nodes;
+}
+
+SymList * SymNodeService_findTargetNodesFor(SymNodeService *this, char *nodeGroupLinkAction) {
+    SymList *nodes = NULL;
+    SymNode *node = this->findIdentity(this);
+    if (node != NULL) {
+        int error;
+        SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+        SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
+        sb->append(sb, SYM_SQL_FIND_NODES_WHO_I_TARGET);
         SymStringArray *args = SymStringArray_new(NULL);
         args->add(args, node->nodeGroupId)->add(args, nodeGroupLinkAction);
 
@@ -166,6 +186,7 @@ SymNodeService * SymNodeService_new(SymNodeService *this, SymDatabasePlatform *p
     this->findNodesToPull = (void *) &SymNodeService_findNodesToPull;
     this->findNodesToPushTo = (void *) &SymNodeService_findNodesToPushTo;
     this->findSourceNodesFor = (void *) &SymNodeService_findSourceNodesFor;
+    this->findTargetNodesFor = (void *) &SymNodeService_findTargetNodesFor;
     this->isDataloadStarted = (void *) &SymNodeService_isDataloadStarted;
     this->isDataloadCompleted = (void *) &SymNodeService_isDataloadCompleted;
     this->getNodeStatus = (void *) &SymNodeService_getNodeStatus;
