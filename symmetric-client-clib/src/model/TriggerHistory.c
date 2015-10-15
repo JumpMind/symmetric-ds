@@ -18,35 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "service/SequenceService.h"
-#include "common/Log.h"
+#include "model/TriggerHistory.h"
 
-long SymSequenceService_nextVal(SymSequenceService *this, char * name) {
-	SymLog_info("SymSequenceService_next_val");
-    return 0;
-}
 
-long SymSequenceService_currVal(SymSequenceService *this, char * name) {
-	SymLog_info("SymSequenceService_curr_val");
-    return 0;
-}
-
-void SymSequenceService_init(SymSequenceService *this) {
-	SymLog_info("SymSequenceService_init");
-}
-
-void SymSequenceService_destroy(SymSequenceService *this) {
+void SymTriggerHistory_destroy(SymTriggerHistory *this) {
     free(this);
 }
 
-SymSequenceService * SymSequenceService_new(SymSequenceService *this) {
+SymTriggerHistory * SymTriggerHistory_new(SymTriggerHistory *this) {
     if (this == NULL) {
-        this = (SymSequenceService *) calloc(1, sizeof(SymSequenceService));
+        this = (SymTriggerHistory *) calloc(1, sizeof(SymTriggerHistory));
     }
-
-    this->nextVal = (void *) &SymSequenceService_nextVal;
-    this->currVal = (void *) &SymSequenceService_currVal;
-    this->init = (void *) &SymSequenceService_init;
-    this->destroy = (void *) &SymSequenceService_destroy;
+    this->destroy = (void *) &SymTriggerHistory_destroy;
     return this;
 }

@@ -80,3 +80,27 @@ char *Sym_toLowerCase(char *str) {
 
     return newString;
 }
+
+unsigned short Sym_isBlank(char *str) {
+    if (str == NULL) {
+        return 1;
+    }
+
+    int strLen = strlen(str);
+    if (strLen == 0) {
+        return 1;
+    }
+
+    int i;
+    for (i = 0; i < strLen; i++) {
+        if (!isspace(str[i])) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+unsigned short Sym_isNotBlank(char *str) {
+    return ! Sym_isBlank(str);
+}

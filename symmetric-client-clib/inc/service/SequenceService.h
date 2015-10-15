@@ -27,6 +27,9 @@ typedef struct SymSequenceService {
     void (*init)(struct SymSequenceService *this);
     long (*nextVal)(struct SymSequenceService *this, char *name);
     long (*currVal)(struct SymSequenceService *this, char *name);
+    void (*destroy)(struct SymSequenceService *this);
 } SymSequenceService;
+
+SymSequenceService * SymSequenceService_new(SymSequenceService *this);
 
 #endif

@@ -53,6 +53,12 @@ void SymStringUtilsTest_test_toLowerCase() {
      CU_ASSERT(strcmp(Sym_toLowerCase(""), "") == 0);
 }
 
+void SymStringUtilsTest_test_isBlank() {
+    CU_ASSERT(Sym_isBlank("t") == 0);
+    CU_ASSERT(Sym_isBlank("       t") == 0);
+    CU_ASSERT(Sym_isBlank("some string") == 0);
+}
+
 int SymStringUtilsTest_CUnit() {
     CU_pSuite suite = CU_add_suite("SymStringUtilsTest", NULL, NULL);
     if (suite == NULL) {
@@ -61,7 +67,9 @@ int SymStringUtilsTest_CUnit() {
 
     if (CU_add_test(suite, "SymStringUtilsTest_testTrim", SymStringUtilsTest_testTrim) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_test_toUpperCase", SymStringUtilsTest_test_toUpperCase) == NULL ||
-            CU_add_test(suite, "SymStringUtilsTest_test_toLowerCase", SymStringUtilsTest_test_toLowerCase) == NULL) {
+            CU_add_test(suite, "SymStringUtilsTest_test_toLowerCase", SymStringUtilsTest_test_toLowerCase) == NULL ||
+            CU_add_test(suite, "SymStringUtilsTest_test_isBlank", SymStringUtilsTest_test_isBlank) == NULL ||
+            1==0) {
         return CUE_NOTEST;
     }
     return CUE_SUCCESS;

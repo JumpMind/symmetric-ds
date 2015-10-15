@@ -62,11 +62,12 @@ typedef struct SymEngine {
     SymIncomingBatchService *incomingBatchService;
     SymOutgoingBatchService *outgoingBatchService;
     SymConfigurationService *configurationService;
+    SymSequenceService *sequenceService;
 
     unsigned short (*start)(struct SymEngine *this);
     unsigned short (*stop)(struct SymEngine *this);
     unsigned short (*uninstall)(struct SymEngine *this);
-    unsigned short (*syncTriggers)(struct SymEngine *this);
+    void (*syncTriggers)(struct SymEngine *this);
     void (*destroy)(struct SymEngine *this);
 } SymEngine;
 

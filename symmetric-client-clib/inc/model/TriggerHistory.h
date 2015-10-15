@@ -50,6 +50,10 @@ typedef struct SymTriggerHistory {
     long triggerRowHash;
     long triggerTemplateHash;
     char *lastTriggerBuildReason;
+
+    void (*destroy)(struct SymTriggerHistory *this);
 } SymTriggerHistory;
+
+SymTriggerHistory * SymTriggerHistory_new(SymTriggerHistory *this);
 
 #endif
