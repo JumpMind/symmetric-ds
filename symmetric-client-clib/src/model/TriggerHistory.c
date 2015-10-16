@@ -32,3 +32,9 @@ SymTriggerHistory * SymTriggerHistory_new(SymTriggerHistory *this) {
     this->destroy = (void *) &SymTriggerHistory_destroy;
     return this;
 }
+
+SymTriggerHistory * SymTriggerHistory_newWithId(SymTriggerHistory *this, int triggerHistoryId) {
+    this = SymTriggerHistory_new(this);
+    this->triggerHistoryId = triggerHistoryId;
+    return this;
+}

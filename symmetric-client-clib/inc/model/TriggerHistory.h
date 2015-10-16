@@ -57,4 +57,6 @@ typedef struct SymTriggerHistory {
 
 SymTriggerHistory * SymTriggerHistory_new(SymTriggerHistory *this);
 
+SymTriggerHistory * SymTriggerHistory_newWithId(SymTriggerHistory *this, int triggerHistoryId);
+
 #endif
