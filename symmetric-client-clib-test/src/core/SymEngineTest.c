@@ -30,7 +30,7 @@ int SymEngineTest_teardown() {
 
 void SymEngineTest_test1() {
     SymProperties *prop = SymProperties_new(NULL);
-    prop->put(prop, SYM_PARAMETER_DB_URL, "sqlite:file:/Users/mmichalek/data.db");
+    prop->put(prop, SYM_PARAMETER_DB_URL, "sqlite:file:./Debug/data.db");
     prop->put(prop, SYM_PARAMETER_GROUP_ID, "store");
     prop->put(prop, SYM_PARAMETER_EXTERNAL_ID, "003");
     prop->put(prop, SYM_PARAMETER_REGISTRATION_URL, "http://localhost:31415/sync/corp-000");
