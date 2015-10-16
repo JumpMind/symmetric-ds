@@ -24,6 +24,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "db/SymDialect.h"
+#include "common/Log.h"
+#include "db/sql/SqlTemplate.h"
+#include "db/sqlite/SqliteTriggerTemplate.h"
+
 
 typedef struct SymSqliteDialect {
     SymDialect super;
@@ -384,5 +388,4 @@ CREATE TABLE sym_trigger_router( \
     FOREIGN KEY (trigger_id) REFERENCES sym_trigger (trigger_id) \
 ); \
 "
-
 #endif

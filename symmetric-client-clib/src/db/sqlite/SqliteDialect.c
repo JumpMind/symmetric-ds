@@ -19,7 +19,6 @@
  * under the License.
  */
 #include "db/sqlite/SqliteDialect.h"
-#include "common/Log.h"
 
 static int create_if_missing(SymDialect *super, char *tableName, char *createSql) {
     // TODO: re-implement this using ddl reader
@@ -68,12 +67,36 @@ void SymSqliteDialect_disableSyncTriggers(SymSqliteDialect *this, SymSqlTransact
 void SymSqliteDialect_enableSyncTriggers(SymSqliteDialect *this, SymSqlTransaction *transaction) {
 }
 
-int SymSqliteDialect_createTrigger(SymSqliteDialect *this) {
+int SymSqliteDialect_createTrigger(SymSqliteDialect *this, SymDataEventType *dml, SymTrigger *trigger,
+        SymTriggerHistory *hist, SymChannel *channel, char* tablePrefix, SymTable *table) {
+
+    SymLog_info("Creating %s trigger for %s", trigger->triggerId, table->name);
+
+    char * (*createTriggerDDL)(struct SymSqliteTriggerTemplate *this, SymDataEventType *dml,
+            SymTrigger trigger, SymTriggerHistory history, SymChannel *channel, char *tablePrefix,
+            SymTable originalTable, char *defaultCatalog, char *defaultSchema);
+
+    SymSqliteTriggerTemplate *triggerTemplate = SymSqliteTriggerTemplate_new(NULL);
+    char *triggerSql =
+            triggerTemplate->createTriggerDDL(triggerTemplate, dml, trigger, hist, channel, tablePrefix, table, NULL, NULL);
+
+    printf("triggerSql %s\n", triggerSql);
+
+
+    triggerTemplate->destroy(triggerTemplate);
+
     return 0;
 }
 
-int SymSqliteDialect_removeTrigger(SymSqliteDialect *this) {
-    return 0;
+int SymSqliteDialect_removeTrigger(SymDialect *super, char *triggerName, char *tableName) {
+
+    char *sql = SymStringUtils_format("drop trigger %s", triggerName);
+
+    // TODO check if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) ;
+    SymSqlTemplate *sqlTemplate = super->platform->getSqlTemplate(super->platform);
+    int error;
+    sqlTemplate->update(sqlTemplate, sql, NULL, NULL, &error);
+    return error;
 }
 
 int SymSqliteDialect_getInitialLoadSql(SymSqliteDialect *this) {

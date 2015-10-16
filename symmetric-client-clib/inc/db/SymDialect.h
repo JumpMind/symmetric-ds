@@ -25,6 +25,10 @@
 #include <stdlib.h>
 #include <util/Properties.h>
 #include "db/platform/DatabasePlatform.h"
+#include "model/Trigger.h"
+#include "model/Channel.h"
+#include "model/TriggerHistory.h"
+#include "io/data/DataEventType.h"
 
 typedef struct SymDialect {
     SymDatabasePlatform *platform;
@@ -32,7 +36,8 @@ typedef struct SymDialect {
     int (*dropTablesAndDatabaseObjects)(struct SymDialect *this);
     void (*disableSyncTriggers)(struct SymDialect *this, SymSqlTransaction *transaction, char *nodeId);
     void (*enableSyncTriggers)(struct SymDialect *this, SymSqlTransaction *transaction);
-    int (*createTrigger)(struct SymDialect *this);
+    int (*createTrigger)(struct SymDialect *this, SymDataEventType *dml, SymTrigger *trigger,
+        SymTriggerHistory *hist, SymChannel *channel, char* tablePrefix, SymTable *table);
     int (*removeTrigger)(struct SymDialect *this);
     int (*getInitialLoadSql)(struct SymDialect *this);
     void (*destroy)(struct SymDialect *this);

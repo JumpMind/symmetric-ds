@@ -30,8 +30,8 @@
 #include "util/Map.h"
 #include "util/List.h"
 #include "model/Trigger.h"
-#include "model/TriggerHistory.h"
 #include "model/NodeGroupLink.h"
+#include "model/TriggerHistory.h"
 #include "model/TriggerRouter.h"
 #include "model/Router.h"
 #include "io/data/DataEventType.h"
@@ -39,15 +39,18 @@
 #include "common/ParameterConstants.h"
 #include "common/Log.h"
 #include "model/TriggerRouter.h"
-#include <time.h>
 #include "util/StringUtils.h"
 #include "service/SequenceService.h"
+#include "model/Router.h"
+#include "io/data/DataEventType.h"
+#include "db/SymDialect.h"
 
 typedef struct SymTriggerRouterService {
     SymConfigurationService *configurationService;
     SymSequenceService *sequenceService;
 	SymParameterService *parameterService;
 	SymDatabasePlatform *platform;
+	SymDialect *symmetricDialect;
 
 	void (*syncTriggers)(struct SymTriggerRouterService *this, unsigned short force);
     void (*destroy)(struct SymTriggerRouterService *this);
@@ -55,7 +58,7 @@ typedef struct SymTriggerRouterService {
 
 SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService *this,
         SymConfigurationService *configurationService, SymSequenceService *sequenceService,
-        SymParameterService *parameterService, SymDatabasePlatform *platform);
+        SymParameterService *parameterService, SymDatabasePlatform *platform, SymDialect *symmetricDialect);
 
 #define SYM_SQL_SELECT_TRIGGER_ROUTERS "select tr.trigger_id, tr.router_id, tr.create_time, tr.last_update_time, tr.last_update_by, tr.initial_load_order, tr.initial_load_select, tr.initial_load_delete_stmt, tr.initial_load_batch_count, tr.ping_back_enabled, tr.enabled \
 from sym_trigger_router tr \
@@ -72,5 +75,16 @@ t.custom_on_insert_text,t.custom_on_update_text,t.custom_on_delete_text,        
 t.tx_id_expression,t.external_select,t.channel_expression,t.create_time as t_create_time,         \
 t.last_update_time as t_last_update_time, t.last_update_by as t_last_update_by \
 from sym_trigger t order by trigger_id asc   "
+
+#define SYM_SQL_SELECT_ROUTERS "select \
+r.sync_on_insert as r_sync_on_insert,r.sync_on_update as r_sync_on_update,r.sync_on_delete as r_sync_on_delete,                            \
+r.target_catalog_name,r.source_node_group_id,r.target_schema_name,r.target_table_name,r.target_node_group_id,r.router_expression,        \
+r.router_type,r.router_id,r.create_time as r_create_time,r.last_update_time as r_last_update_time,r.last_update_by as r_last_update_by, \
+r.use_source_catalog_schema \
+from sym_router r order by r.router_id "
+
+#define SYM_SQL_SELECT_TRIGGER_HISTORY "select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message   \
+from sym_trigger_hist \
+where inactive_time is null "
 
 #endif
