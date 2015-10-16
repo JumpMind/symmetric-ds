@@ -20,6 +20,69 @@
  */
 #include "db/sqlite/SqliteTriggerTemplate.h"
 
+char * SymSqliteTriggerTemplate_fillOutColumnTemplate(SymSqliteTriggerTemplate *this,
+        char *origTableAlias, char *tableAlias,
+        char *columnPrefix, SymColumn *column, SymDataEventType dml, unsigned short isOld,
+        SymChannel *channel, SymTrigger *trigger) {
+
+    unsigned short isLob = 0; // TODO
+
+    char *templateToUse;
+
+    switch (column->sqlType) {
+    case SYM_SQL_TYPE_TINYINT:
+    case SYM_SQL_TYPE_SMALLINT:
+    case SYM_SQL_TYPE_INTEGER:
+    case SYM_SQL_TYPE_BIGINT:
+    case SYM_SQL_TYPE_FLOAT:
+    case SYM_SQL_TYPE_REAL:
+    case SYM_SQL_TYPE_DOUBLE:
+    case SYM_SQL_TYPE_NUMERIC:
+    case SYM_SQL_TYPE_DECIMAL:
+        templateToUse = "case when %s.%s is null then '' else ('\"' || cast(%s.%s as varchar) || '\"') end";
+        break;
+    case SYM_SQL_TYPE_CHAR:
+    case SYM_SQL_TYPE_NCHAR:
+    case SYM_SQL_TYPE_VARCHAR:
+    case SYM_SQL_TYPE_NVARCHAR:
+        templateToUse = "case when %s.%s is null then '' else '\"' || replace(replace(%s.%s,'\\','\\\\'),'\"','\\\"') || '\"' end";
+        break;
+    default:
+        templateToUse = NULL;
+        SymLog_error("Unknown sqlType %d", column->sqlType);
+        break;
+    }
+
+    char* columnName = column->name; // TODO
+    char* formattedColumnText =
+            SymStringUtils_format(templateToUse, tableAlias, columnName, tableAlias, columnName);
+
+    return formattedColumnText;
+}
+
+char * SymSqliteTriggerTemplate_buildColumnsString(SymSqliteTriggerTemplate *this, char *origTableAlias, char *tableAlias,
+        char *columnPrefix, SymList *columns, SymDataEventType dml, unsigned int isOld,
+        SymChannel *channel, SymTrigger *trigger) {
+
+    char *lastCommandToken = "||','||";
+
+    SymStringBuilder *buff = SymStringBuilder_new(NULL);
+
+    int i;
+    for (i = 0; i < columns->size; i++) {
+        SymColumn *column = columns->get(columns, i);
+        char *columnString = SymSqliteTriggerTemplate_fillOutColumnTemplate(this, origTableAlias,
+                tableAlias, columnPrefix, column, dml, isOld, channel, trigger);
+        buff->append(buff, columnString);
+        buff->append(buff, "\n");
+        if (i < (columns->size-1)) {
+            buff->append(buff, lastCommandToken);
+        }
+    }
+
+    return buff->destroyAndReturn(buff);
+}
+
 //#define SYM_SQL_INSERT_TRIGGER_TEMPLATE "\
 //create trigger $(*triggerName) after insert on $(*schemaName)$(**tableName)    \n\
 //for each row     \n\
@@ -37,49 +100,45 @@
 //    ); \n\
 //        $(custom_on_insert_text) \n\
 //end"
-
-char * buildColumnsString(char *origTableAlias, char *tableAlias,
-            char *columnPrefix, SymList *columns, SymDataEventType *dml, unsigned int isOld,
-            SymChannel *channel, SymTrigger *trigger) {
-
-    char *lastCommandToken = "||','||";
-
-    int i = 0;
-    for (i = 0; i < columns->size; i++) {
-        SymColumn *column = columns->get(columns, i);
-
-    }
-
-    return 0;
-}
-
-char * SymSqliteTriggerTemplate_replaceTemplateVariables(SymSqliteTriggerTemplate *this, SymDataEventType *dml,
-            SymTrigger *trigger, SymTriggerHistory *history, SymChannel *channel, char *tablePrefix,
-            SymTable *table, char *defaultCatalog, char *defaultSchema, char *ddl) {
+char * SymSqliteTriggerTemplate_replaceTemplateVariables(SymSqliteTriggerTemplate  *this, SymDataEventType dml,
+        SymTrigger *trigger, SymTriggerHistory *history, SymChannel *channel, char *tablePrefix,
+        SymTable *table, char *defaultCatalog, char *defaultSchema, char *ddl) {
     char *triggerName = history->nameForInsertTrigger; // TODO
     char *schemaName = "";
     char *tableName = table->name;
-    char *syncOnInsertCondition = trigger->syncOnInsertCondition;
+    char *syncOnInsertCondition = "1"; // TODO
     char *syncOnIncomingBatchCondition = "1"; // TODO
     char *targetTableName = trigger->sourceTableName; // TODO
     char *triggerHistoryId = SymStringUtils_format("%d", -1);
+    char *columns = SymSqliteTriggerTemplate_buildColumnsString(this, SYM_ORIG_TABLE_ALIAS,
+            "new", "", table->columns, dml, 0, channel, trigger);
+    char *channelExpression = SymStringUtils_format("'%s'", trigger->channelId); // TODO
+    char *sourceNodeExpression = "null"; // TODO
+    char *externalSelect = "null"; // TODO
+    char *custom_on_insert_text = ""; // TODO
 
+    char *formattedDdl = SymStringUtils_format(ddl, triggerName, schemaName, tableName, syncOnInsertCondition,
+            syncOnIncomingBatchCondition, targetTableName, triggerHistoryId, columns, channelExpression, sourceNodeExpression,
+            externalSelect, custom_on_insert_text);
 
-return 0;
+    return formattedDdl;
 }
 
-char * SymSqliteTriggerTemplate_createTriggerDDL(SymSqliteTriggerTemplate *this, SymDataEventType *dml,
-            SymTrigger *trigger, SymTriggerHistory *history, SymChannel *channel, char *tablePrefix,
-            SymTable *originalTable, char *defaultCatalog, char *defaultSchema) {
+char * SymSqliteTriggerTemplate_createTriggerDDL(SymSqliteTriggerTemplate *this, SymDataEventType dml,
+        SymTrigger *trigger, SymTriggerHistory *history, SymChannel *channel, char *tablePrefix,
+        SymTable *originalTable, char *defaultCatalog, char *defaultSchema) {
 
     char *ddl;
     if (dml == SYM_DATA_EVENT_INSERT) {
         ddl = SYM_SQL_INSERT_TRIGGER_TEMPLATE;
     }
 
-return 0;
-}
+    char *formattedDdl = SymSqliteTriggerTemplate_replaceTemplateVariables(this, dml,
+            trigger, history, channel, tablePrefix, originalTable, defaultCatalog,
+            defaultSchema, ddl);
 
+    return formattedDdl;
+}
 
 void SymSqliteTriggerTemplate_destroy(SymSqliteTriggerTemplate *this) {
 

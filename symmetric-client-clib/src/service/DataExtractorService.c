@@ -23,7 +23,7 @@
 static SymList * SymDataExtractorService_extractOutgoingBatch(SymDataExtractorService *this, SymNode *sourceNode, SymNode *targetNode,
         SymOutgoingTransport *transport, SymOutgoingBatch *outgoingBatch) {
     SymDataReader *reader = (SymDataReader *) SymExtractDataReader_new(NULL, outgoingBatch, sourceNode->nodeId, targetNode->nodeId, this->dataService,
-            this->triggerRouterService);
+            this->triggerRouterService, this->platform);
     SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataWriter_new(NULL, sourceNode->nodeId, reader);
     long rc = transport->process(transport, processor);
     SymLog_debug("Transport rc = %ld" , rc);
@@ -70,6 +70,9 @@ SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode
         }
         iter->destroy(iter);
     }
+    if (processedBatches == NULL) {
+        processedBatches = SymList_new(NULL);
+    }
 	return processedBatches;
 }
 
@@ -78,7 +81,7 @@ void SymDataExtractorService_destroy(SymDataExtractorService *this) {
 }
 
 SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this, SymNodeService *nodeService, SymOutgoingBatchService *outgoingBatchService,
-        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymParameterService *parameterService) {
+        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymParameterService *parameterService, SymDatabasePlatform *platform) {
     if (this == NULL) {
         this = (SymDataExtractorService *) calloc(1, sizeof(SymDataExtractorService));
     }
@@ -86,6 +89,7 @@ SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *t
     this->outgoingBatchService = outgoingBatchService;
     this->dataService = dataService;
     this->parameterService = parameterService;
+    this->platform = platform;
     this->extract = (void *) &SymDataExtractorService_extract;
     this->destroy = (void *) &SymDataExtractorService_destroy;
     return this;

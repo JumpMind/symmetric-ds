@@ -34,6 +34,7 @@
 #include "io/data/DataProcessor.h"
 #include "io/writer/ProtocolDataWriter.h"
 #include "io/reader/ExtractDataReader.h"
+#include "db/platform/DatabasePlatform.h"
 #include "util/List.h"
 #include "common/Log.h"
 
@@ -43,11 +44,12 @@ typedef struct SymDataExtractorService {
     SymDataService *dataService;
     SymTriggerRouterService *triggerRouterService;
     SymParameterService *parameterService;
+    SymDatabasePlatform *platform;
     SymList * (*extract)(struct SymDataExtractorService *this, SymNode *node, SymOutgoingTransport *transport);
     void (*destroy)(struct SymDataExtractorService *this);
 } SymDataExtractorService;
 
 SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this, SymNodeService *nodeService, SymOutgoingBatchService *outgoingBatchService,
-        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymParameterService *parameterService);
+        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymParameterService *parameterService, SymDatabasePlatform *platform);
 
 #endif

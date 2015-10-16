@@ -25,6 +25,14 @@
 #include "model/TriggerHistory.h"
 #include "util/Date.h"
 
+#define SYM_DATA_EVENT_INSERT "I"
+#define SYM_DATA_EVENT_UPDATE "U"
+#define SYM_DATA_EVENT_DELETE "D"
+#define SYM_DATA_EVENT_RELOAD "R"
+#define SYM_DATA_EVENT_SQL "S"
+#define SYM_DATA_EVENT_CREATE "C"
+#define SYM_DATA_EVENT_BSH "B"
+
 typedef struct SymData {
     long dataId;
     char *rowData;

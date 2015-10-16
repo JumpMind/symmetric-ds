@@ -27,6 +27,7 @@
 #include "common/Log.h"
 #include "db/sql/SqlTemplate.h"
 #include "db/sqlite/SqliteTriggerTemplate.h"
+#include "util/StringArray.h"
 
 
 typedef struct SymSqliteDialect {

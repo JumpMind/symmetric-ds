@@ -21,8 +21,8 @@
 #include "db/sql/DmlStatement.h"
 
 static void append_table_name(SymDmlStatement *this, SymStringBuilder *sb) {
-    sb->append(sb, SymTable_getFullTableName(this->table, this->databaseInfo->delimiterToken, this->databaseInfo->catalogSeparator,
-            this->databaseInfo->schemaSeparator));
+    sb->append(sb, SymTable_getFullyQualifiedTableName(this->table->catalog, this->table->schema, this->table->name,
+            this->databaseInfo->delimiterToken, this->databaseInfo->catalogSeparator, this->databaseInfo->schemaSeparator));
 }
 
 static void append_columns(SymDmlStatement *this, SymStringBuilder *sb) {

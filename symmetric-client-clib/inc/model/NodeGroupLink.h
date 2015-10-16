@@ -36,7 +36,7 @@ typedef struct SymNodeGroupLink {
     SymDate *createTime;
     SymDate *lastUpdateTime;
     char *lastUpdateBy;
-    void (*destroy)(struct SymNode *this);
+    void (*destroy)(struct SymNodeGroupLink *this);
 } SymNodeGroupLink;
 
 SymNodeGroupLink * SymNodeGroupLink_new(SymNodeGroupLink *this);
