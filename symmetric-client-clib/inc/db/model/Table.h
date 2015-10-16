@@ -26,6 +26,7 @@
 #include <string.h>
 #include "util/List.h"
 #include "util/StringBuilder.h"
+#include "util/StringUtils.h"
 #include "db/model/Column.h"
 
 typedef struct SymTable {
@@ -34,7 +35,7 @@ typedef struct SymTable {
     char *name;
     SymList *columns;
     struct SymTable * (*copyAndFilterColumns)(struct SymTable *this, struct SymTable *source, unsigned short setPrimaryKeys);
-    void (*copyColumnTypesFrom)(struct SymTable *this, struct SymTable *source);
+    void (*copyColumnTypesFrom)(struct SymTable *this, SymList *sourceColumns);
     SymColumn * (*findColumn)(struct SymTable *this, char *name, unsigned short caseSensitive);
     char * (*toString)(struct SymTable *this);
     int (*calculateTableHashcode)(struct SymTable *this);
@@ -48,6 +49,10 @@ SymTable * SymTable_newWithName(SymTable *this, char *name);
 
 SymTable * SymTable_newWithFullname(SymTable *this, char *catalog, char *schema, char *name);
 
-char * SymTable_getFullTableName(SymTable *this, char *delimiterToken, char *catalogSeparator, char *schemaSeparator);
+char * SymTable_getFullyQualifiedTableName(char *catalogName, char *schemaName,
+        char *tableName, char *quoteString, char *catalogSeparator, char *schemaSeparator);
+
+char * SymTable_getFullyQualifiedTablePrefix(char *catalogName, char *schemaName,
+        char *quoteString, char *catalogSeparator, char *schemaSeparator);
 
 #endif

@@ -20,6 +20,9 @@
  */
 #include "model/TriggerHistory.h"
 
+SymList * SymTiggerHistory_getParsedColumns(SymTriggerHistory *this) {
+    return NULL;
+}
 
 void SymTriggerHistory_destroy(SymTriggerHistory *this) {
     free(this);
@@ -29,6 +32,7 @@ SymTriggerHistory * SymTriggerHistory_new(SymTriggerHistory *this) {
     if (this == NULL) {
         this = (SymTriggerHistory *) calloc(1, sizeof(SymTriggerHistory));
     }
+    this->getParsedColumns = (void *) SymTiggerHistory_getParsedColumns;
     this->destroy = (void *) &SymTriggerHistory_destroy;
     return this;
 }

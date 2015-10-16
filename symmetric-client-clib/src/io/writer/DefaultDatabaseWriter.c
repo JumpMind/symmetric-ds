@@ -49,7 +49,7 @@ static SymTable * SymDefaultDatabaseWriter_lookupTableAtTarget(SymDefaultDatabas
     if (table == NULL) {
         SymTable *targetTable = this->platform->getTableFromCache(this->platform, sourceTable->catalog, sourceTable->schema, sourceTable->name, 0);
         if (targetTable) {
-            table = targetTable->copyAndFilterColumns(targetTable, sourceTable, 1);
+            table = targetTable->copyAndFilterColumns(targetTable, sourceTable->columns, 1);
             this->targetTables->put(this->targetTables, tableKey, targetTable, sizeof(SymTable));
         }
     }

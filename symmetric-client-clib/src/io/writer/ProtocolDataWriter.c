@@ -21,10 +21,14 @@
 #include "io/writer/ProtocolDataWriter.h"
 
 void SymProtocolDataWriter_open(SymProtocolDataWriter *this) {
+    this->reader->open(this->reader);
 }
 
 size_t SymProtocolDataWriter_process(SymProtocolDataWriter *this,  char *data, size_t size, size_t count) {
     size_t length = size * count;
+
+    this->reader->nextBatch(this->reader);
+
     return length;
 }
 
@@ -33,6 +37,7 @@ SymList * SymProtocolDataWriter_getBatchesProcessed(SymProtocolDataWriter *this)
 }
 
 void SymProtocolDataWriter_close(SymProtocolDataWriter *this) {
+    this->reader->close(this->reader);
 }
 
 void SymProtocolDataWriter_destroy(SymProtocolDataWriter *this) {

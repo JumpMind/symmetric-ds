@@ -118,4 +118,11 @@ char* SymStringUtils_format(char *format, ...) {
     return buff->destroyAndReturn(buff);
 }
 
-
+unsigned short SymStringUtils_equals(char *str1, char *str2) {
+    if (str1 == NULL && str2 == NULL) {
+        return 1;
+    } else if (str1 == NULL || str2 == NULL) {
+        return 0;
+    }
+    return strcmp(str1, str2) == 0;
+}

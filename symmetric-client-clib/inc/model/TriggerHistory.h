@@ -23,6 +23,8 @@
 
 #include "util/Date.h"
 #include "util/StringArray.h"
+#include "util/List.h"
+#include "db/model/Column.h"
 
 #define SYM_TRIGGER_REBUILD_REASON_NEW_TRIGGERS "N"
 #define SYM_TRIGGER_REBUILD_REASON_TABLE_SCHEMA_CHANGED "S"
@@ -52,6 +54,7 @@ typedef struct SymTriggerHistory {
     long triggerTemplateHash;
     char *lastTriggerBuildReason;
 
+    SymList * (*getParsedColumns)(struct SymTriggerHistory *this);
     void (*destroy)(struct SymTriggerHistory *this);
 } SymTriggerHistory;
 

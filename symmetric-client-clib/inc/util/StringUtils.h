@@ -18,10 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef INC_UTIL_STRINGUTILS_H_
-#define INC_UTIL_STRINGUTILS_H_
+#ifndef SYM_STRING_UTILS_H
+#define SYM_STRING_UTILS_H
 
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include "util/StringBuilder.h"
 
 char *SymStringUtils_trim(char *str);
@@ -30,5 +32,6 @@ char *SymStringUtils_toLowerCase(char *str);
 unsigned short SymStringUtils_isBlank(char *str);
 unsigned short SymStringUtils_isNotBlank(char *str);
 char* SymStringUtils_format(char *format, ...);
+unsigned short SymStringUtils_equals(char *str1, char *str2);
 
-#endif /* INC_UTIL_STRINGUTILS_H_ */
+#endif
