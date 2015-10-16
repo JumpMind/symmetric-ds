@@ -573,7 +573,12 @@ void SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this, unsigne
             SymTrigger *trigger = triggers->get(triggers, i);
             SymTable *table = this->platform->getTableFromCache(this->platform,
                     trigger->sourceCatalogName, trigger->sourceSchemaName, trigger->sourceTableName, 1);
-            SymTriggerRouterService_updateOrCreateDatabaseTriggers(this, trigger, table, activeTriggerHistories, force);
+            if (table) {
+                SymTriggerRouterService_updateOrCreateDatabaseTriggers(this, trigger, table, activeTriggerHistories, force);
+            }
+            else {
+                SymLog_error("No table '%s' found for trigger. ", trigger->sourceTableName);
+            }
         }
     }
 }
