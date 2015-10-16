@@ -279,8 +279,10 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
      */
     protected String buildURL(String action, Node remote, Node local, String securityToken,
             String registrationUrl) throws IOException {
-        return addSecurityToken((resolveURL(remote.getSyncUrl(), registrationUrl) + "/" + action),
+        String url = addSecurityToken((resolveURL(remote.getSyncUrl(), registrationUrl) + "/" + action),
                 "&", local.getNodeId(), securityToken);
+        log.debug("Building transport url: {}", url);
+        return url;
     }
 
     protected String addSecurityToken(String base, String connector, String nodeId,
