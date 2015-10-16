@@ -40,6 +40,7 @@
 #include "common/Log.h"
 #include "model/TriggerRouter.h"
 #include "util/StringUtils.h"
+#include "util/Map.h"
 #include "service/SequenceService.h"
 #include "model/Router.h"
 #include "io/data/DataEventType.h"
@@ -51,8 +52,13 @@ typedef struct SymTriggerRouterService {
 	SymParameterService *parameterService;
 	SymDatabasePlatform *platform;
 	SymDialect *symmetricDialect;
+	SymMap *historyMap;
 
 	void (*syncTriggers)(struct SymTriggerRouterService *this, unsigned short force);
+	SymTriggerHistory * (*getTriggerHistory)(struct SymTriggerRouterService *this, int histId);
+	SymList * (*getActiveTriggerHistories)(struct SymTriggerRouterService *this);
+	SymList * (*getActiveTriggerHistoriesByTrigger)(struct SymTriggerRouterService *this, SymTrigger *trigger);
+	SymList * (*getActiveTriggerHistoriesByTableName)(struct SymTriggerRouterService *this, char *tableName);
     void (*destroy)(struct SymTriggerRouterService *this);
 } SymTriggerRouterService;
 
@@ -83,8 +89,18 @@ r.router_type,r.router_id,r.create_time as r_create_time,r.last_update_time as r
 r.use_source_catalog_schema \
 from sym_router r order by r.router_id "
 
-#define SYM_SQL_SELECT_TRIGGER_HISTORY "select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message   \
-from sym_trigger_hist \
-where inactive_time is null "
+#define SYM_SQL_TRIGGER_HIST "select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,\
+last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,\
+trigger_row_hash,trigger_template_hash,error_message \
+from sym_trigger_hist where trigger_hist_id = ?"
+
+#define SYM_ALL_TRIGGER_HIST "select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,\
+last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,\
+trigger_row_hash,trigger_template_hash,error_message \
+from sym_trigger_hist "
+
+#define SYM_ACTIVE_TRIGGER_HIST "where inactive_time is null"
+
+#define SYM_TRIGGER_HIST_BY_SOURCE_TABLE_WHERE "where source_table_name = ? and inactive_time is null"
 
 #endif

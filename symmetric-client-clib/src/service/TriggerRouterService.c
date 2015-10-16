@@ -140,31 +140,89 @@ static SymRouter * SymTriggerRouterService_routerMapper(SymRow *row) {
     return router;
 }
 
-static SymRouter * SymTriggerRouterService_triggerHistoryMapper(SymRow *row) {
+static SymTriggerHistory * SymTriggerRouterService_triggerHistoryMapper(SymRow *row) {
 
     SymTriggerHistory *hist = SymTriggerHistory_new(NULL);
-
     hist->triggerHistoryId = row->getInt(row, "trigger_hist_id");
-    hist->triggerId = row->getString(row, "trigger_id");
-    hist->sourceTableName = row->getString(row, "source_table_name");
+    hist->triggerId = row->getStringNew(row, "trigger_id");
+    hist->sourceTableName = row->getStringNew(row, "source_table_name");
     hist->tableHash = row->getInt(row, "table_hash");
     hist->createTime = row->getDate(row, "create_time");
-    hist->pkColumnNames = row->getString(row, "pk_column_names");
-    hist->columnNames = row->getString(row, "column_names");
-    hist->lastTriggerBuildReason = row->getString(row, "last_trigger_build_reason");
-    hist->nameForDeleteTrigger = row->getString(row, "name_for_delete_trigger");
-    hist->nameForInsertTrigger = row->getString(row, "name_for_insert_trigger");
-    hist->nameForUpdateTrigger = row->getString(row, "name_for_update_trigger");
-    hist->sourceSchemaName = row->getString(row, "source_schema_name");
-    hist->sourceCatalogName = row->getString(row, "source_catalog_name");
+    hist->pkColumnNames = row->getStringNew(row, "pk_column_names");
+    hist->columnNames = row->getStringNew(row, "column_names");
+    hist->lastTriggerBuildReason = row->getStringNew(row, "last_trigger_build_reason");
+    hist->nameForDeleteTrigger = row->getStringNew(row, "name_for_delete_trigger");
+    hist->nameForInsertTrigger = row->getStringNew(row, "name_for_insert_trigger");
+    hist->nameForUpdateTrigger = row->getStringNew(row, "name_for_update_trigger");
+    hist->sourceSchemaName = row->getStringNew(row, "source_schema_name");
+    hist->sourceCatalogName = row->getStringNew(row, "source_catalog_name");
     hist->triggerRowHash = row->getLong(row, "trigger_row_hash");
     hist->triggerTemplateHash = row->getLong(row, "trigger_template_hash");
-    hist->errorMessage = row->getString(row, "error_message");
+    hist->errorMessage = row->getStringNew(row, "error_message");
 //    if (this.retMap != null) {
 //        this.retMap.put((long) hist.getTriggerHistoryId(), hist);
 //    }
 
     return hist;
+}
+
+SymTriggerHistory * SymTriggerRouterService_getTriggerHistory(SymTriggerRouterService *this, int histId) {
+    SymTriggerHistory *history = this->historyMap->getByInt(this->historyMap, histId);
+    if (history == NULL && histId >= 0) {
+        SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+        SymStringArray *args = SymStringArray_new(NULL);
+        args->addInt(args, histId);
+        int error;
+        history = sqlTemplate->queryForObject(sqlTemplate, SYM_SQL_TRIGGER_HIST, args, NULL, &error, (void *) SymTriggerRouterService_triggerHistoryMapper);
+        this->historyMap->putByInt(this->historyMap, histId, history, sizeof(SymTriggerHistory));
+        args->destroy(args);
+    }
+    return history;
+}
+
+SymList * SymTriggerRouterService_getActiveTriggerHistories(SymTriggerRouterService *this) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_ALL_TRIGGER_HIST);
+    sb->append(sb, SYM_ACTIVE_TRIGGER_HIST);
+    int error;
+    SymList *histories = sqlTemplate->query(sqlTemplate, sb->str, NULL, NULL, &error, (void *) SymTriggerRouterService_triggerHistoryMapper);
+    sb->destroy(sb);
+
+    SymIterator *iter = histories->iterator(histories);
+    while (iter->hasNext(iter)) {
+        SymTriggerHistory *triggerHistory = (SymTriggerHistory *) iter->next(iter);
+        this->historyMap->putByInt(this->historyMap, triggerHistory->triggerHistoryId, triggerHistory, sizeof(SymTriggerHistory));
+    }
+    iter->destroy(iter);
+    return histories;
+}
+
+SymList * SymTriggerRouterService_getActiveTriggerHistoriesByTrigger(SymTriggerRouterService *this, SymTrigger *trigger) {
+    SymList *active = SymTriggerRouterService_getActiveTriggerHistories(this);
+    SymList *list = SymList_new(NULL);
+    SymIterator *iter = active->iterator(active);
+    while (iter->hasNext(iter)) {
+        SymTriggerHistory *triggerHistory = (SymTriggerHistory *) iter->next(iter);
+        if (strcmp(triggerHistory->triggerId, trigger->triggerId) == 0) {
+            list->add(list, triggerHistory);
+        }
+    }
+    iter->destroy(iter);
+    active->destroy(active);
+    return list;
+}
+
+SymList * SymTriggerRouterService_getActiveTriggerHistoriesByTableName(SymTriggerRouterService *this, char *tableName) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, tableName);
+    SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_ALL_TRIGGER_HIST);
+    sb->append(sb, SYM_TRIGGER_HIST_BY_SOURCE_TABLE_WHERE);
+    int error;
+    SymList *histories = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymTriggerRouterService_triggerHistoryMapper);
+    args->destroy(args);
+    sb->destroy(sb);
+    return histories;
 }
 
 SymList * SymTriggerRouterService_getTriggers(SymTriggerRouterService *this, unsigned short replaceTokens) {
@@ -187,14 +245,6 @@ unsigned short SymTriggerRouterService_isTriggerNameInUse(SymTriggerRouterServic
 SymTriggerHistory * SymTriggerRouterService_getNewestTriggerHistoryForTrigger(SymTriggerRouterService *this, char *triggerId, char *catalogName, char *schemaName, char *tableName) {
     // TODO
     return 0;
-}
-
-SymList * SymTriggerRouterService_getActiveTriggerHistories(SymTriggerRouterService *this) {
-    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
-
-    int error;
-    SymList* triggerHistories = sqlTemplate->query(sqlTemplate, SYM_SQL_SELECT_TRIGGER_HISTORY, NULL, NULL, &error, (void *) SymTriggerRouterService_triggerHistoryMapper);
-    return triggerHistories;
 }
 
 SymList * SymTriggerRouterService_getRouters(SymTriggerRouterService *this, unsigned short replaceVariables) {
@@ -458,6 +508,8 @@ SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService *t
         this = (SymTriggerRouterService*) calloc(1, sizeof(SymTriggerRouterService));
     }
 
+    this->historyMap = SymMap_new(NULL, 100);
+
     this->configurationService = configurationService;
     this->sequenceService = sequenceService;
     this->parameterService = parameterService;
@@ -465,7 +517,10 @@ SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService *t
     this->platform = platform;
 
     this->syncTriggers = (void *) &SymTriggerRouterService_syncTriggers;
-
+    this->getTriggerHistory = (void *) &SymTriggerRouterService_getTriggerHistory;
+    this->getActiveTriggerHistories = (void *) &SymTriggerRouterService_getActiveTriggerHistories;
+    this->getActiveTriggerHistoriesByTrigger = (void *) &SymTriggerRouterService_getActiveTriggerHistoriesByTrigger;
+    this->getActiveTriggerHistoriesByTableName = (void *) &SymTriggerRouterService_getActiveTriggerHistoriesByTableName;
     this->destroy = (void *) &SymTriggerRouterService_destroy;
     return this;
 }

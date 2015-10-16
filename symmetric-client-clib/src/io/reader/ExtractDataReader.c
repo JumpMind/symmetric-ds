@@ -68,6 +68,7 @@ void SymExtractDataReader_close(SymExtractDataReader *this) {
 }
 
 void SymExtractDataReader_destroy(SymExtractDataReader *this) {
+    this->batch->destroy(this->batch);
     free(this);
 }
 
