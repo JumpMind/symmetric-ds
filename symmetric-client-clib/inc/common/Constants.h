@@ -25,4 +25,6 @@
 
 #define SYM_LONG_OPERATION_THRESHOLD 30000
 
+#define SYM_NONE_TOKEN "$(none)"
+
 #endif

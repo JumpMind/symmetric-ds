@@ -26,10 +26,6 @@
 #include "util/StringArray.h"
 #include "io/data/DataEventType.h"
 
-typedef enum {
-    SYM_CSV_ROW_DATA, SYM_CSV_OLD_DATA, SYM_CSV_PK_DATA
-} SymCsvType;
-
 typedef struct SymCsvData {
     SymDataEventType dataEventType;
     SymStringArray *rowData;
