@@ -51,7 +51,9 @@ typedef struct SymSqlTemplate {
     int (*queryForInt)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
     char * (*queryForString)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
     SymList * (*queryForList)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
-    void * (*query)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *map_row(SymRow *row));
+    SymList * (*query)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *map_row(SymRow *row));
+    SymList * (*queryWithUserData)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error,
+            void *map_row(SymRow *row, void *userData), void *userData);
     int (*update)(struct SymSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
     SymSqlTransaction * (*startSqlTransaction)(struct SymSqlTemplate *this);
     void (*destroy)(struct SymSqlTemplate *this);
