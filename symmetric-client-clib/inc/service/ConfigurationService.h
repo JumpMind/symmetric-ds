@@ -32,6 +32,7 @@ typedef struct SymConfigurationService {
     SymDatabasePlatform *platform;
     SymList * (*getNodeChannels)(struct SymConfigurationService *this);
     SymMap * (*getChannels)(struct SymConfigurationService *this, unsigned int refreshCache);
+    SymChannel * (*getChannel)(struct SymConfigurationService *this, char *channelId);
     SymList * (*clearCache)(struct SymConfigurationService *this);
     SymList * (*destroy)(struct SymConfigurationService *this);
 } SymConfigurationService;
@@ -44,5 +45,6 @@ c.use_row_data_to_route, c.use_pk_data_to_route, c.contains_big_lob, \
 c.batch_algorithm, c.extract_period_millis, c.data_loader_type, \
 c.last_update_time, c.last_update_by, c.create_time, c.reload_flag, c.file_sync_flag \
 from sym_channel c order by c.processing_order asc, c.channel_id"
+
 
 #endif

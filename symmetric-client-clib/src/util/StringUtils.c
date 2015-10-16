@@ -20,7 +20,7 @@
  */
 #include "util/StringUtils.h"
 
-char *Sym_trim(char *str)
+char *SymStringUtils_trim(char *str)
 {
     int length = strlen(str);
 
@@ -53,7 +53,7 @@ char *Sym_trim(char *str)
     return newString;
 }
 
-char *Sym_toUpperCase(char *str) {
+char *SymStringUtils_toUpperCase(char *str) {
     int length = strlen(str);
     char *newString = malloc(length+1);
 
@@ -67,7 +67,7 @@ char *Sym_toUpperCase(char *str) {
     return newString;
 }
 
-char *Sym_toLowerCase(char *str) {
+char *SymStringUtils_toLowerCase(char *str) {
     int length = strlen(str);
     char *newString = malloc(length+1);
 
@@ -81,7 +81,7 @@ char *Sym_toLowerCase(char *str) {
     return newString;
 }
 
-unsigned short Sym_isBlank(char *str) {
+unsigned short SymStringUtils_isBlank(char *str) {
     if (str == NULL) {
         return 1;
     }
@@ -101,6 +101,21 @@ unsigned short Sym_isBlank(char *str) {
     return 1;
 }
 
-unsigned short Sym_isNotBlank(char *str) {
-    return ! Sym_isBlank(str);
+unsigned short SymStringUtils_isNotBlank(char *str) {
+    return ! SymStringUtils_isBlank(str);
 }
+
+char* SymStringUtils_format(char *format, ...) {
+    SymStringBuilder *buff = SymStringBuilder_new(NULL);
+
+    va_list varargs;
+    va_start(varargs, format);
+
+    buff->appendfv(buff, format, varargs);
+
+    va_end(varargs);
+
+    return buff->destroyAndReturn(buff);
+}
+
+

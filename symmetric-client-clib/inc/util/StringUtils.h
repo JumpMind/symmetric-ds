@@ -22,11 +22,13 @@
 #define INC_UTIL_STRINGUTILS_H_
 
 #include <stdlib.h>
+#include "util/StringBuilder.h"
 
-char *Sym_trim(char *str);
-char *Sym_toUpperCase(char *str);
-char *Sym_toLowerCase(char *str);
-unsigned short Sym_isBlank(char *str);
-unsigned short Sym_isNotBlank(char *str);
+char *SymStringUtils_trim(char *str);
+char *SymStringUtils_toUpperCase(char *str);
+char *SymStringUtils_toLowerCase(char *str);
+unsigned short SymStringUtils_isBlank(char *str);
+unsigned short SymStringUtils_isNotBlank(char *str);
+char* SymStringUtils_format(char *format, ...);
 
 #endif /* INC_UTIL_STRINGUTILS_H_ */
