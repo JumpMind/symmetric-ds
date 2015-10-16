@@ -50,6 +50,7 @@ SymTriggerHistory * SymTriggerHistory_new(SymTriggerHistory *this) {
         this = (SymTriggerHistory *) calloc(1, sizeof(SymTriggerHistory));
     }
     this->getParsedColumns = (void *) SymTiggerHistory_getParsedColumns;
+    this->getTriggerNameForDmlType = SymTriggerHistory_getTriggerNameForDmlType;
     this->destroy = (void *) &SymTriggerHistory_destroy;
     return this;
 }

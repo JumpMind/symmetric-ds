@@ -87,13 +87,6 @@ t.tx_id_expression,t.external_select,t.channel_expression,t.create_time as t_cre
 t.last_update_time as t_last_update_time, t.last_update_by as t_last_update_by \
 from sym_trigger t order by trigger_id asc   "
 
-#define SYM_SQL_SELECT_ROUTERS "select \
-r.sync_on_insert as r_sync_on_insert,r.sync_on_update as r_sync_on_update,r.sync_on_delete as r_sync_on_delete,                            \
-r.target_catalog_name,r.source_node_group_id,r.target_schema_name,r.target_table_name,r.target_node_group_id,r.router_expression,        \
-r.router_type,r.router_id,r.create_time as r_create_time,r.last_update_time as r_last_update_time,r.last_update_by as r_last_update_by, \
-r.use_source_catalog_schema \
-from sym_router r order by r.router_id "
-
 #define SYM_SQL_TRIGGER_HIST "select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,\
 last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,\
 trigger_row_hash,trigger_template_hash,error_message \
