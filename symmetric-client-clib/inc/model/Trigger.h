@@ -18,8 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef INC_MODEL_TRIGGER_H_
-#define INC_MODEL_TRIGGER_H_
+#ifndef SYM_MODEL_TRIGGER_H
+#define SYM_MODEL_TRIGGER_H
 
 #include <stdlib.h>
 #include "util/Date.h"
@@ -67,4 +67,4 @@ typedef struct SymTrigger {
 
 SymTrigger * SymTrigger_new(SymTrigger *this);
 
-#endif /* INC_MODEL_TRIGGER_H_ */
+#endif /* SYM_MODEL_TRIGGER_H */

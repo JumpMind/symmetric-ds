@@ -18,8 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef INC_IO_DATA_DATAEVENTTYPE_H_
-#define INC_IO_DATA_DATAEVENTTYPE_H_
+#ifndef SYM_IO_DATA_DATAEVENTTYPE_H
+#define SYM_IO_DATA_DATAEVENTTYPE_H
 
 #include "db/sql/DmlStatement.h"
 
@@ -48,4 +48,4 @@ SymDmlType SymDataEvent_getDmlType(SymDataEventType dataEventType);
 SymDataEventType SymDataEvent_getEventType(char *code);
 char * SymDataEvent_getCode(SymDataEventType dataEventType);
 
-#endif /* INC_IO_DATA_DATAEVENTTYPE_H_ */
+#endif /* SYM_IO_DATA_DATAEVENTTYPE_H */

@@ -18,8 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef INC_DB_SQLITE_SQLITETRIGGERTEMPLATE_H_
-#define INC_DB_SQLITE_SQLITETRIGGERTEMPLATE_H_
+#ifndef SYM_DB_SQLITE_SQLITETRIGGERTEMPLATE_H
+#define SYM_DB_SQLITE_SQLITETRIGGERTEMPLATE_H
 
 #include <stdlib.h>
 #include "io/data/DataEventType.h"
@@ -79,4 +79,4 @@ for each row     \n\
         %s \n\
 end"
 
-#endif /* INC_DB_SQLITE_SQLITETRIGGERTEMPLATE_H_ */
+#endif /* SYM_DB_SQLITE_SQLITETRIGGERTEMPLATE_H */

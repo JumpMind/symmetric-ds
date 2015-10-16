@@ -19,8 +19,8 @@
  * under the License.
  */
 
-#ifndef INC_COMMON_PARAMETERCONSTANTS_H_
-#define INC_COMMON_PARAMETERCONSTANTS_H_
+#ifndef SYM_COMMON_PARAMETERCONSTANTS_H
+#define SYM_COMMON_PARAMETERCONSTANTS_H
 
 #define AUTO_START_ENGINE "auto.start.engine"
 
@@ -277,4 +277,4 @@
     #define EXTENSIONS_XML "extensions.xml"
 
 
-#endif /* INC_COMMON_PARAMETERCONSTANTS_H_ */
+#endif /* SYM_COMMON_PARAMETERCONSTANTS_H */
