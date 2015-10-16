@@ -118,6 +118,13 @@ SymRow * SymSqliteSqlTemplate_queryForList(SymSqliteSqlTemplate *this, char *sql
     return (SymRow *) SymSqliteSqlTemplate_query(this, sql, args, sqlTypes, error, (void *) SymSqliteSqlTemplate_rowMapper);
 }
 
+void * SymSqliteSqlTemplate_queryForObject(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *map_row(SymRow *row)) {
+    SymList *list = SymSqliteSqlTemplate_query(this, sql, args, sqlTypes, error, map_row);
+    void *object = list->get(list, 0);
+    list->destroy(list);
+    return object;
+}
+
 int SymSqliteSqlTemplate_queryForInt(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
     int rc;
     sqlite3_stmt *stmt;
@@ -184,6 +191,7 @@ SymSqliteSqlTemplate * SymSqliteSqlTemplate_new(SymSqliteSqlTemplate *this, sqli
     super->queryForInt = (void *) &SymSqliteSqlTemplate_queryForInt;
     super->queryForString = (void *) &SymSqliteSqlTemplate_queryForString;
     super->queryForList = (void *) &SymSqliteSqlTemplate_queryForList;
+    super->queryForObject = (void *) &SymSqliteSqlTemplate_queryForObject;
     super->query = (void *) &SymSqliteSqlTemplate_query;
     super->queryWithUserData = (void *) &SymSqliteSqlTemplate_queryWithUserData;
     super->update = (void *) &SymSqliteSqlTemplate_update;
