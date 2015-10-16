@@ -46,6 +46,7 @@
 #include "model/Router.h"
 #include "io/data/DataEventType.h"
 #include "db/SymDialect.h"
+#include "common/Constants.h"
 
 typedef struct SymTriggerRouterService {
     SymConfigurationService *configurationService;
@@ -108,5 +109,10 @@ r.router_type,r.router_id,r.create_time as r_create_time,r.last_update_time as r
 r.use_source_catalog_schema "
 
 #define SYM_SQL_SELECT_ROUTERS "from sym_router r order by r.router_id"
+
+#define SYM_SQL_INSERT_TRIGGER_HIST "\
+insert into sym_trigger_hist \
+(trigger_hist_id, trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message) \
+values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
 
 #endif

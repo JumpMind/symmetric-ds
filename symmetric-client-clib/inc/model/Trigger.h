@@ -23,6 +23,8 @@
 
 #include <stdlib.h>
 #include "util/Date.h"
+#include "db/model/Table.h"
+#include "util/List.h"
 
 
 typedef struct SymTrigger {
@@ -62,6 +64,9 @@ typedef struct SymTrigger {
     SymDate *lastUpdateTime;
     char *lastUpdateBy;
 
+    SymList * (*orderColumnsForTable)(struct SymTrigger *this, SymTable *table);
+    SymList * (*getSyncKeysColumnsForTable)(struct SymTrigger *this, SymTable *table);
+    long (*toHashedValue)(struct SymTrigger *this);
     void (*destroy)(struct SymTrigger *this);
 } SymTrigger;
 

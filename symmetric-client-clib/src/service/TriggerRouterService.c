@@ -311,7 +311,31 @@ SymList * SymTriggerRouterService_getTriggerRouters(SymTriggerRouterService *thi
 
 
 void SymTriggerRouterService_insert(SymTriggerRouterService *this, SymTriggerHistory *newHistRecord) {
-    // TODO
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    newHistRecord->triggerHistoryId = this->sequenceService->nextVal(this->sequenceService, SYM_SEQUENCE_TRIGGER_HIST);
+
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, SymStringUtils_format("%d", newHistRecord->triggerHistoryId));
+    args->add(args, newHistRecord->triggerId);
+    args->add(args, newHistRecord->sourceTableName);
+    args->add(args, SymStringUtils_format("%d", newHistRecord->tableHash));
+    args->add(args, newHistRecord->createTime == NULL ? "null" : newHistRecord->createTime->dateTimeString);
+    args->add(args, newHistRecord->columnNames);
+    args->add(args, newHistRecord->pkColumnNames);
+    args->add(args, newHistRecord->lastTriggerBuildReason);
+    args->add(args, newHistRecord->nameForDeleteTrigger);
+    args->add(args, newHistRecord->nameForInsertTrigger);
+    args->add(args, newHistRecord->nameForUpdateTrigger);
+    args->add(args, newHistRecord->sourceSchemaName);
+    args->add(args, newHistRecord->sourceCatalogName);
+    args->add(args, SymStringUtils_format("%d", newHistRecord->triggerRowHash));
+    args->add(args, "null"); // getTriggerTemplateHash
+    args->add(args, newHistRecord->errorMessage);
+
+    int error;
+    sqlTemplate->update(sqlTemplate, SYM_SQL_INSERT_TRIGGER_HIST, args, NULL, &error);
+
+
 }
 
 SymList * SymTriggerRouterService_getTriggersToSync(SymTriggerRouterService *this) {
@@ -429,9 +453,15 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
     // TODO create the SymTriggerHistory
     SymTriggerHistory *newTriggerHist = SymTriggerHistory_new(NULL);
 
-//    newTriggerHist->lastTriggerBuildReason = reason;
-//    newTriggerHist->sourceTableName = trigger->sourceTableName; // TODO trigger.isSourceTableNameWildCarded()
-//    newTriggerHist->columnNames =
+    newTriggerHist->triggerId = trigger->triggerId;
+    newTriggerHist->lastTriggerBuildReason = reason;
+    newTriggerHist->sourceTableName = trigger->sourceTableName; // TODO trigger.isSourceTableNameWildCarded()
+
+    newTriggerHist->columnNames = SymTable_getCommaDeliminatedColumns(trigger->orderColumnsForTable(trigger, table));
+    newTriggerHist->pkColumnNames = SymTable_getCommaDeliminatedColumns(trigger->getSyncKeysColumnsForTable(trigger, table));
+    newTriggerHist->triggerRowHash = trigger->toHashedValue(trigger);
+   // newTriggerHist->triggerTemplateHash = TODO
+    newTriggerHist->tableHash = table->calculateTableHashcode(table);
 
     int maxTriggerNameLength = 50; // TODO
 
@@ -485,8 +515,8 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
     unsigned short isDeadTrigger = !trigger->syncOnInsert && !trigger->syncOnUpdate && !trigger->syncOnDelete;
 
     if (hist == NULL && (oldhist == NULL || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
+        SymTriggerRouterService_insert(this, newTriggerHist);
         // TODO
-        // insert(newTriggerHist);
         hist = newTriggerHist;
     }
 

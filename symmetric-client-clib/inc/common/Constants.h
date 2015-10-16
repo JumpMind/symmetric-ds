@@ -27,4 +27,6 @@
 
 #define SYM_NONE_TOKEN "$(none)"
 
+#define SYM_SEQUENCE_TRIGGER_HIST "trigger_hist"
+
 #endif

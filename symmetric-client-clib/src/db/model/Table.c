@@ -58,6 +58,24 @@ static int SymTable_calculateHashcodeForColumns(int prime, SymList *cols) {
     return result;
 }
 
+char * SymTable_getCommaDeliminatedColumns(SymList *cols) {
+    SymStringBuilder *columns = SymStringBuilder_new(NULL);
+    if (cols != NULL && cols->size > 0) {
+        int i;
+        for (i = 0; i < cols->size; i++) {
+            SymColumn *column = cols->get(cols, i);
+            columns->append(columns, column->name);
+            if (i < (cols->size-1)) {
+                columns->append(columns, ",");
+            }
+        }
+        return columns->destroyAndReturn(columns);
+    }
+    else {
+        return " ";
+    }
+}
+
 int SymTable_calculateTableHashcode(SymTable *this) {
     int prime = 31;
     int result = 1;
