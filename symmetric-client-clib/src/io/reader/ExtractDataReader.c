@@ -32,6 +32,7 @@ SymBatch * SymExtractDataReader_nextBatch(SymExtractDataReader *this) {
 SymTable * SymExtractDataReader_nextTable(SymExtractDataReader *this) {
     return this->targetTable;
 }
+
 static SymTable * lookupAndOrderColumnsAccordingToTriggerHistory(SymExtractDataReader *this, char *routerId, SymTriggerHistory *triggerHistory,
         unsigned short setTargetTableName, unsigned short useDatabaseDefinition) {
     char *catalogName = triggerHistory->sourceCatalogName;
@@ -41,7 +42,8 @@ static SymTable * lookupAndOrderColumnsAccordingToTriggerHistory(SymExtractDataR
     if (useDatabaseDefinition) {
         table = this->platform->getTableFromCache(this->platform, catalogName, schemaName, tableName, 0);
 
-        if (table && table->columns->size < triggerHistory->parsedColumnNames->size) {
+        SymList *parsedColumns = triggerHistory->getParsedColumns(triggerHistory);
+        if (table && table->columns->size < parsedColumns->size) {
             /*
              * If the column count is less than what trigger history reports, then
              * chances are the table cache is out of date.
@@ -50,18 +52,15 @@ static SymTable * lookupAndOrderColumnsAccordingToTriggerHistory(SymExtractDataR
         }
 
         if (table) {
-            table = table->copyAndFilterColumns(table, triggerHistory->getParsedColumns(triggerHistory), 1);
+            table = table->copyAndFilterColumns(table, parsedColumns, 1);
         } else {
             SymLog_error("Could not find the following table.  It might have been dropped: %s",
                     SymTable_getFullyQualifiedTableName(catalogName, schemaName, tableName, "", ".", "."));
             return NULL;
         }
     } else {
-        // TODO: when not using database definition
-        //table = SymTable_newWithName(NULL, tableName);
-        //table->columns = triggerHistory->parsedColumnNames;
-        //table->addColumns(table, triggerHistory->parsedColumnNames);
-        //table->setPrimaryKeys(table, triggerHistory->parsePkColumnNames);
+        table = SymTable_newWithName(NULL, tableName);
+        table->columns = triggerHistory->getParsedColumns(triggerHistory);
     }
 
     SymRouter *router = this->triggerRouterService->getRouterById(this->triggerRouterService, routerId, 0);
