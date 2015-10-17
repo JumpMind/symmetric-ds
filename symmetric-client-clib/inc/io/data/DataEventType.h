@@ -18,8 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef INC_IO_DATA_DATAEVENTTYPE_H_
-#define INC_IO_DATA_DATAEVENTTYPE_H_
+#ifndef SYM_IO_DATA_DATAEVENTTYPE_H
+#define SYM_IO_DATA_DATAEVENTTYPE_H
 
 #include "db/sql/DmlStatement.h"
 
@@ -43,8 +43,9 @@ typedef enum {
 #define SYM_DATA_EVENT_CREATE_CODE "C"
 #define SYM_DATA_EVENT_BSH_CODE "B"
 
-unsigned short isDml(SymDataEventType dataEventType);
-SymDmlType getDmlType(SymDataEventType dataEventType);
-SymDataEventType getEventType(char *code);
+unsigned short SymDataEvent_isDml(SymDataEventType dataEventType);
+SymDmlType SymDataEvent_getDmlType(SymDataEventType dataEventType);
+SymDataEventType SymDataEvent_getEventType(char *code);
+char * SymDataEvent_getCode(SymDataEventType dataEventType);
 
-#endif /* INC_IO_DATA_DATAEVENTTYPE_H_ */
+#endif /* SYM_IO_DATA_DATAEVENTTYPE_H */

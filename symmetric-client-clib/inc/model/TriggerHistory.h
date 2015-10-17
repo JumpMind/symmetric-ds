@@ -54,6 +54,7 @@ typedef struct SymTriggerHistory {
 
     SymStringArray * (*getParsedColumnNames)(struct SymTriggerHistory *this);
     SymStringArray * (*getParsedPkColumnNames)(struct SymTriggerHistory *this);
+    char * (*getTriggerNameForDmlType)(struct SymTriggerHistory *this, SymDataEventType type);
     SymList * (*getParsedColumns)(struct SymTriggerHistory *this);
     void (*destroy)(struct SymTriggerHistory *this);
 } SymTriggerHistory;

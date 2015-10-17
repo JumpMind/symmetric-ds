@@ -18,8 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef INC_DB_SQLITE_SQLITETRIGGERTEMPLATE_H_
-#define INC_DB_SQLITE_SQLITETRIGGERTEMPLATE_H_
+#ifndef SYM_DB_SQLITE_SQLITETRIGGERTEMPLATE_H
+#define SYM_DB_SQLITE_SQLITETRIGGERTEMPLATE_H
 
 #include <stdlib.h>
 #include "io/data/DataEventType.h"
@@ -28,9 +28,14 @@
 #include "model/Channel.h"
 #include "db/model/Table.h"
 #include "util/StringUtils.h"
+#include "db/sql/SqlTemplate.h"
+#include "util/StringUtils.h"
+#include "common/Log.h"
+
+#define SYM_ORIG_TABLE_ALIAS "orig"
 
 typedef struct SymSqliteTriggerTemplate {
-    char * (*createTriggerDDL)(struct SymSqliteTriggerTemplate *this, SymDataEventType *dml,
+    char * (*createTriggerDDL)(struct SymSqliteTriggerTemplate *this, SymDataEventType dml,
             SymTrigger *trigger, SymTriggerHistory *history, SymChannel *channel, char *tablePrefix,
             SymTable *originalTable, char *defaultCatalog, char *defaultSchema);
     void (*destroy)(struct SymSqliteTriggerTemplate *this);
@@ -38,7 +43,25 @@ typedef struct SymSqliteTriggerTemplate {
 
 SymSqliteTriggerTemplate * SymSqliteTriggerTemplate_new(SymSqliteTriggerTemplate *this);
 
-#define SYM_SQL_INSERT_TRIGGER_TEMPLATE "\
+//#define SYM_SQL_INSERT_TRIGGER_TEMPLATE "\
+//create trigger %s after insert on %s%s    \n\
+//for each row     \n\
+//  when (%s and %s)    \n\
+//  begin    \n\
+//    insert into sym_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)    \n\
+//    values(    \n\
+//           '%s', \n\
+//           'I', \n\
+//           %s, \n\
+//           %s, \n\
+//           %s, null, %s, \n\
+//           %s, \n\
+//           strftime('%Y-%m-%d %H:%M:%f','now','localtime')    \n\
+//    ); \n\
+//        %s \n\
+//end"
+
+#define SYM_SQL_INSERT_TRIGGER_TEMPLATE "\n\
 create trigger %s after insert on %s%s    \n\
 for each row     \n\
   when (%s and %s)    \n\
@@ -51,9 +74,9 @@ for each row     \n\
            %s, \n\
            %s, null, %s, \n\
            %s, \n\
-           strftime('%Y-%m-%d %H:%M:%f','now','localtime')    \n\
+           strftime('%%Y-%%m-%%d %%H:%%M:%%f','now','localtime')    \n\
     ); \n\
         %s \n\
 end"
 
-#endif /* INC_DB_SQLITE_SQLITETRIGGERTEMPLATE_H_ */
+#endif /* SYM_DB_SQLITE_SQLITETRIGGERTEMPLATE_H */

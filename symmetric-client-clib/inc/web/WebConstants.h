@@ -18,8 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_WEB_CONSTANTS_H_
-#define SYM_WEB_CONSTANTS_H_
+#ifndef SYM_WEB_CONSTANTS_H
+#define SYM_WEB_CONSTANTS_H
 
 #define SYM_WEB_CONSTANTS_SLASH "/"
 #define SYM_WEB_CONSTANTS_QUERY "?"

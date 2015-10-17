@@ -36,9 +36,12 @@ typedef struct SymDialect {
     int (*dropTablesAndDatabaseObjects)(struct SymDialect *this);
     void (*disableSyncTriggers)(struct SymDialect *this, SymSqlTransaction *transaction, char *nodeId);
     void (*enableSyncTriggers)(struct SymDialect *this, SymSqlTransaction *transaction);
-    int (*createTrigger)(struct SymDialect *this, SymDataEventType *dml, SymTrigger *trigger,
+    int (*createTrigger)(struct SymDialect *this, SymDataEventType dml, SymTrigger *trigger,
         SymTriggerHistory *hist, SymChannel *channel, char* tablePrefix, SymTable *table);
-    int (*removeTrigger)(struct SymDialect *this);
+    int (*removeTrigger)(struct SymDialect *this, char *sqlBuffer,
+            char *catalogName, char *schema, char *tableName, char *triggerName);
+    unsigned short (*doesTriggerExist)(struct SymDialect *this,
+            char *catalogName, char *schema, char *tableName, char *triggerName);
     int (*getInitialLoadSql)(struct SymDialect *this);
     void (*destroy)(struct SymDialect *this);
 } SymDialect;

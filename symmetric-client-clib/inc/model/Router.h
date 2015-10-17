@@ -18,8 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef INC_MODEL_ROUTER_H_
-#define INC_MODEL_ROUTER_H_
+#ifndef SYM_MODEL_ROUTER_H
+#define SYM_MODEL_ROUTER_H
 
 #include <stdlib.h>
 #include "model/NodeGroupLink.h"
@@ -49,4 +49,4 @@ typedef struct SymRouter {
 
 SymRouter * SymRouter_new(SymRouter *this);
 
-#endif /* INC_MODEL_ROUTER_H_ */
+#endif /* SYM_MODEL_ROUTER_H */

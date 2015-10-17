@@ -56,4 +56,6 @@ char * SymTable_getFullyQualifiedTableName(char *catalogName, char *schemaName,
 char * SymTable_getFullyQualifiedTablePrefix(char *catalogName, char *schemaName,
         char *quoteString, char *catalogSeparator, char *schemaSeparator);
 
+char * SymTable_getCommaDeliminatedColumns(SymList *cols);
+
 #endif

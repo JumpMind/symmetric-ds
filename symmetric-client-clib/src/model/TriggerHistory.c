@@ -44,6 +44,23 @@ SymList * SymTiggerHistory_getParsedColumns(SymTriggerHistory *this) {
     return columns;
 }
 
+char * SymTriggerHistory_getTriggerNameForDmlType(SymTriggerHistory *this, SymDataEventType type) {
+    switch (type) {
+    case SYM_DATA_EVENT_INSERT:
+        return this->nameForInsertTrigger;
+    case SYM_DATA_EVENT_UPDATE:
+        return this->nameForUpdateTrigger;
+    case SYM_DATA_EVENT_DELETE:
+        return this->nameForDeleteTrigger;
+    default:
+        break;
+    }
+
+    SymLog_error("Unknown SymDataEventType %d", type);
+
+    return NULL;
+}
+
 void SymTriggerHistory_destroy(SymTriggerHistory *this) {
     free(this);
 }
@@ -55,6 +72,7 @@ SymTriggerHistory * SymTriggerHistory_new(SymTriggerHistory *this) {
     this->getParsedColumns = (void *) SymTiggerHistory_getParsedColumns;
     this->getParsedColumnNames = (void *) SymTiggerHistory_getParsedColumnNames;
     this->getParsedPkColumnNames = (void *) SymTiggerHistory_getParsedPkColumnNames;
+    this->getTriggerNameForDmlType = SymTriggerHistory_getTriggerNameForDmlType;
     this->destroy = (void *) &SymTriggerHistory_destroy;
     return this;
 }
