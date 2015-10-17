@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <util/Properties.h>
 #include "db/platform/DatabasePlatformFactory.h"
 #include "db/SymDialectFactory.h"
 #include "db/SymDialect.h"
@@ -43,7 +42,9 @@
 #include "service/ConfigurationService.h"
 #include "transport/TransportManagerFactory.h"
 #include "transport/TransportManager.h"
+#include "util/Properties.h"
 #include "common/Constants.h"
+#include "common/ParameterConstants.h"
 
 typedef struct SymEngine {
     SymProperties *properties;

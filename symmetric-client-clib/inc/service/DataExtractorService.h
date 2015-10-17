@@ -37,6 +37,7 @@
 #include "db/platform/DatabasePlatform.h"
 #include "util/List.h"
 #include "common/Log.h"
+#include "common/ParameterConstants.h"
 
 typedef struct SymDataExtractorService {
     SymNodeService *nodeService;

@@ -163,7 +163,7 @@ static SymTriggerHistory * SymTriggerRouterService_triggerHistoryMapper(SymRow *
 }
 
 SymRouter * SymTriggerRouterService_getRouterById(SymTriggerRouterService *this, char *routerId, unsigned short refreshCache) {
-    long routerCacheTimeoutInMs = this->parameterService->getLong(this->parameterService, CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS, 600000);
+    long routerCacheTimeoutInMs = this->parameterService->getLong(this->parameterService, SYM_PARAMETER_CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS, 600000);
     if (this->routersCache == NULL || refreshCache || time(NULL) * 1000 - this->routersCacheTime * 1000 > routerCacheTimeoutInMs) {
         if (this->routersCache) {
             this->routersCache->destroy(this->routersCache);
@@ -252,8 +252,8 @@ SymList * SymTriggerRouterService_getActiveTriggerHistoriesByTableName(SymTrigge
 static SymTrigger * buildTriggerForSymmetricTable(SymTriggerRouterService *this, char *tableName) {
     SymList *tablesThatDoNotSync = SymTableConstants_getTablesThatDoNotSync();
     unsigned short syncChanges = !tablesThatDoNotSync->contains(tablesThatDoNotSync, tableName, (void *) strcmp)
-            && this->parameterService->is(this->parameterService, AUTO_SYNC_CONFIGURATION, 1);
-    unsigned short syncOnIncoming = this->parameterService->is(this->parameterService, AUTO_SYNC_CONFIGURATION_ON_INCOMING, 1)
+            && this->parameterService->is(this->parameterService, SYM_PARAMETER_AUTO_SYNC_CONFIGURATION, 1);
+    unsigned short syncOnIncoming = this->parameterService->is(this->parameterService, SYM_PARAMETER_AUTO_SYNC_CONFIGURATION_ON_INCOMING, 1)
             || SymStringUtils_equals(tableName, SYM_TABLE_RELOAD_REQUEST);
     SymTrigger *trigger = SymTrigger_new(NULL);
     trigger->triggerId = tableName;
@@ -310,7 +310,7 @@ static SymList * buildTriggersForSymmetricTables(SymTriggerRouterService *this, 
 }
 
 SymTrigger * SymTriggerRouterService_getTriggerById(SymTriggerRouterService *this, char *triggerId, unsigned short refreshCache) {
-    long triggerCacheTimeoutInMs = this->parameterService->getLong(this->parameterService, CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS, 600000);
+    long triggerCacheTimeoutInMs = this->parameterService->getLong(this->parameterService, SYM_PARAMETER_CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS, 600000);
     if (this->triggersCache == NULL || refreshCache || time(NULL) * 1000 - this->triggersCacheTime * 1000 > triggerCacheTimeoutInMs) {
         if (this->triggersCache) {
             this->triggersCache->destroy(this->triggersCache);
@@ -674,7 +674,7 @@ SymNodeGroupLink * SymRouterMapper_getNodeGroupLink(SymTriggerRouterService *thi
 }
 
 void SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this, unsigned short force) {
-    unsigned short autoSyncTriggers = this->parameterService->is(this->parameterService, AUTO_SYNC_TRIGGERS, 1);
+    unsigned short autoSyncTriggers = this->parameterService->is(this->parameterService, SYM_PARAMETER_AUTO_SYNC_TRIGGERS, 1);
 
     if (autoSyncTriggers) {
         SymLog_info("Synchronizing triggers");

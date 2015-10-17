@@ -43,7 +43,7 @@ SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode
 
         long bytesSentCount = 0;
         int batchesSentCount = 0;
-        long maxBytesToSync = this->parameterService->getLong(this->parameterService, SYM_TRANSPORT_MAX_BYTES_TO_SYNC, 1048576);
+        long maxBytesToSync = this->parameterService->getLong(this->parameterService, SYM_PARAMETER_TRANSPORT_MAX_BYTES_TO_SYNC, 1048576);
         SymNode *nodeIdentity = this->nodeService->findIdentity(this->nodeService);
         SymIterator *iter = batches->batches->iterator(batches->batches);
 
