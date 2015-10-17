@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #include "db/model/Table.h"
 #include "service/ParameterService.h"
 #include "service/ConfigurationService.h"
@@ -47,6 +48,7 @@
 #include "io/data/DataEventType.h"
 #include "db/SymDialect.h"
 #include "common/Constants.h"
+#include "common/TableConstants.h"
 
 typedef struct SymTriggerRouterService {
     SymConfigurationService *configurationService;
@@ -57,8 +59,12 @@ typedef struct SymTriggerRouterService {
 	SymMap *historyMap;
 	SymMap *routersCache;
 	time_t routersCacheTime;
+    SymMap *triggersCache;
+    time_t triggersCacheTime;
 
 	void (*syncTriggers)(struct SymTriggerRouterService *this, unsigned short force);
+	SymList * (*getTriggers)(struct SymTriggerRouterService *this, unsigned short replaceTokens);
+	SymTrigger * (*getTriggerById)(struct SymTriggerRouterService *this, char *triggerId, unsigned short refreshCache);
 	SymTriggerHistory * (*getTriggerHistory)(struct SymTriggerRouterService *this, int histId);
 	SymList * (*getActiveTriggerHistories)(struct SymTriggerRouterService *this);
 	SymList * (*getActiveTriggerHistoriesByTrigger)(struct SymTriggerRouterService *this, SymTrigger *trigger);

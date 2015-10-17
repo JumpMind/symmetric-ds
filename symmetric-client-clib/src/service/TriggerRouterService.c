@@ -164,8 +164,11 @@ static SymTriggerHistory * SymTriggerRouterService_triggerHistoryMapper(SymRow *
 
 SymRouter * SymTriggerRouterService_getRouterById(SymTriggerRouterService *this, char *routerId, unsigned short refreshCache) {
     long routerCacheTimeoutInMs = this->parameterService->getLong(this->parameterService, CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS, 600000);
-    if (this->routersCache == NULL || refreshCache
-            || time(NULL) * 1000 - this->routersCacheTime * 1000 > routerCacheTimeoutInMs) {
+    if (this->routersCache == NULL || refreshCache || time(NULL) * 1000 - this->routersCacheTime * 1000 > routerCacheTimeoutInMs) {
+        if (this->routersCache) {
+            this->routersCache->destroy(this->routersCache);
+        }
+        this->routersCache = SymMap_new(NULL, 10);
         this->routersCacheTime = time(NULL);
         SymList *routers = this->getRouters(this, 1);
         SymIterator *iter = routers->iterator(routers);
@@ -244,6 +247,86 @@ SymList * SymTriggerRouterService_getActiveTriggerHistoriesByTableName(SymTrigge
     args->destroy(args);
     sb->destroy(sb);
     return histories;
+}
+
+static SymTrigger * buildTriggerForSymmetricTable(SymTriggerRouterService *this, char *tableName) {
+    SymList *tablesThatDoNotSync = SymTableConstants_getTablesThatDoNotSync();
+    unsigned short syncChanges = !tablesThatDoNotSync->contains(tablesThatDoNotSync, tableName, (void *) strcmp)
+            && this->parameterService->is(this->parameterService, AUTO_SYNC_CONFIGURATION, 1);
+    unsigned short syncOnIncoming = this->parameterService->is(this->parameterService, AUTO_SYNC_CONFIGURATION_ON_INCOMING, 1)
+            || SymStringUtils_equals(tableName, SYM_TABLE_RELOAD_REQUEST);
+    SymTrigger *trigger = SymTrigger_new(NULL);
+    trigger->triggerId = tableName;
+    trigger->syncOnDelete = syncChanges;
+    trigger->syncOnInsert = syncChanges;
+    trigger->syncOnUpdate = syncChanges;
+    trigger->syncOnIncomingBatch = syncOnIncoming;
+    trigger->sourceTableName = tableName;
+    trigger->useCaptureOldData = 0;
+    if (SymStringUtils_equals(tableName, SYM_NODE_HOST)) {
+        trigger->channelId = SYM_CHANNEL_HEARTBEAT;
+    } else {
+        trigger->channelId = SYM_CHANNEL_CONFIG;
+    }
+
+    if (!SymStringUtils_equals(tableName, SYM_NODE_HOST) && !SymStringUtils_equals(tableName, SYM_NODE) &&
+            !SymStringUtils_equals(tableName, SYM_NODE_SECURITY) && !SymStringUtils_equals(tableName, SYM_TABLE_RELOAD_REQUEST)) {
+        trigger->useCaptureLobs = 1;
+    }
+    trigger->lastUpdateTime = SymDate_new();
+    tablesThatDoNotSync->destroy(tablesThatDoNotSync);
+    return trigger;
+}
+
+static SymList * buildTriggersForSymmetricTables(SymTriggerRouterService *this, SymList *tablesToExclude) {
+    SymList *tables = SymTableConstants_getConfigTables();
+
+    SymList *definedTriggers = this->getTriggers(this, 1);
+    SymIterator *iter = definedTriggers->iterator(definedTriggers);
+    while (iter->hasNext(iter)) {
+        SymTrigger *trigger = (SymTrigger *) iter->next(iter);
+        tables->removeObject(tables, trigger->sourceTableName, (void *) strcmp);
+    }
+    iter->destroy(iter);
+
+    if (tablesToExclude) {
+        iter = tablesToExclude->iterator(tablesToExclude);
+        while (iter->hasNext(iter)) {
+            char *tableName = (char *) iter->next(iter);
+            tables->removeObject(tables, tableName, (void *) strcasecmp);
+        }
+        iter->destroy(iter);
+    }
+
+    SymList *triggers = SymList_new(NULL);
+    iter = tables->iterator(tables);
+    while (iter->hasNext(iter)) {
+        char *tableName = (char *) iter->next(iter);
+        SymTrigger *trigger = buildTriggerForSymmetricTable(this, tableName);
+        triggers->add(triggers, trigger);
+    }
+    iter->destroy(iter);
+    return triggers;
+}
+
+SymTrigger * SymTriggerRouterService_getTriggerById(SymTriggerRouterService *this, char *triggerId, unsigned short refreshCache) {
+    long triggerCacheTimeoutInMs = this->parameterService->getLong(this->parameterService, CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS, 600000);
+    if (this->triggersCache == NULL || refreshCache || time(NULL) * 1000 - this->triggersCacheTime * 1000 > triggerCacheTimeoutInMs) {
+        if (this->triggersCache) {
+            this->triggersCache->destroy(this->triggersCache);
+        }
+        this->triggersCache = SymMap_new(NULL, 100);
+        this->triggersCacheTime = time(NULL);
+        SymList *triggers = buildTriggersForSymmetricTables(this, NULL);
+        SymIterator *iter = triggers->iterator(triggers);
+        while (iter->hasNext(iter)) {
+            SymTrigger *trigger = iter->next(iter);
+            this->triggersCache->put(this->triggersCache, trigger->triggerId, trigger, sizeof(SymTrigger));
+        }
+        iter->destroy(iter);
+        triggers->destroy(triggers);
+    }
+    return (SymTrigger *) this->triggersCache->get(this->triggersCache, triggerId);
 }
 
 SymList * SymTriggerRouterService_getTriggers(SymTriggerRouterService *this, unsigned short replaceTokens) {
@@ -616,6 +699,7 @@ void SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this, unsigne
 void SymTriggerRouterService_destroy(SymTriggerRouterService * this) {
     this->historyMap->destroy(this->historyMap);
     this->routersCache->destroy(this->routersCache);
+    this->triggersCache->destroy(this->triggersCache);
     free(this);
 }
 
@@ -628,7 +712,6 @@ SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService *t
     }
 
     this->historyMap = SymMap_new(NULL, 100);
-    this->routersCache = SymMap_new(NULL, 10);
 
     this->configurationService = configurationService;
     this->sequenceService = sequenceService;
@@ -637,6 +720,8 @@ SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService *t
     this->platform = platform;
 
     this->syncTriggers = (void *) &SymTriggerRouterService_syncTriggers;
+    this->getTriggers = (void *) &SymTriggerRouterService_getTriggers;
+    this->getTriggerById = (void *) &SymTriggerRouterService_getTriggerById;
     this->getTriggerHistory = (void *) &SymTriggerRouterService_getTriggerHistory;
     this->getActiveTriggerHistories = (void *) &SymTriggerRouterService_getActiveTriggerHistories;
     this->getActiveTriggerHistoriesByTrigger = (void *) &SymTriggerRouterService_getActiveTriggerHistoriesByTrigger;

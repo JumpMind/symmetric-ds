@@ -101,7 +101,7 @@ SymCsvData * SymExtractDataReader_nextData(SymExtractDataReader *this) {
         if (strcmp(data->eventType, SYM_DATA_EVENT_RELOAD) == 0) {
             // TODO: implement outgoing reload event
         } else {
-            SymTrigger *trigger = NULL; //this->triggerRouterService->getTriggerById(this->triggerRouterService, triggerHist->triggerId);
+            SymTrigger *trigger = this->triggerRouterService->getTriggerById(this->triggerRouterService, triggerHistory->triggerId, 0);
             if (trigger) {
                 if (this->lastTriggerHistory == NULL || this->lastTriggerHistory->triggerHistoryId != triggerHistory->triggerHistoryId ||
                         this->lastRouterId == NULL || strcmp(this->lastRouterId, data->routerId) != 0) {
