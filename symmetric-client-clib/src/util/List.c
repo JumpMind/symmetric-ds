@@ -53,6 +53,56 @@ void * SymList_get(SymList *this, int index) {
     return object;
 }
 
+int SymList_indexOf(SymList *this, void *object, void *compare(void *object1, void *object2)) {
+    SymListItem *item = this->head;
+    int i;
+    for (i = 0; item != NULL; i++) {
+        if (compare(object, item->object) == 0) {
+            return i;
+        }
+        item = item->next;
+    }
+    return -1;
+}
+
+unsigned short SymList_contains(SymList *this, void *object, void *compare(void *object1, void *object2)) {
+    return SymList_indexOf(this, object, compare) != -1;
+}
+
+unsigned short SymList_remove(SymList *this, int index) {
+    SymListItem *item = this->head;
+    int i;
+    for (i = 0; item != NULL; i++) {
+        if (i == index) {
+            if (item == this->head && item == this->tail) {
+                this->head = this->tail = NULL;
+            } else if (item == this->head) {
+                this->head = item->next;
+                item->next->previous = NULL;
+            } else if (item == this->tail) {
+                this->tail = item->previous;
+                item->previous->next = NULL;
+            } else {
+                item->next->previous = item->previous;
+                item->previous->next = item->next;
+            }
+            free(item);
+            this->size--;
+            return 1;
+        }
+        item = item->next;
+    }
+    return 0;
+}
+
+unsigned short SymList_removeObject(SymList *this, void *object, void *compare(void *object1, void *object2)) {
+    int index = SymList_indexOf(this, object, compare);
+    if (index != -1) {
+        return SymList_remove(this, index);
+    }
+    return 0;
+}
+
 unsigned short SymIterator_hasNext(SymIterator *this) {
     return this->index + 1 < this->size && this->currentItem != NULL;
 }
@@ -122,6 +172,10 @@ SymList * SymList_new(SymList *this) {
     this->add = (void *) &SymList_add;
     this->addAll = (void *) &SymList_addAll;
     this->get = (void *) &SymList_get;
+    this->indexOf = (void *) &SymList_indexOf;
+    this->contains = (void *) &SymList_contains;
+    this->remove = (void *) &SymList_remove;
+    this->removeObject = (void *) &SymList_removeObject;
     this->iterator = (void *) &SymList_iterator;
     this->iteratorFromIndex = (void *) &SymList_iteratorFromIndex;
     this->reset = (void *) &SymList_reset;
