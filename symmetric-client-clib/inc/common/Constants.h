@@ -29,4 +29,8 @@
 
 #define SYM_SEQUENCE_TRIGGER_HIST "trigger_hist"
 
+#define SYM_CHANNEL_HEARTBEAT "heartbeat"
+
+#define SYM_CHANNEL_CONFIG "config"
+
 #endif
