@@ -26,6 +26,7 @@
 #include "util/List.h"
 #include "db/model/Column.h"
 #include "io/data/DataEventType.h"
+#include "common/Log.h"
 
 #define SYM_TRIGGER_REBUILD_REASON_NEW_TRIGGERS "N"
 #define SYM_TRIGGER_REBUILD_REASON_TABLE_SCHEMA_CHANGED "S"

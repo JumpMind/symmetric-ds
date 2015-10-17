@@ -43,24 +43,6 @@ typedef struct SymSqliteTriggerTemplate {
 
 SymSqliteTriggerTemplate * SymSqliteTriggerTemplate_new(SymSqliteTriggerTemplate *this);
 
-//#define SYM_SQL_INSERT_TRIGGER_TEMPLATE "\
-//create trigger %s after insert on %s%s    \n\
-//for each row     \n\
-//  when (%s and %s)    \n\
-//  begin    \n\
-//    insert into sym_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)    \n\
-//    values(    \n\
-//           '%s', \n\
-//           'I', \n\
-//           %s, \n\
-//           %s, \n\
-//           %s, null, %s, \n\
-//           %s, \n\
-//           strftime('%Y-%m-%d %H:%M:%f','now','localtime')    \n\
-//    ); \n\
-//        %s \n\
-//end"
-
 #define SYM_SQL_INSERT_TRIGGER_TEMPLATE "\n\
 create trigger %s after insert on %s%s    \n\
 for each row     \n\
@@ -79,4 +61,4 @@ for each row     \n\
         %s \n\
 end"
 
-#endif /* SYM_DB_SQLITE_SQLITETRIGGERTEMPLATE_H */
+#endif

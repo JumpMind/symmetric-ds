@@ -25,7 +25,8 @@ char * SymSqliteTriggerTemplate_fillOutColumnTemplate(SymSqliteTriggerTemplate *
         char *columnPrefix, SymColumn *column, SymDataEventType dml, unsigned short isOld,
         SymChannel *channel, SymTrigger *trigger) {
 
-    unsigned short isLob = 0; // TODO
+    // TODO: handle LOBs
+    //unsigned short isLob = 0;
 
     char *templateToUse;
 
@@ -83,23 +84,6 @@ char * SymSqliteTriggerTemplate_buildColumnsString(SymSqliteTriggerTemplate *thi
     return buff->destroyAndReturn(buff);
 }
 
-//#define SYM_SQL_INSERT_TRIGGER_TEMPLATE "\
-//create trigger $(*triggerName) after insert on $(*schemaName)$(**tableName)    \n\
-//for each row     \n\
-//  when ($(**syncOnInsertCondition) and $(**syncOnIncomingBatchCondition))    \n\
-//  begin    \n\
-//    insert into sym_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)    \n\
-//    values(    \n\
-//           '$(**targetTableName)', \n\
-//           'I', \n\
-//           $(**triggerHistoryId), \n\
-//           $(columns),    \n\
-//           $(channelExpression), null, $(sourceNodeExpression), \n\
-//           $(externalSelect),    \n\
-//           strftime('%Y-%m-%d %H:%M:%f','now','localtime')    \n\
-//    ); \n\
-//        $(custom_on_insert_text) \n\
-//end"
 char * SymSqliteTriggerTemplate_replaceTemplateVariables(SymSqliteTriggerTemplate  *this, SymDataEventType dml,
         SymTrigger *trigger, SymTriggerHistory *history, SymChannel *channel, char *tablePrefix,
         SymTable *table, char *defaultCatalog, char *defaultSchema, char *ddl) {
