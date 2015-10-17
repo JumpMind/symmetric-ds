@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include "util/Map.h"
 #include "util/StringBuilder.h"
+#include "util/StringArray.h"
 #include "util/Date.h"
 
 typedef struct SymRowEntry {
@@ -44,6 +45,11 @@ typedef struct SymRow {
     SymDate * (*getDate)(struct SymRow *this, char *columnName);
     int (*getSize)(struct SymRow *this, char *columnName);
     int (*getSqlType)(struct SymRow *this, char *columnName);
+    char * (*stringValue)(struct SymRow *this);
+    int (*intValue)(struct SymRow *this);
+    long (*longValue)(struct SymRow *this);
+    unsigned short (*booleanValue)(struct SymRow *this);
+    SymDate * (*dateValue)(struct SymRow *this);
     void (*destroy)(struct SymRow *this);
 } SymRow;
 
