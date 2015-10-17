@@ -119,6 +119,19 @@ void SymStringArray_reset(SymStringArray *this) {
     this->size = 0;
 }
 
+SymStringArray * SymStringArray_split(char *str, char *separator) {
+    char *stop = str, *lastStop = str;
+    SymStringArray *array = SymStringArray_new(NULL);
+    while ((stop = strstr(stop, separator)) != NULL) {
+        array->addn(array, lastStop, stop - lastStop);
+        lastStop = ++stop;
+    }
+    if (lastStop != str) {
+        array->add(array, lastStop);
+    }
+    return array;
+}
+
 void SymStringArray_destroy(SymStringArray *this) {
     this->reset(this);
     free(this);
