@@ -101,7 +101,7 @@ char * SymRow_stringValue(SymRow *this) {
     char *value = NULL;
     SymStringArray *names = this->map->keys(this->map);
     if (names->size > 0) {
-        value = this->map->get(this->map, names->get(names, 0));
+        value = SymStringBuilder_copy(this->map->get(this->map, names->get(names, 0)));
     }
     names->destroy(names);
     return value;

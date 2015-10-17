@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <sqlite3.h>
 #include "db/sql/SqlTemplate.h"
+#include "db/sql/mapper/RowMapper.h"
 #include "util/List.h"
 #include "util/StringArray.h"
 #include "util/StringBuilder.h"
