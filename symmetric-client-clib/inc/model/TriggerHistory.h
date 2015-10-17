@@ -41,9 +41,7 @@ typedef struct SymTriggerHistory {
     char *sourceCatalogName;
     SymDate *createTime;
     char *columnNames;
-    SymStringArray *parsedColumnNames;
     char *pkColumnNames;
-    SymStringArray *parsedPkColumnNames;
     char *nameForInsertTrigger;
     char *nameForUpdateTrigger;
     char *nameForDeleteTrigger;
@@ -54,6 +52,8 @@ typedef struct SymTriggerHistory {
     long triggerTemplateHash;
     char *lastTriggerBuildReason;
 
+    SymStringArray * (*getParsedColumnNames)(struct SymTriggerHistory *this);
+    SymStringArray * (*getParsedPkColumnNames)(struct SymTriggerHistory *this);
     SymList * (*getParsedColumns)(struct SymTriggerHistory *this);
     void (*destroy)(struct SymTriggerHistory *this);
 } SymTriggerHistory;

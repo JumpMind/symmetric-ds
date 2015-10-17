@@ -20,8 +20,28 @@
  */
 #include "model/TriggerHistory.h"
 
+SymStringArray * SymTiggerHistory_getParsedColumnNames(SymTriggerHistory *this) {
+    return SymStringArray_split(this->columnNames, ",");
+}
+
+SymStringArray * SymTiggerHistory_getParsedPkColumnNames(SymTriggerHistory *this) {
+    return SymStringArray_split(this->pkColumnNames, ",");
+}
+
 SymList * SymTiggerHistory_getParsedColumns(SymTriggerHistory *this) {
-    return NULL;
+    SymList *columns = SymList_new(NULL);
+    SymStringArray *columnNames = this->getParsedColumnNames(this);
+    SymStringArray *pkNames = this->getParsedPkColumnNames(this);
+    int i;
+    unsigned short isPrimaryKey;
+    for (i = 0; i < columnNames->size; i++) {
+        char *columnName = columnNames->get(columnNames, i);
+        isPrimaryKey = pkNames->contains(pkNames, columnName);
+        columns->add(columns, SymColumn_new(NULL, columnName, isPrimaryKey));
+    }
+    columnNames->destroy(columnNames);
+    pkNames->destroy(pkNames);
+    return columns;
 }
 
 void SymTriggerHistory_destroy(SymTriggerHistory *this) {
@@ -33,6 +53,8 @@ SymTriggerHistory * SymTriggerHistory_new(SymTriggerHistory *this) {
         this = (SymTriggerHistory *) calloc(1, sizeof(SymTriggerHistory));
     }
     this->getParsedColumns = (void *) SymTiggerHistory_getParsedColumns;
+    this->getParsedColumnNames = (void *) SymTiggerHistory_getParsedColumnNames;
+    this->getParsedPkColumnNames = (void *) SymTiggerHistory_getParsedPkColumnNames;
     this->destroy = (void *) &SymTriggerHistory_destroy;
     return this;
 }
