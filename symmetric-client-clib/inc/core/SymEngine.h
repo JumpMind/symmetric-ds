@@ -28,6 +28,7 @@
 #include "db/SymDialectFactory.h"
 #include "db/SymDialect.h"
 #include "db/sqlite/SqliteDialect.h"
+#include "service/AcknowledgeService.h"
 #include "service/TriggerRouterService.h"
 #include "service/ParameterService.h"
 #include "service/PushService.h"
@@ -62,6 +63,7 @@ typedef struct SymEngine {
     SymNodeService *nodeService;
     SymIncomingBatchService *incomingBatchService;
     SymOutgoingBatchService *outgoingBatchService;
+    SymAcknowledgeService *acknowledgeService;
     SymConfigurationService *configurationService;
     SymSequenceService *sequenceService;
 
