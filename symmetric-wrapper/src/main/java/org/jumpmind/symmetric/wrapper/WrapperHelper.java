@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public abstract class AbstractWrapper {
+public class WrapperHelper {
 
 		
 	protected static void run(String[] args, String applHomeDir, String configFileName) {
