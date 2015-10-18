@@ -109,13 +109,8 @@ SymList * SymSqliteSqlTemplate_queryWithUserData(SymSqliteSqlTemplate *this, cha
     return list;
 }
 
-static SymRow * SymSqliteSqlTemplate_rowMapper(SymRow *row) {
-    // TODO: clone the row
-    return row;
-}
-
 SymRow * SymSqliteSqlTemplate_queryForList(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
-    return (SymRow *) SymSqliteSqlTemplate_query(this, sql, args, sqlTypes, error, (void *) SymSqliteSqlTemplate_rowMapper);
+    return (SymRow *) SymSqliteSqlTemplate_query(this, sql, args, sqlTypes, error, (void *) SymRowMapper_mapper);
 }
 
 void * SymSqliteSqlTemplate_queryForObject(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *map_row(SymRow *row)) {
