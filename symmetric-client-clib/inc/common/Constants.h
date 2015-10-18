@@ -33,4 +33,6 @@
 
 #define SYM_CHANNEL_CONFIG "config"
 
+#define SYM_VIRTUAL_BATCH_FOR_REGISTRATION -9999L
+
 #endif

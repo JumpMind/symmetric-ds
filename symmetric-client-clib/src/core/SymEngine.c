@@ -150,7 +150,7 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
             this->configurationService);
     this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
     this->pushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
-            this->configurationService);
+            this->configurationService, this->acknowledgeService);
 
     return this;
 }

@@ -49,8 +49,10 @@ SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode
 
         while (iter->hasNext(iter)) {
             SymOutgoingBatch *batch = (SymOutgoingBatch *) iter->next(iter);
+            // TODO: pass all outgoingbatches to this method so reader can read all of them
             processedBatches = SymDataExtractorService_extractOutgoingBatch(this, nodeIdentity, targetNode, transport, batch);
 
+            // TODO: move this to an extract outgoingbatch callback
             if (strcmp(batch->status, SYM_OUTGOING_BATCH_OK) == 0) {
                 batch->loadCount++;
                 if (strcmp(batch->status, SYM_OUTGOING_BATCH_IGNORED) != 0) {

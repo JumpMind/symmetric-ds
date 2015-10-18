@@ -20,7 +20,7 @@
  */
 #include "db/sql/mapper/RowMapper.h"
 
-SymRow * SymStringMapper_mapper(SymRow *row) {
+SymRow * SymRowMapper_mapper(SymRow *row) {
     // TODO: clone the row
     return row;
 }

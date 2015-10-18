@@ -124,6 +124,11 @@ int SymHttpTransportManager_sendAcknowledgement(SymHttpTransportManager *this, S
     return httpResponseCode;
 }
 
+SymList * SymHttpTransportManager_readAcknowledgement(SymHttpTransportManager *this, char *parameterString1, char *parameterString2) {
+    // TODO: read acknowledgments from ack string response
+    return NULL;
+}
+
 SymHttpIncomingTransport * SymHttpTransportManager_getPullTransport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
     return SymHttpIncomingTransport_new(NULL, buildUrl("pull", remote, local, securityToken, registrationUrl));
 }
@@ -170,6 +175,7 @@ SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *t
     super->getPullTransport = (void *) &SymHttpTransportManager_getPullTransport;
     super->getPushTransport = (void *) &SymHttpTransportManager_getPushTransport;
     super->getRegisterTransport = (void *) &SymHttpTransportManager_getRegisterTransport;
+    super->readAcknowledgement = (void *) SymHttpTransportManager_readAcknowledgement;
     super->destroy = (void *) &SymHttpTransportManager_destroy;
     return this;
 }

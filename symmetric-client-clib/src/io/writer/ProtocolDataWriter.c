@@ -21,13 +21,24 @@
 #include "io/writer/ProtocolDataWriter.h"
 
 void SymProtocolDataWriter_open(SymProtocolDataWriter *this) {
+    this->buffer = SymStringBuilder_newWithSize(4096);
     this->reader->open(this->reader);
 }
 
-size_t SymProtocolDataWriter_process(SymProtocolDataWriter *this,  char *data, size_t size, size_t count) {
+size_t SymProtocolDataWriter_process(SymProtocolDataWriter *this, char *buffer, size_t size, size_t count) {
     size_t length = size * count;
 
-    this->reader->nextBatch(this->reader);
+    // TODO: read the sym_data rows and write as CSV protocol
+    SymBatch *batch;
+    SymTable *table;
+    SymData *data;
+    while ((batch = this->reader->nextBatch(this->reader))) {
+        while ((table = this->reader->nextTable(this->reader))) {
+            while ((data = this->reader->nextData(this->reader))) {
+
+            }
+        }
+    }
 
     return length;
 }
@@ -38,6 +49,7 @@ SymList * SymProtocolDataWriter_getBatchesProcessed(SymProtocolDataWriter *this)
 
 void SymProtocolDataWriter_close(SymProtocolDataWriter *this) {
     this->reader->close(this->reader);
+    this->buffer->destroy(this->buffer);
 }
 
 void SymProtocolDataWriter_destroy(SymProtocolDataWriter *this) {

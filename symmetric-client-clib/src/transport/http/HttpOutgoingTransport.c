@@ -20,8 +20,26 @@
  */
 #include "transport/http/HttpOutgoingTransport.h"
 
-SymList * SymHttpOutgoingTransport_readAcks(SymHttpOutgoingTransport *this) {
-    return NULL;
+static size_t SymHttpOutgoingTransport_saveResponse(char *data, size_t size, size_t nmemb, SymHttpOutgoingTransport *this) {
+    int numBytes = size * nmemb;
+    this->response->appendn(this->response, data, nmemb);
+    return numBytes;
+}
+
+static void SymHttpOutgoingTransport_parseResponse(SymHttpOutgoingTransport *this) {
+    if (SymStringUtils_isBlank(this->response->str)) {
+        SymLog_error("Did not receive an acknowledgment for the batches sent.  Received '%s'", this->response->str);
+    } else {
+        SymOutgoingTransport *super = &this->super;
+        SymStringArray *lines = SymStringArray_split(this->response->str, "\n");
+        super->ackString = SymStringBuilder_copy(lines->get(lines, 0));
+        super->ackExtendedString = SymStringBuilder_copy(lines->get(lines, 1));
+        int i;
+        for (i = 2; i < lines->size; i++) {
+            SymLog_info("Read an unexpected line %s", lines->get(lines, i));
+        }
+        lines->destroy(lines);
+    }
 }
 
 static size_t SymHttpOutgoingTransport_readCallback(char *data, size_t size, size_t count, SymDataProcessor *processor) {
@@ -40,6 +58,8 @@ long SymHttpOutgoingTransport_process(SymHttpOutgoingTransport *this, SymDataPro
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
         curl_easy_setopt(curl, CURLOPT_READFUNCTION, SymHttpOutgoingTransport_readCallback);
         curl_easy_setopt(curl, CURLOPT_READDATA, processor);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, SymHttpOutgoingTransport_saveResponse);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
         processor->open(processor);
         rc = curl_easy_perform(curl);
         if (rc != CURLE_OK) {
@@ -48,6 +68,7 @@ long SymHttpOutgoingTransport_process(SymHttpOutgoingTransport *this, SymDataPro
         }
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
+        SymHttpOutgoingTransport_parseResponse(this);
         processor->close(processor);
     } else {
         SymLog_error("Error cannot initialize curl");
@@ -62,6 +83,7 @@ long SymHttpOutgoingTransport_process(SymHttpOutgoingTransport *this, SymDataPro
 }
 
 void SymHttpOutgoingTransport_destroy(SymHttpOutgoingTransport *this) {
+    this->response->destroy(this->response);
     free(this->url);
     free(this);
 }
@@ -72,6 +94,7 @@ SymHttpOutgoingTransport * SymHttpOutgoingTransport_new(SymHttpOutgoingTransport
     }
     SymOutgoingTransport *super = &this->super;
     this->url = url;
+    this->response = SymStringBuilder_new(NULL);
     super->process = (void *) &SymHttpOutgoingTransport_process;
     super->destroy = (void *) &SymHttpOutgoingTransport_destroy;
     return this;

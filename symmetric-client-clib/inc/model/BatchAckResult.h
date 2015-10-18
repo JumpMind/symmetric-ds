@@ -22,6 +22,7 @@
 #define SYM_BATCH_ACK_RESULT_H
 
 #include <stdlib.h>
+#include "model/BatchAck.h"
 
 typedef struct SymBatchAckResult {
     long batchId;

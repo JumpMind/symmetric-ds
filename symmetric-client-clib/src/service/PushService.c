@@ -20,9 +20,48 @@
  */
 #include "service/PushService.h"
 
+static SymList * readAcks(SymList *batches, SymOutgoingTransport *transport, SymTransportManager *transportManager, SymAcknowledgeService *acknowledgeService) {
+    SymList *batchIds = SymList_new(NULL);
+    SymIterator *iter = batches->iterator(batches);
+    while (iter->hasNext(iter)) {
+        SymOutgoingBatch *outgoingBatch = (SymOutgoingBatch *) iter->next(iter);
+        if (SymStringUtils_equals(outgoingBatch->status, SYM_OUTGOING_BATCH_LOADING)) {
+            batchIds->add(batchIds, SymStringUtils_format("ld", outgoingBatch->batchId));
+        }
+    }
+    iter->destroy(iter);
+
+    SymList *batchAcks = transportManager->readAcknowledgement(transportManager, transport->ackString, transport->ackExtendedString);
+
+    long batchIdInError = LONG_MAX;
+    iter = batchAcks->iterator(batchAcks);
+    while (iter->hasNext(iter)) {
+        SymBatchAck *batchAck = (SymBatchAck *) iter->next(iter);
+        char *batchId = SymStringUtils_format("ld", batchAck->batchId);
+        free(batchIds->removeObject(batchIds, batchId, (void *) strcmp));
+        free(batchId);
+        if (!batchAck->isOk) {
+            batchIdInError = batchAck->batchId;
+        }
+        SymLog_debug("Saving ack: %s, %s", batchAck->batchId, (batchAck->isOk ? SYM_OUTGOING_BATCH_OK : SYM_OUTGOING_BATCH_ERROR));
+        acknowledgeService->ack(acknowledgeService, batchAck);
+    }
+    iter->destroy(iter);
+
+    iter = batchIds->iterator(batchIds);
+    while (iter->hasNext(iter)) {
+        char *batchId = (char *) iter->next(iter);
+        if (atol(batchId) < batchIdInError) {
+            SymLog_error("We expected but did not receive an ack for batch %s", batchId);
+        }
+    }
+    iter->destroy(iter);
+    batchIds->destroyAll(batchIds, (void *) free);
+    return batchAcks;
+}
+
 void SymPushService_pushToNode(SymPushService *this, SymNode *remote, SymRemoteNodeStatus *status) {
-    // TODO: Node identity = nodeService.findIdentity(false);
-    SymNode *identity = this->nodeService->findIdentity(this->nodeService);
+    SymNode *identity = this->nodeService->findIdentityWithCache(this->nodeService, 0);
     SymNodeSecurity *identitySecurity = this->nodeService->findNodeSecurity(this->nodeService, identity->nodeId);
     SymOutgoingTransport *transport = this->transportManager->getPushTransport(this->transportManager, remote, identity, identitySecurity->nodePassword,
             this->parameterService->getRegistrationUrl(this->parameterService));
@@ -30,10 +69,10 @@ void SymPushService_pushToNode(SymPushService *this, SymNode *remote, SymRemoteN
     if (extractedBatches->size > 0) {
         SymLog_info("Push data sent to %s:%s:%s", remote->nodeGroupId, remote->externalId, remote->nodeId);
 
-        // TODO: read acknowledgement
-        //SymList *batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService);
-        //status->updateOutgoingStatus(status, extractedBatches, batchAcks);
-        //batchAcks->destroy(batchAcks);
+        // TODO: read acknowledgment
+        SymList *batchAcks = readAcks(extractedBatches, transport, this->transportManager, this->acknowledgeService);
+        status->updateOutgoingStatus(status, extractedBatches, batchAcks);
+        batchAcks->destroy(batchAcks);
     }
     extractedBatches->destroy(extractedBatches);
     transport->destroy(transport);
@@ -102,7 +141,8 @@ void SymPushService_destroy(SymPushService *this) {
 }
 
 SymPushService * SymPushService_new(SymPushService *this, SymNodeService *nodeService, SymDataExtractorService *dataExtractorService,
-        SymTransportManager *transportManager, SymParameterService *parameterService, SymConfigurationService *configurationService) {
+        SymTransportManager *transportManager, SymParameterService *parameterService, SymConfigurationService *configurationService,
+        SymAcknowledgeService *acknowledgeService) {
     if (this == NULL) {
         this = (SymPushService *) calloc(1, sizeof(SymPushService));
     }
@@ -111,6 +151,7 @@ SymPushService * SymPushService_new(SymPushService *this, SymNodeService *nodeSe
     this->transportManager = transportManager;
     this->parameterService = parameterService;
     this->configurationService = configurationService;
+    this->acknowledgeService = acknowledgeService;
     this->pushData = (void *) &SymPushService_pushData;
     this->destroy = (void *) &SymPushService_destroy;
     return this;
