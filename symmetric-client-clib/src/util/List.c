@@ -69,7 +69,7 @@ unsigned short SymList_contains(SymList *this, void *object, void *compare(void 
     return SymList_indexOf(this, object, compare) != -1;
 }
 
-unsigned short SymList_remove(SymList *this, int index) {
+void * SymList_remove(SymList *this, int index) {
     SymListItem *item = this->head;
     int i;
     for (i = 0; item != NULL; i++) {
@@ -86,16 +86,17 @@ unsigned short SymList_remove(SymList *this, int index) {
                 item->next->previous = item->previous;
                 item->previous->next = item->next;
             }
+            void *object = item->object;
             free(item);
             this->size--;
-            return 1;
+            return object;
         }
         item = item->next;
     }
-    return 0;
+    return NULL;
 }
 
-unsigned short SymList_removeObject(SymList *this, void *object, void *compare(void *object1, void *object2)) {
+void * SymList_removeObject(SymList *this, void *object, void *compare(void *object1, void *object2)) {
     int index = SymList_indexOf(this, object, compare);
     if (index != -1) {
         return SymList_remove(this, index);

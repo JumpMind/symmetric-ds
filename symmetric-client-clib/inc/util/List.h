@@ -50,8 +50,8 @@ typedef struct SymList {
     void * (*get)(struct SymList *this, int index);
     int (*indexOf)(struct SymList *this, void *object, void *compare(void *object1, void *object2));
     unsigned short (*contains)(struct SymList *this, void *object, void *compare(void *object1, void *object2));
-    unsigned short (*remove)(struct SymList *this, int index);
-    unsigned short (*removeObject)(struct SymList *this, void *object, void *compare(void *object1, void *object2));
+    void * (*remove)(struct SymList *this, int index);
+    void * (*removeObject)(struct SymList *this, void *object, void *compare(void *object1, void *object2));
     SymIterator * (*iterator)(struct SymList *this);
     SymIterator * (*iteratorFromIndex)(struct SymList *this, int startIndex);
     void (*reset)(struct SymList *this);
