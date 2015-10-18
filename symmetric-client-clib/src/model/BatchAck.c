@@ -18,26 +18,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_BATCH_ACK_H
-#define SYM_BATCH_ACK_H
+#include "model/BatchAck.h"
 
-#include <stdlib.h>
+void SymBatchAck_destroy(SymBatchAck *this) {
+    free(this);
+}
 
-typedef struct SymBatchAck {
-    long batchId;
-    char *nodeId;
-    unsigned short isOk;
-    long errorLine;
-    long networkMillis;
-    long filterMillis;
-    long databaseMillis;
-    long byteCount;
-    char *sqlState;
-    int sqlCode;
-    unsigned short ignored;
-    char *sqlMessage;
-} SymBatchAck;
-
-SymBatchAck * SymBatchAck_new(SymBatchAck *this);
-
-#endif
+SymBatchAck * SymBatchAck_new(SymBatchAck *this) {
+    if (this == NULL) {
+        this = (SymBatchAck *) calloc(1, sizeof(SymBatchAck));
+    }
+    return this;
+}
