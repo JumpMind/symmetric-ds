@@ -39,12 +39,15 @@ SymDataLoadStatus * SymDataLoadStatus_new();
 
 typedef struct SymNodeService {
     SymDatabasePlatform *platform;
+    SymNode *cachedNodeIdentity;
 
     SymNode * (*findIdentity)(struct SymNodeService *this);
+    SymNode * (*findIdentityWithCache)(struct SymNodeService *this, unsigned short useCache);
     SymNodeSecurity * (*findNodeSecurity)(struct SymNodeService *this, char *nodeId);
     SymList * (*findNodesToPull)(struct SymNodeService *this);
     SymList * (*findNodesToPushTo)(struct SymNodeService *this);
     SymList * (*findSourceNodesFor)(struct SymNodeService *this, char *nodeGroupLinkAction);
+    SymList * (*findTargetNodesFor)(struct SymNodeService *this, char *nodeGroupLinkAction);
     unsigned short (*isDataloadStarted)(struct SymNodeService *this);
     unsigned short (*isDataloadCompleted)(struct SymNodeService *this);
     int (*getNodeStatus)(struct SymNodeService *this);
@@ -62,6 +65,11 @@ from sym_node c "
 #define SYM_SQL_FIND_NODES_WHO_TARGET_ME \
 "inner join sym_node_group_link d on \
 c.node_group_id = d.source_node_group_id where d.target_node_group_id = ? and \
+d.data_event_action = ? and c.node_id not in (select node_id from sym_node_identity)"
+
+#define SYM_SQL_FIND_NODES_WHO_I_TARGET \
+"inner join sym_node_group_link d on \
+c.node_group_id = d.target_node_group_id where d.source_node_group_id = ? and \
 d.data_event_action = ? and c.node_id not in (select node_id from sym_node_identity)"
 
 #define SYM_SQL_FIND_NODE_IDENTITY "inner join sym_node_identity i on c.node_id = i.node_id"

@@ -23,11 +23,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "io/data/DataProcessor.h"
 
 typedef struct SymOutgoingTransport {
-    FILE * (*open)(struct SymOutgoingTransport *this);
-    void (*close)(struct SymOutgoingTransport *this);
-    int (*isOpen)(struct SymOutgoingTransport *this);
+    char *ackString;
+    char *ackExtendedString;
+    long (*process)(struct SymOutgoingTransport *this, SymDataProcessor *processor);
     void (*destroy)(struct SymOutgoingTransport *this);
 } SymOutgoingTransport;
 

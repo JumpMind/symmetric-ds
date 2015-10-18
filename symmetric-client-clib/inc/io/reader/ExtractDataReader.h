@@ -25,14 +25,41 @@
 #include <stdlib.h>
 #include <string.h>
 #include "model/OutgoingBatch.h"
+#include "model/Trigger.h"
+#include "model/TriggerHistory.h"
+#include "model/Router.h"
 #include "io/reader/DataReader.h"
 #include "io/data/CsvConstants.h"
 #include "io/data/CsvData.h"
+#include "io/data/Batch.h"
+#include "db/platform/DatabasePlatform.h"
+#include "db/model/Table.h"
+#include "service/DataService.h"
+#include "service/TriggerRouterService.h"
+#include "util/StringUtils.h"
+#include "util/List.h"
+#include "common/Log.h"
+#include "common/Constants.h"
 
 typedef struct SymExtractDataReader {
     SymDataReader super;
+    SymDataService *dataService;
+    SymTriggerRouterService *triggerRouterService;
+    SymDatabasePlatform *platform;
+
+    SymOutgoingBatch *outgoingBatch;
+    SymBatch *batch;
+    SymTable *targetTable;
+    SymTable *sourceTable;
+    SymTriggerHistory *lastTriggerHistory;
+    char *lastRouterId;
+
+    // TOOD: this should be a cursor instead
+    SymList *datas;
+    SymIterator *iter;
 } SymExtractDataReader;
 
-SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymOutgoingBatch *outgoingBatch, char *sourceNodeId, char *targetNodeId);
+SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymOutgoingBatch *outgoingBatch, char *sourceNodeId, char *targetNodeId,
+        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymDatabasePlatform *platform);
 
 #endif

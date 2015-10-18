@@ -28,6 +28,7 @@
 
 typedef struct SymOutgoingBatches {
     SymList *batches;
+    unsigned short (*containsBatches)(struct SymOutgoingBatches *this);
     void (*destroy)(struct SymOutgoingBatches *this);
 } SymOutgoingBatches;
 

@@ -19,7 +19,6 @@
  * under the License.
  */
 #include "db/sqlite/SqliteDialect.h"
-#include "common/Log.h"
 
 static int create_if_missing(SymDialect *super, char *tableName, char *createSql) {
     // TODO: re-implement this using ddl reader
@@ -68,12 +67,47 @@ void SymSqliteDialect_disableSyncTriggers(SymSqliteDialect *this, SymSqlTransact
 void SymSqliteDialect_enableSyncTriggers(SymSqliteDialect *this, SymSqlTransaction *transaction) {
 }
 
-int SymSqliteDialect_createTrigger(SymSqliteDialect *this) {
-    return 0;
+int SymSqliteDialect_createTrigger(SymDialect *super, SymDataEventType dml, SymTrigger *trigger,
+        SymTriggerHistory *hist, SymChannel *channel, char* tablePrefix, SymTable *table) {
+    SymLog_info("Creating %s trigger for %s", trigger->triggerId, table->name);
+
+    SymSqliteTriggerTemplate *triggerTemplate = SymSqliteTriggerTemplate_new(NULL);
+    char *triggerSql =
+            triggerTemplate->createTriggerDDL(triggerTemplate, dml, trigger, hist, channel, tablePrefix, table, NULL, NULL);
+
+    SymSqlTemplate *sqlTemplate = super->platform->getSqlTemplate(super->platform);super->platform->getSqlTemplate(super->platform);
+    int error;
+    sqlTemplate->update(sqlTemplate, triggerSql, NULL, NULL, &error);
+
+    triggerTemplate->destroy(triggerTemplate);
+    return error;
 }
 
-int SymSqliteDialect_removeTrigger(SymSqliteDialect *this) {
-    return 0;
+int SymSqliteDialect_removeTrigger(SymDialect *super, char *sqlBuffer,
+        char *catalogName, char *schema, char *tableName, char *triggerName) {
+    char *sql = SymStringUtils_format("drop trigger %s", triggerName);
+
+    // TODO check if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) ;
+    SymSqlTemplate *sqlTemplate = super->platform->getSqlTemplate(super->platform);
+    int error;
+    sqlTemplate->update(sqlTemplate, sql, NULL, NULL, &error);
+    return error;
+}
+
+unsigned short SymSqliteDialect_doesTriggerExist(SymDialect *super,
+        char *catalogName, char *schema, char *tableName, char *triggerName) {
+    SymSqlTemplate *sqlTemplate = super->platform->getSqlTemplate(super->platform);super->platform->getSqlTemplate(super->platform);
+    char *sql = "select count(*) from sqlite_master where type='trigger' and name=? and tbl_name=?";
+
+    SymStringArray *params = SymStringArray_new(NULL);
+    params->add(params, triggerName);
+    params->add(params, tableName);
+
+    int error;
+    int triggerCount = sqlTemplate->queryForInt(sqlTemplate, sql, params, NULL, &error);
+
+    params->destroy(params);
+    return (triggerCount > 0);
 }
 
 int SymSqliteDialect_getInitialLoadSql(SymSqliteDialect *this) {
@@ -97,6 +131,7 @@ SymSqliteDialect * SymSqliteDialect_new(SymSqliteDialect *this, SymDatabasePlatf
     super->disableSyncTriggers = (void *) &SymSqliteDialect_disableSyncTriggers;
     super->createTrigger = (void *) &SymSqliteDialect_createTrigger;
     super->removeTrigger = (void *) &SymSqliteDialect_removeTrigger;
+    super->doesTriggerExist = (void *) &SymSqliteDialect_doesTriggerExist;
     super->getInitialLoadSql = (void *) &SymSqliteDialect_getInitialLoadSql;
     super->destroy = (void *) &SymSqliteDialect_destroy;
 

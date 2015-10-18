@@ -30,10 +30,11 @@ int SymEngineTest_teardown() {
 
 void SymEngineTest_test1() {
     SymProperties *prop = SymProperties_new(NULL);
-    prop->put(prop, SYM_PARAMETER_DB_URL, "sqlite:file:/home/elong/data.db");
+    prop->put(prop, SYM_PARAMETER_DB_URL, "sqlite:file:./Debug/data.db");
     prop->put(prop, SYM_PARAMETER_GROUP_ID, "store");
     prop->put(prop, SYM_PARAMETER_EXTERNAL_ID, "003");
     prop->put(prop, SYM_PARAMETER_REGISTRATION_URL, "http://localhost:31415/sync/corp-000");
+    //prop->put(prop, "auto.sync.triggers.at.startup", "0");
 
     SymEngine *engine = SymEngine_new(NULL, prop);
     CU_ASSERT(engine->start(engine) == 0);

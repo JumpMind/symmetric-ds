@@ -36,11 +36,11 @@ void SymDefaultDatabaseWriter_startBatch(SymDefaultDatabaseWriter *this, SymBatc
     SymDataWriter *super = (SymDataWriter *) &this->super;
     super->batchesProcessed->add(super->batchesProcessed, this->incomingBatch);
     if (!this->incomingBatchService->acquireIncomingBatch(this->incomingBatchService, this->incomingBatch)) {
-        this->isError = 1;
+        this->incomingBatch = NULL;
+    } else {
+        // IDataProcessorListener.afterBatchStarted
+        this->dialect->disableSyncTriggers(this->dialect, this->sqlTransaction, batch->sourceNodeId);
     }
-
-    // IDataProcessorListener.afterBatchStarted
-    this->dialect->disableSyncTriggers(this->dialect, this->sqlTransaction, batch->sourceNodeId);
 }
 
 static SymTable * SymDefaultDatabaseWriter_lookupTableAtTarget(SymDefaultDatabaseWriter *this, SymTable *sourceTable) {
@@ -49,7 +49,7 @@ static SymTable * SymDefaultDatabaseWriter_lookupTableAtTarget(SymDefaultDatabas
     if (table == NULL) {
         SymTable *targetTable = this->platform->getTableFromCache(this->platform, sourceTable->catalog, sourceTable->schema, sourceTable->name, 0);
         if (targetTable) {
-            table = targetTable->copyAndFilterColumns(targetTable, sourceTable, 1);
+            table = targetTable->copyAndFilterColumns(targetTable, sourceTable->columns, 1);
             this->targetTables->put(this->targetTables, tableKey, targetTable, sizeof(SymTable));
         }
     }
@@ -58,6 +58,9 @@ static SymTable * SymDefaultDatabaseWriter_lookupTableAtTarget(SymDefaultDatabas
 }
 
 unsigned short SymDefaultDatabaseWriter_startTable(SymDefaultDatabaseWriter *this, SymTable *table) {
+    if (!this->incomingBatch) {
+        return 0;
+    }
     this->dmlStatement = NULL;
     this->sourceTable = table;
     this->targetTable = SymDefaultDatabaseWriter_lookupTableAtTarget(this, table);
@@ -165,6 +168,9 @@ void SymDefaultDatabaseWriter_sql(SymDefaultDatabaseWriter *this, SymCsvData *da
 
 unsigned short SymDefaultDatabaseWriter_write(SymDefaultDatabaseWriter *this, SymCsvData *data) {
     // TODO: check if this->targetTable and if ignore missing tables is on
+    if (!this->incomingBatch) {
+        return 0;
+    }
     switch (data->dataEventType) {
     case SYM_DATA_EVENT_INSERT:
         if (SymDefaultDatabaseWriter_insert(this, data) == 0) {
@@ -184,14 +190,22 @@ unsigned short SymDefaultDatabaseWriter_write(SymDefaultDatabaseWriter *this, Sy
     case SYM_DATA_EVENT_SQL:
         SymDefaultDatabaseWriter_sql(this, data);
         break;
+    default:
+        break;
     }
     return 1;
 }
 
 void SymDefaultDatabaseWriter_endTable(SymDefaultDatabaseWriter *this, SymTable *table) {
+    if (!this->incomingBatch) {
+        return;
+    }
 }
 
 void SymDefaultDatabaseWriter_endBatch(SymDefaultDatabaseWriter *this, SymBatch *batch) {
+    if (!this->incomingBatch) {
+        return;
+    }
     // IDataProcessorListener.beforeBatchEnd
     this->dialect->enableSyncTriggers(this->dialect, this->sqlTransaction);
 

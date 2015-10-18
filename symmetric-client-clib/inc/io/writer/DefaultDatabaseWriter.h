@@ -30,6 +30,7 @@
 #include "io/data/CsvData.h"
 #include "util/StringArray.h"
 #include "util/Map.h"
+#include "util/List.h"
 #include "db/sql/DmlStatement.h"
 #include "db/sql/SqlTemplate.h"
 #include "db/sql/SqlTransaction.h"

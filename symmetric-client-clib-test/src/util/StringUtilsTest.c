@@ -23,40 +23,64 @@
 
 
 void SymStringUtilsTest_testTrim() {
-     CU_ASSERT(strcmp(Sym_trim("nothing to trim"), "nothing to trim") == 0);
-     CU_ASSERT(strcmp(Sym_trim("  trim the front"), "trim the front") == 0);
-     CU_ASSERT(strcmp(Sym_trim("trim the back     "), "trim the back") == 0);
-     CU_ASSERT(strcmp(Sym_trim(" trim one char front and back "), "trim one char front and back") == 0);
-     CU_ASSERT(strcmp(Sym_trim(" trim one char front"), "trim one char front") == 0);
-     CU_ASSERT(strcmp(Sym_trim("trim one char back "), "trim one char back") == 0);
-     CU_ASSERT(strcmp(Sym_trim("                   "), "") == 0);
-     CU_ASSERT(strcmp(Sym_trim(" "), "") == 0);
-     CU_ASSERT(strcmp(Sym_trim("a"), "a") == 0);
-     CU_ASSERT(strcmp(Sym_trim(""), "") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_trim("nothing to trim"), "nothing to trim") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_trim("  trim the front"), "trim the front") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_trim("trim the back     "), "trim the back") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_trim(" trim one char front and back "), "trim one char front and back") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_trim(" trim one char front"), "trim one char front") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_trim("trim one char back "), "trim one char back") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_trim("                   "), "") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_trim(" "), "") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_trim("a"), "a") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_trim(""), "") == 0);
 }
 
 void SymStringUtilsTest_test_toUpperCase() {
-     CU_ASSERT(strcmp(Sym_toUpperCase("lowercase"), "LOWERCASE") == 0);
-     CU_ASSERT(strcmp(Sym_toUpperCase("UPPER"), "UPPER") == 0);
-     CU_ASSERT(strcmp(Sym_toUpperCase("MixeD Case"), "MIXED CASE") == 0);
-     CU_ASSERT(strcmp(Sym_toUpperCase(" "), " ") == 0);
-     CU_ASSERT(strcmp(Sym_toUpperCase("a"), "A") == 0);
-     CU_ASSERT(strcmp(Sym_toUpperCase(""), "") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toUpperCase("lowercase"), "LOWERCASE") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toUpperCase("UPPER"), "UPPER") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toUpperCase("MixeD Case"), "MIXED CASE") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toUpperCase(" "), " ") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toUpperCase("a"), "A") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toUpperCase(""), "") == 0);
 }
 
 void SymStringUtilsTest_test_toLowerCase() {
-     CU_ASSERT(strcmp(Sym_toLowerCase("lowercase"), "lowercase") == 0);
-     CU_ASSERT(strcmp(Sym_toLowerCase("UPPER"), "upper") == 0);
-     CU_ASSERT(strcmp(Sym_toLowerCase("MixeD Case"), "mixed case") == 0);
-     CU_ASSERT(strcmp(Sym_toLowerCase(" "), " ") == 0);
-     CU_ASSERT(strcmp(Sym_toLowerCase("a"), "a") == 0);
-     CU_ASSERT(strcmp(Sym_toLowerCase(""), "") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toLowerCase("lowercase"), "lowercase") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toLowerCase("UPPER"), "upper") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toLowerCase("MixeD Case"), "mixed case") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toLowerCase(" "), " ") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toLowerCase("a"), "a") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_toLowerCase(""), "") == 0);
 }
 
 void SymStringUtilsTest_test_isBlank() {
-    CU_ASSERT(Sym_isBlank("t") == 0);
-    CU_ASSERT(Sym_isBlank("       t") == 0);
-    CU_ASSERT(Sym_isBlank("some string") == 0);
+    CU_ASSERT(SymStringUtils_isBlank("t") == 0);
+    CU_ASSERT(SymStringUtils_isBlank("       t") == 0);
+    CU_ASSERT(SymStringUtils_isBlank("some string") == 0);
+    CU_ASSERT(SymStringUtils_isBlank("") == 1);
+    CU_ASSERT(SymStringUtils_isBlank(" ") == 1);
+    CU_ASSERT(SymStringUtils_isBlank("  ") == 1);
+    CU_ASSERT(SymStringUtils_isBlank("\t") == 1);
+}
+
+void SymStringUtilsTest_test_isNotBlank() {
+    CU_ASSERT(SymStringUtils_isNotBlank("t") == 1);
+    CU_ASSERT(SymStringUtils_isNotBlank("       t") == 1);
+    CU_ASSERT(SymStringUtils_isNotBlank("some string") == 1);
+    CU_ASSERT(SymStringUtils_isNotBlank("") == 0);
+    CU_ASSERT(SymStringUtils_isNotBlank(" ") == 0);
+    CU_ASSERT(SymStringUtils_isNotBlank("  ") == 0);
+    CU_ASSERT(SymStringUtils_isNotBlank("\t") == 0);
+}
+
+void SymStringUtilsTest_test_format() {
+    CU_ASSERT(strcmp(SymStringUtils_format("Hello"), "Hello") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_format("%s", "2"), "2") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_format("%s", ""), "") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_format("%s%s", "1", ""), "1") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_format("%s%s", "1", "2"), "12") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_format("%s%s", "2", "2"), "22") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_format("%s%s%s%s%s%s%s%s%s%s", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"), "12345678910") == 0);
 }
 
 int SymStringUtilsTest_CUnit() {
@@ -69,6 +93,8 @@ int SymStringUtilsTest_CUnit() {
             CU_add_test(suite, "SymStringUtilsTest_test_toUpperCase", SymStringUtilsTest_test_toUpperCase) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_test_toLowerCase", SymStringUtilsTest_test_toLowerCase) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_test_isBlank", SymStringUtilsTest_test_isBlank) == NULL ||
+            CU_add_test(suite, "SymStringUtilsTest_test_isNotBlank", SymStringUtilsTest_test_isNotBlank) == NULL ||
+            CU_add_test(suite, "SymStringUtilsTest_test_format", SymStringUtilsTest_test_format) == NULL ||
             1==0) {
         return CUE_NOTEST;
     }

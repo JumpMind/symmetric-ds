@@ -124,6 +124,11 @@ int SymHttpTransportManager_sendAcknowledgement(SymHttpTransportManager *this, S
     return httpResponseCode;
 }
 
+SymList * SymHttpTransportManager_readAcknowledgement(SymHttpTransportManager *this, char *parameterString1, char *parameterString2) {
+    // TODO: read acknowledgments from ack string response
+    return NULL;
+}
+
 SymHttpIncomingTransport * SymHttpTransportManager_getPullTransport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
     return SymHttpIncomingTransport_new(NULL, buildUrl("pull", remote, local, securityToken, registrationUrl));
 }
@@ -134,6 +139,27 @@ SymHttpOutgoingTransport * SymHttpTransportManager_getPushTransport(SymHttpTrans
 
 SymHttpIncomingTransport * SymHttpTransportManager_getRegisterTransport(SymHttpTransportManager *this, SymNode *local, char *registrationUrl) {
     return SymHttpIncomingTransport_new(NULL, buildRegistrationUrl(local, registrationUrl));
+}
+
+char * SymHttpTransportManager_strerror(long rc) {
+    if (rc == SYM_TRANSPORT_OK) {
+        return "OK";
+    } else if (rc == SYM_TRANSPORT_REGISTRATION_NOT_OPEN) {
+        return "Registration Not Open";
+    } else if (rc == SYM_TRANSPORT_REGISTRATION_REQUIRED) {
+        return "Registration Required";
+    } else if (rc == SYM_TRANSPORT_SYNC_DISABLED) {
+        return "Sync Disabled";
+    } else if (rc == SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE) {
+        return "Service Unavailable";
+    } else if (rc == SYM_TRANSPORT_SC_FORBIDDEN) {
+        return "Forbidden, Authentication Required";
+    } else if (rc == SYM_TRANSPORT_SC_ACCESS_DENIED) {
+        return "Access Denied";
+    } else if (rc == SYM_TRANSPORT_SC_SERVICE_BUSY) {
+        return "Service Busy";
+    }
+    return "Unknown Error";
 }
 
 void SymHttpTransportManager_destroy(SymTransportManager *this) {
@@ -149,6 +175,7 @@ SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *t
     super->getPullTransport = (void *) &SymHttpTransportManager_getPullTransport;
     super->getPushTransport = (void *) &SymHttpTransportManager_getPushTransport;
     super->getRegisterTransport = (void *) &SymHttpTransportManager_getRegisterTransport;
+    super->readAcknowledgement = (void *) SymHttpTransportManager_readAcknowledgement;
     super->destroy = (void *) &SymHttpTransportManager_destroy;
     return this;
 }

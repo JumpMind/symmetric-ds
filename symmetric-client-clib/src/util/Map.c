@@ -90,6 +90,12 @@ void SymMap_put(SymMap *this, char *key, void *value, int size) {
     }
 }
 
+void SymMap_putByInt(SymMap *this, int key, void *value, int size) {
+    char *id = SymStringUtils_format("%d", key);
+    SymMap_put(this, id, value, size);
+    free(id);
+}
+
 void * SymMap_get(SymMap *this, char *key) {
     int hash = SymMap_hash(this, key);
 
@@ -103,6 +109,13 @@ void * SymMap_get(SymMap *this, char *key) {
     } else {
         return entry->value;
     }
+}
+
+void * SymMap_getByInt(SymMap *this, char *key) {
+    char *id = SymStringUtils_format("%d", key);
+    void *result = SymMap_get(this, id);
+    free(id);
+    return result;
 }
 
 SymStringArray * SymMap_keys(SymMap *this) {
@@ -174,11 +187,13 @@ SymMap * SymMap_new(SymMap *this, int size) {
         this = malloc(sizeof(SymMap));
     }
     this->get = (void *) &SymMap_get;
+    this->getByInt = (void *) &SymMap_getByInt;
     this->keys = (void *) &SymMap_keys;
     this->values = (void *) &SymMap_values;
     this->entries = (void *) &SymMap_entries;
     this->getBytesSize = (void *) &SymMap_getBytesSize;
     this->put = (void *) &SymMap_put;
+    this->putByInt = (void *) &SymMap_putByInt;
     this->destroy = (void *) &SymMap_destroy;
 
     if (size < 1) {

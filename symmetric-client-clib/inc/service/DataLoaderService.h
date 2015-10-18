@@ -25,17 +25,19 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "service/NodeService.h"
+#include "service/IncomingBatchService.h"
 #include "service/ParameterService.h"
 #include "transport/TransportManager.h"
 #include "transport/IncomingTransport.h"
 #include "model/Node.h"
 #include "model/RemoteNodeStatus.h"
+#include "io/data/DataProcessor.h"
 #include "io/reader/ProtocolDataReader.h"
 #include "io/writer/DefaultDatabaseWriter.h"
 #include "db/platform/DatabasePlatform.h"
 #include "db/SymDialect.h"
 #include "util/List.h"
-#include "service/IncomingBatchService.h"
+#include "common/ParameterConstants.h"
 
 typedef struct SymDataLoaderService {
     SymParameterService *parameterService;

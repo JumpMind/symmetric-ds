@@ -20,7 +20,7 @@
  */
 #include "service/DataService.h"
 
-SymData * SymDataService_dataMapper(SymRow *row) {
+SymData * SymDataService_dataMapper(SymRow *row, SymDataService *this) {
     SymData *data = SymData_new(NULL);
     data->dataId = row->getLong(row, "data_id");
     data->rowData = row->getString(row, "row_data");
@@ -37,23 +37,22 @@ SymData * SymDataService_dataMapper(SymRow *row) {
     data->routerId = row->getString(row, "router_id");
     data->triggerHistId = row->getInt(row, "trigger_hist_id");
 
-    // TODO: add triggerHistory
-    /*
-    SymTriggerHistory *triggerHistory = this->triggerRouterService->getTriggerHistory(this->triggerRouterService, triggerHistId);
+    SymTriggerHistory *triggerHistory = this->triggerRouterService->getTriggerHistory(this->triggerRouterService, data->triggerHistId);
     if (triggerHistory == NULL) {
-        triggerHistory = SymTriggerHistory_newWithId(triggerHistId);
+        triggerHistory = SymTriggerHistory_newWithId(NULL, data->triggerHistId);
     } else {
         if (strcmp(triggerHistory->sourceTableName, data->tableName) != 0) {
             SymLog_warn("There was a mismatch between the data table name {} and the trigger_hist table name %s for data_id {}.  Attempting to look up a valid trigger_hist row by table name",
                     data->tableName, triggerHistory->sourceTableName, data->dataId);
-            SymList *list = this->triggerRouterService->getActiveTriggerHistories(this->triggerRouterService, data->tableName);
+            SymList *list = this->triggerRouterService->getActiveTriggerHistoriesByTableName(this->triggerRouterService, data->tableName);
             triggerHistory = list->get(list, 0);
+            list->destroy(list);
         }
     }
     data->triggerHistory = triggerHistory;
-    */
     return data;
 }
+
 SymList * SymDataService_selectDataFor(SymDataService *this, SymBatch *batch) {
     SymStringBuilder *sb = SymStringBuilder_new(SYM_SQL_SELECT_EVENT_DATA_TO_EXTRACT);
     sb->append(sb, " order by d.data_id asc");
@@ -63,7 +62,7 @@ SymList * SymDataService_selectDataFor(SymDataService *this, SymBatch *batch) {
 
     int error;
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
-    SymList *list = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymDataService_dataMapper);
+    SymList *list = sqlTemplate->queryWithUserData(sqlTemplate, sb->str, args, NULL, &error, (void *) SymDataService_dataMapper, this);
 
     args->destroy(args);
     sb->destroy(sb);

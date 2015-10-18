@@ -34,7 +34,7 @@ SymOutgoingBatch * SymOutgoingBatch_new(SymOutgoingBatch *this) {
     }
     this->batchId = -1;
     this->loadId = -1;
-    this->status = SYM_OUGOING_BATCH_ROUTING;
+    this->status = SYM_OUTGOING_BATCH_OK;
     this->totalEventCount = &SymOutgoingBatch_totalEventCount;
     this->destroy = (void *) SymOutgoingBatch_destroy;
     return this;

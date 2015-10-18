@@ -23,13 +23,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include "model/RemoteNodeStatus.h"
 #include "model/RemoteNodeStatuses.h"
 #include "service/NodeService.h"
 #include "service/ParameterService.h"
 #include "service/ConfigurationService.h"
 #include "service/DataExtractorService.h"
+#include "service/AcknowledgeService.h"
 #include "transport/TransportManager.h"
+#include "util/List.h"
+#include "util/StringUtils.h"
 #include "common/Log.h"
 
 typedef struct SymPushService {
@@ -38,11 +42,13 @@ typedef struct SymPushService {
     SymTransportManager *transportManager;
     SymParameterService *parameterService;
     SymConfigurationService *configurationService;
+    SymAcknowledgeService *acknowledgeService;
     SymRemoteNodeStatuses * (*pushData)(struct SymPushService *this);
     void (*destroy)(struct SymPushService *);
 } SymPushService;
 
 SymPushService * SymPushService_new(SymPushService *this, SymNodeService *nodeService, SymDataExtractorService *dataExtractorService,
-    SymTransportManager *transportManager, SymParameterService *parameterService, SymConfigurationService *configurationService);
+    SymTransportManager *transportManager, SymParameterService *parameterService, SymConfigurationService *configurationService,
+    SymAcknowledgeService *acknowledgeService);
 
 #endif

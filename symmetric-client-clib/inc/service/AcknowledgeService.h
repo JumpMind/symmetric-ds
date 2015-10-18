@@ -22,10 +22,24 @@
 #define SYM_ACKNOWLEDGE_SERVICE_H
 
 #include <stdio.h>
+#include "service/OutgoingBatchService.h"
+#include "db/platform/DatabasePlatform.h"
+#include "db/sql/mapper/StringMapper.h"
 #include "model/BatchAck.h"
+#include "model/BatchAckResult.h"
+#include "util/List.h"
+#include "util/StringArray.h"
+#include "common/Log.h"
 
 typedef struct SymAcknowledgeService {
-    void (*ack)(struct SymAcknowledgeService *this, SymBatchAck *batchAck);
+    SymOutgoingBatchService *outgoingBatchService;
+    SymDatabasePlatform *platform;
+    SymBatchAckResult * (*ack)(struct SymAcknowledgeService *this, SymBatchAck *batchAck);
+    void (*destroy)(struct SymAcknowledgeService *this);
 } SymAcknowledgeService;
+
+SymAcknowledgeService * SymAcknowledgeService_new(SymAcknowledgeService *this, SymOutgoingBatchService *outgoingBatchService, SymDatabasePlatform *platform);
+
+#define SYM_SQL_SELECT_DATA_ID "select data_id from sym_data_event b where batch_id = ? order by data_id"
 
 #endif

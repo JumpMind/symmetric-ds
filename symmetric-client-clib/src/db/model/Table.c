@@ -20,15 +20,29 @@
  */
 #include "db/model/Table.h"
 
-char * SymTable_getFullTableName(SymTable *this, char *delimiterToken, char *catalogSeparator, char *schemaSeparator) {
+char * SymTable_getFullyQualifiedTableName(char *catalogName, char *schemaName,
+        char *tableName, char *quoteString, char *catalogSeparator, char *schemaSeparator) {
+    if (quoteString == NULL) {
+        quoteString = "";
+    }
+    char *prefix = SymTable_getFullyQualifiedTablePrefix(catalogName, schemaName, quoteString, catalogSeparator, schemaSeparator);
+    SymStringBuilder *sb = SymStringBuilder_newWithString(prefix);
+    sb->append(sb, quoteString)->append(sb, tableName)->append(sb, quoteString);
+    return sb->destroyAndReturn(sb);
+}
+
+char * SymTable_getFullyQualifiedTablePrefix(char *catalogName, char *schemaName,
+        char *quoteString, char *catalogSeparator, char *schemaSeparator) {
+    if (quoteString == NULL) {
+        quoteString = "";
+    }
     SymStringBuilder *sb = SymStringBuilder_new();
-    if (this->catalog != NULL) {
-        sb->append(sb, delimiterToken)->append(sb, this->catalog)->append(sb, delimiterToken)->append(sb, catalogSeparator);
+    if (SymStringUtils_isNotBlank(catalogName)) {
+        sb->append(sb, quoteString)->append(sb, catalogName)->append(sb, quoteString)->append(sb, catalogSeparator);
     }
-    if (this->schema != NULL) {
-        sb->append(sb, delimiterToken)->append(sb, this->schema)->append(sb, delimiterToken)->append(sb, schemaSeparator);
+    if (SymStringUtils_isNotBlank(schemaName)) {
+        sb->append(sb, quoteString)->append(sb, schemaName)->append(sb, quoteString)->append(sb, schemaSeparator);
     }
-    sb->append(sb, delimiterToken)->append(sb, this->name)->append(sb, delimiterToken);
     return sb->destroyAndReturn(sb);
 }
 
@@ -44,6 +58,24 @@ static int SymTable_calculateHashcodeForColumns(int prime, SymList *cols) {
     return result;
 }
 
+char * SymTable_getCommaDeliminatedColumns(SymList *cols) {
+    SymStringBuilder *columns = SymStringBuilder_new(NULL);
+    if (cols != NULL && cols->size > 0) {
+        int i;
+        for (i = 0; i < cols->size; i++) {
+            SymColumn *column = cols->get(cols, i);
+            columns->append(columns, column->name);
+            if (i < (cols->size-1)) {
+                columns->append(columns, ",");
+            }
+        }
+        return columns->destroyAndReturn(columns);
+    }
+    else {
+        return " ";
+    }
+}
+
 int SymTable_calculateTableHashcode(SymTable *this) {
     int prime = 31;
     int result = 1;
@@ -53,7 +85,7 @@ int SymTable_calculateTableHashcode(SymTable *this) {
 }
 
 char * SymTable_getTableKey(SymTable *this) {
-    char *name = SymTable_getFullTableName(this, "", ".", ".");
+    char *name = SymTable_getFullyQualifiedTableName(this->catalog, this->schema, this->name, "", ".", ".");
     SymStringBuilder *sb = SymStringBuilder_newWithString(name);
     sb->append(sb, "-")->appendf(sb, "%d", SymTable_calculateTableHashcode(this));
     free(name);
@@ -74,9 +106,9 @@ SymColumn * SymTable_findColumn(SymTable *this, char *name, unsigned short caseS
     return column;
 }
 
-SymTable * SymTable_copyAndFilterColumns(SymTable *this, SymTable *source, unsigned short setPrimaryKeys) {
+SymTable * SymTable_copyAndFilterColumns(SymTable *this, SymList *sourceColumns, unsigned short setPrimaryKeys) {
     SymList *orderedColumns = SymList_new(NULL);
-    SymIterator *iter = source->columns->iterator(source->columns);
+    SymIterator *iter = sourceColumns->iterator(sourceColumns);
     while (iter->hasNext(iter)) {
         SymColumn *srcColumn = (SymColumn *) iter->next(iter);
         SymColumn *column = this->findColumn(this, srcColumn->name, 0);

@@ -19,28 +19,37 @@
  * under the License.
  */
 #include "io/writer/ProtocolDataWriter.h"
-#include "common/Log.h"
 
 void SymProtocolDataWriter_open(SymProtocolDataWriter *this) {
+    this->buffer = SymStringBuilder_newWithSize(4096);
+    this->reader->open(this->reader);
 }
 
-void SymProtocolDataWriter_startBatch(SymProtocolDataWriter *this, SymBatch *batch) {
+size_t SymProtocolDataWriter_process(SymProtocolDataWriter *this, char *buffer, size_t size, size_t count) {
+    size_t length = size * count;
+
+    // TODO: read the sym_data rows and write as CSV protocol
+    SymBatch *batch;
+    SymTable *table;
+    SymData *data;
+    while ((batch = this->reader->nextBatch(this->reader))) {
+        while ((table = this->reader->nextTable(this->reader))) {
+            while ((data = this->reader->nextData(this->reader))) {
+
+            }
+        }
+    }
+
+    return length;
 }
 
-void SymProtocolDataWriter_startTable(SymProtocolDataWriter *this, SymTable *table) {
-}
-
-unsigned short SymProtocolDataWriter_write(SymProtocolDataWriter *this, SymCsvData *data) {
-    return 0;
-}
-
-void SymProtocolDataWriter_endBatch(SymProtocolDataWriter *this, SymBatch *batch) {
-}
-
-void SymProtocolDataWriter_endTable(SymProtocolDataWriter *this, SymTable *table) {
+SymList * SymProtocolDataWriter_getBatchesProcessed(SymProtocolDataWriter *this) {
+    return this->reader->batchesProcessed;
 }
 
 void SymProtocolDataWriter_close(SymProtocolDataWriter *this) {
+    this->reader->close(this->reader);
+    this->buffer->destroy(this->buffer);
 }
 
 void SymProtocolDataWriter_destroy(SymProtocolDataWriter *this) {
@@ -53,14 +62,11 @@ SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, c
     }
     this->sourceNodeId = sourceNodeId;
     this->reader = reader;
-    SymDataWriter *super = &this->super;
+    SymDataProcessor *super = &this->super;
     super->open = (void *) &SymProtocolDataWriter_open;
     super->close = (void *) &SymProtocolDataWriter_close;
-    super->startBatch = (void *) &SymProtocolDataWriter_startBatch;
-    super->startTable = (void *) &SymProtocolDataWriter_startTable;
-    super->write = (void *) &SymProtocolDataWriter_write;
-    super->endTable = (void *) &SymProtocolDataWriter_endTable;
-    super->endBatch = (void *) &SymProtocolDataWriter_endBatch;
+    super->process = (void *) &SymProtocolDataWriter_process;
+    super->getBatchesProcessed = (void *) &SymProtocolDataWriter_getBatchesProcessed;
     super->destroy = (void *) &SymProtocolDataWriter_destroy;
     return this;
 }

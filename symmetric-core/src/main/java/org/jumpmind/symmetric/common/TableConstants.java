@@ -84,14 +84,14 @@ public class TableConstants {
         if (tablesWithPrefix == null) {
             tablesWithPrefix = populateAllTables(tablePrefix);
         }
-        return tablesWithPrefix;
+        return new ArrayList<String>(tablesWithPrefix);
     }
 
     public static final List<String> getConfigTables(String tablePrefix) {
         if (configTablesWithPrefix == null) {
             configTablesWithPrefix = populateConfigTables(tablePrefix);
         }
-        return configTablesWithPrefix;
+        return new ArrayList<String>(configTablesWithPrefix);
     }
 
     public static final List<String> getTablesWithoutPrefix() {

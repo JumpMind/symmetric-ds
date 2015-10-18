@@ -50,22 +50,27 @@ static void SymSqliteSqlTemplate_prepare(SymSqliteSqlTemplate *this, char *sql, 
     }
 }
 
+static SymRow * SymSqliteSqlTemplate_buildRow(sqlite3_stmt *stmt) {
+    int i, type, size, columnCount = sqlite3_column_count(stmt);
+    SymRow *row = SymRow_new(NULL, columnCount);
+    char *name, *value;
+    for (i = 0; i < columnCount; i++) {
+        name = (char *) sqlite3_column_name(stmt, i);
+        type = sqlite3_column_type(stmt, i);
+        size = sqlite3_column_bytes(stmt, i) + 1;
+        value = (char *) sqlite3_column_text(stmt, i);
+        row->put(row, name, value, type, size);
+    }
+    return row;
+}
+
 SymList * SymSqliteSqlTemplate_query(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *map_row(SymRow *row)) {
     sqlite3_stmt *stmt;
     SymSqliteSqlTemplate_prepare(this, sql, args, sqlTypes, error, &stmt);
     SymList *list = SymList_new(NULL);
     int rc;
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        int i, type, size, columnCount = sqlite3_column_count(stmt);
-        SymRow *row = SymRow_new(NULL, columnCount);
-        char *name, *value;
-        for (i = 0; i < columnCount; i++) {
-            name = (char *) sqlite3_column_name(stmt, i);
-            type = sqlite3_column_type(stmt, i);
-            size = sqlite3_column_bytes(stmt, i) + 1;
-            value = (char *) sqlite3_column_text(stmt, i);
-            row->put(row, name, value, type, size);
-        }
+        SymRow *row = SymSqliteSqlTemplate_buildRow(stmt);
         void *object = map_row(row);
         list->add(list, object);
         // TODO: need to destroy each row, and the row mapper needs to make a copy
@@ -81,13 +86,38 @@ SymList * SymSqliteSqlTemplate_query(SymSqliteSqlTemplate *this, char *sql, SymS
     return list;
 }
 
-static SymRow * SymSqliteSqlTemplate_rowMapper(SymRow *row) {
-    // TODO: clone the row
-    return row;
+SymList * SymSqliteSqlTemplate_queryWithUserData(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error,
+        void *map_row(SymRow *row, void *userData), void *userData) {
+    sqlite3_stmt *stmt;
+    SymSqliteSqlTemplate_prepare(this, sql, args, sqlTypes, error, &stmt);
+    SymList *list = SymList_new(NULL);
+    int rc;
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        SymRow *row = SymSqliteSqlTemplate_buildRow(stmt);
+        void *object = map_row(row, userData);
+        list->add(list, object);
+        // TODO: need to destroy each row, and the row mapper needs to make a copy
+        //row->destroy(row);
+    }
+
+    if (rc != SQLITE_DONE) {
+        SymLog_error("Failed to execute query: %s", sql);
+        SymLog_error("SQL Exception: %s", sqlite3_errmsg(this->db));
+    }
+    sqlite3_finalize(stmt);
+    *error = 0;
+    return list;
 }
 
 SymRow * SymSqliteSqlTemplate_queryForList(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
-    return (SymRow *) SymSqliteSqlTemplate_query(this, sql, args, sqlTypes, error, (void *) SymSqliteSqlTemplate_rowMapper);
+    return (SymRow *) SymSqliteSqlTemplate_query(this, sql, args, sqlTypes, error, (void *) SymRowMapper_mapper);
+}
+
+void * SymSqliteSqlTemplate_queryForObject(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *map_row(SymRow *row)) {
+    SymList *list = SymSqliteSqlTemplate_query(this, sql, args, sqlTypes, error, map_row);
+    void *object = list->get(list, 0);
+    list->destroy(list);
+    return object;
 }
 
 int SymSqliteSqlTemplate_queryForInt(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
@@ -156,7 +186,9 @@ SymSqliteSqlTemplate * SymSqliteSqlTemplate_new(SymSqliteSqlTemplate *this, sqli
     super->queryForInt = (void *) &SymSqliteSqlTemplate_queryForInt;
     super->queryForString = (void *) &SymSqliteSqlTemplate_queryForString;
     super->queryForList = (void *) &SymSqliteSqlTemplate_queryForList;
+    super->queryForObject = (void *) &SymSqliteSqlTemplate_queryForObject;
     super->query = (void *) &SymSqliteSqlTemplate_query;
+    super->queryWithUserData = (void *) &SymSqliteSqlTemplate_queryWithUserData;
     super->update = (void *) &SymSqliteSqlTemplate_update;
     super->startSqlTransaction = (void *) &SymSqliteSqlTemplate_startSqlTransaction;
     this->destroy = (void *) &SymSqliteSqlTemplate_destroy;

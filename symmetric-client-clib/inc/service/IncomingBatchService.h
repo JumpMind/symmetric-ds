@@ -30,6 +30,7 @@
 #include "util/StringBuilder.h"
 #include "util/StringArray.h"
 #include "util/AppUtils.h"
+#include "common/ParameterConstants.h"
 
 typedef struct SymIncomingBatchService {
     SymDatabasePlatform *platform;

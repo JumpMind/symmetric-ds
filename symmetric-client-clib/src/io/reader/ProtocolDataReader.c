@@ -126,6 +126,10 @@ size_t SymProtocolDataReader_process(SymProtocolDataReader *this, char *data, si
     return length;
 }
 
+SymList * SymProtocolDataReader_getBatchesProcessed(SymProtocolDataReader *this) {
+    return this->writer->batchesProcessed;
+}
+
 void SymProtocolDataReader_close(SymProtocolDataReader *this) {
     csv_fini(this->csvParser, SymProtocolDataReader_parseField, SymProtocolDataReader_parseLine, this);
     this->writer->close(this->writer);
@@ -152,10 +156,11 @@ SymProtocolDataReader * SymProtocolDataReader_new(SymProtocolDataReader *this, c
     this->batch->targetNodeId = SymStringBuilder_copy(targetNodeId);
     this->parsedTables = SymMap_new(NULL, 100);
 
-    SymDataReader *super = &this->super;
+    SymDataProcessor *super = &this->super;
     super->open = (void *) &SymProtocolDataReader_open;
     super->close = (void *) &SymProtocolDataReader_close;
     super->process = (void *) &SymProtocolDataReader_process;
+    super->getBatchesProcessed = (void *) &SymProtocolDataReader_getBatchesProcessed;
     super->destroy = (void *) &SymProtocolDataReader_destroy;
     return this;
 }
