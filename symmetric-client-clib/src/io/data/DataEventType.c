@@ -43,19 +43,19 @@ SymDmlType SymDataEvent_getDmlType(SymDataEventType dataEventType) {
 
 SymDataEventType SymDataEvent_getEventType(char *code) {
     if (code != NULL) {
-        if (strcmp(code, SYM_DATA_EVENT_INSERT_CODE)) {
+        if (SymStringUtils_equals(code, SYM_DATA_EVENT_INSERT_CODE)) {
             return SYM_DATA_EVENT_INSERT;
-        } else if (strcmp(code, SYM_DATA_EVENT_UPDATE_CODE)) {
+        } else if (SymStringUtils_equals(code, SYM_DATA_EVENT_UPDATE_CODE)) {
             return SYM_DATA_EVENT_UPDATE;
-        } else if (strcmp(code, SYM_DATA_EVENT_DELETE_CODE)) {
+        } else if (SymStringUtils_equals(code, SYM_DATA_EVENT_DELETE_CODE)) {
             return SYM_DATA_EVENT_DELETE;
-        } else if (strcmp(code, SYM_DATA_EVENT_RELOAD_CODE)) {
+        } else if (SymStringUtils_equals(code, SYM_DATA_EVENT_RELOAD_CODE)) {
             return SYM_DATA_EVENT_RELOAD;
-        } else if (strcmp(code, SYM_DATA_EVENT_SQL_CODE)) {
+        } else if (SymStringUtils_equals(code, SYM_DATA_EVENT_SQL_CODE)) {
             return SYM_DATA_EVENT_SQL;
-        } else if (strcmp(code, SYM_DATA_EVENT_CREATE_CODE)) {
+        } else if (SymStringUtils_equals(code, SYM_DATA_EVENT_CREATE_CODE)) {
             return SYM_DATA_EVENT_CREATE;
-        } else if (strcmp(code, SYM_DATA_EVENT_BSH_CODE)) {
+        } else if (SymStringUtils_equals(code, SYM_DATA_EVENT_BSH_CODE)) {
             return SYM_DATA_EVENT_BSH;
         }
     }

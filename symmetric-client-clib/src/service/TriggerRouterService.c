@@ -462,7 +462,7 @@ SymList * SymTriggerRouterService_getTriggersToSync(SymTriggerRouterService *thi
     int i;
     for (i = 0; i < triggerRouters->size; i++) {
         SymTriggerRouter *triggerRouter = triggerRouters->get(triggerRouters, i);
-        unsigned short nodeGroupIdMatches = strcmp(nodeGroupId, triggerRouter->router->nodeGroupLink->sourceNodeGroupId);
+        unsigned short nodeGroupIdMatches = SymStringUtils_equals(nodeGroupId, triggerRouter->router->nodeGroupLink->sourceNodeGroupId);
         if (nodeGroupIdMatches) {
             triggers->add(triggers, triggerRouter->trigger);
         }
@@ -473,15 +473,18 @@ SymList * SymTriggerRouterService_getTriggersToSync(SymTriggerRouterService *thi
 
 void SymTriggerRouterService_dropTriggers(SymTriggerRouterService *this, SymTriggerHistory *history) {
     if (SymStringUtils_isNotBlank(history->nameForInsertTrigger)) {
-
+        this->symmetricDialect->removeTrigger(this->symmetricDialect, NULL, history->sourceCatalogName,
+                history->sourceSchemaName, history->nameForInsertTrigger, history->sourceTableName);
     }
 
     if (SymStringUtils_isNotBlank(history->nameForDeleteTrigger)) {
-
+        this->symmetricDialect->removeTrigger(this->symmetricDialect, NULL, history->sourceCatalogName,
+                history->sourceSchemaName, history->nameForDeleteTrigger, history->sourceTableName);
     }
 
     if (SymStringUtils_isNotBlank(history->nameForUpdateTrigger)) {
-
+        this->symmetricDialect->removeTrigger(this->symmetricDialect, NULL, history->sourceCatalogName,
+                history->sourceSchemaName, history->nameForUpdateTrigger, history->sourceTableName);
     }
 
     SymTriggerRouterService_inactivateTriggerHistory(this, history);
@@ -696,7 +699,6 @@ void SymTriggerRouterService_updateOrCreateDatabaseTriggers(SymTriggerRouterServ
     newestHistory = SymTriggerRouterService_rebuildTriggerIfNecessary(this, forceRebuildOfTriggers,
             trigger, SYM_DATA_EVENT_INSERT, reason, latestHistoryBeforeRebuild, NULL,
             trigger->syncOnInsert && supportsTriggers, table, activeTriggerHistories);
-
 
 // TODO active these.
 //    newestHistory = SymTriggerRouterService_rebuildTriggerIfNecessary(this, forceRebuildOfTriggers,
