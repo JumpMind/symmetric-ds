@@ -118,6 +118,13 @@ char* SymStringUtils_format(char *format, ...) {
     return buff->destroyAndReturn(buff);
 }
 
+char * SymStringUtils_substring(char *str, int startIndex, int endIndex) {
+    SymStringBuilder *sb = SymStringBuilder_newWithString(str);
+    char *value = sb->substring(sb, startIndex, endIndex);
+    sb->destroy(sb);
+    return value;
+}
+
 unsigned short SymStringUtils_equals(char *str1, char *str2) {
     if (str1 == NULL && str2 == NULL) {
         return 1;
@@ -125,4 +132,13 @@ unsigned short SymStringUtils_equals(char *str1, char *str2) {
         return 0;
     }
     return strcmp(str1, str2) == 0;
+}
+
+unsigned short SymStringUtils_equalsIgnoreCase(char *str1, char *str2) {
+    if (str1 == NULL && str2 == NULL) {
+        return 1;
+    } else if (str1 == NULL || str2 == NULL) {
+        return 0;
+    }
+    return strcasecmp(str1, str2) == 0;
 }

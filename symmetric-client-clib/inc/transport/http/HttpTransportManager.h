@@ -31,6 +31,8 @@
 #include "util/StringBuilder.h"
 #include "util/List.h"
 #include "util/AppUtils.h"
+#include "util/Map.h"
+#include "util/StringUtils.h"
 #include "web/WebConstants.h"
 
 typedef struct SymHttpTransportManager {
