@@ -39,8 +39,10 @@ SymDataLoadStatus * SymDataLoadStatus_new();
 
 typedef struct SymNodeService {
     SymDatabasePlatform *platform;
+    SymNode *cachedNodeIdentity;
 
     SymNode * (*findIdentity)(struct SymNodeService *this);
+    SymNode * (*findIdentityWithCache)(struct SymNodeService *this, unsigned short useCache);
     SymNodeSecurity * (*findNodeSecurity)(struct SymNodeService *this, char *nodeId);
     SymList * (*findNodesToPull)(struct SymNodeService *this);
     SymList * (*findNodesToPushTo)(struct SymNodeService *this);

@@ -24,29 +24,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "db/model/Table.h"
+#include <string.h>
 #include "service/ParameterService.h"
 #include "service/ConfigurationService.h"
+#include "service/SequenceService.h"
+#include "db/SymDialect.h"
 #include "db/platform/DatabasePlatform.h"
-#include "util/Map.h"
-#include "util/List.h"
+#include "db/sql/SqlTemplate.h"
+#include "db/model/Table.h"
 #include "model/Trigger.h"
 #include "model/NodeGroupLink.h"
 #include "model/TriggerHistory.h"
 #include "model/TriggerRouter.h"
 #include "model/Router.h"
-#include "io/data/DataEventType.h"
-#include "db/sql/SqlTemplate.h"
-#include "common/ParameterConstants.h"
-#include "common/Log.h"
 #include "model/TriggerRouter.h"
-#include "util/StringUtils.h"
-#include "util/Map.h"
-#include "service/SequenceService.h"
 #include "model/Router.h"
 #include "io/data/DataEventType.h"
-#include "db/SymDialect.h"
+#include "io/data/DataEventType.h"
+#include "util/StringUtils.h"
+#include "util/Map.h"
+#include "util/List.h"
 #include "common/Constants.h"
+#include "common/TableConstants.h"
+#include "common/ParameterConstants.h"
+#include "common/Log.h"
 
 typedef struct SymTriggerRouterService {
     SymConfigurationService *configurationService;
@@ -57,8 +58,12 @@ typedef struct SymTriggerRouterService {
 	SymMap *historyMap;
 	SymMap *routersCache;
 	time_t routersCacheTime;
+    SymMap *triggersCache;
+    time_t triggersCacheTime;
 
 	void (*syncTriggers)(struct SymTriggerRouterService *this, unsigned short force);
+	SymList * (*getTriggers)(struct SymTriggerRouterService *this, unsigned short replaceTokens);
+	SymTrigger * (*getTriggerById)(struct SymTriggerRouterService *this, char *triggerId, unsigned short refreshCache);
 	SymTriggerHistory * (*getTriggerHistory)(struct SymTriggerRouterService *this, int histId);
 	SymList * (*getActiveTriggerHistories)(struct SymTriggerRouterService *this);
 	SymList * (*getActiveTriggerHistoriesByTrigger)(struct SymTriggerRouterService *this, SymTrigger *trigger);

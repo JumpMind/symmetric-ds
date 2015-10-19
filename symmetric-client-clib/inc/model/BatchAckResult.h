@@ -18,26 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_SQLITE_SQL_TEMPLATE_H
-#define SYM_SQLITE_SQL_TEMPLATE_H
+#ifndef SYM_BATCH_ACK_RESULT_H
+#define SYM_BATCH_ACK_RESULT_H
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <sqlite3.h>
-#include "db/sql/SqlTemplate.h"
-#include "db/sql/mapper/RowMapper.h"
-#include "util/List.h"
-#include "util/StringArray.h"
-#include "util/StringBuilder.h"
+#include "model/BatchAck.h"
 
-typedef struct SymSqliteSqlTemplate {
-    SymSqlTemplate super;
-    sqlite3 *db;
-    void (*destroy)(struct SymSqliteSqlTemplate *this);
-} SymSqliteSqlTemplate;
+typedef struct SymBatchAckResult {
+    long batchId;
+    unsigned short isOk;
+    void (*destroy)(struct SymBatchAckResult *this);
+} SymBatchAckResult;
 
-SymSqliteSqlTemplate * SymSqliteSqlTemplate_new(SymSqliteSqlTemplate *this, sqlite3 *db);
+SymBatchAckResult * SymBatchAckResult_new(SymBatchAckResult *this);
 
-#include "db/sqlite/SqliteSqlTransaction.h"
+SymBatchAckResult * SymBatchAckResult_newWithBatchAck(SymBatchAckResult *this, SymBatchAck *batchAck);
 
 #endif

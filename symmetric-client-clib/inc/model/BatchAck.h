@@ -21,6 +21,8 @@
 #ifndef SYM_BATCH_ACK_H
 #define SYM_BATCH_ACK_H
 
+#include <stdlib.h>
+
 typedef struct SymBatchAck {
     long batchId;
     char *nodeId;
@@ -35,5 +37,7 @@ typedef struct SymBatchAck {
     unsigned short ignored;
     char *sqlMessage;
 } SymBatchAck;
+
+SymBatchAck * SymBatchAck_new(SymBatchAck *this);
 
 #endif

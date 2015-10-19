@@ -26,6 +26,8 @@
 #include "io/data/DataProcessor.h"
 
 typedef struct SymOutgoingTransport {
+    char *ackString;
+    char *ackExtendedString;
     long (*process)(struct SymOutgoingTransport *this, SymDataProcessor *processor);
     void (*destroy)(struct SymOutgoingTransport *this);
 } SymOutgoingTransport;

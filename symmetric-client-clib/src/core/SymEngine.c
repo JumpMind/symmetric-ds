@@ -61,11 +61,11 @@ unsigned short SymEngine_start(SymEngine *this) {
             } else {
             	SymLog_info("Starting registered node [group=%s, id=%s, externalId=%s]", node->nodeGroupId, node->nodeId, node->externalId);
 
-                if (this->parameterService->is(this->parameterService, AUTO_SYNC_TRIGGERS_AT_STARTUP, 1)) {
+                if (this->parameterService->is(this->parameterService, SYM_PARAMETER_AUTO_SYNC_TRIGGERS_AT_STARTUP, 1)) {
                 	this->triggerRouterService->syncTriggers(this->triggerRouterService, 0);
                 }
                 else {
-                	SymLog_info("%s is turned off.", AUTO_SYNC_TRIGGERS_AT_STARTUP);
+                	SymLog_info("%s is turned off.", SYM_PARAMETER_AUTO_SYNC_TRIGGERS_AT_STARTUP);
                 }
 
                 // TODO: if HEARTBEAT_SYNC_ON_STARTUP
@@ -140,6 +140,7 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->nodeService = SymNodeService_new(NULL, this->platform);
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
     this->outgoingBatchService = SymOutgoingBatchService_new(NULL, this->platform, this->parameterService);
+    this->acknowledgeService = SymAcknowledgeService_new(NULL, this->outgoingBatchService, this->platform);
     this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform,
             this->dialect, this->incomingBatchService);
     this->dataService = SymDataService_new(NULL, this->platform, this->triggerRouterService);
@@ -149,7 +150,7 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
             this->configurationService);
     this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
     this->pushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
-            this->configurationService);
+            this->configurationService, this->acknowledgeService);
 
     return this;
 }

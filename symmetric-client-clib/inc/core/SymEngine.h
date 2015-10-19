@@ -24,11 +24,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <util/Properties.h>
 #include "db/platform/DatabasePlatformFactory.h"
 #include "db/SymDialectFactory.h"
 #include "db/SymDialect.h"
 #include "db/sqlite/SqliteDialect.h"
+#include "service/AcknowledgeService.h"
 #include "service/TriggerRouterService.h"
 #include "service/ParameterService.h"
 #include "service/PushService.h"
@@ -43,7 +43,9 @@
 #include "service/ConfigurationService.h"
 #include "transport/TransportManagerFactory.h"
 #include "transport/TransportManager.h"
+#include "util/Properties.h"
 #include "common/Constants.h"
+#include "common/ParameterConstants.h"
 
 typedef struct SymEngine {
     SymProperties *properties;
@@ -61,6 +63,7 @@ typedef struct SymEngine {
     SymNodeService *nodeService;
     SymIncomingBatchService *incomingBatchService;
     SymOutgoingBatchService *outgoingBatchService;
+    SymAcknowledgeService *acknowledgeService;
     SymConfigurationService *configurationService;
     SymSequenceService *sequenceService;
 

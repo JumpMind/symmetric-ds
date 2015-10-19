@@ -74,16 +74,25 @@ SymDataLoadStatus * SymDataLoadStatus_new() {
     return this;
 }
 
-SymNode * SymNodeService_findIdentity(SymNodeService *this) {
-    int error;
-    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
-    SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
-    sb->append(sb, SYM_SQL_FIND_NODE_IDENTITY);
+SymNode * SymNodeService_findIdentityWithCache(SymNodeService *this, unsigned short useCache) {
+    if (this->cachedNodeIdentity == NULL || useCache == 0) {
+        if (this->cachedNodeIdentity) {
+            this->cachedNodeIdentity->destroy(this->cachedNodeIdentity);
+        }
+        int error;
+        SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+        SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
+        sb->append(sb, SYM_SQL_FIND_NODE_IDENTITY);
 
-    SymList *nodes = sqlTemplate->query(sqlTemplate, sb->str, NULL, NULL, &error, (void *) SymNodeService_nodeMapper);
-    SymNode *node = nodes->get(nodes, 0);
-    sb->destroy(sb);
-    return node;
+        SymList *nodes = sqlTemplate->query(sqlTemplate, sb->str, NULL, NULL, &error, (void *) SymNodeService_nodeMapper);
+        this->cachedNodeIdentity = nodes->get(nodes, 0);
+        sb->destroy(sb);
+    }
+    return this->cachedNodeIdentity;
+}
+
+SymNode * SymNodeService_findIdentity(SymNodeService *this) {
+    return SymNodeService_findIdentityWithCache(this, 1);
 }
 
 SymNodeSecurity * SymNodeService_findNodeSecurity(SymNodeService *this, char *nodeId) {
@@ -182,6 +191,7 @@ SymNodeService * SymNodeService_new(SymNodeService *this, SymDatabasePlatform *p
     }
     this->platform = platform;
     this->findIdentity = (void *) &SymNodeService_findIdentity;
+    this->findIdentityWithCache = (void *) &SymNodeService_findIdentityWithCache;
     this->findNodeSecurity = (void *) &SymNodeService_findNodeSecurity;
     this->findNodesToPull = (void *) &SymNodeService_findNodesToPull;
     this->findNodesToPushTo = (void *) &SymNodeService_findNodesToPushTo;

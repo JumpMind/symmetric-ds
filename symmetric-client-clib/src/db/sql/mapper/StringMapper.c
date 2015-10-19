@@ -18,26 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_SQLITE_SQL_TEMPLATE_H
-#define SYM_SQLITE_SQL_TEMPLATE_H
+#include "db/sql/mapper/StringMapper.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sqlite3.h>
-#include "db/sql/SqlTemplate.h"
-#include "db/sql/mapper/RowMapper.h"
-#include "util/List.h"
-#include "util/StringArray.h"
-#include "util/StringBuilder.h"
-
-typedef struct SymSqliteSqlTemplate {
-    SymSqlTemplate super;
-    sqlite3 *db;
-    void (*destroy)(struct SymSqliteSqlTemplate *this);
-} SymSqliteSqlTemplate;
-
-SymSqliteSqlTemplate * SymSqliteSqlTemplate_new(SymSqliteSqlTemplate *this, sqlite3 *db);
-
-#include "db/sqlite/SqliteSqlTransaction.h"
-
-#endif
+char * SymStringMapper_mapper(SymRow *row) {
+    return row->stringValue(row);
+}

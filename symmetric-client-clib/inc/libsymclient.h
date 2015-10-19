@@ -39,6 +39,7 @@
 #include "service/PushService.h"
 #include "service/ParameterService.h"
 #include "util/StringBuilder.h"
+#include "util/StringArray.h"
 #include "util/Properties.h"
 #include "util/Map.h"
 #include "common/Constants.h"

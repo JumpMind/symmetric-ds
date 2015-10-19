@@ -23,10 +23,10 @@
 
 #include "util/Date.h"
 #include "util/StringArray.h"
-#include "io/data/DataEventType.h"
-#include "common/Log.h"
 #include "util/List.h"
 #include "db/model/Column.h"
+#include "io/data/DataEventType.h"
+#include "common/Log.h"
 
 #define SYM_TRIGGER_REBUILD_REASON_NEW_TRIGGERS "N"
 #define SYM_TRIGGER_REBUILD_REASON_TABLE_SCHEMA_CHANGED "S"
@@ -43,9 +43,7 @@ typedef struct SymTriggerHistory {
     char *sourceCatalogName;
     SymDate *createTime;
     char *columnNames;
-    SymStringArray *parsedColumnNames;
     char *pkColumnNames;
-    SymStringArray *parsedPkColumnNames;
     char *nameForInsertTrigger;
     char *nameForUpdateTrigger;
     char *nameForDeleteTrigger;
@@ -56,6 +54,8 @@ typedef struct SymTriggerHistory {
     long triggerTemplateHash;
     char *lastTriggerBuildReason;
 
+    SymStringArray * (*getParsedColumnNames)(struct SymTriggerHistory *this);
+    SymStringArray * (*getParsedPkColumnNames)(struct SymTriggerHistory *this);
     char * (*getTriggerNameForDmlType)(struct SymTriggerHistory *this, SymDataEventType type);
     SymList * (*getParsedColumns)(struct SymTriggerHistory *this);
     void (*destroy)(struct SymTriggerHistory *this);

@@ -124,6 +124,78 @@ int SymHttpTransportManager_sendAcknowledgement(SymHttpTransportManager *this, S
     return httpResponseCode;
 }
 
+static SymMap * SymHttpTransportManager_getParametersFromQueryUrl(char *parameterString) {
+    SymMap *parameters = SymMap_new(NULL, 100);
+    SymStringArray *tokens = SymStringArray_split(parameterString, "&");
+    CURL *curl = curl_easy_init();
+    int i;
+    for (i = 0; i < tokens->size; i++) {
+        SymStringArray *nameValuePair = SymStringArray_split(tokens->get(tokens, i), "=");
+        if (nameValuePair->size == 2) {
+            char *value = curl_easy_unescape(curl, nameValuePair->get(nameValuePair, 1), 0, NULL);
+            parameters->put(parameters, nameValuePair->get(nameValuePair, 0), value, strlen(value) * sizeof(char) + 1);
+            curl_free(value);
+        }
+    }
+    curl_easy_cleanup(curl);
+    return parameters;
+}
+
+static char * SymHttpTransportManager_getParam(SymMap *parameters, char *name, char *batchId) {
+    char *key = SymStringUtils_format("%s%s", name, batchId);
+    char *value = parameters->get(parameters, key);
+    free(key);
+    return value;
+}
+
+static SymBatchAck * SymHttpTransportManager_getBatchInfo(SymMap *parameters, char *batchId) {
+    SymBatchAck *batchAck = SymBatchAck_new(NULL);
+    batchAck->batchId = atol(batchId);
+    char *nodeId = SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_NODE_ID, batchId);
+    if (SymStringUtils_isBlank(nodeId)) {
+        nodeId = parameters->get(parameters, SYM_WEB_CONSTANTS_NODE_ID);
+    }
+    batchAck->nodeId = nodeId;
+    batchAck->networkMillis = atol(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_NETWORK_MILLIS, batchId));
+    batchAck->filterMillis = atol(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_FILTER_MILLIS, batchId));
+    batchAck->databaseMillis = atol(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_DATABASE_MILLIS, batchId));
+    batchAck->byteCount = atol(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_BYTE_COUNT, batchId));
+    batchAck->ignored = atoi(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_IGNORE_COUNT, batchId));
+    char *status = SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_BATCH_NAME, batchId);
+    batchAck->isOk = SymStringUtils_equalsIgnoreCase(status, SYM_WEB_CONSTANTS_ACK_BATCH_OK);
+
+    if (!batchAck->isOk) {
+        batchAck->errorLine = atol(status);
+        batchAck->sqlState = SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_SQL_STATE, batchId);
+        batchAck->sqlCode = atoi(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_SQL_CODE, batchId));
+        batchAck->sqlMessage = SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_SQL_MESSAGE, batchId);
+    }
+    return batchAck;
+}
+
+SymList * SymHttpTransportManager_readAcknowledgement(SymHttpTransportManager *this, char *parameterString1, char *parameterString2) {
+    SymStringBuilder *sb = SymStringBuilder_newWithString(parameterString1);
+    sb->append(sb, "&")->append(sb, parameterString2);
+
+    SymMap *parameters = SymHttpTransportManager_getParametersFromQueryUrl(parameterString1);
+    SymList *batchAcks = SymList_new(NULL);
+    SymStringArray *keys = parameters->keys(parameters);
+    int i;
+    for (i = 0; i < keys->size; i++) {
+        char *key = keys->get(keys, i);
+        if (strncmp(key, SYM_WEB_CONSTANTS_ACK_BATCH_NAME, strlen(SYM_WEB_CONSTANTS_ACK_BATCH_NAME)) == 0) {
+            char *batchId = SymStringUtils_substring(key, strlen(SYM_WEB_CONSTANTS_ACK_BATCH_NAME), strlen(key));
+            SymBatchAck *batchAck = SymHttpTransportManager_getBatchInfo(parameters, batchId);
+            batchAcks->add(batchAcks, batchAck);
+            free(batchId);
+        }
+    }
+    keys->destroy(keys);
+    parameters->destroy(parameters);
+    sb->destroy(sb);
+    return batchAcks;
+}
+
 SymHttpIncomingTransport * SymHttpTransportManager_getPullTransport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
     return SymHttpIncomingTransport_new(NULL, buildUrl("pull", remote, local, securityToken, registrationUrl));
 }
@@ -170,6 +242,7 @@ SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *t
     super->getPullTransport = (void *) &SymHttpTransportManager_getPullTransport;
     super->getPushTransport = (void *) &SymHttpTransportManager_getPushTransport;
     super->getRegisterTransport = (void *) &SymHttpTransportManager_getRegisterTransport;
+    super->readAcknowledgement = (void *) SymHttpTransportManager_readAcknowledgement;
     super->destroy = (void *) &SymHttpTransportManager_destroy;
     return this;
 }

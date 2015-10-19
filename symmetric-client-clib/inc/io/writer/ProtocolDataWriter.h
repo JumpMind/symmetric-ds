@@ -24,17 +24,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "io/data/Batch.h"
-#include "db/model/Table.h"
 #include "io/data/CsvData.h"
+#include "io/data/CsvConstants.h"
 #include "io/data/DataProcessor.h"
 #include "io/reader/DataReader.h"
-#include "util/List.h"
+#include "db/model/Table.h"
+#include "model/Data.h"
+#include "util/StringBuilder.h"
 #include "common/Log.h"
 
 typedef struct SymProtocolDataWriter {
     SymDataProcessor super;
     char *sourceNodeId;
     SymDataReader *reader;
+
+    SymStringBuilder *buffer;
+    SymBatch *batch;
 } SymProtocolDataWriter;
 
 SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId, SymDataReader *reader);

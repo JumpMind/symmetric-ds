@@ -29,4 +29,10 @@
 
 #define SYM_SEQUENCE_TRIGGER_HIST "trigger_hist"
 
+#define SYM_CHANNEL_HEARTBEAT "heartbeat"
+
+#define SYM_CHANNEL_CONFIG "config"
+
+#define SYM_VIRTUAL_BATCH_FOR_REGISTRATION -9999L
+
 #endif

@@ -48,6 +48,7 @@ typedef struct SymTransportManager {
     SymIncomingTransport * (*getPullTransport)(struct SymTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl);
     SymOutgoingTransport * (*getPushTransport)(struct SymTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl);
     SymIncomingTransport * (*getRegisterTransport)(struct SymTransportManager *this, SymNode *local, char *registrationUrl);
+    SymList * (*readAcknowledgement)(struct SymTransportManager *this, char *parameterString1, char *parameterString2);
     void (*destroy)(struct SymTransportManager *this);
 } SymTransportManager;
 

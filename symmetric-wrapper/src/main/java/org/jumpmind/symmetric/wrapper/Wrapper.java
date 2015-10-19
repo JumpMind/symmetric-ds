@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.wrapper;
 
 import java.io.File;
 
-public class Wrapper extends AbstractWrapper {
+public class Wrapper {
 
     public static void main(String[] args) throws Exception {
     	
@@ -44,6 +44,6 @@ public class Wrapper extends AbstractWrapper {
         }
         String configFile = dir + File.separator + "conf" + File.separator + "sym_service.conf";
         
-        run(args, dir, configFile);
+        WrapperHelper.run(args, dir, configFile);
     }
 }

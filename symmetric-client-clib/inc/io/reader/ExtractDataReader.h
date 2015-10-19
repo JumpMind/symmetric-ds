@@ -37,6 +37,7 @@
 #include "service/DataService.h"
 #include "service/TriggerRouterService.h"
 #include "util/StringUtils.h"
+#include "util/List.h"
 #include "common/Log.h"
 #include "common/Constants.h"
 

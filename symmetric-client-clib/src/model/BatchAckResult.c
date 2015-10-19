@@ -18,26 +18,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_SQLITE_SQL_TEMPLATE_H
-#define SYM_SQLITE_SQL_TEMPLATE_H
+#include "model/BatchAckResult.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sqlite3.h>
-#include "db/sql/SqlTemplate.h"
-#include "db/sql/mapper/RowMapper.h"
-#include "util/List.h"
-#include "util/StringArray.h"
-#include "util/StringBuilder.h"
+void SymBatchAckResult_destroy(SymBatchAckResult *this) {
+    free(this);
+}
 
-typedef struct SymSqliteSqlTemplate {
-    SymSqlTemplate super;
-    sqlite3 *db;
-    void (*destroy)(struct SymSqliteSqlTemplate *this);
-} SymSqliteSqlTemplate;
+SymBatchAckResult * SymBatchAckResult_new(SymBatchAckResult *this) {
+    if (this == NULL) {
+        this = (SymBatchAckResult *) calloc(1, sizeof(SymBatchAckResult));
+    }
+    return this;
+}
 
-SymSqliteSqlTemplate * SymSqliteSqlTemplate_new(SymSqliteSqlTemplate *this, sqlite3 *db);
-
-#include "db/sqlite/SqliteSqlTransaction.h"
-
-#endif
+SymBatchAckResult * SymBatchAckResult_newWithBatchAck(SymBatchAckResult *this, SymBatchAck *batchAck) {
+    this = SymBatchAckResult_new(this);
+    this->batchId = batchAck->batchId;
+    this->isOk = 1;
+    return this;
+}

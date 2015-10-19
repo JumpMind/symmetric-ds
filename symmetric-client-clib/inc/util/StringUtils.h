@@ -33,5 +33,7 @@ unsigned short SymStringUtils_isBlank(char *str);
 unsigned short SymStringUtils_isNotBlank(char *str);
 char* SymStringUtils_format(char *format, ...);
 unsigned short SymStringUtils_equals(char *str1, char *str2);
+unsigned short SymStringUtils_equalsIgnoreCase(char *str1, char *str2);
+char * SymStringUtils_substring(char *str, int startIndex, int endIndex);
 
 #endif

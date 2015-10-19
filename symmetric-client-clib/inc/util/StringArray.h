@@ -52,4 +52,6 @@ SymStringArray * SymStringArray_new(SymStringArray *this);
 
 SymStringArray * SymStringArray_newWithSize(SymStringArray *this, int sizeInitial, int sizeIncrement);
 
+SymStringArray * SymStringArray_split(char *str, char *separator);
+
 #endif

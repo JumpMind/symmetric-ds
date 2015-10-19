@@ -32,6 +32,7 @@
 int SymEngineTest_CUnit();
 int SymPropertiesTest_CUnit();
 int SymStringBuilderTest_CUnit();
+int SymStringArrayTest_CUnit();
 int SymMapTest_CUnit();
 int SymListTest_CUnit();
 int SymStringUtilsTest_CUnit();

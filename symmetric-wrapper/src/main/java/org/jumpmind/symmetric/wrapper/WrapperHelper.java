@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public abstract class AbstractWrapper {
+public class WrapperHelper {
 
 		
-	protected static void run(String[] args, String applHomeDir, String configFileName) {
+	public static void run(String[] args, String applHomeDir, String configFileName) {
 		
 		checkArgs(args);
         System.setProperty("java.io.tmpdir", applHomeDir + File.separator + "tmp");
