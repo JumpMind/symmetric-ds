@@ -378,13 +378,15 @@ void SymTriggerRouterService_inactivateTriggers(SymTriggerRouterService *this, S
         SymTriggerHistory *history = activeTriggerHistories->get(activeTriggerHistories, i);
         unsigned int removeTrigger = 1;
 
-        // TODO
-//        for (Trigger trigger : triggersThatShouldBeActive) {
-//            if (trigger.getTriggerId().equals(history.getTriggerId())) {
-//                removeTrigger = false;
-//                break;
-//            }
-//        }
+        int j;
+        for (j = 0; j < triggersThatShouldBeActive->size; j++) {
+            SymTrigger *trigger = triggersThatShouldBeActive->get(triggersThatShouldBeActive, j);
+            if (SymStringUtils_equals(trigger->triggerId, history->triggerId)) {
+                removeTrigger = 0;
+                break;
+            }
+
+        }
 
         if (removeTrigger) {
             SymLog_info("About to remove triggers for inactivated table: %s", history);
@@ -534,7 +536,7 @@ void SymTriggerRouterService_updateOrCreateDatabaseTriggers(SymTriggerRouterServ
     char* reason = SYM_TRIGGER_REBUILD_REASON_NEW_TRIGGERS;
 
     unsigned short foundPk = 0;
-    // TODO filder excluded columns.
+    // TODO filter excluded columns.
     SymList *columns = table->columns;
 
     int i = 0;
