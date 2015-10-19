@@ -347,8 +347,35 @@ unsigned short SymTriggerRouterService_isTriggerNameInUse(SymTriggerRouterServic
 }
 
 SymTriggerHistory * SymTriggerRouterService_getNewestTriggerHistoryForTrigger(SymTriggerRouterService *this, char *triggerId, char *catalogName, char *schemaName, char *tableName) {
-    // TODO
-    return 0;
+    SymTriggerHistory *result = NULL;
+
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, triggerId);
+    args->add(args, tableName);
+
+    int error;
+    SymList *triggerHistories = sqlTemplate->query(sqlTemplate, SYM_SQL_LATEST_TRIGGER_HIST, args, NULL, &error, (void *) SymTriggerRouterService_triggerHistoryMapper);
+
+    int i;
+    for (i = 0; i < triggerHistories->size; ++i) {
+        SymTriggerHistory *triggerHistory = triggerHistories->get(triggerHistories, i);
+
+        unsigned short catalogMatches = (SymStringUtils_isBlank(catalogName) && SymStringUtils_isBlank(triggerHistory->sourceCatalogName))
+            || (SymStringUtils_isNotBlank(catalogName) && SymStringUtils_equals(catalogName, triggerHistory->sourceCatalogName));
+        unsigned short schemaMatches = (SymStringUtils_isBlank(schemaName) && SymStringUtils_isBlank(triggerHistory->sourceSchemaName))
+            || (SymStringUtils_isNotBlank(schemaName) && SymStringUtils_equals(schemaName, triggerHistory->sourceSchemaName));
+
+        if (catalogMatches && schemaMatches) {
+            result = triggerHistory;
+            break;
+        }
+    }
+
+    args->destroy(args);
+
+    return result;
 }
 
 SymList * SymTriggerRouterService_enhanceTriggerRouters(SymTriggerRouterService *this, SymList *triggerRouters) {
@@ -418,7 +445,7 @@ void SymTriggerRouterService_insert(SymTriggerRouterService *this, SymTriggerHis
     int error;
     sqlTemplate->update(sqlTemplate, SYM_SQL_INSERT_TRIGGER_HIST, args, NULL, &error);
 
-
+    args->destroy(args);
 }
 
 SymList * SymTriggerRouterService_getTriggersToSync(SymTriggerRouterService *this) {
@@ -629,11 +656,12 @@ void SymTriggerRouterService_updateOrCreateDatabaseTriggers(SymTriggerRouterServ
     }
 
     if (!foundPk) {
-        // TODO
-        // table = platform.makeAllColumnsPrimaryKeys(table);
+        table = this->platform->makeAllColumnsPrimaryKeys(this->platform, table);
     }
 
-    SymTriggerHistory *latestHistoryBeforeRebuild = NULL; // TODO
+    SymTriggerHistory *latestHistoryBeforeRebuild =
+            SymTriggerRouterService_getNewestTriggerHistoryForTrigger(this,
+                    trigger->triggerId, table->catalog, table->schema, table->name );
 
     unsigned short forceRebuildOfTriggers = 0;
 
