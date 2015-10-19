@@ -31,6 +31,9 @@
 typedef struct SymDate {
     char *dateTimeString;
     time_t time;
+    unsigned short (*before)(struct SymDate *this, struct SymDate *otherDate);
+    unsigned short (*after)(struct SymDate *this, struct SymDate *otherDate);
+    unsigned short (*equals)(struct SymDate *this, struct SymDate *otherDate);
     void (*destroy)(struct SymDate *this);
 } SymDate;
 

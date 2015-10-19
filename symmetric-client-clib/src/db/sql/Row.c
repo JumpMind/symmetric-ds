@@ -61,7 +61,7 @@ unsigned short SymRow_getBoolean(SymRow *this, char *columnName) {
     return value;
 }
 
-int SymRow_getLong(SymRow *this, char *columnName) {
+long SymRow_getLong(SymRow *this, char *columnName) {
     long value = 0;
     char *str = SymRow_getString(this, columnName);
     if (str != NULL) {

@@ -338,7 +338,14 @@ SymList * SymTriggerRouterService_getTriggers(SymTriggerRouterService *this, uns
 }
 
 void SymTriggerRouterService_inactivateTriggerHistory(SymTriggerRouterService *this, SymTriggerHistory *history) {
-    // TODO
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, history->errorMessage);
+    args->add(args, SymStringUtils_format("%d", history->triggerHistoryId));
+
+    int error;
+    sqlTemplate->update(sqlTemplate, SYM_SQL_INACTIVATE_TRIGGER_HISTORY, args, NULL, &error);
 }
 
 unsigned short SymTriggerRouterService_isTriggerNameInUse(SymTriggerRouterService *this, SymList *activeTriggerHistories, char *triggerId, char *triggerName) {
@@ -425,7 +432,6 @@ void SymTriggerRouterService_insert(SymTriggerRouterService *this, SymTriggerHis
     newHistRecord->triggerHistoryId = this->sequenceService->nextVal(this->sequenceService, SYM_SEQUENCE_TRIGGER_HIST);
 
     SymStringArray *args = SymStringArray_new(NULL);
-    args->add(args, SymStringUtils_format("%d", newHistRecord->triggerHistoryId));
     args->add(args, newHistRecord->triggerId);
     args->add(args, newHistRecord->sourceTableName);
     args->add(args, SymStringUtils_format("%d", newHistRecord->tableHash));
@@ -438,7 +444,7 @@ void SymTriggerRouterService_insert(SymTriggerRouterService *this, SymTriggerHis
     args->add(args, newHistRecord->nameForUpdateTrigger);
     args->add(args, newHistRecord->sourceSchemaName);
     args->add(args, newHistRecord->sourceCatalogName);
-    args->add(args, SymStringUtils_format("%d", newHistRecord->triggerRowHash));
+    args->add(args, SymStringUtils_format("%ld", newHistRecord->triggerRowHash));
     args->add(args, "null"); // getTriggerTemplateHash
     args->add(args, newHistRecord->errorMessage);
 
@@ -628,8 +634,8 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
 
     if (hist == NULL && (oldhist == NULL || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
         SymTriggerRouterService_insert(this, newTriggerHist);
-        // TODO
-        hist = newTriggerHist;
+        hist = SymTriggerRouterService_getNewestTriggerHistoryForTrigger(this, trigger->triggerId,
+                table->catalog, table->schema, table->name);
     }
 
     if (!triggerExists && triggerIsActive) {
@@ -668,17 +674,31 @@ void SymTriggerRouterService_updateOrCreateDatabaseTriggers(SymTriggerRouterServ
     if (latestHistoryBeforeRebuild == NULL) {
         reason = SYM_TRIGGER_REBUILD_REASON_NEW_TRIGGERS;
         forceRebuildOfTriggers = 1;
-    }
-    else {
-        // TODO support replacing existing triggers...
+    } else if (table->calculateTableHashcode(table) != latestHistoryBeforeRebuild->tableHash) {
+        reason = SYM_TRIGGER_REBUILD_REASON_TABLE_SCHEMA_CHANGED;
+        forceRebuildOfTriggers = 1;
+    } else if (trigger->hasChangedSinceLastTriggerBuild(trigger, latestHistoryBeforeRebuild->createTime)
+            || trigger->toHashedValue(trigger) != latestHistoryBeforeRebuild->triggerRowHash) {
+
+        printf("%d\n", trigger->hasChangedSinceLastTriggerBuild(trigger, latestHistoryBeforeRebuild->createTime));
+        printf("%ld %ld\n", trigger->toHashedValue(trigger), latestHistoryBeforeRebuild->triggerRowHash);
+
+        reason = SYM_TRIGGER_REBUILD_REASON_TABLE_SYNC_CONFIGURATION_CHANGED;
+        forceRebuildOfTriggers = 1;
+       // TODO check condition for TRIGGER_TEMPLATE_CHANGED
+    } else if (force) {
+        reason = SYM_TRIGGER_REBUILD_REASON_FORCED;
+        forceRebuildOfTriggers = 1;
     }
 
-    unsigned short supportsTriggers = 1; // TODO
+    unsigned short supportsTriggers = 1;
 
     newestHistory = SymTriggerRouterService_rebuildTriggerIfNecessary(this, forceRebuildOfTriggers,
             trigger, SYM_DATA_EVENT_INSERT, reason, latestHistoryBeforeRebuild, NULL,
             trigger->syncOnInsert && supportsTriggers, table, activeTriggerHistories);
 
+
+// TODO active these.
 //    newestHistory = SymTriggerRouterService_rebuildTriggerIfNecessary(this, forceRebuildOfTriggers,
 //            trigger, SYM_DATA_EVENT_UPDATE, reason, latestHistoryBeforeRebuild, newestHistory,
 //            trigger->syncOnInsert && supportsTriggers, table, activeTriggerHistories);

@@ -55,8 +55,23 @@ SymDate * SymDate_newWithString(char *dateTimeString) {
     return this;
 }
 
+unsigned short SymDate_before(SymDate *this, SymDate *otherDate) {
+    return this->time < otherDate->time;
+}
+
+unsigned short SymDate_after(SymDate *this, SymDate *otherDate) {
+    return this->time > otherDate->time;
+}
+
+unsigned short SymDate_equals(SymDate *this, SymDate *otherDate) {
+    return this->time == otherDate->time;
+}
+
 SymDate * SymDate_newWithTime(time_t time) {
     SymDate *this = (SymDate *) calloc(1, sizeof(SymDate));
+    this->before = (void *) &SymDate_before;
+    this->after = (void *) &SymDate_after;
+    this->equals = (void *) &SymDate_equals;
     this->destroy = (void *) &SymDate_destroy;
     this->dateTimeString = calloc(24, sizeof(char));
     this->time = time;

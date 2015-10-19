@@ -351,7 +351,7 @@ CREATE TABLE sym_trigger( \
 
 #define CREATE_SYM_TRIGGER_HIST "\
 CREATE TABLE sym_trigger_hist( \
-    trigger_hist_id INTEGER NOT NULL PRIMARY KEY , \
+    trigger_hist_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \
     trigger_id VARCHAR NOT NULL, \
     source_table_name VARCHAR NOT NULL, \
     source_catalog_name VARCHAR, \

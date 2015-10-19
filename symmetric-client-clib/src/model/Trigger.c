@@ -142,6 +142,11 @@ long SymTrigger_toHashedValue(SymTrigger *this) {
     return hashedValue;
 }
 
+unsigned short SymTrigger_hasChangedSinceLastTriggerBuild(SymTrigger *this, SymDate *lastTriggerBuildTime) {
+    return lastTriggerBuildTime == NULL || this->lastUpdateTime == NULL
+            || lastTriggerBuildTime->before(lastTriggerBuildTime, this->lastUpdateTime);
+}
+
 void SymTrigger_destroy(SymTrigger *this) {
     free(this);
 }
@@ -153,6 +158,7 @@ SymTrigger * SymTrigger_new(SymTrigger *this) {
     this->orderColumnsForTable = (void *) &SymTrigger_orderColumnsForTable;
     this->getSyncKeysColumnsForTable = (void *) &SymTrigger_getSyncKeysColumnsForTable;
     this->toHashedValue = (void *) &SymTrigger_toHashedValue;
+    this->hasChangedSinceLastTriggerBuild = (void *) &SymTrigger_hasChangedSinceLastTriggerBuild;
     this->destroy = (void *) &SymTrigger_destroy;
     return this;
 }

@@ -66,6 +66,7 @@ typedef struct SymTrigger {
 
     SymList * (*orderColumnsForTable)(struct SymTrigger *this, SymTable *table);
     SymList * (*getSyncKeysColumnsForTable)(struct SymTrigger *this, SymTable *table);
+    unsigned short (*hasChangedSinceLastTriggerBuild)(struct SymTrigger *this, SymDate *lastTriggerBuildTime);
     long (*toHashedValue)(struct SymTrigger *this);
     void (*destroy)(struct SymTrigger *this);
 } SymTrigger;

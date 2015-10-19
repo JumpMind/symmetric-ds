@@ -117,12 +117,16 @@ r.use_source_catalog_schema "
 
 #define SYM_SQL_INSERT_TRIGGER_HIST "\
 insert into sym_trigger_hist \
-(trigger_hist_id, trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message) \
-values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
+(trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message) \
+values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
 
 #define SYM_SQL_LATEST_TRIGGER_HIST "\
 select \
 trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash,trigger_template_hash,error_message \
 from sym_trigger_hist where trigger_id=? and source_table_name=? and inactive_time is null order by trigger_hist_id desc "
+
+#define SYM_SQL_INACTIVATE_TRIGGER_HISTORY "\
+update sym_trigger_hist set inactive_time = current_timestamp, error_message=? where \
+trigger_hist_id=? "
 
 #endif
