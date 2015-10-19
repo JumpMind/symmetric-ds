@@ -539,7 +539,7 @@ char * SymTriggerRouterService_getTriggerName(SymTriggerRouterService *this, Sym
     }
 
     if (SymStringUtils_isBlank(triggerName)) {
-        char *tablePrefix = ""; // TODO
+        char *tablePrefix = "sym";
         char *dmlCode = SymStringUtils_toLowerCase(SymDataEvent_getCode(dml));
 
         char *triggerPrefix1 = SymStringUtils_format("%s%s", tablePrefix, "_");
@@ -700,14 +700,13 @@ void SymTriggerRouterService_updateOrCreateDatabaseTriggers(SymTriggerRouterServ
             trigger, SYM_DATA_EVENT_INSERT, reason, latestHistoryBeforeRebuild, NULL,
             trigger->syncOnInsert && supportsTriggers, table, activeTriggerHistories);
 
-// TODO active these.
-//    newestHistory = SymTriggerRouterService_rebuildTriggerIfNecessary(this, forceRebuildOfTriggers,
-//            trigger, SYM_DATA_EVENT_UPDATE, reason, latestHistoryBeforeRebuild, newestHistory,
-//            trigger->syncOnInsert && supportsTriggers, table, activeTriggerHistories);
-//
-//    newestHistory = SymTriggerRouterService_rebuildTriggerIfNecessary(this, forceRebuildOfTriggers,
-//            trigger, SYM_DATA_EVENT_DELETE, reason, latestHistoryBeforeRebuild, newestHistory,
-//            trigger->syncOnInsert && supportsTriggers, table, activeTriggerHistories);
+    newestHistory = SymTriggerRouterService_rebuildTriggerIfNecessary(this, forceRebuildOfTriggers,
+            trigger, SYM_DATA_EVENT_UPDATE, reason, latestHistoryBeforeRebuild, newestHistory,
+            trigger->syncOnInsert && supportsTriggers, table, activeTriggerHistories);
+
+    newestHistory = SymTriggerRouterService_rebuildTriggerIfNecessary(this, forceRebuildOfTriggers,
+            trigger, SYM_DATA_EVENT_DELETE, reason, latestHistoryBeforeRebuild, newestHistory,
+            trigger->syncOnInsert && supportsTriggers, table, activeTriggerHistories);
 
     if (latestHistoryBeforeRebuild != NULL && newestHistory != NULL) {
         SymTriggerRouterService_inactivateTriggerHistory(this, latestHistoryBeforeRebuild);

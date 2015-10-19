@@ -61,4 +61,47 @@ for each row     \n\
         %s \n\
 end"
 
+#define SYM_SQL_UPDATE_TRIGGER_TEMPLATE "\
+create trigger %s after update on %s%s \n\
+for each row \n\
+  when (%s and %s) \n\
+  begin \n\
+    insert into sym_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)\n\
+    values(   \n\
+      '%s', \n\
+      'U', \n\
+      %s, \n\
+      %s, \n\
+      %s, \n\
+      %s, \n\
+      %s, \n\
+      null, \n\
+      %s, \n\
+      %s, \n\
+      strftime('%%Y-%%m-%%d %%H:%%M:%%f','now','localtime')    \n\
+    ); \n\
+        %s \n\
+end"
+
+#define SYM_SQL_DELETE_TRIGGER_TEMPLATE "\
+create trigger %s after delete on %s%s    \n\
+for each row     \n\
+  when (%s and %s)      \n\
+  begin    \n\
+    insert into sym_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n\
+    values( \n\
+    '%s', \n\
+    'D', \n\
+     %s,\n\
+     %s,    \n\
+     %s, \n\
+     %s, \n\
+     null, \n\
+     %s, \n\
+     %s, \n\
+     strftime('%%Y-%%m-%%d %%H:%%M:%%f','now','localtime') \n\
+   ); \n\
+      %s \n\
+end"
+
 #endif

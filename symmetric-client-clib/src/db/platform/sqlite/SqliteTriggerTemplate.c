@@ -84,26 +84,51 @@ char * SymSqliteTriggerTemplate_buildColumnsString(SymSqliteTriggerTemplate *thi
     return buff->destroyAndReturn(buff);
 }
 
+
 char * SymSqliteTriggerTemplate_replaceTemplateVariables(SymSqliteTriggerTemplate  *this, SymDataEventType dml,
         SymTrigger *trigger, SymTriggerHistory *history, SymChannel *channel, char *tablePrefix,
         SymTable *table, char *defaultCatalog, char *defaultSchema, char *ddl) {
-    char *triggerName = history->nameForInsertTrigger; // TODO
+    SymList *primaryKeyColumns = table->getPrimaryKeyColumns(table);
+
+    char *triggerName = history->getTriggerNameForDmlType(history, dml);
     char *schemaName = "";
     char *tableName = table->name;
     char *syncOnInsertCondition = "1"; // TODO
+    char *syncOnUpdateCondition = "1"; // TODO
+    char *syncOnDeleteCondition = "1"; // TODO
     char *syncOnIncomingBatchCondition = "1"; // TODO
     char *targetTableName = trigger->sourceTableName; // TODO
-    char *triggerHistoryId = SymStringUtils_format("%d", -1);
+    char *triggerHistoryId = SymStringUtils_format("%d", history == NULL ? -1 : history->triggerHistoryId);
+    char *oldKeys = SymSqliteTriggerTemplate_buildColumnsString(this, SYM_ORIG_TABLE_ALIAS,
+            "old", "", primaryKeyColumns, dml, 1, channel, trigger);
+    char *oldColumns = trigger->useCaptureOldData ? SymSqliteTriggerTemplate_buildColumnsString(this, SYM_ORIG_TABLE_ALIAS,
+            "old", "old", table->columns, dml, 1, channel, trigger) : "null";
     char *columns = SymSqliteTriggerTemplate_buildColumnsString(this, SYM_ORIG_TABLE_ALIAS,
             "new", "", table->columns, dml, 0, channel, trigger);
     char *channelExpression = SymStringUtils_format("'%s'", trigger->channelId); // TODO
     char *sourceNodeExpression = "null"; // TODO
     char *externalSelect = "null"; // TODO
     char *custom_on_insert_text = ""; // TODO
+    char *custom_on_update_text = ""; // TODO
+    char *custom_on_delete_text = ""; // TODO
 
-    char *formattedDdl = SymStringUtils_format(ddl, triggerName, schemaName, tableName, syncOnInsertCondition,
-            syncOnIncomingBatchCondition, targetTableName, triggerHistoryId, columns, channelExpression, sourceNodeExpression,
-            externalSelect, custom_on_insert_text);
+    char *formattedDdl = NULL;
+
+    if (dml == SYM_DATA_EVENT_INSERT) {
+        formattedDdl = SymStringUtils_format(ddl, triggerName, schemaName, tableName, syncOnInsertCondition,
+                syncOnIncomingBatchCondition, targetTableName, triggerHistoryId, columns, channelExpression, sourceNodeExpression,
+                externalSelect, custom_on_insert_text);
+
+    } else if (dml == SYM_DATA_EVENT_UPDATE) {
+        formattedDdl = SymStringUtils_format(ddl, triggerName, schemaName, tableName, syncOnUpdateCondition,
+                syncOnIncomingBatchCondition, targetTableName, triggerHistoryId, oldKeys, columns, oldColumns, channelExpression, sourceNodeExpression,
+                externalSelect, custom_on_update_text);
+    }
+    else if (dml == SYM_DATA_EVENT_DELETE) {
+        formattedDdl = SymStringUtils_format(ddl, triggerName, schemaName, tableName, syncOnDeleteCondition,
+                syncOnIncomingBatchCondition, targetTableName, triggerHistoryId, oldKeys, oldColumns, channelExpression, sourceNodeExpression,
+                externalSelect, custom_on_delete_text);
+    }
 
     return formattedDdl;
 }
@@ -115,6 +140,10 @@ char * SymSqliteTriggerTemplate_createTriggerDDL(SymSqliteTriggerTemplate *this,
     char *ddl;
     if (dml == SYM_DATA_EVENT_INSERT) {
         ddl = SYM_SQL_INSERT_TRIGGER_TEMPLATE;
+    } else if (dml == SYM_DATA_EVENT_UPDATE) {
+        ddl = SYM_SQL_UPDATE_TRIGGER_TEMPLATE;
+    } else if (dml == SYM_DATA_EVENT_DELETE) {
+        ddl = SYM_SQL_DELETE_TRIGGER_TEMPLATE;
     }
 
     char *formattedDdl = SymSqliteTriggerTemplate_replaceTemplateVariables(this, dml,

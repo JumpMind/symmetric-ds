@@ -161,6 +161,19 @@ char * SymTable_toString(SymTable *this) {
     return sb->destroyAndReturn(sb);
 }
 
+SymList * SymTable_getPrimaryKeyColumns(SymTable *this) {
+    SymList *primaryKeyColumns = SymList_new(NULL);
+    int i;
+    for (i = 0; i < this->columns->size; ++i) {
+        SymColumn *column = this->columns->get(this->columns, i);
+        if (column->isPrimaryKey) {
+            primaryKeyColumns->add(primaryKeyColumns, column);
+        }
+    }
+
+    return primaryKeyColumns;
+}
+
 void SymTable_destroy(SymTable *this) {
     free(this->name);
     free(this->catalog);
@@ -179,6 +192,7 @@ SymTable * SymTable_new(SymTable *this) {
     this->toString = (void *) &SymTable_toString;
     this->calculateTableHashcode = (void *) &SymTable_calculateTableHashcode;
     this->getTableKey = (void *) &SymTable_getTableKey;
+    this->getPrimaryKeyColumns = (void *) &SymTable_getPrimaryKeyColumns;
     this->destroy = (void *) &SymTable_destroy;
     return this;
 }
