@@ -49,6 +49,7 @@ typedef struct SymDatabasePlatform {
     SymTable * (*getTableFromCache)(struct SymDatabasePlatform *this, char *catalog, char *schema, char *tableName, unsigned int forceReread);
     SymTable * (*readTableFromDatabase)(struct SymDatabasePlatform *this, char *catalog, char *schema, char *tableName);
     void (*resetCachedTableModel)(struct SymDatabasePlatform *this);
+    SymTable * (*makeAllColumnsPrimaryKeys)(struct SymDatabasePlatform *this, SymTable *table);
     void (*destroy)(void *this);
 } SymDatabasePlatform;
 

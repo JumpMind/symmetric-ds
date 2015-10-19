@@ -40,6 +40,20 @@ void SymDatabasePlatform_resetCachedTableModel(SymDatabasePlatform *this) {
 	// TODO: implement along with caching.
 }
 
+SymTable * SymDatabasePlatform_makeAllColumnsPrimaryKeys(SymDatabasePlatform *this, SymTable *table) {
+    // TODO Should clone table.
+    SymTable *result = table;
+    int i;
+    for (i = 0; i < result->columns->size; ++i) {
+        SymColumn *column = result->columns->get(result->columns, i);
+        // TODO check for LOB
+        column->isPrimaryKey = 1;
+    }
+
+    return result;
+}
+
+
 void SymDatabasePlatform_destroy(SymDatabasePlatform *this) {
 }
 
@@ -48,6 +62,7 @@ SymDatabasePlatform * SymDatabasePlatform_new(SymDatabasePlatform *this) {
         this->getTableFromCache = (void *) &SymDatabasePlatform_getTableFromCache;
         this->readTableFromDatabase = (void *) &SymDatabasePlatform_readTableFromDatabase;
         this->resetCachedTableModel = (void *)&SymDatabasePlatform_resetCachedTableModel;
+        this->makeAllColumnsPrimaryKeys = (void *)&SymDatabasePlatform_makeAllColumnsPrimaryKeys;
         this->destroy = (void *) &SymDatabasePlatform_destroy;
     }
     return this;
