@@ -29,9 +29,11 @@
 #include "model/Channel.h"
 #include "model/TriggerHistory.h"
 #include "io/data/DataEventType.h"
+#include "db/TriggerTemplate.h"
 
 typedef struct SymDialect {
     SymDatabasePlatform *platform;
+    SymTriggerTemplate *triggerTemplate;
     int (*initTablesAndDatabaseObjects)(struct SymDialect *this);
     int (*dropTablesAndDatabaseObjects)(struct SymDialect *this);
     void (*disableSyncTriggers)(struct SymDialect *this, SymSqlTransaction *transaction, char *nodeId);
