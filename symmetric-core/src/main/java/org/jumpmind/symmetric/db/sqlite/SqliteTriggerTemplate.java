@@ -81,7 +81,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "      $(columns),   \n" + "      $(oldColumns),   \n"
                                 + "      $(channelExpression), null," + sourceNodeExpression + ",   \n" + "      $(externalSelect),   \n"
                                 + "      strftime('%Y-%m-%d %H:%M:%f','now','localtime')  \n" + "    );   \n"
-                                + "      $(custom_on_insert_text)                                                                            \n"
+                                + "      $(custom_on_update_text)                                                                            \n"
                                 + "end  ");
 
         sqlTemplates
@@ -95,7 +95,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "      $(triggerHistoryId),    \n" + "      $(oldKeys),    \n"
                                 + "       $(oldColumns),    \n" + "      $(channelExpression), null," + sourceNodeExpression + ",    \n"
                                 + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime') \n" + "    );     \n"
-                                + "      $(custom_on_insert_text)                                                                            \n"
+                                + "      $(custom_on_delete_text)                                                                            \n"
                                 + "end");
 
         sqlTemplates.put("initialLoadSqlTemplate",
