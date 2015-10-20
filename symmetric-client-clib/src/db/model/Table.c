@@ -59,8 +59,8 @@ static int SymTable_calculateHashcodeForColumns(int prime, SymList *cols) {
 }
 
 char * SymTable_getCommaDeliminatedColumns(SymList *cols) {
-    SymStringBuilder *columns = SymStringBuilder_new(NULL);
     if (cols != NULL && cols->size > 0) {
+        SymStringBuilder *columns = SymStringBuilder_new(NULL);
         int i;
         for (i = 0; i < cols->size; i++) {
             SymColumn *column = cols->get(cols, i);

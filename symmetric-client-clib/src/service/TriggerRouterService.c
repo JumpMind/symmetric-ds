@@ -186,6 +186,7 @@ SymList * SymTriggerRouterService_getRouters(SymTriggerRouterService *this, unsi
     sb->append(sb, SYM_SQL_SELECT_ROUTERS_COLUMN_LIST)->append(sb, SYM_SQL_SELECT_ROUTERS);
     int error;
     SymList *routers = sqlTemplate->query(sqlTemplate, sb->str, NULL, NULL, &error, (void *) SymTriggerRouterService_routerMapper);
+    sb->destroy(sb);
     // TODO: handle replacement variables
     return routers;
 }
@@ -346,6 +347,8 @@ void SymTriggerRouterService_inactivateTriggerHistory(SymTriggerRouterService *t
 
     int error;
     sqlTemplate->update(sqlTemplate, SYM_SQL_INACTIVATE_TRIGGER_HISTORY, args, NULL, &error);
+
+    args->destroy(args);
 }
 
 unsigned short SymTriggerRouterService_isTriggerNameInUse(SymTriggerRouterService *this, SymList *activeTriggerHistories, char *triggerId, char *triggerName) {
@@ -390,6 +393,7 @@ SymTriggerHistory * SymTriggerRouterService_getNewestTriggerHistoryForTrigger(Sy
     }
 
     args->destroy(args);
+    triggerHistories->destroy(triggerHistories);
 
     return result;
 }
@@ -400,25 +404,43 @@ SymList * SymTriggerRouterService_enhanceTriggerRouters(SymTriggerRouterService 
     int i;
     for (i = 0; i < routers->size; i++) {
         SymRouter *router = routers->get(routers, i);
-        char *routerId = SymStringUtils_toUpperCase(SymStringUtils_trim(router->routerId)); // TODO memory leak of strings.
+        char *trimmed = SymStringUtils_trim(router->routerId);
+        char *routerId = SymStringUtils_toUpperCase(trimmed);
         routersById->put(routersById, routerId, router, sizeof(SymRouter));
+        free(trimmed);
+        free(routerId);
     }
 
     SymMap *triggersById = SymMap_new(NULL, 8);
     SymList *triggers = SymTriggerRouterService_getTriggers(this, 1);
     for (i = 0; i < triggers->size; i++) {
         SymTrigger *trigger = triggers->get(triggers, i);
-        char *triggerId = SymStringUtils_toUpperCase(SymStringUtils_trim(trigger->triggerId));  // TODO memory leak of strings.
+        char *trimmed = SymStringUtils_trim(trigger->triggerId);
+        char *triggerId = SymStringUtils_toUpperCase(trimmed);
         triggersById->put(triggersById, triggerId, trigger, sizeof(SymTrigger));
+        free(trimmed);
+        free(triggerId);
     }
 
     for (i = 0; i < triggerRouters->size; i++) {
         SymTriggerRouter *triggerRouter = triggerRouters->get(triggerRouters, i);
-        char* triggerid = SymStringUtils_toUpperCase(SymStringUtils_trim(triggerRouter->trigger->triggerId));  // TODO memory leak of strings.
-        char* routerId = SymStringUtils_toUpperCase(SymStringUtils_trim(triggerRouter->router->routerId));  // TODO memory leak of strings.
-        triggerRouter->trigger = triggersById->get(triggersById, triggerid );
+        char *triggerIdTrimmed = SymStringUtils_trim(triggerRouter->trigger->triggerId);
+        char *triggerId = SymStringUtils_toUpperCase(triggerIdTrimmed);
+        char *routerIdTrimmed = SymStringUtils_trim(triggerRouter->router->routerId);
+        char *routerId = SymStringUtils_toUpperCase(routerIdTrimmed);
+
+        triggerRouter->trigger = triggersById->get(triggersById, triggerId );
         triggerRouter->router = routersById->get(routersById, routerId );
+
+        free(triggerIdTrimmed);
+        free(triggerId);
+        free(routerIdTrimmed);
+        free(routerId);
     }
+
+    routers->destroy(routers);
+    triggersById->destroy(triggersById);
+    routersById->destroy(routersById);
 
     return triggerRouters;
 }
@@ -427,10 +449,9 @@ SymList * SymTriggerRouterService_getTriggerRouters(SymTriggerRouterService *thi
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
 
     int error;
-    SymList* triggers = sqlTemplate->query(sqlTemplate, SYM_SQL_SELECT_TRIGGER_ROUTERS, NULL, NULL, &error, (void *) SymTriggerRouterService_triggerRouterMapper);
+    SymList* triggerRouters = sqlTemplate->query(sqlTemplate, SYM_SQL_SELECT_TRIGGER_ROUTERS, NULL, NULL, &error, (void *) SymTriggerRouterService_triggerRouterMapper);
 
-    SymList *triggerRouters =
-            SymTriggerRouterService_enhanceTriggerRouters(this, triggers);
+    triggerRouters = SymTriggerRouterService_enhanceTriggerRouters(this, triggerRouters);
 
     return triggerRouters;
 }
@@ -476,6 +497,8 @@ SymList * SymTriggerRouterService_getTriggersToSync(SymTriggerRouterService *thi
             triggers->add(triggers, triggerRouter->trigger);
         }
     }
+
+    triggerRouters->destroy(triggerRouters);
 
     return triggers;
 }
@@ -582,19 +605,21 @@ char * SymTriggerRouterService_getTriggerName(SymTriggerRouterService *this, Sym
                 triggerPrefix1, triggerSuffix1, triggerSuffix2, triggerSuffix3);
 
         if (strlen(triggerName) > maxTriggerNameLength && maxTriggerNameLength > 0) {
+            char *oldTriggerName = triggerName;
             triggerName = SymStringUtils_format("%s%s%s",
                     triggerPrefix1, triggerSuffix1, triggerSuffix2);
+            free(oldTriggerName);
         }
     }
 
     triggerName = SymStringUtils_toUpperCase(triggerName);
 
     if (strlen(triggerName) > maxTriggerNameLength && maxTriggerNameLength > 0) {
-        SymStringBuilder *buff = SymStringBuilder_newWithString(triggerName);
-        triggerName = buff->substring(buff, 0, maxTriggerNameLength - 1);
+        char* oldTriggerName = triggerName;
+        triggerName = SymStringUtils_substring(triggerName, 0, maxTriggerNameLength - 1);
+        free(oldTriggerName);
         SymLog_debug("We just truncated the trigger name for the %s trigger id=%s.  You might want to consider manually providing a name for the trigger that is less than %d characters long",
                 SymDataEvent_getCode(dml), trigger->triggerId, maxTriggerNameLength);
-        buff->destroy(buff);
     }
 
     int duplicateCount = 0;
@@ -602,12 +627,17 @@ char * SymTriggerRouterService_getTriggerName(SymTriggerRouterService *this, Sym
         duplicateCount++;
         char *duplicateSuffix = SymStringUtils_format("%d", duplicateCount);
         if (strlen(triggerName) + strlen(duplicateSuffix) > maxTriggerNameLength) {
-            triggerName = SymStringUtils_substring(triggerName, 0, strlen(triggerName)-strlen(duplicateSuffix));
-            triggerName = SymStringUtils_format("%s%s", triggerName, duplicateSuffix);
+            char *shortenedTriggerName = SymStringUtils_substring(triggerName, 0, strlen(triggerName)-strlen(duplicateSuffix));
+            char *oldTriggerName = triggerName;
+            triggerName = SymStringUtils_format("%s%s", shortenedTriggerName, duplicateSuffix);
+
+            free(oldTriggerName);
+            free(shortenedTriggerName);
         }
         else {
             triggerName = SymStringUtils_format("%s%s", triggerName, duplicateSuffix);
         }
+        free(duplicateSuffix);
     }
 
     return triggerName;
@@ -691,6 +721,8 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
         this->symmetricDialect->createTrigger(this->symmetricDialect, dmlType, trigger, hist, channel, NULL, table);
     }
 
+    newTriggerHist->destroy(newTriggerHist);
+
     return hist;
 }
 
@@ -760,6 +792,12 @@ void SymTriggerRouterService_updateOrCreateDatabaseTriggers(SymTriggerRouterServ
         SymTriggerRouterService_inactivateTriggerHistory(this, latestHistoryBeforeRebuild);
     }
 
+    if (latestHistoryBeforeRebuild != NULL) {
+        latestHistoryBeforeRebuild->destroy(latestHistoryBeforeRebuild);
+    }
+    if (newestHistory != NULL) {
+        newestHistory->destroy(newestHistory);
+    }
 }
 
 SymNodeGroupLink * SymRouterMapper_getNodeGroupLink(SymTriggerRouterService *this, char *sourceNodeGroupId, char *targetNodeGroupId) {
@@ -787,6 +825,9 @@ void SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this, unsigne
                 SymLog_error("No table '%s' found for trigger. ", trigger->sourceTableName);
             }
         }
+
+        triggers->destroy(triggers);
+        activeTriggerHistories->destroy(activeTriggerHistories);
     }
 }
 

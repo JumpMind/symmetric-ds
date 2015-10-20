@@ -130,6 +130,12 @@ char * SymSqliteTriggerTemplate_replaceTemplateVariables(SymSqliteTriggerTemplat
                 externalSelect, custom_on_delete_text);
     }
 
+    free(triggerHistoryId);
+    free(oldKeys);
+    free(oldColumns);
+    free(columns);
+    free(channelExpression);
+
     return formattedDdl;
 }
 

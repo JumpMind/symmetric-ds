@@ -71,9 +71,8 @@ int SymSqliteDialect_createTrigger(SymDialect *super, SymDataEventType dml, SymT
         SymTriggerHistory *hist, SymChannel *channel, char* tablePrefix, SymTable *table) {
     SymLog_info("Creating %s trigger for %s", trigger->triggerId, table->name);
 
-    SymSqliteTriggerTemplate *triggerTemplate = SymSqliteTriggerTemplate_new(NULL);
     char *triggerSql =
-            super->triggerTemplate->createTriggerDDL(triggerTemplate, dml, trigger, hist, channel, tablePrefix, table, NULL, NULL);
+            super->triggerTemplate->createTriggerDDL(super->triggerTemplate, dml, trigger, hist, channel, tablePrefix, table, NULL, NULL);
 
     SymSqlTemplate *sqlTemplate = super->platform->getSqlTemplate(super->platform);super->platform->getSqlTemplate(super->platform);
     int error;
@@ -90,6 +89,7 @@ int SymSqliteDialect_removeTrigger(SymDialect *super, char *sqlBuffer,
     SymSqlTemplate *sqlTemplate = super->platform->getSqlTemplate(super->platform);
     int error;
     sqlTemplate->update(sqlTemplate, sql, NULL, NULL, &error);
+    free(sql);
     return error;
 }
 
