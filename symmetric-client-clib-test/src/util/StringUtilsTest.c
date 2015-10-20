@@ -83,6 +83,14 @@ void SymStringUtilsTest_test_format() {
     CU_ASSERT(strcmp(SymStringUtils_format("%s%s%s%s%s%s%s%s%s%s", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"), "12345678910") == 0);
 }
 
+void SymStringUtilsTest_test_substring() {
+    CU_ASSERT(strcmp(SymStringUtils_substring("Testing", 0, 1), "T") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_substring("Testing", 1, 2), "e") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_substring("", 0, 0), "") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_substring("T", 0, 1), "T") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_substring("Testing", 0, 8), "Testing") == 0);
+}
+
 int SymStringUtilsTest_CUnit() {
     CU_pSuite suite = CU_add_suite("SymStringUtilsTest", NULL, NULL);
     if (suite == NULL) {
@@ -95,6 +103,7 @@ int SymStringUtilsTest_CUnit() {
             CU_add_test(suite, "SymStringUtilsTest_test_isBlank", SymStringUtilsTest_test_isBlank) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_test_isNotBlank", SymStringUtilsTest_test_isNotBlank) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_test_format", SymStringUtilsTest_test_format) == NULL ||
+            CU_add_test(suite, "SymStringUtilsTest_test_substring", SymStringUtilsTest_test_substring) == NULL ||
             1==0) {
         return CUE_NOTEST;
     }
