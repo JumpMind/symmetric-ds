@@ -445,7 +445,7 @@ void SymTriggerRouterService_insert(SymTriggerRouterService *this, SymTriggerHis
     args->add(args, newHistRecord->sourceSchemaName);
     args->add(args, newHistRecord->sourceCatalogName);
     args->add(args, SymStringUtils_format("%ld", newHistRecord->triggerRowHash));
-    args->add(args, "null"); // getTriggerTemplateHash
+    args->add(args, SymStringUtils_format("%ld", newHistRecord->triggerTemplateHash));
     args->add(args, newHistRecord->errorMessage);
 
     int error;
@@ -504,7 +504,6 @@ void SymTriggerRouterService_inactivateTriggers(SymTriggerRouterService *this, S
                 removeTrigger = 0;
                 break;
             }
-
         }
 
         if (removeTrigger) {
@@ -571,7 +570,6 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
     unsigned short triggerExists = 0;
     unsigned short triggerRemoved = 0;
 
-    // TODO create the SymTriggerHistory
     SymTriggerHistory *newTriggerHist = SymTriggerHistory_new(NULL);
 
     newTriggerHist->triggerId = trigger->triggerId;
@@ -581,7 +579,8 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
     newTriggerHist->columnNames = SymTable_getCommaDeliminatedColumns(trigger->orderColumnsForTable(trigger, table));
     newTriggerHist->pkColumnNames = SymTable_getCommaDeliminatedColumns(trigger->getSyncKeysColumnsForTable(trigger, table));
     newTriggerHist->triggerRowHash = trigger->toHashedValue(trigger);
-   // newTriggerHist->triggerTemplateHash = TODO
+    newTriggerHist->triggerTemplateHash = this->symmetricDialect->triggerTemplate->
+            toHashedValue(this->symmetricDialect->triggerTemplate);
     newTriggerHist->tableHash = table->calculateTableHashcode(table);
 
     int maxTriggerNameLength = 50; // TODO
@@ -599,7 +598,6 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
         newTriggerHist->nameForDeleteTrigger = SymStringUtils_toUpperCase(triggerName);
     }
 
-    // TODO figure out old trigger stuff.
     char *oldTriggerName = NULL;
     char *oldSourceSchema = NULL;
     char *oldCatalogName = NULL;
@@ -674,6 +672,9 @@ void SymTriggerRouterService_updateOrCreateDatabaseTriggers(SymTriggerRouterServ
 
     unsigned short forceRebuildOfTriggers = 0;
 
+    long currentTriggerTemplateHash = this->symmetricDialect->triggerTemplate->
+            toHashedValue(this->symmetricDialect->triggerTemplate);
+
     if (latestHistoryBeforeRebuild == NULL) {
         reason = SYM_TRIGGER_REBUILD_REASON_NEW_TRIGGERS;
         forceRebuildOfTriggers = 1;
@@ -683,13 +684,13 @@ void SymTriggerRouterService_updateOrCreateDatabaseTriggers(SymTriggerRouterServ
     } else if (trigger->hasChangedSinceLastTriggerBuild(trigger, latestHistoryBeforeRebuild->createTime)
             || trigger->toHashedValue(trigger) != latestHistoryBeforeRebuild->triggerRowHash) {
 
-        printf("%d\n", trigger->hasChangedSinceLastTriggerBuild(trigger, latestHistoryBeforeRebuild->createTime));
-        printf("%ld %ld\n", trigger->toHashedValue(trigger), latestHistoryBeforeRebuild->triggerRowHash);
-
         reason = SYM_TRIGGER_REBUILD_REASON_TABLE_SYNC_CONFIGURATION_CHANGED;
         forceRebuildOfTriggers = 1;
-       // TODO check condition for TRIGGER_TEMPLATE_CHANGED
-    } else if (force) {
+    } else if (currentTriggerTemplateHash != latestHistoryBeforeRebuild->triggerTemplateHash) {
+        reason = SYM_TRIGGER_REBUILD_REASON_TRIGGER_TEMPLATE_CHANGED;
+        forceRebuildOfTriggers = 1;
+    }
+    else if (force) {
         reason = SYM_TRIGGER_REBUILD_REASON_FORCED;
         forceRebuildOfTriggers = 1;
     }
