@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.wrapper;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -30,15 +29,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 public class WrapperConfig {
 
 	protected String configFile;
 	
     protected Map<String, ArrayList<String>> prop;
-    
-    protected Properties serverProperties;
     
     protected File workingDirectory;
 
@@ -56,29 +52,7 @@ public class WrapperConfig {
                 workingDirectory = new File(configFile.substring(0, index + 1) + "..");
             }
         }
-        loadServerPropertiesFile();
-    }
-    
-    protected void loadServerPropertiesFile() throws IOException {
-        serverProperties = new Properties();
-        File serverPropertiesFile = new File(workingDirectory.getCanonicalPath() + "/conf", "symmetric-server.properties");
-        if (serverPropertiesFile.exists()) {
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(serverPropertiesFile);
-                serverProperties.load(fis);
-            } finally {
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    } catch (Exception ex) {
-                    }
-                }
-            }
-        } else {
-            throw new WrapperException(Constants.RC_MISSING_SERVER_PROPERTIES, 0, "Could not locate the " + serverPropertiesFile.getAbsolutePath() + " file");
-        }
-    }
+    }   
 
     public String getWrapperJarPath()  {
         try {
@@ -203,15 +177,6 @@ public class WrapperConfig {
         cmdList.add(sb.toString());
 
         cmdList.addAll(prop.get("wrapper.java.additional"));
-        
-        if ("true".equalsIgnoreCase(serverProperties.getProperty("jmx.agent.enable", "false"))) {
-            String port = serverProperties.getProperty("jmx.agent.port", "31418");
-            cmdList.add("-Dcom.sun.management.jmxremote");
-            cmdList.add("-Dcom.sun.management.jmxremote.authenticate=false");
-            cmdList.add("-Dcom.sun.management.jmxremote.port=" + port);
-            cmdList.add("-Dcom.sun.management.jmxremote.ssl=false"); 
-            cmdList.add("-Djava.rmi.server.hostname=localhost");            
-        }
         
         ArrayList<String> appParams = prop.get("wrapper.app.parameter");
         appParams.remove("--no-log-console");
