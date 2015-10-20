@@ -349,7 +349,16 @@ void SymTriggerRouterService_inactivateTriggerHistory(SymTriggerRouterService *t
 }
 
 unsigned short SymTriggerRouterService_isTriggerNameInUse(SymTriggerRouterService *this, SymList *activeTriggerHistories, char *triggerId, char *triggerName) {
-    // TODO
+    int i;
+    for (i = 0; i < activeTriggerHistories->size; ++i) {
+        SymTriggerHistory *triggerHistory = activeTriggerHistories->get(activeTriggerHistories, i);
+        if (! SymStringUtils_equals(triggerHistory->triggerId, triggerId)
+                && (SymStringUtils_equals(triggerHistory->nameForDeleteTrigger, triggerName)
+                        || SymStringUtils_equals(triggerHistory->nameForInsertTrigger, triggerName)
+                        || SymStringUtils_equals(triggerHistory->nameForUpdateTrigger, triggerName))) {
+            return 1;
+        }
+    }
     return 0;
 }
 
@@ -588,7 +597,18 @@ char * SymTriggerRouterService_getTriggerName(SymTriggerRouterService *this, Sym
         buff->destroy(buff);
     }
 
-    // TODO check triggerName in use.
+    int duplicateCount = 0;
+    while (SymTriggerRouterService_isTriggerNameInUse(this, activeTriggerHistories, trigger->triggerId, triggerName)) {
+        duplicateCount++;
+        char *duplicateSuffix = SymStringUtils_format("%d", duplicateCount);
+        if (strlen(triggerName) + strlen(duplicateSuffix) > maxTriggerNameLength) {
+            triggerName = SymStringUtils_substring(triggerName, 0, strlen(triggerName)-strlen(duplicateSuffix));
+            triggerName = SymStringUtils_format("%s%s", triggerName, duplicateSuffix);
+        }
+        else {
+            triggerName = SymStringUtils_format("%s%s", triggerName, duplicateSuffix);
+        }
+    }
 
     return triggerName;
 }
