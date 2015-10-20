@@ -514,6 +514,24 @@ void SymTriggerRouterService_inactivateTriggers(SymTriggerRouterService *this, S
 
 }
 
+char * SymTriggerRouterService_replaceCharsToShortenName(SymTriggerRouterService *this, char *triggerName) {
+    int triggerNameSize = strlen(triggerName);
+    SymStringBuilder *buff = SymStringBuilder_newWithSize(triggerNameSize);
+
+    int i;
+    for (i = 0; i < triggerNameSize; ++i) {
+        char c = triggerName[i];
+        if (((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_'))) {
+            if (c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u'
+                    && c != 'A' && c != 'E' && c != 'I' && c != 'O' && c != 'U') {
+                buff->appendf(buff, "%c", c);
+            }
+        }
+    }
+
+    return buff->destroyAndReturn(buff);
+}
+
 char * SymTriggerRouterService_getTriggerName(SymTriggerRouterService *this, SymDataEventType dml, int maxTriggerNameLength, SymTrigger *trigger, SymTable *table, SymList *activeTriggerHistories) {
     char *triggerName = NULL;
 
@@ -543,24 +561,33 @@ char * SymTriggerRouterService_getTriggerName(SymTriggerRouterService *this, Sym
 
         char *triggerPrefix1 = SymStringUtils_format("%s%s", tablePrefix, "_");
         char *triggerSuffix1 = SymStringUtils_format("%s%s%s", "on_", dmlCode, "_for_");
-        char *triggerSuffix2 = trigger->triggerId; // TODO replaceCharsToShortenName
+        char *triggerSuffix2 = SymTriggerRouterService_replaceCharsToShortenName(this, trigger->triggerId);
 // TODO
 //        if (trigger.isSourceTableNameWildCarded()) {
 //            triggerSuffix2 = replaceCharsToShortenName(table.getName());
 //        }
 
-        char *triggerSuffix3 = SymStringUtils_format("%s%s", "_", this->parameterService->getNodeGroupId(this->parameterService)); // TODO replaceCharsToShortenName
+        char *triggerSuffix3 = SymTriggerRouterService_replaceCharsToShortenName(this, SymStringUtils_format("%s%s", "_", this->parameterService->getNodeGroupId(this->parameterService)));
 
         triggerName = SymStringUtils_format("%s%s%s%s",
                 triggerPrefix1, triggerSuffix1, triggerSuffix2, triggerSuffix3);
 
-        // TODO check triggerName max length.
-
+        if (strlen(triggerName) > maxTriggerNameLength && maxTriggerNameLength > 0) {
+            triggerName = SymStringUtils_format("%s%s%s",
+                    triggerPrefix1, triggerSuffix1, triggerSuffix2);
+        }
     }
 
     triggerName = SymStringUtils_toUpperCase(triggerName);
 
-    // TODO check triggerName max length.
+    if (strlen(triggerName) > maxTriggerNameLength && maxTriggerNameLength > 0) {
+        SymStringBuilder *buff = SymStringBuilder_newWithString(triggerName);
+        triggerName = buff->substring(buff, 0, maxTriggerNameLength - 1);
+        SymLog_debug("We just truncated the trigger name for the %s trigger id=%s.  You might want to consider manually providing a name for the trigger that is less than %d characters long",
+                SymDataEvent_getCode(dml), trigger->triggerId, maxTriggerNameLength);
+        buff->destroy(buff);
+    }
+
     // TODO check triggerName in use.
 
     return triggerName;
@@ -713,11 +740,6 @@ void SymTriggerRouterService_updateOrCreateDatabaseTriggers(SymTriggerRouterServ
         SymTriggerRouterService_inactivateTriggerHistory(this, latestHistoryBeforeRebuild);
     }
 
-}
-
-char * SymTriggerRouterService_replaceCharsToShortenName(SymTriggerRouterService *this, char *triggerName) {
-    // TODO
-    return 0;
 }
 
 SymNodeGroupLink * SymRouterMapper_getNodeGroupLink(SymTriggerRouterService *this, char *sourceNodeGroupId, char *targetNodeGroupId) {
