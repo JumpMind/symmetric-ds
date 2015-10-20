@@ -594,6 +594,8 @@ char * SymTriggerRouterService_getTriggerName(SymTriggerRouterService *this, Sym
         char *triggerPrefix1 = SymStringUtils_format("%s%s", tablePrefix, "_");
         char *triggerSuffix1 = SymStringUtils_format("%s%s%s", "on_", dmlCode, "_for_");
         char *triggerSuffix2 = SymTriggerRouterService_replaceCharsToShortenName(this, trigger->triggerId);
+
+
 // TODO
 //        if (trigger.isSourceTableNameWildCarded()) {
 //            triggerSuffix2 = replaceCharsToShortenName(table.getName());
@@ -610,12 +612,20 @@ char * SymTriggerRouterService_getTriggerName(SymTriggerRouterService *this, Sym
                     triggerPrefix1, triggerSuffix1, triggerSuffix2);
             free(oldTriggerName);
         }
+
+        free(dmlCode);
+        free(triggerPrefix1);
+        free(triggerSuffix1);
+        free(triggerSuffix2);
+        free(triggerSuffix3);
     }
 
+    char *oldTriggerName = triggerName;
     triggerName = SymStringUtils_toUpperCase(triggerName);
+    free(oldTriggerName);
 
     if (strlen(triggerName) > maxTriggerNameLength && maxTriggerNameLength > 0) {
-        char* oldTriggerName = triggerName;
+        char *oldTriggerName = triggerName;
         triggerName = SymStringUtils_substring(triggerName, 0, maxTriggerNameLength - 1);
         free(oldTriggerName);
         SymLog_debug("We just truncated the trigger name for the %s trigger id=%s.  You might want to consider manually providing a name for the trigger that is less than %d characters long",
