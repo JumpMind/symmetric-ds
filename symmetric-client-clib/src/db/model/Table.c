@@ -84,8 +84,12 @@ int SymTable_calculateTableHashcode(SymTable *this) {
     return result;
 }
 
+char * SymTable_getFullyQualifiedTableNameThis(SymTable *this) {
+    return SymTable_getFullyQualifiedTableName(this->catalog, this->schema, this->name, "", ".", ".");
+}
+
 char * SymTable_getTableKey(SymTable *this) {
-    char *name = SymTable_getFullyQualifiedTableName(this->catalog, this->schema, this->name, "", ".", ".");
+    char *name = this->getFullyQualifiedTableName(this);
     SymStringBuilder *sb = SymStringBuilder_newWithString(name);
     sb->append(sb, "-")->appendf(sb, "%d", SymTable_calculateTableHashcode(this));
     free(name);
@@ -170,7 +174,6 @@ SymList * SymTable_getPrimaryKeyColumns(SymTable *this) {
             primaryKeyColumns->add(primaryKeyColumns, column);
         }
     }
-
     return primaryKeyColumns;
 }
 
@@ -192,6 +195,7 @@ SymTable * SymTable_new(SymTable *this) {
     this->toString = (void *) &SymTable_toString;
     this->calculateTableHashcode = (void *) &SymTable_calculateTableHashcode;
     this->getTableKey = (void *) &SymTable_getTableKey;
+    this->getFullyQualifiedTableName = (void *) &SymTable_getFullyQualifiedTableNameThis;
     this->getPrimaryKeyColumns = (void *) &SymTable_getPrimaryKeyColumns;
     this->destroy = (void *) &SymTable_destroy;
     return this;

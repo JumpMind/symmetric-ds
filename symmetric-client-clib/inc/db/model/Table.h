@@ -41,6 +41,7 @@ typedef struct SymTable {
     char * (*toString)(struct SymTable *this);
     int (*calculateTableHashcode)(struct SymTable *this);
     char * (*getTableKey)(struct SymTable *this);
+    char * (*getFullyQualifiedTableName)(struct SymTable *this);
     SymList * (*getPrimaryKeyColumns)(struct SymTable *this);
     void (*destroy)(struct SymTable *this);
 } SymTable;
