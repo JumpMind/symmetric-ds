@@ -51,12 +51,49 @@ SymList * SymTrigger_orderColumnsForTable(SymTrigger *this, SymTable *table) {
     return orderedColumns;
 }
 
-SymList * SymTrigger_getSyncKeysColumnsForTable(SymTrigger *this, SymTable *table) {
-    SymList *columnNames = SymList_new(NULL);
+SymStringArray * SymTrigger_getSyncKeyNamesAsList(SymTrigger *this) {
     if (SymStringUtils_isNotBlank(this->syncKeyNames)) {
-        // TODO implement.
+        SymStringArray *columnNames = SymStringArray_split(this->syncKeyNames, ",");
+        int i;
+        for (i = 0; i < columnNames->size; ++i) {
+            char *toLowerCase = SymStringUtils_toLowerCase(columnNames->get(columnNames, i));
+            char *trimmed = SymStringUtils_trim(toLowerCase);
+            columnNames->add(columnNames, trimmed);
+            free(toLowerCase);
+            free(trimmed);
+        }
+        return columnNames;
     }
-    return columnNames;
+    else {
+        return SymStringArray_new(NULL);
+    }
+}
+
+SymList * SymTrigger_getSyncKeysColumnsForTable(SymTrigger *this, SymTable *table) {
+    SymStringArray *syncKeys = SymTrigger_getSyncKeyNamesAsList(this);
+    SymList *columns = NULL;
+    if (syncKeys->size > 0) {
+        int i;
+        for (i = 0; i < syncKeys->size; ++i) {
+            char *syncKey = syncKeys->get(syncKeys, i);
+            SymColumn *col = table->findColumn(table, syncKey, 0);
+            if (col != NULL) {
+                columns->add(columns, col);
+            } else {
+                SymLog_error("The sync key column '%s' was specified for the '%s' trigger but was not found in the table", syncKey, this->triggerId);
+            }
+        }
+
+        if (columns->size == 0) {
+            columns = table->getPrimaryKeyColumns(table);
+        }
+    }
+    else {
+        columns = table->getPrimaryKeyColumns(table);
+    }
+
+    syncKeys->destroy(syncKeys);
+    return columns;
 }
 
 long SymTrigger_toHashedValue(SymTrigger *this) {

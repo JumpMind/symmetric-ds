@@ -25,6 +25,8 @@
 #include "util/Date.h"
 #include "db/model/Table.h"
 #include "util/List.h"
+#include "util/StringArray.h"
+#include "common/Log.h"
 
 
 typedef struct SymTrigger {
