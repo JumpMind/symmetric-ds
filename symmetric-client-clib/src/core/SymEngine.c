@@ -124,6 +124,7 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->stop = (void *) &SymEngine_stop;
     this->uninstall = (void *) &SymEngine_uninstall;
     this->syncTriggers = (void *) &SymEngine_syncTriggers;
+    this->purge = (void *) &SymEngine_purge;
     this->destroy = (void *) &SymEngine_destroy;
 
     this->properties = properties;
