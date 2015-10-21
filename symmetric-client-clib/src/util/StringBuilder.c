@@ -33,10 +33,10 @@ SymStringBuilder * SymStringBuilder_appendn(SymStringBuilder *this, const char *
 }
 
 SymStringBuilder * SymStringBuilder_append(SymStringBuilder *this, const char *src) {
-    if (src == NULL) {
-        src = "(null)";
+    if (src != NULL) {
+        SymStringBuilder_appendn(this, src, strlen(src));
     }
-    return SymStringBuilder_appendn(this, src, strlen(src));
+    return this;
 }
 
 SymStringBuilder * SymStringBuilder_appendfv(SymStringBuilder *this, const char *fmt, va_list arglist) {

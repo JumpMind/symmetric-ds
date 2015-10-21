@@ -84,6 +84,7 @@ SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *t
     this->outgoingBatchService = outgoingBatchService;
     this->dataService = dataService;
     this->parameterService = parameterService;
+    this->triggerRouterService = triggerRouterService;
     this->platform = platform;
     this->extract = (void *) &SymDataExtractorService_extract;
     this->destroy = (void *) &SymDataExtractorService_destroy;

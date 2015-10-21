@@ -58,7 +58,7 @@ typedef struct SymExtractDataReader {
     SymTriggerHistory *lastTriggerHistory;
     char *lastRouterId;
     SymData *nextData;
-    unsigned short *(*batchProcessed)(SymOutgoingBatch *batch, void *userData);
+    unsigned short (*batchProcessed)(SymOutgoingBatch *batch, void *userData);
     void *userData;
     unsigned short keepProcessing;
 
@@ -69,6 +69,6 @@ typedef struct SymExtractDataReader {
 
 SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymList *outgoingBatches, char *sourceNodeId, char *targetNodeId,
         SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymDatabasePlatform *platform,
-        void *batchProcessed(SymOutgoingBatch *batch, void *userData), void *userData);
+        unsigned short *batchProcessed(SymOutgoingBatch *batch, void *userData), void *userData);
 
 #endif
