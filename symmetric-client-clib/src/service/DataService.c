@@ -54,7 +54,7 @@ SymData * SymDataService_dataMapper(SymRow *row, SymDataService *this) {
 }
 
 SymList * SymDataService_selectDataFor(SymDataService *this, SymBatch *batch) {
-    SymStringBuilder *sb = SymStringBuilder_new(SYM_SQL_SELECT_EVENT_DATA_TO_EXTRACT);
+    SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_EVENT_DATA_TO_EXTRACT);
     sb->append(sb, " order by d.data_id asc");
 
     SymStringArray *args = SymStringArray_new(NULL);
