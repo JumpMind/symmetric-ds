@@ -100,6 +100,11 @@ void SymEngine_syncTriggers(SymEngine *this) {
     this->triggerRouterService->syncTriggers(this->triggerRouterService, 0);
 }
 
+void SymEngine_purge(SymEngine *this) {
+    this->purgeService->purgeOutgoing(this->purgeService);
+    this->purgeService->purgeIncoming(this->purgeService);
+}
+
 unsigned short SymEngine_uninstall(SymEngine *this) {
 	SymLog_warn("Un-installing");
 	return 0;
@@ -151,6 +156,7 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
     this->pushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
             this->configurationService, this->acknowledgeService);
+    this->purgeService = SymPurgeService_new(NULL, this->parameterService, this->dialect);
 
     return this;
 }
