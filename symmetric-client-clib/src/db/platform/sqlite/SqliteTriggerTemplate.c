@@ -130,6 +130,12 @@ char * SymSqliteTriggerTemplate_replaceTemplateVariables(SymSqliteTriggerTemplat
                 externalSelect, custom_on_delete_text);
     }
 
+    free(triggerHistoryId);
+    free(oldKeys);
+    free(oldColumns);
+    free(columns);
+    free(channelExpression);
+
     return formattedDdl;
 }
 
@@ -139,11 +145,11 @@ char * SymSqliteTriggerTemplate_createTriggerDDL(SymSqliteTriggerTemplate *this,
 
     char *ddl;
     if (dml == SYM_DATA_EVENT_INSERT) {
-        ddl = SYM_SQL_INSERT_TRIGGER_TEMPLATE;
+        ddl = SYM_SQL_SQLITE_INSERT_TRIGGER_TEMPLATE;
     } else if (dml == SYM_DATA_EVENT_UPDATE) {
-        ddl = SYM_SQL_UPDATE_TRIGGER_TEMPLATE;
+        ddl = SYM_SQL_SQLITE_UPDATE_TRIGGER_TEMPLATE;
     } else if (dml == SYM_DATA_EVENT_DELETE) {
-        ddl = SYM_SQL_DELETE_TRIGGER_TEMPLATE;
+        ddl = SYM_SQL_SQLITE_DELETE_TRIGGER_TEMPLATE;
     }
 
     char *formattedDdl = SymSqliteTriggerTemplate_replaceTemplateVariables(this, dml,
@@ -151,6 +157,13 @@ char * SymSqliteTriggerTemplate_createTriggerDDL(SymSqliteTriggerTemplate *this,
             defaultSchema, ddl);
 
     return formattedDdl;
+}
+
+long SymSqliteTriggerTemplate_toHashedValue(SymSqliteTriggerTemplate *this) {
+    long hashCode = SymStringBuilder_hashCode(SYM_SQL_SQLITE_INSERT_TRIGGER_TEMPLATE);
+    hashCode += SymStringBuilder_hashCode(SYM_SQL_SQLITE_UPDATE_TRIGGER_TEMPLATE);
+    hashCode += SymStringBuilder_hashCode(SYM_SQL_SQLITE_DELETE_TRIGGER_TEMPLATE);
+    return hashCode;
 }
 
 void SymSqliteTriggerTemplate_destroy(SymSqliteTriggerTemplate *this) {
@@ -162,7 +175,10 @@ SymSqliteTriggerTemplate * SymSqliteTriggerTemplate_new(SymSqliteTriggerTemplate
     if (this == NULL) {
         this = (SymSqliteTriggerTemplate *) calloc(1, sizeof(SymSqliteTriggerTemplate));
     }
-    this->createTriggerDDL = (void *) &SymSqliteTriggerTemplate_createTriggerDDL;
-    this->destroy = (void *) &SymSqliteTriggerTemplate_destroy;
+    SymTriggerTemplate_new(&this->super);
+    SymTriggerTemplate *super = &this->super;
+    super->createTriggerDDL = (void *) &SymSqliteTriggerTemplate_createTriggerDDL;
+    super->toHashedValue = (void *) &SymSqliteTriggerTemplate_toHashedValue;
+    super->destroy = (void *) &SymSqliteTriggerTemplate_destroy;
     return this;
 }

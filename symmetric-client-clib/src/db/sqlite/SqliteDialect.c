@@ -71,15 +71,13 @@ int SymSqliteDialect_createTrigger(SymDialect *super, SymDataEventType dml, SymT
         SymTriggerHistory *hist, SymChannel *channel, char* tablePrefix, SymTable *table) {
     SymLog_info("Creating %s trigger for %s", trigger->triggerId, table->name);
 
-    SymSqliteTriggerTemplate *triggerTemplate = SymSqliteTriggerTemplate_new(NULL);
     char *triggerSql =
-            triggerTemplate->createTriggerDDL(triggerTemplate, dml, trigger, hist, channel, tablePrefix, table, NULL, NULL);
+            super->triggerTemplate->createTriggerDDL(super->triggerTemplate, dml, trigger, hist, channel, tablePrefix, table, NULL, NULL);
 
     SymSqlTemplate *sqlTemplate = super->platform->getSqlTemplate(super->platform);super->platform->getSqlTemplate(super->platform);
     int error;
     sqlTemplate->update(sqlTemplate, triggerSql, NULL, NULL, &error);
 
-    triggerTemplate->destroy(triggerTemplate);
     return error;
 }
 
@@ -91,6 +89,7 @@ int SymSqliteDialect_removeTrigger(SymDialect *super, char *sqlBuffer,
     SymSqlTemplate *sqlTemplate = super->platform->getSqlTemplate(super->platform);
     int error;
     sqlTemplate->update(sqlTemplate, sql, NULL, NULL, &error);
+    free(sql);
     return error;
 }
 
@@ -125,6 +124,7 @@ SymSqliteDialect * SymSqliteDialect_new(SymSqliteDialect *this, SymDatabasePlatf
     }
     SymDialect_new(&this->super, platform);
     SymDialect *super = &this->super;
+    super->triggerTemplate = SymSqliteTriggerTemplate_new(NULL);
     super->initTablesAndDatabaseObjects = (void *) &SymSqliteDialect_initTablesAndDatabaseObjects;
     super->dropTablesAndDatabaseObjects = (void *) &SymSqliteDialect_dropTablesAndDatabaseObjects;
     super->enableSyncTriggers = (void *) &SymSqliteDialect_enableSyncTriggers;

@@ -17,6 +17,7 @@ dependencies {
 allprojects {
 
     apply plugin: 'eclipse-wtp'
+    apply plugin: 'maven-publish'
 
     group = 'org.jumpmind.symmetric'
     

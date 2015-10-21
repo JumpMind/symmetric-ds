@@ -79,7 +79,7 @@ char * SymStringBuilder_substring(SymStringBuilder *this, int startIndex, int en
     int size = endIndex - startIndex + 1;
     char *str = (char *) malloc(size * sizeof(char));
     str[size] = '\0';
-    return memcpy(str, str + startIndex, endIndex - startIndex);
+    return memcpy(str, this->str + startIndex, endIndex - startIndex);
 }
 
 void SymStringBuilder_reset(SymStringBuilder *this) {
