@@ -51,7 +51,7 @@ SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *t
 values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp, ?)"
 
 #define SYM_SQL_UPDATE_OUTGOING_BATCH \
-"update $(outgoing_batch) set status=?, load_id=?, extract_job_flag=?, load_flag=?, error_flag=?, \
+"update sym_outgoing_batch set status=?, load_id=?, extract_job_flag=?, load_flag=?, error_flag=?, \
 byte_count=?, extract_count=?, sent_count=?, load_count=?, data_event_count=?, \
 reload_event_count=?, insert_event_count=?, update_event_count=?, delete_event_count=?, other_event_count=?, \
 ignore_count=?, router_millis=?, network_millis=?, filter_millis=?, \
