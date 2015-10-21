@@ -39,7 +39,7 @@ static void SymProtocolDataWriter_printlnl(SymStringBuilder *sb, char *token, lo
 }
 
 static void SymProtocolDataWriter_printList(SymStringBuilder *buffer, char *token, SymList *list) {
-    buffer->append(buffer, token);
+    buffer->append(buffer, token)->append(buffer, ",");
     SymIterator *iter = list->iterator(list);
     while (iter->hasNext(iter)) {
         SymColumn *column = (SymColumn *) iter->next(iter);
