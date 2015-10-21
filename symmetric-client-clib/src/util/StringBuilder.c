@@ -24,7 +24,7 @@ SymStringBuilder * SymStringBuilder_appendn(SymStringBuilder *this, const char *
     int sdiff = length - (this->size - this->pos) + 1;
     if (sdiff > 0) {
         this->size = this->size + sdiff;
-        this->str = (char *) realloc(this->str, this->size);
+        this->str = (char *) realloc(this->str, this->size * sizeof(char));
     }
     memcpy(this->str + this->pos, src, length);
     this->pos += length;
@@ -83,10 +83,8 @@ char * SymStringBuilder_substring(SymStringBuilder *this, int startIndex, int en
 }
 
 void SymStringBuilder_reset(SymStringBuilder *this) {
-    free(this->str);
-    this->size = 255;
-    this->str = (char *) calloc(255, sizeof(char));
     this->pos = 0;
+    this->str[this->pos] = '\0';
 }
 
 void SymStringBuilder_destroy(SymStringBuilder *this) {
@@ -146,6 +144,7 @@ SymStringBuilder * SymStringBuilder_newWithSize(int size) {
     this->appendInt = (void *) &SymStringBuilder_appendInt;
     this->toString = (void *) &SymStringBuilder_toString;
     this->substring = (void *) &SymStringBuilder_substring;
+    this->reset = (void *) &SymStringBuilder_reset;
     this->destroy = (void *) &SymStringBuilder_destroy;
     this->destroyAndReturn = (void *) &SymStringBuilder_destroy_and_return;
     return this;

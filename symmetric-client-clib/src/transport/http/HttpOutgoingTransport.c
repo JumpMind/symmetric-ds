@@ -47,7 +47,7 @@ static size_t SymHttpOutgoingTransport_readCallback(char *data, size_t size, siz
 }
 
 long SymHttpOutgoingTransport_process(SymHttpOutgoingTransport *this, SymDataProcessor *processor) {
-    long httpCode = 0;
+    long httpCode = -1;
     CURLcode rc = CURLE_FAILED_INIT;
     CURL *curl = curl_easy_init();
     if (curl) {

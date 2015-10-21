@@ -66,7 +66,6 @@ SymRemoteNodeStatuses * SymPullService_pullData(SymPullService *this) {
         iter->destroy(iter);
         nodes->destroy(nodes);
     }
-    identity->destroy(identity);
     return statuses;
 }
 

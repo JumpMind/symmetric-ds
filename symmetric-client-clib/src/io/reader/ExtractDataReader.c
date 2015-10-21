@@ -21,16 +21,36 @@
 #include "io/reader/ExtractDataReader.h"
 
 void SymExtractDataReader_open(SymExtractDataReader *this) {
-    this->datas = this->dataService->selectDataFor(this->dataService, this->batch);
-    this->iter = this->datas->iterator(this->datas);
+    this->outgoingBatchesIter = this->outgoingBatches->iterator(this->outgoingBatches);
 }
 
 SymBatch * SymExtractDataReader_nextBatch(SymExtractDataReader *this) {
+    if (this->keepProcessing && this->outgoingBatchesIter->hasNext(this->outgoingBatchesIter)) {
+        if (this->batch) {
+            this->batch->destroy(this->batch);
+            this->dataIter->destroy(this->dataIter);
+            SymList_destroyAll(this->dataList, (void *) SymData_destroy);
+        }
+        this->outgoingBatch = (SymOutgoingBatch *) this->outgoingBatchesIter->next(this->outgoingBatchesIter);
+        this->batch = SymBatch_newWithSettings(NULL, this->outgoingBatch->batchId, this->outgoingBatch->channelId, this->sourceNodeId, this->targetNodeId);
+        this->dataList = this->dataService->selectDataFor(this->dataService, this->batch);
+        this->dataIter = this->dataList->iterator(this->dataList);
+    } else {
+        this->outgoingBatch = NULL;
+        if (this->batch) {
+            this->batch->destroy(this->batch);
+            this->dataIter->destroy(this->dataIter);
+            SymList_destroyAll(this->dataList, (void *) SymData_destroy);
+            this->batch = this->dataIter = this->dataList = NULL;
+        }
+    }
     return this->batch;
 }
 
 SymTable * SymExtractDataReader_nextTable(SymExtractDataReader *this) {
-    return this->targetTable;
+    SymTable *table = this->targetTable;
+    this->targetTable = NULL;
+    return table;
 }
 
 static SymTable * lookupAndOrderColumnsAccordingToTriggerHistory(SymExtractDataReader *this, char *routerId, SymTriggerHistory *triggerHistory,
@@ -92,10 +112,14 @@ static SymTable * lookupAndOrderColumnsAccordingToTriggerHistory(SymExtractDataR
     return table;
 }
 
-SymCsvData * SymExtractDataReader_nextData(SymExtractDataReader *this) {
-    SymData *data = NULL;
-    if (this->iter->hasNext(this->iter)) {
-        data = (SymData *) this->iter->next(this->iter);
+SymData * SymExtractDataReader_nextData(SymExtractDataReader *this) {
+    SymData *data = this->nextData;
+    if (data) {
+        this->nextData = NULL;
+    } else if (this->dataIter->hasNext(this->dataIter)) {
+        data = (SymData *) this->dataIter->next(this->dataIter);
+    }
+    if (data) {
         SymTriggerHistory *triggerHistory = data->triggerHistory;
 
         if (strcmp(data->eventType, SYM_DATA_EVENT_RELOAD) == 0) {
@@ -105,8 +129,11 @@ SymCsvData * SymExtractDataReader_nextData(SymExtractDataReader *this) {
             if (trigger) {
                 if (this->lastTriggerHistory == NULL || this->lastTriggerHistory->triggerHistoryId != triggerHistory->triggerHistoryId ||
                         this->lastRouterId == NULL || strcmp(this->lastRouterId, data->routerId) != 0) {
+                    // TODO: what is sourceTable for?
                     this->sourceTable = lookupAndOrderColumnsAccordingToTriggerHistory(this, data->routerId, triggerHistory, 0, 1);
                     this->targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(this, data->routerId, triggerHistory, 1, 0);
+                    this->nextData = data;
+                    data = NULL;
                 }
                 this->outgoingBatch->dataEventCount++;
             } else {
@@ -116,33 +143,43 @@ SymCsvData * SymExtractDataReader_nextData(SymExtractDataReader *this) {
             this->lastRouterId = data->routerId;
             this->lastTriggerHistory = triggerHistory;
         }
+    } else {
+        this->keepProcessing = this->batchProcessed(this->outgoingBatch, this->userData);
     }
     return data;
 }
 
 void SymExtractDataReader_close(SymExtractDataReader *this) {
-    this->iter->destroy(this->iter);
-    SymList_destroyAll(this->datas, (void *) SymData_destroy);
+    this->outgoingBatchesIter->destroy(this->outgoingBatchesIter);
+    if (this->batch) {
+        this->batch->destroy(this->batch);
+        this->dataIter->destroy(this->dataIter);
+        SymList_destroyAll(this->dataList, (void *) SymData_destroy);
+        this->batch = this->dataIter = this->dataList = NULL;
+    }
 }
 
 void SymExtractDataReader_destroy(SymExtractDataReader *this) {
-    this->batch->destroy(this->batch);
     free(this);
 }
 
-SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymOutgoingBatch *outgoingBatch, char *sourceNodeId, char *targetNodeId,
-        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymDatabasePlatform *platform) {
+SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymList *outgoingBatches, char *sourceNodeId, char *targetNodeId,
+        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymDatabasePlatform *platform,
+        void *batchProcessed(SymOutgoingBatch *batch, void *userData), void *userData) {
     if (this == NULL) {
         this = (SymExtractDataReader *) calloc(1, sizeof(SymExtractDataReader));
     }
     this->dataService = dataService;
     this->triggerRouterService = triggerRouterService;
     this->platform = platform;
-    this->outgoingBatch = outgoingBatch;
-    this->batch = SymBatch_newWithSettings(NULL, outgoingBatch->batchId, outgoingBatch->channelId, sourceNodeId, targetNodeId);
+    this->outgoingBatches = outgoingBatches;
+    this->sourceNodeId = sourceNodeId;
+    this->targetNodeId = targetNodeId;
+    this->batchProcessed = batchProcessed;
+    this->userData = userData;
+    this->keepProcessing = 1;
 
     SymDataReader *super = &this->super;
-    super->batchesProcessed = SymList_new(NULL);
     super->open = (void *) &SymExtractDataReader_open;
     super->close = (void *) &SymExtractDataReader_close;
     super->nextBatch = (void *) &SymExtractDataReader_nextBatch;

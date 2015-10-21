@@ -31,6 +31,8 @@
 #include "db/model/Table.h"
 #include "model/Data.h"
 #include "util/StringBuilder.h"
+#include "util/Map.h"
+#include "util/StringUtils.h"
 #include "common/Log.h"
 
 typedef struct SymProtocolDataWriter {
@@ -38,8 +40,11 @@ typedef struct SymProtocolDataWriter {
     char *sourceNodeId;
     SymDataReader *reader;
 
-    SymStringBuilder *buffer;
+    SymStringBuilder *sb;
     SymBatch *batch;
+    SymTable *table;
+    SymMap *processedTables;
+    unsigned short isFirstBatch;
 } SymProtocolDataWriter;
 
 SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, char *sourceNodeId, SymDataReader *reader);

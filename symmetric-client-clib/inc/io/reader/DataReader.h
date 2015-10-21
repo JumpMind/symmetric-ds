@@ -26,13 +26,14 @@
 #include "io/data/Batch.h"
 #include "db/model/Table.h"
 #include "io/data/CsvData.h"
+#include "model/Data.h"
 
 typedef struct SymDataReader {
     SymList *batchesProcessed;
     void (*open)(struct SymDataReader *this);
     SymBatch * (*nextBatch)(struct SymDataReader *this);
     SymTable * (*nextTable)(struct SymDataReader *this);
-    SymCsvData * (*nextData)(struct SymDataReader *this);
+    SymData * (*nextData)(struct SymDataReader *this);
     void (*close)(struct SymDataReader *this);
     void (*destroy)(struct SymDataReader *this);
 } SymDataReader;

@@ -39,6 +39,17 @@
 #include "common/Log.h"
 #include "common/ParameterConstants.h"
 
+typedef struct SymDataExtractorInfo {
+    SymOutgoingBatchService *outgoingBatchService;
+    SymOutgoingBatches *batches;
+    SymNode *sourceNode;
+    SymNode *targetNode;
+    long bytesSentCount;
+    int batchesSentCount;
+    long maxBytesToSync;
+    SymList *processedBatches;
+} SymDataExtractorInfo;
+
 typedef struct SymDataExtractorService {
     SymNodeService *nodeService;
     SymOutgoingBatchService *outgoingBatchService;
