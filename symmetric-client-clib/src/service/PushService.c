@@ -26,7 +26,7 @@ static SymList * readAcks(SymList *batches, SymOutgoingTransport *transport, Sym
     while (iter->hasNext(iter)) {
         SymOutgoingBatch *outgoingBatch = (SymOutgoingBatch *) iter->next(iter);
         if (SymStringUtils_equals(outgoingBatch->status, SYM_OUTGOING_BATCH_LOADING)) {
-            batchIds->add(batchIds, SymStringUtils_format("ld", outgoingBatch->batchId));
+            batchIds->add(batchIds, SymStringUtils_format("%ld", outgoingBatch->batchId));
         }
     }
     iter->destroy(iter);
@@ -37,13 +37,13 @@ static SymList * readAcks(SymList *batches, SymOutgoingTransport *transport, Sym
     iter = batchAcks->iterator(batchAcks);
     while (iter->hasNext(iter)) {
         SymBatchAck *batchAck = (SymBatchAck *) iter->next(iter);
-        char *batchId = SymStringUtils_format("ld", batchAck->batchId);
+        char *batchId = SymStringUtils_format("%ld", batchAck->batchId);
         free(batchIds->removeObject(batchIds, batchId, (void *) strcmp));
         free(batchId);
         if (!batchAck->isOk) {
             batchIdInError = batchAck->batchId;
         }
-        SymLog_debug("Saving ack: %s, %s", batchAck->batchId, (batchAck->isOk ? SYM_OUTGOING_BATCH_OK : SYM_OUTGOING_BATCH_ERROR));
+        SymLog_debug("Saving ack: %ld, %s", batchAck->batchId, (batchAck->isOk ? SYM_OUTGOING_BATCH_OK : SYM_OUTGOING_BATCH_ERROR));
         acknowledgeService->ack(acknowledgeService, batchAck);
     }
     iter->destroy(iter);

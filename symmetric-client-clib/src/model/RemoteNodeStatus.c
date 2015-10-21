@@ -82,5 +82,6 @@ SymRemoteNodeStatus * SymRemoteNodeStatus_new(SymRemoteNodeStatus *this, char *n
     this->channels = channels;
     this->destroy = (void *) &SymRemoteNodeStatus_destroy;
     this->updateIncomingStatus = (void *) &SymRemoteNodeStatus_updateIncomingStatus;
+    this->updateOutgoingStatus = (void *) &SymRemoteNodeStatus_updateOutgoingStatus;
     return this;
 }

@@ -61,7 +61,7 @@ SymBatchAckResult * SymAcknowledgeService_ack(SymAcknowledgeService *this, SymBa
         }
 
         if (strcmp(outgoingBatch->status, SYM_OUTGOING_BATCH_ERROR) == 0) {
-            SymLog_error("The outgoing batch %s:%ld failed %s", outgoingBatch->nodeId, outgoingBatch->batchId, batchAck->sqlMessage);
+            SymLog_error("The outgoing batch %s:%ld failed, %s", outgoingBatch->nodeId, outgoingBatch->batchId, batchAck->sqlMessage);
         }
 
         this->outgoingBatchService->updateOutgoingBatch(this->outgoingBatchService, outgoingBatch);
