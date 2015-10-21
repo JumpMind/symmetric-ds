@@ -318,7 +318,9 @@ SymTrigger * SymTriggerRouterService_getTriggerById(SymTriggerRouterService *thi
         }
         this->triggersCache = SymMap_new(NULL, 100);
         this->triggersCacheTime = time(NULL);
-        SymList *triggers = buildTriggersForSymmetricTables(this, NULL);
+        SymList *triggers = this->getTriggers(this, 1);
+        SymList *symTriggers = buildTriggersForSymmetricTables(this, NULL);
+        triggers->addAll(triggers, symTriggers);
         SymIterator *iter = triggers->iterator(triggers);
         while (iter->hasNext(iter)) {
             SymTrigger *trigger = iter->next(iter);
@@ -326,6 +328,7 @@ SymTrigger * SymTriggerRouterService_getTriggerById(SymTriggerRouterService *thi
         }
         iter->destroy(iter);
         triggers->destroy(triggers);
+        symTriggers->destroy(symTriggers);
     }
     return (SymTrigger *) this->triggersCache->get(this->triggersCache, triggerId);
 }
@@ -843,8 +846,12 @@ void SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this, unsigne
 
 void SymTriggerRouterService_destroy(SymTriggerRouterService * this) {
     this->historyMap->destroy(this->historyMap);
-    this->routersCache->destroy(this->routersCache);
-    this->triggersCache->destroy(this->triggersCache);
+    if (this->routersCache)  {
+        this->routersCache->destroy(this->routersCache);
+    }
+    if (this->triggersCache) {
+        this->triggersCache->destroy(this->triggersCache);
+    }
     free(this);
 }
 
@@ -857,8 +864,6 @@ SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService *t
     }
 
     this->historyMap = SymMap_new(NULL, 100);
-    this->routersCache = SymMap_new(NULL, 10);
-    this->triggersCache = SymMap_new(NULL, 100);
 
     this->configurationService = configurationService;
     this->sequenceService = sequenceService;
