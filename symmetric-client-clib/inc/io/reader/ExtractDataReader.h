@@ -47,19 +47,28 @@ typedef struct SymExtractDataReader {
     SymTriggerRouterService *triggerRouterService;
     SymDatabasePlatform *platform;
 
+    char *sourceNodeId;
+    char *targetNodeId;
+    SymList *outgoingBatches;
+    SymIterator *outgoingBatchesIter;
     SymOutgoingBatch *outgoingBatch;
     SymBatch *batch;
     SymTable *targetTable;
     SymTable *sourceTable;
     SymTriggerHistory *lastTriggerHistory;
     char *lastRouterId;
+    SymData *nextData;
+    unsigned short *(*batchProcessed)(SymOutgoingBatch *batch, void *userData);
+    void *userData;
+    unsigned short keepProcessing;
 
     // TOOD: this should be a cursor instead
-    SymList *datas;
-    SymIterator *iter;
+    SymList *dataList;
+    SymIterator *dataIter;
 } SymExtractDataReader;
 
-SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymOutgoingBatch *outgoingBatch, char *sourceNodeId, char *targetNodeId,
-        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymDatabasePlatform *platform);
+SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymList *outgoingBatches, char *sourceNodeId, char *targetNodeId,
+        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymDatabasePlatform *platform,
+        void *batchProcessed(SymOutgoingBatch *batch, void *userData), void *userData);
 
 #endif

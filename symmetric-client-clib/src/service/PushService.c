@@ -76,7 +76,6 @@ void SymPushService_pushToNode(SymPushService *this, SymNode *remote, SymRemoteN
     }
     extractedBatches->destroy(extractedBatches);
     transport->destroy(transport);
-    identity->destroy(identity);
     identitySecurity->destroy(identitySecurity);
 }
 
@@ -109,29 +108,26 @@ SymRemoteNodeStatuses * SymPushService_pushData(SymPushService *this, unsigned i
     SymMap *channels = this->configurationService->getChannels(this->configurationService, 0);
     SymRemoteNodeStatuses *statuses = SymRemoteNodeStatuses_new(NULL, channels);
     SymNode *identity = this->nodeService->findIdentity(this->nodeService);
-    if (identity) {
-        if (identity->syncEnabled) {
-            SymList *nodes = this->nodeService->findNodesToPushTo(this->nodeService);
-            if (nodes->size > 0) {
-                SymNodeSecurity *identitySecurity = this->nodeService->findNodeSecurity(this->nodeService, identity->nodeId);
-                if (identitySecurity) {
-                    statuses = SymRemoteNodeStatuses_new(NULL, channels);
-                    SymIterator *iter = nodes->iterator(nodes);
-                    while (iter->hasNext(iter)) {
-                        SymNode *node = (SymNode *) iter->next(iter);
-                        SymRemoteNodeStatus *status = statuses->add(statuses, node->nodeId);
-                        SymPushService_execute(this, node, status);
-                    }
-                    identitySecurity->destroy(identitySecurity);
-                    iter->destroy(iter);
-                } else {
-                    SymLog_error("Could not find a node security row for '%s'.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data",
-                            identity->nodeId);
+    if (identity && identity->syncEnabled) {
+        SymList *nodes = this->nodeService->findNodesToPushTo(this->nodeService);
+        if (nodes->size > 0) {
+            SymNodeSecurity *identitySecurity = this->nodeService->findNodeSecurity(this->nodeService, identity->nodeId);
+            if (identitySecurity) {
+                statuses = SymRemoteNodeStatuses_new(NULL, channels);
+                SymIterator *iter = nodes->iterator(nodes);
+                while (iter->hasNext(iter)) {
+                    SymNode *node = (SymNode *) iter->next(iter);
+                    SymRemoteNodeStatus *status = statuses->add(statuses, node->nodeId);
+                    SymPushService_execute(this, node, status);
                 }
+                identitySecurity->destroy(identitySecurity);
+                iter->destroy(iter);
+            } else {
+                SymLog_error("Could not find a node security row for '%s'.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data",
+                        identity->nodeId);
             }
-            nodes->destroy(nodes);
         }
-        identity->destroy(identity);
+        nodes->destroy(nodes);
     }
     return statuses;
 }

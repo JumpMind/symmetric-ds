@@ -86,7 +86,6 @@ void SymDataLoaderService_loadDataFromRegistration(SymDataLoaderService *this, S
     }
     SymList_destroyAll(incomingBatches, (void *) SymIncomingBatch_destroy);
 
-    local->destroy(local);
     remote->destroy(remote);
     transport->destroy(transport);
 }
@@ -116,7 +115,6 @@ void SymDataLoaderService_loadDataFromPull(SymDataLoaderService *this, SymNode *
 
         transport->destroy(transport);
         localSecurity->destroy(localSecurity);
-        local->destroy(local);
     }
 }
 

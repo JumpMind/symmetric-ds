@@ -70,7 +70,6 @@ unsigned short SymEngine_start(SymEngine *this) {
 
                 // TODO: if HEARTBEAT_SYNC_ON_STARTUP
             }
-            node->destroy(node);
         } else {
         	SymLog_info("Starting unregistered node [group=%s, externalId=%s]", this->parameterService->getNodeGroupId(this->parameterService),
                     this->parameterService->getExternalId(this->parameterService));
@@ -109,9 +108,6 @@ void SymEngine_destroy(SymEngine *this) {
     this->triggerRouterService->destroy(this->triggerRouterService);
     this->dialect->destroy(this->dialect);
     this->platform->destroy(this->platform);
-    if (this->dialect) {
-        this->dialect->destroy(this->dialect);
-    }
     free(this);
 }
 

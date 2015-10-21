@@ -763,6 +763,8 @@ SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService *t
     }
 
     this->historyMap = SymMap_new(NULL, 100);
+    this->routersCache = SymMap_new(NULL, 10);
+    this->triggersCache = SymMap_new(NULL, 100);
 
     this->configurationService = configurationService;
     this->sequenceService = sequenceService;

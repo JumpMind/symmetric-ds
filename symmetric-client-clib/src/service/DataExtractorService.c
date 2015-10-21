@@ -20,60 +20,53 @@
  */
 #include "service/DataExtractorService.h"
 
-static SymList * SymDataExtractorService_extractOutgoingBatch(SymDataExtractorService *this, SymNode *sourceNode, SymNode *targetNode,
-        SymOutgoingTransport *transport, SymOutgoingBatch *outgoingBatch) {
-    SymDataReader *reader = (SymDataReader *) SymExtractDataReader_new(NULL, outgoingBatch, sourceNode->nodeId, targetNode->nodeId, this->dataService,
-            this->triggerRouterService, this->platform);
-    SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataWriter_new(NULL, sourceNode->nodeId, reader);
-    long rc = transport->process(transport, processor);
-    SymLog_debug("Transport rc = %ld" , rc);
-    SymList *batchesProcessed = processor->getBatchesProcessed(processor);
-    reader->destroy(reader);
-    processor->destroy(processor);
-    return batchesProcessed;
+static unsigned short SymDataExtractorService_batchProcessed(SymOutgoingBatch *batch, SymDataExtractorInfo *info) {
+    info->processedBatches->add(info->processedBatches, batch);
+    if (strcmp(batch->status, SYM_OUTGOING_BATCH_OK) != 0) {
+        batch->loadCount++;
+        if (strcmp(batch->status, SYM_OUTGOING_BATCH_IGNORED) != 0) {
+            batch->status = SYM_OUTGOING_BATCH_LOADING;
+        }
+        info->outgoingBatchService->updateOutgoingBatch(info->outgoingBatchService, batch);
+
+        info->bytesSentCount += batch->byteCount;
+        info->batchesSentCount++;
+
+        if (info->bytesSentCount >= info->maxBytesToSync && info->processedBatches->size < info->batches->batches->size) {
+            SymLog_info("Reached the total byte threshold after %d of %d batches were extracted for node '%s'.  The remaining batches will be extracted on a subsequent sync",
+                    info->batchesSentCount, info->batches->batches->size, info->targetNode->nodeId);
+            return 0;
+        }
+    }
+    return 1;
 }
 
 SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode *targetNode, SymOutgoingTransport *transport) {
-    SymList *processedBatches = NULL;
+    SymList *processedBatches = SymList_new(NULL);
     SymOutgoingBatches *batches = this->outgoingBatchService->getOutgoingBatches(this->outgoingBatchService, targetNode->nodeId);
 
     if (batches->containsBatches(batches)) {
         // TODO: filter for local and remote suspended channels
         // TODO: update ignored batches
 
-        long bytesSentCount = 0;
-        int batchesSentCount = 0;
-        long maxBytesToSync = this->parameterService->getLong(this->parameterService, SYM_PARAMETER_TRANSPORT_MAX_BYTES_TO_SYNC, 1048576);
-        SymNode *nodeIdentity = this->nodeService->findIdentity(this->nodeService);
-        SymIterator *iter = batches->batches->iterator(batches->batches);
+        SymDataExtractorInfo info;
+        info.bytesSentCount = 0;
+        info.batchesSentCount = 0;
+        info.maxBytesToSync = this->parameterService->getLong(this->parameterService, SYM_PARAMETER_TRANSPORT_MAX_BYTES_TO_SYNC, 1048576);
+        info.sourceNode = this->nodeService->findIdentity(this->nodeService);
+        info.targetNode = targetNode;
+        info.outgoingBatchService = this->outgoingBatchService;
+        info.processedBatches = processedBatches;
+        info.batches = batches;
 
-        while (iter->hasNext(iter)) {
-            SymOutgoingBatch *batch = (SymOutgoingBatch *) iter->next(iter);
-            // TODO: pass all outgoingbatches to this method so reader can read all of them
-            processedBatches = SymDataExtractorService_extractOutgoingBatch(this, nodeIdentity, targetNode, transport, batch);
+        SymDataReader *reader = (SymDataReader *) SymExtractDataReader_new(NULL, batches->batches, info.sourceNode->nodeId, targetNode->nodeId,
+                this->dataService, this->triggerRouterService, this->platform, (void *) SymDataExtractorService_batchProcessed, (void *) &info);
+        SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataWriter_new(NULL, info.sourceNode->nodeId, reader);
+        long rc = transport->process(transport, processor);
+        SymLog_debug("Transport rc = %ld" , rc);
 
-            // TODO: move this to an extract outgoingbatch callback
-            if (strcmp(batch->status, SYM_OUTGOING_BATCH_OK) == 0) {
-                batch->loadCount++;
-                if (strcmp(batch->status, SYM_OUTGOING_BATCH_IGNORED) != 0) {
-                    batch->status = SYM_OUTGOING_BATCH_LOADING;
-                }
-                this->outgoingBatchService->updateOutgoingBatch(this->outgoingBatchService, batch);
-
-                bytesSentCount += batch->byteCount;
-                batchesSentCount++;
-
-                if (bytesSentCount >= maxBytesToSync && processedBatches->size < batches->batches->size) {
-                    SymLog_info("Reached the total byte threshold after %d of %d batches were extracted for node '%s'.  The remaining batches will be extracted on a subsequent sync",
-                            batchesSentCount, batches->batches->size, targetNode->nodeId);
-                    break;
-                }
-            }
-        }
-        iter->destroy(iter);
-    }
-    if (processedBatches == NULL) {
-        processedBatches = SymList_new(NULL);
+        reader->destroy(reader);
+        processor->destroy(processor);
     }
 	return processedBatches;
 }

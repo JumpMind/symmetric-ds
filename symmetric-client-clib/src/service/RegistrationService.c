@@ -41,7 +41,6 @@ void SymRegistrationService_registerWithServer(SymRegistrationService *this) {
                 if (node != NULL) {
                 	SymLog_info("Successfully registered node [id=%s]\n", node->nodeId);
                     // TODO: this->dataService->heartbeat(this->dataService);
-                    node->destroy(node);
                 } else {
                     SymLog_error("Node identity is missing after registration.  The registration server may be misconfigured or have an error");
                     isRegistered = 0;
@@ -67,12 +66,7 @@ void SymRegistrationService_registerWithServer(SymRegistrationService *this) {
 }
 
 unsigned short SymRegistrationService_isRegisteredWithServer(SymRegistrationService *this) {
-    SymNode *identity = this->nodeService->findIdentity(this->nodeService);
-    unsigned short isRegistered = identity != NULL;
-    if (identity != NULL) {
-        identity->destroy(identity);
-    }
-    return isRegistered;
+    return this->nodeService->findIdentity(this->nodeService) != NULL;
 }
 
 void SymRegistrationService_destroy(SymRegistrationService *this) {
