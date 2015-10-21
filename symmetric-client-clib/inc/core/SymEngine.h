@@ -46,6 +46,7 @@
 #include "util/Properties.h"
 #include "common/Constants.h"
 #include "common/ParameterConstants.h"
+#include "service/PurgeService.h"
 
 typedef struct SymEngine {
     SymProperties *properties;
@@ -66,11 +67,13 @@ typedef struct SymEngine {
     SymAcknowledgeService *acknowledgeService;
     SymConfigurationService *configurationService;
     SymSequenceService *sequenceService;
+    SymPurgeService *purgeService;
 
     unsigned short (*start)(struct SymEngine *this);
     unsigned short (*stop)(struct SymEngine *this);
     unsigned short (*uninstall)(struct SymEngine *this);
     void (*syncTriggers)(struct SymEngine *this);
+    void (*purge)(struct SymEngine *this);
     void (*destroy)(struct SymEngine *this);
 } SymEngine;
 

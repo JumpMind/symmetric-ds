@@ -22,10 +22,27 @@
 #define SYM_PURGE_SERVICE_H
 
 #include <stdio.h>
+#include "util/Date.h"
+#include "util/List.h"
+#include "service/ParameterService.h"
+#include "db/SymDialect.h"
+
+typedef enum {
+    DATA, DATA_EVENT, OUTGOING_BATCH, STRANDED_DATA
+} SymMinMaxDeleteSql;
 
 typedef struct SymPurgeService {
-    int (*purgeOutgoing)(struct SymPurgeService *this);
-    int (*purgeIncoming)(struct SymPurgeService *this);
+    SymParameterService *parameterService;
+    SymDialect *symmetricDialect;
+    long (*purgeIncoming)(struct SymPurgeService *this);
+    long (*purgeOutgoing)(struct SymPurgeService *this);
+    long (*purgeIncomingBeforeDate)(struct SymPurgeService *this, SymDate *retentionCutoff);
+    long (*purgeOutgoingBeforeDate)(struct SymPurgeService *this, SymDate *retentionCutoff);
+
+    void (*destroy)(struct SymPurgeService *);
 } SymPurgeService;
+
+SymPurgeService * SymPurgeService_new(SymPurgeService *this, SymParameterService *parameterService,
+        SymDialect *symmetricDialect);
 
 #endif
