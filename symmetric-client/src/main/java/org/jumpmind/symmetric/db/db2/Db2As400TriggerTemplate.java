@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.db.db2;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
@@ -7,7 +8,9 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
     public Db2As400TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         
-        clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as DBCLOB),'\\','\\\\'),'\"','\\\"') || '\"' end" ;
+        String castClobTo = symmetricDialect.getParameterService().getString(ParameterConstants.AS400_CAST_CLOB_TO, "DCLOB");
+        
+        clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as "+castClobTo+"),'\\','\\\\'),'\"','\\\"') || '\"' end" ;
 
         sqlTemplates.put("insertTriggerTemplate" ,
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             " +
