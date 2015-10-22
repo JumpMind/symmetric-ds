@@ -67,6 +67,8 @@ public interface IDdlBuilder {
      */
     public void setDelimitedIdentifierModeOn(boolean delimitedIdentifierModeOn);
     
+    public void setCaseSensitive(boolean caseSensitive);
+    
     public DatabaseInfo getDatabaseInfo();
     
     public String getColumnTypeDdl(Table table, Column column);

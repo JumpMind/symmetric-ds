@@ -53,7 +53,7 @@ abstract public class DbTestUtils {
         EnvironmentSpecificProperties properties = getEnvironmentSpecificProperties(name);
         return JdbcDatabasePlatformFactory.createNewPlatformInstance(
                 BasicDataSourceFactory.create(properties, SecurityServiceFactory.create()),
-                new SqlTemplateSettings(), true);
+                new SqlTemplateSettings(), true, false);
     }
 
 }
