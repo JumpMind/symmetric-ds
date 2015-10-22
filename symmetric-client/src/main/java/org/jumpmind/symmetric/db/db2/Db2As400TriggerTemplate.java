@@ -7,7 +7,7 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
     public Db2As400TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         
-        clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as CLOB),'\\','\\\\'),'\"','\\\"') || '\"' end" ;
+        clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as DBCLOB),'\\','\\\\'),'\"','\\\"') || '\"' end" ;
 
         sqlTemplates.put("insertTriggerTemplate" ,
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             " +
