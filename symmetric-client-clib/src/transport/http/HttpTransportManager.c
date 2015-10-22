@@ -133,6 +133,7 @@ static SymMap * SymHttpTransportManager_getParametersFromQueryUrl(char *paramete
         SymStringArray *nameValuePair = SymStringArray_split(tokens->get(tokens, i), "=");
         if (nameValuePair->size == 2) {
             char *value = curl_easy_unescape(curl, nameValuePair->get(nameValuePair, 1), 0, NULL);
+            SymStringUtils_replaceChar(value, '+', ' ');
             parameters->put(parameters, nameValuePair->get(nameValuePair, 0), value, strlen(value) * sizeof(char) + 1);
             curl_free(value);
         }
@@ -148,6 +149,15 @@ static char * SymHttpTransportManager_getParam(SymMap *parameters, char *name, c
     return value;
 }
 
+static int SymHttpTransportManager_getParamAsLong(SymMap *parameters, char *name, char *batchId) {
+    long value = 0;
+    char *str = SymHttpTransportManager_getParam(parameters, name, batchId);
+    if (str) {
+        value = atol(str);
+    }
+    return value;
+}
+
 static SymBatchAck * SymHttpTransportManager_getBatchInfo(SymMap *parameters, char *batchId) {
     SymBatchAck *batchAck = SymBatchAck_new(NULL);
     batchAck->batchId = atol(batchId);
@@ -156,18 +166,18 @@ static SymBatchAck * SymHttpTransportManager_getBatchInfo(SymMap *parameters, ch
         nodeId = parameters->get(parameters, SYM_WEB_CONSTANTS_NODE_ID);
     }
     batchAck->nodeId = nodeId;
-    batchAck->networkMillis = atol(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_NETWORK_MILLIS, batchId));
-    batchAck->filterMillis = atol(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_FILTER_MILLIS, batchId));
-    batchAck->databaseMillis = atol(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_DATABASE_MILLIS, batchId));
-    batchAck->byteCount = atol(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_BYTE_COUNT, batchId));
-    batchAck->ignored = atoi(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_IGNORE_COUNT, batchId));
+    batchAck->networkMillis = SymHttpTransportManager_getParamAsLong(parameters, SYM_WEB_CONSTANTS_ACK_NETWORK_MILLIS, batchId);
+    batchAck->filterMillis = SymHttpTransportManager_getParamAsLong(parameters, SYM_WEB_CONSTANTS_ACK_FILTER_MILLIS, batchId);
+    batchAck->databaseMillis = SymHttpTransportManager_getParamAsLong(parameters, SYM_WEB_CONSTANTS_ACK_DATABASE_MILLIS, batchId);
+    batchAck->byteCount = SymHttpTransportManager_getParamAsLong(parameters, SYM_WEB_CONSTANTS_ACK_BYTE_COUNT, batchId);
+    batchAck->ignored = (unsigned short) SymHttpTransportManager_getParamAsLong(parameters, SYM_WEB_CONSTANTS_ACK_IGNORE_COUNT, batchId);
     char *status = SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_BATCH_NAME, batchId);
     batchAck->isOk = SymStringUtils_equalsIgnoreCase(status, SYM_WEB_CONSTANTS_ACK_BATCH_OK);
 
     if (!batchAck->isOk) {
         batchAck->errorLine = atol(status);
         batchAck->sqlState = SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_SQL_STATE, batchId);
-        batchAck->sqlCode = atoi(SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_SQL_CODE, batchId));
+        batchAck->sqlCode = (int) SymHttpTransportManager_getParamAsLong(parameters, SYM_WEB_CONSTANTS_ACK_SQL_CODE, batchId);
         batchAck->sqlMessage = SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_SQL_MESSAGE, batchId);
     }
     return batchAck;

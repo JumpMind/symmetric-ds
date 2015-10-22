@@ -25,6 +25,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include "util/StringBuilder.h"
 
 #define SYM_STRING_ARRAY_SIZE_INITIAL 100
 #define SYM_STRING_ARRAY_SIZE_INCREMENT 100
@@ -44,6 +45,7 @@ typedef struct SymStringArray {
     unsigned short (*contains)(struct SymStringArray *this, char *findStr);
     struct SymStringArray * (*subarray)(struct SymStringArray *this, int startIndex, int endIndex);
     void (*print)(struct SymStringArray *this);
+    char * (*toString)(struct SymStringArray *this);
     void (*reset)(struct SymStringArray *this);
     void (*destroy)(struct SymStringArray *this);
 } SymStringArray;

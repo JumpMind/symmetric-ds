@@ -142,3 +142,12 @@ unsigned short SymStringUtils_equalsIgnoreCase(char *str1, char *str2) {
     }
     return strcasecmp(str1, str2) == 0;
 }
+
+void SymStringUtils_replaceChar(char *str, char oldChar, char newChar) {
+    int i, len = strlen(str);
+    for (i = 0; i < len; i++) {
+        if (str[i] == oldChar) {
+            str[i] = newChar;
+        }
+    }
+}

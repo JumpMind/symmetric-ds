@@ -35,5 +35,6 @@ char* SymStringUtils_format(char *format, ...);
 unsigned short SymStringUtils_equals(char *str1, char *str2);
 unsigned short SymStringUtils_equalsIgnoreCase(char *str1, char *str2);
 char * SymStringUtils_substring(char *str, int startIndex, int endIndex);
+void SymStringUtils_replaceChar(char *str, char oldChar, char newChar);
 
 #endif

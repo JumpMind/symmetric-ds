@@ -98,17 +98,23 @@ SymStringArray * SymStringArray_subarray(SymStringArray *this, int startIndex, i
     return strArray;
 }
 
-void SymStringArray_print(SymStringArray *this) {
+char * SymStringArray_toString(SymStringArray *this) {
+    SymStringBuilder *buff = SymStringBuilder_new(NULL);
     if (this->size > 0) {
         int i;
         for (i = 0; i < this->size; i++) {
-            printf("%s", this->array[i]);
+            buff->append(buff, this->array[i]);
             if (i + 1 < this->size) {
-                printf("|");
+                buff->append(buff, "|");
             }
         }
-        printf("\n");
     }
+    return buff->destroyAndReturn(buff);
+}
+
+void SymStringArray_print(SymStringArray *this) {
+    printf("%s", SymStringArray_toString(this));
+    printf("\n");
 }
 
 void SymStringArray_reset(SymStringArray *this) {
@@ -157,6 +163,7 @@ SymStringArray * SymStringArray_newWithSize(SymStringArray *this, int sizeInitia
     this->get = (void *) &SymStringArray_get;
     this->contains = (void *) &SymStringArray_contains;
     this->subarray = (void *) &SymStringArray_subarray;
+    this->toString = (void *) &SymStringArray_toString;
     this->print = (void *) &SymStringArray_print;
     this->reset = (void *) &SymStringArray_reset;
     this->destroy = (void *) &SymStringArray_destroy;
