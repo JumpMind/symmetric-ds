@@ -22,9 +22,44 @@
 #define SYM_ROUTER_SERVICE_H
 
 #include <stdio.h>
+#include <time.h>
+#include "common/Constants.h"
+#include "route/ChannelRouterContext.h"
+#include "route/DataRouter.h"
+#include "route/DefaultDataRouter.h"
+#include "db/platform/DatabasePlatform.h"
+#include "service/NodeService.h"
+#include "service/ConfigurationService.h"
+#include "service/OutgoingBatchService.h"
+#include "service/SequenceService.h"
+#include "service/DataService.h"
+#include "service/ParameterService.h"
+#include "model/Channel.h"
+#include "model/Router.h"
+#include "model/Data.h"
+#include "model/DataMetaData.h"
+#include "model/OutgoingBatch.h"
+#include "util/List.h"
+#include "util/Map.h"
+#include "util/StringUtils.h"
+
+#define SYM_ROUTER_DEFAULT "default"
 
 typedef struct SymRouterService {
+    SymOutgoingBatchService *outgoingBatchService;
+    SymSequenceService *sequenceService;
+    SymDataService *dataService;
+    SymNodeService *nodeService;
+    SymConfigurationService *configurationService;
+    SymParameterService *parameterService;
+    SymDatabasePlatform *platform;
+    SymMap *routers;
     long (*routeData)(struct SymRouterService *this);
+    void (*destroy)(struct SymRouterService *this);
 } SymRouterService;
+
+SymRouterService * SymRouterService_new(SymRouterService *this, SymOutgoingBatchService *outgoingBatchService, SymSequenceService *sequenceService,
+        SymDataService *dataService, SymNodeService *nodeService, SymConfigurationService *configurationService, SymParameterService *parameterService,
+        SymDatabasePlatform *platform);
 
 #endif

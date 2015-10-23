@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include "model/Node.h"
 #include "model/NodeGroupLink.h"
+#include "model/NodeGroupLinkAction.h"
 #include "model/NodeSecurity.h"
 #include "db/platform/DatabasePlatform.h"
 #include "util/List.h"
@@ -46,8 +47,8 @@ typedef struct SymNodeService {
     SymNodeSecurity * (*findNodeSecurity)(struct SymNodeService *this, char *nodeId);
     SymList * (*findNodesToPull)(struct SymNodeService *this);
     SymList * (*findNodesToPushTo)(struct SymNodeService *this);
-    SymList * (*findSourceNodesFor)(struct SymNodeService *this, char *nodeGroupLinkAction);
-    SymList * (*findTargetNodesFor)(struct SymNodeService *this, char *nodeGroupLinkAction);
+    SymList * (*findSourceNodesFor)(struct SymNodeService *this, SymNodeGroupLinkAction nodeGroupLinkAction);
+    SymList * (*findTargetNodesFor)(struct SymNodeService *this, SymNodeGroupLinkAction nodeGroupLinkAction);
     unsigned short (*isDataloadStarted)(struct SymNodeService *this);
     unsigned short (*isDataloadCompleted)(struct SymNodeService *this);
     int (*getNodeStatus)(struct SymNodeService *this);

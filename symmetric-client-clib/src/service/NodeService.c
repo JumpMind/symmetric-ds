@@ -110,14 +110,14 @@ SymNodeSecurity * SymNodeService_findNodeSecurity(SymNodeService *this, char *no
 }
 
 SymList * SymNodeService_findNodesToPull(SymNodeService *this) {
-    return this->findSourceNodesFor(this, SYM_NODE_GROUP_LINK_WAIT_FOR_PULL);
+    return this->findSourceNodesFor(this, SymNodeGroupLinkAction_W);
 }
 
 SymList * SymNodeService_findNodesToPushTo(SymNodeService *this) {
-    return this->findTargetNodesFor(this, SYM_NODE_GROUP_LINK_PUSH);
+    return this->findTargetNodesFor(this, SymNodeGroupLinkAction_P);
 }
 
-SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char *nodeGroupLinkAction) {
+SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, SymNodeGroupLinkAction nodeGroupLinkAction) {
     SymList *nodes = NULL;
     SymNode *node = this->findIdentity(this);
     if (node != NULL) {
@@ -126,7 +126,7 @@ SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char *nodeGrou
         SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
         sb->append(sb, SYM_SQL_FIND_NODES_WHO_TARGET_ME);
         SymStringArray *args = SymStringArray_new(NULL);
-        args->add(args, node->nodeGroupId)->add(args, nodeGroupLinkAction);
+        args->add(args, node->nodeGroupId)->add(args, SymNodeGroupLinkAction_toString(nodeGroupLinkAction));
 
         nodes = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymNodeService_nodeMapper);
         args->destroy(args);
@@ -137,7 +137,7 @@ SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char *nodeGrou
     return nodes;
 }
 
-SymList * SymNodeService_findTargetNodesFor(SymNodeService *this, char *nodeGroupLinkAction) {
+SymList * SymNodeService_findTargetNodesFor(SymNodeService *this, SymNodeGroupLinkAction nodeGroupLinkAction) {
     SymList *nodes = NULL;
     SymNode *node = this->findIdentity(this);
     if (node != NULL) {
@@ -146,7 +146,7 @@ SymList * SymNodeService_findTargetNodesFor(SymNodeService *this, char *nodeGrou
         SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
         sb->append(sb, SYM_SQL_FIND_NODES_WHO_I_TARGET);
         SymStringArray *args = SymStringArray_new(NULL);
-        args->add(args, node->nodeGroupId)->add(args, nodeGroupLinkAction);
+        args->add(args, node->nodeGroupId)->add(args, SymNodeGroupLinkAction_toString(nodeGroupLinkAction));
 
         nodes = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymNodeService_nodeMapper);
         args->destroy(args);

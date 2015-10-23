@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include "model/Trigger.h"
 #include "model/Router.h"
+#include "model/Data.h"
+#include "io/data/DataEventType.h"
 #include "util/Date.h"
 
 typedef struct SymTriggerRouter {
@@ -38,9 +40,10 @@ typedef struct SymTriggerRouter {
 	SymDate *lastUpdateTime;
 	char *lastUpdateBy;
 	unsigned short pingBackEnabled;
+	unsigned short (*isRouted)(struct SymTriggerRouter *this, SymDataEventType dataEventType);
     void (*destroy)(struct SymTriggerRouter *this);
 } SymTriggerRouter;
 
 SymTriggerRouter * SymTriggerRouter_new(SymTriggerRouter *this);
 
-#endif /* SYM_MODEL_TRIGGERROUTER_H */
+#endif

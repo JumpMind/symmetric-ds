@@ -20,6 +20,18 @@
  */
 #include "model/TriggerRouter.h"
 
+unsigned short SymTriggerRouter_isRouted(SymTriggerRouter *this, SymDataEventType dataEventType) {
+    switch (dataEventType) {
+    case SYM_DATA_EVENT_INSERT:
+        return this->router->syncOnInsert;
+    case SYM_DATA_EVENT_UPDATE:
+        return this->router->syncOnUpdate;
+    case SYM_DATA_EVENT_DELETE:
+        return this->router->syncOnDelete;
+    }
+    return 0;
+}
+
 void SymTriggerRouter_destroy(SymTriggerRouter *this) {
     free(this);
 }
@@ -28,6 +40,7 @@ SymTriggerRouter * SymTriggerRouter_new(SymTriggerRouter *this) {
     if (this == NULL) {
         this = (SymTriggerRouter *) calloc(1, sizeof(SymTriggerRouter));
     }
+    this->isRouted = (void *) &SymTriggerRouter_isRouted;
     this->destroy = (void *) &SymTriggerRouter_destroy;
     return this;
 }

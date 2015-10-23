@@ -93,7 +93,7 @@ SymData * SymExtractDataReader_nextData(SymExtractDataReader *this) {
     if (data) {
         SymTriggerHistory *triggerHistory = data->triggerHistory;
 
-        if (strcmp(data->eventType, SYM_DATA_EVENT_RELOAD) == 0) {
+        if (data->eventType == SYM_DATA_EVENT_RELOAD) {
             // TODO: implement outgoing reload event
         } else {
             SymTrigger *trigger = this->triggerRouterService->getTriggerById(this->triggerRouterService, triggerHistory->triggerId, 0);

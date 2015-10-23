@@ -31,7 +31,7 @@ static int SymMap_hash(SymMap *this, char *key) {
     return hash % this->size;
 }
 
-static SymMapEntry * SymMap_new_entry(char *key, void *value, int size) {
+static SymMapEntry * SymMap_newEntry(char *key, void *value, int size) {
     SymMapEntry *entry;
 
     if ((entry = malloc(sizeof(SymMapEntry))) == NULL) {
@@ -76,7 +76,7 @@ void SymMap_put(SymMap *this, char *key, void *value, int size) {
             next->sizeBytes = 0;
         }
     } else {
-        SymMapEntry *entry = SymMap_new_entry(key, value, size);
+        SymMapEntry *entry = SymMap_newEntry(key, value, size);
 
         if (next == this->table[hash]) {
             entry->next = next;
@@ -123,9 +123,12 @@ SymStringArray * SymMap_keys(SymMap *this) {
 	SymStringArray *keys = SymStringArray_new(NULL);
 	int i;
 	for (i = 0; i < entries->size; i++) {
-		keys->add(keys, ((SymMapEntry *)entries->get(entries, i))->key);
+	    SymMapEntry *entry = (SymMapEntry *) entries->get(entries, i);
+	    if (entry->key) {
+	        keys->add(keys, entry->key);
+	    }
 	}
-
+	entries->destroy(entries);
 	return keys;
 }
 
@@ -134,9 +137,12 @@ SymList * SymMap_values(SymMap *this) {
 	SymList *values = SymList_new(NULL);
 	int i;
 	for (i = 0; i < entries->size; i++) {
-		values->add(values, ((SymMapEntry *)entries->get(entries, i))->value);
+	    SymMapEntry *entry = (SymMapEntry *) entries->get(entries, i);
+	    if (entry->key) {
+	        values->add(values, entry->value);
+	    }
 	}
-
+	entries->destroy(entries);
 	return values;
 }
 
@@ -177,8 +183,56 @@ int SymMap_getBytesSize(SymMap *this, char *key) {
     }
 }
 
+void * SymMap_remove(SymMap *this, char *key) {
+    int hash = SymMap_hash(this, key);
+    SymMapEntry *entry = this->table[hash];
+    void *result = NULL;
+
+    while (entry != NULL) {
+        if (entry->key != NULL && strcmp(key, entry->key) == 0) {
+            result = entry->value;
+            free(entry->key);
+            entry->key = NULL;
+            entry->value = NULL;
+            break;
+        }
+        entry = entry->next;
+    }
+
+    return result;
+}
+
+void * SymMap_removeByInt(SymMap *this, int key) {
+    char *id = SymStringUtils_format("%d", key);
+    void *result = SymMap_remove(this, id);
+    free(id);
+    return result;
+}
+
+void SymMap_reset(SymMap *this) {
+    SymMapEntry *entry = NULL;
+    int index = 0;
+
+    while (index < this->size) {
+        if (this->table[index] != NULL) {
+            entry = this->table[index];
+            SymMapEntry *currentEntry = entry;
+
+            while (currentEntry != NULL) {
+                SymMapEntry *nextEntry = currentEntry->next;
+                free(currentEntry->key);
+                free(currentEntry->value);
+                free(currentEntry);
+                currentEntry = nextEntry;
+            }
+        }
+        index++;
+    }
+}
+
 void SymMap_destroy(SymMap *this) {
     // TODO: free all the malloc'ed memory
+    this->reset(this);
     free(this);
 }
 
@@ -194,6 +248,9 @@ SymMap * SymMap_new(SymMap *this, int size) {
     this->getBytesSize = (void *) &SymMap_getBytesSize;
     this->put = (void *) &SymMap_put;
     this->putByInt = (void *) &SymMap_putByInt;
+    this->remove = (void *) &SymMap_remove;
+    this->removeByInt = (void *) &SymMap_removeByInt;
+    this->reset = (void *) &SymMap_reset;
     this->destroy = (void *) &SymMap_destroy;
 
     if (size < 1) {

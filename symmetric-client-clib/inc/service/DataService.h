@@ -29,6 +29,7 @@
 #include "model/Data.h"
 #include "model/TriggerHistory.h"
 #include "io/data/Batch.h"
+#include "io/data/DataEventType.h"
 #include "util/List.h"
 #include "util/StringBuilder.h"
 #include "common/Log.h"

@@ -21,14 +21,9 @@
 #include "service/ConfigurationService.h"
 #include "common/Log.h"
 
-SymNodeChannel* SymConfigurationService_getNodeChannels(SymConfigurationService *this) {
-	SymLog_info("SymConfigurationService_getNodeChannels");
-    return NULL;
-}
-
 static SymChannel * SymConfigurationService_channelMapper(SymRow *row) {
     SymChannel *channel = SymChannel_new(NULL);
-    channel->channelId = row->getString(row, "channel_id");
+    channel->channelId = row->getStringNew(row, "channel_id");
     channel->processingOrder = row->getInt(row, "processing_order");
     channel->maxBatchSize = row->getInt(row, "max_batch_size");
     channel->enabled = row->getBoolean(row, "enabled");
@@ -38,15 +33,60 @@ static SymChannel * SymConfigurationService_channelMapper(SymRow *row) {
     channel->useRowDataToRoute = row->getBoolean(row, "use_row_data_to_route");
     channel->usePkDataToRoute = row->getBoolean(row, "use_pk_data_to_route");
     channel->containsBigLob = row->getBoolean(row, "contains_big_lob");
-    channel->batchAlgorithm = row->getString(row, "batch_algorithm");
+    channel->batchAlgorithm = row->getStringNew(row, "batch_algorithm");
     channel->extractPeriodMillis = row->getLong(row, "extract_period_millis");
-    channel->dataLoaderType = row->getString(row, "data_loader_type");
+    channel->dataLoaderType = row->getStringNew(row, "data_loader_type");
     channel->createTime = row->getDate(row, "create_time");
-    channel->lastUpdateBy = row->getString(row, "last_update_by");
+    channel->lastUpdateBy = row->getStringNew(row, "last_update_by");
     channel->lastUpdateTime = row->getDate(row, "last_update_time");
     channel->reloadFlag = row->getBoolean(row, "reload_flag");
     channel->fileSyncFlag = row->getBoolean(row, "file_sync_flag");
     return channel;
+}
+
+static SymNodeGroupLink * SymConfigurationService_nodeGroupLinkMapper(SymRow *row) {
+    SymNodeGroupLink *link = SymNodeGroupLink_new(NULL);
+    link->sourceNodeGroupId = row->getStringNew(row, "source_node_group_id");
+    link->targetNodeGroupId = row->getStringNew(row, "target_node_group_id");
+    link->dataEventAction = SymNodeGroupLinkAction_fromCode(row->getStringNew(row, "data_event_action"));
+    link->syncConfigEnabled = row->getBoolean(row, "sync_config_enabled");
+    link->createTime = row->getDate(row, "create_time");
+    link->lastUpdateBy = row->getStringNew(row, "last_update_by");
+    link->lastUpdateTime = row->getDate(row, "last_update_time");
+    return link;
+}
+
+SymList * SymConfigurationService_getNodeGroupLinks(SymConfigurationService *this, unsigned short refreshCache) {
+    if (refreshCache) {
+        this->nodeGroupLinkCacheTime = 0;
+    }
+    long cacheTimeoutInMs = this->parameterService->getLong(this->parameterService, SYM_PARAMETER_CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS, 600000);
+    if ((time(NULL) - this->nodeGroupLinkCacheTime) * 1000 >= cacheTimeoutInMs || this->nodeGroupLinksCache == NULL) {
+        SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+        int error;
+        this->nodeGroupLinksCache = sqlTemplate->query(sqlTemplate, SYM_SQL_GROUPS_LINKS_SQL, NULL, NULL, &error,
+                (void *) &SymConfigurationService_nodeGroupLinkMapper);
+        this->nodeGroupLinkCacheTime = time(NULL);
+    }
+
+    return this->nodeGroupLinksCache;
+}
+
+SymNodeGroupLink * SymConfigurationService_getNodeGroupLinkFor(SymConfigurationService *this, char *sourceNodeGroupId, char *targetNodeGroupId,
+        unsigned short refreshCache) {
+    SymList *links = SymConfigurationService_getNodeGroupLinks(this, refreshCache);
+    SymNodeGroupLink *link = NULL;
+    SymIterator *iter = links->iterator(links);
+    while (iter->hasNext(iter)) {
+        SymNodeGroupLink *nodeGroupLink = (SymNodeGroupLink *) iter->next(iter);
+        if (SymStringUtils_equals(nodeGroupLink->targetNodeGroupId, targetNodeGroupId) &&
+                SymStringUtils_equals(nodeGroupLink->sourceNodeGroupId, sourceNodeGroupId)) {
+            link = nodeGroupLink;
+            break;
+        }
+    }
+    iter->destroy(iter);
+    return link;
 }
 
 // TODO: cache the channels
@@ -80,14 +120,16 @@ void SymConfigurationService_destroy(SymConfigurationService * this) {
     free(this);
 }
 
-SymConfigurationService * SymConfigurationService_new(SymConfigurationService *this, SymDatabasePlatform *platform) {
+SymConfigurationService * SymConfigurationService_new(SymConfigurationService *this, SymParameterService *parameterService, SymDatabasePlatform *platform) {
     if (this == NULL) {
         this = (SymConfigurationService *) calloc(1, sizeof(SymConfigurationService));
     }
+    this->parameterService = parameterService;
     this->platform = platform;
-    this->getNodeChannels = (void *) &SymConfigurationService_getNodeChannels;
     this->getChannels = (void *) &SymConfigurationService_getChannels;
     this->getChannel = (void *) &SymConfigurationService_getChannel;
+    this->getNodeGroupLinks = (void *) &SymConfigurationService_getNodeGroupLinks;
+    this->getNodeGroupLinkFor = (void *) &SymConfigurationService_getNodeGroupLinkFor;
     this->clearCache = (void *) &SymConfigurationService_clearCache;
     this->destroy = (void *) &SymConfigurationService_destroy;
     return this;

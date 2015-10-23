@@ -18,24 +18,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_NODE_GROUP_LINK_H
-#define SYM_NODE_GROUP_LINK_H
-
-#include <stdlib.h>
-#include "util/Date.h"
 #include "model/NodeGroupLinkAction.h"
 
-typedef struct SymNodeGroupLink {
-    char *sourceNodeGroupId;
-    char *targetNodeGroupId;
-    SymNodeGroupLinkAction dataEventAction;
-    unsigned short syncConfigEnabled;
-    SymDate *createTime;
-    SymDate *lastUpdateTime;
-    char *lastUpdateBy;
-    void (*destroy)(struct SymNodeGroupLink *this);
-} SymNodeGroupLink;
+SymNodeGroupLinkAction SymNodeGroupLinkAction_fromCode(char *code) {
+    if (SymStringUtils_equals(code, SYM_NODE_GROUP_LINK_ACTION_PUSH)) {
+        return SymNodeGroupLinkAction_P;
+    } else if (SymStringUtils_equals(code, SYM_NODE_GROUP_LINK_ACTION_WAIT_FOR_PULL)) {
+        return SymNodeGroupLinkAction_W;
+    } else if (SymStringUtils_equals(code, SYM_NODE_GROUP_LINK_ACTION_ROUTE)) {
+        return SymNodeGroupLinkAction_R;
+    }
+    return -1;
+}
 
-SymNodeGroupLink * SymNodeGroupLink_new(SymNodeGroupLink *this);
-
-#endif
+char * SymNodeGroupLinkAction_toString(SymNodeGroupLinkAction nodeGroupLinkAction) {
+    switch (nodeGroupLinkAction) {
+    case SymNodeGroupLinkAction_P:
+        return SYM_NODE_GROUP_LINK_ACTION_PUSH;
+    case SymNodeGroupLinkAction_W:
+        return SYM_NODE_GROUP_LINK_ACTION_WAIT_FOR_PULL;
+    case SymNodeGroupLinkAction_R:
+        return SYM_NODE_GROUP_LINK_ACTION_ROUTE;
+    }
+    return NULL;
+}

@@ -68,8 +68,6 @@ void SymPushService_pushToNode(SymPushService *this, SymNode *remote, SymRemoteN
     SymList *extractedBatches = this->dataExtractorService->extract(this->dataExtractorService, remote, transport);
     if (extractedBatches->size > 0) {
         SymLog_info("Push data sent to %s:%s:%s", remote->nodeGroupId, remote->externalId, remote->nodeId);
-
-        // TODO: read acknowledgment
         SymList *batchAcks = readAcks(extractedBatches, transport, this->transportManager, this->acknowledgeService);
         status->updateOutgoingStatus(status, extractedBatches, batchAcks);
         batchAcks->destroy(batchAcks);
@@ -78,7 +76,6 @@ void SymPushService_pushToNode(SymPushService *this, SymNode *remote, SymRemoteN
     transport->destroy(transport);
     identitySecurity->destroy(identitySecurity);
 }
-
 
 void SymPushService_execute(SymPushService *this, SymNode *node, SymRemoteNodeStatus *status) {
     long reloadBatchesProcessed = 0;

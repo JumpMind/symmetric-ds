@@ -39,6 +39,7 @@ typedef struct SymOutgoingBatchService {
     SymParameterService *parameterService;
     SymOutgoingBatch * (*findOutgoingBatch)(struct SymOutgoingBatchService *this, long batchId, char *nodeId);
     SymOutgoingBatches * (*getOutgoingBatches)(struct SymOutgoingBatchService *this, char *nodeId);
+    void (*insertOutgoingBatch)(struct SymOutgoingBatchService *this, SymOutgoingBatch *outgoingBatch);
     void (*updateOutgoingBatch)(struct SymOutgoingBatchService *this, SymOutgoingBatch *outgoingBatch);
     void (*destroy)(struct SymOutgoingBatchService *this);
 } SymOutgoingBatchService;

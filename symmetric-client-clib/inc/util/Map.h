@@ -24,10 +24,13 @@ typedef struct SymMap {
     void (*putByInt)(struct SymMap *this, int key, void *value, int size);
     void * (*get)(struct SymMap *this, char *key);
     void * (*getByInt)(struct SymMap *this, int key);
+    void * (*remove)(struct SymMap *this, char *key);
+    void * (*removeByInt)(struct SymMap *this, int key);
     SymStringArray * (*keys)(struct SymMap *this);
     SymList * (*values)(struct SymMap *this);
     SymList * (*entries)(struct SymMap *this);
     int (*getBytesSize)(struct SymMap *this, char *key);
+    void (*reset)(struct SymMap *this);
     void (*destroy)(struct SymMap *this);
 } SymMap;
 

@@ -24,6 +24,26 @@ long SymOutgoingBatch_totalEventCount(SymOutgoingBatch *this) {
     return this->insertEventCount + this->updateEventCount + this->deleteEventCount + this->otherEventCount;
 }
 
+void SymOutgoingBatch_incrementEventCount(SymOutgoingBatch *this, SymDataEventType type) {
+    switch (type) {
+    case SYM_DATA_EVENT_RELOAD:
+        this->reloadEventCount++;
+        break;
+    case SYM_DATA_EVENT_INSERT:
+        this->insertEventCount++;
+        break;
+    case SYM_DATA_EVENT_UPDATE:
+        this->updateEventCount++;
+        break;
+    case SYM_DATA_EVENT_DELETE:
+        this->deleteEventCount++;
+        break;
+    default:
+        this->otherEventCount++;
+        break;
+    }
+}
+
 void SymOutgoingBatch_destroy(SymOutgoingBatch *this) {
     free(this);
 }
@@ -35,7 +55,16 @@ SymOutgoingBatch * SymOutgoingBatch_new(SymOutgoingBatch *this) {
     this->batchId = -1;
     this->loadId = -1;
     this->status = SYM_OUTGOING_BATCH_OK;
-    this->totalEventCount = &SymOutgoingBatch_totalEventCount;
+    this->totalEventCount = (void *) &SymOutgoingBatch_totalEventCount;
+    this->incrementEventCount = (void*) &SymOutgoingBatch_incrementEventCount;
     this->destroy = (void *) SymOutgoingBatch_destroy;
+    return this;
+}
+
+SymOutgoingBatch * SymOutgoingBatch_newWithNode(SymOutgoingBatch *this, char *nodeId, char *channelId, char *status) {
+    this = SymOutgoingBatch_new(this);
+    this->nodeId = nodeId;
+    this->channelId = channelId;
+    this->status = status;
     return this;
 }

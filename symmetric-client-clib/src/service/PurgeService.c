@@ -67,7 +67,7 @@ int SymPurgeService_purgeByMinMax(SymPurgeService *this, SymMinMax *minMax, SymM
     long minId = minMax->min;
     long purgeUpToId = minMax->max;
 
-    time_t ts = time(NULL);
+    //time_t ts = time(NULL);
 
     int totalCount = 0;
     int totalDeleteStmts = 0;
@@ -196,7 +196,7 @@ long SymPurgeService_purgeOutgoingBatch(SymPurgeService *this, SymDate *time) {
 int SymPurgeService_purgeByNodeBatchRangeList(SymPurgeService *this, SymList *nodeBatchRangeList) {
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
 
-    time_t ts = time(NULL);
+    //time_t ts = time(NULL);
     int totalCount = 0;
     int totalDeleteStmts = 0;
     SymLog_info("About to purge incoming batch");

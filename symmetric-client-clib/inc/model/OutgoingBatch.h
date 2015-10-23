@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "util/Date.h"
+#include "io/data/DataEventType.h"
 
 #define SYM_OUTGOING_BATCH_OK "OK"
 #define SYM_OUTGOING_BATCH_ERROR "ER"
@@ -70,9 +71,12 @@ typedef struct SymOutgoingBatch {
     SymDate *createTime;
     char *createBy;
     long (*totalEventCount)(struct SymOutgoingBatch *this);
+    void (*incrementEventCount)(struct SymOutgoingBatch *this, SymDataEventType type);
     void (*destroy)(struct SymOutgoingBatch *this);
 } SymOutgoingBatch;
 
 SymOutgoingBatch * SymOutgoingBatch_new(SymOutgoingBatch *this);
+
+SymOutgoingBatch * SymOutgoingBatch_newWithNode(SymOutgoingBatch *this, char *nodeId, char *channelId, char *status);
 
 #endif

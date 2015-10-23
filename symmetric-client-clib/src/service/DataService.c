@@ -29,7 +29,7 @@ SymData * SymDataService_dataMapper(SymRow *row, SymDataService *this) {
     data->channelId = row->getString(row, "channel_id");
     data->transactionId = row->getString(row, "transaction_id");
     data->tableName = row->getString(row, "table_name");
-    data->eventType = row->getString(row, "event_type");
+    data->eventType = SymDataEvent_getEventType(row->getString(row, "event_type"));
     data->sourceNodeId = row->getString(row, "source_node_id");
     data->externalData = row->getString(row, "external_data");
     data->nodeList = row->getString(row, "node_list");

@@ -133,9 +133,9 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
 
     this->sequenceService = SymSequenceService_new(NULL);
 
-    this->configurationService = SymConfigurationService_new(NULL, this->platform);
-
     this->parameterService = SymParameterService_new(NULL, properties);
+    this->configurationService = SymConfigurationService_new(NULL, this->parameterService, this->platform);
+
     this->triggerRouterService = SymTriggerRouterService_new(NULL, this->configurationService,
             this->sequenceService, this->parameterService, this->platform, this->dialect);
     this->transportManager = SymTransportManagerFactory_create(SYM_PROTOCOL_HTTP, this->parameterService);
