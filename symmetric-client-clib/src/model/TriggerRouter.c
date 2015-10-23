@@ -28,8 +28,9 @@ unsigned short SymTriggerRouter_isRouted(SymTriggerRouter *this, SymDataEventTyp
         return this->router->syncOnUpdate;
     case SYM_DATA_EVENT_DELETE:
         return this->router->syncOnDelete;
+    default:
+        return -1;
     }
-    return 0;
 }
 
 void SymTriggerRouter_destroy(SymTriggerRouter *this) {

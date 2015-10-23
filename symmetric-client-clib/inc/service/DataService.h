@@ -24,8 +24,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "db/SymDialect.h"
 #include "db/platform/DatabasePlatform.h"
 #include "service/TriggerRouterService.h"
+#include "service/OutgoingBatchService.h"
+#include "service/NodeService.h"
+#include "service/ParameterService.h"
 #include "model/Data.h"
 #include "model/TriggerHistory.h"
 #include "io/data/Batch.h"
@@ -33,10 +37,6 @@
 #include "util/List.h"
 #include "util/StringBuilder.h"
 #include "common/Log.h"
-#include "service/OutgoingBatchService.h"
-#include "service/NodeService.h"
-#include "db/SymDialect.h"
-#include "service/ParameterService.h"
 #include "common/ParameterConstants.h"
 
 typedef struct SymDataService {

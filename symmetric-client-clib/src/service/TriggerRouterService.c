@@ -658,7 +658,6 @@ char * SymTriggerRouterService_getTriggerName(SymTriggerRouterService *this, Sym
 
 SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTriggerRouterService *this, unsigned short forceRebuild, SymTrigger *trigger, SymDataEventType dmlType, char *reason, SymTriggerHistory *oldhist, SymTriggerHistory *hist, unsigned short triggerIsActive, SymTable *table, SymList *activeTriggerHistories) {
     unsigned short triggerExists = 0;
-    unsigned short triggerRemoved = 0;
 
     SymTriggerHistory *newTriggerHist = SymTriggerHistory_new(NULL);
 
@@ -718,7 +717,6 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
         this->symmetricDialect->removeTrigger(this->symmetricDialect,
                            NULL, oldCatalogName, oldSourceSchema, table->name, oldTriggerName);
         triggerExists = 0;
-        triggerRemoved = 1;
     }
 
     unsigned short isDeadTrigger = !trigger->syncOnInsert && !trigger->syncOnUpdate && !trigger->syncOnDelete;
