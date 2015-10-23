@@ -125,6 +125,27 @@ void SymDataService_heartbeat(SymDataService *this, unsigned short force) {
     SymLog_debug("Done updating my node info");
 }
 
+void SymDataService_insertDataEvents(SymDataService *this, SymSqlTransaction *transaction, SymList *events) {
+    if (events->size > 0) {
+        transaction->prepare(transaction, SYM_SQL_INSERT_INTO_DATA_EVENT);
+
+        SymIterator *iter = events->iterator(events);
+        while (iter->hasNext(iter)) {
+            SymDataEvent *dataEvent = (SymDataEvent *) iter->next(iter);
+            char *routerId = dataEvent->routerId;
+            if (SymStringUtils_isBlank(routerId)) {
+                routerId = SYM_UNKNOWN_ROUTER_ID;
+            }
+            SymStringArray *args = SymStringArray_new(NULL);
+            args->addLong(args, dataEvent->dataId);
+            args->addLong(args, dataEvent->batchId);
+            args->add(args, dataEvent->routerId);
+            transaction->addRow(transaction, args, NULL);
+        }
+        iter->destroy(iter);
+    }
+}
+
 void SymDataService_destroy(SymDataService *this) {
     free(this);
 }
@@ -143,6 +164,7 @@ SymDataService * SymDataService_new(SymDataService *this, SymDatabasePlatform *p
     this->parameterService = parameterService;
     this->heartbeat = (void *) &SymDataService_heartbeat;
     this->selectDataFor = (void *) &SymDataService_selectDataFor;
+    this->insertDataEvents = (void *) &SymDataService_insertDataEvents;
     this->destroy = (void *) &SymDataService_destroy;
     return this;
 }

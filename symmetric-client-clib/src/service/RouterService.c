@@ -105,14 +105,12 @@ SymList * SymRouterService_findAvailableNodes(SymRouterService *this, SymTrigger
         SymNodeGroupLink *link = this->configurationService->getNodeGroupLinkFor(this->configurationService,
                 router->nodeGroupLink->sourceNodeGroupId, router->nodeGroupLink->targetNodeGroupId, 0);
         if (link != NULL) {
-            // TODO: missing implementation
-            //nodes->addAll(nodes, this->nodeService->findEnabledNodesFromNodeGroup(router->nodeGroupLink->targetNodeGroupId));
+            nodes->addAll(nodes, this->nodeService->findEnabledNodesFromNodeGroup(this->nodeService, router->nodeGroupLink->targetNodeGroupId));
         } else {
             SymLog_error("The router %s has no node group link configured from %s to %s",
                     router->routerId, router->nodeGroupLink->sourceNodeGroupId, router->nodeGroupLink->targetNodeGroupId);
         }
-        // TODO: the map can't be copying memory to do things like this
-        //context->availableNodes->put(context->availableNodes, triggerRouter->router->routerId, nodes);
+        context->availableNodes->put(context->availableNodes, triggerRouter->router->routerId, nodes, sizeof(SymList));
     }
     return nodes;
 }
@@ -187,8 +185,7 @@ static int SymRouterService_selectDataAndRoute(SymRouterService *this, SymChanne
         totalDataEventCount += dataEventsInserted;
 
         if (maxNumberOfEventsBeforeFlush <= context->dataEventList->size || context->needsCommitted) {
-            // TODO: implement dataService insertDataEvents
-            //this->dataService->insertDataEvents(this->dataService, context->sqlTransaction, context->dataEventsList);
+            this->dataService->insertDataEvents(this->dataService, context->sqlTransaction, context->dataEventList);
             context->dataEventList->reset(context->dataEventList);
         }
         if (context->needsCommitted) {
@@ -206,8 +203,7 @@ static int SymRouterService_routeDataForChannel(SymRouterService *this, SymChann
     int dataCount = SymRouterService_selectDataAndRoute(this, context);
     if (dataCount > 0) {
         long insertTs = time(NULL);
-        // TODO: implement insertDataEvents
-        //this->dataService->insertDataEvents(this->dataService, context->sqlTransaction, context->dataEventsList);
+        this->dataService->insertDataEvents(this->dataService, context->sqlTransaction, context->dataEventList);
         SymRouterService_completeBatchesAndCommit(this, context);
         context->statInsertDataEventsMs += ((time(NULL) - insertTs) * 1000);
     }
@@ -245,6 +241,8 @@ long SymRouterService_routeData(SymRouterService *this) {
 }
 
 void SymRouterService_destroy(SymRouterService *this) {
+    // TODO: clean up memory
+    // SymMap_destroyAll(this->routers, SymDataRouter_destroy);
     free(this);
 }
 

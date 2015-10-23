@@ -31,11 +31,13 @@
 #include "service/NodeService.h"
 #include "service/ParameterService.h"
 #include "model/Data.h"
+#include "model/DataEvent.h"
 #include "model/TriggerHistory.h"
 #include "io/data/Batch.h"
 #include "io/data/DataEventType.h"
 #include "util/List.h"
 #include "util/StringBuilder.h"
+#include "util/StringUtils.h"
 #include "common/Log.h"
 #include "common/ParameterConstants.h"
 
@@ -49,6 +51,7 @@ typedef struct SymDataService {
 
     void (*heartbeat)(struct SymDataService *this, unsigned short force);
     SymList * (*selectDataFor)(struct SymDataService *this, SymBatch *batch);
+    void (*insertDataEvents)(struct SymDataService *this, SymSqlTransaction *transaction, SymList *events);
     void (*destroy)(struct SymDataService *this);
 } SymDataService;
 
@@ -63,5 +66,7 @@ from sym_data d \
 inner join sym_data_event e on d.data_id = e.data_id \
 inner join sym_outgoing_batch o on o.batch_id = e.batch_id \
 where o.batch_id = ? and o.node_id = ?"
+
+#define SYM_SQL_INSERT_INTO_DATA_EVENT "insert into sym_data_event (data_id, batch_id, router_id, create_time) values(?, ?, ?, current_timestamp)"
 
 #endif
