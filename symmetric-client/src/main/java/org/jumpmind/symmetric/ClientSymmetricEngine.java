@@ -305,8 +305,9 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         }
         boolean delimitedIdentifierMode = properties.is(
                 ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
+        boolean caseSensitive = !properties.is(ParameterConstants.DB_METADATA_IGNORE_CASE, true);
         return JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource,
-                createSqlTemplateSettings(properties), delimitedIdentifierMode);
+                createSqlTemplateSettings(properties), delimitedIdentifierMode, caseSensitive);
     }
 
     protected static SqlTemplateSettings createSqlTemplateSettings(TypedProperties properties) {

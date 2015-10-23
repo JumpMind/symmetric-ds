@@ -128,21 +128,27 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                         writer.setForceQualifier(true);
                         writer.setNullString("\\N");
                         Column[] columns = targetTable.getColumns();
+                        boolean lastWasBinary = false;
                         for (int i = 0; i < columns.length; i++) {
                             if (columns[i].isOfBinaryType() && parsedData[i] != null) {
                                 if (i > 0) {
-                                        out.write(',');
+                                    out.write(',');
                                 }
                                 out.write('"');
                                 if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
-                                        out.write(escape(Hex.decodeHex(parsedData[i].toCharArray())));
+                                    out.write(escape(Hex.decodeHex(parsedData[i].toCharArray())));
                                 } else if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
-                                        out.write(escape(Base64.decodeBase64(parsedData[i].getBytes())));
+                                    out.write(escape(Base64.decodeBase64(parsedData[i].getBytes())));
                                 }
                                 out.write('"');
+                                lastWasBinary = true;
                             } else {
+                                if (lastWasBinary) {
+                                    out.write(',');
+                                } 
                                 writer.write(parsedData[i], true);
                                 writer.flush();
+                                lastWasBinary = false;
                             }
                         }
                         writer.endRecord();
@@ -190,7 +196,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            		(isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
 	            		this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) +
                                 " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY ''" +
-                                " (" + Table.getCommaDeliminatedColumns(table.getColumns()) + ")";
+                                " (" + getCommaDeliminatedColumns(table.getColumns()) + ")";
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
@@ -207,6 +213,24 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        createStagingFile();
 	        loadedRows = 0;
 	        loadedBytes = 0;
+        }
+    }
+    
+    protected String getCommaDeliminatedColumns(Column[] cols) {
+        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        String quote = dbInfo.getDelimiterToken();
+        StringBuilder columns = new StringBuilder();
+        if (cols != null && cols.length > 0) {
+            for (Column column : cols) {
+                columns.append(quote);
+                columns.append(column.getName());
+                columns.append(quote);
+                columns.append(",");
+            }
+            columns.replace(columns.length() - 1, columns.length(), "");
+            return columns.toString();
+        } else {
+            return " ";
         }
     }
 
