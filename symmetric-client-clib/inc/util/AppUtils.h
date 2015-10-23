@@ -29,6 +29,8 @@
 #include <ifaddrs.h>
 #include <stdlib.h>
 #include <string.h>
+#include "common/Log.h"
+#include "util/StringUtils.h"
 
 #define SYM_MAX_HOSTNAME 64
 #define SYM_MAX_IP_ADDRESS 64
@@ -36,5 +38,7 @@
 char * SymAppUtils_getHostName();
 
 char * SymAppUtils_getIpAddress();
+
+char * SymAppUtils_getTimezoneOffset();
 
 #endif

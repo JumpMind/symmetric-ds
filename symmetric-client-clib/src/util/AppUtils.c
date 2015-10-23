@@ -19,7 +19,6 @@
  * under the License.
  */
 #include "util/AppUtils.h"
-#include "common/Log.h"
 
 char * SymAppUtils_getHostName() {
     int numBytes = SYM_MAX_HOSTNAME * sizeof(char);
@@ -47,4 +46,29 @@ char * SymAppUtils_getIpAddress() {
         freeifaddrs(ifaddr);
     }
     return ipaddr;
+}
+
+char * SymAppUtils_getTimezoneOffset() {
+    time_t t = time(NULL);
+    struct tm lt = {0};
+    localtime_r(&t, &lt);
+
+    int MINUTES_PER_HOUR = 60, SECONDS_PER_MINUTE = 60;
+    int offsetInMinutes = lt.tm_gmtoff / SECONDS_PER_MINUTE;
+
+
+    char sign;
+    if (offsetInMinutes < 0) {
+        sign = '-';
+    }
+    else {
+        sign = '+'; // should be plus or minus sign for UTC?
+    }
+
+    int hours =  abs(offsetInMinutes / MINUTES_PER_HOUR);
+    int minutes = abs(offsetInMinutes % MINUTES_PER_HOUR);
+
+    char *timezoneOffset = SymStringUtils_format("%c%02d:%02d", sign, hours, minutes);
+
+    return timezoneOffset;
 }
