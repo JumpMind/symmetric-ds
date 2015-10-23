@@ -104,6 +104,10 @@ void SymEngine_purge(SymEngine *this) {
     this->purgeService->purgeIncoming(this->purgeService);
 }
 
+void SymEngine_heartbeat(SymEngine *this, unsigned short force) {
+    this->dataService->heartbeat(this->dataService, force);
+}
+
 unsigned short SymEngine_uninstall(SymEngine *this) {
 	SymLog_warn("Un-installing");
 	return 0;
@@ -116,7 +120,7 @@ void SymEngine_destroy(SymEngine *this) {
     free(this);
 }
 
-SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
+SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     if (this == NULL) {
         this = (SymEngine *) calloc(1, sizeof(SymEngine));
     }
@@ -125,6 +129,7 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
     this->uninstall = (void *) &SymEngine_uninstall;
     this->syncTriggers = (void *) &SymEngine_syncTriggers;
     this->purge = (void *) &SymEngine_purge;
+    this->heartbeat = (void *) &SymEngine_heartbeat;
     this->destroy = (void *) &SymEngine_destroy;
 
     this->properties = properties;
@@ -140,12 +145,13 @@ SymEngine * SymEngine_new(SymEngine *this, SymProperties *properties) {
             this->sequenceService, this->parameterService, this->platform, this->dialect);
     this->transportManager = SymTransportManagerFactory_create(SYM_PROTOCOL_HTTP, this->parameterService);
     this->nodeService = SymNodeService_new(NULL, this->platform);
+    this->nodeService->lastRestartTime = SymDate_new(NULL);
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
     this->outgoingBatchService = SymOutgoingBatchService_new(NULL, this->platform, this->parameterService);
     this->acknowledgeService = SymAcknowledgeService_new(NULL, this->outgoingBatchService, this->platform);
     this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform,
             this->dialect, this->incomingBatchService);
-    this->dataService = SymDataService_new(NULL, this->platform, this->triggerRouterService);
+    this->dataService = SymDataService_new(NULL, this->platform, this->triggerRouterService, this->nodeService, this->dialect, this->outgoingBatchService, this->parameterService);
     this->dataExtractorService = SymDataExtractorService_new(NULL, this->nodeService, this->outgoingBatchService, this->dataService,
             this->triggerRouterService, this->parameterService, this->platform);
     this->registrationService = SymRegistrationService_new(NULL, this->nodeService, this->dataLoaderService, this->parameterService,

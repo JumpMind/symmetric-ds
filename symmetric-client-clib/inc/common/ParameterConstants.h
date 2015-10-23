@@ -49,9 +49,13 @@
 #define SYM_PARAMETER_AUTO_SYNC_TRIGGERS "auto.sync.triggers"
 #define SYM_PARAMETER_AUTO_SYNC_TRIGGERS_AT_STARTUP "auto.sync.triggers.at.startup"
 
-#define SYM_PURGE_MAX_NUMBER_OF_DATA_IDS "job.purge.max.num.data.to.delete.in.tx"
-#define SYM_PURGE_MAX_NUMBER_OF_BATCH_IDS "job.purge.max.num.batches.to.delete.in.tx"
-#define SYM_PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS "job.purge.max.num.data.event.batches.to.delete.in.tx"
-#define SYM_PURGE_RETENTION_MINUTES "purge.retention.minutes"
+#define SYM_PARAMETER_PURGE_MAX_NUMBER_OF_DATA_IDS "job.purge.max.num.data.to.delete.in.tx"
+#define SYM_PARAMETER_PURGE_MAX_NUMBER_OF_BATCH_IDS "job.purge.max.num.batches.to.delete.in.tx"
+#define SYM_PARAMETER_PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS "job.purge.max.num.data.event.batches.to.delete.in.tx"
+#define SYM_PARAMETER_PURGE_RETENTION_MINUTES "purge.retention.minutes"
+
+#define SYM_PARAMETER_HEARTBEAT_ENABLED "heartbeat.sync.on.push.enabled"
+#define SYM_PARAMETER_HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS "heartbeat.update.node.with.batch.status"
+#define SYM_PARAMETER_AUTO_UPDATE_NODE_VALUES "auto.update.node.values.from.properties"
 
 #endif

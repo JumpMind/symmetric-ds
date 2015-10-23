@@ -74,6 +74,7 @@ typedef struct SymEngine {
     unsigned short (*uninstall)(struct SymEngine *this);
     void (*syncTriggers)(struct SymEngine *this);
     void (*purge)(struct SymEngine *this);
+    void (*heartbeat)(struct SymEngine *this, unsigned short force);
     void (*destroy)(struct SymEngine *this);
 } SymEngine;
 
