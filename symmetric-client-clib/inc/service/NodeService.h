@@ -56,6 +56,7 @@ typedef struct SymNodeService {
     int (*getNodeStatus)(struct SymNodeService *this);
     void (*save)(struct SymNodeService *this, SymNode *node);
     void (*updateNodeHostForCurrentNode)(struct SymNodeService *this);
+    SymList * (*findEnabledNodesFromNodeGroup)(struct SymNodeService *this, char *nodeGroupId);
     void (*destroy)(struct SymNodeService *);
 } SymNodeService;
 
@@ -109,5 +110,7 @@ update sym_node_host set \
 ip_address=?, os_user=?, os_name=?, os_arch=?, os_version=?, available_processors=?, free_memory_bytes=?, \
 total_memory_bytes=?, max_memory_bytes=?, java_version=?, java_vendor=?, jdbc_version=?, symmetric_version=?, timezone_offset=?, heartbeat_time=?, \
 last_restart_time=? where node_id=? and host_name=? "
+
+#define SYM_SQL_FIND_ENABLED_NODES_FROM_NODE_GROUP_SQL "where node_group_id = ? and sync_enabled=1 order by node_id"
 
 #endif
