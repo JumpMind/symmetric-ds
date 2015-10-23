@@ -57,10 +57,14 @@ public class WrapperConfig {
     public String getWrapperJarPath()  {
         try {
             File libDir = new File(workingDirectory.getCanonicalPath() + File.separator + "lib");
-            for (String filename : libDir.list()) {
-                if (filename.startsWith("symmetric-wrapper")) {
-                    return new File(libDir.getCanonicalPath() + File.separator + filename).getCanonicalPath();
-                }
+            if (libDir.list() != null) {
+	            for (String filename : libDir.list()) {
+	                if (filename.startsWith("symmetric-wrapper")) {
+	                    return new File(libDir.getCanonicalPath() + File.separator + filename).getCanonicalPath();
+	                }
+	            }
+            } else {
+            	return workingDirectory.getCanonicalPath();
             }
         } catch (IOException e) {
             throw new WrapperException(Constants.RC_MISSING_LIB_FOLDER, 0, "Error while locating wrapper JAR");

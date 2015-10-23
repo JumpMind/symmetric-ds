@@ -16,11 +16,11 @@ public class WrapperHelper {
         try {
             service.loadConfig(configFileName);
         } catch (FileNotFoundException e) {
-            System.out.println("Missing config file " + args[1]);
+            System.out.println("Missing config file " + configFileName);
             System.out.println(e.getMessage());
             System.exit(Constants.RC_MISSING_CONFIG_FILE);
         } catch (IOException e) {
-            System.out.println("Cannot read config file " + args[1]);
+            System.out.println("Cannot read config file " + configFileName);
             System.out.println(e.getMessage());
             System.exit(Constants.RC_FAIL_READ_CONFIG_FILE);
         }
