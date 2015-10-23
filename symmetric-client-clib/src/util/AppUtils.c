@@ -19,7 +19,6 @@
  * under the License.
  */
 #include "util/AppUtils.h"
-#include "common/Log.h"
 
 char * SymAppUtils_getHostName() {
     int numBytes = SYM_MAX_HOSTNAME * sizeof(char);
@@ -36,8 +35,10 @@ char * SymAppUtils_getIpAddress() {
     if (getifaddrs(&ifaddr) == 0) {
         for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
             if (ifa->ifa_addr != NULL && ifa->ifa_addr->sa_family == AF_INET &&
-                    (strcmp(ifa->ifa_name, "wlan0") == 0 || strcmp(ifa->ifa_name, "eth0") == 0)) {
-                if ((rc = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), ipaddr, NI_MAXHOST, NULL, 0, NI_NUMERICHOST)) == 0) {
+                    (strcmp(ifa->ifa_name, "wlan0") == 0
+                            || strcmp(ifa->ifa_name, "en0") == 0
+                            || strcmp(ifa->ifa_name, "eth0") == 0)) {
+                if ((rc = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), ipaddr, SYM_MAX_IP_ADDRESS, NULL, 0, NI_NUMERICHOST)) == 0) {
                     break;
                 } else {
                 	SymLog_warn("getnameinfo() failed: %s", gai_strerror(rc));
@@ -48,3 +49,52 @@ char * SymAppUtils_getIpAddress() {
     }
     return ipaddr;
 }
+
+char * SymAppUtils_getTimezoneOffset() {
+    time_t t = time(NULL);
+    struct tm lt = {0};
+    localtime_r(&t, &lt);
+
+    int MINUTES_PER_HOUR = 60, SECONDS_PER_MINUTE = 60;
+    int offsetInMinutes = lt.tm_gmtoff / SECONDS_PER_MINUTE;
+
+    char sign;
+    if (offsetInMinutes < 0) {
+        sign = '-';
+    }
+    else {
+        sign = '+'; // should be plus or minus sign for UTC?
+    }
+
+    int hours =  abs(offsetInMinutes / MINUTES_PER_HOUR);
+    int minutes = abs(offsetInMinutes % MINUTES_PER_HOUR);
+
+    char *timezoneOffset = SymStringUtils_format("%c%02d:%02d", sign, hours, minutes);
+
+    return timezoneOffset;
+}
+
+char * SymAppUtils_getOsName() {
+    struct utsname unameData;
+    uname(&unameData);
+    return SymStringUtils_format("%s", unameData.sysname);
+}
+
+char * SymAppUtils_getOsVersion() {
+    struct utsname unameData;
+    uname(&unameData);
+    return SymStringUtils_format("%s", unameData.release);
+}
+
+char * SymAppUtils_getOsArch() {
+    struct utsname unameData;
+    uname(&unameData);
+    return SymStringUtils_format("%s", unameData.machine);
+}
+
+char * SymAppUtils_getOsUser() {
+    char *username = getlogin();
+    return username;
+}
+
+

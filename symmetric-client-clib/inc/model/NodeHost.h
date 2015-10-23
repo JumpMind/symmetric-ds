@@ -18,36 +18,40 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_APP_UTILS_H
-#define SYM_APP_UTILS_H
+#ifndef SYM_NODEHOST_H
+#define SYM_NODEHOST_H
 
-#include <stdio.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <ifaddrs.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/utsname.h>
-#include "common/Log.h"
-#include "util/StringUtils.h"
 
-#define SYM_MAX_HOSTNAME 64
-#define SYM_MAX_IP_ADDRESS 64
+#include "util/Date.h"
+#include "util/AppUtils.h"
+#include "model/Node.h"
 
-char * SymAppUtils_getHostName();
+typedef struct SymNodeHost {
+    char *nodeId;
+    char *hostName;
+    char *ipAddress;
+    char *osUser;
+    char *osName;
+    char *osArch;
+    char *osVersion;
+    int availableProcessors;
+    long freeMemoryBytes;
+    long totalMemoryBytes;
+    long maxMemoryBytes;
+    char *javaVersion;
+    char *javaVendor;
+    char *jdbcVersion;
+    char *symmetricVersion;
+    char *timezoneOffset;
+    SymDate *heartbeatTime;
+    SymDate *lastRestartTime;
+    SymDate *createTime;
 
-char * SymAppUtils_getIpAddress();
+    void (*refresh)(struct SymNodeHost *this);
+    void (*destroy)(struct SymNodeHost *this);
+} SymNodeHost;
 
-char * SymAppUtils_getTimezoneOffset();
-
-char * SymAppUtils_getOsName();
-
-char * SymAppUtils_getOsVersion();
-
-char * SymAppUtils_getOsArch();
-
-char * SymAppUtils_getOsUser();
+SymNodeHost * SymNodeHost_new(SymNodeHost *this);
 
 #endif

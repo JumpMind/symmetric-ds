@@ -33,15 +33,28 @@
 #include "util/List.h"
 #include "util/StringBuilder.h"
 #include "common/Log.h"
+#include "service/OutgoingBatchService.h"
+#include "service/NodeService.h"
+#include "db/SymDialect.h"
+#include "service/ParameterService.h"
+#include "common/ParameterConstants.h"
 
 typedef struct SymDataService {
     SymDatabasePlatform *platform;
     SymTriggerRouterService *triggerRouterService;
+    SymNodeService *nodeService;
+    SymDialect *dialect;
+    SymOutgoingBatchService *outgoingBatchService;
+    SymParameterService *parameterService;
+
+    void (*heartbeat)(struct SymDataService *this, unsigned short force);
     SymList * (*selectDataFor)(struct SymDataService *this, SymBatch *batch);
     void (*destroy)(struct SymDataService *this);
 } SymDataService;
 
-SymDataService * SymDataService_new(SymDataService *this, SymDatabasePlatform *platform, SymTriggerRouterService *triggerRouterService);
+SymDataService * SymDataService_new(SymDataService *this, SymDatabasePlatform *platform, SymTriggerRouterService *triggerRouterService,
+        SymNodeService *nodeService, SymDialect *dialect, SymOutgoingBatchService *outgoingBatchService,
+        SymParameterService *parameterService);
 
 #define SYM_SQL_SELECT_EVENT_DATA_TO_EXTRACT \
 "select d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data, \
