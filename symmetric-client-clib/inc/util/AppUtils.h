@@ -29,6 +29,7 @@
 #include <ifaddrs.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/utsname.h>
 #include "common/Log.h"
 #include "util/StringUtils.h"
 
@@ -40,5 +41,13 @@ char * SymAppUtils_getHostName();
 char * SymAppUtils_getIpAddress();
 
 char * SymAppUtils_getTimezoneOffset();
+
+char * SymAppUtils_getOsName();
+
+char * SymAppUtils_getOsVersion();
+
+char * SymAppUtils_getOsArch();
+
+char * SymAppUtils_getOsUser();
 
 #endif

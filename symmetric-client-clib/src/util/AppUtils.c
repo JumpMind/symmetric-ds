@@ -35,8 +35,10 @@ char * SymAppUtils_getIpAddress() {
     if (getifaddrs(&ifaddr) == 0) {
         for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
             if (ifa->ifa_addr != NULL && ifa->ifa_addr->sa_family == AF_INET &&
-                    (strcmp(ifa->ifa_name, "wlan0") == 0 || strcmp(ifa->ifa_name, "eth0") == 0)) {
-                if ((rc = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), ipaddr, NI_MAXHOST, NULL, 0, NI_NUMERICHOST)) == 0) {
+                    (strcmp(ifa->ifa_name, "wlan0") == 0
+                            || strcmp(ifa->ifa_name, "en0") == 0
+                            || strcmp(ifa->ifa_name, "eth0") == 0)) {
+                if ((rc = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), ipaddr, SYM_MAX_IP_ADDRESS, NULL, 0, NI_NUMERICHOST)) == 0) {
                     break;
                 } else {
                 	SymLog_warn("getnameinfo() failed: %s", gai_strerror(rc));
@@ -56,7 +58,6 @@ char * SymAppUtils_getTimezoneOffset() {
     int MINUTES_PER_HOUR = 60, SECONDS_PER_MINUTE = 60;
     int offsetInMinutes = lt.tm_gmtoff / SECONDS_PER_MINUTE;
 
-
     char sign;
     if (offsetInMinutes < 0) {
         sign = '-';
@@ -72,3 +73,28 @@ char * SymAppUtils_getTimezoneOffset() {
 
     return timezoneOffset;
 }
+
+char * SymAppUtils_getOsName() {
+    struct utsname unameData;
+    uname(&unameData);
+    return SymStringUtils_format("%s", unameData.sysname);
+}
+
+char * SymAppUtils_getOsVersion() {
+    struct utsname unameData;
+    uname(&unameData);
+    return SymStringUtils_format("%s", unameData.release);
+}
+
+char * SymAppUtils_getOsArch() {
+    struct utsname unameData;
+    uname(&unameData);
+    return SymStringUtils_format("%s", unameData.machine);
+}
+
+char * SymAppUtils_getOsUser() {
+    char *username = getlogin();
+    return username;
+}
+
+
