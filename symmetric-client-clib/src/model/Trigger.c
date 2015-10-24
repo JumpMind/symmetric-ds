@@ -179,6 +179,12 @@ long SymTrigger_toHashedValue(SymTrigger *this) {
     return hashedValue;
 }
 
+unsigned short SymTrigger_matches(SymTrigger *this, SymTrigger *trigger) {
+    return SymStringUtils_equals(this->sourceCatalogName, trigger->sourceCatalogName)
+            && SymStringUtils_equals(this->sourceSchemaName, trigger->sourceSchemaName)
+            && SymStringUtils_equalsIgnoreCase(this->sourceTableName, trigger->sourceTableName);
+}
+
 unsigned short SymTrigger_hasChangedSinceLastTriggerBuild(SymTrigger *this, SymDate *lastTriggerBuildTime) {
     return lastTriggerBuildTime == NULL || this->lastUpdateTime == NULL
             || lastTriggerBuildTime->before(lastTriggerBuildTime, this->lastUpdateTime);
@@ -196,6 +202,7 @@ SymTrigger * SymTrigger_new(SymTrigger *this) {
     this->getSyncKeysColumnsForTable = (void *) &SymTrigger_getSyncKeysColumnsForTable;
     this->toHashedValue = (void *) &SymTrigger_toHashedValue;
     this->hasChangedSinceLastTriggerBuild = (void *) &SymTrigger_hasChangedSinceLastTriggerBuild;
+    this->matches = (void *) &SymTrigger_matches;
     this->destroy = (void *) &SymTrigger_destroy;
     return this;
 }
