@@ -41,6 +41,7 @@ typedef struct SymTriggerRouter {
 	char *lastUpdateBy;
 	unsigned short pingBackEnabled;
 	unsigned short (*isRouted)(struct SymTriggerRouter *this, SymDataEventType dataEventType);
+	unsigned short (*isSame)(struct SymTriggerRouter *this, struct SymTriggerRouter *triggerRouter);
     void (*destroy)(struct SymTriggerRouter *this);
 } SymTriggerRouter;
 

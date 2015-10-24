@@ -33,6 +33,13 @@ unsigned short SymTriggerRouter_isRouted(SymTriggerRouter *this, SymDataEventTyp
     }
 }
 
+unsigned short SymTriggerRouter_isSame(SymTriggerRouter *this, SymTriggerRouter *triggerRouter) {
+    return ((this->trigger == NULL && triggerRouter->trigger == NULL)
+            || (this->trigger != NULL && triggerRouter->trigger != NULL && this->trigger->matches(this->trigger, triggerRouter->trigger)))
+            && ((this->router == NULL && triggerRouter->router == NULL)
+            || (this->router != NULL && triggerRouter->router != NULL && this->router->equals(this->router, triggerRouter->router)));
+}
+
 void SymTriggerRouter_destroy(SymTriggerRouter *this) {
     free(this);
 }
@@ -42,6 +49,7 @@ SymTriggerRouter * SymTriggerRouter_new(SymTriggerRouter *this) {
         this = (SymTriggerRouter *) calloc(1, sizeof(SymTriggerRouter));
     }
     this->isRouted = (void *) &SymTriggerRouter_isRouted;
+    this->isSame = (void *) &SymTriggerRouter_isSame;
     this->destroy = (void *) &SymTriggerRouter_destroy;
     return this;
 }
