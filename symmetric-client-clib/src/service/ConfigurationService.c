@@ -72,6 +72,22 @@ SymList * SymConfigurationService_getNodeGroupLinks(SymConfigurationService *thi
     return this->nodeGroupLinksCache;
 }
 
+SymList * SymConfigurationService_getNodeGroupLinksFor(SymConfigurationService *this, char *sourceNodeGroupId, unsigned short refreshCache) {
+    SymList *links = SymConfigurationService_getNodeGroupLinks(this, refreshCache);
+    SymList *target = SymList_new(NULL);
+    SymIterator *iter = links->iterator(links);
+    while (iter->hasNext(iter)) {
+        SymNodeGroupLink *nodeGroupLink = (SymNodeGroupLink *) iter->next(iter);
+        if (SymStringUtils_equals(nodeGroupLink->sourceNodeGroupId, sourceNodeGroupId)) {
+            target->add(target, nodeGroupLink);
+        }
+    }
+    iter->destroy(iter);
+    // TODO: destroy NodeGroupLinks that were not used
+    links->destroy(links);
+    return target;
+}
+
 SymNodeGroupLink * SymConfigurationService_getNodeGroupLinkFor(SymConfigurationService *this, char *sourceNodeGroupId, char *targetNodeGroupId,
         unsigned short refreshCache) {
     SymList *links = SymConfigurationService_getNodeGroupLinks(this, refreshCache);
@@ -130,6 +146,7 @@ SymConfigurationService * SymConfigurationService_new(SymConfigurationService *t
     this->getChannel = (void *) &SymConfigurationService_getChannel;
     this->getNodeGroupLinks = (void *) &SymConfigurationService_getNodeGroupLinks;
     this->getNodeGroupLinkFor = (void *) &SymConfigurationService_getNodeGroupLinkFor;
+    this->getNodeGroupLinksFor = (void *) &SymConfigurationService_getNodeGroupLinksFor;
     this->clearCache = (void *) &SymConfigurationService_clearCache;
     this->destroy = (void *) &SymConfigurationService_destroy;
     return this;

@@ -42,6 +42,7 @@ typedef struct SymConfigurationService {
     SymList * (*getNodeGroupLinks)(struct SymConfigurationService *this, unsigned short refreshCache);
     SymNodeGroupLink * (*getNodeGroupLinkFor)(struct SymConfigurationService *this, char *sourceNodeGroupId, char *targetNodeGroupId,
             unsigned short refreshCache);
+    SymList * (*getNodeGroupLinksFor)(struct SymConfigurationService *this, char *sourceNodeGroupId, unsigned short refreshCache);
     SymList * (*clearCache)(struct SymConfigurationService *this);
     SymList * (*destroy)(struct SymConfigurationService *this);
 } SymConfigurationService;
