@@ -38,38 +38,18 @@ public class WrapperConfig {
     
     protected File workingDirectory;
 
-    public WrapperConfig(String configFile) throws IOException {
+    protected String jarFile;
+    
+    public WrapperConfig(String applHomeDir, String configFile, String jarFile) throws IOException {
         prop = getProperties(configFile);
         this.configFile = new File(configFile).getAbsolutePath();
-        String symHome = System.getenv("SYM_HOME");
-        if (symHome != null) {
-            workingDirectory = new File(symHome);
-        } else {
-            int index = configFile.lastIndexOf(File.separator);
-            if (index == -1) {
-                workingDirectory = new File(".");
-            } else {
-                workingDirectory = new File(configFile.substring(0, index + 1) + "..");
-            }
-        }
+        this.jarFile = new File(jarFile).getAbsolutePath();
+        System.out.println("jarfile==>" + this.jarFile);
+        workingDirectory = new File(applHomeDir);
     }   
 
     public String getWrapperJarPath()  {
-        try {
-            File libDir = new File(workingDirectory.getCanonicalPath() + File.separator + "lib");
-            if (libDir.list() != null) {
-	            for (String filename : libDir.list()) {
-	                if (filename.startsWith("symmetric-wrapper")) {
-	                    return new File(libDir.getCanonicalPath() + File.separator + filename).getCanonicalPath();
-	                }
-	            }
-            } else {
-            	return workingDirectory.getCanonicalPath();
-            }
-        } catch (IOException e) {
-            throw new WrapperException(Constants.RC_MISSING_LIB_FOLDER, 0, "Error while locating wrapper JAR");
-        }
-        throw new WrapperException(Constants.RC_MISSING_LIB_FOLDER, 0, "Cannot find wrapper JAR");
+    	return jarFile;
     }
 
     public String getConfigFile() {

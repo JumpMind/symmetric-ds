@@ -59,8 +59,8 @@ public abstract class WrapperService {
         return instance;
     }
 
-    public void loadConfig(String configFile) throws IOException {
-        config = new WrapperConfig(configFile);
+    public void loadConfig(String applHomeDir, String configFile, String jarFile) throws IOException {
+        config = new WrapperConfig(applHomeDir, configFile, jarFile);
         setWorkingDirectory(config.getWorkingDirectory().getAbsolutePath());        
     }
 

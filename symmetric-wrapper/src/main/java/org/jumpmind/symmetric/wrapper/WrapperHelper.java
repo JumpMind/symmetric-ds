@@ -7,14 +7,14 @@ import java.io.IOException;
 public class WrapperHelper {
 
 		
-	public static void run(String[] args, String applHomeDir, String configFileName) {
+	public static void run(String[] args, String applHomeDir, String configFileName, String jarFileName) {
 		
 		checkArgs(args);
         System.setProperty("java.io.tmpdir", applHomeDir + File.separator + "tmp");
 
         WrapperService service = WrapperService.getInstance();
         try {
-            service.loadConfig(configFileName);
+            service.loadConfig(applHomeDir, configFileName, jarFileName);
         } catch (FileNotFoundException e) {
             System.out.println("Missing config file " + configFileName);
             System.out.println(e.getMessage());
