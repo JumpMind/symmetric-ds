@@ -20,6 +20,26 @@
  */
 #include "model/TriggerRouter.h"
 
+unsigned short SymTriggerRouter_isRouted(SymTriggerRouter *this, SymDataEventType dataEventType) {
+    switch (dataEventType) {
+    case SYM_DATA_EVENT_INSERT:
+        return this->router->syncOnInsert;
+    case SYM_DATA_EVENT_UPDATE:
+        return this->router->syncOnUpdate;
+    case SYM_DATA_EVENT_DELETE:
+        return this->router->syncOnDelete;
+    default:
+        return -1;
+    }
+}
+
+unsigned short SymTriggerRouter_isSame(SymTriggerRouter *this, SymTriggerRouter *triggerRouter) {
+    return ((this->trigger == NULL && triggerRouter->trigger == NULL)
+            || (this->trigger != NULL && triggerRouter->trigger != NULL && this->trigger->matches(this->trigger, triggerRouter->trigger)))
+            && ((this->router == NULL && triggerRouter->router == NULL)
+            || (this->router != NULL && triggerRouter->router != NULL && this->router->equals(this->router, triggerRouter->router)));
+}
+
 void SymTriggerRouter_destroy(SymTriggerRouter *this) {
     free(this);
 }
@@ -28,6 +48,8 @@ SymTriggerRouter * SymTriggerRouter_new(SymTriggerRouter *this) {
     if (this == NULL) {
         this = (SymTriggerRouter *) calloc(1, sizeof(SymTriggerRouter));
     }
+    this->isRouted = (void *) &SymTriggerRouter_isRouted;
+    this->isSame = (void *) &SymTriggerRouter_isSame;
     this->destroy = (void *) &SymTriggerRouter_destroy;
     return this;
 }

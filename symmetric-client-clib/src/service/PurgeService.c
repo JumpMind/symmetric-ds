@@ -67,8 +67,6 @@ int SymPurgeService_purgeByMinMax(SymPurgeService *this, SymMinMax *minMax, SymM
     long minId = minMax->min;
     long purgeUpToId = minMax->max;
 
-    time_t ts = time(NULL);
-
     int totalCount = 0;
     int totalDeleteStmts = 0;
 
@@ -163,7 +161,7 @@ long SymPurgeService_purgeDataRows(SymPurgeService *this, SymDate *time) {
     SymLog_info("Getting range for data");
     SymMinMax *minMax = SymPurgeService_queryForMinMax(this, SYM_SQL_SELECT_DATA_RANGE, NULL);
     int maxNumOfDataIdsToPurgeInTx =
-            this->parameterService->getInt(this->parameterService, SYM_PURGE_MAX_NUMBER_OF_DATA_IDS, 5000);
+            this->parameterService->getInt(this->parameterService, SYM_PARAMETER_PURGE_MAX_NUMBER_OF_DATA_IDS, 5000);
     int dataDeletedCount = SymPurgeService_purgeByMinMax(this, minMax,
             SYM_MIN_MAX_DELETE_DATA, time, maxNumOfDataIdsToPurgeInTx);
     int strandedDeletedCount = SymPurgeService_purgeByMinMax(this, minMax,
@@ -182,9 +180,9 @@ long SymPurgeService_purgeOutgoingBatch(SymPurgeService *this, SymDate *time) {
     args->destroy(args);
 
     int maxNumOfBatchIdsToPurgeInTx =
-            this->parameterService->getInt(this->parameterService, SYM_PURGE_MAX_NUMBER_OF_BATCH_IDS, 5000);
+            this->parameterService->getInt(this->parameterService, SYM_PARAMETER_PURGE_MAX_NUMBER_OF_BATCH_IDS, 5000);
     int maxNumOfDataEventsToPurgeInTx =
-            this->parameterService->getInt(this->parameterService, SYM_PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS, 5);
+            this->parameterService->getInt(this->parameterService, SYM_PARAMETER_PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS, 5);
 
     int dataEventsPurgedCount = SymPurgeService_purgeByMinMax(this, minMax, SYM_MIN_MAX_DELETE_DATA_EVENT,
             time, maxNumOfDataEventsToPurgeInTx);
@@ -196,7 +194,6 @@ long SymPurgeService_purgeOutgoingBatch(SymPurgeService *this, SymDate *time) {
 int SymPurgeService_purgeByNodeBatchRangeList(SymPurgeService *this, SymList *nodeBatchRangeList) {
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
 
-    time_t ts = time(NULL);
     int totalCount = 0;
     int totalDeleteStmts = 0;
     SymLog_info("About to purge incoming batch");
@@ -205,7 +202,7 @@ int SymPurgeService_purgeByNodeBatchRangeList(SymPurgeService *this, SymList *no
     for (i = 0; i < nodeBatchRangeList->size; ++i) {
         SymNodeBatchRange *nodeBatchRange = nodeBatchRangeList->get(nodeBatchRangeList, i);
         int maxNumOfBatchIdsToPurgeInTx =
-                this->parameterService->getInt(this->parameterService, SYM_PURGE_MAX_NUMBER_OF_BATCH_IDS, 5000);
+                this->parameterService->getInt(this->parameterService, SYM_PARAMETER_PURGE_MAX_NUMBER_OF_BATCH_IDS, 5000);
 
         char *minBatchIdString = SymStringUtils_format("%ld", nodeBatchRange->minBatchId);
         char *maxBatchIdString = SymStringUtils_format("%ld", nodeBatchRange->maxBatchId);
@@ -226,7 +223,7 @@ int SymPurgeService_purgeByNodeBatchRangeList(SymPurgeService *this, SymList *no
             args->add(args, SYM_OUTGOING_BATCH_OK);
 
             int error;
-            totalCount +=  sqlTemplate->update(sqlTemplate, SYM_SQL_DELETE_INCOMING_BATCH, args, NULL, &error);
+            totalCount +=  sqlTemplate->update(sqlTemplate, SYM_SQL_PURGE_INCOMING_BATCH, args, NULL, &error);
             args->destroy(args);
             minBatchId = maxBatchId + 1;
         }
@@ -298,7 +295,7 @@ SymDate *SymPurgeService_getRetentionCutoff(SymPurgeService *this) {
     long timeInMinutes = timeInSeconds / 60;
 
     int purgeRetentionMinutes =
-            this->parameterService->getInt(this->parameterService, SYM_PURGE_RETENTION_MINUTES, 1440);
+            this->parameterService->getInt(this->parameterService, SYM_PARAMETER_PURGE_RETENTION_MINUTES, 1440);
     long retentionCutoffMinutes = timeInMinutes - purgeRetentionMinutes;
 
     SymDate *retentionCutoff = SymDate_newWithTime(retentionCutoffMinutes*60);
@@ -320,10 +317,6 @@ long SymPurgeService_purgeOutgoing(SymPurgeService *this) {
     rowsPurged += SymPurgeService_purgeOutgoingBeforeDate(this, retentionCutoff);
     retentionCutoff->destroy(retentionCutoff);
     return rowsPurged;
-}
-
-void SymPurgeService_purgeStats(SymPurgeService *this, unsigned short force) {
-    // TODO
 }
 
 void SymPurgeService_purgeAllIncomingEventsForNode(SymPurgeService *this, char *nodeId) {

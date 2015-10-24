@@ -18,36 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_APP_UTILS_H
-#define SYM_APP_UTILS_H
+#include "model/DataMetaData.h"
 
-#include <stdio.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <ifaddrs.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/utsname.h>
-#include "common/Log.h"
-#include "util/StringUtils.h"
+void SymDataMetaData_destroy(SymDataMetaData *this) {
+    free(this);
+}
 
-#define SYM_MAX_HOSTNAME 64
-#define SYM_MAX_IP_ADDRESS 64
-
-char * SymAppUtils_getHostName();
-
-char * SymAppUtils_getIpAddress();
-
-char * SymAppUtils_getTimezoneOffset();
-
-char * SymAppUtils_getOsName();
-
-char * SymAppUtils_getOsVersion();
-
-char * SymAppUtils_getOsArch();
-
-char * SymAppUtils_getOsUser();
-
-#endif
+SymDataMetaData * SymDataMetaData_new(SymDataMetaData *this, SymData *data, SymTable *table, SymRouter *router, SymChannel *nodeChannel) {
+    if (this == NULL) {
+        this = (SymDataMetaData *) calloc(1, sizeof(SymDataMetaData));
+    }
+    this->data = data;
+    this->table = table;
+    this->router = router;
+    this->nodeChannel = nodeChannel;
+    this->destroy = (void *) SymDataMetaData_destroy;
+    return this;
+}

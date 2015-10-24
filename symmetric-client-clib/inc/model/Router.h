@@ -23,15 +23,13 @@
 
 #include <stdlib.h>
 #include "model/NodeGroupLink.h"
+#include "util/StringUtils.h"
 
 typedef struct SymRouter {
     char *routerId;
     SymNodeGroupLink *nodeGroupLink;
     char *routerType;
 
-    /**
-     * Default to routing all data to all nodes.
-     */
     char *routerExpression;
     unsigned short syncOnUpdate;
     unsigned short syncOnInsert;
@@ -44,9 +42,10 @@ typedef struct SymRouter {
     SymDate *lastUpdateTime;
     char *lastUpdateBy;
 
+    unsigned short (*equals)(struct SymRouter *this, struct SymRouter *router);
     void (*destroy)(struct SymRouter *this);
 } SymRouter;
 
 SymRouter * SymRouter_new(SymRouter *this);
 
-#endif /* SYM_MODEL_ROUTER_H */
+#endif

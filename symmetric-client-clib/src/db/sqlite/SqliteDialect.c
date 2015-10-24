@@ -124,7 +124,7 @@ SymSqliteDialect * SymSqliteDialect_new(SymSqliteDialect *this, SymDatabasePlatf
     }
     SymDialect_new(&this->super, platform);
     SymDialect *super = &this->super;
-    super->triggerTemplate = SymSqliteTriggerTemplate_new(NULL);
+    super->triggerTemplate = (SymTriggerTemplate *) SymSqliteTriggerTemplate_new(NULL);
     super->initTablesAndDatabaseObjects = (void *) &SymSqliteDialect_initTablesAndDatabaseObjects;
     super->dropTablesAndDatabaseObjects = (void *) &SymSqliteDialect_dropTablesAndDatabaseObjects;
     super->enableSyncTriggers = (void *) &SymSqliteDialect_enableSyncTriggers;

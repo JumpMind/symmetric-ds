@@ -18,36 +18,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_APP_UTILS_H
-#define SYM_APP_UTILS_H
+#ifndef SYM_DATA_META_DATA_H
+#define SYM_DATA_META_DATA_H
 
-#include <stdio.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <ifaddrs.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/utsname.h>
-#include "common/Log.h"
-#include "util/StringUtils.h"
+#include "model/Data.h"
+#include "model/Router.h"
+#include "model/Channel.h"
+#include "db/model/Table.h"
 
-#define SYM_MAX_HOSTNAME 64
-#define SYM_MAX_IP_ADDRESS 64
+typedef struct SymDataMetaData {
+    SymData *data;
+    SymTable *table;
+    SymRouter *router;
+    SymChannel *nodeChannel;
+    void (*destroy)(struct SymDataMetaData *this);
+} SymDataMetaData;
 
-char * SymAppUtils_getHostName();
-
-char * SymAppUtils_getIpAddress();
-
-char * SymAppUtils_getTimezoneOffset();
-
-char * SymAppUtils_getOsName();
-
-char * SymAppUtils_getOsVersion();
-
-char * SymAppUtils_getOsArch();
-
-char * SymAppUtils_getOsUser();
+SymDataMetaData * SymDataMetaData_new(SymDataMetaData *this, SymData *data, SymTable *table, SymRouter *router, SymChannel *nodeChannel);
 
 #endif

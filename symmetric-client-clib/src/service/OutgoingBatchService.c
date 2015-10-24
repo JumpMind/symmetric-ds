@@ -150,6 +150,18 @@ void SymOutgoingBatchService_updateOutgoingBatch(SymOutgoingBatchService *this, 
     args->destroy(args);
 }
 
+int SymOutgoingBatchService_countOutgoingBatchesUnsent(SymOutgoingBatchService *this) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    int error;
+    return sqlTemplate->queryForInt(sqlTemplate, SYM_SQL_COUNT_OUTGOING_BATCHES_UNSENT, NULL, NULL, &error);
+}
+
+int SymOutgoingBatchService_countOutgoingBatchesInError(SymOutgoingBatchService *this) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    int error;
+    return sqlTemplate->queryForInt(sqlTemplate, SYM_SQL_COUNT_OUTGOING_BATCHES_ERRORS, NULL, NULL, &error);
+}
+
 void SymOutgoingBatchService_destroy(SymOutgoingBatchService *this) {
     free(this);
 }
@@ -162,6 +174,7 @@ SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *t
     this->parameterService = parameterService;
     this->findOutgoingBatch = (void *) &SymOutgoingBatchService_findOutgoingBatch;
     this->getOutgoingBatches = (void *) &SymOutgoingBatchService_getOutgoingBatches;
+    this->insertOutgoingBatch = (void *) &SymOutgoingBatchService_insertOutgoingBatch;
     this->updateOutgoingBatch = (void *) &SymOutgoingBatchService_updateOutgoingBatch;
     this->destroy = (void *) &SymOutgoingBatchService_destroy;
     return this;

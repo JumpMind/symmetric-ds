@@ -18,36 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_APP_UTILS_H
-#define SYM_APP_UTILS_H
+#ifndef SYM_DATA_EVENT_H
+#define SYM_DATA_EVENT_H
 
-#include <stdio.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <ifaddrs.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/utsname.h>
-#include "common/Log.h"
-#include "util/StringUtils.h"
 
-#define SYM_MAX_HOSTNAME 64
-#define SYM_MAX_IP_ADDRESS 64
+typedef struct SymDataEvent {
+    long dataId;
+    long batchId;
+    char *routerId;
+    void (*destroy)(struct SymDataEvent *this);
+} SymDataEvent;
 
-char * SymAppUtils_getHostName();
+SymDataEvent * SymDataEvent_new(SymDataEvent *this, long dataId, long batchId, char *routerId);
 
-char * SymAppUtils_getIpAddress();
-
-char * SymAppUtils_getTimezoneOffset();
-
-char * SymAppUtils_getOsName();
-
-char * SymAppUtils_getOsVersion();
-
-char * SymAppUtils_getOsArch();
-
-char * SymAppUtils_getOsUser();
+void SymDataEvent_destroy(SymDataEvent *this);
 
 #endif

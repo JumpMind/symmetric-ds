@@ -18,36 +18,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_APP_UTILS_H
-#define SYM_APP_UTILS_H
+#include "model/NodeHost.h"
 
-#include <stdio.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <ifaddrs.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/utsname.h>
-#include "common/Log.h"
-#include "util/StringUtils.h"
+void SymNodeHost_refresh(SymNodeHost *this) {
+   this->hostName = SymAppUtils_getHostName();
+   this->ipAddress = SymAppUtils_getIpAddress();
+   this->osArch = SymAppUtils_getOsArch();
+   this->osName = SymAppUtils_getOsName();
+   this->osVersion = SymAppUtils_getOsVersion();
+   this->osUser = SymAppUtils_getOsUser();
 
-#define SYM_MAX_HOSTNAME 64
-#define SYM_MAX_IP_ADDRESS 64
+   // TODO consider mallinfo(); for memory statistics?
 
-char * SymAppUtils_getHostName();
+   this->symmetricVersion = SYM_VERSION;
+   this->timezoneOffset = SymAppUtils_getTimezoneOffset();
+   this->heartbeatTime = SymDate_new(NULL);
+}
 
-char * SymAppUtils_getIpAddress();
+void SymNodeHost_destroy(SymNodeHost *this) {
 
-char * SymAppUtils_getTimezoneOffset();
+    free(this);
+}
 
-char * SymAppUtils_getOsName();
-
-char * SymAppUtils_getOsVersion();
-
-char * SymAppUtils_getOsArch();
-
-char * SymAppUtils_getOsUser();
-
-#endif
+SymNodeHost * SymNodeHost_new(SymNodeHost *this) {
+    if (this == NULL) {
+        this = (SymNodeHost *) calloc(1, sizeof(SymNodeHost));
+    }
+    this->refresh = (void *) &SymNodeHost_refresh;
+    this->destroy = (void *) &SymNodeHost_destroy;
+    return this;
+}

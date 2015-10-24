@@ -26,6 +26,7 @@
 #include "db/model/Table.h"
 #include "util/List.h"
 #include "util/StringArray.h"
+#include "util/StringUtils.h"
 #include "common/Log.h"
 
 
@@ -69,6 +70,7 @@ typedef struct SymTrigger {
     SymList * (*orderColumnsForTable)(struct SymTrigger *this, SymTable *table);
     SymList * (*getSyncKeysColumnsForTable)(struct SymTrigger *this, SymTable *table);
     unsigned short (*hasChangedSinceLastTriggerBuild)(struct SymTrigger *this, SymDate *lastTriggerBuildTime);
+    unsigned short (*matches)(struct SymTrigger *this, struct SymTrigger *trigger);
     long (*toHashedValue)(struct SymTrigger *this);
     void (*destroy)(struct SymTrigger *this);
 } SymTrigger;

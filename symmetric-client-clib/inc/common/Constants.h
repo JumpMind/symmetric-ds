@@ -35,4 +35,8 @@
 
 #define SYM_VIRTUAL_BATCH_FOR_REGISTRATION -9999L
 
+#define SYM_UNROUTED_NODE_ID "-1"
+
+#define SYM_UNKNOWN_ROUTER_ID "?"
+
 #endif

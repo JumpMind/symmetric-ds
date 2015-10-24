@@ -39,7 +39,10 @@ typedef struct SymOutgoingBatchService {
     SymParameterService *parameterService;
     SymOutgoingBatch * (*findOutgoingBatch)(struct SymOutgoingBatchService *this, long batchId, char *nodeId);
     SymOutgoingBatches * (*getOutgoingBatches)(struct SymOutgoingBatchService *this, char *nodeId);
+    void (*insertOutgoingBatch)(struct SymOutgoingBatchService *this, SymOutgoingBatch *outgoingBatch);
     void (*updateOutgoingBatch)(struct SymOutgoingBatchService *this, SymOutgoingBatch *outgoingBatch);
+    int (*countOutgoingBatchesUnsent)(struct SymOutgoingBatchService *this);
+    int (*countOutgoingBatchesInError)(struct SymOutgoingBatchService *this);
     void (*destroy)(struct SymOutgoingBatchService *this);
 } SymOutgoingBatchService;
 
@@ -70,5 +73,9 @@ from sym_outgoing_batch b "
 #define SYM_SQL_FIND_OUTGOING_BATCH "where batch_id = ? and node_id = ?"
 
 #define SYM_SQL_SELECT_OUTGOING_BATCH "where node_id = ? and status in (?, ?, ?, ?, ?, ?, ?) order by batch_id asc"
+
+#define SYM_SQL_COUNT_OUTGOING_BATCHES_UNSENT "select count(*) from sym_outgoing_batch where status != 'OK'"
+
+#define SYM_SQL_COUNT_OUTGOING_BATCHES_ERRORS "select count(*) from sym_outgoing_batch where error_flag=1"
 
 #endif

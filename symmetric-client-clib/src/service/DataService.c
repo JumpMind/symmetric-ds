@@ -29,7 +29,7 @@ SymData * SymDataService_dataMapper(SymRow *row, SymDataService *this) {
     data->channelId = row->getString(row, "channel_id");
     data->transactionId = row->getString(row, "transaction_id");
     data->tableName = row->getString(row, "table_name");
-    data->eventType = row->getString(row, "event_type");
+    data->eventType = SymDataEvent_getEventType(row->getString(row, "event_type"));
     data->sourceNodeId = row->getString(row, "source_node_id");
     data->externalData = row->getString(row, "external_data");
     data->nodeList = row->getString(row, "node_list");
@@ -71,67 +71,100 @@ SymList * SymDataService_selectDataFor(SymDataService *this, SymBatch *batch) {
     return list;
 }
 
-void heartbeat(unsigned short force) {
-    /*
-    Node me = engine.getNodeService().findIdentity();
+void SymDataService_heartbeat(SymDataService *this, unsigned short force) {
+    SymNode *me = this->nodeService->findIdentity(this->nodeService);
 
-    IParameterService parameterService = engine.getParameterService();
-    if (parameterService.is(ParameterConstants.HEARTBEAT_ENABLED)) {
-        ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
-        boolean updateWithBatchStatus = parameterService.is(ParameterConstants.HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS, false);
+    if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HEARTBEAT_ENABLED, 1)) {
+        unsigned short updateWithBatchStatus = this->parameterService->is(this->parameterService,
+                SYM_PARAMETER_HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS, 0);
+
+        char *syncUrl = this->parameterService->getSyncUrl(this->parameterService);
+        char *schemaVersion = this->parameterService->getString(this->parameterService, SYM_PARAMETER_SCHEMA_VERSION, "");
+
         int outgoingErrorCount = -1;
         int outgoingUnsentCount = -1;
         if (updateWithBatchStatus) {
-            outgoingUnsentCount = engine.getOutgoingBatchService().countOutgoingBatchesUnsent();
-            outgoingErrorCount = engine.getOutgoingBatchService().countOutgoingBatchesInError();
+            outgoingUnsentCount = this->outgoingBatchService->countOutgoingBatchesUnsent(this->outgoingBatchService);
+            outgoingErrorCount = this->outgoingBatchService->countOutgoingBatchesInError(this->outgoingBatchService);
         }
-        if (!parameterService.getExternalId().equals(me.getExternalId())
-                || !parameterService.getNodeGroupId().equals(me.getNodeGroupId())
-                || (parameterService.getSyncUrl() != null && !parameterService.getSyncUrl().equals(me.getSyncUrl()))
-                || !parameterService.getString(ParameterConstants.SCHEMA_VERSION, "").equals(me.getSchemaVersion())
-                || (engine.getDeploymentType() != null && !engine.getDeploymentType().equals(me.getDeploymentType()))
-                || !Version.version().equals(me.getSymmetricVersion())
-                || !symmetricDialect.getName().equals(me.getDatabaseType())
-                || !symmetricDialect.getVersion().equals(me.getDatabaseVersion())
-                || me.getBatchInErrorCount() != outgoingErrorCount
-                || me.getBatchToSendCount() != outgoingUnsentCount) {
-            log.info("Some attribute(s) of node changed.  Recording changes");
-            me.setDeploymentType(engine.getDeploymentType());
-            me.setSymmetricVersion(Version.version());
-            me.setDatabaseType(symmetricDialect.getName());
-            me.setDatabaseVersion(symmetricDialect.getVersion());
-            me.setBatchInErrorCount(outgoingErrorCount);
-            me.setBatchToSendCount(outgoingUnsentCount);
-            me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
-            if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
-                log.info("Updating my node configuration info according to the symmetric properties");
-                me.setExternalId(parameterService.getExternalId());
-                me.setNodeGroupId(parameterService.getNodeGroupId());
-                if (!StringUtils.isBlank(parameterService.getSyncUrl())) {
-                    me.setSyncUrl(parameterService.getSyncUrl());
+
+        if (! SymStringUtils_equals(this->parameterService->getExternalId(this->parameterService), me->externalId)
+                || ! SymStringUtils_equals(this->parameterService->getNodeGroupId(this->parameterService), me->nodeGroupId)
+                || (syncUrl != NULL && ! SymStringUtils_equals(syncUrl, me->syncUrl))
+                || ! SymStringUtils_equals(schemaVersion, me->schemaVersion)  // TODO empty string vs. null is causing refresh everytime.
+                || ! SymStringUtils_equals(SYM_VERSION, me->symmetricVersion)
+                || ! SymStringUtils_equals(this->platform->name, me->databaseType)
+                || ! SymStringUtils_equals(this->platform->version, me->databaseVersion)
+                || me->batchInErrorCount != outgoingErrorCount
+                || me->batchToSendCount != outgoingUnsentCount) {
+            SymLog_info("Some attribute(s) of node changed.  Recording changes");
+
+            me->deploymentType = SYM_DEPLOYMENT_TYPE;
+            me->symmetricVersion = SYM_VERSION;
+            me->databaseType = this->platform->name;
+            me->databaseVersion = this->platform->version;
+            me->batchInErrorCount = outgoingErrorCount;
+            me->batchToSendCount = outgoingUnsentCount;
+            me->schemaVersion = schemaVersion;
+            if (this->parameterService->is(this->parameterService, SYM_PARAMETER_AUTO_UPDATE_NODE_VALUES, 0)) {
+                SymLog_info("Updating my node configuration info according to the symmetric properties");
+                me->externalId = this->parameterService->getExternalId(this->parameterService);
+                me->nodeGroupId = this->parameterService->getNodeGroupId(this->parameterService);
+                if (SymStringUtils_isNotBlank(this->parameterService->getSyncUrl(this->parameterService))) {
+                    me->syncUrl = this->parameterService->getSyncUrl(this->parameterService);
                 }
             }
 
-            engine.getNodeService().save(me);
+            this->nodeService->save(this->nodeService, me);
         }
 
-        log.debug("Updating my node info");
-        engine.getNodeService().updateNodeHostForCurrentNode();
-        log.debug("Done updating my node info");
-    */
+    }
+
+    SymLog_debug("Updating my node info");
+    this->nodeService->updateNodeHostForCurrentNode(this->nodeService);
+    SymLog_debug("Done updating my node info");
+}
+
+void SymDataService_insertDataEvents(SymDataService *this, SymSqlTransaction *transaction, SymList *events) {
+    if (events->size > 0) {
+        transaction->prepare(transaction, SYM_SQL_INSERT_INTO_DATA_EVENT);
+
+        SymIterator *iter = events->iterator(events);
+        while (iter->hasNext(iter)) {
+            SymDataEvent *dataEvent = (SymDataEvent *) iter->next(iter);
+            char *routerId = dataEvent->routerId;
+            if (SymStringUtils_isBlank(routerId)) {
+                routerId = SYM_UNKNOWN_ROUTER_ID;
+            }
+            SymStringArray *args = SymStringArray_new(NULL);
+            args->addLong(args, dataEvent->dataId);
+            args->addLong(args, dataEvent->batchId);
+            args->add(args, dataEvent->routerId);
+            transaction->addRow(transaction, args, NULL);
+        }
+        iter->destroy(iter);
+    }
 }
 
 void SymDataService_destroy(SymDataService *this) {
     free(this);
 }
 
-SymDataService * SymDataService_new(SymDataService *this, SymDatabasePlatform *platform, SymTriggerRouterService *triggerRouterService) {
+SymDataService * SymDataService_new(SymDataService *this, SymDatabasePlatform *platform, SymTriggerRouterService *triggerRouterService,
+        SymNodeService *nodeService, SymDialect *dialect, SymOutgoingBatchService *outgoingBatchService,
+        SymParameterService *parameterService) {
     if (this == NULL) {
         this = (SymDataService *) calloc(1, sizeof(SymDataService));
     }
     this->platform = platform;
     this->triggerRouterService = triggerRouterService;
+    this->nodeService = nodeService;
+    this->dialect = dialect;
+    this->outgoingBatchService = outgoingBatchService;
+    this->parameterService = parameterService;
+    this->heartbeat = (void *) &SymDataService_heartbeat;
     this->selectDataFor = (void *) &SymDataService_selectDataFor;
+    this->insertDataEvents = (void *) &SymDataService_insertDataEvents;
     this->destroy = (void *) &SymDataService_destroy;
     return this;
 }

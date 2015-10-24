@@ -18,36 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_APP_UTILS_H
-#define SYM_APP_UTILS_H
+#ifndef SYM_NODE_GROUP_LINK_ACTION_H
+#define SYM_NODE_GROUP_LINK_ACTION_H
 
-#include <stdio.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <ifaddrs.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/utsname.h>
-#include "common/Log.h"
+#include "util/Date.h"
 #include "util/StringUtils.h"
 
-#define SYM_MAX_HOSTNAME 64
-#define SYM_MAX_IP_ADDRESS 64
+#define SYM_NODE_GROUP_LINK_ACTION_PUSH "P"
+#define SYM_NODE_GROUP_LINK_ACTION_WAIT_FOR_PULL "W"
+#define SYM_NODE_GROUP_LINK_ACTION_ROUTE "R"
 
-char * SymAppUtils_getHostName();
+typedef enum SymNodeGroupLinkAction {
+    SymNodeGroupLinkAction_P,
+    SymNodeGroupLinkAction_W,
+    SymNodeGroupLinkAction_R
+} SymNodeGroupLinkAction;
 
-char * SymAppUtils_getIpAddress();
-
-char * SymAppUtils_getTimezoneOffset();
-
-char * SymAppUtils_getOsName();
-
-char * SymAppUtils_getOsVersion();
-
-char * SymAppUtils_getOsArch();
-
-char * SymAppUtils_getOsUser();
+SymNodeGroupLinkAction SymNodeGroupLinkAction_fromCode(char *code);
+char * SymNodeGroupLinkAction_toString(SymNodeGroupLinkAction);
 
 #endif

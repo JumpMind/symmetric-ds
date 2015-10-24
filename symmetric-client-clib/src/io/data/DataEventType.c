@@ -81,9 +81,8 @@ char * SymDataEvent_getCode(SymDataEventType dataEventType) {
         return SYM_DATA_EVENT_CREATE_CODE;
     case SYM_DATA_EVENT_BSH:
         return SYM_DATA_EVENT_BSH_CODE;
+    default:
+        SymLog_error("Invalid data event type of %d", dataEventType);
     }
-
-    SymLog_error("Invalid data event type of %d", dataEventType);
-
     return "UNKNOWN";
 }

@@ -110,14 +110,14 @@ SymNodeSecurity * SymNodeService_findNodeSecurity(SymNodeService *this, char *no
 }
 
 SymList * SymNodeService_findNodesToPull(SymNodeService *this) {
-    return this->findSourceNodesFor(this, SYM_NODE_GROUP_LINK_WAIT_FOR_PULL);
+    return this->findSourceNodesFor(this, SymNodeGroupLinkAction_W);
 }
 
 SymList * SymNodeService_findNodesToPushTo(SymNodeService *this) {
-    return this->findTargetNodesFor(this, SYM_NODE_GROUP_LINK_PUSH);
+    return this->findTargetNodesFor(this, SymNodeGroupLinkAction_P);
 }
 
-SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char *nodeGroupLinkAction) {
+SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, SymNodeGroupLinkAction nodeGroupLinkAction) {
     SymList *nodes = NULL;
     SymNode *node = this->findIdentity(this);
     if (node != NULL) {
@@ -126,7 +126,7 @@ SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char *nodeGrou
         SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
         sb->append(sb, SYM_SQL_FIND_NODES_WHO_TARGET_ME);
         SymStringArray *args = SymStringArray_new(NULL);
-        args->add(args, node->nodeGroupId)->add(args, nodeGroupLinkAction);
+        args->add(args, node->nodeGroupId)->add(args, SymNodeGroupLinkAction_toString(nodeGroupLinkAction));
 
         nodes = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymNodeService_nodeMapper);
         args->destroy(args);
@@ -137,7 +137,7 @@ SymList * SymNodeService_findSourceNodesFor(SymNodeService *this, char *nodeGrou
     return nodes;
 }
 
-SymList * SymNodeService_findTargetNodesFor(SymNodeService *this, char *nodeGroupLinkAction) {
+SymList * SymNodeService_findTargetNodesFor(SymNodeService *this, SymNodeGroupLinkAction nodeGroupLinkAction) {
     SymList *nodes = NULL;
     SymNode *node = this->findIdentity(this);
     if (node != NULL) {
@@ -146,7 +146,7 @@ SymList * SymNodeService_findTargetNodesFor(SymNodeService *this, char *nodeGrou
         SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
         sb->append(sb, SYM_SQL_FIND_NODES_WHO_I_TARGET);
         SymStringArray *args = SymStringArray_new(NULL);
-        args->add(args, node->nodeGroupId)->add(args, nodeGroupLinkAction);
+        args->add(args, node->nodeGroupId)->add(args, SymNodeGroupLinkAction_toString(nodeGroupLinkAction));
 
         nodes = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymNodeService_nodeMapper);
         args->destroy(args);
@@ -181,6 +181,146 @@ int SymNodeService_getNodeStatus(SymNodeService *this) {
     return status;
 }
 
+unsigned short SymNodeService_updateNode(SymNodeService *this, SymNode *node) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+
+    SymDate *now = SymDate_new(NULL);
+
+    char *syncEnabled = SymStringUtils_format("%d", node->syncEnabled);
+    char *batchToSendCount = SymStringUtils_format("%d", node->batchToSendCount);
+    char *batchInErrorCount = SymStringUtils_format("%d", node->batchInErrorCount);
+
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, node->nodeGroupId);
+    args->add(args, node->externalId);
+    args->add(args, node->databaseType);
+    args->add(args, node->databaseVersion);
+    args->add(args, node->schemaVersion);
+    args->add(args, node->symmetricVersion);
+    args->add(args, node->syncUrl);
+    args->add(args, now->dateTimeString);
+    args->add(args, syncEnabled);
+    args->add(args, SymAppUtils_getTimezoneOffset());
+    args->add(args, batchToSendCount);
+    args->add(args, batchInErrorCount);
+    args->add(args, node->createdAtNodeId);
+    args->add(args, node->deploymentType);
+    args->add(args, node->nodeId);
+
+    int error;
+    unsigned short updated = sqlTemplate->update(sqlTemplate,
+            SYM_SQL_UPDATE_NODE, args, NULL, &error) == 1;
+
+    free(syncEnabled);
+    free(batchToSendCount);
+    free(batchInErrorCount);
+    args->destroy(args);
+    now->destroy(now);
+
+    return updated;
+}
+
+void SymNodeService_save(SymNodeService *this, SymNode *node) {
+
+    if (! SymNodeService_updateNode(this, node)) {
+        SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+
+        SymDate *now = SymDate_new(NULL);
+
+        char *syncEnabled = SymStringUtils_format("%d", node->syncEnabled);
+        char *batchToSendCount = SymStringUtils_format("%d", node->batchToSendCount);
+        char *batchInErrorCount = SymStringUtils_format("%d", node->batchInErrorCount);
+
+        SymStringArray *args = SymStringArray_new(NULL);
+        args->add(args, node->nodeGroupId);
+        args->add(args, node->externalId);
+        args->add(args, node->databaseType);
+        args->add(args, node->databaseVersion);
+        args->add(args, node->schemaVersion);
+        args->add(args, node->symmetricVersion);
+        args->add(args, node->syncUrl);
+        args->add(args, now->dateTimeString);
+        args->add(args, syncEnabled);
+        args->add(args, SymAppUtils_getTimezoneOffset());
+        args->add(args, batchToSendCount);
+        args->add(args, batchInErrorCount);
+        args->add(args, node->createdAtNodeId);
+        args->add(args, node->deploymentType);
+        args->add(args, node->nodeId);
+
+        int error;
+        sqlTemplate->update(sqlTemplate, SYM_SQL_INSERT_NODE, args, NULL, &error);
+
+        free(syncEnabled);
+        free(batchToSendCount);
+        free(batchInErrorCount);
+        args->destroy(args);
+        now->destroy(now);
+    }
+}
+
+void SymNodeService_updateNodeHost(SymNodeService *this, SymNodeHost *nodeHost) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+
+    SymStringArray *params = SymStringArray_new(NULL);
+    params->add(params, nodeHost->ipAddress);
+    params->add(params, nodeHost->osUser);
+    params->add(params, nodeHost->osName);
+    params->add(params, nodeHost->osArch);
+    params->add(params, nodeHost->osVersion);
+    // TODO support memory stats?
+//    params->add(params, nodeHost->availableProcessors);
+//    params->add(params, nodeHost->freeMemoryBytes);
+//    params->add(params, nodeHost->totalMemoryBytes);
+//    params->add(params, nodeHost->maxMemoryBytes);
+    params->add(params, "");
+    params->add(params, "");
+    params->add(params, "");
+    params->add(params, "");
+    params->add(params, nodeHost->javaVersion);
+    params->add(params, nodeHost->javaVendor);
+    params->add(params, nodeHost->jdbcVersion);
+    params->add(params, nodeHost->symmetricVersion);
+    params->add(params, nodeHost->timezoneOffset);
+    params->add(params, nodeHost->heartbeatTime->dateTimeString);
+    params->add(params, nodeHost->lastRestartTime->dateTimeString);
+    params->add(params, nodeHost->nodeId);
+    params->add(params, nodeHost->hostName);
+
+    int error;
+    int updateCount = sqlTemplate->update(sqlTemplate, SYM_SQL_UPDATE_NODE_HOST, params, NULL, &error);
+
+    if (updateCount == 0) {
+        sqlTemplate->update(sqlTemplate, SYM_SQL_INSERT_NODE_HOST, params, NULL, &error);
+    }
+
+    params->destroy(params);
+}
+
+void SymNodeService_updateNodeHostForCurrentNode(SymNodeService *this) {
+    SymNode *node = SymNodeService_findIdentity(this);
+    SymNodeHost *nodeHostForCurrentNode = SymNodeHost_new(NULL);
+    nodeHostForCurrentNode->nodeId = node->nodeId;
+    nodeHostForCurrentNode->refresh(nodeHostForCurrentNode);
+    nodeHostForCurrentNode->lastRestartTime = this->lastRestartTime;
+    SymNodeService_updateNodeHost(this, nodeHostForCurrentNode);
+}
+
+SymList * SymNodeService_findEnabledNodesFromNodeGroup(SymNodeService *this, char *nodeGroupId) {
+    int error;
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
+    sb->append(sb, SYM_SQL_FIND_ENABLED_NODES_FROM_NODE_GROUP_SQL);
+
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, nodeGroupId);
+
+    SymList *nodes = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymNodeService_nodeMapper);
+    sb->destroy(sb);
+    args->destroy(args);
+    return nodes;
+}
+
 void SymNodeService_destroy(SymNodeService *this) {
     free(this);
 }
@@ -200,6 +340,9 @@ SymNodeService * SymNodeService_new(SymNodeService *this, SymDatabasePlatform *p
     this->isDataloadStarted = (void *) &SymNodeService_isDataloadStarted;
     this->isDataloadCompleted = (void *) &SymNodeService_isDataloadCompleted;
     this->getNodeStatus = (void *) &SymNodeService_getNodeStatus;
+    this->save = (void *) &SymNodeService_save;
+    this->updateNodeHostForCurrentNode = (void *) &SymNodeService_updateNodeHostForCurrentNode;
+    this->findEnabledNodesFromNodeGroup = (void*) &SymNodeService_findEnabledNodesFromNodeGroup;
     this->destroy = (void *) &SymNodeService_destroy;
     return this;
 }

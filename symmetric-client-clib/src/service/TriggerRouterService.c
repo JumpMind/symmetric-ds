@@ -658,7 +658,6 @@ char * SymTriggerRouterService_getTriggerName(SymTriggerRouterService *this, Sym
 
 SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTriggerRouterService *this, unsigned short forceRebuild, SymTrigger *trigger, SymDataEventType dmlType, char *reason, SymTriggerHistory *oldhist, SymTriggerHistory *hist, unsigned short triggerIsActive, SymTable *table, SymList *activeTriggerHistories) {
     unsigned short triggerExists = 0;
-    unsigned short triggerRemoved = 0;
 
     SymTriggerHistory *newTriggerHist = SymTriggerHistory_new(NULL);
 
@@ -718,7 +717,6 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
         this->symmetricDialect->removeTrigger(this->symmetricDialect,
                            NULL, oldCatalogName, oldSourceSchema, table->name, oldTriggerName);
         triggerExists = 0;
-        triggerRemoved = 1;
     }
 
     unsigned short isDeadTrigger = !trigger->syncOnInsert && !trigger->syncOnUpdate && !trigger->syncOnDelete;
@@ -844,6 +842,147 @@ void SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this, unsigne
     }
 }
 
+static unsigned short SymTriggerRouterService_doesTriggerRouterExistInList(SymList *triggerRouters, SymTriggerRouter *triggerRouter) {
+    SymIterator *iter = triggerRouters->iterator(triggerRouters);
+    while (iter->hasNext(iter)) {
+        SymTriggerRouter *checkMe = (SymTriggerRouter *) iter->next(iter);
+        if (checkMe->isSame(checkMe, triggerRouter)) {
+            return 1;
+        }
+    }
+    iter->destroy(iter);
+    return 0;
+}
+
+static char * SymTriggerRouterService_buildSymmetricTableRouterId(SymTriggerRouterService *this, char *triggerId, char *sourceNodeGroupId,
+        char *targetNodeGroupId) {
+    return SymTriggerRouterService_replaceCharsToShortenName(this, SymStringUtils_format("%s_%s_2_%s",
+            triggerId, sourceNodeGroupId, targetNodeGroupId));
+}
+
+static SymTriggerRouter * SymTriggerRouterService_buildTriggerRoutersForSymmetricTablesWithTrigger(SymTriggerRouterService *this, SymTrigger *trigger,
+        SymNodeGroupLink *nodeGroupLink) {
+    SymTriggerRouter *triggerRouter = SymTriggerRouter_new(NULL);
+    triggerRouter->trigger = trigger;
+
+    SymRouter *router = SymRouter_new(NULL);
+    triggerRouter->router = router;
+    router->routerId = SymTriggerRouterService_buildSymmetricTableRouterId(this, trigger->triggerId, nodeGroupLink->sourceNodeGroupId,
+            nodeGroupLink->targetNodeGroupId);
+    router->routerType = SYM_CONFIGURATION_CHANGED_DATA_ROUTER_ROUTER_TYPE;
+    router->nodeGroupLink = nodeGroupLink;
+    router->lastUpdateTime = trigger->lastUpdateTime;
+
+    triggerRouter->lastUpdateTime = trigger->lastUpdateTime;
+
+    return triggerRouter;
+}
+
+static SymList * SymTriggerRouterService_buildTriggerRoutersForSymmetricTables(SymTriggerRouterService *this, SymNodeGroupLink *nodeGroupLink,
+        SymList *tablesToExclude) {
+    int initialLoadOrder = 1;
+
+    SymList *triggers = buildTriggersForSymmetricTables(this, tablesToExclude);
+    SymList *triggerRouters = SymList_new(NULL);
+
+    SymIterator *iter = triggers->iterator(triggers);
+    while (iter->hasNext(iter)) {
+        SymTrigger *trigger = (SymTrigger *) iter->next(iter);
+        SymTriggerRouter *triggerRouter = SymTriggerRouterService_buildTriggerRoutersForSymmetricTablesWithTrigger(this, trigger, nodeGroupLink);
+        triggerRouter->initialLoadOrder = initialLoadOrder++;
+        triggerRouters->add(triggerRouters, triggerRouter);
+    }
+    return triggerRouters;
+}
+
+static SymList * SymTriggerRouterService_getConfigurationTablesTriggerRoutersForCurrentNode(SymTriggerRouterService *this, char *sourceNodeGroupId) {
+    SymList *triggerRouters = SymList_new(NULL);
+    SymList *links = this->configurationService->getNodeGroupLinksFor(this->configurationService, sourceNodeGroupId, 0);
+    SymIterator *iter = links->iterator(links);
+    while (iter->hasNext(iter)) {
+        SymNodeGroupLink *nodeGroupLink = (SymNodeGroupLink *) iter->next(iter);
+        triggerRouters->addAll(triggerRouters, SymTriggerRouterService_buildTriggerRoutersForSymmetricTables(this, nodeGroupLink, NULL));
+    }
+    iter->destroy(iter);
+    return triggerRouters;
+}
+
+static void SymTriggerRouterService_mergeInConfigurationTablesTriggerRoutersForCurrentNode(SymTriggerRouterService *this, char *sourceNodeGroupId,
+        SymList *configuredInDatabase) {
+    SymList *virtualConfigTriggers = SymTriggerRouterService_getConfigurationTablesTriggerRoutersForCurrentNode(this, sourceNodeGroupId);
+    SymIterator *iter = virtualConfigTriggers->iterator(virtualConfigTriggers);
+    while (iter->hasNext(iter)) {
+        SymTriggerRouter *trigger = (SymTriggerRouter *) iter->next(iter);
+        if (SymStringUtils_equalsIgnoreCase(trigger->router->nodeGroupLink->sourceNodeGroupId, sourceNodeGroupId) &&
+                !SymTriggerRouterService_doesTriggerRouterExistInList(configuredInDatabase, trigger)) {
+            configuredInDatabase->add(configuredInDatabase, trigger);
+        }
+    }
+    iter->destroy(iter);
+}
+
+static SymList * SymTriggerRouterService_getAllTriggerRoutersForCurrentNode(SymTriggerRouterService *this, char *sourceNodeGroupId) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymStringBuilder *sql = SymStringBuilder_newWithString("select ");
+    sql->append(sql, SYM_SQL_SELECT_TRIGGER_ROUTERS_COLUMN_LIST);
+    sql->append(sql, SYM_SQL_SELECT_TRIGGER_ROUTERS);
+    sql->append(sql, SYM_SQL_ACTIVE_TRIGGERS_FOR_SOURCE_NODE_GROUP);
+
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, sourceNodeGroupId);
+
+    int error;
+    SymList *triggerRouters = sqlTemplate->query(sqlTemplate, sql->str, args, NULL, &error, (void *) &SymTriggerRouterService_triggerRouterMapper);
+    SymTriggerRouterService_enhanceTriggerRouters(this, triggerRouters);
+    SymTriggerRouterService_mergeInConfigurationTablesTriggerRoutersForCurrentNode(this, sourceNodeGroupId, triggerRouters);
+
+    sql->destroy(sql);
+    args->destroy(args);
+    return triggerRouters;
+}
+
+static SymTriggerRoutersCache * SymTriggerRouterService_getTriggerRoutersCacheForCurrentNode(SymTriggerRouterService * this, unsigned short refreshCache) {
+    char *myNodeGroupId = this->parameterService->getNodeGroupId(this->parameterService);
+    long triggerRouterCacheTimeoutInMs = this->parameterService->getLong(this->parameterService, SYM_PARAMETER_CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS, 600000);
+    SymTriggerRoutersCache *cache = this->triggerRouterCacheByNodeGroupId == NULL ? NULL:
+            this->triggerRouterCacheByNodeGroupId->get(this->triggerRouterCacheByNodeGroupId, myNodeGroupId);
+    if (cache == NULL || refreshCache || (time(NULL) - this->triggerRouterPerNodeCacheTime) * 1000 > triggerRouterCacheTimeoutInMs) {
+        this->triggerRouterPerNodeCacheTime = time(NULL);
+        SymMap *newTriggerRouterCacheByNodeGroupId = SymMap_new(NULL, 10);
+        SymList *triggerRouters = SymTriggerRouterService_getAllTriggerRoutersForCurrentNode(this, myNodeGroupId);
+        SymMap *triggerRoutersByTriggerId = SymMap_new(NULL, triggerRouters->size);
+        SymMap *routers = SymMap_new(NULL, triggerRouters->size);
+        SymIterator *iter = triggerRouters->iterator(triggerRouters);
+        while (iter->hasNext(iter)) {
+            SymTriggerRouter *triggerRouter = (SymTriggerRouter *) iter->next(iter);
+            if (triggerRouter->enabled) {
+                char *triggerId = triggerRouter->trigger->triggerId;
+                SymList *list = triggerRoutersByTriggerId->get(triggerRoutersByTriggerId, triggerId);
+                if (list == NULL) {
+                    list = SymList_new(NULL);
+                    triggerRoutersByTriggerId->put(triggerRoutersByTriggerId, triggerId, list, sizeof(SymList));
+                }
+                list->add(list, triggerRouter);
+                routers->put(routers, triggerRouter->router->routerId, triggerRouter->router, sizeof(SymRouter));
+            }
+        }
+        iter->destroy(iter);
+
+        SymTriggerRoutersCache *cache = (SymTriggerRoutersCache *) calloc(1, sizeof(SymTriggerRoutersCache));
+        cache->routersByRouterId = routers;
+        cache->triggerRoutersByTriggerId = triggerRoutersByTriggerId;
+        newTriggerRouterCacheByNodeGroupId->put(newTriggerRouterCacheByNodeGroupId, myNodeGroupId, cache, sizeof(SymTriggerRoutersCache));
+        this->triggerRouterCacheByNodeGroupId = newTriggerRouterCacheByNodeGroupId;
+        cache = this->triggerRouterCacheByNodeGroupId == NULL ? NULL:
+                this->triggerRouterCacheByNodeGroupId->get(this->triggerRouterCacheByNodeGroupId, myNodeGroupId);
+    }
+    return cache;
+}
+
+SymMap * SymTriggerRouterService_getTriggerRoutersForCurrentNode(SymTriggerRouterService * this, unsigned short refreshCache) {
+    return SymTriggerRouterService_getTriggerRoutersCacheForCurrentNode(this, refreshCache)->triggerRoutersByTriggerId;
+}
+
 void SymTriggerRouterService_destroy(SymTriggerRouterService * this) {
     this->historyMap->destroy(this->historyMap);
     if (this->routersCache)  {
@@ -880,6 +1019,7 @@ SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService *t
     this->getActiveTriggerHistoriesByTableName = (void *) &SymTriggerRouterService_getActiveTriggerHistoriesByTableName;
     this->getRouters = (void *) &SymTriggerRouterService_getRouters;
     this->getRouterById = (void *) &SymTriggerRouterService_getRouterById;
+    this->getTriggerRoutersForCurrentNode = (void *) &SymTriggerRouterService_getTriggerRoutersForCurrentNode;
     this->destroy = (void *) &SymTriggerRouterService_destroy;
     return this;
 }

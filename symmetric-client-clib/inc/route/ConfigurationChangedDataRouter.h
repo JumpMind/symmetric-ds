@@ -18,36 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_APP_UTILS_H
-#define SYM_APP_UTILS_H
+#ifndef SYM_CONFIGURATION_CHANGED_DATA_ROUTER_H
+#define SYM_CONFIGURATION_CHANGED_DATA_ROUTER_H
 
-#include <stdio.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <ifaddrs.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/utsname.h>
-#include "common/Log.h"
-#include "util/StringUtils.h"
+#include "route/DataRouter.h"
+#include "model/Node.h"
+#include "util/List.h"
 
-#define SYM_MAX_HOSTNAME 64
-#define SYM_MAX_IP_ADDRESS 64
+#define SYM_CONFIGURATION_CHANGED_DATA_ROUTER_ROUTER_TYPE "configurationChanged"
 
-char * SymAppUtils_getHostName();
+typedef struct SymConfigurationChangedDataRouter {
+    SymDataRouter super;
+    void (*destroy)(struct SymConfigurationChangedDataRouter *this);
+} SymConfigurationChangedDataRouter;
 
-char * SymAppUtils_getIpAddress();
-
-char * SymAppUtils_getTimezoneOffset();
-
-char * SymAppUtils_getOsName();
-
-char * SymAppUtils_getOsVersion();
-
-char * SymAppUtils_getOsArch();
-
-char * SymAppUtils_getOsUser();
+SymConfigurationChangedDataRouter * SymConfigurationChangedDataRouter_new(SymConfigurationChangedDataRouter *this);
 
 #endif

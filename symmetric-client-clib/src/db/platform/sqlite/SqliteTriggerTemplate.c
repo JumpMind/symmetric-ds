@@ -143,13 +143,15 @@ char * SymSqliteTriggerTemplate_createTriggerDDL(SymSqliteTriggerTemplate *this,
         SymTrigger *trigger, SymTriggerHistory *history, SymChannel *channel, char *tablePrefix,
         SymTable *originalTable, char *defaultCatalog, char *defaultSchema) {
 
-    char *ddl;
+    char *ddl = NULL;
     if (dml == SYM_DATA_EVENT_INSERT) {
         ddl = SYM_SQL_SQLITE_INSERT_TRIGGER_TEMPLATE;
     } else if (dml == SYM_DATA_EVENT_UPDATE) {
         ddl = SYM_SQL_SQLITE_UPDATE_TRIGGER_TEMPLATE;
     } else if (dml == SYM_DATA_EVENT_DELETE) {
         ddl = SYM_SQL_SQLITE_DELETE_TRIGGER_TEMPLATE;
+    } else {
+        SymLog_error("Unknown dml %d", dml);
     }
 
     char *formattedDdl = SymSqliteTriggerTemplate_replaceTemplateVariables(this, dml,
