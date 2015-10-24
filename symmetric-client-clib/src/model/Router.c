@@ -20,6 +20,13 @@
  */
 #include "model/Router.h"
 
+unsigned short SymRouter_equals(SymRouter *this, SymRouter *router) {
+    if (this && this->routerId && router && router->routerId) {
+        return StringUtils_equals(this->routerId, router->routerId);
+    } else {
+        return 0;
+    }
+}
 
 void SymRouter_destroy(SymRouter *this) {
     free(this);
@@ -29,6 +36,7 @@ SymRouter * SymRouter_new(SymRouter *this) {
     if (this == NULL) {
         this = (SymRouter *) calloc(1, sizeof(SymRouter));
     }
+    this->equals = (void *) &SymRouter_equals;
     this->destroy = (void *) &SymRouter_destroy;
     return this;
 }
