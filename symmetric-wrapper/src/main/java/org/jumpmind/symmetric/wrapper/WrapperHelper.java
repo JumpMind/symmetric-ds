@@ -59,6 +59,9 @@ public class WrapperHelper {
                 System.out.println("Native error " + e.getErrorCode());    
             }
             System.exit(e.getErrorCode());
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+            System.exit(-1);
         }
 	}
 	
