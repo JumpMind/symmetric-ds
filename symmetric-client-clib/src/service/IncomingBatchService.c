@@ -39,10 +39,10 @@ static SymIncomingBatch * SymIncomingBatchService_mapIncomingBatch(SymRow *row) 
     batch->ignoreCount = row->getLong(row, "ignore_count");
     batch->missingDeleteCount = row->getLong(row, "missing_delete_count");
     batch->skipCount = row->getLong(row, "skip_count");
-    batch->sqlState = row->getString(row, "sql_state");
+    batch->sqlState = row->getStringNew(row, "sql_state");
     batch->sqlCode = row->getInt(row, "sql_code");
-    batch->sqlMessage = row->getString(row, "sql_message");
-    batch->lastUpdatedHostName = row->getString(row, "last_update_hostname");
+    batch->sqlMessage = row->getStringNew(row, "sql_message");
+    batch->lastUpdatedHostName = row->getStringNew(row, "last_update_hostname");
     batch->lastUpdatedTime = row->getDate(row, "last_update_time");
     batch->createTime = row->getDate(row, "create_time");
     batch->errorFlag = row->getInt(row, "error_flag");

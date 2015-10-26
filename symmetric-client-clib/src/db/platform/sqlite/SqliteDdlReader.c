@@ -54,7 +54,7 @@ static int SymSqliteDdlReader_toSqlType(char *type) {
 }
 
 static void * SymSqliteDdlReader_columnMapper(SymRow *row) {
-    char *name = row->getString(row, "name");
+    char *name = row->getStringNew(row, "name");
     int isPrimaryKey = row->getInt(row, "pk");
     SymColumn *column = SymColumn_new(NULL, name, isPrimaryKey);
     column->isRequired = row->getInt(row, "notnull");

@@ -23,18 +23,18 @@
 SymData * SymDataService_dataMapper(SymRow *row, SymDataService *this) {
     SymData *data = SymData_new(NULL);
     data->dataId = row->getLong(row, "data_id");
-    data->rowData = row->getString(row, "row_data");
-    data->oldData = row->getString(row, "old_data");
-    data->pkData = row->getString(row, "pk_data");
-    data->channelId = row->getString(row, "channel_id");
-    data->transactionId = row->getString(row, "transaction_id");
-    data->tableName = row->getString(row, "table_name");
+    data->rowData = row->getStringNew(row, "row_data");
+    data->oldData = row->getStringNew(row, "old_data");
+    data->pkData = row->getStringNew(row, "pk_data");
+    data->channelId = row->getStringNew(row, "channel_id");
+    data->transactionId = row->getStringNew(row, "transaction_id");
+    data->tableName = row->getStringNew(row, "table_name");
     data->eventType = SymDataEvent_getEventType(row->getString(row, "event_type"));
-    data->sourceNodeId = row->getString(row, "source_node_id");
-    data->externalData = row->getString(row, "external_data");
-    data->nodeList = row->getString(row, "node_list");
+    data->sourceNodeId = row->getStringNew(row, "source_node_id");
+    data->externalData = row->getStringNew(row, "external_data");
+    data->nodeList = row->getStringNew(row, "node_list");
     data->createTime = row->getDate(row, "create_time");
-    data->routerId = row->getString(row, "router_id");
+    data->routerId = row->getStringNew(row, "router_id");
     data->triggerHistId = row->getInt(row, "trigger_hist_id");
 
     SymTriggerHistory *triggerHistory = this->triggerRouterService->getTriggerHistory(this->triggerRouterService, data->triggerHistId);
