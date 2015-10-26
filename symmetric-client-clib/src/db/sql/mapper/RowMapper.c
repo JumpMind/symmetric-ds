@@ -21,6 +21,17 @@
 #include "db/sql/mapper/RowMapper.h"
 
 SymRow * SymRowMapper_mapper(SymRow *row) {
-    // TODO: clone the row
-    return row;
+    SymRow *newRow = SymRow_new(NULL, row->map->size);
+    SymList *entries = row->map->entries(row->map);
+    SymIterator *iter = entries->iterator(entries);
+    while (iter->hasNext(iter)) {
+        SymMapEntry *entry = (SymMapEntry *) iter->next(iter);
+        SymRowEntry *rowEntry = (SymRowEntry *) entry->value;
+        char *columnName = strdup(entry->key);
+        char *columnValue = strdup(rowEntry->value);
+        newRow->put(newRow, columnName, columnValue, rowEntry->sqlType, rowEntry->size);
+    }
+    iter->destroy(iter);
+    entries->destroy(entries);
+    return newRow;
 }

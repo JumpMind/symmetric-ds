@@ -83,8 +83,6 @@ SymList * SymConfigurationService_getNodeGroupLinksFor(SymConfigurationService *
         }
     }
     iter->destroy(iter);
-    // TODO: destroy NodeGroupLinks that were not used
-    links->destroy(links);
     return target;
 }
 
@@ -114,7 +112,7 @@ SymMap * SymConfigurationService_getChannels(SymConfigurationService *this, unsi
     SymIterator *iter = list->iterator(list);
     while (iter->hasNext(iter)) {
         SymChannel *channel = (SymChannel *) iter->next(iter);
-        channels->put(channels, channel->channelId, channel, sizeof(SymChannel));
+        channels->put(channels, channel->channelId, channel);
     }
     iter->destroy(iter);
     list->destroy(list);

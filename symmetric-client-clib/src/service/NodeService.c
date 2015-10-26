@@ -33,7 +33,7 @@ static SymNode * SymNodeService_nodeMapper(SymRow *row) {
     node->nodeGroupId = row->getStringNew(row, "node_group_id");
     node->externalId = row->getStringNew(row, "external_id");
     node->syncEnabled = row->getBoolean(row, "sync_enabled");
-    node->syncUrl = row->getString(row, "sync_url");
+    node->syncUrl = row->getStringNew(row, "sync_url");
     node->schemaVersion = row->getStringNew(row, "schema_version");
     node->databaseType = row->getStringNew(row, "database_type");
     node->databaseVersion = row->getStringNew(row, "database_version");

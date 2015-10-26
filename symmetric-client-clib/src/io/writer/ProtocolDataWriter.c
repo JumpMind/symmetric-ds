@@ -85,7 +85,7 @@ static void SymProtocolDataWriter_startTable(SymProtocolDataWriter *this, SymTab
             SymList *pkList = table->getPrimaryKeyColumns(table);
             SymProtocolDataWriter_printList(this->sb, SYM_CSV_KEYS, pkList);
             SymProtocolDataWriter_printList(this->sb, SYM_CSV_COLUMNS, table->columns);
-            this->processedTables->put(this->processedTables, fullyQualifiedTableName, tableKey, (strlen(tableKey) * sizeof(char)) + 1);
+            this->processedTables->put(this->processedTables, fullyQualifiedTableName, tableKey);
             pkList->destroy(pkList);
         }
         free(fullyQualifiedTableName);
@@ -156,8 +156,9 @@ size_t SymProtocolDataWriter_process(SymProtocolDataWriter *this, char *buffer, 
 
     if (numBytes > 0) {
         memcpy(buffer, this->sb->str, numBytes);
+        SymLog_debug("Writing data: %s\n", this->sb->str);
     }
-printf("buffer: %s\n", this->sb->str);
+
     if (bufferFull) {
         char *leftOverData = this->sb->substring(this->sb, count, this->sb->pos);
         this->sb->reset(this->sb);

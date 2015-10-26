@@ -23,7 +23,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "db/sql/Row.h"
+#include "util/List.h"
+#include "util/Map.h"
 
 SymRow * SymRowMapper_mapper(SymRow *row);
 

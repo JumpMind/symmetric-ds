@@ -24,7 +24,7 @@ static SymMap * SymMapTest_test_createStringMap(int keySize, char **keys, char *
     SymMap *map = SymMap_new(NULL, mapSize);
     int i;
     for (i = 0; i < keySize; i++) {
-        map->put(map, keys[i], values[i], strlen(values[i]));
+        map->put(map, keys[i], values[i]);
     }
     return map;
 }
@@ -72,7 +72,7 @@ void SymMapTest_test3() {
     }
 
     SymMap *map = SymMap_new(NULL, 100);
-    map->put(map, table->name, table, sizeof(SymTable));
+    map->put(map, table->name, table);
     SymTable *out = map->get(map, table->name);
 
     CU_ASSERT(out != NULL);
@@ -139,7 +139,7 @@ void SymMapTest_testValuesEmpty() {
 
 void SymMapTest_testValuesSingleValue() {
     SymMap *map = SymMap_new(NULL, 100);
-    map->put(map, "key1", "value1", sizeof(char*));
+    map->put(map, "key1", "value1");
     SymList *valuesList = map->values(map);
 
     CU_ASSERT(strcmp(valuesList->get(valuesList, 0), "value1") == 0);
@@ -190,7 +190,7 @@ void SymMapTest_testEntriesEmpty() {
 
 void SymMapTest_testEntriesSingleValue() {
     SymMap *map = SymMap_new(NULL, 100);
-    map->put(map, "key1", "value1", sizeof(char*));
+    map->put(map, "key1", "value1");
     SymList *entryList = map->entries(map);
 
     CU_ASSERT(strcmp(((SymMapEntry*)entryList->get(entryList, 0))->key, "key1") == 0);
@@ -249,7 +249,7 @@ void SymMapTest_testKeysEmpty() {
 
 void SymMapTest_testKeysSingleValue() {
     SymMap *map = SymMap_new(NULL, 100);
-    map->put(map, "key1", "value1", sizeof(char*));
+    map->put(map, "key1", "value1");
     SymStringArray *keyList = map->keys(map);
 
     CU_ASSERT(strcmp(keyList->get(keyList, 0), "key1") == 0);

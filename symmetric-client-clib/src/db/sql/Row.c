@@ -20,14 +20,21 @@
  */
 #include "db/sql/Row.h"
 
+void SymRowEntry_destroy(SymRowEntry *this) {
+    free(this);
+}
+
+SymRowEntry * SymRowEntry_new(char *value, int sqlType, int size) {
+    SymRowEntry *entry = (SymRowEntry *) calloc(1, sizeof(SymRowEntry));
+    entry->value = value;
+    entry->sqlType = sqlType;
+    entry->size = size;
+    return entry;
+}
+
 void SymRow_put(SymRow *this, char *columnName, void *value, int sqlType, int size) {
-    char *copyValue = NULL;
-    if (value != NULL) {
-        copyValue = (char *) memcpy(malloc(size + 1), value, size);
-        copyValue[size] = '\0';
-    }
-    SymRowEntry entry = { copyValue, sqlType, size };
-    this->map->put(this->map, columnName, &entry, sizeof(SymRowEntry));
+    SymRowEntry *entry = SymRowEntry_new(value, sqlType, size);
+    this->map->put(this->map, columnName, entry);
 }
 
 char * SymRow_getString(SymRow *this, char *columnName) {
@@ -144,16 +151,7 @@ SymDate * SymRow_dateValue(SymRow *this) {
 }
 
 void SymRow_destroy(SymRow *this) {
-    /*
-    int i;
-    for (i = 0; i < this->map->size; i++) {
-        if (this->map->table[i]) {
-            SymRowEntry *entry = (SymRowEntry *) this->map->table[i]->value;
-            free(entry->value);
-        }
-    }
-    */
-    this->map->destroy(this->map);
+    this->map->destroyAll(this->map, (void *) &SymRowEntry_destroy, 0);
     free(this);
 }
 

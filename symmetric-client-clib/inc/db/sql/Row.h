@@ -54,5 +54,7 @@ typedef struct SymRow {
 } SymRow;
 
 SymRow * SymRow_new(SymRow *this, int columnCount);
+SymRowEntry * SymRowEntry_new(char *value, int sqlType, int size);
+void SymRowEntry_destroy(SymRowEntry *this);
 
 #endif

@@ -86,10 +86,9 @@ SymTriggerRouterService * SymTriggerRouterService_new(SymTriggerRouterService *t
         SymConfigurationService *configurationService, SymSequenceService *sequenceService,
         SymParameterService *parameterService, SymDatabasePlatform *platform, SymDialect *symmetricDialect);
 
-#define SYM_SQL_SELECT_TRIGGER_ROUTERS "select tr.trigger_id, tr.router_id, tr.create_time, tr.last_update_time, tr.last_update_by, tr.initial_load_order, tr.initial_load_select, tr.initial_load_delete_stmt, tr.initial_load_batch_count, tr.ping_back_enabled, tr.enabled \
-from sym_trigger_router tr \
+#define SYM_SQL_SELECT_TRIGGER_ROUTERS "from sym_trigger_router tr \
 inner join sym_trigger t on tr.trigger_id=t.trigger_id \
-inner join sym_router r on tr.router_id=r.router_id      "
+inner join sym_router r on tr.router_id=r.router_id "
 
 #define SYM_SQL_SELECT_TRIGGERS "select t.trigger_id,t.channel_id,t.reload_channel_id,t.source_table_name,t.source_schema_name,t.source_catalog_name,        \
 t.sync_on_insert,t.sync_on_update,t.sync_on_delete,t.sync_on_incoming_batch,t.use_stream_lobs,   \

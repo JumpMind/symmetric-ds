@@ -78,7 +78,7 @@ static int SymRouterService_insertDataEvents(SymRouterService *this, SymChannelR
                 SymLog_debug("About to insert a new batch for node %s on the '%s' channel.", nodeId, batch->channelId);
 
                 this->outgoingBatchService->insertOutgoingBatch(this->outgoingBatchService, batch);
-                context->batchesByNodes->put(context->batchesByNodes, nodeId, batch, sizeof(SymOutgoingBatch));
+                context->batchesByNodes->put(context->batchesByNodes, nodeId, batch);
             }
 
             batch->incrementEventCount(batch, dataMetaData->data->eventType);
@@ -110,7 +110,7 @@ SymList * SymRouterService_findAvailableNodes(SymRouterService *this, SymTrigger
             SymLog_error("The router %s has no node group link configured from %s to %s",
                     router->routerId, router->nodeGroupLink->sourceNodeGroupId, router->nodeGroupLink->targetNodeGroupId);
         }
-        context->availableNodes->put(context->availableNodes, triggerRouter->router->routerId, nodes, sizeof(SymList));
+        context->availableNodes->put(context->availableNodes, triggerRouter->router->routerId, nodes);
     }
     return nodes;
 }
@@ -267,7 +267,7 @@ SymRouterService * SymRouterService_new(SymRouterService *this, SymOutgoingBatch
     this->triggerRouterService = triggerRouterService;
     this->platform = platform;
     this->routers = SymMap_new(NULL, 20);
-    this->routers->put(this->routers, SYM_ROUTER_DEFAULT, SymDefaultDataRouter_new(NULL), sizeof(SymDefaultDataRouter));
+    this->routers->put(this->routers, SYM_ROUTER_DEFAULT, SymDefaultDataRouter_new(NULL));
     this->routeData = (void *) &SymRouterService_routeData;
     this->destroy = (void *) &SymRouterService_destroy;
     return this;

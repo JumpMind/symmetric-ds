@@ -12,7 +12,6 @@
 typedef struct {
     char *key;
     void *value;
-    int sizeBytes;
     void *next;
 } SymMapEntry;
 
@@ -20,8 +19,8 @@ typedef struct {
 typedef struct SymMap {
     int size;
     SymMapEntry **table;
-    void (*put)(struct SymMap *this, char *key, void *value, int size);
-    void (*putByInt)(struct SymMap *this, int key, void *value, int size);
+    void (*put)(struct SymMap *this, char *key, void *value);
+    void (*putByInt)(struct SymMap *this, int key, void *value);
     void * (*get)(struct SymMap *this, char *key);
     void * (*getByInt)(struct SymMap *this, int key);
     void * (*remove)(struct SymMap *this, char *key);
@@ -29,9 +28,10 @@ typedef struct SymMap {
     SymStringArray * (*keys)(struct SymMap *this);
     SymList * (*values)(struct SymMap *this);
     SymList * (*entries)(struct SymMap *this);
-    int (*getBytesSize)(struct SymMap *this, char *key);
     void (*reset)(struct SymMap *this);
+    void (*resetAll)(struct SymMap *this, void (*destroyObject)(void *object), unsigned short shouldFreeKey);
     void (*destroy)(struct SymMap *this);
+    void (*destroyAll)(struct SymMap *this, void (*destroyObject)(void *object), unsigned short shouldFreeKey);
 } SymMap;
 
 SymMap *SymMap_new(SymMap *this, int size);

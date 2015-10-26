@@ -134,7 +134,7 @@ static SymMap * SymHttpTransportManager_getParametersFromQueryUrl(char *paramete
         if (nameValuePair->size == 2) {
             char *value = curl_easy_unescape(curl, nameValuePair->get(nameValuePair, 1), 0, NULL);
             SymStringUtils_replaceChar(value, '+', ' ');
-            parameters->put(parameters, nameValuePair->get(nameValuePair, 0), value, strlen(value) * sizeof(char) + 1);
+            parameters->put(parameters, nameValuePair->get(nameValuePair, 0), value);
             curl_free(value);
         }
     }

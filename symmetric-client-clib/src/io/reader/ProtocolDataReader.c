@@ -82,7 +82,7 @@ static void SymProtocolDataReader_parseLine(int eol, void *userData) {
                 isPrimary = this->keys->contains(this->keys, this->fields->array[i]);
                 this->table->columns->add(this->table->columns, SymColumn_new(NULL, this->fields->array[i], isPrimary));
             }
-            this->parsedTables->put(this->parsedTables, this->table->name, this->table, sizeof(SymTable));
+            this->parsedTables->put(this->parsedTables, this->table->name, this->table);
             this->writer->startTable(this->writer, this->table);
         } else if (strcmp(token, SYM_CSV_NODEID) == 0) {
             SymStringBuilder_copyToField(&batch->sourceNodeId, fields->get(fields, 1));

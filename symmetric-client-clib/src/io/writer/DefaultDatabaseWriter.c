@@ -50,7 +50,7 @@ static SymTable * SymDefaultDatabaseWriter_lookupTableAtTarget(SymDefaultDatabas
         SymTable *targetTable = this->platform->getTableFromCache(this->platform, sourceTable->catalog, sourceTable->schema, sourceTable->name, 0);
         if (targetTable) {
             table = targetTable->copyAndFilterColumns(targetTable, sourceTable->columns, 1);
-            this->targetTables->put(this->targetTables, tableKey, targetTable, sizeof(SymTable));
+            this->targetTables->put(this->targetTables, tableKey, targetTable);
         }
     }
     free(tableKey);
@@ -169,7 +169,7 @@ void SymDefaultDatabaseWriter_sql(SymDefaultDatabaseWriter *this, SymCsvData *da
 unsigned short SymDefaultDatabaseWriter_write(SymDefaultDatabaseWriter *this, SymCsvData *data) {
     // TODO: check if this->targetTable and if ignore missing tables is on
     if (!this->incomingBatch) {
-        return 0;
+        return 1;
     }
     switch (data->dataEventType) {
     case SYM_DATA_EVENT_INSERT:

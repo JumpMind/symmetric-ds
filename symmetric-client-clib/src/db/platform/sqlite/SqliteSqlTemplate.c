@@ -73,8 +73,7 @@ SymList * SymSqliteSqlTemplate_query(SymSqliteSqlTemplate *this, char *sql, SymS
         SymRow *row = SymSqliteSqlTemplate_buildRow(stmt);
         void *object = map_row(row);
         list->add(list, object);
-        // TODO: need to destroy each row, and the row mapper needs to make a copy
-        //row->destroy(row);
+        row->destroy(row);
     }
 
     if (rc != SQLITE_DONE) {
@@ -96,8 +95,7 @@ SymList * SymSqliteSqlTemplate_queryWithUserData(SymSqliteSqlTemplate *this, cha
         SymRow *row = SymSqliteSqlTemplate_buildRow(stmt);
         void *object = map_row(row, userData);
         list->add(list, object);
-        // TODO: need to destroy each row, and the row mapper needs to make a copy
-        //row->destroy(row);
+        row->destroy(row);
     }
 
     if (rc != SQLITE_DONE) {
