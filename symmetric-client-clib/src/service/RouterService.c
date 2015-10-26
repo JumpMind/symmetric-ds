@@ -119,10 +119,11 @@ SymList * SymRouterService_getTriggerRoutersForData(SymRouterService *this, SymD
     SymList *triggerRouters = NULL;
     if (data != NULL) {
         if (data->triggerHistory) {
-            // TODO: implement
-            //triggerRouters = engine.getTriggerRouterService().getTriggerRoutersForCurrentNode(false).get((data.getTriggerHistory().getTriggerId()));
+            SymMap *triggerRoutersMap = this->triggerRouterService->getTriggerRoutersForCurrentNode(this->triggerRouterService, 0);
+            triggerRouters = triggerRoutersMap->get(triggerRoutersMap, data->triggerHistory->triggerId);
             if (triggerRouters == NULL || triggerRouters->size == 0) {
-                //triggerRouters = engine.getTriggerRouterService().getTriggerRoutersForCurrentNode(true).get((data.getTriggerHistory().getTriggerId()));
+                triggerRoutersMap = this->triggerRouterService->getTriggerRoutersForCurrentNode(this->triggerRouterService, 1);
+                triggerRouters = triggerRoutersMap->get(triggerRoutersMap, data->triggerHistory->triggerId);
             }
         } else {
             SymLog_warn("Could not find a trigger hist record for recorded data %ld.  Was the trigger hist record deleted manually?", data->dataId);
@@ -248,7 +249,7 @@ void SymRouterService_destroy(SymRouterService *this) {
 
 SymRouterService * SymRouterService_new(SymRouterService *this, SymOutgoingBatchService *outgoingBatchService, SymSequenceService *sequenceService,
         SymDataService *dataService, SymNodeService *nodeService, SymConfigurationService *configurationService, SymParameterService *parameterService,
-        SymDatabasePlatform *platform) {
+        SymTriggerRouterService *triggerRouterService, SymDatabasePlatform *platform) {
     if (this == NULL) {
         this = (SymRouterService *) calloc(1, sizeof(SymRouterService));
     }
@@ -257,6 +258,7 @@ SymRouterService * SymRouterService_new(SymRouterService *this, SymOutgoingBatch
     this->nodeService = nodeService;
     this->configurationService = configurationService;
     this->parameterService = parameterService;
+    this->triggerRouterService = triggerRouterService;
     this->platform = platform;
     this->routers = SymMap_new(NULL, 20);
     this->routers->put(this->routers, SYM_ROUTER_DEFAULT, SymDefaultDataRouter_new(NULL), sizeof(SymDefaultDataRouter));
