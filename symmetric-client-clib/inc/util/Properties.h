@@ -23,6 +23,10 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include "common/Log.h"
+#include "util/StringUtils.h"
+#include "util/StringBuilder.h"
+#include "util/StringArray.h"
 
 typedef struct {
     char *key;
@@ -35,9 +39,12 @@ typedef struct SymProperties {
     char * (*get)(struct SymProperties *this, char *key, char *defaultValue);
     void (*put)(struct SymProperties *this, char *key, char *value);
     void (*putAll)(struct SymProperties *this, void *properties);
+    char * (*toString)(struct SymProperties *this);
     void (*destroy)(struct SymProperties *this);
 } SymProperties;
 
 SymProperties * SymProperties_new(SymProperties *);
+SymProperties * SymProperties_newWithString(SymProperties *this, char *propertiesFileContents);
+SymProperties * SymProperties_newWithFile(SymProperties *, char * argPath);
 
 #endif

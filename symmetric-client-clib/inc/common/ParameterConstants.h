@@ -64,4 +64,18 @@
 
 #define SYM_PARAMETER_ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED "routing.data.reader.order.by.gap.id.enabled"
 
+#define SYM_PARAMETER_JOB_MANAGER_SLEEP_PERIOD_MS "job.manager.sleep.period.ms"
+#define SYM_PARAMETER_START_ROUTE_JOB "start.route.job"
+#define SYM_PARAMETER_START_PUSH_JOB "start.pull.job"
+#define SYM_PARAMETER_START_PULL_JOB "start.push.job"
+#define SYM_PARAMETER_START_HEARTBEAT_JOB "start.heartbeat.job"
+#define SYM_PARAMETER_START_PURGE_JOB "start.purge.job"
+#define SYM_PARAMETER_START_SYNCTRIGGERS_JOB "start.synctriggers.job"
+#define SYM_PARAMETER_ROUTE_PERIOD_MS "job.routing.period.time.ms"
+#define SYM_PARAMETER_PURGE_PERIOD_MS "job.purge.period.time.ms"
+#define SYM_PARAMETER_PULL_PERIOD_MS "job.pull.period.time.ms"
+#define SYM_PARAMETER_PUSH_PERIOD_MS "job.push.period.time.ms"
+#define SYM_PARAMETER_HEARTBEAT_JOB_PERIOD_MS "job.heartbeat.period.time.ms"
+#define SYM_PARAMETER_SYNCTRIGGERS_PERIOD_MS "job.synctriggers.period.time.ms"
+
 #endif

@@ -43,6 +43,22 @@ void SymProperties_putAll(SymProperties *this, SymProperties *properties) {
     }
 }
 
+char * SymProperties_toString(struct SymProperties *this) {
+    SymStringBuilder *buff = SymStringBuilder_new(NULL);
+
+    int i;
+    for (i = 0; i < this->index; i++) {
+        buff->append(buff, this->propArray[i].key);
+        buff->append(buff, "=");
+        buff->append(buff, this->propArray[i].value);
+        if (i < this->index) {
+            buff->append(buff, ", ");
+        }
+    }
+
+    return buff->destroyAndReturn(buff);
+}
+
 void SymProperties_destroy(SymProperties *this) {
     free(this->propArray);
     free(this);
@@ -56,6 +72,82 @@ SymProperties * SymProperties_new(SymProperties *this) {
     this->get = (void *) &SymProperties_get;
     this->put = (void *) &SymProperties_put;
     this->putAll = (void *) &SymProperties_putAll;
+    this->toString = (void *) &SymProperties_toString;
     this->destroy = (void *) &SymProperties_destroy;
+    return this;
+}
+
+SymProperties * SymProperties_newWithString(SymProperties *this, char *propertiesFileContents) {
+    if (this == NULL) {
+        this = SymProperties_new(this);
+    }
+
+    SymStringArray *propertyLines = SymStringArray_split(propertiesFileContents, "\n");
+    int i;
+    for (i = 0; i < propertyLines->size; ++i) {
+        char *propertyLine = propertyLines->get(propertyLines, i);
+        if (SymStringUtils_isBlank(propertyLine)) {
+            continue;
+        }
+
+        char *trimmed = SymStringUtils_ltrim(propertyLine);
+        if (trimmed[0] == '#' || trimmed[0] == '!' ) {
+            continue;
+        }
+
+        int delimiterIndex = 0;
+        int length = strlen(trimmed);
+        int i;
+        for (i = 0; i < length; ++i) {
+            if (trimmed[i] == '=' || trimmed[i] == ':') {
+                delimiterIndex = i;
+                break;
+            }
+        }
+
+        if (delimiterIndex > 0) {
+            SymStringBuilder *buff = SymStringBuilder_newWithString(trimmed);
+            char *propertyName = buff->substring(buff, 0, delimiterIndex);
+            char *propertyValue = buff->substring(buff, delimiterIndex+1, length);
+            this->put(this, propertyName, propertyValue);
+            buff->destroy(buff);
+        }
+
+        free(trimmed);
+    }
+
+    propertyLines->destroy(propertyLines);
+
+    return this;
+}
+
+SymProperties * SymProperties_newWithFile(SymProperties *this, char *argPath) {
+    if (this == NULL) {
+        this = SymProperties_new(this);
+    }
+
+    // SymStringArray / split to read properties file.
+
+    FILE *file;
+    int BUFFER_SIZE = 1024;
+    char intputBuffer[BUFFER_SIZE];
+
+    file = fopen(argPath,"r");
+    if (!file) {
+        SymLog_error("Failed to load properties from file %s", argPath);
+        return this;
+    }
+
+    SymStringBuilder *buff = SymStringBuilder_new(NULL);
+
+    while (fgets(intputBuffer, BUFFER_SIZE, file) != NULL) {
+        buff->append(buff, intputBuffer);
+    }
+
+    this = SymProperties_newWithString(this, buff->destroyAndReturn(buff));
+
+    fclose(file);
+
+
     return this;
 }

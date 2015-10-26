@@ -65,6 +65,17 @@ void SymPropertiesTest_test3() {
     prop2->destroy(prop2);
 }
 
+void SymPropertiesTest_testNewWithString() {
+    char *propertiesFileContents = " prop1=value1\n#comment\n \nprop2=value 2 ";
+
+    SymProperties *prop = SymProperties_newWithString(NULL, propertiesFileContents);
+
+    CU_ASSERT(strcmp(prop->get(prop, "prop1", NOT_FOUND), "value1") == 0);
+    CU_ASSERT(strcmp(prop->get(prop, "prop2", NOT_FOUND), "value 2 ") == 0);
+
+    prop->destroy(prop);
+}
+
 int SymPropertiesTest_CUnit() {
     CU_pSuite suite = CU_add_suite("SymPropertiesTest", NULL, NULL);
     if (suite == NULL) {
@@ -73,7 +84,9 @@ int SymPropertiesTest_CUnit() {
 
     if (CU_add_test(suite, "SymPropertiesTest_test1", SymPropertiesTest_test1) == NULL ||
             CU_add_test(suite, "SymPropertiesTest_test2", SymPropertiesTest_test2) == NULL ||
-            CU_add_test(suite, "SymPropertiesTest_test3", SymPropertiesTest_test3) == NULL) {
+            CU_add_test(suite, "SymPropertiesTest_test3", SymPropertiesTest_test3) == NULL ||
+            CU_add_test(suite, "SymPropertiesTest_testNewWithString", SymPropertiesTest_testNewWithString) == NULL ||
+            1==0) {
         return CUE_NOTEST;
     }
     return CUE_SUCCESS;
