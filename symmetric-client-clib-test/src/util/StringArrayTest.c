@@ -47,9 +47,38 @@ void SymStringArrayTest_test2() {
     CU_ASSERT(array->contains(array, "two"));
     CU_ASSERT(array->contains(array, "three"));
 
-    CU_ASSERT(strcmp(array->get(array, 0), "one") == 0);
-    CU_ASSERT(strcmp(array->get(array, 1), "two") == 0);
-    CU_ASSERT(strcmp(array->get(array, 2), "three") == 0);
+    if (array->size == 3) {
+        CU_ASSERT(strcmp(array->get(array, 0), "one") == 0);
+        CU_ASSERT(strcmp(array->get(array, 1), "two") == 0);
+        CU_ASSERT(strcmp(array->get(array, 2), "three") == 0);
+    }
+
+    array->destroy(array);
+}
+
+void SymStringArrayTest_test3() {
+    SymStringArray *array = SymStringArray_split("one", ",");
+
+    CU_ASSERT(array->size == 1);
+    CU_ASSERT(array->contains(array, "one"));
+
+    if (array->size == 1) {
+        CU_ASSERT(strcmp(array->get(array, 0), "one") == 0);
+    }
+
+    array->destroy(array);
+}
+
+void SymStringArrayTest_test4() {
+    SymStringArray *array = SymStringArray_split(",,", ",");
+
+    CU_ASSERT(array->size == 3);
+
+    if (array->size == 3) {
+        CU_ASSERT(array->get(array, 0) == NULL);
+        CU_ASSERT(array->get(array, 1) == NULL);
+        CU_ASSERT(array->get(array, 2) == NULL);
+    }
 
     array->destroy(array);
 }
@@ -61,7 +90,9 @@ int SymStringArrayTest_CUnit() {
     }
 
     if (CU_add_test(suite, "SymStringArrayTest_test1", SymStringArrayTest_test1) == NULL ||
-            CU_add_test(suite, "SymStringArrayTest_test2", SymStringArrayTest_test2) == NULL) {
+            CU_add_test(suite, "SymStringArrayTest_test2", SymStringArrayTest_test2) == NULL ||
+            CU_add_test(suite, "SymStringArrayTest_test3", SymStringArrayTest_test3) == NULL ||
+            CU_add_test(suite, "SymStringArrayTest_test4", SymStringArrayTest_test4) == NULL) {
         return CUE_NOTEST;
     }
     return CUE_SUCCESS;
