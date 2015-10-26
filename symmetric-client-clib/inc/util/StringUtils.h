@@ -27,6 +27,8 @@
 #include "util/StringBuilder.h"
 
 char *SymStringUtils_trim(char *str);
+char *SymStringUtils_ltrim(char *str);
+char *SymStringUtils_rtrim(char *str);
 char *SymStringUtils_toUpperCase(char *str);
 char *SymStringUtils_toLowerCase(char *str);
 unsigned short SymStringUtils_isBlank(char *str);
