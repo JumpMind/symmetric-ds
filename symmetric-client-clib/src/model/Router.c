@@ -22,7 +22,7 @@
 
 unsigned short SymRouter_equals(SymRouter *this, SymRouter *router) {
     if (this && this->routerId && router && router->routerId) {
-        return StringUtils_equals(this->routerId, router->routerId);
+        return SymStringUtils_equals(this->routerId, router->routerId);
     } else {
         return 0;
     }
