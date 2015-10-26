@@ -28,11 +28,45 @@ void SymStringUtilsTest_testTrim() {
      CU_ASSERT(strcmp(SymStringUtils_trim("trim the back     "), "trim the back") == 0);
      CU_ASSERT(strcmp(SymStringUtils_trim(" trim one char front and back "), "trim one char front and back") == 0);
      CU_ASSERT(strcmp(SymStringUtils_trim(" trim one char front"), "trim one char front") == 0);
+     free(SymStringUtils_trim(" trim one char front"));
      CU_ASSERT(strcmp(SymStringUtils_trim("trim one char back "), "trim one char back") == 0);
      CU_ASSERT(strcmp(SymStringUtils_trim("                   "), "") == 0);
      CU_ASSERT(strcmp(SymStringUtils_trim(" "), "") == 0);
+     free(SymStringUtils_trim(" "));
      CU_ASSERT(strcmp(SymStringUtils_trim("a"), "a") == 0);
      CU_ASSERT(strcmp(SymStringUtils_trim(""), "") == 0);
+     free(SymStringUtils_trim(""));
+}
+
+void SymStringUtilsTest_testLTrim() {
+     CU_ASSERT(strcmp(SymStringUtils_ltrim("nothing to trim"), "nothing to trim") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_ltrim("  trim the front"), "trim the front") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_ltrim("trim the back     "), "trim the back     ") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_ltrim(" trim one char front and back "), "trim one char front and back ") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_ltrim(" trim one char front"), "trim one char front") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_ltrim("trim one char back "), "trim one char back ") == 0);
+     free(SymStringUtils_ltrim("trim one char back "));
+     CU_ASSERT(strcmp(SymStringUtils_ltrim("                   "), "") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_ltrim(" "), "") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_ltrim("a"), "a") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_ltrim(""), "") == 0);
+     free(SymStringUtils_ltrim(""));
+}
+
+void SymStringUtilsTest_testRTrim() {
+     CU_ASSERT(strcmp(SymStringUtils_rtrim("nothing to trim"), "nothing to trim") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_rtrim("  trim the front"), "  trim the front") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_rtrim("trim the back     "), "trim the back") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_rtrim(" trim one char front and back "), " trim one char front and back") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_rtrim(" trim one char front"), " trim one char front") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_rtrim("trim one char back "), "trim one char back") == 0);
+     free(SymStringUtils_rtrim("trim one char back "));
+     CU_ASSERT(strcmp(SymStringUtils_rtrim("                   "), "") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_rtrim(" "), "") == 0);
+     free(SymStringUtils_rtrim(" "));
+     CU_ASSERT(strcmp(SymStringUtils_rtrim("a"), "a") == 0);
+     CU_ASSERT(strcmp(SymStringUtils_rtrim(""), "") == 0);
+     free(SymStringUtils_rtrim(""));
 }
 
 void SymStringUtilsTest_test_toUpperCase() {
@@ -104,6 +138,8 @@ int SymStringUtilsTest_CUnit() {
             CU_add_test(suite, "SymStringUtilsTest_test_isNotBlank", SymStringUtilsTest_test_isNotBlank) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_test_format", SymStringUtilsTest_test_format) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_test_substring", SymStringUtilsTest_test_substring) == NULL ||
+            CU_add_test(suite, "SymStringUtilsTest_testLTrim", SymStringUtilsTest_testLTrim) == NULL ||
+            CU_add_test(suite, "SymStringUtilsTest_testRTrim", SymStringUtilsTest_testRTrim) == NULL ||
             1==0) {
         return CUE_NOTEST;
     }

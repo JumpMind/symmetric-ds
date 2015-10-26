@@ -29,16 +29,17 @@ char *SymStringUtils_trim(char *str)
         leadingWhitespaces++;
     }
 
-    if (leadingWhitespaces == length) { // all whitespace.
-        return "";
-    }
-
     int trailingWhitespaces = length-1;
-    while (isspace(str[trailingWhitespaces]) && trailingWhitespaces >=0) {
-        trailingWhitespaces--;
+    if (leadingWhitespaces == length) { // all whitespace.
+        trailingWhitespaces = 0;
     }
+    else {
+        while (isspace(str[trailingWhitespaces]) && trailingWhitespaces >=0) {
+            trailingWhitespaces--;
+        }
 
-    trailingWhitespaces = ((length-1)-trailingWhitespaces);
+        trailingWhitespaces = ((length-1)-trailingWhitespaces);
+    }
 
     int newLength = length - leadingWhitespaces - trailingWhitespaces;
     char *newString = malloc(newLength+1);
@@ -52,6 +53,51 @@ char *SymStringUtils_trim(char *str)
 
     return newString;
 }
+
+char *SymStringUtils_ltrim(char *str) {
+    int length = strlen(str);
+
+     int leadingWhitespaces = 0;
+     while (isspace(str[leadingWhitespaces]) && leadingWhitespaces < length) {
+         leadingWhitespaces++;
+     }
+
+     int newLength = length - leadingWhitespaces;
+     char *newString = malloc(newLength+1);
+
+     int i;
+     for (i = leadingWhitespaces; i < length; i++) {
+         newString[i-leadingWhitespaces] = str[i];
+     }
+
+     newString[i] = '\0';
+
+     return newString;
+}
+
+char *SymStringUtils_rtrim(char *str) {
+    int length = strlen(str);
+
+    int trailingWhitespaces = length-1;
+    while (isspace(str[trailingWhitespaces]) && trailingWhitespaces >=0) {
+        trailingWhitespaces--;
+    }
+
+    trailingWhitespaces = ((length-1)-trailingWhitespaces);
+
+    int newLength = length - trailingWhitespaces;
+    char *newString = malloc(newLength+1);
+
+    int i;
+    for (i = 0; i < length-trailingWhitespaces; i++) {
+        newString[i] = str[i];
+    }
+
+    newString[i] = '\0';
+
+    return newString;
+}
+
 
 char *SymStringUtils_toUpperCase(char *str) {
     int length = strlen(str);
