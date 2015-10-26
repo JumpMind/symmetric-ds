@@ -18,32 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef LIB_SYM_CLIENT_H
-#define LIB_SYM_CLIENT_H
+#ifndef SYMCLIENT_NATIVE_H
+#define SYMCLIENT_NATIVE_H
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include "core/SymEngine.h"
+#include <stdarg.h>
+#include <string.h>
+#include "libsymclient.h"
 #include "core/JobManager.h"
-#include "db/SymDialect.h"
-#include "model/BatchAck.h"
-#include "model/IncomingBatch.h"
-#include "model/Node.h"
-#include "model/NodeSecurity.h"
-#include "model/OutgoingBatch.h"
-#include "model/RemoteNodeStatus.h"
-#include "db/model/Table.h"
-#include "db/model/Column.h"
-#include "service/TriggerRouterService.h"
-#include "service/PullService.h"
-#include "service/PushService.h"
-#include "service/ParameterService.h"
-#include "util/StringBuilder.h"
 #include "util/StringArray.h"
+#include "util/StringUtils.h"
 #include "util/Properties.h"
-#include "util/Map.h"
-#include "common/Constants.h"
-#include "common/Log.h"
+
+int SymNativeClient_runSymmetricEngine(SymProperties *properties);
 
 #endif

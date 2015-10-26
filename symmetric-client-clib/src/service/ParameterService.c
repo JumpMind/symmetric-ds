@@ -92,7 +92,11 @@ unsigned short SymParameterService_is(SymParameterService *this, char *name, uns
     unsigned short value = defaultValue;
     char *stringValue = this->getString(this, name, NULL);
     if (stringValue != NULL) {
-        value = atoi(stringValue);
+        if (strcmp("true", stringValue) == 0) {
+            value = 1;
+        } else {
+            value = atoi(stringValue);
+        }
     }
     return value;
 }
