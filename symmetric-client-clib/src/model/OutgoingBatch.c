@@ -66,5 +66,6 @@ SymOutgoingBatch * SymOutgoingBatch_newWithNode(SymOutgoingBatch *this, char *no
     this->nodeId = nodeId;
     this->channelId = channelId;
     this->status = status;
+    this->createTime = SymDate_new();
     return this;
 }
