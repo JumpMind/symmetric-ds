@@ -27,6 +27,7 @@
 #include "route/ChannelRouterContext.h"
 #include "route/DataRouter.h"
 #include "route/DefaultDataRouter.h"
+#include "route/DataGapRouteReader.h"
 #include "db/platform/DatabasePlatform.h"
 #include "service/NodeService.h"
 #include "service/ConfigurationService.h"

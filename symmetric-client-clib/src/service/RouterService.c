@@ -174,13 +174,16 @@ static int SymRouterService_routeDataToNodes(SymRouterService *this, SymData *da
 }
 
 static int SymRouterService_selectDataAndRoute(SymRouterService *this, SymChannelRouterContext *context) {
-    SymData *data = NULL;
+    SymDataGapRouteReader *reader = SymDataGapRouteReader_new(NULL, this->platform, this->parameterService, this->dataService, context);
     int totalDataCount = 0;
     int totalDataEventCount = 0;
     int maxNumberOfEventsBeforeFlush = this->parameterService->getInt(this->parameterService, SYM_PARAMETER_ROUTING_FLUSH_JDBC_BATCH_SIZE, 50000);
 
-    // TODO: implement reader that returns data
-    while (data != NULL) {
+    // TODO: use SymSqlCursor instead
+    SymList *dataList = reader->selectDataFor(reader);
+    SymIterator *iter = dataList->iterator(dataList);
+    while (iter->hasNext(iter)) {
+        SymData *data = (SymData *) iter->next(iter);
         totalDataCount++;
         int dataEventsInserted = SymRouterService_routeDataToNodes(this, data, context);
         totalDataEventCount += dataEventsInserted;
@@ -194,6 +197,8 @@ static int SymRouterService_selectDataAndRoute(SymRouterService *this, SymChanne
         }
     }
     context->statDataRoutedCount += totalDataCount;
+    iter->destroy(iter);
+    dataList->destroy(dataList);
     return totalDataEventCount;
 }
 
@@ -255,6 +260,7 @@ SymRouterService * SymRouterService_new(SymRouterService *this, SymOutgoingBatch
     }
     this->outgoingBatchService = outgoingBatchService;
     this->sequenceService = sequenceService;
+    this->dataService = dataService;
     this->nodeService = nodeService;
     this->configurationService = configurationService;
     this->parameterService = parameterService;
