@@ -52,6 +52,7 @@ typedef struct SymDataService {
     void (*heartbeat)(struct SymDataService *this, unsigned short force);
     SymList * (*selectDataFor)(struct SymDataService *this, SymBatch *batch);
     void (*insertDataEvents)(struct SymDataService *this, SymSqlTransaction *transaction, SymList *events);
+    SymData * (*mapData)(struct SymDataService *this, SymRow *row);
     void (*destroy)(struct SymDataService *this);
 } SymDataService;
 

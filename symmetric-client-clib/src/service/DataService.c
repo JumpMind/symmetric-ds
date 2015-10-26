@@ -146,6 +146,10 @@ void SymDataService_insertDataEvents(SymDataService *this, SymSqlTransaction *tr
     }
 }
 
+SymData * SymDataService_mapData(SymDataService *this, SymRow *row) {
+    return SymDataService_dataMapper(row, this);
+}
+
 void SymDataService_destroy(SymDataService *this) {
     free(this);
 }
@@ -165,6 +169,7 @@ SymDataService * SymDataService_new(SymDataService *this, SymDatabasePlatform *p
     this->heartbeat = (void *) &SymDataService_heartbeat;
     this->selectDataFor = (void *) &SymDataService_selectDataFor;
     this->insertDataEvents = (void *) &SymDataService_insertDataEvents;
+    this->mapData = (void *) &SymDataService_mapData;
     this->destroy = (void *) &SymDataService_destroy;
     return this;
 }
