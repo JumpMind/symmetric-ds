@@ -99,6 +99,18 @@ void SymEngine_syncTriggers(SymEngine *this) {
     this->triggerRouterService->syncTriggers(this->triggerRouterService, 0);
 }
 
+SymRemoteNodeStatuses * SymEngine_push(SymEngine *this) {
+    return this->pushService->pushData(this->pushService);
+}
+
+SymRemoteNodeStatuses * SymEngine_pull(SymEngine *this) {
+    return this->pullService->pullData(this->pullService);
+}
+
+void SymEngine_route(SymEngine *this) {
+    this->routerService->routeData(this->routerService);
+}
+
 void SymEngine_purge(SymEngine *this) {
     this->purgeService->purgeOutgoing(this->purgeService);
     this->purgeService->purgeIncoming(this->purgeService);
@@ -128,6 +140,9 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->stop = (void *) &SymEngine_stop;
     this->uninstall = (void *) &SymEngine_uninstall;
     this->syncTriggers = (void *) &SymEngine_syncTriggers;
+    this->push = (void *) &SymEngine_push;
+    this->pull = (void *) &SymEngine_pull;
+    this->route = (void *) &SymEngine_route;
     this->purge = (void *) &SymEngine_purge;
     this->heartbeat = (void *) &SymEngine_heartbeat;
     this->destroy = (void *) &SymEngine_destroy;
@@ -152,6 +167,8 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform,
             this->dialect, this->incomingBatchService);
     this->dataService = SymDataService_new(NULL, this->platform, this->triggerRouterService, this->nodeService, this->dialect, this->outgoingBatchService, this->parameterService);
+    this->routerService = SymRouterService_new(NULL, this->outgoingBatchService, this->sequenceService, this->dataService, this->nodeService, this->configurationService,
+            this->parameterService, this->platform);
     this->dataExtractorService = SymDataExtractorService_new(NULL, this->nodeService, this->outgoingBatchService, this->dataService,
             this->triggerRouterService, this->parameterService, this->platform);
     this->registrationService = SymRegistrationService_new(NULL, this->nodeService, this->dataLoaderService, this->parameterService,

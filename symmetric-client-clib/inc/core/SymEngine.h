@@ -35,6 +35,7 @@
 #include "service/NodeService.h"
 #include "service/PullService.h"
 #include "service/RegistrationService.h"
+#include "service/RouterService.h"
 #include "service/DataLoaderService.h"
 #include "service/DataService.h"
 #include "service/DataExtractorService.h"
@@ -43,6 +44,7 @@
 #include "service/ConfigurationService.h"
 #include "transport/TransportManagerFactory.h"
 #include "transport/TransportManager.h"
+#include "model/RemoteNodeStatuses.h"
 #include "util/Properties.h"
 #include "common/Constants.h"
 #include "common/ParameterConstants.h"
@@ -57,6 +59,7 @@ typedef struct SymEngine {
     SymTriggerRouterService *triggerRouterService;
     SymDataLoaderService *dataLoaderService;
     SymDataService *dataService;
+    SymRouterService *routerService;
     SymDataExtractorService *dataExtractorService;
     SymRegistrationService *registrationService;
     SymPushService *pushService;
@@ -73,6 +76,9 @@ typedef struct SymEngine {
     unsigned short (*stop)(struct SymEngine *this);
     unsigned short (*uninstall)(struct SymEngine *this);
     void (*syncTriggers)(struct SymEngine *this);
+    SymRemoteNodeStatuses * (*push)(struct SymEngine *this);
+    SymRemoteNodeStatuses * (*pull)(struct SymEngine *this);
+    void (*route)(struct SymEngine *this);
     void (*purge)(struct SymEngine *this);
     void (*heartbeat)(struct SymEngine *this, unsigned short force);
     void (*destroy)(struct SymEngine *this);
