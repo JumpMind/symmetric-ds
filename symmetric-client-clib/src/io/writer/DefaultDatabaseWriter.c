@@ -146,7 +146,7 @@ int SymDefaultDatabaseWriter_delete(SymDefaultDatabaseWriter *this, SymCsvData *
     }
     // TODO: need to know length of each pkData
     SymStringArray *values = SymStringArray_new(NULL);
-    SymDefaultDatabaseWriter_buildTargetValues(this, data->oldData, values, 1);
+    SymDefaultDatabaseWriter_buildTargetValues(this, data->pkData, values, 1);
     int count = this->sqlTransaction->addRow(this->sqlTransaction, data->pkData, this->dmlStatement->sqlTypes);
     values->destroy(values);
     if (count > 0) {
