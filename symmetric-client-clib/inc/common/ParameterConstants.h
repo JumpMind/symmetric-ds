@@ -62,4 +62,6 @@
 
 #define SYM_PARAMETER_CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS "cache.node.group.link.time.ms"
 
+#define SYM_PARAMETER_ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED "routing.data.reader.order.by.gap.id.enabled"
+
 #endif
