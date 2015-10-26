@@ -99,14 +99,14 @@ static void SymProtocolDataWriter_endTable(SymProtocolDataWriter *this, SymTable
 
 static void SymProtocolDataWriter_writeData(SymProtocolDataWriter *this, SymTable *table, SymBatch *batch, SymData *data) {
     if (!batch->isIgnore) {
-        if (SymStringUtils_equals(data->eventType, SYM_DATA_EVENT_INSERT)) {
+        if (data->eventType == SYM_DATA_EVENT_INSERT) {
             SymProtocolDataWriter_println(this->sb, SYM_CSV_INSERT, data->rowData);
-        } else if (SymStringUtils_equals(data->eventType, SYM_DATA_EVENT_UPDATE)) {
+        } else if (data->eventType == SYM_DATA_EVENT_UPDATE) {
             if (data->oldData) {
                 SymProtocolDataWriter_println(this->sb, SYM_CSV_OLD, data->oldData);
             }
             SymProtocolDataWriter_println2(this->sb, SYM_CSV_UPDATE, data->rowData, data->pkData);
-        } else if (SymStringUtils_equals(data->eventType, SYM_DATA_EVENT_DELETE)) {
+        } else if (data->eventType == SYM_DATA_EVENT_DELETE) {
             if (data->oldData) {
                 SymProtocolDataWriter_println(this->sb, SYM_CSV_OLD, data->oldData);
             }

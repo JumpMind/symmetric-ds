@@ -23,15 +23,12 @@
 
 #include <stdlib.h>
 #include "util/Date.h"
-
-#define SYM_NODE_GROUP_LINK_PUSH "P"
-#define SYM_NODE_GROUP_LINK_WAIT_FOR_PULL "W"
-#define SYM_NODE_GROUP_LINK_ROUTE "R"
+#include "model/NodeGroupLinkAction.h"
 
 typedef struct SymNodeGroupLink {
     char *sourceNodeGroupId;
     char *targetNodeGroupId;
-    char dataEventAction;
+    SymNodeGroupLinkAction dataEventAction;
     unsigned short syncConfigEnabled;
     SymDate *createTime;
     SymDate *lastUpdateTime;

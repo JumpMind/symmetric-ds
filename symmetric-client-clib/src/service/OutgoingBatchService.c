@@ -174,6 +174,7 @@ SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *t
     this->parameterService = parameterService;
     this->findOutgoingBatch = (void *) &SymOutgoingBatchService_findOutgoingBatch;
     this->getOutgoingBatches = (void *) &SymOutgoingBatchService_getOutgoingBatches;
+    this->insertOutgoingBatch = (void *) &SymOutgoingBatchService_insertOutgoingBatch;
     this->updateOutgoingBatch = (void *) &SymOutgoingBatchService_updateOutgoingBatch;
     this->destroy = (void *) &SymOutgoingBatchService_destroy;
     return this;

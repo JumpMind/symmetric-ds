@@ -28,6 +28,7 @@
 #include "service/ParameterService.h"
 #include "service/ConfigurationService.h"
 #include "service/SequenceService.h"
+#include "route/ConfigurationChangedDataRouter.h"
 #include "db/SymDialect.h"
 #include "db/platform/DatabasePlatform.h"
 #include "db/sql/SqlTemplate.h"
@@ -49,6 +50,11 @@
 #include "common/ParameterConstants.h"
 #include "common/Log.h"
 
+typedef struct SymTriggerRoutersCache {
+    SymMap *triggerRoutersByTriggerId;
+    SymMap *routersByRouterId;
+} SymTriggerRoutersCache;
+
 typedef struct SymTriggerRouterService {
     SymConfigurationService *configurationService;
     SymSequenceService *sequenceService;
@@ -60,6 +66,8 @@ typedef struct SymTriggerRouterService {
 	time_t routersCacheTime;
     SymMap *triggersCache;
     time_t triggersCacheTime;
+    SymMap *triggerRouterCacheByNodeGroupId;
+    time_t triggerRouterPerNodeCacheTime;
 
 	void (*syncTriggers)(struct SymTriggerRouterService *this, unsigned short force);
 	SymList * (*getTriggers)(struct SymTriggerRouterService *this, unsigned short replaceTokens);
@@ -70,6 +78,7 @@ typedef struct SymTriggerRouterService {
 	SymList * (*getActiveTriggerHistoriesByTableName)(struct SymTriggerRouterService *this, char *tableName);
 	SymList * (*getRouters)(struct SymTriggerRouterService *this, unsigned short replaceVariables);
 	SymRouter * (*getRouterById)(struct SymTriggerRouterService *this, char *routerId, unsigned short refreshCache);
+	SymMap * (*getTriggerRoutersForCurrentNode)(struct SymTriggerRouterService * this, unsigned short refreshCache);
     void (*destroy)(struct SymTriggerRouterService *this);
 } SymTriggerRouterService;
 
@@ -128,5 +137,10 @@ from sym_trigger_hist where trigger_id=? and source_table_name=? and inactive_ti
 #define SYM_SQL_INACTIVATE_TRIGGER_HISTORY "\
 update sym_trigger_hist set inactive_time = current_timestamp, error_message=? where \
 trigger_hist_id=? "
+
+#define SYM_SQL_SELECT_TRIGGER_ROUTERS_COLUMN_LIST \
+" tr.trigger_id, tr.router_id, tr.create_time, tr.last_update_time, tr.last_update_by, tr.initial_load_order, tr.initial_load_select, tr.initial_load_delete_stmt, tr.initial_load_batch_count, tr.ping_back_enabled, tr.enabled "
+
+#define SYM_SQL_ACTIVE_TRIGGERS_FOR_SOURCE_NODE_GROUP "where r.source_node_group_id = ?"
 
 #endif

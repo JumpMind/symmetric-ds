@@ -101,8 +101,4 @@ select node_id, min(batch_id) as min_id, max(batch_id) as max_id from sym_incomi
 #define SYM_SQL_PURGE_INCOMING_BATCH "\
 delete from sym_incoming_batch where batch_id between ? and ? and node_id = ? and status = ? "
 
-//#define SYM_SQL_DELETE_INCOMING_ERRORS "\
-//        delete from $(incoming_error) where batch_id not in (select batch_id from $(incoming_batch))"
-
-
 #endif

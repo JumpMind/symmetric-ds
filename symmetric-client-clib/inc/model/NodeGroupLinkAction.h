@@ -18,35 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_DATA_H
-#define SYM_DATA_H
+#ifndef SYM_NODE_GROUP_LINK_ACTION_H
+#define SYM_NODE_GROUP_LINK_ACTION_H
 
-#include "io/data/CsvData.h"
-#include "io/data/DataEventType.h"
-#include "model/TriggerHistory.h"
+#include <stdlib.h>
 #include "util/Date.h"
+#include "util/StringUtils.h"
 
-typedef struct SymData {
-    long dataId;
-    char *rowData;
-    char *oldData;
-    char *pkData;
-    char *channelId;
-    char *transactionId;
-    char *tableName;
-    SymDataEventType eventType;
-    char *sourceNodeId;
-    char *externalData;
-    char *nodeList;
-    SymDate *createTime;
-    char *routerId;
-    int triggerHistId;
-    SymTriggerHistory *triggerHistory;
-    void (*destroy)(struct SymData *this);
-} SymData;
+#define SYM_NODE_GROUP_LINK_ACTION_PUSH "P"
+#define SYM_NODE_GROUP_LINK_ACTION_WAIT_FOR_PULL "W"
+#define SYM_NODE_GROUP_LINK_ACTION_ROUTE "R"
 
-SymData * SymData_new(SymData *this);
+typedef enum SymNodeGroupLinkAction {
+    SymNodeGroupLinkAction_P,
+    SymNodeGroupLinkAction_W,
+    SymNodeGroupLinkAction_R
+} SymNodeGroupLinkAction;
 
-void SymData_destroy(SymData *this);
+SymNodeGroupLinkAction SymNodeGroupLinkAction_fromCode(char *code);
+char * SymNodeGroupLinkAction_toString(SymNodeGroupLinkAction);
 
 #endif

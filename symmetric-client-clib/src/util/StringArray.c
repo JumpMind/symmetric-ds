@@ -132,9 +132,7 @@ SymStringArray * SymStringArray_split(char *str, char *separator) {
         array->addn(array, lastStop, stop - lastStop);
         lastStop = ++stop;
     }
-    if (lastStop != str) {
-        array->add(array, lastStop);
-    }
+    array->add(array, lastStop);
     return array;
 }
 

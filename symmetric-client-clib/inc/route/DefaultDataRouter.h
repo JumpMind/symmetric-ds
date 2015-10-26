@@ -18,35 +18,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_DATA_H
-#define SYM_DATA_H
+#ifndef SYM_DEFAULT_DATA_ROUTER_H
+#define SYM_DEFAULT_DATA_ROUTER_H
 
-#include "io/data/CsvData.h"
-#include "io/data/DataEventType.h"
-#include "model/TriggerHistory.h"
-#include "util/Date.h"
+#include <stdlib.h>
+#include "route/DataRouter.h"
+#include "model/Node.h"
+#include "util/List.h"
 
-typedef struct SymData {
-    long dataId;
-    char *rowData;
-    char *oldData;
-    char *pkData;
-    char *channelId;
-    char *transactionId;
-    char *tableName;
-    SymDataEventType eventType;
-    char *sourceNodeId;
-    char *externalData;
-    char *nodeList;
-    SymDate *createTime;
-    char *routerId;
-    int triggerHistId;
-    SymTriggerHistory *triggerHistory;
-    void (*destroy)(struct SymData *this);
-} SymData;
+typedef struct SymDefaultDataRouter {
+    SymDataRouter super;
+    void (*destroy)(struct SymDefaultDataRouter *this);
+} SymDefaultDataRouter;
 
-SymData * SymData_new(SymData *this);
-
-void SymData_destroy(SymData *this);
+SymDefaultDataRouter * SymDefaultDataRouter_new(SymDefaultDataRouter *this);
 
 #endif

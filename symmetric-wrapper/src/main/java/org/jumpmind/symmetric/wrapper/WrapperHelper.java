@@ -7,20 +7,20 @@ import java.io.IOException;
 public class WrapperHelper {
 
 		
-	public static void run(String[] args, String applHomeDir, String configFileName) {
+	public static void run(String[] args, String applHomeDir, String configFileName, String jarFileName) {
 		
 		checkArgs(args);
         System.setProperty("java.io.tmpdir", applHomeDir + File.separator + "tmp");
 
         WrapperService service = WrapperService.getInstance();
         try {
-            service.loadConfig(configFileName);
+            service.loadConfig(applHomeDir, configFileName, jarFileName);
         } catch (FileNotFoundException e) {
-            System.out.println("Missing config file " + args[1]);
+            System.out.println("Missing config file " + configFileName);
             System.out.println(e.getMessage());
             System.exit(Constants.RC_MISSING_CONFIG_FILE);
         } catch (IOException e) {
-            System.out.println("Cannot read config file " + args[1]);
+            System.out.println("Cannot read config file " + configFileName);
             System.out.println(e.getMessage());
             System.exit(Constants.RC_FAIL_READ_CONFIG_FILE);
         }
@@ -59,6 +59,9 @@ public class WrapperHelper {
                 System.out.println("Native error " + e.getErrorCode());    
             }
             System.exit(e.getErrorCode());
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+            System.exit(-1);
         }
 	}
 	
