@@ -32,6 +32,7 @@
 #include "service/ConfigurationService.h"
 #include "service/OutgoingBatchService.h"
 #include "service/SequenceService.h"
+#include "service/TriggerRouterService.h"
 #include "service/DataService.h"
 #include "service/ParameterService.h"
 #include "model/Channel.h"
@@ -51,6 +52,7 @@ typedef struct SymRouterService {
     SymDataService *dataService;
     SymNodeService *nodeService;
     SymConfigurationService *configurationService;
+    SymTriggerRouterService *triggerRouterService;
     SymParameterService *parameterService;
     SymDatabasePlatform *platform;
     SymMap *routers;
@@ -60,6 +62,6 @@ typedef struct SymRouterService {
 
 SymRouterService * SymRouterService_new(SymRouterService *this, SymOutgoingBatchService *outgoingBatchService, SymSequenceService *sequenceService,
         SymDataService *dataService, SymNodeService *nodeService, SymConfigurationService *configurationService, SymParameterService *parameterService,
-        SymDatabasePlatform *platform);
+        SymTriggerRouterService *triggerRouterService, SymDatabasePlatform *platform);
 
 #endif
