@@ -152,6 +152,16 @@ char * SymSqliteSqlTemplate_queryForString(SymSqliteSqlTemplate *this, char *sql
     return value;
 }
 
+int SymSqliteSqlTemplate_queryForLong(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
+    char *str = SymSqliteSqlTemplate_queryForString(this, sql, args, sqlTypes, error);
+    long value = 0;
+    if (str != NULL) {
+        value = atol(str);
+        free(str);
+    }
+    return value;
+}
+
 int SymSqliteSqlTemplate_update(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
     int rc;
     sqlite3_stmt *stmt;
@@ -182,6 +192,7 @@ SymSqliteSqlTemplate * SymSqliteSqlTemplate_new(SymSqliteSqlTemplate *this, sqli
     this->db = db;
     SymSqlTemplate *super = (SymSqlTemplate *) this;
     super->queryForInt = (void *) &SymSqliteSqlTemplate_queryForInt;
+    super->queryForLong = (void *) &SymSqliteSqlTemplate_queryForLong;
     super->queryForString = (void *) &SymSqliteSqlTemplate_queryForString;
     super->queryForList = (void *) &SymSqliteSqlTemplate_queryForList;
     super->queryForObject = (void *) &SymSqliteSqlTemplate_queryForObject;

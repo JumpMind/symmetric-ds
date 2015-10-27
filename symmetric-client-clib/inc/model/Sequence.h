@@ -18,30 +18,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_CONSTANTS_H
-#define SYM_CONSTANTS_H
+#ifndef SYM_SEQUENCE_H
+#define SYM_SEQUENCE_H
 
-#define SYM_DEPLOYMENT_TYPE "cclient"
+#include <stdlib.h>
+#include "util/Date.h"
 
-#define SYM_LONG_OPERATION_THRESHOLD 30000
+typedef struct SymSequence {
+    char *sequenceName;
+    long currentValue;
+    int incrementBy;
+    long minValue;
+    long maxValue;
+    SymDate *createTime;
+    char *lastUpdateBy;
+    SymDate *lastUpdateTime;
+    unsigned short cycle;
+    void (*destroy)(struct SymSequence *this);
+} SymSequence;
 
-#define SYM_NONE_TOKEN "$(none)"
-
-#define SYM_SEQUENCE_TRIGGER_HIST "trigger_hist"
-
-#define SYM_CHANNEL_HEARTBEAT "heartbeat"
-
-#define SYM_CHANNEL_CONFIG "config"
-
-#define SYM_VIRTUAL_BATCH_FOR_REGISTRATION -9999L
-
-#define SYM_UNROUTED_NODE_ID "-1"
-
-#define SYM_UNKNOWN_ROUTER_ID "?"
-
-#define SYM_SEQUENCE_OUTGOING_BATCH_LOAD_ID "outgoing_batch_load_id"
-#define SYM_SEQUENCE_OUTGOING_BATCH "outgoing_batch"
-#define SYM_SEQUENCE_TRIGGER_HIST "trigger_hist"
-#define SYM_SEQUENCE_EXTRACT_REQ "extract_request"
+SymSequence * SymSequence_new(SymSequence *this);
+SymSequence * SymSequence_newWithValues(SymSequence *this, char *sequenceName, long currentValue, int incrementBy, long minValue,
+            long maxValue, char *lastUpdateBy, unsigned short cycle);
+void SymSequence_destroy(SymSequence *this);
 
 #endif

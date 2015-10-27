@@ -151,7 +151,7 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->platform = SymDatabasePlatformFactory_create(properties);
     this->dialect = SymDialectFactory_create(this->platform);
 
-    this->sequenceService = SymSequenceService_new(NULL);
+    this->sequenceService = SymSequenceService_new(NULL, this->platform);
 
     this->parameterService = SymParameterService_new(NULL, properties);
     this->configurationService = SymConfigurationService_new(NULL, this->parameterService, this->platform);

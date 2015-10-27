@@ -18,30 +18,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_CONSTANTS_H
-#define SYM_CONSTANTS_H
+#include "model/Sequence.h"
 
-#define SYM_DEPLOYMENT_TYPE "cclient"
+void SymSequence_destroy(SymSequence *this) {
+    free(this);
+}
 
-#define SYM_LONG_OPERATION_THRESHOLD 30000
+SymSequence * SymSequence_new(SymSequence *this) {
+    if (this == NULL) {
+        this = (SymSequence *) calloc(1, sizeof(SymSequence));
+    }
+    this->destroy = (void *) &SymSequence_destroy;
+    return this;
+}
 
-#define SYM_NONE_TOKEN "$(none)"
-
-#define SYM_SEQUENCE_TRIGGER_HIST "trigger_hist"
-
-#define SYM_CHANNEL_HEARTBEAT "heartbeat"
-
-#define SYM_CHANNEL_CONFIG "config"
-
-#define SYM_VIRTUAL_BATCH_FOR_REGISTRATION -9999L
-
-#define SYM_UNROUTED_NODE_ID "-1"
-
-#define SYM_UNKNOWN_ROUTER_ID "?"
-
-#define SYM_SEQUENCE_OUTGOING_BATCH_LOAD_ID "outgoing_batch_load_id"
-#define SYM_SEQUENCE_OUTGOING_BATCH "outgoing_batch"
-#define SYM_SEQUENCE_TRIGGER_HIST "trigger_hist"
-#define SYM_SEQUENCE_EXTRACT_REQ "extract_request"
-
-#endif
+SymSequence * SymSequence_newWithValues(SymSequence *this, char *sequenceName, long currentValue, int incrementBy, long minValue,
+            long maxValue, char *lastUpdateBy, unsigned short cycle) {
+    this = SymSequence_new(this);
+    this->sequenceName = sequenceName;
+    this->currentValue = currentValue;
+    this->incrementBy = incrementBy;
+    this->minValue = minValue;
+    this->maxValue = maxValue;
+    this->lastUpdateBy = lastUpdateBy;
+    this->cycle = cycle;
+    return this;
+}

@@ -25,12 +25,16 @@ int SymSqliteSqlTransaction_queryForInt(SymSqliteSqlTransaction *this, char *sql
     return this->sqlTemplate->queryForInt(this->sqlTemplate, sql, args, sqlTypes, error);
 }
 
+long SymSqliteSqlTransaction_queryForLong(SymSqliteSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
+    return this->sqlTemplate->queryForLong(this->sqlTemplate, sql, args, sqlTypes, error);
+}
+
 char * SymSqliteSqlTransaction_queryForString(SymSqliteSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error) {
     return this->sqlTemplate->queryForString(this->sqlTemplate, sql, args, sqlTypes, error);
 }
 
-void SymSqliteSqlTransaction_query(SymSqliteSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *callback) {
-    this->sqlTemplate->query(this->sqlTemplate, sql, args, sqlTypes, error, callback);
+SymList * SymSqliteSqlTransaction_query(SymSqliteSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *callback) {
+    return this->sqlTemplate->query(this->sqlTemplate, sql, args, sqlTypes, error, callback);
 }
 
 static void SymSqliteSqlTransaction_requireTransaction(SymSqliteSqlTransaction *this) {
