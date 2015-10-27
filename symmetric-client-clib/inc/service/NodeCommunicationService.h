@@ -18,19 +18,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_TRANSPORT_MANAGER_FACTORY_H
-#define SYM_TRANSPORT_MANAGER_FACTORY_H
+#ifndef SYM_NODECOMMUNICATIONSERVICE_H
+#define SYM_NODECOMMUNICATIONSERVICE_H
 
-#include <stdio.h>
-#include <string.h>
-#include "common/Log.h"
-#include "service/ParameterService.h"
-#include "transport/TransportManager.h"
-#include "transport/http/HttpTransportManager.h"
+#include <stdlib.h>
+#include "util/List.h"
+#include "service/NodeService.h"
 
-#define SYM_PROTOCOL_HTTP "http"
-#define SYM_PROTOCOL_FILE "file"
+typedef enum {
+    SYM_COMMUNICATION_TYPE_PULL, SYM_COMMUNICATION_TYPE_PUSH, SYM_COMMUNICATION_TYPE_FILE_PUSH, SYM_COMMUNICATION_TYPE_FILE_PULL, SYM_COMMUNICATION_TYPE_OFFLN_PULL, SYM_COMMUNICATION_TYPE_OFFLN_PUSH, SYM_COMMUNICATION_TYPE_EXTRACT
+} SymCommunicationType;
 
-SymTransportManager * SymTransportManagerFactory_create(char *type, SymParameterService *parameterService);
+typedef struct SymNodeCommunicationService {
+    SymNodeService * nodeService;
+    SymList * (*list)(struct SymNodeCommunicationService *this, SymCommunicationType communicationType);
+    void (*destroy)(struct SymNodeCommunicationService *this);
+} SymNodeCommunicationService;
+
+SymNodeCommunicationService * SymNodeCommunicationService_new(SymNodeCommunicationService *this, SymNodeService * nodeService);
 
 #endif

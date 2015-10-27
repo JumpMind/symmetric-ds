@@ -18,19 +18,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_TRANSPORT_MANAGER_FACTORY_H
-#define SYM_TRANSPORT_MANAGER_FACTORY_H
+#ifndef SYM_FILEINCOMINGTRANSPORT_H
+#define SYM_FILEINCOMINGTRANSPORT_H
 
 #include <stdio.h>
-#include <string.h>
-#include "common/Log.h"
-#include "service/ParameterService.h"
-#include "transport/TransportManager.h"
+#include <stdlib.h>
+#include <curl/curl.h>
+#include <util/Properties.h>
+#include <dirent.h>
+#include "model/Node.h"
 #include "transport/http/HttpTransportManager.h"
+#include "transport/IncomingTransport.h"
+#include "common/Log.h"
+#include "util/StringUtils.h"
 
-#define SYM_PROTOCOL_HTTP "http"
-#define SYM_PROTOCOL_FILE "file"
+typedef struct SymFileIncomingTransport {
+    SymIncomingTransport super;
+    SymNode *remoteNode;
+    SymNode *localNode;
+    char *offlineIncomingDir;
+    char *offlineArchiveDir;
+    char *offlineErrorDir;
+} SymFileIncomingTransport;
 
-SymTransportManager * SymTransportManagerFactory_create(char *type, SymParameterService *parameterService);
+SymFileIncomingTransport * SymFileIncomingTransport_new(SymFileIncomingTransport *this, SymNode *remoteNode, SymNode *localNode,
+        char *offlineIncomingDir, char *offlineArchiveDir, char *offlineErrorDir);
 
 #endif

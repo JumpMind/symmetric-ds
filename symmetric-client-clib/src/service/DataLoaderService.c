@@ -118,18 +118,48 @@ void SymDataLoaderService_loadDataFromPull(SymDataLoaderService *this, SymNode *
     }
 }
 
+void loadDataFromOfflineTransport(SymDataLoaderService *this, SymNode *remote, SymRemoteNodeStatus *status) {
+    SymNode *local = this->nodeService->findIdentity(this->nodeService);
+    if (local == NULL) {
+        this->loadDataFromRegistration(this, status);
+    } else {
+        SymNodeSecurity *localSecurity = this->nodeService->findNodeSecurity(this->nodeService, local->nodeId);
+//        char *registrationUrl = this->parameterService->getRegistrationUrl(this->parameterService);
+
+        SymIncomingTransport *transport = this->fileTransportManager->getPullTransport(this->fileTransportManager, remote, local,
+                    localSecurity->nodePassword, NULL, NULL);
+
+        int error = 0;
+        SymList *incomingBatches = SymDataLoaderService_loadDataFromTransport(this, remote, transport, &error);
+        if (incomingBatches->size > 0) {
+            status->updateIncomingStatus(status, incomingBatches);
+            SymDataLoaderService_sendAck(this, remote, local, localSecurity, incomingBatches);
+        }
+        SymList_destroyAll(incomingBatches, (void *) SymIncomingBatch_destroy);
+
+        if (error == 1) {
+            SymLog_warn("Node information missing on the server.  Attempting to re-register.");
+            this->loadDataFromRegistration(this, status);
+        }
+
+        transport->destroy(transport);
+        localSecurity->destroy(localSecurity);
+    }
+}
+
 void SymDataLoaderService_destroy(SymDataLoaderService *this) {
     free(this);
 }
 
 SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService, SymNodeService *nodeService,
-        SymTransportManager *transportManager, SymDatabasePlatform *platform, SymDialect *dialect, SymIncomingBatchService *incomingBatchService) {
+        SymTransportManager *transportManager, SymTransportManager *fileTransportManager, SymDatabasePlatform *platform, SymDialect *dialect, SymIncomingBatchService *incomingBatchService) {
     if (this == NULL) {
         this = (SymDataLoaderService *) calloc(1, sizeof(SymDataLoaderService));
     }
     this->parameterService = parameterService;
     this->nodeService = nodeService;
     this->transportManager = transportManager;
+    this->fileTransportManager = fileTransportManager;
     this->platform = platform;
     this->dialect = dialect;
     this->incomingBatchService = incomingBatchService;

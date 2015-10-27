@@ -78,4 +78,9 @@
 #define SYM_PARAMETER_HEARTBEAT_JOB_PERIOD_MS "job.heartbeat.period.time.ms"
 #define SYM_PARAMETER_SYNCTRIGGERS_PERIOD_MS "job.synctriggers.period.time.ms"
 
+#define SYM_PARAMETER_NODE_OFFLINE_INCOMING_DIR "node.offline.incoming.dir"
+#define SYM_PARAMETER_NODE_OFFLINE_OUTGOING_DIR "node.offline.outgoing.dir"
+#define SYM_PARAMETER_NODE_OFFLINE_ERROR_DIR "node.offline.error.dir"
+#define SYM_PARAMETER_NODE_OFFLINE_ARCHIVE_DIR "node.offline.archive.dir"
+
 #endif

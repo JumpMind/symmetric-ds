@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "common/ParameterConstants.h"
+#include "common/Log.h"
 #include "db/platform/DatabasePlatformFactory.h"
 #include "db/SymDialectFactory.h"
 #include "db/SymDialect.h"
@@ -49,6 +51,8 @@
 #include "common/Constants.h"
 #include "common/ParameterConstants.h"
 #include "service/PurgeService.h"
+#include "service/OfflinePullService.h"
+#include "service/OfflinePushService.h"
 
 typedef struct SymEngine {
     SymProperties *properties;
@@ -56,6 +60,7 @@ typedef struct SymEngine {
     SymDatabasePlatform *platform;
     SymParameterService *parameterService;
     SymTransportManager *transportManager;
+    SymTransportManager *offlineTransportManager;
     SymTriggerRouterService *triggerRouterService;
     SymDataLoaderService *dataLoaderService;
     SymDataService *dataService;
@@ -64,6 +69,8 @@ typedef struct SymEngine {
     SymRegistrationService *registrationService;
     SymPushService *pushService;
     SymPullService *pullService;
+    SymOfflinePushService *offlinePushService;
+    SymOfflinePullService *offlinePullService;
     SymNodeService *nodeService;
     SymIncomingBatchService *incomingBatchService;
     SymOutgoingBatchService *outgoingBatchService;

@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include "core/SymEngine.h"
+#include "common/Log.h"
 
 typedef struct SymJobManager {
     SymEngine *engine;

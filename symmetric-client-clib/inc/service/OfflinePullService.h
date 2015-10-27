@@ -18,11 +18,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_PULL_SERVICE_H
-#define SYM_PULL_SERVICE_H
+#ifndef SYM_OFFLINEPULLSERVICE_H
+#define SYM_OFFLINEPULLSERVICE_H
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "model/RemoteNodeStatus.h"
 #include "model/RemoteNodeStatuses.h"
 #include "service/NodeService.h"
@@ -32,16 +32,17 @@
 #include "util/Map.h"
 #include "common/Log.h"
 
-typedef struct SymPullService {
+typedef struct SymOfflinePullService {
     SymNodeService *nodeService;
     SymDataLoaderService *dataLoaderService;
     SymRegistrationService *registrationService;
     SymConfigurationService *configurationService;
-    SymRemoteNodeStatuses * (*pullData)(struct SymPullService *this);
-    void (*destroy)(struct SymPullService *this);
-} SymPullService;
+    SymRemoteNodeStatuses * (*pullData)(struct SymOfflinePullService *this);
+    void (*destroy)(struct SymOfflinePullService *this);
+} SymOfflinePullService;
 
-SymPullService * SymPullService_new(SymPullService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,
+SymOfflinePullService * SymOfflinePullService_new(SymOfflinePullService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,
         SymRegistrationService *registrationService, SymConfigurationService *configurationService);
+
 
 #endif

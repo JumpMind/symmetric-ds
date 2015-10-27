@@ -38,20 +38,23 @@
 #include "db/SymDialect.h"
 #include "util/List.h"
 #include "common/ParameterConstants.h"
+#include "transport/file/FileTransportManager.h"
 
 typedef struct SymDataLoaderService {
     SymParameterService *parameterService;
     SymNodeService *nodeService;
     SymTransportManager *transportManager;
+    SymTransportManager *fileTransportManager;
     SymDatabasePlatform *platform;
     SymDialect *dialect;
     SymIncomingBatchService *incomingBatchService;
     void (*loadDataFromPull)(struct SymDataLoaderService *this, SymNode *remote, SymRemoteNodeStatus *status);
+    void (*loadDataFromOfflineTransport)(struct SymDataLoaderService *this, SymNode *remote, SymRemoteNodeStatus *status);
     void (*loadDataFromRegistration)(struct SymDataLoaderService *this, SymRemoteNodeStatus *status);
     void (*destroy)(struct SymDataLoaderService *this);
 } SymDataLoaderService;
 
 SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService, SymNodeService *nodeService,
-        SymTransportManager *transportManager, SymDatabasePlatform *platform, SymDialect *dialect, SymIncomingBatchService *incomingBatchService);
+        SymTransportManager *transportManager, SymTransportManager *fileTransportManager, SymDatabasePlatform *platform, SymDialect *dialect, SymIncomingBatchService *incomingBatchService);
 
 #endif

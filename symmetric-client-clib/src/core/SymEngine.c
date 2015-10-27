@@ -19,8 +19,6 @@
  * under the License.
  */
 #include "core/SymEngine.h"
-#include "common/ParameterConstants.h"
-#include "common/Log.h"
 
 static unsigned short SymEngine_isConfigured(SymEngine *this) {
     unsigned short isConfigured = 1;
@@ -166,8 +164,8 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
     this->outgoingBatchService = SymOutgoingBatchService_new(NULL, this->platform, this->parameterService, this->sequenceService);
     this->acknowledgeService = SymAcknowledgeService_new(NULL, this->outgoingBatchService, this->platform);
-    this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform,
-            this->dialect, this->incomingBatchService);
+    this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->offlineTransportManager,
+            this->platform, this->dialect, this->incomingBatchService);
     this->dataService = SymDataService_new(NULL, this->platform, this->triggerRouterService, this->nodeService, this->dialect, this->outgoingBatchService, this->parameterService);
     this->routerService = SymRouterService_new(NULL, this->outgoingBatchService, this->sequenceService, this->dataService, this->nodeService, this->configurationService,
             this->parameterService, this->triggerRouterService, this->platform);
@@ -178,10 +176,9 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
     this->pushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
             this->configurationService, this->acknowledgeService);
-    // TODO add these.
-//    this->offlinePullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
-//    this->offlinePushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
-//            this->configurationService, this->acknowledgeService);
+    this->offlinePullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
+    this->offlinePushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
+            this->configurationService, this->acknowledgeService);
     this->purgeService = SymPurgeService_new(NULL, this->parameterService, this->dialect, this->platform);
 
     return this;

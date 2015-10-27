@@ -130,7 +130,7 @@ SymProperties * SymProperties_newWithFile(SymProperties *this, char *argPath) {
 
     FILE *file;
     int BUFFER_SIZE = 1024;
-    char intputBuffer[BUFFER_SIZE];
+    char inputBuffer[BUFFER_SIZE];
 
     file = fopen(argPath,"r");
     if (!file) {
@@ -140,8 +140,8 @@ SymProperties * SymProperties_newWithFile(SymProperties *this, char *argPath) {
 
     SymStringBuilder *buff = SymStringBuilder_new(NULL);
 
-    while (fgets(intputBuffer, BUFFER_SIZE, file) != NULL) {
-        buff->append(buff, intputBuffer);
+    while (fgets(inputBuffer, BUFFER_SIZE, file) != NULL) {
+        buff->append(buff, inputBuffer);
     }
 
     this = SymProperties_newWithString(this, buff->destroyAndReturn(buff));

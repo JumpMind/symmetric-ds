@@ -18,19 +18,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_TRANSPORT_MANAGER_FACTORY_H
-#define SYM_TRANSPORT_MANAGER_FACTORY_H
+#ifndef SYM_FILETRANSPORTMANAGER_H
+#define SYM_FILETRANSPORTMANAGER_H
 
-#include <stdio.h>
-#include <string.h>
-#include "common/Log.h"
-#include "service/ParameterService.h"
-#include "transport/TransportManager.h"
-#include "transport/http/HttpTransportManager.h"
+#include <stdlib.h>
+#include"transport/TransportManager.h"
+#include "transport/file/FileIncomingTransport.h"
+#include "transport/file/FileOutgoingTransport.h"
 
-#define SYM_PROTOCOL_HTTP "http"
-#define SYM_PROTOCOL_FILE "file"
+typedef struct SymFileTransportManager {
+    SymTransportManager super;
+    void (*destroy)(struct SymFileTransportManager *this);
+} SymFileTransportManager;
 
-SymTransportManager * SymTransportManagerFactory_create(char *type, SymParameterService *parameterService);
+SymFileTransportManager * SymFileTransportManager_new(SymFileTransportManager *this, SymParameterService *parameterService);
 
 #endif

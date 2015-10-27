@@ -18,19 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_TRANSPORT_MANAGER_FACTORY_H
-#define SYM_TRANSPORT_MANAGER_FACTORY_H
+#include "service/OfflinePushService.h"
 
-#include <stdio.h>
-#include <string.h>
-#include "common/Log.h"
-#include "service/ParameterService.h"
-#include "transport/TransportManager.h"
-#include "transport/http/HttpTransportManager.h"
 
-#define SYM_PROTOCOL_HTTP "http"
-#define SYM_PROTOCOL_FILE "file"
+void SymOfflinePushService_destroy(SymOfflinePushService *this) {
+    free(this);
+}
 
-SymTransportManager * SymTransportManagerFactory_create(char *type, SymParameterService *parameterService);
-
-#endif
+SymOfflinePushService * SymOfflinePushService_new(SymOfflinePushService *this) {
+    if (this == NULL) {
+        this = (SymOfflinePushService *) calloc(1, sizeof(SymOfflinePushService));
+    }
+    this->destroy = (void *) &SymOfflinePushService_destroy;
+    return this;
+}
