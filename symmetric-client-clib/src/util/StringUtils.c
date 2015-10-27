@@ -197,3 +197,18 @@ void SymStringUtils_replaceChar(char *str, char oldChar, char newChar) {
         }
     }
 }
+
+unsigned short SymStringUtils_endsWith(char *str, char *suffix) {
+    if (!str || !suffix)
+        return 0;
+
+    size_t length = strlen(str);
+    size_t suffixLength = strlen(suffix);
+    if (suffixLength >  length)
+        return 0;
+    return strncmp(str + length - suffixLength, suffix, suffixLength) == 0;
+
+    return 0;
+}
+
+
