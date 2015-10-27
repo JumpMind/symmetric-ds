@@ -28,6 +28,7 @@
 #include "model/OutgoingBatches.h"
 #include "db/platform/DatabasePlatform.h"
 #include "service/ParameterService.h"
+#include "service/SequenceService.h"
 #include "util/List.h"
 #include "util/StringBuilder.h"
 #include "util/StringArray.h"
@@ -37,6 +38,7 @@
 typedef struct SymOutgoingBatchService {
     SymDatabasePlatform *platform;
     SymParameterService *parameterService;
+    SymSequenceService *sequenceService;
     SymOutgoingBatch * (*findOutgoingBatch)(struct SymOutgoingBatchService *this, long batchId, char *nodeId);
     SymOutgoingBatches * (*getOutgoingBatches)(struct SymOutgoingBatchService *this, char *nodeId);
     void (*insertOutgoingBatch)(struct SymOutgoingBatchService *this, SymOutgoingBatch *outgoingBatch);
@@ -46,7 +48,8 @@ typedef struct SymOutgoingBatchService {
     void (*destroy)(struct SymOutgoingBatchService *this);
 } SymOutgoingBatchService;
 
-SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *this, SymDatabasePlatform *platform, SymParameterService *parameterService);
+SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *this, SymDatabasePlatform *platform, SymParameterService *parameterService,
+        SymSequenceService *sequenceService);
 
 #define SYM_SQL_INSERT_OUTGOING_BATCH \
 "insert into sym_outgoing_batch \

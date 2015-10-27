@@ -173,10 +173,10 @@ void SymSequenceService_init(SymSequenceService *this) {
         initSequence(this, SYM_SEQUENCE_TRIGGER_HIST, maxTriggerHistId);
     }
 
-    if (sequences->get(sequences, SYM_SEQUENCE_EXTRACT_REQ) == NULL) {
-        long maxRequestId = sqlTemplate->queryForLong(sqlTemplate, SYM_SQL_MAX_EXTRACT_REQUEST, NULL, NULL, &error);
-        initSequence(this, SYM_SEQUENCE_EXTRACT_REQ, maxRequestId);
-    }
+    //if (sequences->get(sequences, SYM_SEQUENCE_EXTRACT_REQ) == NULL) {
+    //    long maxRequestId = sqlTemplate->queryForLong(sqlTemplate, SYM_SQL_MAX_EXTRACT_REQUEST, NULL, NULL, &error);
+    //    initSequence(this, SYM_SEQUENCE_EXTRACT_REQ, maxRequestId);
+    //}
 }
 
 void SymSequenceService_destroy(SymSequenceService *this) {
