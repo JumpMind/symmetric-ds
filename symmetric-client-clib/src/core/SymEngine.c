@@ -159,6 +159,7 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->triggerRouterService = SymTriggerRouterService_new(NULL, this->configurationService,
             this->sequenceService, this->parameterService, this->platform, this->dialect);
     this->transportManager = SymTransportManagerFactory_create(SYM_PROTOCOL_HTTP, this->parameterService);
+    this->offlineTransportManager = SymTransportManagerFactory_create(SYM_PROTOCOL_FILE, this->parameterService);
     this->nodeService = SymNodeService_new(NULL, this->platform);
     this->nodeService->lastRestartTime = SymDate_new(NULL);
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
@@ -176,6 +177,10 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
     this->pushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
             this->configurationService, this->acknowledgeService);
+    // TODO add these.
+//    this->offlinePullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
+//    this->offlinePushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
+//            this->configurationService, this->acknowledgeService);
     this->purgeService = SymPurgeService_new(NULL, this->parameterService, this->dialect, this->platform);
 
     return this;
