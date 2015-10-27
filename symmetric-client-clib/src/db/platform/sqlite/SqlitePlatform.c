@@ -73,10 +73,10 @@ SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties
 
     SymLog_info("The IDatabasePlatform being used is SymSqlitePlatform");
 
-    char filename[100];
+    char filename[256];
     char *url = properties->get(properties, SYM_PARAMETER_DB_URL, SYM_DATABASE_SQLITE);
     url += strlen(SYM_DATABASE_SQLITE) + 1;
-    strncpy(filename, url, 100);
+    strncpy(filename, url, 256);
     SymLog_info("Opening SQLite database at %s", filename);
 
     if (sqlite3_open_v2(filename, &this->db,
