@@ -126,6 +126,7 @@ SymSqliteSqlTransaction * SymSqliteSqlTransaction_new(SymSqliteSqlTransaction *t
     this->db = sqlTemplate->db;
     SymSqlTransaction *super = (SymSqlTransaction *) this;
     super->queryForInt = (void *) &SymSqliteSqlTransaction_queryForInt;
+    super->queryForLong = (void *) &SymSqliteSqlTransaction_queryForLong;
     super->queryForString = (void *) &SymSqliteSqlTransaction_queryForString;
     super->query = (void *) &SymSqliteSqlTransaction_query;
     super->update = (void *) &SymSqliteSqlTransaction_update;

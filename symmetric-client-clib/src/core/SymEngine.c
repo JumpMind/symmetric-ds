@@ -47,6 +47,7 @@ unsigned short SymEngine_start(SymEngine *this) {
     SymLog_info("About to start SymmetricDS");
 
     this->dialect->initTablesAndDatabaseObjects(this->dialect);
+    this->sequenceService->init(this->sequenceService);
 
     if (SymEngine_isConfigured(this)) {
         SymNode *node = this->nodeService->findIdentity(this->nodeService);
@@ -162,7 +163,7 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->nodeService = SymNodeService_new(NULL, this->platform);
     this->nodeService->lastRestartTime = SymDate_new(NULL);
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
-    this->outgoingBatchService = SymOutgoingBatchService_new(NULL, this->platform, this->parameterService);
+    this->outgoingBatchService = SymOutgoingBatchService_new(NULL, this->platform, this->parameterService, this->sequenceService);
     this->acknowledgeService = SymAcknowledgeService_new(NULL, this->outgoingBatchService, this->platform);
     this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->platform,
             this->dialect, this->incomingBatchService);

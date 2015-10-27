@@ -60,7 +60,9 @@ SymOutgoingBatch * SymOutgoingBatchService_outgoingBatchMapper(SymRow *row) {
 }
 
 void SymOutgoingBatchService_insertOutgoingBatch(SymOutgoingBatchService *this, SymOutgoingBatch *batch) {
-    // TODO: get batchId from sequence service
+    if (batch->batchId <= 0) {
+        batch->batchId = this->sequenceService->nextVal(this->sequenceService, SYM_SEQUENCE_OUTGOING_BATCH);
+    }
 
     SymStringArray *args = SymStringArray_new(NULL);
     args->addLong(args, batch->batchId)->add(args, batch->nodeId)->add(args, batch->channelId);
@@ -166,12 +168,14 @@ void SymOutgoingBatchService_destroy(SymOutgoingBatchService *this) {
     free(this);
 }
 
-SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *this, SymDatabasePlatform *platform, SymParameterService *parameterService) {
+SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *this, SymDatabasePlatform *platform, SymParameterService *parameterService,
+        SymSequenceService *sequenceService) {
     if (this == NULL) {
         this = (SymOutgoingBatchService *) calloc(1, sizeof(SymOutgoingBatchService));
     }
     this->platform = platform;
     this->parameterService = parameterService;
+    this->sequenceService = sequenceService;
     this->findOutgoingBatch = (void *) &SymOutgoingBatchService_findOutgoingBatch;
     this->getOutgoingBatches = (void *) &SymOutgoingBatchService_getOutgoingBatches;
     this->insertOutgoingBatch = (void *) &SymOutgoingBatchService_insertOutgoingBatch;
