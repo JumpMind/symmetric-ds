@@ -56,7 +56,7 @@ public class LookupTableDataRouterTest {
             valid = false;
         }
         
-        assertEquals(false, valid);
+        assertEquals(true, valid);
     }
     
     @Test
