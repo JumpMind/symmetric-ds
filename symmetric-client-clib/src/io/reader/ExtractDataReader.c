@@ -133,6 +133,7 @@ static void SymExtractDataReader_reset(SymExtractDataReader *this) {
 }
 
 SymBatch * SymExtractDataReader_nextBatch(SymExtractDataReader *this) {
+    SymDataReader *super = &this->super;
     if (this->keepProcessing && this->outgoingBatchesIter->hasNext(this->outgoingBatchesIter)) {
         if (this->batch) {
             this->batch->destroy(this->batch);
@@ -143,6 +144,7 @@ SymBatch * SymExtractDataReader_nextBatch(SymExtractDataReader *this) {
         this->batch = SymBatch_newWithSettings(NULL, this->outgoingBatch->batchId, this->outgoingBatch->channelId, this->sourceNodeId, this->targetNodeId);
         this->dataList = this->dataService->selectDataFor(this->dataService, this->batch);
         this->dataIter = this->dataList->iterator(this->dataList);
+        super->batchesProcessed->add(super->batchesProcessed, SymStringUtils_format("%ld", this->outgoingBatch->batchId));
     } else {
         SymExtractDataReader_reset(this);
     }
@@ -184,6 +186,7 @@ SymExtractDataReader * SymExtractDataReader_new(SymExtractDataReader *this, SymL
     this->keepProcessing = 1;
 
     SymDataReader *super = &this->super;
+    super->batchesProcessed = SymList_new(NULL);
     super->open = (void *) &SymExtractDataReader_open;
     super->close = (void *) &SymExtractDataReader_close;
     super->nextBatch = (void *) &SymExtractDataReader_nextBatch;

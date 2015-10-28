@@ -130,12 +130,16 @@ int SymHttpTransportManager_sendAcknowledgement(SymHttpTransportManager *this, S
     return httpResponseCode;
 }
 
-static SymMap * SymHttpTransportManager_getParametersFromQueryUrl(char *parameterString) {
+SymMap * SymHttpTransportManager_getParametersFromQueryUrl(char *parameterString) {
     SymMap *parameters = SymMap_new(NULL, 100);
     SymStringArray *tokens = SymStringArray_split(parameterString, "&");
     CURL *curl = curl_easy_init();
     int i;
     for (i = 0; i < tokens->size; i++) {
+        char * token = tokens->get(tokens, i);
+        if (!token) {
+            continue;
+        }
         SymStringArray *nameValuePair = SymStringArray_split(tokens->get(tokens, i), "=");
         if (nameValuePair->size == 2) {
             char *value = curl_easy_unescape(curl, nameValuePair->get(nameValuePair, 1), 0, NULL);
@@ -163,7 +167,7 @@ static int SymHttpTransportManager_getParamAsLong(SymMap *parameters, char *name
     return value;
 }
 
-static SymBatchAck * SymHttpTransportManager_getBatchInfo(SymMap *parameters, char *batchId) {
+SymBatchAck * SymHttpTransportManager_getBatchInfo(SymMap *parameters, char *batchId) {
     SymBatchAck *batchAck = SymBatchAck_new(NULL);
     batchAck->batchId = atol(batchId);
     char *nodeId = SymHttpTransportManager_getParam(parameters, SYM_WEB_CONSTANTS_ACK_NODE_ID, batchId);

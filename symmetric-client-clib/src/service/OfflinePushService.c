@@ -63,7 +63,7 @@ static SymList * readAcks(SymList *batches, SymOutgoingTransport *transport, Sym
 void SymOfflinePushService_pushToNode(SymOfflinePushService *this, SymNode *remote, SymRemoteNodeStatus *status) {
     SymNode *identity = this->nodeService->findIdentityWithCache(this->nodeService, 0);
     SymNodeSecurity *identitySecurity = this->nodeService->findNodeSecurity(this->nodeService, identity->nodeId);
-    SymFileOutgoingTransport *transport = (SymFileOutgoingTransport *)this->transportManager->getPushTransport(this->transportManager, remote,
+    SymOutgoingTransport *transport = this->transportManager->getPushTransport(this->transportManager, remote,
             identity, identitySecurity->nodePassword, NULL);
     SymList *extractedBatches = this->dataExtractorService->extract(this->dataExtractorService, remote, transport);
     if (extractedBatches->size > 0) {

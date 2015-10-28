@@ -69,6 +69,7 @@ static void SymProtocolDataWriter_endBatch(SymProtocolDataWriter *this, SymBatch
         SymProtocolDataWriter_println(this->sb, SYM_CSV_IGNORE, NULL);
     }
     SymProtocolDataWriter_printlnl(this->sb, SYM_CSV_COMMIT, batch->batchId);
+
     this->batch = NULL;
 }
 
@@ -192,6 +193,7 @@ SymProtocolDataWriter * SymProtocolDataWriter_new(SymProtocolDataWriter *this, c
     this->reader = reader;
     this->isFirstBatch = 1;
     this->processedTables = SymMap_new(NULL, 100);
+
     SymDataProcessor *super = &this->super;
     super->open = (void *) &SymProtocolDataWriter_open;
     super->close = (void *) &SymProtocolDataWriter_close;

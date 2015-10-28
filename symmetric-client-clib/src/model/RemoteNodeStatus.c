@@ -41,7 +41,7 @@ void SymRemoteNodeStatus_updateOutgoingStatus(SymRemoteNodeStatus *this, SymList
         SymIterator *iter = batchAcks->iterator(batchAcks);
         while (iter->hasNext(iter)) {
             SymBatchAck *batchAck = (SymBatchAck *) iter->next(iter);
-            if (batchAck->isOk) {
+            if (! batchAck->isOk) {
                 this->status = SYM_REMOTE_NODE_STATUS_DATA_ERROR;
             }
         }
