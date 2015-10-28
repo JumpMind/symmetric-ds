@@ -18,15 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_DATABASE_PLATFORM_FACTORY_H
-#define SYM_DATABASE_PLATFORM_FACTORY_H
+#include "model/DatabaseParameter.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "db/platform/DatabasePlatform.h"
-#include "db/platform/sqlite/SqlitePlatform.h"
-#include "util/Properties.h"
+void SymDatabaseParameter_destroy(SymDatabaseParameter *this) {
+    free(this);
+}
 
-SymDatabasePlatform * SymDatabasePlatformFactory_create(SymProperties *properties);
-
-#endif
+SymDatabaseParameter * SymDatabaseParameter_new(SymDatabaseParameter *this) {
+    if (this == NULL) {
+        this = (SymDatabaseParameter *) calloc(1, sizeof(SymDatabaseParameter));
+    }
+    this->externalId = SYM_PARAMETER_ALL;
+    this->nodeGroupId = SYM_PARAMETER_ALL;
+    this->destroy = (void *) SymDatabaseParameter_destroy;
+    return this;
+}

@@ -23,9 +23,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <util/Properties.h>
 #include "db/SymDialect.h"
 #include "db/sqlite/SqliteDialect.h"
+#include "util/Properties.h"
 
 SymDialect * SymDialectFactory_create(SymDatabasePlatform *platform);
 

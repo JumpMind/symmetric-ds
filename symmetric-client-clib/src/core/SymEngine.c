@@ -152,7 +152,7 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
 
     this->sequenceService = SymSequenceService_new(NULL, this->platform);
 
-    this->parameterService = SymParameterService_new(NULL, properties);
+    this->parameterService = SymParameterService_new(NULL, properties, this->platform);
     this->configurationService = SymConfigurationService_new(NULL, this->parameterService, this->platform);
 
     this->triggerRouterService = SymTriggerRouterService_new(NULL, this->configurationService,

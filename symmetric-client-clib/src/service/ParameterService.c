@@ -20,7 +20,29 @@
  */
 #include "service/ParameterService.h"
 
+static SymDatabaseParameter * databaseParameterMapper(SymRow *row) {
+    SymDatabaseParameter *param = SymDatabaseParameter_new(NULL);
+    param->key = row->getStringNew(row, "param_key");
+    param->value = row->getStringNew(row, "param_value");
+    param->externalId = row->getStringNew(row, "external_id");
+    param->nodeGroupId = row->getStringNew(row, "node_group_id");
+    return param;
+}
+
+void * parameterMapper(SymRow *row, SymParameterService *this) {
+    if (row->getString(row, "param_value")) {
+        this->parameters->put(this->parameters, row->getStringNew(row, "param_key"), row->getStringNew(row, "param_value"));
+    }
+    return NULL;
+}
+
 static void getDatabaseParameters(SymParameterService *this, char *externalId, char *nodeGroupId) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, externalId)->add(args, nodeGroupId);
+    int error;
+    SymList *list = sqlTemplate->queryWithUserData(sqlTemplate, SYM_SQL_SELECT_PARAMETERS, args, NULL, &error, (void *) &parameterMapper, this);
+    list->destroy(list);
 }
 
 static void rereadDatabaseParameters(SymParameterService *this) {
@@ -43,6 +65,11 @@ static SymProperties * getParameters(SymParameterService *this) {
         this->cacheTimeoutInMs = this->getLong(this, SYM_PARAMETER_PARAMETER_REFRESH_PERIOD_IN_MS, 60000);
     }
     return this->parameters;
+}
+
+static void rereadParameters(SymParameterService *this) {
+    this->lastTimeParameterWereCached = 0;
+    getParameters(this);
 }
 
 char* SymParameterService_getRegistrationUrl(SymParameterService *this) {
@@ -95,17 +122,46 @@ unsigned short SymParameterService_is(SymParameterService *this, char *name, uns
         if (strcmp("true", stringValue) == 0) {
             value = 1;
         } else {
-            value = atoi(stringValue);
+            value = 0;
         }
     }
     return value;
 }
 
 void SymParameterService_saveParameter(SymParameterService *this, char *externalId, char *nodeGroupId,
-        char *name, char *value, char *lastUpdatedBy) {
+        char *key, char *paramValue, char *lastUpdatedBy) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, paramValue)->add(args, lastUpdatedBy)->add(args, externalId);
+    args->add(args, nodeGroupId)->add(args, key);
+    int error;
+    int count = sqlTemplate->update(sqlTemplate, SYM_SQL_UPDATE_PARAMETER, args, NULL, &error);
+    args->reset(args);
+
+    if (count == 0) {
+        args->add(args, externalId)->add(args, nodeGroupId)->add(args, key);
+        args->add(args, paramValue)->add(args, lastUpdatedBy);
+        sqlTemplate->update(sqlTemplate, SYM_SQL_INSERT_PARAMETER, args, NULL, &error);
+    }
+
+    rereadParameters(this);
 }
 
-void SymParameterService_deleteParameter(SymParameterService *this, char *externalId, char *nodeGroupId, char *name) {
+void SymParameterService_deleteParameter(SymParameterService *this, char *externalId, char *nodeGroupId, char *key) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, externalId)->add(args, nodeGroupId)->add(args, key);
+    int error;
+    sqlTemplate->update(sqlTemplate, SYM_SQL_DELETE_PARAMETER, args, NULL, &error);
+    rereadParameters(this);
+}
+
+SymList * SymParameterService_getDatabaseParametersFor(SymParameterService *this, char *paramKey) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, paramKey);
+    int error;
+    return sqlTemplate->query(sqlTemplate, SYM_SELECT_PARAMETERS_BY_KEY, args, NULL, &error, (void *) &databaseParameterMapper);
 }
 
 void SymParameterService_destroy(SymParameterService *this) {
@@ -113,11 +169,12 @@ void SymParameterService_destroy(SymParameterService *this) {
     free(this);
 }
 
-SymParameterService * SymParameterService_new(SymParameterService *this, SymProperties *properties) {
+SymParameterService * SymParameterService_new(SymParameterService *this, SymProperties *properties, SymDatabasePlatform *platform) {
     if (this == NULL) {
         this = (SymParameterService *) calloc(1, sizeof(SymParameterService));
     }
     this->properties = properties;
+    this->platform = platform;
     this->getRegistrationUrl = (void *) &SymParameterService_getRegistrationUrl;
     this->getSyncUrl = (void *) &SymParameterService_getSyncUrl;
     this->getExternalId = (void *) &SymParameterService_getExternalId;
@@ -128,6 +185,7 @@ SymParameterService * SymParameterService_new(SymParameterService *this, SymProp
     this->is = (void *) &SymParameterService_is;
     this->saveParameter = (void *) &SymParameterService_saveParameter;
     this->deleteParameter = (void *) &SymParameterService_deleteParameter;
+    this->getDatabaseParametersFor = (void *) &SymParameterService_getDatabaseParametersFor;
     this->destroy = (void *) &SymParameterService_destroy;
     return this;
 }
