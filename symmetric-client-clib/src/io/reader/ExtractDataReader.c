@@ -150,7 +150,7 @@ SymBatch * SymExtractDataReader_nextBatch(SymExtractDataReader *this) {
 }
 
 SymTable * SymExtractDataReader_nextTable(SymExtractDataReader *this) {
-    if (this->targetTable == NULL) {
+    if (this->targetTable == NULL && (this->nextData || this->dataIter->hasNext(this->dataIter))) {
         SymExtractDataReader_nextData(this);
     }
     SymTable *table = this->targetTable;
