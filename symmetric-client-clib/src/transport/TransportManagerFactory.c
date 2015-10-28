@@ -24,6 +24,8 @@ SymTransportManager * SymTransportManagerFactory_create(char *type, SymParameter
     SymTransportManager *manager = NULL;
     if (strcmp(type, SYM_PROTOCOL_HTTP) == 0) {
         manager = (SymTransportManager *) SymHttpTransportManager_new(NULL, parameterService);
+    } else if (strcmp(type, SYM_PROTOCOL_FILE) == 0) {
+        manager = (SymTransportManager *) SymFileTransportManager_new(NULL, parameterService);
     } else {
         SymLog_error("An invalid transport type of '%s' was specified\n", type);
     }

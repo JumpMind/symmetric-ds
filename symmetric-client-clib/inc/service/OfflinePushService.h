@@ -22,12 +22,36 @@
 #define SYM_OFFLINEPUSHSERVICE_H
 
 #include <stdlib.h>
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include "model/RemoteNodeStatus.h"
+#include "model/RemoteNodeStatuses.h"
+#include "service/NodeService.h"
+#include "service/ParameterService.h"
+#include "service/ConfigurationService.h"
+#include "service/DataExtractorService.h"
+#include "service/AcknowledgeService.h"
+#include "transport/TransportManager.h"
+#include "transport/file/FileOutgoingTransport.h"
+#include "util/List.h"
+#include "util/StringUtils.h"
+#include "common/Log.h"
 
 typedef struct SymOfflinePushService {
-    void (*destroy)(struct SymOfflinePushService *this);
+    SymNodeService *nodeService;
+    SymDataExtractorService *dataExtractorService;
+    SymTransportManager *transportManager;
+    SymParameterService *parameterService;
+    SymConfigurationService *configurationService;
+    SymAcknowledgeService *acknowledgeService;
+    SymRemoteNodeStatuses * (*pushData)(struct SymOfflinePushService *this);
+    void (*destroy)(struct SymOfflinePushService *);
 } SymOfflinePushService;
 
-SymOfflinePushService * SymOfflinePushService_new(SymOfflinePushService *this);
+SymOfflinePushService * SymOfflinePushService_new(SymOfflinePushService *this, SymNodeService *nodeService, SymDataExtractorService *dataExtractorService,
+    SymTransportManager *transportManager, SymParameterService *parameterService, SymConfigurationService *configurationService,
+    SymAcknowledgeService *acknowledgeService);
+
 
 #endif

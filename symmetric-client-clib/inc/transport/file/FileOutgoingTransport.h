@@ -18,16 +18,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_FILEOUTGOINGTRANSPORT_H_
-#define SYM_FILEOUTGOINGTRANSPORT_H_
+#ifndef SYM_FILEOUTGOINGTRANSPORT_H
+#define SYM_FILEOUTGOINGTRANSPORT_H
 
 #include <stdlib.h>
-
+#include "common/Log.h"
+#include "model/Node.h"
+#include "service/ParameterService.h"
+#include "transport/OutgoingTransport.h"
+#include "util/List.h"
+#include "util/StringBuilder.h"
+#include "util/StringUtils.h"
+#include "util/StringArray.h"
+#include "transport/TransportManager.h"
 
 typedef struct SymFileOutgoingTransport {
+    SymOutgoingTransport super;
+    SymNode *remoteNode;
+    SymNode *localNode;
+    char *offlineOutgoingDir;
     void (*destroy)(struct SymFileOutgoingTransport *this);
 } SymFileOutgoingTransport;
 
-SymFileOutgoingTransport * SymFileOutgoingTransport_new(SymFileOutgoingTransport *this);
+SymFileOutgoingTransport * SymFileOutgoingTransport_new(SymFileOutgoingTransport *this, SymNode *remoteNode, SymNode *localNode,
+        char *offlineOutgoingDir);
 
-#endif /* SYM_FILEOUTGOINGTRANSPORT_H_ */
+#endif

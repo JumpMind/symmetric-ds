@@ -181,8 +181,8 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
             Map<String, String> oldValues = data.toColumnNameValuePairs(table.getColumnNames(),
                     CsvData.OLD_DATA);
             for (String columnName : oldValues.keySet()) {
-                interpreter.set(OLD_ + columnName, sourceValues.get(columnName));
-                interpreter.set(OLD_ + columnName.toUpperCase(), sourceValues.get(columnName));
+                interpreter.set(OLD_ + columnName, oldValues.get(columnName));
+                interpreter.set(OLD_ + columnName.toUpperCase(), oldValues.get(columnName));
             }
         }
 

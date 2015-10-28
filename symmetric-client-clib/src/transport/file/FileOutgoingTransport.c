@@ -20,15 +20,61 @@
  */
 #include "transport/file/FileOutgoingTransport.h"
 
+char *SymFileOutgoingTransport_getFileName(SymFileOutgoingTransport *this) {
+
+    long currentTimeMillis;
+    time(&currentTimeMillis);
+    currentTimeMillis *= 1000;
+
+    return SymStringUtils_format("%s/%s-%s_to_%s-%s_%ld.tmp", this->offlineOutgoingDir,
+            this->localNode->nodeGroupId, this->localNode->nodeId,  this->remoteNode->nodeGroupId, this->remoteNode->nodeId, currentTimeMillis);
+}
+
+long SymFileOutgoingTransport_process(SymFileOutgoingTransport *this, SymDataProcessor *processor) {
+
+    processor->open(processor);
+
+    int BUFFER_SIZE = 2048;
+    char inputBuffer[BUFFER_SIZE];
+    char* fileName = SymFileOutgoingTransport_getFileName(this);
+    SymLog_debug("Writing file %s", fileName);
+
+    long result = SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE;
+
+    FILE *file = fopen(SymFileOutgoingTransport_getFileName(this), "w");
+
+    if (file) {
+        int size;
+        while ((size = processor->process(processor, inputBuffer, 1, BUFFER_SIZE)) > 0) {
+            fprintf(file, "%.*s", size, inputBuffer);
+        }
+        fclose(file);
+        result = SYM_TRANSPORT_OK;
+    } else {
+        SymLog_error("Failed to open file for writing. %s", fileName);
+        result = SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE;
+    }
+    free(fileName);
+
+    processor->close(processor);
+
+    return result;
+}
+
 
 void SymFileOutgoingTransport_destroy(SymFileOutgoingTransport *this) {
     free(this);
 }
 
-SymFileOutgoingTransport * SymFileOutgoingTransport_new(SymFileOutgoingTransport *this) {
+SymFileOutgoingTransport * SymFileOutgoingTransport_new(SymFileOutgoingTransport *this, SymNode *remoteNode, SymNode *localNode,
+        char *offlineOutgoingDir) {
     if (this == NULL) {
         this = (SymFileOutgoingTransport *) calloc(1, sizeof(SymFileOutgoingTransport));
     }
+    SymOutgoingTransport *super = (SymOutgoingTransport *)&this->super;
+    this->remoteNode = remoteNode;
+    this->localNode = localNode;
+    this->offlineOutgoingDir = offlineOutgoingDir;
     this->destroy = (void *) &SymFileOutgoingTransport_destroy;
     return this;
 }

@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include "util/List.h"
+#include "service/ParameterService.h"
 #include "service/NodeService.h"
 
 typedef enum {
@@ -30,7 +31,8 @@ typedef enum {
 } SymCommunicationType;
 
 typedef struct SymNodeCommunicationService {
-    SymNodeService * nodeService;
+    SymNodeService *nodeService;
+    SymParameterService *parameterService;
     SymList * (*list)(struct SymNodeCommunicationService *this, SymCommunicationType communicationType);
     void (*destroy)(struct SymNodeCommunicationService *this);
 } SymNodeCommunicationService;

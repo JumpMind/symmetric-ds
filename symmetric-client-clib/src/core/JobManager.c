@@ -75,6 +75,16 @@ void SymJobManager_invoke(SymJobManager *this) {
         this->engine->purge(this->engine);
         time(&this->lastPurgeTime);
     }
+    if (1) { // TODO.
+        SymLog_info("OFFLINE PUSH ============================)");
+        this->engine->offlinePushService->pushData(this->engine->offlinePushService);
+        //time(&this->lastPurgeTime);
+    }
+    if (1) { // TODO.
+        SymLog_info("OFFLINE PULL ============================)");
+        this->engine->offlinePullService->pullData(this->engine->offlinePullService);
+        //time(&this->lastPurgeTime);
+    }
 }
 
 void SymJobManager_startJobs(SymJobManager *this) {

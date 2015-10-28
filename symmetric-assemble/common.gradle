@@ -24,9 +24,8 @@ allprojects {
     project.buildDir='target'
     
     repositories {
-        mavenCentral()
-        maven { url "http://repository.codehaus.org" }
         maven { url "http://maven.jumpmind.com/repo" }
+        mavenCentral()
         maven { url "http://maven.vaadin.com/vaadin-addons" }
     }
 
@@ -152,7 +151,7 @@ subprojects { subproject ->
         h2Version = '1.3.176'
         derbyVersion = '10.10.2.0'
         mariaDbVersion = '1.1.7'
-        postgresqlVersion = '9.2-1002-jdbc4'
+        postgresqlVersion = '9.4-1204.jdbc4'
         hsqldbVersion = '2.3.2'
         sqliteVersion = '3.8.7'
         firebirdVersion = '2.1.6'
@@ -187,7 +186,7 @@ subprojects { subproject ->
         provided "org.apache.derby:derbytools:$derbyVersion"
         provided "mysql:mysql-connector-java:$mysqlVersion"
         provided ("org.mariadb.jdbc:mariadb-java-client:$mariaDbVersion") { exclude group: 'net.java.dev.jna' }
-        provided "org.jumpmind.symmetric.jdbc:postgresql:$postgresqlVersion"
+        provided "jdbc.postgresql:postgresql:$postgresqlVersion"
         provided "jdbc:ojdbc:11.2.0.3"
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
         provided "org.hsqldb:hsqldb:$hsqldbVersion:jdk5"

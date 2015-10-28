@@ -21,13 +21,78 @@
 #include "service/NodeCommunicationService.h"
 
 SymList * SymNodeCommunicationService_removeOfflineNodes(SymNodeCommunicationService *this, SymList *nodes) {
-    // TODO
+    if (this->parameterService->is(this->parameterService, SYM_PARAMETER_NODE_OFFLINE, 0)) {
+        nodes->resetAll(nodes, NULL);
+    } else {
+        SymList *parms = this->parameterService->getDatabaseParametersFor(this->parameterService, SYM_PARAMETER_NODE_OFFLINE);
+        int i;
+        for (i = 0; i < parms->size; ++i) {
+            SymDatabaseParameter *parm = parms->get(parms, i);
+            int j;
+            for (j = 0; j < nodes->size; ++j) {
+                SymNode *node = nodes->get(nodes, j);
+                if ((SymStringUtils_equals(node->nodeGroupId, SYM_PARAMETER_ALL)
+                            || SymStringUtils_equals(node->nodeGroupId, parm->nodeGroupId))
+                        && (SymStringUtils_equals(node->externalId, SYM_PARAMETER_ALL)
+                                || SymStringUtils_equals(node->externalId, parm->externalId))) {
+                    nodes->remove(nodes, j);
+                    j--;
+                }
+            }
+        }
+    }
+
     return nodes;
 }
 
 SymList * SymNodeCommunicationService_getNodesToCommunicateWithOffline(SymNodeCommunicationService *this, SymCommunicationType communicationType) {
-    // TODO
-    return 0;
+
+    SymList *nodesToCommunicateWith = NULL;
+
+    if (this->parameterService->is(this->parameterService, SYM_PARAMETER_NODE_OFFLINE, 0)
+            || (communicationType == SYM_COMMUNICATION_TYPE_PULL
+                    && this->parameterService->is(this->parameterService, SYM_PARAMETER_NODE_OFFLINE_INCOMING_ACCEPT_ALL, 0))) {
+
+        if (communicationType == SYM_COMMUNICATION_TYPE_PUSH) {
+            nodesToCommunicateWith = this->nodeService->findTargetNodesFor(this->nodeService, SymNodeGroupLinkAction_W);
+            nodesToCommunicateWith->addAll(nodesToCommunicateWith, this->nodeService->findNodesToPushTo(this->nodeService));
+        } else if (communicationType == SYM_COMMUNICATION_TYPE_PULL) {
+            nodesToCommunicateWith = this->nodeService->findTargetNodesFor(this->nodeService, SymNodeGroupLinkAction_P);
+            nodesToCommunicateWith->addAll(nodesToCommunicateWith, this->nodeService->findNodesToPull(this->nodeService));
+        }
+    }
+    else {
+        SymList *parms = this->parameterService->getDatabaseParametersFor(this->parameterService, SYM_PARAMETER_NODE_OFFLINE);
+        nodesToCommunicateWith = SymList_new(NULL);
+        if (parms->size > 0) {
+            SymList *sourceNodes = NULL;
+            if (communicationType == SYM_COMMUNICATION_TYPE_PUSH) {
+                sourceNodes = this->nodeService->findTargetNodesFor(this->nodeService, SymNodeGroupLinkAction_W);
+                sourceNodes->addAll(sourceNodes, this->nodeService->findNodesToPushTo(this->nodeService));
+            } else if (communicationType == SYM_COMMUNICATION_TYPE_PULL) {
+                sourceNodes = this->nodeService->findTargetNodesFor(this->nodeService, SymNodeGroupLinkAction_P);
+                sourceNodes->addAll(sourceNodes, this->nodeService->findNodesToPull(this->nodeService));
+            }
+            if (sourceNodes != NULL && sourceNodes->size > 0) {
+                int i;
+                for (i = 0; i < parms->size; ++i) {
+                    SymDatabaseParameter *parm = parms->get(parms, i);
+                    int j;
+                    for (j = 0; j < sourceNodes->size; ++j) {
+                        SymNode *node = sourceNodes->get(sourceNodes, j);
+                        if ((SymStringUtils_equals(node->nodeGroupId, SYM_PARAMETER_ALL)
+                                    || SymStringUtils_equals(node->nodeGroupId, parm->nodeGroupId))
+                                && (SymStringUtils_equals(node->externalId, SYM_PARAMETER_ALL)
+                                        || SymStringUtils_equals(node->externalId, parm->externalId))) {
+                            nodesToCommunicateWith->add(nodesToCommunicateWith, node);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return nodesToCommunicateWith;
 }
 
 SymList * SymNodeCommunicationService_list(SymNodeCommunicationService *this, SymCommunicationType communicationType) {
