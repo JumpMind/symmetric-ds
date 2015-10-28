@@ -20,8 +20,6 @@
  */
 #include "service/OfflinePullService.h"
 
-
-
 void SymOfflinePullService_execute(SymOfflinePullService *this, SymNode *node, SymRemoteNodeStatus *status) {
 
     SymNode *local = this->nodeService->findIdentity(this->nodeService);

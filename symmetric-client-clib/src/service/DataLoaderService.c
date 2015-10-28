@@ -43,7 +43,6 @@ static void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *re
 }
 
 static SymList * SymDataLoaderService_loadDataFromTransport(SymDataLoaderService *this, SymNode *remote, SymIncomingTransport *transport, int *error) {
-    // TODO:
     SymDataWriter *writer = (SymDataWriter *) SymDefaultDatabaseWriter_new(NULL, this->incomingBatchService, this->platform, this->dialect);
     SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataReader_new(NULL, remote->nodeId, writer);
 
@@ -124,7 +123,6 @@ void loadDataFromOfflineTransport(SymDataLoaderService *this, SymNode *remote, S
         this->loadDataFromRegistration(this, status);
     } else {
         SymNodeSecurity *localSecurity = this->nodeService->findNodeSecurity(this->nodeService, local->nodeId);
-//        char *registrationUrl = this->parameterService->getRegistrationUrl(this->parameterService);
 
         SymIncomingTransport *transport = this->fileTransportManager->getPullTransport(this->fileTransportManager, remote, local,
                     localSecurity->nodePassword, NULL, NULL);

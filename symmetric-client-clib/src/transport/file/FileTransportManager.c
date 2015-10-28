@@ -21,58 +21,28 @@
 #include "transport/file/FileTransportManager.h"
 
 int SymFileTransportManager_sendAcknowledgement(SymFileTransportManager *this, SymNode *remote, SymList *batches, SymNode *local, char *securityToken, char *registrationUrl) {
-//    long httpResponseCode = 0;
-//    if (batches->size > 0) {
-//        char *url = buildUrl("ack", remote, local, securityToken, registrationUrl);
-//        char *ackData = getAcknowledgementData(batches);
-//        SymStringBuilder *sb = SymStringBuilder_newWithString(url);
-//        sb->append(sb, ackData);
-//        httpResponseCode = sendMessage(url, ackData);
-//        sb->destroy(sb);
-//        free(ackData);
-//        free(url);
-//    }
-//    return httpResponseCode;
+    return SYM_TRANSPORT_OK;
+}
 
-    return 0;
+char * SymFileTransportManager_getDirName(SymFileTransportManager *this, char *paramName, SymNode *localNode) {
+    // TODO replace nodeGroupId and nodeId variables.
+    //return super->parameterService->getString(this->parameterService, paramName, ".");
+    return "."; // TODO
 }
 
 SymFileIncomingTransport * SymFileTransportManager_getPullTransport(SymFileTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
-    // return SymFileIncomingTransport_new(NULL, buildUrl("pull", remote, local, securityToken, registrationUrl));
-    return 0;
+     return SymFileIncomingTransport_new(NULL, remote, local,
+             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_INCOMING_DIR, local),
+             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_ARCHIVE_DIR, local),
+             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_ERROR_DIR, local));
 }
 
 SymFileOutgoingTransport * SymFileTransportManager_getPushTransport(SymFileTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
-    // return SymFileOutgoingTransport_new(NULL, buildUrl("push", remote, local, securityToken, registrationUrl));
-    return 0;
+    return SymFileOutgoingTransport_new(NULL, remote, local,
+            SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_OUTGOING_DIR, local));
 }
 
-//SymHttpIncomingTransport * SymFileTransportManager_getRegisterTransport(SymFileTransportManager *this, SymNode *local, char *registrationUrl) {
-//    return SymHttpIncomingTransport_new(NULL, buildRegistrationUrl(local, registrationUrl));
-//}
-
 SymList * SymFileTransportManager_readAcknowledgement(SymFileTransportManager *this, char *parameterString1, char *parameterString2) {
-//    SymStringBuilder *sb = SymStringBuilder_newWithString(parameterString1);
-//    sb->append(sb, "&")->append(sb, parameterString2);
-//
-//    SymMap *parameters = SymFileTransportManager_getParametersFromQueryUrl(parameterString1);
-//    SymList *batchAcks = SymList_new(NULL);
-//    SymStringArray *keys = parameters->keys(parameters);
-//    int i;
-//    for (i = 0; i < keys->size; i++) {
-//        char *key = keys->get(keys, i);
-//        if (strncmp(key, SYM_WEB_CONSTANTS_ACK_BATCH_NAME, strlen(SYM_WEB_CONSTANTS_ACK_BATCH_NAME)) == 0) {
-//            char *batchId = SymStringUtils_substring(key, strlen(SYM_WEB_CONSTANTS_ACK_BATCH_NAME), strlen(key));
-//            SymBatchAck *batchAck = SymFileTransportManager_getBatchInfo(parameters, batchId);
-//            batchAcks->add(batchAcks, batchAck);
-//            free(batchId);
-//        }
-//    }
-//    keys->destroy(keys);
-//    parameters->destroy(parameters);
-//    sb->destroy(sb);
-//    return batchAcks;
-
     return NULL;
 }
 
@@ -89,7 +59,6 @@ SymFileTransportManager * SymFileTransportManager_new(SymFileTransportManager *t
     super->sendAcknowledgement = (void *) &SymFileTransportManager_sendAcknowledgement;
     super->getPullTransport = (void *) &SymFileTransportManager_getPullTransport;
     super->getPushTransport = (void *) &SymFileTransportManager_getPushTransport;
-//    super->getRegisterTransport = (void *) &SymHttpTransportManager_getRegisterTransport;
     super->readAcknowledgement = (void *) SymFileTransportManager_readAcknowledgement;
     this->destroy = (void *) &SymFileTransportManager_destroy;
     return this;
