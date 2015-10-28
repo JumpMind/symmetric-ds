@@ -176,8 +176,8 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
     this->pushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
             this->configurationService, this->acknowledgeService);
-    this->offlinePullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
-    this->offlinePushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
+    this->offlinePullService = SymOfflinePullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
+    this->offlinePushService = SymOfflinePushService_new(NULL, this->nodeService, this->dataExtractorService, this->offlineTransportManager, this->parameterService,
             this->configurationService, this->acknowledgeService);
     this->purgeService = SymPurgeService_new(NULL, this->parameterService, this->dialect, this->platform);
 

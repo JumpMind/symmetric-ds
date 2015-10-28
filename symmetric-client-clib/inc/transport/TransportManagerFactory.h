@@ -27,6 +27,7 @@
 #include "service/ParameterService.h"
 #include "transport/TransportManager.h"
 #include "transport/http/HttpTransportManager.h"
+#include "transport/file/FileTransportManager.h"
 
 #define SYM_PROTOCOL_HTTP "http"
 #define SYM_PROTOCOL_FILE "file"
