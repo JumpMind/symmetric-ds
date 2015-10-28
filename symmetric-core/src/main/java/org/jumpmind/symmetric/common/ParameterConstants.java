@@ -290,8 +290,13 @@ final public class ParameterConstants {
     public final static String MSSQL_ROW_LEVEL_LOCKS_ONLY = "mssql.allow.only.row.level.locks.on.runtime.tables";
     
     public final static String MSSQL_USE_NTYPES_FOR_SYNC = "mssql.use.ntypes.for.sync";
+
     
     public final static String MSSQL_TRIGGER_EXECUTE_AS = "mssql.trigger.execute.as";
+    
+    public final static String SQLITE_TRIGGER_FUNCTION_TO_USE = "sqlite.trigger.function.to.use";
+    
+    public final static String AS400_CAST_CLOB_TO = "as400.cast.clob.to";
 
     public final static String EXTENSIONS_XML = "extensions.xml";
 

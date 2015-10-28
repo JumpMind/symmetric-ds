@@ -32,7 +32,7 @@ public class LoadFilter implements Serializable {
 
     static final Logger logger = LoggerFactory.getLogger(LoadFilter.class);
     
-    public enum LoadFilterType { BSH, JAVA };       
+    public enum LoadFilterType { BSH, JAVA, SQL };
 
     private String loadFilterId;
     

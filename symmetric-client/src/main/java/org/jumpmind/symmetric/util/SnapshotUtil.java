@@ -209,10 +209,10 @@ public class SnapshotUtil {
         extract(export, new File(tmpDir, "nodecommunication.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION));        
         
-        extract(export, 5000, new File(tmpDir, "outgoingbatch.csv"), 
+        extract(export, 5000, "order by create_time desc", new File(tmpDir, "outgoingbatch.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));        
         
-        extract(export, 5000, new File(tmpDir, "incomingbatch.csv"), 
+        extract(export, 5000, "order by create_time desc", new File(tmpDir, "incomingbatch.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));          
         
         final int THREAD_INDENT_SPACE = 50;
@@ -330,14 +330,15 @@ public class SnapshotUtil {
     }
     
     protected static void extract(DbExport export, File file, String... tables) {
-        extract(export, Integer.MAX_VALUE, file, tables);
+        extract(export, Integer.MAX_VALUE, null, file, tables);
     }
     
-    protected static void extract(DbExport export, int maxRows, File file, String... tables) {
+    protected static void extract(DbExport export, int maxRows, String whereClause, File file, String... tables) {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
             export.setMaxRows(maxRows);
+            export.setWhereClause(whereClause);
             export.exportTables(
                     fos,
                     tables);

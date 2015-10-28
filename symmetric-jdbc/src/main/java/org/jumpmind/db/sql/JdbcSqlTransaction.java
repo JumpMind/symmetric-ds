@@ -331,7 +331,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         });
     }
 
-    protected <T> T executeCallback(IConnectionCallback<T> callback) {
+    public <T> T executeCallback(IConnectionCallback<T> callback) {
         try {
             return callback.execute(this.connection);
         } catch (SQLException ex) {

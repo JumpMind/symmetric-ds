@@ -118,6 +118,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected DatabaseInfo databaseInfo = new DatabaseInfo();
 
     protected boolean delimitedIdentifierModeOn = true;
+    
+    protected boolean caseSensitive = true;
 
     protected boolean sqlCommentsOn = false;
 
@@ -383,7 +385,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         currentModel = currentModel.copy();
         mergeOrRemovePlatformTypes(currentModel, desiredModel);
 
-        ModelComparator comparator = new ModelComparator(databaseName, databaseInfo, delimitedIdentifierModeOn);
+        ModelComparator comparator = new ModelComparator(databaseName, databaseInfo, caseSensitive);
         List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
         if (alterDatabaseInterceptors != null) {
             for (IAlterDatabaseInterceptor interceptor : alterDatabaseInterceptors) {
@@ -394,7 +396,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     public boolean isAlterDatabase(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
-        ModelComparator comparator = new ModelComparator(databaseName, databaseInfo, delimitedIdentifierModeOn);
+        ModelComparator comparator = new ModelComparator(databaseName, databaseInfo, caseSensitive);
         List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
         if (alterDatabaseInterceptors != null) {
             for (IAlterDatabaseInterceptor interceptor : alterDatabaseInterceptors) {
@@ -2689,6 +2691,14 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
     public DatabaseInfo getDatabaseInfo() {
         return databaseInfo;
+    }
+    
+    public void setCaseSensitive(boolean caseSensitive) {
+        this.caseSensitive = caseSensitive;
+    }
+    
+    public boolean isCaseSensitive() {
+        return caseSensitive;
     }
 
 }

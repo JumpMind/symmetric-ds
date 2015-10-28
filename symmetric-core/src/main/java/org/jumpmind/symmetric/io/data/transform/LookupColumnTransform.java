@@ -69,12 +69,21 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
         if (StringUtils.isNotBlank(sql)) {
             ISqlTransaction transaction = context.findTransaction();
             List<String> values = null;
+            LinkedCaseInsensitiveMap<Object> namedParams = new LinkedCaseInsensitiveMap<Object>(sourceValues);
+            if (data.getOldSourceValues() != null && sql.contains(":OLD_")) {
+                for (Map.Entry<String, String> oldColumn : data.getOldSourceValues().entrySet()) {
+                    namedParams.put("OLD_" + oldColumn.getKey().toUpperCase(), oldColumn.getValue());
+                }
+            }
+            if (data.getTargetValues() != null && sql.contains(":TRM_")) {
+                for (Map.Entry<String, String> transformedCol : data.getTargetValues().entrySet()) {
+                    namedParams.put("TRM_" + transformedCol.getKey().toUpperCase(), transformedCol.getValue());
+                }
+            }
             if (transaction != null) {
-                values = transaction.query(sql, lookupColumnRowMapper, new LinkedCaseInsensitiveMap<Object>(
-                        sourceValues));
+                values = transaction.query(sql, lookupColumnRowMapper, namedParams);
             } else {
-                values = platform.getSqlTemplate().query(sql, lookupColumnRowMapper,
-                        new LinkedCaseInsensitiveMap<Object>(sourceValues));
+                values = platform.getSqlTemplate().query(sql, lookupColumnRowMapper, namedParams);
             }
 
             int rowCount = values.size();

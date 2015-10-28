@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
@@ -64,6 +65,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private long nodeGroupLinkCacheTime;
 
     private List<Channel> defaultChannels;
+    
+    private Map<String, List<NodeGroupChannelWindow>> channelWindowsByChannelCache;
 
     private Date lastUpdateTime;
 
@@ -418,6 +421,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             nodeChannelCache = null;
             channelsCache = null;
             nodeGroupLinksCache = null;
+            channelWindowsByChannelCache = null;
         }
     }
 
@@ -462,11 +466,26 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
-    public List<NodeGroupChannelWindow> getNodeGroupChannelWindows(String nodeGroupId,
-            String channelId) {
-        return (List<NodeGroupChannelWindow>) sqlTemplate.query(
-                getSql("selectNodeGroupChannelWindowSql"), new NodeGroupChannelWindowMapper(),
-                nodeGroupId, channelId);
+    public List<NodeGroupChannelWindow> getNodeGroupChannelWindows(String notUsed, String channelId) {
+        long channelCacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_CHANNEL_IN_MS, 60000);
+        Map<String, List<NodeGroupChannelWindow>> channelWindowsByChannel = channelWindowsByChannelCache;
+        if (System.currentTimeMillis() - channelCacheTime >= channelCacheTimeoutInMs || channelWindowsByChannel == null) {
+            synchronized (this) {
+                channelWindowsByChannel = channelWindowsByChannelCache;
+                if (System.currentTimeMillis() - channelCacheTime >= channelCacheTimeoutInMs || channelWindowsByChannel == null) {
+                    channelWindowsByChannel = new HashMap<String, List<NodeGroupChannelWindow>>();
+                    String nodeGroupId = parameterService.getNodeGroupId();
+                    Set<String> channelIds = getChannels(false).keySet();
+                    for (String id : channelIds) {
+                        channelWindowsByChannel.put(channelId, sqlTemplate.query(getSql("selectNodeGroupChannelWindowSql"),
+                                new NodeGroupChannelWindowMapper(), nodeGroupId, id));
+                    }
+
+                    channelWindowsByChannelCache = channelWindowsByChannel;
+                }
+            }
+        }
+        return channelWindowsByChannel.get(channelId);
     }
 
     public ChannelMap getSuspendIgnoreChannelLists(final String nodeId) {

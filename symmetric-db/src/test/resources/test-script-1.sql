@@ -47,3 +47,14 @@ class A {
   int x, y = 0;
 }
 ');
+insert into test (col) values('<!--
+<test></test>
+-->');
+insert into test (col1,col2) values('<!--', -- test
+'<test></test>');
+select col1 /* test */, col2 /* col2 */ from rubixcube;
+select col1 /* test */, col2 /* col2 */ from rubixcube;
+
+insert into test (col1, col2) ('test', '
+''test'';
+');

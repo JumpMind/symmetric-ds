@@ -397,6 +397,7 @@ public class DmlStatement {
                     }
                     break;
                 case SELECT:
+                case COUNT:
                 case DELETE:
                     args = new Object[keys.length];
                     for (Column column : keys) {

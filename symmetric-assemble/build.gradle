@@ -33,7 +33,15 @@ subprojects { subproject ->
             }
     
         }
-    }    
+    }  
+    
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+               from components.java
+            }
+        }
+    }  
 }
 
 project(":symmetric-csv") {
@@ -82,6 +90,7 @@ project(':symmetric-db') {
     dependencies {
         compile project(":symmetric-util")
         compile "net.sf.kxml:kxml2:2.3.0"
+        compile "commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion"
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }
 }
@@ -91,7 +100,6 @@ project(":symmetric-jdbc") {
 
     dependencies {
         compile project(":symmetric-db")
-        compile "commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion"
         compile "commons-dbcp:commons-dbcp:$commonsDbcpVersion"
         compile "org.springframework:spring-jdbc:$springVersion"
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
@@ -209,8 +217,8 @@ project(':symmetric-server') {
             exclude group: 'com.fasterxml.jackson.core'
             exclude group: 'commons-codec'
         }
-        provided "javax.servlet:servlet-api:2.5"
-        provided "org.eclipse.jetty:jetty-server:$jettyVersion"
+        compile "javax.servlet:javax.servlet-api:$servletVersion"
+        provided "org.eclipse.jetty:jetty-annotations:$jettyVersion"
         provided "org.eclipse.jetty:jetty-servlets:$jettyVersion"
         provided "org.eclipse.jetty:jetty-webapp:$jettyVersion"
         provided "org.eclipse.jetty:jetty-jmx:$jettyVersion"
@@ -323,4 +331,4 @@ task releaseSymmetric {
     dependsOn publishDoc
 }
 
-task wrapper(type: Wrapper) { gradleVersion = '2.2.1' }
+task wrapper(type: Wrapper) { gradleVersion = '2.7' }

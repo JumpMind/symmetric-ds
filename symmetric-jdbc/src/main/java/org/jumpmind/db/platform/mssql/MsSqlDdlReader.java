@@ -153,7 +153,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             return Types.VARCHAR;
         } else if (typeName != null && typeName.toUpperCase().contains("VARCHAR") && size > 8000) {
             return Types.LONGVARCHAR;
-        } else if (typeName != null && typeName.toUpperCase().contains("NVARCHAR") && size > 8000) {
+        } else if (typeName != null && typeName.toUpperCase().contains("NVARCHAR") && size > 4000) {
             return Types.LONGNVARCHAR;
         } else if (typeName != null && typeName.toUpperCase().equals("SQL_VARIANT")) {
             return Types.BINARY;

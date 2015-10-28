@@ -20,6 +20,7 @@
  */
 package org.jumpmind.security;
 
+import java.security.KeyStore;
 
 /**
  * Pluggable Service API that is responsible for encrypting and decrypting data.
@@ -35,5 +36,9 @@ public interface ISecurityService {
     public String encrypt(String plainText);
     
     public String decrypt(String encText);
+    
+    public KeyStore getKeyStore();
+    
+    public KeyStore getTrustStore();
 
 }

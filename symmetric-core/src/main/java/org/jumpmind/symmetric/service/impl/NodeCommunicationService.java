@@ -377,45 +377,51 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         Date now = new Date();
         Date lockTimeout = getLockTimeoutDate(nodeCommunication.getCommunicationType());
         final Set<String> executing = this.currentlyExecuting.get(nodeCommunication.getCommunicationType());
-        boolean locked = !executing.contains(nodeCommunication.getNodeId()) && 
-                sqlTemplate.update(getSql("aquireLockSql"), clusterService.getServerId(), now, now,
-                nodeCommunication.getNodeId(), nodeCommunication.getCommunicationType().name(),
-                lockTimeout) == 1;
-        if (locked) {
-            executing.add(nodeCommunication.getNodeId());
-            nodeCommunication.setLastLockTime(now);
-            nodeCommunication.setLockingServerId(clusterService.getServerId());
-            final RemoteNodeStatus status = statuses.add(nodeCommunication.getNodeId());
-            Runnable r = new Runnable() {
-                public void run() {
-                    long ts = System.currentTimeMillis();
-                    boolean failed = false;
-                    try {
-                        executor.execute(nodeCommunication, status);
-                        failed = status.failed();
-                    } catch (Throwable ex) {
-                        failed = true;
-                        log.error(String.format("Failed to execute %s for node %s",
-                                nodeCommunication.getCommunicationType().name(),
-                                nodeCommunication.getNodeId()), ex);
-                    } finally {
-                        unlock(nodeCommunication, status, failed, ts);
-                        executing.remove(nodeCommunication.getNodeId());
+        try {
+            boolean locked = !executing.contains(nodeCommunication.getNodeId())
+                    && sqlTemplate.update(getSql("aquireLockSql"), clusterService.getServerId(), now, now, nodeCommunication.getNodeId(),
+                            nodeCommunication.getCommunicationType().name(), lockTimeout) == 1;
+            if (locked) {
+                executing.add(nodeCommunication.getNodeId());
+                nodeCommunication.setLastLockTime(now);
+                nodeCommunication.setLockingServerId(clusterService.getServerId());
+                final RemoteNodeStatus status = statuses.add(nodeCommunication.getNodeId());
+                Runnable r = new Runnable() {
+                    public void run() {
+                        long ts = System.currentTimeMillis();
+                        boolean failed = false;
+                        try {
+                            executor.execute(nodeCommunication, status);
+                            failed = status.failed();
+                        } catch (Throwable ex) {
+                            failed = true;
+                            log.error(String.format("Failed to execute %s for node %s", nodeCommunication.getCommunicationType().name(),
+                                    nodeCommunication.getNodeId()), ex);
+                        } finally {
+                            unlock(nodeCommunication, failed, ts);
+                            status.setComplete(true);
+                            executing.remove(nodeCommunication.getNodeId());
+                        }
                     }
+                };
+                if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
+                    r.run();
+                } else {
+                    ThreadPoolExecutor service = getExecutor(nodeCommunication.getCommunicationType());
+                    service.execute(r);
                 }
-            };
-            if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
-                r.run();
-            } else {
-                ThreadPoolExecutor service = getExecutor(nodeCommunication.getCommunicationType());
-                service.execute(r);
-            }     
+            }
+            return locked;
+        } catch (RuntimeException ex) {
+            log.error(String.format("Failed to execute %s for node %s", nodeCommunication.getCommunicationType().name(),
+                    nodeCommunication.getNodeId()), ex);
+            unlock(nodeCommunication, true, System.currentTimeMillis());
+            return false;
         }
-        return locked;
     }
     
     protected void unlock(NodeCommunication nodeCommunication,
-            RemoteNodeStatus status, boolean failed, long ts) {
+            boolean failed, long ts) {
         boolean unlocked = false;
         int attempts = 1;
         do {
@@ -439,7 +445,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                             .getTotalSuccessMillis() + millis);
                     nodeCommunication.setFailCount(0);
                 }
-                status.setComplete(true);
                 save(nodeCommunication);
                 unlocked = true;
                 if (attempts > 1) {

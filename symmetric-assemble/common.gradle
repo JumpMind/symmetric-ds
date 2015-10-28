@@ -17,6 +17,7 @@ dependencies {
 allprojects {
 
     apply plugin: 'eclipse-wtp'
+    apply plugin: 'maven-publish'
 
     group = 'org.jumpmind.symmetric'
     
@@ -36,11 +37,37 @@ allprojects {
         }
     }
     
+    eclipse.project.file.withXml { provider ->
+      ignoreDerivedResources(provider.asNode())
+    }
+    
     ext {
         majorMinorVersion = version.substring(0, version.indexOf(".", version.indexOf(".")+ 1))
     }
     
 }
+
+def ignoreDerivedResources(projectDescription, directories = ["build", "target", "test-output"]) {
+  def count = directories.count { file(it).exists() }
+  if (count > 0) {
+    def filter = projectDescription
+      .appendNode("filteredResources")
+      .appendNode("filter")
+    filter.appendNode("id", System.currentTimeMillis().toString().trim())
+    filter.appendNode("type", "26")
+    filter.appendNode("name")
+    def matcher = filter.appendNode("matcher")
+    matcher.appendNode("id", "org.eclipse.ui.ide.orFilterMatcher")
+    def arguments = matcher.appendNode("arguments")
+    directories.each {
+      if (file(it).exists()) {
+        def dirMatcher = arguments.appendNode("matcher")
+        dirMatcher.appendNode("id", "org.eclipse.ui.ide.multiFilter")
+        dirMatcher.appendNode("arguments", "1.0-projectRelativePath-matches-false-false-${it}")
+      }
+    }
+  }
+}  
 
 subprojects { subproject ->
 
@@ -138,13 +165,13 @@ subprojects { subproject ->
         mockitoVersion = '1.9.5'
         powerMockVersion = '1.5.3'
         mysqlVersion = '5.1.30'
-        servletVersion = '3.0.1'
+        servletVersion = '3.1.0'
         springVersion = '4.0.5.RELEASE'
         jtdsVersion = '1.2.8'
         bouncyCastleVersion = '140'
         animalSnifferVersion = '1.10'
         jnaVersion = '4.1.0'
-        jettyVersion = '7.6.3.v20120416'        
+        jettyVersion = '9.2.13.v20150730'
         
         env = System.getenv()
     }

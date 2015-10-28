@@ -59,8 +59,8 @@ public abstract class WrapperService {
         return instance;
     }
 
-    public void loadConfig(String configFile) throws IOException {
-        config = new WrapperConfig(configFile);
+    public void loadConfig(String applHomeDir, String configFile, String jarFile) throws IOException {
+        config = new WrapperConfig(applHomeDir, configFile, jarFile);
         setWorkingDirectory(config.getWorkingDirectory().getAbsolutePath());        
     }
 
@@ -304,7 +304,7 @@ public abstract class WrapperService {
         ArrayList<String> cmd = new ArrayList<String>();
         String quote = getWrapperCommandQuote();
         cmd.add(quote + config.getJavaCommand() + quote);
-        cmd.addAll(config.getOptions());
+        cmd.add("-Djava.io.tmpdir="+System.getProperty("java.io.tmpdir"));
         cmd.add("-jar");
         cmd.add(quote + config.getWrapperJarPath() + quote);
         cmd.add(arg);
