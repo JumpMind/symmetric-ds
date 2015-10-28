@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+#include "service/ParameterService.h"
 #include "transport/TransportManager.h"
 #include "transport/http/HttpIncomingTransport.h"
 #include "transport/http/HttpOutgoingTransport.h"
@@ -37,6 +38,7 @@
 
 typedef struct SymHttpTransportManager {
     SymTransportManager super;
+    SymParameterService *parameterService;
 } SymHttpTransportManager;
 
 SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *this, SymParameterService *parameterService);
