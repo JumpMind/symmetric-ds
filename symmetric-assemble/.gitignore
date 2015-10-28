@@ -5,3 +5,4 @@
 /.gradle/
 /.settings/
 /.classpath
+/build/
