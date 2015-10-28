@@ -43,7 +43,8 @@ static SymList * readAcks(SymList *batches, SymOutgoingTransport *transport, Sym
         if (!batchAck->isOk) {
             batchIdInError = batchAck->batchId;
         }
-        SymLog_debug("Saving ack: %ld, %s", batchAck->batchId, (batchAck->isOk ? SYM_OUTGOING_BATCH_OK : SYM_OUTGOING_BATCH_ERROR));
+        SymLog_debug("Saving ack: nodeId=%s, batchId=%ld, status=%s", batchAck->nodeId, batchAck->batchId,
+                (batchAck->isOk ? SYM_OUTGOING_BATCH_OK : SYM_OUTGOING_BATCH_ERROR));
         acknowledgeService->ack(acknowledgeService, batchAck);
     }
     iter->destroy(iter);
