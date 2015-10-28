@@ -118,7 +118,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
         boolean valid = true;
         Map<String, String> params = new HashMap<String, String>();
         if (!StringUtils.isBlank(routerExpression)) {
-            String[] expTokens = routerExpression.split("\r\n|\r|\n|\\s");
+            String[] expTokens = routerExpression.split("\\s");
             if (expTokens != null) {
                 for (String t : expTokens) {
                     if (!StringUtils.isBlank(t)) {
