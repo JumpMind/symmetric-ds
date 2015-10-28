@@ -51,6 +51,7 @@ import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.config.TriggerSelector;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.Router;
@@ -119,7 +120,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     private Date lastUpdateTime;
 
-    private Object cacheLock = new Object();
+    private Object cacheLock = new Object();    
     
     /**
      * Cache the history for performance. History never changes and does not
@@ -1185,7 +1186,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         log.info("Done synchronizing triggers");
                     }
                 } else {
-                    log.info("Sync triggers was locked by the cluster service");
+                    Lock lock = clusterService.findLocks().get(ClusterConstants.SYNCTRIGGERS);
+                    if (lock != null) {
+                        log.info("Sync triggers was locked by the cluster service.  The locking server id was: {}.  The lock time was: {}", lock.getLockingServerId(), lock.getLockTime());
+                    } else {
+                        log.info("Sync triggers was locked by something but lock details were found");
+                    }
                 }
             }
         } else {
