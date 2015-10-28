@@ -24,17 +24,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <curl/curl.h>
-#include <util/Properties.h>
+#include "service/ParameterService.h"
 #include "model/Node.h"
 #include "transport/http/HttpTransportManager.h"
 #include "transport/IncomingTransport.h"
+#include "util/Properties.h"
+#include "common/ParameterConstants.h"
 #include "common/Log.h"
 
 typedef struct SymHttpIncomingTransport {
     SymIncomingTransport super;
     char *url;
+    SymParameterService *parameterService;
 } SymHttpIncomingTransport;
 
-SymHttpIncomingTransport * SymHttpIncomingTransport_new(SymHttpIncomingTransport *this, char *url);
+SymHttpIncomingTransport * SymHttpIncomingTransport_new(SymHttpIncomingTransport *this, char *url, SymParameterService *parameterService);
 
 #endif

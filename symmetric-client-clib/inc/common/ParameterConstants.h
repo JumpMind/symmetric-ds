@@ -83,4 +83,7 @@
 #define SYM_PARAMETER_NODE_OFFLINE_ERROR_DIR "node.offline.error.dir"
 #define SYM_PARAMETER_NODE_OFFLINE_ARCHIVE_DIR "node.offline.archive.dir"
 
+#define SYM_PARAMETER_HTTPS_VERIFIED_SERVERS "https.verified.server.names"
+#define SYM_PARAMETER_HTTPS_ALLOW_SELF_SIGNED_CERTS "https.allow.self.signed.certs"
+
 #endif

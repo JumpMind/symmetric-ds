@@ -86,11 +86,17 @@ static char * getAcknowledgementData(SymList *batches) {
     return sb->destroyAndReturn(sb);
 }
 
-static int sendMessage(char *url, char *postData) {
+static int sendMessage(SymHttpTransportManager *this, char *url, char *postData) {
     long httpResponseCode = -1;
     SymLog_info("Sending message '%s' to URL '%s'", postData, url);
     CURL *curl = curl_easy_init();
     if (curl) {
+        if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_VERIFIED_SERVERS, 1)) {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
+        }
+        if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_ALLOW_SELF_SIGNED_CERTS, 1)) {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+        }
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_POST, 1);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
@@ -116,7 +122,7 @@ int SymHttpTransportManager_sendAcknowledgement(SymHttpTransportManager *this, S
         char *ackData = getAcknowledgementData(batches);
         SymStringBuilder *sb = SymStringBuilder_newWithString(url);
         sb->append(sb, ackData);
-        httpResponseCode = sendMessage(url, ackData);
+        httpResponseCode = sendMessage(this, url, ackData);
         sb->destroy(sb);
         free(ackData);
         free(url);
@@ -207,15 +213,15 @@ SymList * SymHttpTransportManager_readAcknowledgement(SymHttpTransportManager *t
 }
 
 SymHttpIncomingTransport * SymHttpTransportManager_getPullTransport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
-    return SymHttpIncomingTransport_new(NULL, buildUrl("pull", remote, local, securityToken, registrationUrl));
+    return SymHttpIncomingTransport_new(NULL, buildUrl("pull", remote, local, securityToken, registrationUrl), this->parameterService);
 }
 
 SymHttpOutgoingTransport * SymHttpTransportManager_getPushTransport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
-    return SymHttpOutgoingTransport_new(NULL, buildUrl("push", remote, local, securityToken, registrationUrl));
+    return SymHttpOutgoingTransport_new(NULL, buildUrl("push", remote, local, securityToken, registrationUrl), this->parameterService);
 }
 
 SymHttpIncomingTransport * SymHttpTransportManager_getRegisterTransport(SymHttpTransportManager *this, SymNode *local, char *registrationUrl) {
-    return SymHttpIncomingTransport_new(NULL, buildRegistrationUrl(local, registrationUrl));
+    return SymHttpIncomingTransport_new(NULL, buildRegistrationUrl(local, registrationUrl), this->parameterService);
 }
 
 char * SymHttpTransportManager_strerror(long rc) {
@@ -247,6 +253,7 @@ SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *t
     if (this == NULL) {
         this = (SymHttpTransportManager *) calloc(1, sizeof(SymHttpTransportManager));
     }
+    this->parameterService = parameterService;
     SymTransportManager *super = &this->super;
     super->sendAcknowledgement = (void *) &SymHttpTransportManager_sendAcknowledgement;
     super->getPullTransport = (void *) &SymHttpTransportManager_getPullTransport;
