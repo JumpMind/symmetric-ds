@@ -25,13 +25,13 @@ char * SymSqliteTriggerTemplate_fillOutColumnTemplate(SymSqliteTriggerTemplate *
         char *columnPrefix, SymColumn *column, SymDataEventType dml, unsigned short isOld,
         SymChannel *channel, SymTrigger *trigger) {
 
-    // TODO: handle LOBs
-    //unsigned short isLob = 0;
-
     char *templateToUse;
 
     switch (column->sqlType) {
+    case SYM_SQL_TYPE_BIT:
     case SYM_SQL_TYPE_BOOLEAN:
+        templateToUse = "case when %s.%s is null then '' when %s.%s = 1 then '\"1\"' else '\"0\"' end";
+        break;
     case SYM_SQL_TYPE_TINYINT:
     case SYM_SQL_TYPE_SMALLINT:
     case SYM_SQL_TYPE_INTEGER:
@@ -56,13 +56,18 @@ char * SymSqliteTriggerTemplate_fillOutColumnTemplate(SymSqliteTriggerTemplate *
     case SYM_SQL_TYPE_LONGVARBINARY:
         templateToUse = "case when %s.%s is null then '' else '\"' || replace(replace(hex(%s.%s),'\\','\\\\'),'\"','\\\"') || '\"' end ";
         break;
+    case SYM_SQL_TYPE_DATE:
+    case SYM_SQL_TYPE_TIMESTAMP:
+    case SYM_SQL_TYPE_TIME:
+        templateToUse = "case when strftime('%%Y-%%m-%%d %%H:%%M:%%f',%s.%s) is null then '' else ('\"' || strftime('%%Y-%%m-%%d %%H:%%M:%%f', %s.%s) || '\"') end";
+        break;
     default:
         templateToUse = NULL;
         SymLog_error("Unknown sqlType %d", column->sqlType);
         break;
     }
 
-    char* columnName = column->name; // TODO
+    char* columnName = column->name;
     char* formattedColumnText =
             SymStringUtils_format(templateToUse, tableAlias, columnName, tableAlias, columnName);
 

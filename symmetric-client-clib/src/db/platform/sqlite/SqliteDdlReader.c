@@ -47,6 +47,10 @@ static int SymSqliteDdlReader_toSqlType(char *type) {
         sqlType = SYM_SQL_TYPE_TIMESTAMP;
     } else if (strncasecmp(type, "TIME", 4) == 0) {
         sqlType = SYM_SQL_TYPE_TIME;
+    } else if (strncasecmp(type, "BOOLEAN", 7) == 0) {
+        sqlType = SYM_SQL_TYPE_BOOLEAN;
+    } else if (strncasecmp(type, "BIT", 3) == 0) {
+        sqlType = SYM_SQL_TYPE_BIT;
     } else {
         sqlType = SYM_SQL_TYPE_VARCHAR;
     }
