@@ -18,25 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYMCLIENT_TEST_H
-#define SYMCLIENT_TEST_H
+#ifndef SYM_BASE64_H
+#define SYM_BASE64_H
 
-#include <CUnit/Basic.h>
-
+#include <stdint.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
 
-#include "libsymclient.h"
-
-int SymEngineTest_CUnit();
-int SymPropertiesTest_CUnit();
-int SymStringBuilderTest_CUnit();
-int SymStringArrayTest_CUnit();
-int SymMapTest_CUnit();
-int SymListTest_CUnit();
-int SymStringUtilsTest_CUnit();
-int SymHexTest_CUnit();
-int SymBase64Test_CUnit();
+char * SymBase64_encode(const unsigned char *data, int inSize);
+unsigned char * SymBase64_decode(const char *data, int *outSize);
 
 #endif

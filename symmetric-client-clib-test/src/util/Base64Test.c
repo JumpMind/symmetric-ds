@@ -18,25 +18,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYMCLIENT_TEST_H
-#define SYMCLIENT_TEST_H
-
-#include <CUnit/Basic.h>
-
-#include <stdlib.h>
-#include <stdarg.h>
+#include "symclient_test.h"
 #include <string.h>
+#include "util/Base64.h"
 
-#include "libsymclient.h"
+void SymBase64Test_testDecode1() {
+    int outSize;
+    unsigned char *result = SymBase64_decode("ZWZn", &outSize);
+    CU_ASSERT(outSize == 3);
+    CU_ASSERT(strcmp((char *) result, "efg") == 0);
+}
 
-int SymEngineTest_CUnit();
-int SymPropertiesTest_CUnit();
-int SymStringBuilderTest_CUnit();
-int SymStringArrayTest_CUnit();
-int SymMapTest_CUnit();
-int SymListTest_CUnit();
-int SymStringUtilsTest_CUnit();
-int SymHexTest_CUnit();
-int SymBase64Test_CUnit();
+void SymBase64Test_testEncode1() {
+    char *result = SymBase64_encode((unsigned char * ) "efg", 3);
+    CU_ASSERT(strcmp(result, "ZWZn") == 0);
+}
 
-#endif
+int SymBase64Test_CUnit() {
+    CU_pSuite suite = CU_add_suite("SymBase64Test", NULL, NULL);
+    if (suite == NULL) {
+        return CUE_NOSUITE;
+    }
+
+    if (CU_add_test(suite, "SymBase64Test_testDecode1", SymBase64Test_testDecode1) == NULL ||
+            CU_add_test(suite, "SymBase64Test_testEncode1", SymBase64Test_testEncode1) == NULL) {
+        return CUE_NOTEST;
+    }
+    return CUE_SUCCESS;
+}
