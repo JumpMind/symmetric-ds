@@ -198,6 +198,19 @@ void SymStringUtils_replaceChar(char *str, char oldChar, char newChar) {
     }
 }
 
+unsigned short SymStringUtils_startsWith(char *str, char *prefix) {
+    if (!str || !prefix)
+        return 0;
+
+    size_t length = strlen(str);
+    size_t prefixLength = strlen(prefix);
+    if (prefixLength >  length)
+        return 0;
+    return strncmp(str, prefix, prefixLength) == 0;
+
+    return 0;
+}
+
 unsigned short SymStringUtils_endsWith(char *str, char *suffix) {
     if (!str || !suffix)
         return 0;

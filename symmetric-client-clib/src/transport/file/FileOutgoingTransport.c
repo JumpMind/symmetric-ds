@@ -21,7 +21,6 @@
 #include "transport/file/FileOutgoingTransport.h"
 
 char *SymFileOutgoingTransport_getFileName(SymFileOutgoingTransport *this) {
-
     long currentTimeMillis;
     time(&currentTimeMillis);
     currentTimeMillis *= 1000;
@@ -55,8 +54,6 @@ long SymFileOutgoingTransport_process(SymFileOutgoingTransport *this, SymDataPro
         result = SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE;
     }
     free(fileName);
-
-    // TODO NEED list of batch id's written.
 
     SymList *batchIds = processor->getBatchesProcessed(processor);
     SymStringBuilder *buff = SymStringBuilder_new(NULL);

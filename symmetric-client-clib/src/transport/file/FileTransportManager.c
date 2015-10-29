@@ -26,8 +26,9 @@ int SymFileTransportManager_sendAcknowledgement(SymFileTransportManager *this, S
 
 char * SymFileTransportManager_getDirName(SymFileTransportManager *this, char *paramName, SymNode *localNode) {
     // TODO replace nodeGroupId and nodeId variables.
-    //return super->parameterService->getString(this->parameterService, paramName, ".");
-    return "."; // TODO
+    SymTransportManager *super = &this->super;
+    char *dirName = super->parameterService->getString(super->parameterService, paramName, ".");
+    return dirName;
 }
 
 SymFileIncomingTransport * SymFileTransportManager_getPullTransport(SymFileTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {

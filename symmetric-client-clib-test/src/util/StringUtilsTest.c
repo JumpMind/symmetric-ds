@@ -125,6 +125,15 @@ void SymStringUtilsTest_test_substring() {
     CU_ASSERT(strcmp(SymStringUtils_substring("Testing", 0, 8), "Testing") == 0);
 }
 
+void SymStringUtilsTest_test_startsWith() {
+    CU_ASSERT(SymStringUtils_startsWith("Testing","Tes") == 1);
+    CU_ASSERT(SymStringUtils_startsWith("Testing","Ttt") == 0);
+    CU_ASSERT(SymStringUtils_startsWith("Testing","T") == 1);
+    CU_ASSERT(SymStringUtils_startsWith("","") == 1);
+    CU_ASSERT(SymStringUtils_startsWith("1","1") == 1);
+    CU_ASSERT(SymStringUtils_startsWith("1"," ") == 0);
+}
+
 void SymStringUtilsTest_test_endsWith() {
     CU_ASSERT(SymStringUtils_endsWith("Testing","ing") == 1);
     CU_ASSERT(SymStringUtils_endsWith("Testing","ed") == 0);
@@ -132,6 +141,7 @@ void SymStringUtilsTest_test_endsWith() {
     CU_ASSERT(SymStringUtils_endsWith("1","1") == 1);
     CU_ASSERT(SymStringUtils_endsWith("1"," ") == 0);
 }
+
 
 int SymStringUtilsTest_CUnit() {
     CU_pSuite suite = CU_add_suite("SymStringUtilsTest", NULL, NULL);
@@ -148,6 +158,7 @@ int SymStringUtilsTest_CUnit() {
             CU_add_test(suite, "SymStringUtilsTest_test_substring", SymStringUtilsTest_test_substring) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_testLTrim", SymStringUtilsTest_testLTrim) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_testRTrim", SymStringUtilsTest_testRTrim) == NULL ||
+            CU_add_test(suite, "SymStringUtilsTest_test_startsWith", SymStringUtilsTest_test_startsWith) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_test_endsWith", SymStringUtilsTest_test_endsWith) == NULL ||
             1==0) {
         return CUE_NOTEST;

@@ -25,22 +25,44 @@ char* SymFileIncomingTransport_getIncomingFile(SymFileIncomingTransport *this, c
     struct dirent *dirEntries;
     dir = opendir(this->offlineIncomingDir);
 
+    SymStringArray *files = SymStringArray_new(NULL);
+
+    char *startFilter = SymStringUtils_format("%s-%s", this->remoteNode->nodeGroupId, this->remoteNode->nodeId);
+
     if (dir) {
         while ((dirEntries = readdir(dir)) != NULL) {
             char *entry = dirEntries->d_name;
-            if (SymStringUtils_endsWith(entry, extension)) {
-                return entry;
+            if (SymStringUtils_startsWith(entry, startFilter) && SymStringUtils_endsWith(entry, extension)) {
+                files->add(files, entry);
             }
         }
         closedir(dir);
     }
+    else {
+        SymLog_error("Failed to open incoming directory '%s'", this->offlineIncomingDir);
+    }
 
-    return NULL;
+    char *firstFile = NULL;
+
+    if (files->size > 0) {
+        files->sort(files);
+        firstFile = files->get(files, 0);
+    }
+
+    free(startFilter);
+    files->destroy(files);
+
+    if (firstFile) {
+        char *path = SymStringUtils_format("%s/%s", this->offlineIncomingDir, firstFile);
+        return path;
+    } else {
+        return firstFile;
+    }
 }
 
 long SymFileIncomingTransport_process(SymFileIncomingTransport *this, SymDataProcessor *processor) {
     FILE *file;
-    int BUFFER_SIZE = 1024;
+    int BUFFER_SIZE = 2048;
     char inputBuffer[BUFFER_SIZE];
 
     char *fileName = SymFileIncomingTransport_getIncomingFile(this, ".csv");
@@ -49,16 +71,19 @@ long SymFileIncomingTransport_process(SymFileIncomingTransport *this, SymDataPro
 
     if (!file) {
         SymLog_warn("Failed to load file %s", this->offlineIncomingDir);
-        return CURLE_HTTP_NOT_FOUND;
+        return SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE;
     }
 
-    int counter = 0;
-    while (fgets(inputBuffer, BUFFER_SIZE, file) != NULL) {
-        processor->process(processor, inputBuffer, strlen(inputBuffer), counter++);
+    processor->open(processor);
 
+    int count;
+    while ((count = fread(inputBuffer, sizeof(char), BUFFER_SIZE, file)) > 0) {
+        processor->process(processor, inputBuffer, sizeof(char), count);
     }
 
-    return CURLE_OK;
+    processor->close(processor);
+
+    return SYM_TRANSPORT_OK;
 }
 
 void SymFileIncomingTransport_destroy(SymFileIncomingTransport *this) {
