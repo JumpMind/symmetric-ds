@@ -107,6 +107,9 @@ void SymSqliteSqlTransaction_rollback(SymSqliteSqlTransaction *this) {
 }
 
 void SymSqliteSqlTransaction_close(SymSqliteSqlTransaction *this) {
+    if (this->inTransaction) {
+        SymSqliteSqlTransaction_commit(this);
+    }
     if (this->stmt != NULL) {
         sqlite3_finalize(this->stmt);
     }
