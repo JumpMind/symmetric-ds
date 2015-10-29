@@ -31,6 +31,7 @@
 #include "transport/IncomingTransport.h"
 #include "common/Log.h"
 #include "util/StringUtils.h"
+#include "util/StringArray.h"
 
 typedef struct SymFileIncomingTransport {
     SymIncomingTransport super;

@@ -15,7 +15,7 @@
 <booleanAttribute key="org.eclipse.cdt.debug.mi.core.breakpointsFullPath" value="false"/>
 <stringAttribute key="org.eclipse.cdt.debug.mi.core.commandFactory" value="org.eclipse.cdt.debug.mi.core.standardMacOSCommandFactory"/>
 <stringAttribute key="org.eclipse.cdt.debug.mi.core.protocol" value="mi"/>
-<booleanAttribute key="org.eclipse.cdt.debug.mi.core.verboseMode" value="true"/>
+<booleanAttribute key="org.eclipse.cdt.debug.mi.core.verboseMode" value="false"/>
 <booleanAttribute key="org.eclipse.cdt.dsf.gdb.AUTO_SOLIB" value="true"/>
 <listAttribute key="org.eclipse.cdt.dsf.gdb.AUTO_SOLIB_LIST"/>
 <stringAttribute key="org.eclipse.cdt.dsf.gdb.DEBUG_NAME" value="/opt/local/bin/gdb-apple"/>

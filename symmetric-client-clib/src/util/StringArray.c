@@ -20,6 +20,12 @@
  */
 #include "util/StringArray.h"
 
+int SymStringArray_compareFunction(const void * a, const void * b) {
+    const char *aString = *(const char **)a;
+    const char *bString = *(const char **)b;
+    return strcmp(aString, bString);
+}
+
 SymStringArray * SymStringArray_addn(SymStringArray *this, char *src, int size) {
     if (this->size == this->sizeAllocated) {
         this->sizeAllocated += this->sizeIncrement;
@@ -136,6 +142,10 @@ SymStringArray * SymStringArray_split(char *str, char *separator) {
     return array;
 }
 
+void SymStringArray_sort(SymStringArray *this) {
+    qsort(this->array, this->size, sizeof(char*), SymStringArray_compareFunction);
+}
+
 void SymStringArray_destroy(SymStringArray *this) {
     this->reset(this);
     free(this);
@@ -164,6 +174,7 @@ SymStringArray * SymStringArray_newWithSize(SymStringArray *this, int sizeInitia
     this->toString = (void *) &SymStringArray_toString;
     this->print = (void *) &SymStringArray_print;
     this->reset = (void *) &SymStringArray_reset;
+    this->sort = (void *) &SymStringArray_sort;
     this->destroy = (void *) &SymStringArray_destroy;
     return this;
 }

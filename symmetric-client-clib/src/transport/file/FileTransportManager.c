@@ -26,8 +26,9 @@ int SymFileTransportManager_sendAcknowledgement(SymFileTransportManager *this, S
 
 char * SymFileTransportManager_getDirName(SymFileTransportManager *this, char *paramName, SymNode *localNode) {
     // TODO replace nodeGroupId and nodeId variables.
-    //return super->parameterService->getString(this->parameterService, paramName, ".");
-    return "."; // TODO
+    SymTransportManager *super = &this->super;
+    char *dirName = super->parameterService->getString(super->parameterService, paramName, ".");
+    return dirName;
 }
 
 SymFileIncomingTransport * SymFileTransportManager_getPullTransport(SymFileTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
@@ -43,7 +44,26 @@ SymFileOutgoingTransport * SymFileTransportManager_getPushTransport(SymFileTrans
 }
 
 SymList * SymFileTransportManager_readAcknowledgement(SymFileTransportManager *this, char *parameterString1, char *parameterString2) {
-    return NULL;
+    SymStringBuilder *sb = SymStringBuilder_newWithString(parameterString1);
+    sb->append(sb, "&")->append(sb, parameterString2);
+
+    SymMap *parameters = SymHttpTransportManager_getParametersFromQueryUrl(parameterString1);
+    SymList *batchAcks = SymList_new(NULL);
+    SymStringArray *keys = parameters->keys(parameters);
+    int i;
+    for (i = 0; i < keys->size; i++) {
+        char *key = keys->get(keys, i);
+        if (strncmp(key, SYM_WEB_CONSTANTS_ACK_BATCH_NAME, strlen(SYM_WEB_CONSTANTS_ACK_BATCH_NAME)) == 0) {
+            char *batchId = SymStringUtils_substring(key, strlen(SYM_WEB_CONSTANTS_ACK_BATCH_NAME), strlen(key));
+            SymBatchAck *batchAck = SymHttpTransportManager_getBatchInfo(parameters, batchId);
+            batchAcks->add(batchAcks, batchAck);
+            free(batchId);
+        }
+    }
+    keys->destroy(keys);
+    parameters->destroy(parameters);
+    sb->destroy(sb);
+    return batchAcks;
 }
 
 void SymFileTransportManager_destroy(SymFileTransportManager *this) {

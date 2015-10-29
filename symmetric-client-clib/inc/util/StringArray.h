@@ -44,6 +44,7 @@ typedef struct SymStringArray {
     char * (*get)(struct SymStringArray *this, int index);
     unsigned short (*contains)(struct SymStringArray *this, char *findStr);
     struct SymStringArray * (*subarray)(struct SymStringArray *this, int startIndex, int endIndex);
+    void (*sort)(struct SymStringArray *this);
     void (*print)(struct SymStringArray *this);
     char * (*toString)(struct SymStringArray *this);
     void (*reset)(struct SymStringArray *this);

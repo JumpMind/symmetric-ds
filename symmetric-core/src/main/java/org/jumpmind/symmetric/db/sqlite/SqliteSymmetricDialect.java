@@ -20,6 +20,9 @@
  */
 package org.jumpmind.symmetric.db.sqlite;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -29,8 +32,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.AppUtils;
-
-import com.mysql.jdbc.StringUtils;
 
 public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
 
@@ -55,7 +56,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     
     @Override
     public void createRequiredDatabaseObjects() {
-    	if(!StringUtils.isNullOrEmpty(sqliteFunctionToOverride)){
+    	if(isNotBlank(sqliteFunctionToOverride)){
     		return;
     	}
     	
@@ -85,7 +86,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     }
     
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-    	if(StringUtils.isNullOrEmpty(sqliteFunctionToOverride)){
+    	if(isBlank(sqliteFunctionToOverride)){
     		String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
             transaction.prepareAndExecute(String.format(CONTEXT_TABLE_INSERT, contextTableName), new Object[] {
                 SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1" });
@@ -105,7 +106,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-    	if(StringUtils.isNullOrEmpty(sqliteFunctionToOverride)){
+    	if(isBlank(sqliteFunctionToOverride)){
     		String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
             transaction.prepareAndExecute("delete from " + contextTableName);
     	}else{
@@ -114,7 +115,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     }
 
     public String getSyncTriggersExpression() {
-        if(StringUtils.isNullOrEmpty(sqliteFunctionToOverride)){
+        if(isBlank(sqliteFunctionToOverride)){
         	String contextTableName = parameterService.getTablePrefix() + "_" + CONTEXT_TABLE_NAME;
         	return "(not exists (select context_value from "+contextTableName+" where id = 'sync_triggers_disabled'))";
     	}else{

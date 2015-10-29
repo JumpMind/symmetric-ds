@@ -31,13 +31,13 @@
 #include "util/StringUtils.h"
 #include "util/StringArray.h"
 #include "transport/TransportManager.h"
+#include "web/WebConstants.h"
 
 typedef struct SymFileOutgoingTransport {
     SymOutgoingTransport super;
     SymNode *remoteNode;
     SymNode *localNode;
     char *offlineOutgoingDir;
-    void (*destroy)(struct SymFileOutgoingTransport *this);
 } SymFileOutgoingTransport;
 
 SymFileOutgoingTransport * SymFileOutgoingTransport_new(SymFileOutgoingTransport *this, SymNode *remoteNode, SymNode *localNode,
