@@ -31,22 +31,30 @@ char * SymSqliteTriggerTemplate_fillOutColumnTemplate(SymSqliteTriggerTemplate *
     char *templateToUse;
 
     switch (column->sqlType) {
+    case SYM_SQL_TYPE_BOOLEAN:
     case SYM_SQL_TYPE_TINYINT:
     case SYM_SQL_TYPE_SMALLINT:
     case SYM_SQL_TYPE_INTEGER:
     case SYM_SQL_TYPE_BIGINT:
     case SYM_SQL_TYPE_FLOAT:
-    case SYM_SQL_TYPE_REAL:
     case SYM_SQL_TYPE_DOUBLE:
     case SYM_SQL_TYPE_NUMERIC:
     case SYM_SQL_TYPE_DECIMAL:
+    case SYM_SQL_TYPE_REAL:
         templateToUse = "case when %s.%s is null then '' else ('\"' || cast(%s.%s as varchar) || '\"') end";
         break;
     case SYM_SQL_TYPE_CHAR:
     case SYM_SQL_TYPE_NCHAR:
     case SYM_SQL_TYPE_VARCHAR:
     case SYM_SQL_TYPE_NVARCHAR:
+    case SYM_SQL_TYPE_CLOB:
+    case SYM_SQL_TYPE_LONGVARCHAR:
+    case SYM_SQL_TYPE_LONGNVARCHAR:
         templateToUse = "case when %s.%s is null then '' else '\"' || replace(replace(%s.%s,'\\','\\\\'),'\"','\\\"') || '\"' end";
+        break;
+    case SYM_SQL_TYPE_BLOB:
+    case SYM_SQL_TYPE_LONGVARBINARY:
+        templateToUse = "case when %s.%s is null then '' else '\"' || replace(replace(hex(%s.%s),'\\','\\\\'),'\"','\\\"') || '\"' end ";
         break;
     default:
         templateToUse = NULL;
