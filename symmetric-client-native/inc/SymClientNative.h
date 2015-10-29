@@ -29,6 +29,7 @@
 #include "util/StringArray.h"
 #include "util/StringUtils.h"
 #include "util/Properties.h"
+#include "common/Log.h"
 
 int SymNativeClient_runSymmetricEngine(SymProperties *properties);
 
