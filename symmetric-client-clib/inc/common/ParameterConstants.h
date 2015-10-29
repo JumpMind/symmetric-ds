@@ -83,6 +83,10 @@
 #define SYM_PARAMETER_NODE_OFFLINE_ERROR_DIR "node.offline.error.dir"
 #define SYM_PARAMETER_NODE_OFFLINE_ARCHIVE_DIR "node.offline.archive.dir"
 #define SYM_PARAMETER_NODE_OFFLINE_INCOMING_ACCEPT_ALL "node.offline.incoming.accept.all"
+#define SYM_PARAMETER_START_OFFLINE_PULL_JOB "start.offline.pull.job"
+#define SYM_PARAMETER_START_OFFLINE_PUSH_JOB "start.offline.push.job"
+#define SYM_PARAMETER_OFFLINE_PUSH_PERIOD_MS "job.offline.push.period.time.ms"
+#define SYM_PARAMETER_OFFLINE_PULL_PERIOD_MS "job.offline.pull.period.time.ms"
 
 #define SYM_PARAMETER_HTTPS_VERIFIED_SERVERS "https.verified.server.names"
 #define SYM_PARAMETER_HTTPS_ALLOW_SELF_SIGNED_CERTS "https.allow.self.signed.certs"

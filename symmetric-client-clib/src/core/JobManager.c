@@ -75,26 +75,27 @@ void SymJobManager_invoke(SymJobManager *this) {
         this->engine->purge(this->engine);
         time(&this->lastPurgeTime);
     }
-    if (1) { // TODO.
+    if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_OFFLINE_PUSH_JOB, SYM_PARAMETER_OFFLINE_PUSH_PERIOD_MS, this->lastOfflinePushTime)) {
         SymLog_info("OFFLINE PUSH ============================)");
         this->engine->offlinePushService->pushData(this->engine->offlinePushService);
-        //time(&this->lastPurgeTime);
+        time(&this->lastOfflinePushTime);
     }
-    if (1) { // TODO.
+    if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_OFFLINE_PULL_JOB, SYM_PARAMETER_OFFLINE_PULL_PERIOD_MS, this->lastOfflinePullTime)) {
         SymLog_info("OFFLINE PULL ============================)");
         this->engine->offlinePullService->pullData(this->engine->offlinePullService);
-        //time(&this->lastPurgeTime);
+        time(&this->lastOfflinePullTime);
     }
 }
 
 void SymJobManager_startJobs(SymJobManager *this) {
     this->engine->start(this->engine);
-    time(&this->lastRouteTime);
-    time(&this->lastPullTime);
-    time(&this->lastPushTime);
-    time(&this->lastHeartbeatTime);
-    time(&this->lastPurgeTime);
-    time(&this->lastSyncTriggersTime);
+
+    long now;
+    time(&now);
+
+    this->lastRouteTime = this->lastPullTime = this->lastPushTime =
+            this->lastHeartbeatTime = this->lastPurgeTime = this->lastSyncTriggersTime =
+                    this->lastOfflinePullTime = this->lastOfflinePushTime = now;
 
     this->started = 1;
 
