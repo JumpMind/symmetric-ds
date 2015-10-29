@@ -33,6 +33,8 @@ int main() {
             //SymStringArrayTest_CUnit() != CUE_SUCCESS ||
             //SymPropertiesTest_CUnit() != CUE_SUCCESS ||
             //SymStringUtilsTest_CUnit() != CUE_SUCCESS ||
+            //SymHexTest_CUnit() != CUE_SUCCESS ||
+            //SymBase64Test_CUnit() != CUE_SUCCESS ||
             1==0) {
         CU_cleanup_registry();
         return CU_get_error();

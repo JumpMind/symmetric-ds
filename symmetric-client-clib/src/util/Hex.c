@@ -18,25 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYMCLIENT_TEST_H
-#define SYMCLIENT_TEST_H
+#include "util/Hex.h"
 
-#include <CUnit/Basic.h>
+char * SymHex_encode(const unsigned char *data, int inSize) {
+    char *result = (char *) malloc(inSize * 2);
+    int i;
+    for(i = 0; i < inSize; i++) {
+        sprintf(result + (i * 2), "%02x", data[i]);
+    }
+    return result;
+}
 
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-
-#include "libsymclient.h"
-
-int SymEngineTest_CUnit();
-int SymPropertiesTest_CUnit();
-int SymStringBuilderTest_CUnit();
-int SymStringArrayTest_CUnit();
-int SymMapTest_CUnit();
-int SymListTest_CUnit();
-int SymStringUtilsTest_CUnit();
-int SymHexTest_CUnit();
-int SymBase64Test_CUnit();
-
-#endif
+unsigned char * SymHex_decode(const char *data, int *outSize) {
+    *outSize = strlen(data) / 2;
+    unsigned char *result = malloc(*outSize);
+    char *pos = (char *) data;
+    int i;
+    for(i = 0; i < *outSize; i++, pos += 2) {
+        sscanf(pos, "%2hhx", &result[i]);
+    }
+    return result;
+}

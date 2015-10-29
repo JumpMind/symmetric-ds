@@ -18,25 +18,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYMCLIENT_TEST_H
-#define SYMCLIENT_TEST_H
-
-#include <CUnit/Basic.h>
-
-#include <stdlib.h>
-#include <stdarg.h>
+#include "symclient_test.h"
 #include <string.h>
+#include "util/Hex.h"
 
-#include "libsymclient.h"
+void SymHexTest_testDecode1() {
+    int outSize;
+    unsigned char *result = SymHex_decode("656667", &outSize);
+    CU_ASSERT(outSize == 3);
+    CU_ASSERT(strcmp((char *) result, "efg") == 0);
+}
 
-int SymEngineTest_CUnit();
-int SymPropertiesTest_CUnit();
-int SymStringBuilderTest_CUnit();
-int SymStringArrayTest_CUnit();
-int SymMapTest_CUnit();
-int SymListTest_CUnit();
-int SymStringUtilsTest_CUnit();
-int SymHexTest_CUnit();
-int SymBase64Test_CUnit();
+void SymHexTest_testEncode1() {
+    char *result = SymHex_encode((unsigned char * ) "efg", 3);
+    CU_ASSERT(strcmp(result, "656667") == 0);
+}
 
-#endif
+int SymHexTest_CUnit() {
+    CU_pSuite suite = CU_add_suite("SymHexTest", NULL, NULL);
+    if (suite == NULL) {
+        return CUE_NOSUITE;
+    }
+
+    if (CU_add_test(suite, "SymHexTest_testDecode1", SymHexTest_testDecode1) == NULL ||
+            CU_add_test(suite, "SymHexTest_testEncode1", SymHexTest_testEncode1) == NULL) {
+        return CUE_NOTEST;
+    }
+    return CUE_SUCCESS;
+}
