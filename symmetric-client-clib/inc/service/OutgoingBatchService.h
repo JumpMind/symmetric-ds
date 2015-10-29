@@ -74,6 +74,7 @@ b.failed_data_id, b.last_update_hostname, b.last_update_time, b.create_time, b.b
 from sym_outgoing_batch b "
 
 #define SYM_SQL_FIND_OUTGOING_BATCH "where batch_id = ? and node_id = ?"
+#define SYM_SQL_FIND_OUTGOING_BATCH_BY_ID_ONLY "where batch_id=? "
 
 #define SYM_SQL_SELECT_OUTGOING_BATCH "where node_id = ? and status in (?, ?, ?, ?, ?, ?, ?) order by batch_id asc"
 
