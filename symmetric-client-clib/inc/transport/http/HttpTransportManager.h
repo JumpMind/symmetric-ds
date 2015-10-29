@@ -45,4 +45,7 @@ SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *t
 
 char * SymHttpTransportManager_strerror(long rc);
 
+SymMap * SymHttpTransportManager_getParametersFromQueryUrl(char *parameterString);
+SymBatchAck * SymHttpTransportManager_getBatchInfo(SymMap *parameters, char *batchId);
+
 #endif

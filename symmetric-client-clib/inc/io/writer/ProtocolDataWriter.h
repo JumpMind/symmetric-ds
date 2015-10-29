@@ -34,6 +34,7 @@
 #include "util/Map.h"
 #include "util/StringUtils.h"
 #include "common/Log.h"
+#include "util/List.h"
 
 typedef struct SymProtocolDataWriter {
     SymDataProcessor super;

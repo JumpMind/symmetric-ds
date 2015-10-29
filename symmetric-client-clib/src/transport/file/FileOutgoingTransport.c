@@ -56,7 +56,21 @@ long SymFileOutgoingTransport_process(SymFileOutgoingTransport *this, SymDataPro
     }
     free(fileName);
 
-    processor->close(processor);
+    // TODO NEED list of batch id's written.
+
+    SymList *batchIds = processor->getBatchesProcessed(processor);
+    SymStringBuilder *buff = SymStringBuilder_new(NULL);
+    int i;
+    for (i = 0; i < batchIds->size; ++i) {
+        char* batchId = batchIds->get(batchIds, i);
+        buff->append(buff, SYM_WEB_CONSTANTS_ACK_BATCH_NAME);
+        buff->append(buff, batchId);
+        buff->append(buff, "=");
+        buff->append(buff, SYM_WEB_CONSTANTS_ACK_BATCH_OK);
+        buff->append(buff, "&");
+    }
+
+    this->super.ackString = buff->destroyAndReturn(buff);
 
     return result;
 }
@@ -75,6 +89,8 @@ SymFileOutgoingTransport * SymFileOutgoingTransport_new(SymFileOutgoingTransport
     this->remoteNode = remoteNode;
     this->localNode = localNode;
     this->offlineOutgoingDir = offlineOutgoingDir;
-    this->destroy = (void *) &SymFileOutgoingTransport_destroy;
+
+    super->process = (void *) &SymFileOutgoingTransport_process;
+    super->destroy = (void *) &SymFileOutgoingTransport_destroy;
     return this;
 }

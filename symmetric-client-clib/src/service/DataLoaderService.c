@@ -117,7 +117,7 @@ void SymDataLoaderService_loadDataFromPull(SymDataLoaderService *this, SymNode *
     }
 }
 
-void loadDataFromOfflineTransport(SymDataLoaderService *this, SymNode *remote, SymRemoteNodeStatus *status) {
+void SymDataLoaderService_loadDataFromOfflineTransport(SymDataLoaderService *this, SymNode *remote, SymRemoteNodeStatus *status) {
     SymNode *local = this->nodeService->findIdentity(this->nodeService);
     if (local == NULL) {
         this->loadDataFromRegistration(this, status);
@@ -164,6 +164,7 @@ SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymP
 
     this->loadDataFromPull = (void *) &SymDataLoaderService_loadDataFromPull;
     this->loadDataFromRegistration = (void *) &SymDataLoaderService_loadDataFromRegistration;
+    this->loadDataFromOfflineTransport = (void *) &SymDataLoaderService_loadDataFromOfflineTransport;
     this->destroy = (void *) &SymDataLoaderService_destroy;
     return this;
 }
