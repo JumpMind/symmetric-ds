@@ -73,6 +73,8 @@ int main(int argCount, char **argValues) {
         return 1;
     }
 
+    SymLog_configure(properties);
+
     SymNativeClient_runSymmetricEngine(properties);
 
     properties->destroy(properties);

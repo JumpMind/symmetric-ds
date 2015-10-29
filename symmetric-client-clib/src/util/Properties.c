@@ -126,16 +126,13 @@ SymProperties * SymProperties_newWithFile(SymProperties *this, char *argPath) {
         this = SymProperties_new(this);
     }
 
-    // SymStringArray / split to read properties file.
-
     FILE *file;
     int BUFFER_SIZE = 1024;
     char inputBuffer[BUFFER_SIZE];
 
     file = fopen(argPath,"r");
     if (!file) {
-        SymLog_error("Failed to load properties from file %s", argPath);
-        return this;
+        return NULL;
     }
 
     SymStringBuilder *buff = SymStringBuilder_new(NULL);
