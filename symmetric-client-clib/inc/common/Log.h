@@ -26,9 +26,17 @@
 #include <stdarg.h>
 #include <time.h>
 #include "util/StringBuilder.h"
+#include "util/Properties.h"
 #include "util/Date.h"
+#include "util/StringUtils.h"
 
 typedef enum {SYM_LOG_LEVEL_DEBUG, SYM_LOG_LEVEL_INFO, SYM_LOG_LEVEL_WARN, SYM_LOG_LEVEL_ERROR} SymLogLevel;
+
+#define SYM_LOG_DESTINATION_CONSOLE "console"
+
+#define SYM_LOG_SETTINGS_LOG_LEVEL "client.log.level"
+#define SYM_LOG_SETTINGS_LOG_DESTINATION "client.log.destination"
+#define SYM_LOG_SETTINGS_LOG_SHOW_SOURCE_FILE "client.log.show.source.file"
 
 #define SYM_LOG_LEVEL_DESC_DEBUG "DEBUG"
 #define SYM_LOG_LEVEL_DESC_INFO "INFO"
@@ -42,5 +50,6 @@ typedef enum {SYM_LOG_LEVEL_DEBUG, SYM_LOG_LEVEL_INFO, SYM_LOG_LEVEL_WARN, SYM_L
 #define SymLog_error(M, ...) SymLog_log(3, __func__, __FILE__, __LINE__, M, ##__VA_ARGS__)
 
 void SymLog_log(SymLogLevel logLevel, const char *functionName, const char *filename, int lineNumber, const char* message, ...);
+void SymLog_configure(SymProperties *settings);
 
 #endif

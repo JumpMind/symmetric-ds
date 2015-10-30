@@ -20,7 +20,11 @@
  */
 #include "common/Log.h"
 
-static char* logLevelDescription(SymLogLevel logLevel) {
+static int SymLog_logLevel = SYM_LOG_LEVEL_DEBUG;
+static unsigned short SymLog_showSourceFile = 1;
+static char* SymLog_destination = "console";
+
+static char* SymLog_getlogLevelDescription(SymLogLevel logLevel) {
 	switch (logLevel) {
 	case SYM_LOG_LEVEL_DEBUG:
 		return SYM_LOG_LEVEL_DESC_DEBUG;
@@ -35,17 +39,44 @@ static char* logLevelDescription(SymLogLevel logLevel) {
 	}
 }
 
+static SymLogLevel SymLog_getLogLevelValue(char* logLevelDescription) {
+    if (SymStringUtils_equals(logLevelDescription, SYM_LOG_LEVEL_DESC_DEBUG)) {
+        return SYM_LOG_LEVEL_DEBUG;
+    } else if (SymStringUtils_equals(logLevelDescription, SYM_LOG_LEVEL_DESC_INFO)) {
+        return SYM_LOG_LEVEL_INFO;
+    } else if (SymStringUtils_equals(logLevelDescription, SYM_LOG_LEVEL_DESC_WARN)) {
+        return SYM_LOG_LEVEL_WARN;
+    } else if (SymStringUtils_equals(logLevelDescription, SYM_LOG_LEVEL_DESC_ERROR)) {
+        return SYM_LOG_LEVEL_ERROR;
+    }
+    return SYM_LOG_LEVEL_DEBUG;
+}
+
+void SymLog_configure(SymProperties *settings) {
+    char *logLevelDescription = settings->get(settings, SYM_LOG_SETTINGS_LOG_LEVEL, "DEBUG");
+    if (! SymStringUtils_isBlank(logLevelDescription)) {
+        SymLog_logLevel = SymLog_getLogLevelValue(logLevelDescription);
+    }
+
+    char *logDestination = settings->get(settings, SYM_LOG_SETTINGS_LOG_DESTINATION, "console");
+    if (! SymStringUtils_isBlank(logDestination)) {
+        SymLog_destination = logDestination;
+    }
+
+    char *showSourceFile = settings->get(settings, SYM_LOG_SETTINGS_LOG_SHOW_SOURCE_FILE, "1");
+    if (! SymStringUtils_isBlank(showSourceFile)) {
+        SymLog_showSourceFile = SymStringUtils_equals(showSourceFile, "1")
+                || SymStringUtils_equalsIgnoreCase(showSourceFile, "true");
+    }
+}
+
 /** This is the central place where all logging funnels through. */
 void SymLog_log(SymLogLevel logLevel, const char *functionName, const char *fileName, int lineNumber, const char* message, ...) {
-	FILE *destination;
-	if (logLevel <= SYM_LOG_LEVEL_INFO) {
-		destination = stdout;
-	}
-	else {
-		destination = stderr;
-	}
+    if (logLevel < SymLog_logLevel) {
+        return;
+    }
 
-	char* levelDescription = logLevelDescription(logLevel);
+	char* levelDescription = SymLog_getlogLevelDescription(logLevel);
 
 	SymStringBuilder *messageBuffer = SymStringBuilder_new();
 
@@ -56,22 +87,51 @@ void SymLog_log(SymLogLevel logLevel, const char *functionName, const char *file
 	messageBuffer->append(messageBuffer, levelDescription);
 	messageBuffer->append(messageBuffer, "] [");
 	messageBuffer->append(messageBuffer, functionName);
-//	messageBuffer->append(messageBuffer, " ");
-//	messageBuffer->append(messageBuffer, fileName);
-//	messageBuffer->append(messageBuffer, ":");
-//	messageBuffer->appendInt(messageBuffer, lineNumber);
 	messageBuffer->append(messageBuffer, "] ");
     va_list varargs;
     va_start(varargs, message);
     messageBuffer->appendfv(messageBuffer, message, varargs);
     va_end(varargs);
+    if (SymLog_showSourceFile) {
+        messageBuffer->append(messageBuffer, " (");
+        messageBuffer->append(messageBuffer, fileName);
+        messageBuffer->append(messageBuffer, ":");
+        messageBuffer->appendInt(messageBuffer, lineNumber);
+        messageBuffer->append(messageBuffer, ")");
+    }
 	messageBuffer->append(messageBuffer, "\n");
+
+    unsigned short physicalFile = 0;
+    FILE *destination;
+
+    if (SymStringUtils_equalsIgnoreCase(SymLog_destination, SYM_LOG_DESTINATION_CONSOLE)) {
+        if (logLevel <= SYM_LOG_LEVEL_INFO) {
+            destination = stdout;
+        }
+        else {
+            destination = stderr;
+        }
+    }
+    else {
+        destination = fopen(SymLog_destination, "a+");
+        if (!destination) {
+            printf("Failed to open log file destination '%s'.  Check the path our use 'console'\n", SymLog_destination);
+            destination = stdout;
+        }
+        else  {
+            physicalFile = 1;
+        }
+
+    }
 
 	fprintf(destination, "%s", messageBuffer->toString(messageBuffer));
 
 	// stdout may not flush before stderr does.
 	// Do this to keep log messages more or less in order.
 	fflush(destination);
+	if (physicalFile) {
+	    fclose(destination);
+	}
 
 	date->destroy(date);
 	messageBuffer->destroy(messageBuffer);

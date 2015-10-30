@@ -23,7 +23,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "common/Log.h"
 #include "util/StringUtils.h"
 #include "util/StringBuilder.h"
 #include "util/StringArray.h"

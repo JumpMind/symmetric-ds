@@ -43,7 +43,7 @@ public class Wrapper {
             }
         }
         String configFile = dir + File.separator + "conf" + File.separator + "sym_service.conf";
-        String jarFile = dir + File.separator + "lib" + File.pathSeparator + "symmetric-wrapper.jar";
+        String jarFile = dir + File.separator + "lib" + File.separator + "symmetric-wrapper.jar";
         
         WrapperHelper.run(args, dir, configFile, jarFile);
     }

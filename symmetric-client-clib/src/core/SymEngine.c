@@ -42,6 +42,8 @@ static unsigned short SymEngine_isConfigured(SymEngine *this) {
 unsigned short SymEngine_start(SymEngine *this) {
     unsigned short isStarted = 0;
 
+    SymLog_configure(this->properties);
+
     SymLog_info("About to start SymmetricDS");
 
     this->dialect->initTablesAndDatabaseObjects(this->dialect);

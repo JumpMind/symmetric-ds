@@ -34,6 +34,8 @@ typedef struct SymJobManager {
     long lastPurgeTime;
     long lastRouteTime;
     long lastSyncTriggersTime;
+    long lastOfflinePushTime;
+    long lastOfflinePullTime;
     void (*startJobs)(struct SymJobManager *this);
     void (*stopJobs)(struct SymJobManager *this);
     void (*destroy)(struct SymJobManager *this);

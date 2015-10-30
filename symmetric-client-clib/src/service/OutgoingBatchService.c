@@ -78,13 +78,19 @@ void SymOutgoingBatchService_insertOutgoingBatch(SymOutgoingBatchService *this, 
 }
 
 SymOutgoingBatch * SymOutgoingBatchService_findOutgoingBatch(SymOutgoingBatchService *this, long batchId, char *nodeId) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
     SymStringArray *args = SymStringArray_new(NULL);
     args->addLong(args, batchId);
     args->add(args, nodeId);
 
-    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+
     SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_OUTGOING_BATCH_PREFIX);
-    sb->append(sb, SYM_SQL_FIND_OUTGOING_BATCH);
+    if (SymStringUtils_isNotBlank(nodeId)) {
+        sb->append(sb, SYM_SQL_FIND_OUTGOING_BATCH);
+    } else {
+        sb->append(sb, SYM_SQL_FIND_OUTGOING_BATCH_BY_ID_ONLY);
+    }
+
     int error;
     SymList *batches = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymOutgoingBatchService_outgoingBatchMapper);
 

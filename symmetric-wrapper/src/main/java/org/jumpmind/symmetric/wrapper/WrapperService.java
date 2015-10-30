@@ -304,7 +304,7 @@ public abstract class WrapperService {
         ArrayList<String> cmd = new ArrayList<String>();
         String quote = getWrapperCommandQuote();
         cmd.add(quote + config.getJavaCommand() + quote);
-        cmd.add("-Djava.io.tmpdir="+System.getProperty("java.io.tmpdir"));
+        cmd.add("-Djava.io.tmpdir="+quote+System.getProperty("java.io.tmpdir")+quote);
         cmd.add("-jar");
         cmd.add(quote + config.getWrapperJarPath() + quote);
         cmd.add(arg);
