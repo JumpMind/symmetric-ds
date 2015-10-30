@@ -42,6 +42,7 @@ static void getDatabaseParameters(SymParameterService *this, char *externalId, c
     args->add(args, externalId)->add(args, nodeGroupId);
     int error;
     SymList *list = sqlTemplate->queryWithUserData(sqlTemplate, SYM_SQL_SELECT_PARAMETERS, args, NULL, &error, (void *) &parameterMapper, this);
+    args->destroy(args);
     list->destroy(list);
 }
 

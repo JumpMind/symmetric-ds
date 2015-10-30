@@ -119,6 +119,7 @@ int SymRow_intValue(SymRow *this) {
     char *str = SymRow_stringValue(this);
     if (str != NULL) {
         value = atoi(str);
+        free(str);
     }
     return value;
 }
@@ -128,6 +129,7 @@ long SymRow_longValue(SymRow *this) {
     char *str = SymRow_stringValue(this);
     if (str != NULL) {
         value = atol(str);
+        free(str);
     }
     return value;
 }
@@ -137,6 +139,7 @@ unsigned short SymRow_booleanValue(SymRow *this) {
     char *str = SymRow_stringValue(this);
     if (str != NULL) {
         value = atoi(str);
+        free(str);
     }
     return value;
 }
@@ -146,12 +149,13 @@ SymDate * SymRow_dateValue(SymRow *this) {
     char *str = SymRow_stringValue(this);
     if (str != NULL) {
         value = SymDate_newWithString(str);
+        free(str);
     }
     return value;
 }
 
 void SymRow_destroy(SymRow *this) {
-    this->map->destroyAll(this->map, (void *) &SymRowEntry_destroy, 0);
+    this->map->destroyAll(this->map, (void *) &SymRowEntry_destroy);
     free(this);
 }
 

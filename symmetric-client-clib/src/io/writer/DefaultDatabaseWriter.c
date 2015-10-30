@@ -201,9 +201,8 @@ unsigned short SymDefaultDatabaseWriter_write(SymDefaultDatabaseWriter *this, Sy
             if (!this->missingTables->get(this->missingTables, qualifiedName)) {
                 SymLog_warn("Did not find the '%s' table in the target database", this->sourceTable->name);
                 this->missingTables->put(this->missingTables, qualifiedName, qualifiedName);
-            } else {
-                free(qualifiedName);
             }
+            free(qualifiedName);
             return 1;
         } else {
             this->targetTable = this->sourceTable;
@@ -285,7 +284,7 @@ void SymDefaultDatabaseWriter_close(SymDefaultDatabaseWriter *this) {
 
 void SymDefaultDatabaseWriter_destroy(SymDefaultDatabaseWriter *this) {
     this->targetTables->destroy(this->targetTables);
-    this->missingTables->destroyAll(this->missingTables, NULL, 1);
+    this->missingTables->destroyAll(this->missingTables, NULL);
     this->settings->destroy(this->settings);
     free(this);
 }

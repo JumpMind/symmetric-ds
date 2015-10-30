@@ -29,9 +29,9 @@ typedef struct SymMap {
     SymList * (*values)(struct SymMap *this);
     SymList * (*entries)(struct SymMap *this);
     void (*reset)(struct SymMap *this);
-    void (*resetAll)(struct SymMap *this, void (*destroyObject)(void *object), unsigned short shouldFreeKey);
+    void (*resetAll)(struct SymMap *this, void (*destroyObject)(void *object));
     void (*destroy)(struct SymMap *this);
-    void (*destroyAll)(struct SymMap *this, void (*destroyObject)(void *object), unsigned short shouldFreeKey);
+    void (*destroyAll)(struct SymMap *this, void (*destroyObject)(void *object));
 } SymMap;
 
 SymMap *SymMap_new(SymMap *this, int size);
