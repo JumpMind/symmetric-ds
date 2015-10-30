@@ -80,6 +80,6 @@ SymFileTransportManager * SymFileTransportManager_new(SymFileTransportManager *t
     super->getPullTransport = (void *) &SymFileTransportManager_getPullTransport;
     super->getPushTransport = (void *) &SymFileTransportManager_getPushTransport;
     super->readAcknowledgement = (void *) SymFileTransportManager_readAcknowledgement;
-    this->destroy = (void *) &SymFileTransportManager_destroy;
+    super->destroy = (void *) &SymFileTransportManager_destroy;
     return this;
 }

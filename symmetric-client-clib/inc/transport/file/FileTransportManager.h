@@ -28,7 +28,6 @@
 
 typedef struct SymFileTransportManager {
     SymTransportManager super;
-    void (*destroy)(struct SymFileTransportManager *this);
 } SymFileTransportManager;
 
 SymFileTransportManager * SymFileTransportManager_new(SymFileTransportManager *this, SymParameterService *parameterService);

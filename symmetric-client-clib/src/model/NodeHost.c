@@ -36,6 +36,30 @@ void SymNodeHost_refresh(SymNodeHost *this) {
 }
 
 void SymNodeHost_destroy(SymNodeHost *this) {
+    if (this->hostName) {
+        free(this->hostName);
+    }
+    if (this->ipAddress) {
+        free(this->ipAddress);
+    }
+    if (this->osArch) {
+        free(this->osArch);
+    }
+    if (this->osName) {
+        free(this->osName);
+    }
+    if (this->osVersion) {
+        free(this->osVersion);
+    }
+    if (this->osUser) {
+        free(this->osUser);
+    }
+    if (this->timezoneOffset) {
+        free(this->timezoneOffset);
+    }
+    if (this->heartbeatTime) {
+        this->heartbeatTime->destroy(this->heartbeatTime);
+    }
 
     free(this);
 }

@@ -132,7 +132,7 @@ SymProperties * SymProperties_newWithFile(SymProperties *this, char *argPath) {
         return NULL;
     }
 
-    SymStringBuilder *buff = SymStringBuilder_new(NULL);
+    SymStringBuilder *buff = SymStringBuilder_newWithSize(4096);
 
     while (fgets(inputBuffer, BUFFER_SIZE, file) != NULL) {
         buff->append(buff, inputBuffer);
