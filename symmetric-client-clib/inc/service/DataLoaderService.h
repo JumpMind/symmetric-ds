@@ -34,6 +34,7 @@
 #include "io/data/DataProcessor.h"
 #include "io/reader/ProtocolDataReader.h"
 #include "io/writer/DefaultDatabaseWriter.h"
+#include "load/DefaultDataLoaderFactory.h"
 #include "db/platform/DatabasePlatform.h"
 #include "db/SymDialect.h"
 #include "util/List.h"
@@ -48,6 +49,7 @@ typedef struct SymDataLoaderService {
     SymDatabasePlatform *platform;
     SymDialect *dialect;
     SymIncomingBatchService *incomingBatchService;
+    SymDefaultDataLoaderFactory *dataLoaderFactory;
     void (*loadDataFromPull)(struct SymDataLoaderService *this, SymNode *remote, SymRemoteNodeStatus *status);
     void (*loadDataFromOfflineTransport)(struct SymDataLoaderService *this, SymNode *remote, SymRemoteNodeStatus *status);
     void (*loadDataFromRegistration)(struct SymDataLoaderService *this, SymRemoteNodeStatus *status);

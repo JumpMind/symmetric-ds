@@ -37,6 +37,8 @@
 #define SYM_PARAMETER_NODE_OFFLINE "node.offline"
 #define SYM_PARAMETER_DATA_LOADER_NUM_OF_ACK_RETRIES "num.of.ack.retries"
 #define SYM_PARAMETER_DATA_LOADER_TIME_BETWEEN_ACK_RETRIES "time.between.ack.retries.ms"
+#define SYM_PARAMETER_DATA_LOADER_IGNORE_MISSING_TABLES "dataloader.ignore.missing.tables"
+#define SYM_PARAMETER_DATA_LOADER_USE_PRIMARY_KEYS_FROM_SOURCE "dataloader.use.primary.keys.from.source"
 #define SYM_PARAMETER_REGISTRATION_NUMBER_OF_ATTEMPTS "registration.number.of.attempts"
 #define SYM_PARAMETER_PARAMETER_REFRESH_PERIOD_IN_MS "parameter.reload.timeout.ms"
 #define SYM_PARAMETER_INCOMING_BATCH_RECORD_OK_ENABLED "incoming.batches.record.ok.enabled"

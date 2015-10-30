@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "io/writer/DataWriter.h"
+#include "io/writer/DatabaseWriterSettings.h"
 #include "io/data/Batch.h"
 #include "db/model/Table.h"
 #include "db/platform/DatabasePlatform.h"
@@ -31,6 +32,7 @@
 #include "util/StringArray.h"
 #include "util/Map.h"
 #include "util/List.h"
+#include "util/Base64.h"
 #include "db/sql/DmlStatement.h"
 #include "db/sql/SqlTemplate.h"
 #include "db/sql/SqlTransaction.h"
@@ -43,6 +45,7 @@ typedef struct SymDefaultDatabaseWriter {
     SymIncomingBatchService *incomingBatchService;
     SymDatabasePlatform *platform;
     SymDialect *dialect;
+    SymDatabaseWriterSettings *settings;
     SymSqlTransaction *sqlTransaction;
     SymBatch *batch;
     SymTable *sourceTable;
@@ -50,10 +53,11 @@ typedef struct SymDefaultDatabaseWriter {
     SymMap *targetTables;
     SymDmlStatement *dmlStatement;
     SymIncomingBatch *incomingBatch;
+    SymMap *missingTables;
     unsigned short isError;
 } SymDefaultDatabaseWriter;
 
 SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter *this, SymIncomingBatchService *incomingBatchService,
-        SymDatabasePlatform *platform, SymDialect *dialect);
+        SymDatabasePlatform *platform, SymDialect *dialect, SymDatabaseWriterSettings *settings);
 
 #endif

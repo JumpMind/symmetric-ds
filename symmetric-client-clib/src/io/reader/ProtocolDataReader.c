@@ -120,9 +120,6 @@ size_t SymProtocolDataReader_process(SymProtocolDataReader *this, char *data, si
     	SymLog_error("Error from CSV parser: %s", csv_strerror(csv_error(this->csvParser)));
         return 0;
     }
-    if (this->isError) {
-        return 0;
-    }
     return length;
 }
 

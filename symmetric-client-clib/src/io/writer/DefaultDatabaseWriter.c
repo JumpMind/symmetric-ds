@@ -49,7 +49,7 @@ static SymTable * SymDefaultDatabaseWriter_lookupTableAtTarget(SymDefaultDatabas
     if (table == NULL) {
         SymTable *targetTable = this->platform->getTableFromCache(this->platform, sourceTable->catalog, sourceTable->schema, sourceTable->name, 0);
         if (targetTable) {
-            table = targetTable->copyAndFilterColumns(targetTable, sourceTable->columns, 1);
+            table = targetTable->copyAndFilterColumns(targetTable, sourceTable->columns, this->settings->usePrimaryKeysFromSource);
             this->targetTables->put(this->targetTables, tableKey, targetTable);
         }
     }
@@ -85,7 +85,7 @@ void SymDefaultDatabaseWriter_buildTargetValues(SymDefaultDatabaseWriter *this, 
     iter->destroy(iter);
 }
 
-int SymDefaultDatabaseWriter_insert(SymDefaultDatabaseWriter *this, SymCsvData *data) {
+int SymDefaultDatabaseWriter_insert(SymDefaultDatabaseWriter *this, SymCsvData *data, int *error) {
     if (SymDefaultDatabaseWriter_requiresNewStatement(this, SYM_DML_TYPE_INSERT, data)) {
         if (this->dmlStatement) {
             this->sqlTransaction->close(this->sqlTransaction);
@@ -93,20 +93,26 @@ int SymDefaultDatabaseWriter_insert(SymDefaultDatabaseWriter *this, SymCsvData *
         }
         // TODO: pass nullKeyIndiciators
         this->dmlStatement = SymDmlStatement_new(NULL, SYM_DML_TYPE_INSERT, this->targetTable, NULL, &this->platform->databaseInfo);
-        this->sqlTransaction->prepare(this->sqlTransaction, this->dmlStatement->sql);
+        this->sqlTransaction->prepare(this->sqlTransaction, this->dmlStatement->sql, error);
+        this->isError = *error != 0;
     }
-    // TODO: need to know length of each rowData
-    SymStringArray *values = SymStringArray_new(NULL);
-    SymDefaultDatabaseWriter_buildTargetValues(this, data->rowData, values, 0);
-    int count = this->sqlTransaction->addRow(this->sqlTransaction, values, this->dmlStatement->sqlTypes);
-    values->destroy(values);
-    if (count > 0) {
-        this->incomingBatch->statementCount++;
+    int count = 0;
+    if (!this->isError) {
+        // TODO: need to know length of each rowData
+        SymStringArray *values = SymStringArray_new(NULL);
+        SymDefaultDatabaseWriter_buildTargetValues(this, data->rowData, values, 0);
+        count = this->sqlTransaction->addRow(this->sqlTransaction, values, this->dmlStatement->sqlTypes, error);
+        this->isError = *error != 0;
+        values->destroy(values);
+        if (count > 0) {
+            this->incomingBatch->statementCount++;
+        }
     }
     return count;
 }
 
 int SymDefaultDatabaseWriter_update(SymDefaultDatabaseWriter *this, SymCsvData *data) {
+    int error;
     if (SymDefaultDatabaseWriter_requiresNewStatement(this, SYM_DML_TYPE_UPDATE, data)) {
         if (this->dmlStatement) {
             this->sqlTransaction->close(this->sqlTransaction);
@@ -114,27 +120,32 @@ int SymDefaultDatabaseWriter_update(SymDefaultDatabaseWriter *this, SymCsvData *
         }
         // TODO: pass nullKeyIndiciators
         this->dmlStatement = SymDmlStatement_new(NULL, SYM_DML_TYPE_UPDATE, this->targetTable, NULL, &this->platform->databaseInfo);
-        this->sqlTransaction->prepare(this->sqlTransaction, this->dmlStatement->sql);
+        this->sqlTransaction->prepare(this->sqlTransaction, this->dmlStatement->sql, &error);
+        this->isError = error != 0;
     }
-    // TODO: need to know length of each rowData and pkData
-
-    SymStringArray *values = SymStringArray_new(NULL);
-    SymDefaultDatabaseWriter_buildTargetValues(this, data->rowData, values, 0);
-    if (data->oldData) {
-        SymDefaultDatabaseWriter_buildTargetValues(this, data->oldData, values, 1);
-    } else {
-        SymDefaultDatabaseWriter_buildTargetValues(this, data->rowData, values, 1);
-    }
-    int count = this->sqlTransaction->addRow(this->sqlTransaction, values, this->dmlStatement->sqlTypes);
-    values->destroy(values);
-    this->incomingBatch->statementCount++;
-    if (count > 0) {
+    int count = 0;
+    if (!this->isError) {
+        // TODO: need to know length of each rowData and pkData
+        SymStringArray *values = SymStringArray_new(NULL);
+        SymDefaultDatabaseWriter_buildTargetValues(this, data->rowData, values, 0);
+        if (data->oldData) {
+            SymDefaultDatabaseWriter_buildTargetValues(this, data->oldData, values, 1);
+        } else {
+            SymDefaultDatabaseWriter_buildTargetValues(this, data->rowData, values, 1);
+        }
+        count = this->sqlTransaction->addRow(this->sqlTransaction, values, this->dmlStatement->sqlTypes, &error);
+        this->isError = error != 0;
+        values->destroy(values);
         this->incomingBatch->statementCount++;
+        if (count > 0) {
+            this->incomingBatch->statementCount++;
+        }
     }
     return count;
 }
 
 int SymDefaultDatabaseWriter_delete(SymDefaultDatabaseWriter *this, SymCsvData *data) {
+    int error;
     if (SymDefaultDatabaseWriter_requiresNewStatement(this, SYM_DML_TYPE_DELETE, data)) {
         if (this->dmlStatement) {
             this->sqlTransaction->close(this->sqlTransaction);
@@ -142,17 +153,22 @@ int SymDefaultDatabaseWriter_delete(SymDefaultDatabaseWriter *this, SymCsvData *
         }
         // TODO: pass nullKeyIndiciators
         this->dmlStatement = SymDmlStatement_new(NULL, SYM_DML_TYPE_UPDATE, this->targetTable, NULL, &this->platform->databaseInfo);
-        this->sqlTransaction->prepare(this->sqlTransaction, this->dmlStatement->sql);
+        this->sqlTransaction->prepare(this->sqlTransaction, this->dmlStatement->sql, &error);
+        this->isError = error != 0;
     }
-    // TODO: need to know length of each pkData
-    SymStringArray *values = SymStringArray_new(NULL);
-    SymDefaultDatabaseWriter_buildTargetValues(this, data->pkData, values, 1);
-    int count = this->sqlTransaction->addRow(this->sqlTransaction, data->pkData, this->dmlStatement->sqlTypes);
-    values->destroy(values);
-    if (count > 0) {
-        this->incomingBatch->statementCount++;
-    } else {
-        this->incomingBatch->missingDeleteCount++;
+    int count = 0;
+    if (!this->isError) {
+        // TODO: need to know length of each pkData
+        SymStringArray *values = SymStringArray_new(NULL);
+        SymDefaultDatabaseWriter_buildTargetValues(this, data->pkData, values, 1);
+        count = this->sqlTransaction->addRow(this->sqlTransaction, data->pkData, this->dmlStatement->sqlTypes, &error);
+        this->isError = error != 0;
+        values->destroy(values);
+        if (count > 0) {
+            this->incomingBatch->statementCount++;
+        } else {
+            this->incomingBatch->missingDeleteCount++;
+        }
     }
     return count;
 }
@@ -167,13 +183,27 @@ void SymDefaultDatabaseWriter_sql(SymDefaultDatabaseWriter *this, SymCsvData *da
 }
 
 unsigned short SymDefaultDatabaseWriter_write(SymDefaultDatabaseWriter *this, SymCsvData *data) {
-    // TODO: check if this->targetTable and if ignore missing tables is on
     if (!this->incomingBatch) {
         return 1;
     }
+    if (!this->targetTable) {
+        if (this->settings->ignoreMissingTables) {
+            char *qualifiedName = this->sourceTable->getFullyQualifiedTableName(this->sourceTable);
+            if (!this->missingTables->get(this->missingTables, qualifiedName)) {
+                SymLog_warn("Did not find the '%s' table in the target database", this->sourceTable->name);
+                this->missingTables->put(this->missingTables, qualifiedName, qualifiedName);
+            } else {
+                free(qualifiedName);
+            }
+            return 1;
+        } else {
+            this->targetTable = this->sourceTable;
+        }
+    }
+    int error = 0;
     switch (data->dataEventType) {
     case SYM_DATA_EVENT_INSERT:
-        if (SymDefaultDatabaseWriter_insert(this, data) == 0) {
+        if (SymDefaultDatabaseWriter_insert(this, data, &error) == 0 && error == 19) {
            this->incomingBatch->fallbackUpdateCount++;
            SymDefaultDatabaseWriter_update(this, data);
         }
@@ -181,7 +211,7 @@ unsigned short SymDefaultDatabaseWriter_write(SymDefaultDatabaseWriter *this, Sy
     case SYM_DATA_EVENT_UPDATE:
         if (SymDefaultDatabaseWriter_update(this, data) == 0) {
            this->incomingBatch->fallbackInsertCount++;
-           SymDefaultDatabaseWriter_insert(this, data);
+           SymDefaultDatabaseWriter_insert(this, data, &error);
         }
         break;
     case SYM_DATA_EVENT_DELETE:
@@ -193,7 +223,7 @@ unsigned short SymDefaultDatabaseWriter_write(SymDefaultDatabaseWriter *this, Sy
     default:
         break;
     }
-    return 1;
+    return !this->isError;
 }
 
 void SymDefaultDatabaseWriter_endTable(SymDefaultDatabaseWriter *this, SymTable *table) {
@@ -241,17 +271,18 @@ void SymDefaultDatabaseWriter_endBatch(SymDefaultDatabaseWriter *this, SymBatch 
 }
 
 void SymDefaultDatabaseWriter_close(SymDefaultDatabaseWriter *this) {
-	SymLog_debug("close");
     this->sqlTransaction->close(this->sqlTransaction);
 }
 
 void SymDefaultDatabaseWriter_destroy(SymDefaultDatabaseWriter *this) {
     this->targetTables->destroy(this->targetTables);
+    this->missingTables->destroyAll(this->missingTables, NULL, 1);
+    this->settings->destroy(this->settings);
     free(this);
 }
 
 SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter *this, SymIncomingBatchService *incomingBatchService,
-        SymDatabasePlatform *platform, SymDialect *dialect) {
+        SymDatabasePlatform *platform, SymDialect *dialect, SymDatabaseWriterSettings *settings) {
     if (this == NULL) {
         this = (SymDefaultDatabaseWriter *) calloc(1, sizeof(SymDefaultDatabaseWriter));
     }
@@ -259,7 +290,9 @@ SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter
     this->incomingBatchService = incomingBatchService;
     this->platform = platform;
     this->dialect = dialect;
+    this->settings = settings;
     this->targetTables = SymMap_new(NULL, 50);
+    this->missingTables = SymMap_new(NULL, 50);
     super->batchesProcessed = SymList_new(NULL);
     super->open = (void *) &SymDefaultDatabaseWriter_open;
     super->startBatch = (void *) &SymDefaultDatabaseWriter_startBatch;
