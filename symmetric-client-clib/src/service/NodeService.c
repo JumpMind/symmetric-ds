@@ -86,6 +86,7 @@ SymNode * SymNodeService_findIdentityWithCache(SymNodeService *this, unsigned sh
 
         SymList *nodes = sqlTemplate->query(sqlTemplate, sb->str, NULL, NULL, &error, (void *) SymNodeService_nodeMapper);
         this->cachedNodeIdentity = nodes->get(nodes, 0);
+        nodes->destroy(nodes);
         sb->destroy(sb);
     }
     return this->cachedNodeIdentity;

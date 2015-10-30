@@ -27,6 +27,7 @@ char * SymTable_getFullyQualifiedTableName(char *catalogName, char *schemaName,
     }
     char *prefix = SymTable_getFullyQualifiedTablePrefix(catalogName, schemaName, quoteString, catalogSeparator, schemaSeparator);
     SymStringBuilder *sb = SymStringBuilder_newWithString(prefix);
+    free(prefix);
     sb->append(sb, quoteString)->append(sb, tableName)->append(sb, quoteString);
     return sb->destroyAndReturn(sb);
 }
@@ -72,7 +73,7 @@ char * SymTable_getCommaDeliminatedColumns(SymList *cols) {
         return columns->destroyAndReturn(columns);
     }
     else {
-        return " ";
+        return SymStringUtils_format("%s", " ");
     }
 }
 

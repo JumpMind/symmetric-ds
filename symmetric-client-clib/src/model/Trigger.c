@@ -46,6 +46,8 @@ SymList * SymTrigger_orderColumnsForTable(SymTrigger *this, SymTable *table) {
                 orderedColumns->add(orderedColumns, cols->get(cols, i));
             }
         }
+
+        pks->destroy(pks);
         // TODO filterExcludedColumns
     }
     return orderedColumns;

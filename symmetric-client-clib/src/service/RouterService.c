@@ -247,8 +247,7 @@ long SymRouterService_routeData(SymRouterService *this) {
 }
 
 void SymRouterService_destroy(SymRouterService *this) {
-    // TODO: clean up memory
-    // SymMap_destroyAll(this->routers, SymDataRouter_destroy);
+    SymMap_destroy(this->routers);
     free(this);
 }
 
