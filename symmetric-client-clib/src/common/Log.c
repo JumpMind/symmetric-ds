@@ -21,7 +21,7 @@
 #include "common/Log.h"
 
 static int SymLog_logLevel = SYM_LOG_LEVEL_DEBUG;
-static unsigned short SymLog_showSourceFile = 1;
+static unsigned short SymLog_showSourceFile = 0;
 static char* SymLog_destination = "console";
 
 static char* SymLog_getlogLevelDescription(SymLogLevel logLevel) {
@@ -63,7 +63,7 @@ void SymLog_configure(SymProperties *settings) {
         SymLog_destination = logDestination;
     }
 
-    char *showSourceFile = settings->get(settings, SYM_LOG_SETTINGS_LOG_SHOW_SOURCE_FILE, "1");
+    char *showSourceFile = settings->get(settings, SYM_LOG_SETTINGS_LOG_SHOW_SOURCE_FILE, "0");
     if (! SymStringUtils_isBlank(showSourceFile)) {
         SymLog_showSourceFile = SymStringUtils_equals(showSourceFile, "1")
                 || SymStringUtils_equalsIgnoreCase(showSourceFile, "true");

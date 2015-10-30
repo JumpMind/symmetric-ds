@@ -44,7 +44,7 @@ static void SymSqliteSqlTransaction_requireTransaction(SymSqliteSqlTransaction *
     }
 }
 
-void SymSqliteSqlTransaction_prepare(SymSqliteSqlTransaction *this, char *sql) {
+void SymSqliteSqlTransaction_prepare(SymSqliteSqlTransaction *this, char *sql, int *error) {
     this->sql = sql;
     SymSqliteSqlTransaction_requireTransaction(this);
     SymLog_debug("Preparing %s", sql);
@@ -52,11 +52,14 @@ void SymSqliteSqlTransaction_prepare(SymSqliteSqlTransaction *this, char *sql) {
 
     if (rc != SQLITE_OK) {
     	SymLog_error("Failed to prepare statement: %s", sql);
-    	SymLog_error("SQL Exception: %s", sqlite3_errmsg(this->db));
+    	SymLog_error("SQL Exception (rc=%d): %s", rc, sqlite3_errmsg(this->db));
+    	*error = rc;
+    } else {
+        *error = 0;
     }
 }
 
-int SymSqliteSqlTransaction_addRow(SymSqliteSqlTransaction *this, SymStringArray *args, SymList *sqlTypes) {
+int SymSqliteSqlTransaction_addRow(SymSqliteSqlTransaction *this, SymStringArray *args, SymList *sqlTypes, int *error) {
     // TODO: do we need to convert to sqlType and bind correctly?
 
     sqlite3_reset(this->stmt);
@@ -86,7 +89,10 @@ int SymSqliteSqlTransaction_addRow(SymSqliteSqlTransaction *this, SymStringArray
     int rc = sqlite3_step(this->stmt);
     if (rc != SQLITE_DONE) {
     	SymLog_error("Failed to execute statement: %s", this->sql);
-    	SymLog_error("SQL Exception: %s", sqlite3_errmsg(this->db));
+    	SymLog_error("SQL Exception (rc=%d): %s", rc, sqlite3_errmsg(this->db));
+    	*error = rc;
+    } else {
+        *error = 0;
     }
     return sqlite3_changes(this->db);
 }
@@ -107,6 +113,9 @@ void SymSqliteSqlTransaction_rollback(SymSqliteSqlTransaction *this) {
 }
 
 void SymSqliteSqlTransaction_close(SymSqliteSqlTransaction *this) {
+    if (this->inTransaction) {
+        SymSqliteSqlTransaction_commit(this);
+    }
     if (this->stmt != NULL) {
         sqlite3_finalize(this->stmt);
     }

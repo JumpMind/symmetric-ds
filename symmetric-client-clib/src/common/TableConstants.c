@@ -29,23 +29,10 @@ SymList * SymTableConstants_getConfigTables() {
     list->add(list, SYM_NODE_SECURITY);
     list->add(list, SYM_PARAMETER);
     list->add(list, SYM_CHANNEL);
-    list->add(list, SYM_NODE_GROUP_CHANNEL_WND);
     list->add(list, SYM_TRIGGER);
     list->add(list, SYM_ROUTER);
     list->add(list, SYM_TRIGGER_ROUTER);
-    list->add(list, SYM_TRANSFORM_TABLE);
-    list->add(list, SYM_LOAD_FILTER);
-    list->add(list, SYM_TRANSFORM_COLUMN);
-    list->add(list, SYM_CONFLICT);
-    list->add(list, SYM_TABLE_RELOAD_REQUEST);
-    list->add(list, SYM_GROUPLET);
-    list->add(list, SYM_GROUPLET_LINK);
-    list->add(list, SYM_TRIGGER_ROUTER_GROUPLET);
-    list->add(list, SYM_FILE_TRIGGER);
-    list->add(list, SYM_FILE_TRIGGER_ROUTER);
-    list->add(list, SYM_FILE_SNAPSHOT);
     list->add(list, SYM_NODE_IDENTITY);
-    list->add(list, SYM_EXTENSION);
     return list;
 }
 

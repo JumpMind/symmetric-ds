@@ -127,22 +127,25 @@ void SymDataService_heartbeat(SymDataService *this, unsigned short force) {
 
 void SymDataService_insertDataEvents(SymDataService *this, SymSqlTransaction *transaction, SymList *events) {
     if (events->size > 0) {
-        transaction->prepare(transaction, SYM_SQL_INSERT_INTO_DATA_EVENT);
-
-        SymIterator *iter = events->iterator(events);
-        while (iter->hasNext(iter)) {
-            SymDataEvent *dataEvent = (SymDataEvent *) iter->next(iter);
-            char *routerId = dataEvent->routerId;
-            if (SymStringUtils_isBlank(routerId)) {
-                routerId = SYM_UNKNOWN_ROUTER_ID;
+        int error = 0;
+        transaction->prepare(transaction, SYM_SQL_INSERT_INTO_DATA_EVENT, &error);
+        if (!error) {
+            SymIterator *iter = events->iterator(events);
+            while (iter->hasNext(iter)) {
+                SymDataEvent *dataEvent = (SymDataEvent *) iter->next(iter);
+                char *routerId = dataEvent->routerId;
+                if (SymStringUtils_isBlank(routerId)) {
+                    routerId = SYM_UNKNOWN_ROUTER_ID;
+                }
+                SymStringArray *args = SymStringArray_new(NULL);
+                args->addLong(args, dataEvent->dataId);
+                args->addLong(args, dataEvent->batchId);
+                args->add(args, dataEvent->routerId);
+                int error;
+                transaction->addRow(transaction, args, NULL, &error);
             }
-            SymStringArray *args = SymStringArray_new(NULL);
-            args->addLong(args, dataEvent->dataId);
-            args->addLong(args, dataEvent->batchId);
-            args->add(args, dataEvent->routerId);
-            transaction->addRow(transaction, args, NULL);
+            iter->destroy(iter);
         }
-        iter->destroy(iter);
     }
 }
 

@@ -274,3 +274,97 @@ the Emulator's API, the better.
 
 Run your NotePad project by pressing Run on NotePadProvider.java in Eclipse. When prompted, select the emulator you just created. Monitor the 
 Console in Eclipse. Let the NotePad.apk install on the emulator. Now watch the LogCat and wait as it attempts to register with your SymmetricDS Master Node.
+
+=== Embedding in C/C++
+A minimal implementation of the SymmetricDS client is written in C, which includes a shared library named "libsymclient" and a command line executable
+named "sym" for synchronizing a database.  It currently only supports the SQLite database.  The SymmetricDS C library and client are built
+from the following projects:
+
+symmetric-client-clib:: This project contains most of the code and builds the libsymclient C library.  It depends on libcurl, libsqlite3, and libcsv.
+symmetric-client-clib-test::  This project links against the C library to runs unit tests.  It also depends on the CUnit library.
+symmetric-client-native:: This project links against the C library to build the sym executable.
+
+The binaries are built using Eclipse CDT (C/C++ Development Tooling), which is an Integrated Developer Environment based on the Eclipse
+platform.  A distribution of Eclipse CDT can be downloaded or an existing Eclipse installation can be updated to include the CDT.
+(See https://eclipse.org/cdt/ for information and downloads.)  In the future, the projects above will switch to a general build system
+like Autotools for automating builds, but for now Eclipse is required. 
+
+The "sym" executable can be run from the command line and expects the "libsymclient.so" library to be installed on the system.
+If running from the project directories during development, the path to the library can be specified with the LD_LIBRARY_PATH environment
+variable on Linux, the DYLD_LIBRARY_PATH on Mac OS X, or PATH on Windows.  The executable will look for a "symmetric.properties" file
+containing startup parameters in the user's home directory or in the current directory:
+
+[source, cli]
+----
+LD_LIBRARY_PATH=../../symmetric-client-clib/Debug ./sym
+----
+
+It will also accept an argument of the path and filename of the properties file to use:
+
+[source, cli]
+----
+LD_LIBRARY_PATH=../../symmetric-client-clib/Debug ./sym /path/to/client.properties
+----
+
+The client uses <<Startup Parameters>> to connect to a database, identify itself, and register with a server to request synchronization.
+Here is an example client.properties file:
+
+[source, text]
+----
+db.url=sqlite:file:test.db
+group.id=store
+external.id=003
+registration.url=http://localhost:31415/sync/corp-000
+----
+
+The symmetric-client-native project is an example of how to use the SymEngine API provided by the C library.  The C library
+uses an object-oriented pattern and follows the same naming conventions as the Java project.
+All symbol names in the C library are prefixed with "Sym".  Each Java class is represented in C with a struct that contains member data
+and pointers to member functions.  Here is an example C program that runs the SymmetricDS engine:
+
+[source, c]
+----
+#include "libsymclient.h"
+
+int main(int argCount, char **argValues) {	
+
+    // Startup and runtime parameters
+    SymProperties *prop = SymProperties_new(NULL);
+    prop->put(prop, SYM_PARAMETER_DB_URL, "sqlite:file:data.db");
+    prop->put(prop, SYM_PARAMETER_GROUP_ID, "store");
+    prop->put(prop, SYM_PARAMETER_EXTERNAL_ID, "003");
+    prop->put(prop, SYM_PARAMETER_REGISTRATION_URL, "http://localhost:31415/sync/corp-000");
+    
+    // Uncomment to read parameters from a file instead
+    //SymProperties *prop = SymProperties_newWithFile(NULL, fileName);
+
+    SymEngine *engine = SymEngine_new(NULL, prop);
+    // Connects to database, creates config/runtime tables and triggers
+    engine->start(engine);
+
+    // Pull changes from remote nodes
+    engine->pull(engine);
+    
+    // Create batches of captured changes
+    engine->route(engine);
+    
+    // Push changes to remote nodes
+    engine->push(engine);
+
+    // Create a heartbeat batch with current host information
+    engine->heartbeat(engine, 0);
+    
+    // Purge old batch data that has successfully synced
+    engine->purge(engine);
+
+    // Clean up
+    engine->stop(engine);
+    engine->destroy(engine);
+    prop->destroy(prop);
+    
+    return 0;
+}
+----    
+
+
+

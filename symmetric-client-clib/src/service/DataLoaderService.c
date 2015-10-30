@@ -43,7 +43,7 @@ static void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *re
 }
 
 static SymList * SymDataLoaderService_loadDataFromTransport(SymDataLoaderService *this, SymNode *remote, SymIncomingTransport *transport, int *error) {
-    SymDataWriter *writer = (SymDataWriter *) SymDefaultDatabaseWriter_new(NULL, this->incomingBatchService, this->platform, this->dialect);
+    SymDataWriter *writer = this->dataLoaderFactory->getDataWriter(this->dataLoaderFactory);
     SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataReader_new(NULL, remote->nodeId, writer);
 
     long rc = transport->process(transport, processor);
@@ -146,6 +146,7 @@ void SymDataLoaderService_loadDataFromOfflineTransport(SymDataLoaderService *thi
 }
 
 void SymDataLoaderService_destroy(SymDataLoaderService *this) {
+    this->dataLoaderFactory->destroy(this->dataLoaderFactory);
     free(this);
 }
 
@@ -161,6 +162,7 @@ SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymP
     this->platform = platform;
     this->dialect = dialect;
     this->incomingBatchService = incomingBatchService;
+    this->dataLoaderFactory = SymDefaultDataLoaderFactory_new(NULL, parameterService, incomingBatchService, platform, dialect);
 
     this->loadDataFromPull = (void *) &SymDataLoaderService_loadDataFromPull;
     this->loadDataFromRegistration = (void *) &SymDataLoaderService_loadDataFromRegistration;

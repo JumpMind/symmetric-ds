@@ -32,8 +32,8 @@ typedef struct SymSqlTransaction {
     char * (*queryForString)(struct SymSqlTransaction *this, char *sql, SymStringArray *argss, SymList *sqlTypes, int *error);
     SymList * (*query)(struct SymSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, void *callback);
     int (*update)(struct SymSqlTransaction *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error);
-    void (*prepare)(struct SymSqlTransaction *this, char *sql);
-    int (*addRow)(struct SymSqlTransaction *this, SymStringArray *args, SymList *sqlTypes);
+    void (*prepare)(struct SymSqlTransaction *this, char *sql, int *error);
+    int (*addRow)(struct SymSqlTransaction *this, SymStringArray *args, SymList *sqlTypes, int *error);
     void (*commit)(struct SymSqlTransaction *this);
     void (*rollback)(struct SymSqlTransaction *this);
     void (*close)(struct SymSqlTransaction *this);

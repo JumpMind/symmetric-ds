@@ -18,27 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_BATCH_H
-#define SYM_BATCH_H
+#ifndef SYM_DATABASE_WRITER_SETTINGS_H
+#define SYM_DATABASE_WRITER_SETTINGS_H
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "util/StringBuilder.h"
-#include "util/BinaryEncoding.h"
 
-typedef struct SymBatch {
-    long batchId;
-    char *sourceNodeId;
-    char *targetNodeId;
-    int initialLoad;
-    char *channelId;
-    unsigned short isIgnore;
-    SymBinaryEncoding binaryEncoding;
-    void (*destroy)(struct SymBatch *this);
-} SymBatch;
+typedef struct SymDatabaseWriterSettings {
+    long maxRowsBeforeCommit;
+    long commitSleepInterval;
+    unsigned short usePrimaryKeysFromSource;
+    unsigned short applyChangesOnly;
+    unsigned short ignoreMissingTables;
+    void (*destroy)(struct SymDatabaseWriterSettings *this);
+} SymDatabaseWriterSettings;
 
-SymBatch * SymBatch_new(SymBatch *this);
-
-SymBatch * SymBatch_newWithSettings(SymBatch *this, long batchId, char *channelId, char *sourceNodeId, char *targetNodeId);
+SymDatabaseWriterSettings * SymDatabaseWriterSettings_new(SymDatabaseWriterSettings *this);
 
 #endif

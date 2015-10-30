@@ -21,7 +21,9 @@
 #include "util/Hex.h"
 
 char * SymHex_encode(const unsigned char *data, int inSize) {
-    char *result = (char *) malloc(inSize * 2);
+    int outSize = inSize * 2;
+    char *result = (char *) malloc(outSize + 1);
+    result[outSize] = '\0';
     int i;
     for(i = 0; i < inSize; i++) {
         sprintf(result + (i * 2), "%02x", data[i]);
@@ -31,7 +33,8 @@ char * SymHex_encode(const unsigned char *data, int inSize) {
 
 unsigned char * SymHex_decode(const char *data, int *outSize) {
     *outSize = strlen(data) / 2;
-    unsigned char *result = malloc(*outSize);
+    unsigned char *result = malloc(*outSize + 1);
+    result[*outSize] = '\0';
     char *pos = (char *) data;
     int i;
     for(i = 0; i < *outSize; i++, pos += 2) {

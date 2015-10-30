@@ -26,7 +26,7 @@ static void SymSqliteSqlTemplate_prepare(SymSqliteSqlTemplate *this, char *sql, 
     int rc = sqlite3_prepare_v2(this->db, sql, -1, stmt, NULL);
     if (rc != SQLITE_OK) {
     	SymLog_error("Failed to prepare query: %s", sql);
-    	SymLog_error("SQL Exception: %s", sqlite3_errmsg(this->db));
+    	SymLog_error("SQL Exception (rc=%d): %s", rc, sqlite3_errmsg(this->db));
         *error = rc;
     } else {
         // TODO: do we need to convert to sqlType and bind correctly?
@@ -43,10 +43,9 @@ static void SymSqliteSqlTemplate_prepare(SymSqliteSqlTemplate *this, char *sql, 
             buff->appendf(buff, "%s", args->get(args, i));
         }
         buff->append(buff, "]");
-
         SymLog_debug(buff->toString(buff));
-
         buff->destroy(buff);
+        *error = 0;
     }
 }
 
@@ -78,10 +77,12 @@ SymList * SymSqliteSqlTemplate_query(SymSqliteSqlTemplate *this, char *sql, SymS
 
     if (rc != SQLITE_DONE) {
         SymLog_error("Failed to execute query: %s", sql);
-        SymLog_error("SQL Exception: %s", sqlite3_errmsg(this->db));
+        SymLog_error("SQL Exception (rc=%d): %s", rc, sqlite3_errmsg(this->db));
+        *error = rc;
+    } else {
+        *error = 0;
     }
     sqlite3_finalize(stmt);
-    *error = 0;
     return list;
 }
 
@@ -100,10 +101,12 @@ SymList * SymSqliteSqlTemplate_queryWithUserData(SymSqliteSqlTemplate *this, cha
 
     if (rc != SQLITE_DONE) {
         SymLog_error("Failed to execute query: %s", sql);
-        SymLog_error("SQL Exception: %s", sqlite3_errmsg(this->db));
+        SymLog_error("SQL Exception (rc=%d): %s", rc, sqlite3_errmsg(this->db));
+        *error = rc;
+    } else {
+        *error = 0;
     }
     sqlite3_finalize(stmt);
-    *error = 0;
     return list;
 }
 
@@ -126,12 +129,13 @@ int SymSqliteSqlTemplate_queryForInt(SymSqliteSqlTemplate *this, char *sql, SymS
     int value = 0;
     if ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
         value = sqlite3_column_int(stmt, 0);
+        *error = 0;
     } else {
     	SymLog_error("Failed to execute query: %s", sql);
-    	SymLog_error("SQL Exception: %s", sqlite3_errmsg(this->db));
+    	SymLog_error("SQL Exception (rc=%d): %s", rc, sqlite3_errmsg(this->db));
+    	*error = rc;
     }
     sqlite3_finalize(stmt);
-    *error = 0;
     return value;
 }
 
@@ -143,12 +147,13 @@ char * SymSqliteSqlTemplate_queryForString(SymSqliteSqlTemplate *this, char *sql
     char *value = NULL;
     if ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
         value = SymStringBuilder_copy((char *) sqlite3_column_text(stmt, 0));
+        *error = 0;
     } else {
     	SymLog_error("Failed to execute query: %s", sql);
-    	SymLog_error("SQL Exception: %s", sqlite3_errmsg(this->db));
+    	SymLog_error("SQL Exception (rc=%d): %s", rc, sqlite3_errmsg(this->db));
+    	*error = rc;
     }
     sqlite3_finalize(stmt);
-    *error = 0;
     return value;
 }
 
@@ -170,10 +175,12 @@ int SymSqliteSqlTemplate_update(SymSqliteSqlTemplate *this, char *sql, SymString
     rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
     	SymLog_error("Failed to execute statement: %s", sql);
-    	SymLog_error("SQL Exception: %s", sqlite3_errmsg(this->db));
+    	SymLog_error("SQL Exception (rc=%d): %s", rc, sqlite3_errmsg(this->db));
+    	*error = rc;
+    } else {
+        *error = 0;
     }
     sqlite3_finalize(stmt);
-    *error = 0;
     return sqlite3_changes(this->db);
 }
 
