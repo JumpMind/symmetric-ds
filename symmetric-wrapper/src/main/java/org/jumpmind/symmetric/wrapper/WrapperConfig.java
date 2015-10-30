@@ -44,7 +44,6 @@ public class WrapperConfig {
         prop = getProperties(configFile);
         this.configFile = new File(configFile).getAbsolutePath();
         this.jarFile = new File(jarFile).getAbsolutePath();
-        System.out.println("jarfile==>" + this.jarFile);
         workingDirectory = new File(applHomeDir);
     }   
 
