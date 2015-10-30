@@ -115,7 +115,7 @@ char * SymSqliteTriggerTemplate_replaceTemplateVariables(SymSqliteTriggerTemplat
     char *oldKeys = SymSqliteTriggerTemplate_buildColumnsString(this, SYM_ORIG_TABLE_ALIAS,
             "old", "", primaryKeyColumns, dml, 1, channel, trigger);
     char *oldColumns = trigger->useCaptureOldData ? SymSqliteTriggerTemplate_buildColumnsString(this, SYM_ORIG_TABLE_ALIAS,
-            "old", "old", table->columns, dml, 1, channel, trigger) : "null";
+            "old", "old", table->columns, dml, 1, channel, trigger) : SymStringUtils_format("%s", "null");
     char *columns = SymSqliteTriggerTemplate_buildColumnsString(this, SYM_ORIG_TABLE_ALIAS,
             "new", "", table->columns, dml, 0, channel, trigger);
     char *channelExpression = SymStringUtils_format("'%s'", trigger->channelId); // TODO

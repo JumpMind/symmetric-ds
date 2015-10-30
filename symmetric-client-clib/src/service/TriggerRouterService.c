@@ -822,6 +822,9 @@ void SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this, unsigne
     if (autoSyncTriggers) {
         SymLog_info("Synchronizing triggers");
         SymList *triggers = SymTriggerRouterService_getTriggersToSync(this);
+        SymList *symmetricTableTriggers = buildTriggersForSymmetricTables(this, NULL);
+        triggers->addAll(triggers, symmetricTableTriggers);
+
         SymList *activeTriggerHistories = SymTriggerRouterService_getActiveTriggerHistories(this);
         SymTriggerRouterService_inactivateTriggers(this, triggers, activeTriggerHistories);
         int i;
