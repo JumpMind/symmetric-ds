@@ -91,6 +91,8 @@ static void SymProtocolDataReader_parseLine(int eol, void *userData) {
         } else if (strcmp(token, SYM_CSV_BATCH) == 0) {
             batch->batchId = atol(fields->get(fields, 1));
             this->writer->startBatch(this->writer, batch);
+        } else if (strcmp(token, SYM_CSV_BINARY) == 0) {
+            this->batch->binaryEncoding = SymBinaryEncoding_valueOf(fields->get(fields, 1));
         } else if (strcmp(token, SYM_CSV_COMMIT) == 0) {
             this->writer->endBatch(this->writer, batch);
         } else if (strcmp(token, SYM_CSV_IGNORE) == 0) {

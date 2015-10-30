@@ -79,7 +79,16 @@ void SymDefaultDatabaseWriter_buildTargetValues(SymDefaultDatabaseWriter *this, 
         SymColumn *column = (SymColumn *) iter->next(iter);
         SymColumn *targetColumn = this->targetTable->findColumn(this->targetTable, column->name, 0);
         if (targetColumn && (!onlyPrimaryKeys || targetColumn->isPrimaryKey)) {
-            targetValues->add(targetValues, sourceValues->array[iter->index]);
+            // TODO: call platform.getObjectValues() instead
+            if (targetColumn->sqlType == SYM_SQL_TYPE_BLOB && this->batch->binaryEncoding == SymBinaryEncoding_BASE64) {
+                int outSize;
+                targetValues->add(targetValues, (char *) SymBase64_decode(sourceValues->array[iter->index], &outSize));
+            } else if (targetColumn->sqlType == SYM_SQL_TYPE_BLOB && this->batch->binaryEncoding == SymBinaryEncoding_HEX) {
+                int outSize;
+                targetValues->add(targetValues, (char *) SymHex_decode(sourceValues->array[iter->index], &outSize));
+            } else {
+                targetValues->add(targetValues, sourceValues->array[iter->index]);
+            }
         }
     }
     iter->destroy(iter);

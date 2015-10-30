@@ -33,6 +33,7 @@
 #include "util/Map.h"
 #include "util/List.h"
 #include "util/Base64.h"
+#include "util/Hex.h"
 #include "db/sql/DmlStatement.h"
 #include "db/sql/SqlTemplate.h"
 #include "db/sql/SqlTransaction.h"

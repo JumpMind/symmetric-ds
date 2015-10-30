@@ -18,27 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_BATCH_H
-#define SYM_BATCH_H
+#ifndef SYM_BINARY_ENCODING_H
+#define SYM_BINARY_ENCODING_H
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "util/StringBuilder.h"
-#include "util/BinaryEncoding.h"
+#include "util/StringUtils.h"
 
-typedef struct SymBatch {
-    long batchId;
-    char *sourceNodeId;
-    char *targetNodeId;
-    int initialLoad;
-    char *channelId;
-    unsigned short isIgnore;
-    SymBinaryEncoding binaryEncoding;
-    void (*destroy)(struct SymBatch *this);
-} SymBatch;
+#define SYM_BINARY_ENCODING_NONE "none"
+#define SYM_BINARY_ENCODING_BASE64 "base64"
+#define SYM_BINARY_ENCODING_HEX "hex"
 
-SymBatch * SymBatch_new(SymBatch *this);
+typedef enum SymBinaryEncoding {
+    SymBinaryEncoding_NONE, SymBinaryEncoding_BASE64, SymBinaryEncoding_HEX
+} SymBinaryEncoding;
 
-SymBatch * SymBatch_newWithSettings(SymBatch *this, long batchId, char *channelId, char *sourceNodeId, char *targetNodeId);
+SymBinaryEncoding SymBinaryEncoding_valueOf(char *str);
 
 #endif
