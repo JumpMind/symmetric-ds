@@ -64,7 +64,7 @@ public class UnixService extends WrapperService {
             FileWriter writer = new FileWriter(runFile);
             System.out.println("name looking for ==>" + config.getName());
             BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(
-                "/" + config.getName() + ".initd")));
+                "/" + config.getName().toLowerCase() + ".initd")));
             String line = null;
             while ((line = reader.readLine()) != null) {
                 line = line.replaceAll("\\$\\{wrapper.name}", config.getName());
