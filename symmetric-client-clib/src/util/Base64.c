@@ -40,10 +40,11 @@ char * SymBase64_encode(const unsigned char *data, int inSize) {
 
     int outSize = 4 * ((inSize + 2) / 3);
 
-    char *encodedData = malloc(outSize);
+    char *encodedData = malloc(outSize + 1);
     if (encodedData == NULL) {
         return NULL;
     }
+    encodedData[outSize] = '\0';
 
     int i, j;
     for (i = 0, j = 0; i < inSize;) {
@@ -80,10 +81,11 @@ unsigned char * SymBase64_decode(const char *data, int *outSize) {
     if (data[inSize - 1] == '=') (*outSize)--;
     if (data[inSize - 2] == '=') (*outSize)--;
 
-    unsigned char *decodedData = malloc(*outSize);
+    unsigned char *decodedData = malloc(*outSize + 1);
     if (decodedData == NULL) {
         return NULL;
     }
+    decodedData[*outSize] = '\0';
 
     int i, j;
     for (i = 0, j = 0; i < inSize;) {
