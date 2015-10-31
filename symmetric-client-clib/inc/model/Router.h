@@ -47,5 +47,6 @@ typedef struct SymRouter {
 } SymRouter;
 
 SymRouter * SymRouter_new(SymRouter *this);
+void SymRouter_destroy(SymRouter *this);
 
 #endif

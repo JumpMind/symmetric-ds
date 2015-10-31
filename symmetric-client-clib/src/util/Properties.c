@@ -92,6 +92,7 @@ SymProperties * SymProperties_newWithString(SymProperties *this, char *propertie
 
         char *trimmed = SymStringUtils_ltrim(propertyLine);
         if (trimmed[0] == '#' || trimmed[0] == '!' ) {
+            free(trimmed);
             continue;
         }
 
@@ -122,10 +123,6 @@ SymProperties * SymProperties_newWithString(SymProperties *this, char *propertie
 }
 
 SymProperties * SymProperties_newWithFile(SymProperties *this, char *argPath) {
-    if (this == NULL) {
-        this = SymProperties_new(this);
-    }
-
     FILE *file;
     int BUFFER_SIZE = 1024;
     char inputBuffer[BUFFER_SIZE];
@@ -135,16 +132,15 @@ SymProperties * SymProperties_newWithFile(SymProperties *this, char *argPath) {
         return NULL;
     }
 
-    SymStringBuilder *buff = SymStringBuilder_new(NULL);
+    SymStringBuilder *buff = SymStringBuilder_newWithSize(4096);
 
     while (fgets(inputBuffer, BUFFER_SIZE, file) != NULL) {
         buff->append(buff, inputBuffer);
     }
 
-    this = SymProperties_newWithString(this, buff->destroyAndReturn(buff));
+    this = SymProperties_newWithString(NULL, buff->destroyAndReturn(buff));
 
     fclose(file);
-
 
     return this;
 }

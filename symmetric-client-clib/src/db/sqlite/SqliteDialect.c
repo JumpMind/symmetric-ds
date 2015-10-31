@@ -115,6 +115,7 @@ int SymSqliteDialect_getInitialLoadSql(SymSqliteDialect *this) {
 
 void SymSqliteDialect_destroy(SymDialect *super) {
     SymSqliteDialect *this = (SymSqliteDialect *) super;
+    free(super->triggerTemplate);
     free(this);
 }
 

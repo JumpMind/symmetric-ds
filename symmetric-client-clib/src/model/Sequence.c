@@ -21,6 +21,19 @@
 #include "model/Sequence.h"
 
 void SymSequence_destroy(SymSequence *this) {
+    if (this->sequenceName) {
+        free(this->sequenceName);
+    }
+    if (this->createTime) {
+        this->createTime->destroy(this->createTime);
+    }
+    if (this->lastUpdateBy) {
+        free(this->lastUpdateBy);
+    }
+    if (this->lastUpdateTime) {
+        this->lastUpdateTime->destroy(this->lastUpdateTime);
+    }
+
     free(this);
 }
 

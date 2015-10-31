@@ -28,7 +28,9 @@ SymStringArray * SymNativeClient_getPropertiesNames(int argCount, char **argValu
         propertiesNames->add(propertiesNames, argValues[1]);
     }
     else {
-        propertiesNames->add(propertiesNames, SymStringUtils_format("%s/symmetric.properties", getenv("HOME")));
+        char *location = SymStringUtils_format("%s/symmetric.properties", getenv("HOME"));
+        propertiesNames->add(propertiesNames, location);
+        free(location);
         propertiesNames->add(propertiesNames, "./symmetric.properties");
     }
     return propertiesNames;
@@ -44,7 +46,6 @@ int SymNativeClient_runSymmetricEngine(SymProperties *properties) {
 
     jobManager->destroy(jobManager);
     engine->destroy(engine);
-    properties->destroy(properties);
     return 0;
 }
 
@@ -77,7 +78,9 @@ int main(int argCount, char **argValues) {
 
     SymNativeClient_runSymmetricEngine(properties);
 
-    properties->destroy(properties);
+    if (properties) {
+        properties->destroy(properties);
+    }
     propertiesFiles->destroy(propertiesFiles);
     return 0;
 }

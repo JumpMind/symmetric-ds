@@ -46,6 +46,7 @@ static SymMap * getAll(SymSequenceService *this) {
         map->put(map, sequence->sequenceName, sequence);
     }
     iter->destroy(iter);
+    sequences->destroy(sequences);
     return map;
 }
 
@@ -173,6 +174,8 @@ void SymSequenceService_init(SymSequenceService *this) {
         initSequence(this, SYM_SEQUENCE_TRIGGER_HIST, maxTriggerHistId);
     }
 
+    sequences->destroyAll(sequences, (void *) SymSequence_destroy);
+
     //if (sequences->get(sequences, SYM_SEQUENCE_EXTRACT_REQ) == NULL) {
     //    long maxRequestId = sqlTemplate->queryForLong(sqlTemplate, SYM_SQL_MAX_EXTRACT_REQUEST, NULL, NULL, &error);
     //    initSequence(this, SYM_SEQUENCE_EXTRACT_REQ, maxRequestId);
@@ -180,7 +183,7 @@ void SymSequenceService_init(SymSequenceService *this) {
 }
 
 void SymSequenceService_destroy(SymSequenceService *this) {
-    this->sequenceDefinitionCache->destroyAll(this->sequenceDefinitionCache, (void *) &SymSequence_destroy, 0);
+    this->sequenceDefinitionCache->destroyAll(this->sequenceDefinitionCache, (void *) &SymSequence_destroy);
     free(this);
 }
 

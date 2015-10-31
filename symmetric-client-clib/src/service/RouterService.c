@@ -199,13 +199,15 @@ static int SymRouterService_selectDataAndRoute(SymRouterService *this, SymChanne
     context->statDataRoutedCount += totalDataCount;
     iter->destroy(iter);
     dataList->destroy(dataList);
+    reader->destroy(reader);
     return totalDataEventCount;
 }
 
 static int SymRouterService_routeDataForChannel(SymRouterService *this, SymChannel *nodeChannel, SymNode *sourceNode) {
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymSqlTransaction *sqlTrans = sqlTemplate->startSqlTransaction(sqlTemplate);
     SymChannelRouterContext *context = SymChannelRouterContext_new(NULL, sourceNode->nodeId, nodeChannel,
-            sqlTemplate->startSqlTransaction(sqlTemplate));
+            sqlTrans);
     int dataCount = SymRouterService_selectDataAndRoute(this, context);
     if (dataCount > 0) {
         long insertTs = time(NULL);
@@ -213,6 +215,9 @@ static int SymRouterService_routeDataForChannel(SymRouterService *this, SymChann
         SymRouterService_completeBatchesAndCommit(this, context);
         context->statInsertDataEventsMs += ((time(NULL) - insertTs) * 1000);
     }
+
+   // sqlTrans->destroy(sqlTrans);
+    context->destroy(context);
     return dataCount;
 }
 
@@ -247,8 +252,7 @@ long SymRouterService_routeData(SymRouterService *this) {
 }
 
 void SymRouterService_destroy(SymRouterService *this) {
-    // TODO: clean up memory
-    // SymMap_destroyAll(this->routers, SymDataRouter_destroy);
+    this->routers->destroyAll(this->routers, (void *) SymRouter_destroy);
     free(this);
 }
 

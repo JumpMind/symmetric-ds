@@ -38,7 +38,7 @@ static SymMapEntry * SymMap_newEntry(char *key, void *value) {
         return NULL;
     }
 
-    entry->key = key;
+    entry->key = SymStringBuilder_copy(key);
     entry->value = value;
     entry->next = NULL;
     return entry;
@@ -158,6 +158,7 @@ void * SymMap_remove(SymMap *this, char *key) {
     while (entry != NULL) {
         if (entry->key != NULL && strcmp(key, entry->key) == 0) {
             result = entry->value;
+            free(entry->key);
             entry->key = NULL;
             entry->value = NULL;
             break;
@@ -175,7 +176,7 @@ void * SymMap_removeByInt(SymMap *this, int key) {
     return result;
 }
 
-void SymMap_resetAll(SymMap *this, void (*destroyObject)(void *object), unsigned short shouldFreeKey) {
+void SymMap_resetAll(SymMap *this, void (*destroyObject)(void *object)) {
     SymMapEntry *entry = NULL;
     int index = 0;
 
@@ -189,9 +190,7 @@ void SymMap_resetAll(SymMap *this, void (*destroyObject)(void *object), unsigned
                 if (destroyObject) {
                     destroyObject(currentEntry->value);
                 }
-                if (shouldFreeKey) {
-                    free(currentEntry->key);
-                }
+                free(currentEntry->key);
                 currentEntry->key = NULL;
                 currentEntry->value = NULL;
                 free(currentEntry);
@@ -203,7 +202,7 @@ void SymMap_resetAll(SymMap *this, void (*destroyObject)(void *object), unsigned
 }
 
 void SymMap_reset(SymMap *this) {
-    SymMap_resetAll(this, NULL, 0);
+    SymMap_resetAll(this, NULL);
 }
 
 void SymMap_destroy(SymMap *this) {
@@ -212,8 +211,8 @@ void SymMap_destroy(SymMap *this) {
     free(this);
 }
 
-void SymMap_destroyAll(SymMap *this, void (*destroyObject)(void *object), unsigned short shouldFreeKey) {
-    SymMap_resetAll(this, destroyObject, shouldFreeKey);
+void SymMap_destroyAll(SymMap *this, void (*destroyObject)(void *object)) {
+    SymMap_resetAll(this, destroyObject);
     free(this->table);
     free(this);
 }

@@ -148,6 +148,7 @@ void SymStringArray_sort(SymStringArray *this) {
 
 void SymStringArray_destroy(SymStringArray *this) {
     this->reset(this);
+    free(this->array);
     free(this);
 }
 

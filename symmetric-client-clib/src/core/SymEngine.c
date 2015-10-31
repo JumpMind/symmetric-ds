@@ -130,6 +130,25 @@ void SymEngine_destroy(SymEngine *this) {
     this->triggerRouterService->destroy(this->triggerRouterService);
     this->dialect->destroy(this->dialect);
     this->platform->destroy(this->platform);
+    this->purgeService->destroy(this->purgeService);
+    this->pushService->destroy(this->pushService);
+    this->pullService->destroy(this->pullService);
+    this->offlinePushService->destroy(this->offlinePushService);
+    this->offlinePullService->destroy(this->offlinePullService);
+    this->routerService->destroy(this->routerService);
+    this->registrationService->destroy(this->registrationService);
+    this->configurationService->destroy(this->configurationService);
+    this->platform->destroy(this->platform);
+    this->dataLoaderService->destroy(this->dataLoaderService);
+    this->transportManager->destroy(this->transportManager);
+    this->offlineTransportManager->destroy(this->offlineTransportManager);
+    this->incomingBatchService->destroy(this->incomingBatchService);
+    this->outgoingBatchService->destroy(this->outgoingBatchService);
+    this->acknowledgeService->destroy(this->acknowledgeService);
+    this->dataExtractorService->destroy(this->dataExtractorService);
+    this->dataService->destroy(this->dataService);
+    this->nodeService->destroy(this->nodeService);
+    this->parameterService->destroy(this->parameterService);
     free(this);
 }
 

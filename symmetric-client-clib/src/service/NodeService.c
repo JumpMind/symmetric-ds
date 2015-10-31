@@ -86,6 +86,7 @@ SymNode * SymNodeService_findIdentityWithCache(SymNodeService *this, unsigned sh
 
         SymList *nodes = sqlTemplate->query(sqlTemplate, sb->str, NULL, NULL, &error, (void *) SymNodeService_nodeMapper);
         this->cachedNodeIdentity = nodes->get(nodes, 0);
+        nodes->destroy(nodes);
         sb->destroy(sb);
     }
     return this->cachedNodeIdentity;
@@ -189,6 +190,7 @@ unsigned short SymNodeService_updateNode(SymNodeService *this, SymNode *node) {
     char *syncEnabled = SymStringUtils_format("%d", node->syncEnabled);
     char *batchToSendCount = SymStringUtils_format("%d", node->batchToSendCount);
     char *batchInErrorCount = SymStringUtils_format("%d", node->batchInErrorCount);
+    char *timezoneOffset = SymAppUtils_getTimezoneOffset();
 
     SymStringArray *args = SymStringArray_new(NULL);
     args->add(args, node->nodeGroupId);
@@ -200,7 +202,7 @@ unsigned short SymNodeService_updateNode(SymNodeService *this, SymNode *node) {
     args->add(args, node->syncUrl);
     args->add(args, now->dateTimeString);
     args->add(args, syncEnabled);
-    args->add(args, SymAppUtils_getTimezoneOffset());
+    args->add(args, timezoneOffset);
     args->add(args, batchToSendCount);
     args->add(args, batchInErrorCount);
     args->add(args, node->createdAtNodeId);
@@ -211,6 +213,7 @@ unsigned short SymNodeService_updateNode(SymNodeService *this, SymNode *node) {
     unsigned short updated = sqlTemplate->update(sqlTemplate,
             SYM_SQL_UPDATE_NODE, args, NULL, &error) == 1;
 
+    free(timezoneOffset);
     free(syncEnabled);
     free(batchToSendCount);
     free(batchInErrorCount);
@@ -304,6 +307,7 @@ void SymNodeService_updateNodeHostForCurrentNode(SymNodeService *this) {
     nodeHostForCurrentNode->refresh(nodeHostForCurrentNode);
     nodeHostForCurrentNode->lastRestartTime = this->lastRestartTime;
     SymNodeService_updateNodeHost(this, nodeHostForCurrentNode);
+    nodeHostForCurrentNode->destroy(nodeHostForCurrentNode);
 }
 
 SymList * SymNodeService_findEnabledNodesFromNodeGroup(SymNodeService *this, char *nodeGroupId) {
