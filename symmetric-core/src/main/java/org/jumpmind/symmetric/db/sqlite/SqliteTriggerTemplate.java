@@ -20,13 +20,13 @@
  */
 package org.jumpmind.symmetric.db.sqlite;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 import java.util.HashMap;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
-
-import com.mysql.jdbc.StringUtils;
 
 public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
 
@@ -36,7 +36,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
         String sqliteFunctionToOverride = symmetricDialect.getParameterService().getString(ParameterConstants.SQLITE_TRIGGER_FUNCTION_TO_USE);
 
         String sourceNodeExpression;
-        if(StringUtils.isNullOrEmpty(sqliteFunctionToOverride)){
+        if(isBlank(sqliteFunctionToOverride)){
         	sourceNodeExpression = "(select context_value from $(prefixName)_context where id = 'sync_node_disabled')";
         }else{
         	sourceNodeExpression = "(select substr(" + sqliteFunctionToOverride + "(), 10) from sqlite_master where " + sqliteFunctionToOverride + "() like 'DISABLED:%')";
