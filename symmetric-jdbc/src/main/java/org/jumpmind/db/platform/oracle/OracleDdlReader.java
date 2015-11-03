@@ -360,8 +360,8 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                     values.put("ORDINAL_POSITION", new Short(rs.getShort(5)));
 
                     readIndex(metaData, values, indices);
-                } else {
-                    log.warn("Skipping index " + name + " of type " + type);
+                } else if (log.isDebugEnabled()) {
+                    log.debug("Skipping index " + name + " of type " + type);
                 }
             }
             
