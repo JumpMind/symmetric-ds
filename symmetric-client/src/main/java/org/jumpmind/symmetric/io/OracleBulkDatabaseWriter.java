@@ -158,7 +158,12 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
                 stmt.execute();
 
                 ARRAY errorsArray = stmt.getARRAY(errorIndex);
-                int[] errors = errorsArray.getIntArray();
+                int[] errors;
+                if (errorsArray != null) {
+                    errors = errorsArray.getIntArray();
+                } else {
+                    errors = new int[0];
+                }
 
                 if (errors.length > 0) {
                     // set the statement count so the failed row number get reported correctly
