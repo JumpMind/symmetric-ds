@@ -705,7 +705,8 @@ public class Column implements Cloneable, Serializable {
     }
     
     public boolean isTimestampWithTimezone() {
-        return jdbcTypeCode == ORACLE_TIMESTAMPLTZ || jdbcTypeCode == ORACLE_TIMESTAMPTZ || 
+        return mappedTypeCode == ORACLE_TIMESTAMPLTZ || mappedTypeCode == ORACLE_TIMESTAMPTZ ||
+                jdbcTypeCode == ORACLE_TIMESTAMPLTZ || jdbcTypeCode == ORACLE_TIMESTAMPTZ || 
                 (jdbcTypeName != null && jdbcTypeName.equals("timestamptz"));
     }
     

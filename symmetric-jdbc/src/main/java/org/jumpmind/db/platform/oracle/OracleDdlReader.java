@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
@@ -119,6 +120,12 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 && !typeName.endsWith("TIME ZONE")) {
             // This is for Oracle's TIMESTAMP(9)
             return Types.TIMESTAMP;
+        } else if (typeName != null && typeName.startsWith("TIMESTAMP")
+                && typeName.endsWith("WITH TIME ZONE")) {
+            return ColumnTypes.ORACLE_TIMESTAMPTZ;
+        } else if (typeName != null && typeName.startsWith("TIMESTAMP")
+                && typeName.endsWith("WITH LOCAL TIME ZONE")) {
+            return ColumnTypes.ORACLE_TIMESTAMPLTZ;
         } else if (typeName != null && typeName.startsWith("NVARCHAR")) {
             // This is for Oracle's NVARCHAR type
             return Types.VARCHAR;
@@ -366,7 +373,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                     log.debug("Skipping index " + name + " of type " + type);
                 }
             }
-            
+
             rs.close();
         } finally {
             if (stmt != null) {
