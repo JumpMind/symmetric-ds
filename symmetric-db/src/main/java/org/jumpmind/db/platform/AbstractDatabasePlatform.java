@@ -559,18 +559,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     return new Date(time);
                 } else {
                     if (useTimestamp) {
-                        try {
-                            return Timestamp.valueOf(value);
-                        } catch (IllegalArgumentException ex) {
-                            try {
-                                return FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS);
-                            } catch (Exception e) {
-                                int split = value.lastIndexOf(" ");
-                                return FormatUtils.parseDate(value.substring(0, split).trim(),
-                                FormatUtils.TIMESTAMP_PATTERNS,
-                                TimeZone.getTimeZone(value.substring(split).trim()));
-                            }
-                        }
+                        return parseTimestamp(type, value);
                     } else if (type == Types.TIME) {
                         if (value.indexOf(".") == 8) {
                             /*
@@ -824,6 +813,36 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     
     public boolean canColumnBeUsedInWhereClause(Column column) {
         return true;
+    }
+    
+    public java.util.Date parseTimestamp(int type, String value) {
+        try {
+            return Timestamp.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            try {
+                return FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS);
+            } catch (Exception e) {
+                int split = value.lastIndexOf(" ");
+                String datetime = value.substring(0, split).trim();
+                String timezone = value.substring(split).trim();
+
+                try {
+                    return Timestamp.valueOf(datetime); // Try it again without the timezone component.
+                } catch (IllegalArgumentException ex2) {
+                    return FormatUtils.parseDate(datetime,
+                            FormatUtils.TIMESTAMP_PATTERNS,
+                            getTimeZone(timezone));
+                }
+            }
+        }                
+    }
+    
+    public TimeZone getTimeZone(String value) {
+        TimeZone tz = TimeZone.getTimeZone("GMT" + value); // try as an offset. ("-05:00")
+        if (tz.getRawOffset() == 0) {
+            tz = TimeZone.getTimeZone(value); // try as a raw code. e.g. "EST."
+        }
+        return tz;
     }
     
     @Override
