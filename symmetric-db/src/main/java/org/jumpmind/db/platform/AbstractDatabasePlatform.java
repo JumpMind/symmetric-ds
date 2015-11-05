@@ -840,7 +840,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public TimeZone getTimeZone(String value) {
         TimeZone tz = TimeZone.getTimeZone("GMT" + value); // try as an offset. ("-05:00")
         if (tz.getRawOffset() == 0) {
-            tz = TimeZone.getTimeZone(value); // try as a raw code. e.g. "EST."
+            tz = TimeZone.getTimeZone(value); // try as a raw code. e.g. "EST"
         }
         return tz;
     }
