@@ -7,6 +7,8 @@ Open source downloads are available at https://sourceforge.net/projects/symmetri
 
 Professional downloads are available at http://www.jumpmind.com/products/symmetricds/download.  Documentation is available at http://www.jumpmind.com/products/symmetricds/documentation.
 
+We also have developed a native SymmetricDS client.  Check out the code in the [symmetric-client-clib](symmetric-client-clib) and [symmetric-client-native](symmetric-client-native).
+
 ##Core Product Development
 We use Eclipse for development.
 
