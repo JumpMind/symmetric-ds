@@ -5,7 +5,7 @@ SymmetricDS is sponsored by http://www.jumpmind.com.  JumpMind also provides sup
 
 Open source downloads are available at https://sourceforge.net/projects/symmetricds/files/?source=navbar.  Professional downloads are available at http://www.jumpmind.com/products/symmetricds/download.
 
-##Development
+##Core Product Development
 We use Eclipse for development.
 
 To setup a development environment run the following commands:
