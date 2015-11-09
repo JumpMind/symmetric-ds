@@ -138,9 +138,12 @@ SymProperties * SymProperties_newWithFile(SymProperties *this, char *argPath) {
         buff->append(buff, inputBuffer);
     }
 
-    this = SymProperties_newWithString(NULL, buff->destroyAndReturn(buff));
+    char *fileContentsRaw = buff->destroyAndReturn(buff);
+    this = SymProperties_newWithString(NULL, fileContentsRaw);
 
     fclose(file);
+
+    free(fileContentsRaw);
 
     return this;
 }

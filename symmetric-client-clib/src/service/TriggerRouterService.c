@@ -306,11 +306,7 @@ static SymList * buildTriggersForSymmetricTables(SymTriggerRouterService *this, 
         triggers->add(triggers, trigger);
     }
 
-    if (definedTriggers->size > 0) {
-        definedTriggers->destroyAll(definedTriggers, (void *)((SymTrigger*)triggers->head)->destroy);
-    } else {
-        definedTriggers->destroy(definedTriggers);
-    }
+    definedTriggers->destroyAll(definedTriggers, (void *)SymTrigger_destroy);
 
     tables->destroy(tables);
     iter->destroy(iter);
@@ -404,7 +400,10 @@ SymTriggerHistory * SymTriggerRouterService_getNewestTriggerHistoryForTrigger(Sy
     }
 
     args->destroy(args);
-    triggerHistories->destroyAll(triggerHistories, (void *) result->destroy);
+    if (result) {
+        triggerHistories->destroyAll(triggerHistories, (void *) result->destroy);
+    }
+
 
     return result;
 }
@@ -512,7 +511,7 @@ SymList * SymTriggerRouterService_getTriggersToSync(SymTriggerRouterService *thi
         }
     }
 
-    triggerRouters->destroy(triggerRouters);
+    triggerRouters->destroyAll(triggerRouters, (void *)SymTriggerRouter_destroy);
 
     return triggers;
 }
@@ -615,7 +614,9 @@ char * SymTriggerRouterService_getTriggerName(SymTriggerRouterService *this, Sym
 //            triggerSuffix2 = replaceCharsToShortenName(table.getName());
 //        }
 
-        char *triggerSuffix3 = SymTriggerRouterService_replaceCharsToShortenName(this, SymStringUtils_format("%s%s", "_", this->parameterService->getNodeGroupId(this->parameterService)));
+        char* triggerSuffix3Temp = SymStringUtils_format("%s%s", "_", this->parameterService->getNodeGroupId(this->parameterService));
+        char *triggerSuffix3 = SymTriggerRouterService_replaceCharsToShortenName(this, triggerSuffix3Temp);
+        free(triggerSuffix3Temp);
 
         triggerName = SymStringUtils_format("%s%s%s%s",
                 triggerPrefix1, triggerSuffix1, triggerSuffix2, triggerSuffix3);
@@ -854,15 +855,16 @@ void SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this, unsigne
                     trigger->sourceCatalogName, trigger->sourceSchemaName, trigger->sourceTableName, 1);
             if (table) {
                 SymTriggerRouterService_updateOrCreateDatabaseTriggers(this, trigger, table, activeTriggerHistories, force);
+                table->destroy(table); // TODO should not do this when the the cache is fully implemented.
             }
             else {
                 SymLog_error("No table '%s' found for trigger. ", trigger->sourceTableName);
             }
         }
 
-        symmetricTableTriggers->destroy(symmetricTableTriggers);
-        triggers->destroy(triggers);
-        activeTriggerHistories->destroy(activeTriggerHistories);
+        symmetricTableTriggers->destroy(symmetricTableTriggers); // shallow destroy here because these objects are also in 'triggers'.
+        triggers->destroyAll(triggers, (void *)SymTrigger_destroy);
+        activeTriggerHistories->destroyAll(activeTriggerHistories, (void *)SymTriggerHistory_destroy);
     }
 }
 

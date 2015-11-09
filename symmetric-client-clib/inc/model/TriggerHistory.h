@@ -65,4 +65,6 @@ SymTriggerHistory * SymTriggerHistory_new(SymTriggerHistory *this);
 
 SymTriggerHistory * SymTriggerHistory_newWithId(SymTriggerHistory *this, int triggerHistoryId);
 
+void SymTriggerHistory_destroy(SymTriggerHistory *this);
+
 #endif

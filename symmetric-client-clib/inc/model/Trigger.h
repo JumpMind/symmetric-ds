@@ -76,5 +76,6 @@ typedef struct SymTrigger {
 } SymTrigger;
 
 SymTrigger * SymTrigger_new(SymTrigger *this);
+void SymTrigger_destroy(SymTrigger *this);
 
 #endif /* SYM_MODEL_TRIGGER_H */

@@ -65,7 +65,7 @@ void SymTriggerHistory_destroy(SymTriggerHistory *this) {
     // Being selective here based on Valgrind reports and testing that
     // shows other fields are static memory or really owned by someone else.
     if (this->sourceTableName) {
-        free(this->sourceTableName);
+     //   free(this->sourceTableName);
     }
     if (this->nameForInsertTrigger) {
         free(this->nameForInsertTrigger);

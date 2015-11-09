@@ -149,6 +149,7 @@ void SymEngine_destroy(SymEngine *this) {
     this->dataService->destroy(this->dataService);
     this->nodeService->destroy(this->nodeService);
     this->parameterService->destroy(this->parameterService);
+    this->sequenceService->destroy(this->sequenceService);
     free(this);
 }
 

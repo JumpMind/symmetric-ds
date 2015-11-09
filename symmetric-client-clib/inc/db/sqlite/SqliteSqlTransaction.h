@@ -35,7 +35,6 @@ typedef struct SymSqliteSqlTransaction {
     sqlite3_stmt *stmt;
     char *sql;
     unsigned short inTransaction;
-    void (*destroy)(struct SymSqliteSqlTransaction *this);
 } SymSqliteSqlTransaction;
 
 SymSqliteSqlTransaction * SymSqliteSqlTransaction_new(SymSqliteSqlTransaction *this, SymSqliteSqlTemplate *sqlTemplate);

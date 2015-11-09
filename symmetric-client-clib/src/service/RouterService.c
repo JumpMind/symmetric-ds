@@ -216,7 +216,7 @@ static int SymRouterService_routeDataForChannel(SymRouterService *this, SymChann
         context->statInsertDataEventsMs += ((time(NULL) - insertTs) * 1000);
     }
 
-   // sqlTrans->destroy(sqlTrans);
+    sqlTrans->destroy(sqlTrans);
     context->destroy(context);
     return dataCount;
 }
@@ -237,7 +237,8 @@ static int SymRouterService_routeDataForEachChannel(SymRouterService *this) {
     }
     iter->destroy(iter);
     channelList->destroy(channelList);
-    channels->destroy(channels);
+//    channels->destroy(channels);
+    channels->destroyAll(channels, (void *)SymChannel_destroy);
     return dataCount;
 }
 

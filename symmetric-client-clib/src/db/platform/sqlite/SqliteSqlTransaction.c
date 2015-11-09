@@ -144,6 +144,6 @@ SymSqliteSqlTransaction * SymSqliteSqlTransaction_new(SymSqliteSqlTransaction *t
     super->commit = (void *) &SymSqliteSqlTransaction_commit;
     super->rollback = (void *) &SymSqliteSqlTransaction_rollback;
     super->close = (void *) &SymSqliteSqlTransaction_close;
-    this->destroy = (void *) &SymSqliteSqlTransaction_destroy;
+    super->destroy = (void *) &SymSqliteSqlTransaction_destroy;
     return this;
 }

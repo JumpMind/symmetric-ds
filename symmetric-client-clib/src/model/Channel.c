@@ -21,6 +21,12 @@
 #include "model/Channel.h"
 
 void SymChannel_destroy(SymChannel *this) {
+    if (this->createTime) {
+        free(this->createTime);
+    }
+    if (this->lastUpdateTime) {
+        free(this->lastUpdateTime);
+    }
     free(this);
 }
 

@@ -179,10 +179,10 @@ SymList * SymTable_getPrimaryKeyColumns(SymTable *this) {
 }
 
 void SymTable_destroy(SymTable *this) {
-    free(this->name);
-    free(this->catalog);
-    free(this->schema);
-    this->columns->destroy(this->columns);
+//    free(this->name); probably stack memory.
+//    free(this->catalog);
+//    free(this->schema);
+    this->columns->destroyAll(this->columns, (void *)SymColumn_destroy);
     free(this);
 }
 

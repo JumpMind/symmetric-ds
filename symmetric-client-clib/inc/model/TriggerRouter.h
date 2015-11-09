@@ -46,5 +46,6 @@ typedef struct SymTriggerRouter {
 } SymTriggerRouter;
 
 SymTriggerRouter * SymTriggerRouter_new(SymTriggerRouter *this);
+void SymTriggerRouter_destroy(SymTriggerRouter *this);
 
 #endif
