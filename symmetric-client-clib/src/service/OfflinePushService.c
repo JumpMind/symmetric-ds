@@ -75,6 +75,7 @@ void SymOfflinePushService_pushToNode(SymOfflinePushService *this, SymNode *remo
     extractedBatches->destroy(extractedBatches);
     transport->destroy(transport);
     identitySecurity->destroy(identitySecurity);
+    identity->destroy(identity);
 }
 
 void SymOfflinePushService_execute(SymOfflinePushService *this, SymNode *node, SymRemoteNodeStatus *status) {
@@ -110,7 +111,6 @@ SymRemoteNodeStatuses * SymOfflinePushService_pushData(SymOfflinePushService *th
         if (nodes->size > 0) {
             SymNodeSecurity *identitySecurity = this->nodeService->findNodeSecurity(this->nodeService, identity->nodeId);
             if (identitySecurity) {
-                statuses = SymRemoteNodeStatuses_new(NULL, channels);
                 SymIterator *iter = nodes->iterator(nodes);
                 while (iter->hasNext(iter)) {
                     SymNode *node = (SymNode *) iter->next(iter);
@@ -126,6 +126,7 @@ SymRemoteNodeStatuses * SymOfflinePushService_pushData(SymOfflinePushService *th
         }
         nodes->destroy(nodes);
     }
+    channels->destroyAll(channels, (void *)SymChannel_destroy);
     return statuses;
 }
 

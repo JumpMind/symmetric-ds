@@ -51,8 +51,8 @@ void SymSqlitePlatform_destroy(SymDatabasePlatform *super) {
 //    SymSqlitePlatform *this = (SymSqlitePlatform *) super;
 //    sqlite3_close(this->db);
 //    this->sqlTemplate->destroy(this->sqlTemplate);
-//    free(super->ddlReader);
-//    free(this);
+//	  free(super->ddlReader);
+//    free(super);
 }
 
 SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties *properties) {

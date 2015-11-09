@@ -111,7 +111,6 @@ SymRemoteNodeStatuses * SymPushService_pushData(SymPushService *this, unsigned i
         if (nodes->size > 0) {
             SymNodeSecurity *identitySecurity = this->nodeService->findNodeSecurity(this->nodeService, identity->nodeId);
             if (identitySecurity) {
-                statuses = SymRemoteNodeStatuses_new(NULL, channels);
                 SymIterator *iter = nodes->iterator(nodes);
                 while (iter->hasNext(iter)) {
                     SymNode *node = (SymNode *) iter->next(iter);
@@ -127,6 +126,7 @@ SymRemoteNodeStatuses * SymPushService_pushData(SymPushService *this, unsigned i
         }
         nodes->destroy(nodes);
     }
+    channels->destroyAll(channels, (void *)SymChannel_destroy);
     return statuses;
 }
 

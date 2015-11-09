@@ -50,5 +50,6 @@ typedef struct SymNode {
 } SymNode;
 
 SymNode * SymNode_new(SymNode *this);
+void SymNode_destroy(SymNode *this);
 
 #endif

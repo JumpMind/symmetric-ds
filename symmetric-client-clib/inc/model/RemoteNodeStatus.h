@@ -57,5 +57,6 @@ typedef struct SymRemoteNodeStatus {
 } SymRemoteNodeStatus;
 
 SymRemoteNodeStatus * SymRemoteNodeStatus_new(SymRemoteNodeStatus *this, char *nodeId, SymMap *channels);
+void SymRemoteNodeStatus_destroy(SymRemoteNodeStatus *this);
 
 #endif

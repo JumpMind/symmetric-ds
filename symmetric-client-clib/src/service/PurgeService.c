@@ -124,7 +124,9 @@ int SymPurgeService_purgeByMinMax(SymPurgeService *this, SymMinMax *minMax, SymM
             break;
         }
 
-        SymLog_debug("Running the following statement: %s with the following arguments: %s", deleteSql, args->toString(args));
+        char *argsString = args->toString(args);
+        SymLog_debug("Running the following statement: %s with the following arguments: %s", deleteSql, argsString);
+        free(argsString);
 
         int error;
         int count = sqlTemplate->update(sqlTemplate, deleteSql, args, NULL, &error);

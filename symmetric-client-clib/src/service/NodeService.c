@@ -326,6 +326,9 @@ SymList * SymNodeService_findEnabledNodesFromNodeGroup(SymNodeService *this, cha
 }
 
 void SymNodeService_destroy(SymNodeService *this) {
+    if (this->lastRestartTime) {
+        this->lastRestartTime->destroy(this->lastRestartTime);
+    }
     free(this);
 }
 

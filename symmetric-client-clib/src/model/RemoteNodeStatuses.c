@@ -77,7 +77,7 @@ unsigned int SymRemoteNodeStatuses_isComplete(SymRemoteNodeStatuses *this) {
 }
 
 void SymRemoteNodeStatuses_destroy(SymRemoteNodeStatuses *this) {
-    free(this->nodes);
+    this->nodes->destroy(this->nodes);
     free(this);
 }
 

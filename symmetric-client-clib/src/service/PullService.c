@@ -62,6 +62,7 @@ SymRemoteNodeStatuses * SymPullService_pullData(SymPullService *this) {
             SymRemoteNodeStatus *status = statuses->add(statuses, node->nodeId);
             SymPullService_execute(this, node, status);
         }
+        channels->destroyAll(channels, (void *)SymChannel_destroy);
         iter->destroy(iter);
         nodes->destroy(nodes);
     }

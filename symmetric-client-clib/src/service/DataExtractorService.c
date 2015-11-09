@@ -68,6 +68,7 @@ SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode
         reader->destroy(reader);
         processor->destroy(processor);
     }
+    batches->destroy(batches);
 	return processedBatches;
 }
 
