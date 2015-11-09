@@ -1,7 +1,15 @@
 # SymmetricDS
 SymmetricDS is a database and file synchronization solution that is platform-independent, web-enabled, and database agnostic.  SymmetricDS was built to make data replication across two to tens of thousands of databases and file systems fast, easy and resilient.  We specialize in near real time, bi-directional data replication across large node networks over the WAN or LAN.
 
-##Development
+SymmetricDS is sponsored by http://www.jumpmind.com.  JumpMind also provides support and a professional version that features a web-based user interface that simplifies configuration and management.
+
+Open source downloads are available at https://sourceforge.net/projects/symmetricds/files/?source=navbar. Documentation is available at http://www.symmetricds.org/docs/overview.
+
+Professional downloads are available at http://www.jumpmind.com/products/symmetricds/download.  Documentation is available at http://www.jumpmind.com/products/symmetricds/documentation.
+
+We also have developed a native SymmetricDS client.  Check out the code in the [symmetric-client-clib](symmetric-client-clib) and [symmetric-client-native](symmetric-client-native).
+
+##Core Product Development
 We use Eclipse for development.
 
 To setup a development environment run the following commands:
