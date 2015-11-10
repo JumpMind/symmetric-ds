@@ -193,6 +193,13 @@ unsigned short SymTrigger_hasChangedSinceLastTriggerBuild(SymTrigger *this, SymD
 }
 
 void SymTrigger_destroy(SymTrigger *this) {
+    if (this->createTime) {
+        free(this->createTime);
+    }
+    if (this->lastUpdateTime) {
+        free(this->lastUpdateTime);
+    }
+
     free(this);
 }
 

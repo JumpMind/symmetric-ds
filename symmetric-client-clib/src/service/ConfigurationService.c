@@ -121,9 +121,10 @@ SymMap * SymConfigurationService_getChannels(SymConfigurationService *this, unsi
 
 SymChannel * SymConfigurationService_getChannel(SymConfigurationService *this, char *channelId) {
     // TODO refactor to use getNodeChannels like the Java code.
-
     SymMap *channels = SymConfigurationService_getChannels(this, 0);
-    return channels->get(channels, channelId);
+    SymChannel *channel = channels->remove(channels, channelId);
+    channels->destroyAll(channels, (void *)SymChannel_destroy);
+    return channel;
 }
 
 void SymConfigurationService_clearCache(SymConfigurationService *this) {

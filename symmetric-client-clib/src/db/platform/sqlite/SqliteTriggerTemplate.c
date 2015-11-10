@@ -92,6 +92,7 @@ char * SymSqliteTriggerTemplate_buildColumnsString(SymSqliteTriggerTemplate *thi
         if (i < (columns->size-1)) {
             buff->append(buff, lastCommandToken);
         }
+       free(columnString);
     }
 
     return buff->destroyAndReturn(buff);
@@ -148,6 +149,7 @@ char * SymSqliteTriggerTemplate_replaceTemplateVariables(SymSqliteTriggerTemplat
     free(oldColumns);
     free(columns);
     free(channelExpression);
+    primaryKeyColumns->destroy(primaryKeyColumns);
 
     return formattedDdl;
 }

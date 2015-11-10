@@ -41,6 +41,12 @@ unsigned short SymTriggerRouter_isSame(SymTriggerRouter *this, SymTriggerRouter 
 }
 
 void SymTriggerRouter_destroy(SymTriggerRouter *this) {
+    if (this->createTime) {
+        this->createTime->destroy(this->createTime);
+    }
+    if (this->lastUpdateTime) {
+        this->lastUpdateTime->destroy(this->lastUpdateTime);
+    }
     free(this);
 }
 

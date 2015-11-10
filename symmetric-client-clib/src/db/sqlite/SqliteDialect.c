@@ -78,6 +78,8 @@ int SymSqliteDialect_createTrigger(SymDialect *super, SymDataEventType dml, SymT
     int error;
     sqlTemplate->update(sqlTemplate, triggerSql, NULL, NULL, &error);
 
+    free(triggerSql);
+
     return error;
 }
 

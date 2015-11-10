@@ -347,14 +347,17 @@ SymList * SymTriggerRouterService_getTriggers(SymTriggerRouterService *this, uns
 void SymTriggerRouterService_inactivateTriggerHistory(SymTriggerRouterService *this, SymTriggerHistory *history) {
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
 
+    char *triggerHistoryId = SymStringUtils_format("%d", history->triggerHistoryId);
     SymStringArray *args = SymStringArray_new(NULL);
+
     args->add(args, history->errorMessage);
-    args->add(args, SymStringUtils_format("%d", history->triggerHistoryId));
+    args->add(args, triggerHistoryId);
 
     int error;
     sqlTemplate->update(sqlTemplate, SYM_SQL_INACTIVATE_TRIGGER_HISTORY, args, NULL, &error);
 
     args->destroy(args);
+    free(triggerHistoryId);
 }
 
 unsigned short SymTriggerRouterService_isTriggerNameInUse(SymTriggerRouterService *this, SymList *activeTriggerHistories, char *triggerId, char *triggerName) {
@@ -418,6 +421,7 @@ SymList * SymTriggerRouterService_enhanceTriggerRouters(SymTriggerRouterService 
         char *routerId = SymStringUtils_toUpperCase(trimmed);
         routersById->put(routersById, routerId, router);
         free(trimmed);
+        free(routerId);
     }
 
     SymMap *triggersById = SymMap_new(NULL, 8);
@@ -428,7 +432,7 @@ SymList * SymTriggerRouterService_enhanceTriggerRouters(SymTriggerRouterService 
         char *triggerId = SymStringUtils_toUpperCase(trimmed);
         triggersById->put(triggersById, triggerId, trigger);
         free(trimmed);
-//        free(triggerId); TODO this causes crash because the map needs this key around.
+        free(triggerId);
     }
 
     for (i = 0; i < triggerRouters->size; i++) {
@@ -438,7 +442,9 @@ SymList * SymTriggerRouterService_enhanceTriggerRouters(SymTriggerRouterService 
         char *routerIdTrimmed = SymStringUtils_trim(triggerRouter->router->routerId);
         char *routerId = SymStringUtils_toUpperCase(routerIdTrimmed);
 
+        triggerRouter->trigger->destroy(triggerRouter->trigger);
         triggerRouter->trigger = triggersById->get(triggersById, triggerId );
+        triggerRouter->router->destroy(triggerRouter->router);
         triggerRouter->router = routersById->get(routersById, routerId );
 
         free(triggerId);
@@ -474,10 +480,14 @@ void SymTriggerRouterService_insert(SymTriggerRouterService *this, SymTriggerHis
     SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
     newHistRecord->triggerHistoryId = this->sequenceService->nextVal(this->sequenceService, SYM_SEQUENCE_TRIGGER_HIST);
 
+    char *tableHash = SymStringUtils_format("%d", newHistRecord->tableHash);
+    char *triggerRowHash = SymStringUtils_format("%ld", newHistRecord->triggerRowHash);
+    char *triggerTemplateHash = SymStringUtils_format("%ld", newHistRecord->triggerTemplateHash);
+
     SymStringArray *args = SymStringArray_new(NULL);
     args->add(args, newHistRecord->triggerId);
     args->add(args, newHistRecord->sourceTableName);
-    args->add(args, SymStringUtils_format("%d", newHistRecord->tableHash));
+    args->add(args, tableHash);
     args->add(args, newHistRecord->createTime == NULL ? "null" : newHistRecord->createTime->dateTimeString);
     args->add(args, newHistRecord->columnNames);
     args->add(args, newHistRecord->pkColumnNames);
@@ -487,14 +497,64 @@ void SymTriggerRouterService_insert(SymTriggerRouterService *this, SymTriggerHis
     args->add(args, newHistRecord->nameForUpdateTrigger);
     args->add(args, newHistRecord->sourceSchemaName);
     args->add(args, newHistRecord->sourceCatalogName);
-    args->add(args, SymStringUtils_format("%ld", newHistRecord->triggerRowHash));
-    args->add(args, SymStringUtils_format("%ld", newHistRecord->triggerTemplateHash));
+    args->add(args, triggerRowHash);
+    args->add(args, triggerTemplateHash);
     args->add(args, newHistRecord->errorMessage);
 
     int error;
     sqlTemplate->update(sqlTemplate, SYM_SQL_INSERT_TRIGGER_HIST, args, NULL, &error);
 
+    free(tableHash);
+    free(triggerRowHash);
+    free(triggerTemplateHash);
     args->destroy(args);
+
+}
+
+void SymTriggerRouterService_destroyTriggerRouters(SymTriggerRouterService *this, SymList *triggerRouters) {
+    // Cleanup discarded TriggerRouters completely. Need to keep track of the
+    // freedRouters and Triggers because there are multiple pointers to the same
+    // memory location within these objects and we can't free the same pointer
+    // twice.
+    SymList *freedRouters = SymList_new(NULL);
+    SymList *freedTriggers = SymList_new(NULL);
+
+    int i;
+    for (i = 0; i < triggerRouters->size; i++) {
+        SymTriggerRouter *triggerRouter = triggerRouters->get(triggerRouters, i);
+        unsigned short shouldFreeRouter = 1;
+        int j =0;
+        for (j =0; j < freedRouters->size; j++) {
+            if (freedRouters->get(freedRouters, j) == triggerRouter->router) {
+                shouldFreeRouter = 0;
+                break; //already freed.
+            }
+        }
+
+        if (shouldFreeRouter && triggerRouter->router) {
+            triggerRouter->router->destroy(triggerRouter->router);
+            freedRouters->add(freedRouters, triggerRouter->router);
+            triggerRouter->router = NULL;
+        }
+        unsigned short shouldFreeTrigger = 1;
+
+        for (j =0; j < freedTriggers->size; j++) {
+            if (freedTriggers->get(freedTriggers, j) == triggerRouter->trigger) {
+                shouldFreeTrigger = 0;
+                break; //already freed.
+            }
+        }
+
+        if (shouldFreeTrigger && triggerRouter->trigger) {
+            triggerRouter->trigger->destroy(triggerRouter->trigger);
+            freedTriggers->add(freedRouters, triggerRouter->trigger);
+            triggerRouter->trigger = NULL;
+        }
+    }
+
+    triggerRouters->destroyAll(triggerRouters, (void *)SymTriggerRouter_destroy);
+    freedRouters->destroy(freedRouters);
+    freedTriggers->destroy(freedTriggers);
 }
 
 SymList * SymTriggerRouterService_getTriggersToSync(SymTriggerRouterService *this) {
@@ -508,10 +568,14 @@ SymList * SymTriggerRouterService_getTriggersToSync(SymTriggerRouterService *thi
         unsigned short nodeGroupIdMatches = SymStringUtils_equals(nodeGroupId, triggerRouter->router->nodeGroupLink->sourceNodeGroupId);
         if (nodeGroupIdMatches) {
             triggers->add(triggers, triggerRouter->trigger);
+            // ultimately we just wanted the trigger from the TriggerRouter.
+            // So break the link to the trigger here so we can destroy the rest of
+            // the objects below.
+            triggerRouter->trigger = NULL;
         }
     }
 
-    triggerRouters->destroyAll(triggerRouters, (void *)SymTriggerRouter_destroy);
+    SymTriggerRouterService_destroyTriggerRouters(this, triggerRouters);
 
     return triggers;
 }
@@ -676,7 +740,6 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
     newTriggerHist->triggerId = trigger->triggerId;
     newTriggerHist->lastTriggerBuildReason = reason;
     newTriggerHist->sourceTableName = trigger->sourceTableName; // TODO trigger.isSourceTableNameWildCarded()
-
     SymList *orderColumnsForTable = trigger->orderColumnsForTable(trigger, table);
     newTriggerHist->columnNames = SymTable_getCommaDeliminatedColumns(orderColumnsForTable);
     orderColumnsForTable->destroy(orderColumnsForTable);
@@ -751,6 +814,7 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
     if (!triggerExists && triggerIsActive) {
         SymChannel *channel = this->configurationService->getChannel(this->configurationService, trigger->channelId);
         this->symmetricDialect->createTrigger(this->symmetricDialect, dmlType, trigger, hist, channel, NULL, table);
+        channel->destroy(channel);
     }
 
     newTriggerHist->destroy(newTriggerHist);

@@ -187,7 +187,7 @@ void SymMap_resetAll(SymMap *this, void (*destroyObject)(void *object)) {
 
             while (currentEntry != NULL) {
                 SymMapEntry *nextEntry = currentEntry->next;
-                if (destroyObject) {
+                if (destroyObject && currentEntry->value) {
                     destroyObject(currentEntry->value);
                 }
                 free(currentEntry->key);
