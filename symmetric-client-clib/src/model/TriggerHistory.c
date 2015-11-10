@@ -62,29 +62,8 @@ char * SymTriggerHistory_getTriggerNameForDmlType(SymTriggerHistory *this, SymDa
 }
 
 void SymTriggerHistory_destroy(SymTriggerHistory *this) {
-    // Being selective here based on Valgrind reports and testing that
-    // shows other fields are static memory or really owned by someone else.
-    if (this->sourceTableName) {
-     //   free(this->sourceTableName);
-    }
-    if (this->nameForInsertTrigger) {
-        free(this->nameForInsertTrigger);
-    }
-    if (this->nameForUpdateTrigger) {
-        free(this->nameForUpdateTrigger);
-    }
-    if (this->nameForDeleteTrigger) {
-        free(this->nameForDeleteTrigger);
-    }
-
     if (this->createTime) {
         this->createTime->destroy(this->createTime);
-    }
-    if (this->columnNames) {
-        free(this->columnNames);
-    }
-    if (this->pkColumnNames) {
-        free(this->pkColumnNames);
     }
     if (this->inactiveTime) {
         this->inactiveTime->destroy(this->inactiveTime);

@@ -199,6 +199,11 @@ void SymMap_resetAll(SymMap *this, void (*destroyObject)(void *object)) {
         }
         index++;
     }
+
+    int i;
+    for (i = 0; i < this->size; i++) {
+        this->table[i] = NULL;
+    }
 }
 
 void SymMap_reset(SymMap *this) {
