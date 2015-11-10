@@ -129,7 +129,6 @@ unsigned short SymEngine_uninstall(SymEngine *this) {
 void SymEngine_destroy(SymEngine *this) {
     this->triggerRouterService->destroy(this->triggerRouterService);
     this->dialect->destroy(this->dialect);
-    this->platform->destroy(this->platform);
     this->purgeService->destroy(this->purgeService);
     this->pushService->destroy(this->pushService);
     this->pullService->destroy(this->pullService);

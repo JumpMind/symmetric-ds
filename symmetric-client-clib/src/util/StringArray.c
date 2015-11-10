@@ -29,7 +29,7 @@ int SymStringArray_compareFunction(const void * a, const void * b) {
 SymStringArray * SymStringArray_addn(SymStringArray *this, char *src, int size) {
     if (this->size == this->sizeAllocated) {
         this->sizeAllocated += this->sizeIncrement;
-        this->array = realloc(this->array, this->sizeAllocated);
+        this->array = (char **) realloc(this->array, this->sizeAllocated * sizeof(char *));
     }
     char *str = NULL;
     if (size > 0) {
@@ -126,7 +126,9 @@ void SymStringArray_print(SymStringArray *this) {
 void SymStringArray_reset(SymStringArray *this) {
     int i;
     for (i = 0; i < this->size; i++) {
-        free(this->array[i]);
+        if (this->array[i]) {
+            free(this->array[i]);
+        }
     }
     this->size = 0;
 }

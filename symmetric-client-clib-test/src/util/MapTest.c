@@ -302,6 +302,25 @@ void SymMapTest_testRemove() {
     map->remove(map, "1");
 }
 
+void SymMapTest_testResetRemove() {
+    int mapSize = 16;
+    SymMap *map = SymMap_new(NULL, mapSize);
+    int i;
+    for (i = 0; i < mapSize; i++) {
+        map->put(map, SymStringUtils_format("%d", i), SymStringUtils_format("value %d", i));
+    }
+    CU_ASSERT(SymStringUtils_equals(map->get(map, "1"), "value 1"));
+    map->reset(map);
+    CU_ASSERT(map->get(map, "1") == NULL);
+    map->remove(map, "1");
+    CU_ASSERT(map->get(map, "1") == NULL);
+
+    map->put(map, "1", "value 1");
+    CU_ASSERT(SymStringUtils_equals(map->get(map, "1"), "value 1"));
+    map->remove(map, "1");
+    CU_ASSERT(map->get(map, "1") == NULL);
+}
+
 int SymMapTest_CUnit() {
     CU_pSuite suite = CU_add_suite("SymMapTest", NULL, NULL);
     if (suite == NULL) {
@@ -321,6 +340,7 @@ int SymMapTest_CUnit() {
 			CU_add_test(suite, "SymMapTest_testKeysSingleValue", SymMapTest_testKeysSingleValue) == NULL ||
 			CU_add_test(suite, "SymMapTest_testKeysMultiValue", SymMapTest_testKeysMultiValue) == NULL ||
 			CU_add_test(suite, "SymMapTest_testRemove", SymMapTest_testRemove) == NULL ||
+			CU_add_test(suite, "SymMapTest_testResetRemove", SymMapTest_testResetRemove) == NULL ||
 			1==0
 
 			) {

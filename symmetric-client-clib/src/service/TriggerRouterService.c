@@ -532,6 +532,7 @@ void SymTriggerRouterService_destroyTriggerRouters(SymTriggerRouterService *this
         }
 
         if (shouldFreeRouter && triggerRouter->router) {
+            free(triggerRouter->router->routerId);
             triggerRouter->router->destroy(triggerRouter->router);
             freedRouters->add(freedRouters, triggerRouter->router);
             triggerRouter->router = NULL;
@@ -946,8 +947,10 @@ static unsigned short SymTriggerRouterService_doesTriggerRouterExistInList(SymLi
 
 static char * SymTriggerRouterService_buildSymmetricTableRouterId(SymTriggerRouterService *this, char *triggerId, char *sourceNodeGroupId,
         char *targetNodeGroupId) {
-    return SymTriggerRouterService_replaceCharsToShortenName(this, SymStringUtils_format("%s_%s_2_%s",
-            triggerId, sourceNodeGroupId, targetNodeGroupId));
+    char *format = SymStringUtils_format("%s_%s_2_%s", triggerId, sourceNodeGroupId, targetNodeGroupId);
+    char *symmetricTableRouterId = SymTriggerRouterService_replaceCharsToShortenName(this, format);
+    free(format);
+    return symmetricTableRouterId;
 }
 
 static SymTriggerRouter * SymTriggerRouterService_buildTriggerRoutersForSymmetricTablesWithTrigger(SymTriggerRouterService *this, SymTrigger *trigger,
@@ -961,9 +964,11 @@ static SymTriggerRouter * SymTriggerRouterService_buildTriggerRoutersForSymmetri
             nodeGroupLink->targetNodeGroupId);
     router->routerType = SYM_CONFIGURATION_CHANGED_DATA_ROUTER_ROUTER_TYPE;
     router->nodeGroupLink = nodeGroupLink;
-    router->lastUpdateTime = trigger->lastUpdateTime;
+    if (trigger->lastUpdateTime) {
+        router->lastUpdateTime = SymDate_newWithTime(trigger->lastUpdateTime->time); // Everyone needs their own copy to avoid attempts to free the same memory later.
+        triggerRouter->lastUpdateTime = SymDate_newWithTime(trigger->lastUpdateTime->time);
+    }
 
-    triggerRouter->lastUpdateTime = trigger->lastUpdateTime;
 
     return triggerRouter;
 }
@@ -1012,6 +1017,7 @@ static void SymTriggerRouterService_mergeInConfigurationTablesTriggerRoutersForC
             configuredInDatabase->add(configuredInDatabase, trigger);
         }
     }
+
     virtualConfigTriggers->destroy(virtualConfigTriggers);
     iter->destroy(iter);
 }
@@ -1062,11 +1068,15 @@ static SymTriggerRoutersCache * SymTriggerRouterService_getTriggerRoutersCacheFo
             }
         }
         iter->destroy(iter);
+        triggerRouters->destroy(triggerRouters);
 
         cache = (SymTriggerRoutersCache *) calloc(1, sizeof(SymTriggerRoutersCache));
         cache->routersByRouterId = routers;
         cache->triggerRoutersByTriggerId = triggerRoutersByTriggerId;
         newTriggerRouterCacheByNodeGroupId->put(newTriggerRouterCacheByNodeGroupId, myNodeGroupId, cache);
+        if (this->triggerRouterCacheByNodeGroupId) {
+            this->triggerRouterCacheByNodeGroupId->destroy(this->triggerRouterCacheByNodeGroupId);
+        }
         this->triggerRouterCacheByNodeGroupId = newTriggerRouterCacheByNodeGroupId;
         cache = this->triggerRouterCacheByNodeGroupId == NULL ? NULL:
                 this->triggerRouterCacheByNodeGroupId->get(this->triggerRouterCacheByNodeGroupId, myNodeGroupId);
@@ -1086,6 +1096,9 @@ void SymTriggerRouterService_destroy(SymTriggerRouterService * this) {
     }
     if (this->triggersCache) {
         this->triggersCache->destroy(this->triggersCache);
+    }
+    if (this->triggerRouterCacheByNodeGroupId) {
+        this->triggerRouterCacheByNodeGroupId->destroy(this->triggerRouterCacheByNodeGroupId);
     }
     free(this);
 }

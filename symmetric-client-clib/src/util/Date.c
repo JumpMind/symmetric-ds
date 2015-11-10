@@ -26,7 +26,7 @@ void SymDate_destroy(SymDate *this) {
 }
 
 SymDate * SymDate_newWithString(char *dateTimeString) {
-    SymDate *this = (SymDate *) calloc(1, sizeof(SymDate));
+    SymDate *this = SymDate_new();
     this->dateTimeString = SymStringBuilder_copy(dateTimeString);
     SymStringBuilder *sb = SymStringBuilder_newWithString(dateTimeString);
     char *year = sb->substring(sb, 0, 4);
@@ -69,10 +69,10 @@ unsigned short SymDate_equals(SymDate *this, SymDate *otherDate) {
 
 SymDate * SymDate_newWithTime(time_t time) {
     SymDate *this = (SymDate *) calloc(1, sizeof(SymDate));
+    this->destroy = (void *) &SymDate_destroy;
     this->before = (void *) &SymDate_before;
     this->after = (void *) &SymDate_after;
     this->equals = (void *) &SymDate_equals;
-    this->destroy = (void *) &SymDate_destroy;
     this->dateTimeString = calloc(24, sizeof(char));
     this->time = time;
     struct tm *timeInfo = localtime(&time);

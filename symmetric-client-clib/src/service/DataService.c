@@ -143,6 +143,7 @@ void SymDataService_insertDataEvents(SymDataService *this, SymSqlTransaction *tr
                 args->add(args, dataEvent->routerId);
                 int error;
                 transaction->addRow(transaction, args, NULL, &error);
+                args->destroy(args);
             }
             iter->destroy(iter);
         }

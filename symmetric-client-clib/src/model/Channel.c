@@ -22,10 +22,10 @@
 
 void SymChannel_destroy(SymChannel *this) {
     if (this->createTime) {
-        free(this->createTime);
+        this->createTime->destroy(this->createTime);
     }
     if (this->lastUpdateTime) {
-        free(this->lastUpdateTime);
+        this->lastUpdateTime->destroy(this->lastUpdateTime);
     }
     free(this);
 }

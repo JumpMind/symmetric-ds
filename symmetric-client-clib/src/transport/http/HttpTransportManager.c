@@ -110,7 +110,7 @@ static int sendMessage(SymHttpTransportManager *this, char *url, char *postData)
         }
         curl_easy_cleanup(curl);
     } else {
-        fprintf(stderr, "Error cannot initialize curl\n");
+        SymLog_error("Cannot initialize curl.");
     }
     return httpResponseCode;
 }

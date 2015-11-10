@@ -161,6 +161,7 @@ static int SymRouterService_routeDataToNodes(SymRouterService *this, SymData *da
                 }
             }
             numberOfDataEventsInserted += SymRouterService_insertDataEvents(this, context, dataMetaData, nodeIds);
+            dataMetaData->destroy(dataMetaData);
         }
     } else {
         SymLog_warn("Could not find trigger routers for trigger history id of %d.  There is a good chance that data was captured and the trigger router link was removed before the data could be routed",
@@ -237,7 +238,6 @@ static int SymRouterService_routeDataForEachChannel(SymRouterService *this) {
     }
     iter->destroy(iter);
     channelList->destroy(channelList);
-//    channels->destroy(channels);
     channels->destroyAll(channels, (void *)SymChannel_destroy);
     return dataCount;
 }
