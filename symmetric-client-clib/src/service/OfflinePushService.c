@@ -75,7 +75,7 @@ void SymOfflinePushService_pushToNode(SymOfflinePushService *this, SymNode *remo
     extractedBatches->destroy(extractedBatches);
     transport->destroy(transport);
     identitySecurity->destroy(identitySecurity);
-    identity->destroy(identity);
+    // identity->destroy(identity);  Don't free identity. It's cached.
 }
 
 void SymOfflinePushService_execute(SymOfflinePushService *this, SymNode *node, SymRemoteNodeStatus *status) {
