@@ -397,10 +397,12 @@ public class DbExport {
     }
 
     protected String getDatabaseName() {
-        if (compatible == Compatible.MSSQL) {
-            compatible = Compatible.MSSQL2000;
+        Compatible mappedCompatible = compatible;
+        
+        if (mappedCompatible == Compatible.MSSQL) {
+            mappedCompatible = Compatible.MSSQL2000;
         }
-        return compatible.toString().toLowerCase();
+        return mappedCompatible.toString().toLowerCase();
     }
 
     class WriterWrapper {
