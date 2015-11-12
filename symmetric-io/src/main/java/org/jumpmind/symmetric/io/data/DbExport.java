@@ -396,6 +396,13 @@ public class DbExport {
         return maxRows;
     }
 
+    protected String getDatabaseName() {
+        if (compatible == Compatible.MSSQL) {
+            compatible = Compatible.MSSQL2000;
+        }
+        return compatible.toString().toLowerCase();
+    }
+
     class WriterWrapper {
         final private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -450,6 +457,8 @@ public class DbExport {
                     }
                     startedWriting = true;
                 }
+                
+                String databaseName = getDatabaseName();
 
                 if (format == Format.CSV && csvWriter == null) {
                     csvWriter = new CsvWriter(writer, ',');
@@ -467,18 +476,23 @@ public class DbExport {
                         table.setSchema(null);
                     }
                     Table targetTable = table.copy();
-                    insertSql = DmlStatementFactory.createDmlStatement(compatible.toString()
-                            .toLowerCase(), DmlType.INSERT, targetTable, useQuotedIdentifiers);
+                    insertSql = DmlStatementFactory.createDmlStatement(databaseName, 
+                            DmlType.INSERT, targetTable, useQuotedIdentifiers);
                 }
 
                 if (!noCreateInfo) {
                     if (format == Format.SQL) {
-                        IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(compatible
-                                .toString().toLowerCase());
+                        IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(databaseName);
                         target.setDelimitedIdentifierModeOn(useQuotedIdentifiers);
                         write(target.createTables(getDatabase(table), addDropTable));
                     } else if (format == Format.XML) {
                         DatabaseXmlUtil.write(table, writer);
+                    }
+                }
+                else if (addDropTable) {
+                    if (format == Format.SQL) {
+                        IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(databaseName);
+                        write(target.dropTables(getDatabase(table)));
                     }
                 }
 
