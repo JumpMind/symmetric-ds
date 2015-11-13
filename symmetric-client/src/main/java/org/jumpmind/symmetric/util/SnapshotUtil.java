@@ -55,6 +55,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.db.firebird.FirebirdSymmetricDialect;
 import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
 import org.jumpmind.symmetric.job.IJob;
@@ -214,6 +215,14 @@ public class SnapshotUtil {
         
         extract(export, 5000, "order by create_time desc", new File(tmpDir, "incomingbatch.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));          
+        
+        if (engine.getSymmetricDialect() instanceof FirebirdSymmetricDialect) {
+            final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements",
+                    "mon$io_stats", "mon$record_stats", "mon$memory_usage", "mon$call_stack", "mon$context_variables"};
+            for (String table : monTables) {
+                extract(export, new File(tmpDir, "firebird-" + table + ".csv"), table);
+            }
+        }
         
         final int THREAD_INDENT_SPACE = 50;
         fwriter = null;
