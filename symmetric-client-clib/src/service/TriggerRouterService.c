@@ -212,6 +212,10 @@ SymList * SymTriggerRouterService_getActiveTriggerHistories(SymTriggerRouterServ
     SymList *histories = sqlTemplate->query(sqlTemplate, sb->str, NULL, NULL, &error, (void *) SymTriggerRouterService_triggerHistoryMapper);
     sb->destroy(sb);
 
+    if (this->historyMap->size > 0) {
+        this->historyMap->resetAll(this->historyMap, (void *)SymTriggerHistory_destroy);
+    }
+
     SymIterator *iter = histories->iterator(histories);
     while (iter->hasNext(iter)) {
         SymTriggerHistory *triggerHistory = (SymTriggerHistory *) iter->next(iter);
@@ -516,46 +520,46 @@ void SymTriggerRouterService_destroyTriggerRouters(SymTriggerRouterService *this
     // freedRouters and Triggers because there are multiple pointers to the same
     // memory location within these objects and we can't free the same pointer
     // twice.
-//    SymList *freedRouters = SymList_new(NULL);
-//    SymList *freedTriggers = SymList_new(NULL);
-//
-//    int i;
-//    for (i = 0; i < triggerRouters->size; i++) {
-//        SymTriggerRouter *triggerRouter = triggerRouters->get(triggerRouters, i);
-//        unsigned short shouldFreeRouter = 1;
-//        int j =0;
-//        for (j =0; j < freedRouters->size; j++) {
-//            if (freedRouters->get(freedRouters, j) == triggerRouter->router) {
-//                shouldFreeRouter = 0;
-//                break; //already freed.
-//            }
-//        }
-//
-//        if (shouldFreeRouter && triggerRouter->router) {
-//            free(triggerRouter->router->routerId);
-//            triggerRouter->router->destroy(triggerRouter->router);
-//            freedRouters->add(freedRouters, triggerRouter->router);
-//            triggerRouter->router = NULL;
-//        }
-//        unsigned short shouldFreeTrigger = 1;
-//
-//        for (j =0; j < freedTriggers->size; j++) {
-//            if (freedTriggers->get(freedTriggers, j) == triggerRouter->trigger) {
-//                shouldFreeTrigger = 0;
-//                break; //already freed.
-//            }
-//        }
-//
-//        if (shouldFreeTrigger && triggerRouter->trigger) {
-//            triggerRouter->trigger->destroy(triggerRouter->trigger);
-//            freedTriggers->add(freedRouters, triggerRouter->trigger);
-//            triggerRouter->trigger = NULL;
-//        }
-//    }
-//
-//    triggerRouters->destroyAll(triggerRouters, (void *)SymTriggerRouter_destroy);
-//    freedRouters->destroy(freedRouters);
-//    freedTriggers->destroy(freedTriggers);
+    SymList *freedRouters = SymList_new(NULL);
+    SymList *freedTriggers = SymList_new(NULL);
+
+    int i;
+    for (i = 0; i < triggerRouters->size; i++) {
+        SymTriggerRouter *triggerRouter = triggerRouters->get(triggerRouters, i);
+        unsigned short shouldFreeRouter = 1;
+        int j =0;
+        for (j =0; j < freedRouters->size; j++) {
+            if (freedRouters->get(freedRouters, j) == triggerRouter->router) {
+                shouldFreeRouter = 0;
+                break; //already freed.
+            }
+        }
+
+        if (shouldFreeRouter && triggerRouter->router) {
+            free(triggerRouter->router->routerId);
+            triggerRouter->router->destroy(triggerRouter->router);
+            freedRouters->add(freedRouters, triggerRouter->router);
+            triggerRouter->router = NULL;
+        }
+        unsigned short shouldFreeTrigger = 1;
+
+        for (j =0; j < freedTriggers->size; j++) {
+            if (freedTriggers->get(freedTriggers, j) == triggerRouter->trigger) {
+                shouldFreeTrigger = 0;
+                break; //already freed.
+            }
+        }
+
+        if (shouldFreeTrigger && triggerRouter->trigger) {
+            triggerRouter->trigger->destroy(triggerRouter->trigger);
+            freedTriggers->add(freedRouters, triggerRouter->trigger);
+            triggerRouter->trigger = NULL;
+        }
+    }
+
+    triggerRouters->destroyAll(triggerRouters, (void *)SymTriggerRouter_destroy);
+    freedRouters->destroy(freedRouters);
+    freedTriggers->destroy(freedTriggers);
 }
 
 SymList * SymTriggerRouterService_getTriggersToSync(SymTriggerRouterService *this) {
@@ -929,7 +933,7 @@ void SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this, unsigne
 
         symmetricTableTriggers->destroy(symmetricTableTriggers); // shallow destroy here because these objects are also in 'triggers'.
         triggers->destroyAll(triggers, (void *)SymTrigger_destroy);
-        // activeTriggerHistories is cached - don't destroy.
+        activeTriggerHistories->destroy(activeTriggerHistories); // shallow destroy, these trigger histories are used in the cache.
     }
 }
 
