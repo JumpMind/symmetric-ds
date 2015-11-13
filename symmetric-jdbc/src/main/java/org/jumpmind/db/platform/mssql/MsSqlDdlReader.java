@@ -64,6 +64,13 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
+    protected String getTableNamePattern(String tableName) {
+        tableName = tableName.replace("_", "\\_");
+        tableName = tableName.replace("%", "\\%");
+        return tableName;
+    }
+    
+    @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         String tableName = (String) values.get("TABLE_NAME");
