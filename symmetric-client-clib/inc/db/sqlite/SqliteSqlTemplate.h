@@ -33,7 +33,6 @@
 typedef struct SymSqliteSqlTemplate {
     SymSqlTemplate super;
     sqlite3 *db;
-    void (*destroy)(struct SymSqliteSqlTemplate *this);
 } SymSqliteSqlTemplate;
 
 SymSqliteSqlTemplate * SymSqliteSqlTemplate_new(SymSqliteSqlTemplate *this, sqlite3 *db);

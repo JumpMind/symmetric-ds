@@ -280,6 +280,8 @@ void SymDefaultDatabaseWriter_endBatch(SymDefaultDatabaseWriter *this, SymBatch 
 
 void SymDefaultDatabaseWriter_close(SymDefaultDatabaseWriter *this) {
     this->sqlTransaction->close(this->sqlTransaction);
+    this->sqlTransaction->destroy(this->sqlTransaction);
+    this->sqlTransaction = NULL;
 }
 
 void SymDefaultDatabaseWriter_destroy(SymDefaultDatabaseWriter *this) {

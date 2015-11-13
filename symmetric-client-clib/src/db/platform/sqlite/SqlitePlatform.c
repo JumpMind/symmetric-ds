@@ -48,11 +48,11 @@ SymSqliteSqlTemplate * SymSqlitePlatform_getSqlTemplate(SymSqlitePlatform *this)
 
 void SymSqlitePlatform_destroy(SymDatabasePlatform *super) {
 	SymLog_info("Closing SQLite database");
-//    SymSqlitePlatform *this = (SymSqlitePlatform *) super;
+    SymSqlitePlatform *this = (SymSqlitePlatform *) super;
 //    sqlite3_close(this->db);
-//    this->sqlTemplate->destroy(this->sqlTemplate);
+    this->sqlTemplate->destroy(this->sqlTemplate);
 //	  free(super->ddlReader);
-//    free(super);
+    free(this);
 }
 
 SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties *properties) {
