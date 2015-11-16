@@ -193,32 +193,35 @@ public class SnapshotUtil {
         export.setFormat(Format.CSV);
         export.setNoCreateInfo(true);
         
-        extract(export, new File(tmpDir, "identity.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
+        extract(export, new File(tmpDir, "sym_identity.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
         
-        extract(export, new File(tmpDir, "node.csv"),  
+        extract(export, new File(tmpDir, "sym_node.csv"),  
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
         
-        extract(export, new File(tmpDir, "nodesecurity.csv"), 
+        extract(export, new File(tmpDir, "sym_node_security.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
 
-        extract(export, new File(tmpDir, "nodehost.csv"),  
+        extract(export, new File(tmpDir, "sym_node_host.csv"),  
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST));
         
-        extract(export, new File(tmpDir, "triggerhist.csv"), 
+        extract(export, new File(tmpDir, "sym_trigger_hist.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST));
         
-        extract(export, new File(tmpDir, "lock.csv"),
+        extract(export, new File(tmpDir, "sym_lock.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_LOCK));
         
-        extract(export, new File(tmpDir, "nodecommunication.csv"), 
+        extract(export, new File(tmpDir, "sym_node_communication.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION));        
         
-        extract(export, 5000, "order by create_time desc", new File(tmpDir, "outgoingbatch.csv"), 
+        extract(export, 5000, "order by create_time desc", new File(tmpDir, "sym_outgoing_batch.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));        
         
-        extract(export, 5000, "order by create_time desc", new File(tmpDir, "incomingbatch.csv"), 
+        extract(export, 5000, "order by create_time desc", new File(tmpDir, "sym_incoming_batch.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));          
-        
+
+        extract(export, 5000, "order by start_id, end_id desc", new File(tmpDir, "sym_data_gap.csv"), 
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_DATA_GAP));
+
         if (engine.getSymmetricDialect() instanceof FirebirdSymmetricDialect) {
             final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements",
                     "mon$io_stats", "mon$record_stats", "mon$memory_usage", "mon$call_stack", "mon$context_variables"};
