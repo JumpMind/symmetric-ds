@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.sql.DataSource;
-
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -88,8 +86,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     /* The platform that this model reader belongs to. */
     protected IDatabasePlatform platform;
     
-    protected String wildcardEscapeString;
-
     /*
      * Contains default column sizes (minimum sizes that a JDBC-compliant db
      * must support).
@@ -133,17 +129,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         _columnsForPK = initColumnsForPK();
         _columnsForFK = initColumnsForFK();
         _columnsForIndex = initColumnsForIndex();
-        
-        DataSource ds = platform.getDataSource();
-        Connection c = null;
-        try {
-            c = ds.getConnection();
-            wildcardEscapeString = c.getMetaData().getSearchStringEscape();
-        } catch (SQLException ex) {
-            throw new SqlException(ex);
-        } finally {
-            JdbcSqlTemplate.close(c);
-        }
     }
 
     /*
@@ -634,10 +619,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
 
     protected String getTableNamePattern(String tableName) {
-        if (isNotBlank(wildcardEscapeString)) {
-            tableName = tableName.replace("_", wildcardEscapeString + "_");
-            tableName = tableName.replace("%", wildcardEscapeString + "%");
-        }
         return tableName;
     }
 
@@ -997,7 +978,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         ResultSet pkData = null;
 
         try {
-            pkData = metaData.getPrimaryKeys(tableName);
+            pkData = metaData.getPrimaryKeys(getTableNamePattern(tableName));
             while (pkData.next()) {
                 Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
 
@@ -1041,7 +1022,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             ResultSet fkData = null;
     
             try {
-                fkData = metaData.getForeignKeys(tableName);
+                fkData = metaData.getForeignKeys(getTableNamePattern(tableName));
     
                 while (fkData.next()) {
                     Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
@@ -1104,7 +1085,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             ResultSet indexData = null;
     
             try {
-                indexData = metaData.getIndices(tableName, false, false);
+                indexData = metaData.getIndices(getTableNamePattern(tableName), false, false);
     
                 while (indexData.next()) {
                     Map<String, Object> values = readMetaData(indexData, getColumnsForIndex());

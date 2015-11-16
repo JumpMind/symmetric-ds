@@ -40,6 +40,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -55,6 +58,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.db.firebird.FirebirdSymmetricDialect;
 import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
 import org.jumpmind.symmetric.job.IJob;
@@ -189,31 +193,42 @@ public class SnapshotUtil {
         export.setFormat(Format.CSV);
         export.setNoCreateInfo(true);
         
-        extract(export, new File(tmpDir, "identity.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
+        extract(export, new File(tmpDir, "sym_identity.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
         
-        extract(export, new File(tmpDir, "node.csv"),  
+        extract(export, new File(tmpDir, "sym_node.csv"),  
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
         
-        extract(export, new File(tmpDir, "nodesecurity.csv"), 
+        extract(export, new File(tmpDir, "sym_node_security.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
 
-        extract(export, new File(tmpDir, "nodehost.csv"),  
+        extract(export, new File(tmpDir, "sym_node_host.csv"),  
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST));
         
-        extract(export, new File(tmpDir, "triggerhist.csv"), 
+        extract(export, new File(tmpDir, "sym_trigger_hist.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST));
         
-        extract(export, new File(tmpDir, "lock.csv"),
+        extract(export, new File(tmpDir, "sym_lock.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_LOCK));
         
-        extract(export, new File(tmpDir, "nodecommunication.csv"), 
+        extract(export, new File(tmpDir, "sym_node_communication.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION));        
         
-        extract(export, 5000, "order by create_time desc", new File(tmpDir, "outgoingbatch.csv"), 
+        extract(export, 5000, "order by create_time desc", new File(tmpDir, "sym_outgoing_batch.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));        
         
-        extract(export, 5000, "order by create_time desc", new File(tmpDir, "incomingbatch.csv"), 
+        extract(export, 5000, "order by create_time desc", new File(tmpDir, "sym_incoming_batch.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));          
+
+        extract(export, 5000, "order by start_id, end_id desc", new File(tmpDir, "sym_data_gap.csv"), 
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_DATA_GAP));
+
+        if (engine.getSymmetricDialect() instanceof FirebirdSymmetricDialect) {
+            final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements",
+                    "mon$io_stats", "mon$record_stats", "mon$memory_usage", "mon$call_stack", "mon$context_variables"};
+            for (String table : monTables) {
+                extract(export, new File(tmpDir, "firebird-" + table + ".csv"), table);
+            }
+        }
         
         final int THREAD_INDENT_SPACE = 50;
         fwriter = null;
@@ -396,17 +411,38 @@ public class SnapshotUtil {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(new File(tmpDir, "runtime-stats.properties"));
-            Properties runtimeProperties = new Properties();
+            Properties runtimeProperties = new Properties() {
+                private static final long serialVersionUID = 1L;
+                public synchronized Enumeration<Object> keys() {
+                    return Collections.enumeration(new TreeSet<Object>(super.keySet()));
+                }
+            };
+
+            DataSource dataSource = engine.getDatabasePlatform().getDataSource();
+            if (dataSource instanceof BasicDataSource) {
+                BasicDataSource dbcp = (BasicDataSource) dataSource;
+                runtimeProperties.setProperty("connections.idle", String.valueOf(dbcp.getNumIdle()));
+                runtimeProperties.setProperty("connections.used", String.valueOf(dbcp.getNumActive()));
+                runtimeProperties.setProperty("connections.max", String.valueOf(dbcp.getMaxActive()));   
+            }
+            
+            Runtime rt = Runtime.getRuntime();
+            runtimeProperties.setProperty("memory.free", String.valueOf(rt.freeMemory()));
+            runtimeProperties.setProperty("memory.used", String.valueOf(rt.totalMemory() - rt.freeMemory()));
+            runtimeProperties.setProperty("memory.max", String.valueOf(rt.maxMemory()));
+
             runtimeProperties.setProperty("engine.is.started", Boolean.toString(engine.isStarted()));
-            runtimeProperties.setProperty("server.time", new Date().toString());
-            runtimeProperties.setProperty("database.time", new Date(engine.getSymmetricDialect().getDatabaseTime()).toString());
-            runtimeProperties.setProperty("unrouted.data.count",
+            runtimeProperties.setProperty("engine.last.restart", engine.getLastRestartTime().toString());
+            
+            runtimeProperties.setProperty("time.server", new Date().toString());
+            runtimeProperties.setProperty("time.database", new Date(engine.getSymmetricDialect().getDatabaseTime()).toString());
+            runtimeProperties.setProperty("batch.unrouted.data.count",
                     Long.toString(engine.getRouterService().getUnroutedDataCount()));
-            runtimeProperties.setProperty("outgoing.errors.count",
+            runtimeProperties.setProperty("batch.outgoing.errors.count",
                     Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesInError()));
-            runtimeProperties.setProperty("outgoing.tosend.count",
+            runtimeProperties.setProperty("batch.outgoing.tosend.count",
                     Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesUnsent()));
-            runtimeProperties.setProperty("incoming.errors.count",
+            runtimeProperties.setProperty("batch.incoming.errors.count",
                     Long.toString(engine.getIncomingBatchService().countIncomingBatchesInError()));
             
             List<DataGap> gaps = engine.getDataService().findDataGaps();
@@ -419,7 +455,10 @@ public class SnapshotUtil {
                         Long.toString(gaps.get(gaps.size()-1).getEndId()));                
 
             }
-            
+
+            runtimeProperties.put("jvm.title", Runtime.class.getPackage().getImplementationTitle());
+            runtimeProperties.put("jvm.vendor", Runtime.class.getPackage().getImplementationVendor());
+            runtimeProperties.put("jvm.version", Runtime.class.getPackage().getImplementationVersion());
             RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
             List<String> arguments = runtimeMxBean.getInputArguments();
             runtimeProperties.setProperty("jvm.arguments", arguments.toString());

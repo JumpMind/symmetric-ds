@@ -212,6 +212,10 @@ SymList * SymTriggerRouterService_getActiveTriggerHistories(SymTriggerRouterServ
     SymList *histories = sqlTemplate->query(sqlTemplate, sb->str, NULL, NULL, &error, (void *) SymTriggerRouterService_triggerHistoryMapper);
     sb->destroy(sb);
 
+    if (this->historyMap->size > 0) {
+        this->historyMap->resetAll(this->historyMap, (void *)SymTriggerHistory_destroy);
+    }
+
     SymIterator *iter = histories->iterator(histories);
     while (iter->hasNext(iter)) {
         SymTriggerHistory *triggerHistory = (SymTriggerHistory *) iter->next(iter);
@@ -815,7 +819,7 @@ SymTriggerHistory * SymTriggerRouterService_rebuildTriggerIfNecessary(SymTrigger
     if (!triggerExists && triggerIsActive) {
         SymChannel *channel = this->configurationService->getChannel(this->configurationService, trigger->channelId);
         this->symmetricDialect->createTrigger(this->symmetricDialect, dmlType, trigger, hist, channel, NULL, table);
-        channel->destroy(channel);
+        //channel->destroy(channel);
     }
 
     newTriggerHist->destroy(newTriggerHist);
@@ -929,7 +933,7 @@ void SymTriggerRouterService_syncTriggers(SymTriggerRouterService *this, unsigne
 
         symmetricTableTriggers->destroy(symmetricTableTriggers); // shallow destroy here because these objects are also in 'triggers'.
         triggers->destroyAll(triggers, (void *)SymTrigger_destroy);
-        activeTriggerHistories->destroyAll(activeTriggerHistories, (void *)SymTriggerHistory_destroy);
+        activeTriggerHistories->destroy(activeTriggerHistories); // shallow destroy, these trigger histories are used in the cache.
     }
 }
 

@@ -398,9 +398,9 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                             log.error(String.format("Failed to execute %s for node %s", nodeCommunication.getCommunicationType().name(),
                                     nodeCommunication.getNodeId()), ex);
                         } finally {
-                            unlock(nodeCommunication, failed, ts);
                             status.setComplete(true);
                             executing.remove(nodeCommunication.getNodeId());
+                            unlock(nodeCommunication, failed, ts);
                         }
                     }
                 };
@@ -415,6 +415,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         } catch (RuntimeException ex) {
             log.error(String.format("Failed to execute %s for node %s", nodeCommunication.getCommunicationType().name(),
                     nodeCommunication.getNodeId()), ex);
+            executing.remove(nodeCommunication.getNodeId());
             unlock(nodeCommunication, true, System.currentTimeMillis());
             return false;
         }
