@@ -62,6 +62,23 @@ char * SymTriggerHistory_getTriggerNameForDmlType(SymTriggerHistory *this, SymDa
 }
 
 void SymTriggerHistory_destroy(SymTriggerHistory *this) {
+    if (this->nameForInsertTrigger) {
+        free(this->nameForInsertTrigger);
+    }
+    if (this->nameForUpdateTrigger) {
+        free(this->nameForUpdateTrigger);
+    }
+    if (this->nameForDeleteTrigger) {
+        free(this->nameForDeleteTrigger);
+    }
+    if (this->columnNames) {
+        free(this->columnNames);
+        this->columnNames = NULL;
+    }
+    if (this->pkColumnNames) {
+        free(this->pkColumnNames);
+        this->pkColumnNames = NULL;
+    }
     if (this->createTime) {
         this->createTime->destroy(this->createTime);
     }

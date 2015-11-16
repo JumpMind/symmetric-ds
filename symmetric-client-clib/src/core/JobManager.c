@@ -42,7 +42,6 @@ unsigned short SymJobManager_shouldRun(SymJobManager *this, char* startJobProper
 
 void SymJobManager_invoke(SymJobManager *this) {
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_SYNCTRIGGERS_JOB, SYM_PARAMETER_SYNCTRIGGERS_PERIOD_MS, this->lastSyncTriggersTime)) {
-
         SymLog_info("SYNC TRIGGERS ============================)");
         this->engine->syncTriggers(this->engine);
         time(&this->lastSyncTriggersTime);
@@ -64,11 +63,13 @@ void SymJobManager_invoke(SymJobManager *this) {
             }
         }
         time(&this->lastPushTime);
+        pushStatus->destroy(pushStatus);
     }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_PULL_JOB, SYM_PARAMETER_PULL_PERIOD_MS, this->lastPullTime)) {
         SymLog_info("PULL ============================)");
-        this->engine->pull(this->engine);
+        SymRemoteNodeStatuses *statuses = this->engine->pull(this->engine);
         time(&this->lastPullTime);
+        statuses->destroy(statuses);
     }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_PURGE_JOB, SYM_PARAMETER_PURGE_PERIOD_MS, this->lastPurgeTime)) {
         SymLog_info("PURGE ============================)");
@@ -77,13 +78,15 @@ void SymJobManager_invoke(SymJobManager *this) {
     }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_OFFLINE_PUSH_JOB, SYM_PARAMETER_OFFLINE_PUSH_PERIOD_MS, this->lastOfflinePushTime)) {
         SymLog_info("OFFLINE PUSH ============================)");
-        this->engine->offlinePushService->pushData(this->engine->offlinePushService);
+        SymRemoteNodeStatuses *statuses = this->engine->offlinePushService->pushData(this->engine->offlinePushService);
         time(&this->lastOfflinePushTime);
+        statuses->destroy(statuses);
     }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_OFFLINE_PULL_JOB, SYM_PARAMETER_OFFLINE_PULL_PERIOD_MS, this->lastOfflinePullTime)) {
         SymLog_info("OFFLINE PULL ============================)");
-        this->engine->offlinePullService->pullData(this->engine->offlinePullService);
+        SymRemoteNodeStatuses *statuses = this->engine->offlinePullService->pullData(this->engine->offlinePullService);
         time(&this->lastOfflinePullTime);
+        statuses->destroy(statuses);
     }
 }
 

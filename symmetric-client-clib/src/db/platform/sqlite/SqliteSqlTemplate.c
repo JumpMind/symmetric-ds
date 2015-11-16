@@ -207,6 +207,6 @@ SymSqliteSqlTemplate * SymSqliteSqlTemplate_new(SymSqliteSqlTemplate *this, sqli
     super->queryWithUserData = (void *) &SymSqliteSqlTemplate_queryWithUserData;
     super->update = (void *) &SymSqliteSqlTemplate_update;
     super->startSqlTransaction = (void *) &SymSqliteSqlTemplate_startSqlTransaction;
-    this->destroy = (void *) &SymSqliteSqlTemplate_destroy;
+    super->destroy = (void *) &SymSqliteSqlTemplate_destroy;
     return this;
 }
