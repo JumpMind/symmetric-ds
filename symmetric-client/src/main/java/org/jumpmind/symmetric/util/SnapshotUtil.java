@@ -40,6 +40,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -405,17 +408,38 @@ public class SnapshotUtil {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(new File(tmpDir, "runtime-stats.properties"));
-            Properties runtimeProperties = new Properties();
+            Properties runtimeProperties = new Properties() {
+                private static final long serialVersionUID = 1L;
+                public synchronized Enumeration<Object> keys() {
+                    return Collections.enumeration(new TreeSet<Object>(super.keySet()));
+                }
+            };
+
+            DataSource dataSource = engine.getDatabasePlatform().getDataSource();
+            if (dataSource instanceof BasicDataSource) {
+                BasicDataSource dbcp = (BasicDataSource) dataSource;
+                runtimeProperties.setProperty("connections.idle", String.valueOf(dbcp.getNumIdle()));
+                runtimeProperties.setProperty("connections.used", String.valueOf(dbcp.getNumActive()));
+                runtimeProperties.setProperty("connections.max", String.valueOf(dbcp.getMaxActive()));   
+            }
+            
+            Runtime rt = Runtime.getRuntime();
+            runtimeProperties.setProperty("memory.free", String.valueOf(rt.freeMemory()));
+            runtimeProperties.setProperty("memory.used", String.valueOf(rt.totalMemory() - rt.freeMemory()));
+            runtimeProperties.setProperty("memory.max", String.valueOf(rt.maxMemory()));
+
             runtimeProperties.setProperty("engine.is.started", Boolean.toString(engine.isStarted()));
-            runtimeProperties.setProperty("server.time", new Date().toString());
-            runtimeProperties.setProperty("database.time", new Date(engine.getSymmetricDialect().getDatabaseTime()).toString());
-            runtimeProperties.setProperty("unrouted.data.count",
+            runtimeProperties.setProperty("engine.last.restart", engine.getLastRestartTime().toString());
+            
+            runtimeProperties.setProperty("time.server", new Date().toString());
+            runtimeProperties.setProperty("time.database", new Date(engine.getSymmetricDialect().getDatabaseTime()).toString());
+            runtimeProperties.setProperty("batch.unrouted.data.count",
                     Long.toString(engine.getRouterService().getUnroutedDataCount()));
-            runtimeProperties.setProperty("outgoing.errors.count",
+            runtimeProperties.setProperty("batch.outgoing.errors.count",
                     Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesInError()));
-            runtimeProperties.setProperty("outgoing.tosend.count",
+            runtimeProperties.setProperty("batch.outgoing.tosend.count",
                     Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesUnsent()));
-            runtimeProperties.setProperty("incoming.errors.count",
+            runtimeProperties.setProperty("batch.incoming.errors.count",
                     Long.toString(engine.getIncomingBatchService().countIncomingBatchesInError()));
             
             List<DataGap> gaps = engine.getDataService().findDataGaps();
@@ -428,7 +452,10 @@ public class SnapshotUtil {
                         Long.toString(gaps.get(gaps.size()-1).getEndId()));                
 
             }
-            
+
+            runtimeProperties.put("jvm.title", Runtime.class.getPackage().getImplementationTitle());
+            runtimeProperties.put("jvm.vendor", Runtime.class.getPackage().getImplementationVendor());
+            runtimeProperties.put("jvm.version", Runtime.class.getPackage().getImplementationVersion());
             RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
             List<String> arguments = runtimeMxBean.getInputArguments();
             runtimeProperties.setProperty("jvm.arguments", arguments.toString());
