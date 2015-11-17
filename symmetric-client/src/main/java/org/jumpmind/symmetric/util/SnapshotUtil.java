@@ -28,10 +28,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
+import java.lang.management.MemoryUsage;
+import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -430,7 +435,24 @@ public class SnapshotUtil {
             runtimeProperties.setProperty("memory.free", String.valueOf(rt.freeMemory()));
             runtimeProperties.setProperty("memory.used", String.valueOf(rt.totalMemory() - rt.freeMemory()));
             runtimeProperties.setProperty("memory.max", String.valueOf(rt.maxMemory()));
-
+            
+            List<MemoryPoolMXBean> memoryPools = new ArrayList<MemoryPoolMXBean>(ManagementFactory.getMemoryPoolMXBeans());
+            long usedHeapMemory = 0;
+            for (MemoryPoolMXBean memoryPool : memoryPools) {
+                if (memoryPool.getType().equals(MemoryType.HEAP)) {
+                    MemoryUsage memoryUsage = memoryPool.getCollectionUsage();
+                    runtimeProperties.setProperty("memory.heap." + memoryPool.getName().toLowerCase().replaceAll(" ", "."),
+                            Long.toString(memoryUsage.getUsed()));
+                    usedHeapMemory += memoryUsage.getUsed();
+                }
+            }
+            runtimeProperties.setProperty("memory.heap.total", Long.toString(usedHeapMemory));
+            
+            OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+            runtimeProperties.setProperty("os.name", System.getProperty("os.name") + " (" + System.getProperty("os.arch") + ")");
+            runtimeProperties.setProperty("os.processors", String.valueOf(osBean.getAvailableProcessors()));
+            runtimeProperties.setProperty("os.load.average", String.valueOf(osBean.getSystemLoadAverage()));
+            
             runtimeProperties.setProperty("engine.is.started", Boolean.toString(engine.isStarted()));
             runtimeProperties.setProperty("engine.last.restart", engine.getLastRestartTime().toString());
             
