@@ -85,6 +85,11 @@ SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties
         sqlite3_close(this->db);
         return NULL;
     }
+
+    int busyTimeout = atoi(properties->get(properties, SYM_PARAMETER_SQLITE_BUSY_TIMEOUT_MS, SYM_SQLITE_DEFAULT_BUSY_TIMEOUT_MS));
+
+    sqlite3_busy_timeout(this->db, busyTimeout);
+
     this->sqlTemplate = (SymSqlTemplate *) SymSqliteSqlTemplate_new(NULL, this->db);
 
     SymLog_info("Detected database '%s', version '%s'", super->name, super->version);

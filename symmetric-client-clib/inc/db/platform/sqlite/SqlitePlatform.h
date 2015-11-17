@@ -28,6 +28,8 @@
 #include "db/platform/sqlite/SqliteDdlReader.h"
 #include "db/sqlite/SqliteSqlTemplate.h"
 
+#define SYM_SQLITE_DEFAULT_BUSY_TIMEOUT_MS "30000"
+
 typedef struct SymSqlitePlatform {
     SymDatabasePlatform super;
     sqlite3 *db;
