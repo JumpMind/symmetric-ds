@@ -429,4 +429,9 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
     protected String getTableNamePattern(String tableName) {
         return String.format("\"%s\"", tableName);
     }
+    
+    @Override
+    protected String getTableNamePatternForConstraints(String tableName) {
+        return String.format("\"%s\"", tableName);
+    }
 }

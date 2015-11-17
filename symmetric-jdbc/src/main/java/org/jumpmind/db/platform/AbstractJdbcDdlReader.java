@@ -622,6 +622,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         return tableName;
     }
 
+    protected String getTableNamePatternForConstraints(String tableName) {
+        return tableName;
+    }
+
     /*
      * Reads the next table from the meta data.
      * 
@@ -978,7 +982,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         ResultSet pkData = null;
 
         try {
-            pkData = metaData.getPrimaryKeys(getTableNamePattern(tableName));
+            pkData = metaData.getPrimaryKeys(getTableNamePatternForConstraints(tableName));
             while (pkData.next()) {
                 Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
 
@@ -1022,7 +1026,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             ResultSet fkData = null;
     
             try {
-                fkData = metaData.getForeignKeys(getTableNamePattern(tableName));
+                fkData = metaData.getForeignKeys(getTableNamePatternForConstraints(tableName));
     
                 while (fkData.next()) {
                     Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
@@ -1085,7 +1089,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             ResultSet indexData = null;
     
             try {
-                indexData = metaData.getIndices(getTableNamePattern(tableName), false, false);
+                indexData = metaData.getIndices(getTableNamePatternForConstraints(tableName), false, false);
     
                 while (indexData.next()) {
                     Map<String, Object> values = readMetaData(indexData, getColumnsForIndex());

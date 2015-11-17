@@ -257,4 +257,9 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
         return String.format("\"%s\"", tableName).replaceAll("\\_", "\\\\_");
     }
 
+    @Override
+    protected String getTableNamePatternForConstraints(String tableName) {
+        return String.format("\"%s\"", tableName).replaceAll("\\_", "\\\\_");
+    }
+
 }
