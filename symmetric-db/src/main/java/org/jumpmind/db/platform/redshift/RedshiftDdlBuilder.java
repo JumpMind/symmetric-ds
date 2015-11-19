@@ -22,6 +22,8 @@ package org.jumpmind.db.platform.redshift;
 
 import java.sql.Types;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
@@ -52,13 +54,16 @@ public class RedshiftDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
-
+        
         addEscapedCharSequence("\\", "\\\\");
         addEscapedCharSequence("\b", "\\b");
         addEscapedCharSequence("\f", "\\f");
         addEscapedCharSequence("\n", "\\n");
         addEscapedCharSequence("\r", "\\r");
         addEscapedCharSequence("\t", "\\t");
+    }
+
+    protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
     }
 
 }
