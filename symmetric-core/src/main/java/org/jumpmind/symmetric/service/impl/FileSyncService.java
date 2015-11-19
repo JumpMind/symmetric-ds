@@ -495,16 +495,14 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
     public void acknowledgeFiles(OutgoingBatch outgoingBatch) {
         log.debug("Acknowledging file_sync outgoing batch-{}", outgoingBatch.getBatchId());
-        ISqlReadCursor<Data> cursor = engine.getDataService().selectDataFor(
-                outgoingBatch.getBatchId(), outgoingBatch.getChannelId());
-        Data data = null;
         List<File> filesToDelete = new ArrayList<File>();
         Table snapshotTable = platform.getTableFromCache(
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT), false);
-        for (int i = 0; i < outgoingBatch.getInsertEventCount(); i++) {
-            data = cursor.next();
-            if (data != null
-                    && (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE)) {
+        ISqlReadCursor<Data> cursor = engine.getDataService().selectDataFor(
+                outgoingBatch.getBatchId(), outgoingBatch.getChannelId());
+        Data data = cursor.next();
+        while (data != null) {
+            if (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE) {
                 Map<String, String> columnData = data.toColumnNameValuePairs(
                         snapshotTable.getColumnNames(), CsvData.ROW_DATA);
 
@@ -534,6 +532,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     }
                 }
             }
+            data = cursor.next();
         }
 
         if (cursor != null) {
