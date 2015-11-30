@@ -20,8 +20,13 @@
  */
 package org.jumpmind.symmetric.io;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import javax.sql.DataSource;
 
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
@@ -33,6 +38,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor;
+import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
+
+import oracle.sql.TIMESTAMPLTZ;
+import oracle.sql.TIMESTAMPTZ;
 
 
 public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
@@ -83,7 +92,133 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
 
             Assert.assertEquals(count, countRows("test_bulkload_table_1"));
         }
+    }
+    
+    @Test
+    public void testInsertTimestampTZ_timestamp() throws Exception {
+        if (platform != null && platform instanceof OracleDatabasePlatform) {
 
+            NativeJdbcExtractor jdbcExtractor = new CommonsDbcpNativeJdbcExtractor();
+
+            platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
+
+            List<CsvData> datas = new ArrayList<CsvData>();
+
+            String id = getNextId();
+
+            String[] values = { id, "string2", "string not null2", "char2",
+                    "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0",
+                    "47", "67.89", "-0.0747663", "2007-01-02 03:20:10.000", "2007-01-02 03:20:10.000", 
+                    "2007-01-02 03:20:10.000", "2007-01-02 03:20:10.000" };
+            CsvData data = new CsvData(DataEventType.INSERT, values);
+            datas.add(data);
+
+            long count = writeData(new TableCsvData(platform.getTableFromCache(
+                    "test_bulkload_table_1", false), datas));
+
+            Map<String, Object> rowData = queryForRow(id);
+            DataSource datasource = (DataSource)platform.getDataSource();
+            Connection connection = datasource.getConnection();
+            Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
+
+            final String EXPECTED_TIMESTAMPTZ = "2007-01-02 03:20:10.0 America/New_York";
+
+            checkTimestampTZ(rowData.get("TIMESTAMPTZ0_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
+            checkTimestampTZ(rowData.get("TIMESTAMPTZ3_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
+            checkTimestampTZ(rowData.get("TIMESTAMPTZ6_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
+            checkTimestampTZ(rowData.get("TIMESTAMPTZ9_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
+
+            Assert.assertEquals(count, countRows("test_bulkload_table_1"));
+        }
+    }
+    
+    @Test
+    public void testInsertTimestampTZ_timestampWithTimeZone() throws Exception {
+        if (platform != null && platform instanceof OracleDatabasePlatform) {
+
+            NativeJdbcExtractor jdbcExtractor = new CommonsDbcpNativeJdbcExtractor();
+
+            platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
+
+            List<CsvData> datas = new ArrayList<CsvData>();
+
+            String id = getNextId();
+
+            String[] values = { id, "string2", "string not null2", "char2",
+                    "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0",
+                    "47", "67.89", "-0.0747663", "2007-01-02 03:20:10.123456789 -08:00", "2007-01-02 03:20:10.123456789 -08:00", 
+                    "2007-01-02 03:20:10.123456789 -08:00", "2007-01-02 03:20:10.123456789 -08:00" };
+            CsvData data = new CsvData(DataEventType.INSERT, values);
+            datas.add(data);
+
+            long count = writeData(new TableCsvData(platform.getTableFromCache(
+                    "test_bulkload_table_1", false), datas));
+
+            Map<String, Object> rowData = queryForRow(id);
+            DataSource datasource = (DataSource)platform.getDataSource();
+            Connection connection = datasource.getConnection();
+            Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
+
+            checkTimestampTZ(rowData.get("TIMESTAMPTZ0_VALUE"), oracleConnection, "2007-01-02 03:20:10.0 -8:00");
+            checkTimestampTZ(rowData.get("TIMESTAMPTZ3_VALUE"), oracleConnection, "2007-01-02 03:20:10.123 -8:00");
+            checkTimestampTZ(rowData.get("TIMESTAMPTZ6_VALUE"), oracleConnection, "2007-01-02 03:20:10.123457 -8:00");
+            checkTimestampTZ(rowData.get("TIMESTAMPTZ9_VALUE"), oracleConnection, "2007-01-02 03:20:10.123456789 -8:00");
+
+            Assert.assertEquals(count, countRows("test_bulkload_table_1"));
+        }
+    }
+    
+    @Test
+    public void testInsertTimestampTZ_timestampWithLocalTimeZone() throws Exception {
+        if (platform != null && platform instanceof OracleDatabasePlatform) {
+            
+            NativeJdbcExtractor jdbcExtractor = new CommonsDbcpNativeJdbcExtractor();
+            
+            platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
+            
+            List<CsvData> datas = new ArrayList<CsvData>();
+            
+            String id = getNextId();
+            
+            String[] values = { id, "string2", "string not null2", "char2",
+                    "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0",
+                    "47", "67.89", "-0.0747663", null, null, 
+                    null, null, "2007-01-02 03:20:10.123456789 -08:00" };
+            CsvData data = new CsvData(DataEventType.INSERT, values);
+            datas.add(data);
+            
+            long count = writeData(new TableCsvData(platform.getTableFromCache(
+                    "test_bulkload_table_1", false), datas));
+            
+            Map<String, Object> rowData = queryForRow(id);
+            DataSource datasource = (DataSource)platform.getDataSource();
+            Connection connection = datasource.getConnection();
+            Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
+            
+            checkTimestampLTZ(rowData.get("TIMESTAMPLTZ9_VALUE"), oracleConnection, "2007-01-02 03:20:10.123456789 America/New_York");
+            
+            Assert.assertEquals(count, countRows("test_bulkload_table_1"));
+        }
+    }
+
+    /**
+     * @param rowData
+     * @param oracleConnection
+     * @param EXPECTED_TIMESTAMPTZ
+     * @throws SQLException
+     */
+    private void checkTimestampTZ(Object value, Connection oracleConnection, final String EXPECTED_TIMESTAMPTZ)
+            throws SQLException {
+        TIMESTAMPTZ timestamp = (TIMESTAMPTZ) value;
+        String actualTimestampString = timestamp.stringValue(oracleConnection);
+        Assert.assertEquals(EXPECTED_TIMESTAMPTZ, actualTimestampString);
+    }
+    
+    private void checkTimestampLTZ(Object value, Connection oracleConnection, final String EXPECTED_TIMESTAMPTZ)
+            throws SQLException {
+        TIMESTAMPLTZ timestamp = (TIMESTAMPLTZ) value;
+        String actualTimestampString = timestamp.stringValue(oracleConnection);
+        Assert.assertEquals(EXPECTED_TIMESTAMPTZ, actualTimestampString);
     }
 
     @Test
@@ -91,20 +226,24 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
 
-            String[] values = { getNextId(), "string2", "string not null2", "char2",
+            String id = getNextId();
+
+            String[] values = { id, "string2", "string not null2", "char2",
                     "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0", "47",
                     "67.89", "-0.0747663" };
             CsvData data = new CsvData(DataEventType.INSERT, values);
             writeData(data, values);
             Assert.assertEquals(1, countRows("test_bulkload_table_1"));
 
+
             try {
                 setErrorExpected(true);
 
                 List<CsvData> datas = new ArrayList<CsvData>();
                 datas.add(data);
+
                 for (int i = 0; i < 10; i++) {
-                    values = new String[] { getNextId(), "string2", "string not null2", "char2",
+                    values = new String[] { id, "string2", "string not null2", "char2",
                             "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000",
                             "0", "47", "67.89", "-0.0747663" };
                     data = new CsvData(DataEventType.INSERT, values);
@@ -121,6 +260,5 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
                 setErrorExpected(false);
             }
         }
-
     }
 }
