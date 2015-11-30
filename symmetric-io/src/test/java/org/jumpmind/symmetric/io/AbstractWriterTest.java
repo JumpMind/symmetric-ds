@@ -276,7 +276,7 @@ abstract public class AbstractWriterTest {
     }
     
     public Map<String,Object> queryForRow(String id) {
-        return platform.getSqlTemplate().queryForMap("select * from " + TEST_TABLE + " where id=?", new Integer(id));
+        return platform.getSqlTemplate().queryForMap("select * from " + getTestTable() + " where id=?", new Integer(id));
     }
 
     protected class TableCsvData {

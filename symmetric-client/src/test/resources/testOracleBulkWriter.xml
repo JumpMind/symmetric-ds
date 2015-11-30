@@ -21,7 +21,7 @@
     under the License.
 
 -->
-<!DOCTYPE database SYSTEM "http://db.apache.org/torque/dtd/database.dtd">
+<!--  <!DOCTYPE database SYSTEM "http://db.apache.org/torque/dtd/database.dtd"> -->
 
 <database name="databasewritertest">
 
@@ -40,6 +40,26 @@
 		<column name="integer_value" type="INTEGER" />
 		<column name="decimal_value" type="DECIMAL" size="10,2" />
 		<column name="double_value" type="DOUBLE" />
+        <column name="timestamptz0_value" type="TIMESTAMPTZ" size="13"  decimalDigits="0">
+            <platform-column name="oracle" type="TIMESTAMP(0) WITH TIME ZONE"/>
+        </column>
+        <column name="timestamptz3_value" type="TIMESTAMPTZ" size="13"  decimalDigits="3">
+            <platform-column name="oracle" type="TIMESTAMP(3) WITH TIME ZONE"/>
+        </column>
+        <column name="timestamptz6_value" type="TIMESTAMPTZ" size="13"  decimalDigits="6">
+            <platform-column name="oracle" type="TIMESTAMP(6) WITH TIME ZONE" />
+        </column>    
+        <column name="timestamptz9_value" type="TIMESTAMPTZ" size="13"  decimalDigits="9">
+            <platform-column name="oracle" type="TIMESTAMP(9) WITH TIME ZONE"/>
+        </column>                
+        <column name="timestampltz9_value" type="TIMESTAMPTZ" size="13"  decimalDigits="9">
+            <platform-column name="oracle" type="TIMESTAMP(9) WITH LOCAL TIME ZONE"/>
+        </column>                
+         
+        
+<!--          <column name="timestamptz_value3" type="TIMESTAMP(3) WITH TIME ZONE" size="13" decimalDigits="3"/>
+        <column name="timestamptz_value6" type="TIMESTAMP(6) WITH TIME ZONE" size="13" decimalDigits="6"/>
+        <column name="timestamptz_value9" type="TIMESTAMP(9) WITH TIME ZONE" size="13" decimalDigits="9"/>  -->
 	</table>
 	
 	<table name="test_bulkload_table_2">
