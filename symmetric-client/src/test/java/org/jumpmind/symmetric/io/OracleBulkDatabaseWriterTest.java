@@ -169,6 +169,44 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
     }
     
     @Test
+    public void testInsertTimestampTZ_timestampWithTimeZoneNull() throws Exception {
+        if (platform != null && platform instanceof OracleDatabasePlatform) {
+            
+            NativeJdbcExtractor jdbcExtractor = new CommonsDbcpNativeJdbcExtractor();
+            
+            platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
+            
+            List<CsvData> datas = new ArrayList<CsvData>();
+            
+            String id = getNextId();
+            
+            String[] values = { id, "string2", "string not null2", "char2",
+                    "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0",
+                    "47", "67.89", "-0.0747663", "2007-01-02 03:20:10. -08:00", 
+                    "", 
+                    " ", 
+                    null };
+            CsvData data = new CsvData(DataEventType.INSERT, values);
+            datas.add(data);
+            
+            long count = writeData(new TableCsvData(platform.getTableFromCache(
+                    "test_bulkload_table_1", false), datas));
+            
+            Map<String, Object> rowData = queryForRow(id);
+            DataSource datasource = (DataSource)platform.getDataSource();
+            Connection connection = datasource.getConnection();
+            Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
+            
+            checkTimestampTZ(rowData.get("TIMESTAMPTZ0_VALUE"), oracleConnection, "2007-01-02 03:20:10.0 -8:00");
+            Assert.assertNull(rowData.get("TIMESTAMPTZ3_VALUE"));
+            Assert.assertNull(rowData.get("TIMESTAMPTZ6_VALUE"));
+            Assert.assertNull(rowData.get("TIMESTAMPTZ9_VALUE"));
+            
+            Assert.assertEquals(count, countRows("test_bulkload_table_1"));
+        }
+    }
+    
+    @Test
     public void testInsertTimestampTZ_timestampWithLocalTimeZone() throws Exception {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
             
