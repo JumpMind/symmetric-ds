@@ -179,41 +179,49 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
             String stringValue = (String)value;
             return parseTimestampTZ(column.getMappedTypeCode(), stringValue);
         }
-        
+
         return value;
     }
 
     protected Datum parseTimestampTZ(int type, String value) {
-        Timestamp timestamp = null;
-        TimeZone timezone = null;
-        try {
-            // Try something like: 2015-11-20 13:37:44.000000000
-            timestamp = Timestamp.valueOf(value);
-            timezone = TimeZone.getDefault();
+        if (value == null || StringUtils.isEmpty(value.trim())) {
+            return null;
         }
-        catch (Exception ex) {
-            log.debug("Failed to convert value to timestamp.", ex);
-            // Now expecting something like: 2015-11-20 13:37:44.000000000 +08:00
-            int split = value.lastIndexOf(" ");
-            String timestampString = value.substring(0, split).trim();
-            String timezoneString = value.substring(split).trim();
-            
-            timestamp = Timestamp.valueOf(timestampString);
-                
-            timezone = ((AbstractDatabasePlatform)platform).getTimeZone(timezoneString);
-            // Even though we provide the timezone to the Oracle driver, apparently 
-            // the timestamp component needs to actually be in UTC.
-            if (type == OracleTypes.TIMESTAMPTZ) {
-                timestamp = toUTC(timestamp, timezone);                
-            }
-        }
-        Calendar timezoneCalender = Calendar.getInstance();
-        timezoneCalender.setTimeZone(timezone);
-        timezoneCalender.setTime(timestamp);
 
-        JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
-        Connection c = jdbcTransaction.getConnection();
         try {
+            Timestamp timestamp = null;
+            TimeZone timezone = null;
+            try {
+                // Try something like: 2015-11-20 13:37:44.000000000
+                timestamp = Timestamp.valueOf(value.trim());
+                timezone = TimeZone.getDefault();
+            }
+            catch (Exception ex) {
+                log.debug("Failed to convert value to timestamp.", ex);
+                // Now expecting something like: 2015-11-20 13:37:44.000000000 +08:00
+                int split = value.lastIndexOf(" ");
+                String timestampString = value.substring(0, split).trim();
+                if (timestampString.endsWith(".")) { // Cover case where triggers would export format like "2007-01-02 03:20:10."
+                    timestampString = timestampString.substring(0, timestampString.length()-1);
+                }
+                String timezoneString = value.substring(split).trim();
+
+                timestamp = Timestamp.valueOf(timestampString);
+
+                timezone = ((AbstractDatabasePlatform)platform).getTimeZone(timezoneString);
+                // Even though we provide the timezone to the Oracle driver, apparently 
+                // the timestamp component needs to actually be in UTC.
+                if (type == OracleTypes.TIMESTAMPTZ) {
+                    timestamp = toUTC(timestamp, timezone);                
+                }
+            }
+            Calendar timezoneCalender = Calendar.getInstance();
+            timezoneCalender.setTimeZone(timezone);
+            timezoneCalender.setTime(timestamp);
+
+            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
+            Connection c = jdbcTransaction.getConnection();
+
             Connection oracleConnection = jdbcExtractor.getNativeConnection(c);
             Datum ts = null;
             if (type == OracleTypes.TIMESTAMPTZ) {
@@ -222,16 +230,16 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
                 ts = new TIMESTAMPLTZ(oracleConnection, timestamp);
             }
             return ts;
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             log.info("Failed to convert '" + value + "' to TIMESTAMPTZ." );
             throw platform.getSqlTemplate().translate(ex);
         }
     }    
-        
+
     public Timestamp toUTC(Timestamp timestamp, TimeZone timezone) {       
         int nanos = timestamp.getNanos();
         timestamp.setNanos(0);
-                
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
         dateFormat.setTimeZone(timezone);
         Date date;
@@ -241,7 +249,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
             log.info("Failed to parse '" + timestamp + "'");
             throw platform.getSqlTemplate().translate(ex);
         }
-        
+
         Timestamp utcTimestamp = new Timestamp(date.getTime());
         utcTimestamp.setNanos(nanos);
         return utcTimestamp;
@@ -467,7 +475,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
                 ddl.append(String.format("%s(i), \n", variable));
             }
             ddl.replace(ddl.length()-3, ddl.length(), ");\n");
-            
+
             ddl.append(String.format("exception                                                                   \n"));
             ddl.append(String.format("  when dml_errors then                                                      \n"));
             ddl.append(String.format("    for i in 1 .. SQL%%BULK_EXCEPTIONS.count loop                            \n"));
@@ -478,7 +486,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
             ddl.append(String.format("      o_errors(o_errors.count) := SQL%%BULK_EXCEPTIONS(i).ERROR_INDEX;       \n"));       
             ddl.append(String.format("    end loop;                                                               \n"));       
             ddl.append(String.format("end %s;                                                      ", procedureName));
-          
+
             if (log.isDebugEnabled()) {
                 log.debug(ddl.toString());
             }
