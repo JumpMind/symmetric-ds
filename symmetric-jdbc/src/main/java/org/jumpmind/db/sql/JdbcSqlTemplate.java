@@ -268,7 +268,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                                         && superClazz.getName().equals("oracle.sql.Datum")) {
                                     try {
                                         Method method = superClazz.getMethod("toJdbc");
-                                        value = method.invoke(value);
+                                        Object jdbcValue = method.invoke(value); 
+                                        if (jdbcValue != null) { // Oracle TIMESTAMPTZ (for example) will not convert through toJdbc. 
+                                            value = jdbcValue;
+                                        }
                                     } catch (Exception e) {
                                         throw new IllegalStateException(e);
                                     }
