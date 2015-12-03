@@ -302,11 +302,15 @@ public class JdbcDatabasePlatformFactory {
         try {
             DatabaseMetaData dmd = connection.getMetaData();
             dmd.getMaxColumnsInIndex();
+            if (dmd.getDriverName().toUpperCase().contains("REDSHIFT")) {
+            	isRedshift = true;
+            }
         } catch (SQLException ex) {
             if (ex.getSQLState().equals("99999")) {
                 isRedshift = true;
             }
         }
+        
         return isRedshift;
     }
 
