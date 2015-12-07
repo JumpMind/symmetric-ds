@@ -122,7 +122,6 @@ long SymFileIncomingTransport_process(SymFileIncomingTransport *this, SymDataPro
 }
 
 void SymFileIncomingTransport_destroy(SymFileIncomingTransport *this) {
-    free(this->remoteNode);
     free(this);
 }
 
