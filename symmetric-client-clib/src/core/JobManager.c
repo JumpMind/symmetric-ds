@@ -54,8 +54,7 @@ void SymJobManager_invoke(SymJobManager *this) {
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_PUSH_JOB, SYM_PARAMETER_PUSH_PERIOD_MS, this->lastPushTime)) {
         SymLog_debug("PUSH ============================");
         SymRemoteNodeStatuses *pushStatus = this->engine->push(this->engine);
-        if (pushStatus->wasBatchProcessed(pushStatus)
-                || pushStatus->wasDataProcessed(pushStatus)) {
+        if (pushStatus->errorOccurred(pushStatus) == 0) {
             // Only run heartbeat after a successful push to avoid queueing up lots of offline heartbeats.
             if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_HEARTBEAT_JOB, SYM_PARAMETER_HEARTBEAT_JOB_PERIOD_MS, this->lastHeartbeatTime)) {
                 SymLog_debug("HEARTBEAT ============================");
