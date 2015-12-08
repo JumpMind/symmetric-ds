@@ -27,6 +27,7 @@
 #include "db/platform/DatabasePlatform.h"
 #include "db/platform/sqlite/SqliteDdlReader.h"
 #include "db/sqlite/SqliteSqlTemplate.h"
+#include "util/StringArray.h"
 
 #define SYM_SQLITE_DEFAULT_BUSY_TIMEOUT_MS "30000"
 
