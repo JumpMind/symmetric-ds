@@ -20,11 +20,13 @@
  */
 package org.jumpmind.db.platform.redshift;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
@@ -37,6 +39,17 @@ public class RedshiftDdlReader extends AbstractJdbcDdlReader {
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern(null);
+    }
+    
+    @Override
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+    		throws SQLException {
+    	Table table = super.readTable(connection, metaData, values);
+
+        if (table != null) {
+            determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
+        }
+        return table;
     }
     
     @Override
@@ -111,6 +124,9 @@ public class RedshiftDdlReader extends AbstractJdbcDdlReader {
      * Extracts the default value from a default value spec of the form
      * "-9000000000000000000::bigint".
      * 
+     * Handles sequence evaluations where the end paren is after the ::
+     * nextval('"sym_data_data_id_seq"'::text)
+     * 
      * @param defaultValue The default value spec
      * 
      * @return The default value
@@ -119,7 +135,16 @@ public class RedshiftDdlReader extends AbstractJdbcDdlReader {
         int valueEnd = defaultValue.indexOf("::");
 
         if (valueEnd > 0) {
-            defaultValue = defaultValue.substring(0, valueEnd);
+        	
+        	defaultValue = defaultValue.substring(0, valueEnd);
+        	
+        	int startParen = defaultValue.indexOf("(");
+        	int endParen = defaultValue.indexOf(")");
+        	
+        	if (startParen > 0 && endParen < 0) {
+        		defaultValue = defaultValue + ")";
+        	}
+            
         } else {
             if (defaultValue.startsWith("(") && defaultValue.endsWith(")")) {
                 defaultValue = defaultValue.substring(1, defaultValue.length() - 1);

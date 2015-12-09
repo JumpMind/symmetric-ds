@@ -161,7 +161,7 @@ int SymDefaultDatabaseWriter_delete(SymDefaultDatabaseWriter *this, SymCsvData *
             this->dmlStatement->destroy(this->dmlStatement);
         }
         // TODO: pass nullKeyIndiciators
-        this->dmlStatement = SymDmlStatement_new(NULL, SYM_DML_TYPE_UPDATE, this->targetTable, NULL, &this->platform->databaseInfo);
+        this->dmlStatement = SymDmlStatement_new(NULL, SYM_DML_TYPE_DELETE, this->targetTable, NULL, &this->platform->databaseInfo);
         this->sqlTransaction->prepare(this->sqlTransaction, this->dmlStatement->sql, &error);
         this->isError = error != 0;
     }

@@ -40,14 +40,18 @@ public class PostgresLobHandler extends SymmetricLobHandler {
             String jdbcTypeName) throws SQLException {
 
         if (PostgreSqlDatabasePlatform.isBlobStoredByReference(jdbcTypeName)) {
-            Blob blob = rs.getBlob(columnIndex);
-            if (blob != null) {
-                return blob.getBytes(1, (int) blob.length());
-            } else {
-                return null;
-            }
+            return getLoColumnAsBytes(rs, columnIndex);
         } else {
             return getDefaultHandler().getBlobAsBytes(rs, columnIndex);
+        }
+    }
+    
+    public static byte[] getLoColumnAsBytes(ResultSet rs, int columnIndex) throws SQLException {
+        Blob blob = rs.getBlob(columnIndex);
+        if (blob != null) {
+            return blob.getBytes(1, (int) blob.length());
+        } else {
+            return null;
         }
     }
 }

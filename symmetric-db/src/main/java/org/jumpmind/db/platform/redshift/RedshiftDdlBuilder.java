@@ -46,7 +46,8 @@ public class RedshiftDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR(65535)");
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIMESTAMP", Types.TIMESTAMP);
-
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "VARCHAR(65535)");
+        
         databaseInfo.setDefaultSize(Types.CHAR, 256);
         databaseInfo.setDefaultSize(Types.VARCHAR, 256);
 

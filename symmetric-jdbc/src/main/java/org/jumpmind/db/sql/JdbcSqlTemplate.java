@@ -51,6 +51,7 @@ import javax.sql.DataSource;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.platform.postgresql.PostgresLobHandler;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import org.slf4j.Logger;
@@ -228,7 +229,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public Map<String, Object> queryForMap(final String sql, final Object... args) {
         logSql(sql, args);
         return execute(new IConnectionCallback<Map<String, Object>>() {
-            @SuppressWarnings("resource")
             public Map<String, Object> execute(Connection con) throws SQLException {
                 Map<String, Object> result = null;
                 PreparedStatement ps = null;
@@ -247,6 +247,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         for (int i = 1; i <= colCount; i++) {
                             String key = meta.getColumnName(i);
                             Object value = rs.getObject(i);
+                            // TODO It seems like this should call getResultSetValue()
                             if (value instanceof Blob) {
                                 Blob blob = (Blob) value;
                                 try {
@@ -497,6 +498,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         ResultSetMetaData metaData = rs.getMetaData();
         Object obj = null;
         int jdbcType = metaData.getColumnType(index);
+        String jdbcTypeName = metaData.getColumnTypeName(index);
         if (readStringsAsBytes && TypeMap.isTextType(jdbcType)) {
             byte[] bytes = rs.getBytes(index);
             if (bytes != null) {
@@ -553,6 +555,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (typeName != null && typeName.equals("timestamptz")) {
                 obj = rs.getString(index);
             }
+        }  else if (jdbcTypeName != null && "oid".equals(jdbcTypeName)) {
+            obj = PostgresLobHandler.getLoColumnAsBytes(rs, index);
         }
         return obj;
     }

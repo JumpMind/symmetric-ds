@@ -88,7 +88,7 @@ static char * getAcknowledgementData(SymList *batches) {
 
 static int sendMessage(SymHttpTransportManager *this, char *url, char *postData) {
     long httpResponseCode = -1;
-    SymLog_info("Sending message '%s' to URL '%s'", postData, url);
+    SymLog_debug("Sending message '%s' to URL '%s'", postData, url);
     CURL *curl = curl_easy_init();
     if (curl) {
         if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_VERIFIED_SERVERS, 1)) {

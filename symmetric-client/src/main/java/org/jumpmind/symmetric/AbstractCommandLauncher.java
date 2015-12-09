@@ -109,7 +109,7 @@ public abstract class AbstractCommandLauncher {
             symHome = ".";
         }
         System.setProperty("log4j.sym.home", symHome);
-        if (isBlank(System.getProperty("h2.baseDir"))) {
+        if (isBlank(System.getProperty("h2.baseDir.disable")) && isBlank(System.getProperty("h2.baseDir"))) {
            System.setProperty("h2.baseDir", symHome + "/tmp/h2");
         }
         DEFAULT_SERVER_PROPERTIES = System.getProperty(SystemConstants.SYSPROP_SERVER_PROPERTIES_PATH, symHome + "/conf/symmetric-server.properties");

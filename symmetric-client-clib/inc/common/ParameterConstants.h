@@ -94,5 +94,6 @@
 #define SYM_PARAMETER_HTTPS_ALLOW_SELF_SIGNED_CERTS "https.allow.self.signed.certs"
 
 #define SYM_PARAMETER_SQLITE_BUSY_TIMEOUT_MS "sqlite.busy.timeout.ms"
+#define SYM_PARAMETER_SQLITE_INIT_SQL "sqlite.init.sql"
 
 #endif

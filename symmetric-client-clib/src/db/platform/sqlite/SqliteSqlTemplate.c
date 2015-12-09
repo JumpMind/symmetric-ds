@@ -22,7 +22,7 @@
 #include "common/Log.h"
 
 static void SymSqliteSqlTemplate_prepare(SymSqliteSqlTemplate *this, char *sql, SymStringArray *args, SymList *sqlTypes, int *error, sqlite3_stmt **stmt) {
-	SymLog_info("Preparing %s", sql);
+	SymLog_debug("Preparing %s", sql);
     int rc = sqlite3_prepare_v2(this->db, sql, -1, stmt, NULL);
     if (rc != SQLITE_OK) {
     	SymLog_error("Failed to prepare query: %s", sql);

@@ -68,9 +68,11 @@ public class OracleDmlStatement extends DmlStatement {
     @Override
     protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
         int typeCode = super.getTypeCode(column, isDateOverrideToTimestamp);
-        if (typeCode == Types.LONGVARCHAR) {
+        if (column.getJdbcTypeName().startsWith("XML")) {
+            typeCode = Types.VARCHAR;
+        } else if (typeCode == Types.LONGVARCHAR) {
             typeCode = Types.CLOB;
-        } 
+        }
         return typeCode;
     }
     
