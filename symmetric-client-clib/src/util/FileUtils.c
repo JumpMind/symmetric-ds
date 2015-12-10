@@ -22,13 +22,35 @@
 
 int SymFileUtils_mkdir(char* dirName) {
 
-    struct stat st = {0};
     int result = 0;
+    struct stat st = {0};
 
     if (stat(dirName, &st) == -1) {
-        result = mkdir(dirName, 0777);
+        char tmp[256];
+        char *p = NULL;
+        size_t len;
+        char SEPERATOR = '/';
+
+        snprintf(tmp, sizeof(tmp),"%s", dirName);
+        len = strlen(tmp);
+        if (tmp[len - 1] == SEPERATOR) {
+            tmp[len - 1] = 0;
+        }
+
+        for (p = tmp + 1; *p; p++) {
+            if(*p == '/') {
+                *p = 0;
+                result = mkdir(tmp, S_IRWXU);
+                if (result != 0) {
+                    SymLog_warn("Failed to create dir '%s' %s", tmp, strerror(errno));
+                }
+                *p = '/';
+            }
+        }
+
+        result = mkdir(tmp, S_IRWXU);
         if (result != 0) {
-            SymLog_warn("Failed to create dir '%s' %s", dirName, strerror(errno));
+            SymLog_warn("Failed to create dir '%s' %s", tmp, strerror(errno));
         }
     }
 

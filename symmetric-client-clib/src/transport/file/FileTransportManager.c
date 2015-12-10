@@ -24,23 +24,22 @@ int SymFileTransportManager_sendAcknowledgement(SymFileTransportManager *this, S
     return SYM_TRANSPORT_OK;
 }
 
-char * SymFileTransportManager_getDirName(SymFileTransportManager *this, char *paramName, SymNode *localNode) {
-    // TODO replace nodeGroupId and nodeId variables.
+char * SymFileTransportManager_getDirName(SymFileTransportManager *this, char *paramName, SymNode *localNode, char *defaultDirName) {
     SymTransportManager *super = &this->super;
-    char *dirName = super->parameterService->getString(super->parameterService, paramName, ".");
+    char *dirName = super->parameterService->getString(super->parameterService, paramName, defaultDirName);
     return dirName;
 }
 
 SymFileIncomingTransport * SymFileTransportManager_getPullTransport(SymFileTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
      return SymFileIncomingTransport_new(NULL, remote, local,
-             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_INCOMING_DIR, local),
-             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_ARCHIVE_DIR, local),
-             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_ERROR_DIR, local));
+             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_INCOMING_DIR, local, "./tmp/offline/incoming"),
+             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_ARCHIVE_DIR, local, ""),
+             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_ERROR_DIR, local, ""));
 }
 
 SymFileOutgoingTransport * SymFileTransportManager_getPushTransport(SymFileTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
     return SymFileOutgoingTransport_new(NULL, remote, local,
-            SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_OUTGOING_DIR, local));
+            SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_OUTGOING_DIR, local, "./tmp/offline/outgoing"));
 }
 
 SymList * SymFileTransportManager_readAcknowledgement(SymFileTransportManager *this, char *parameterString1, char *parameterString2) {

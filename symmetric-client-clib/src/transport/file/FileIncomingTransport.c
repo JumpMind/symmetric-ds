@@ -21,6 +21,9 @@
 #include "transport/file/FileIncomingTransport.h"
 
 char* SymFileIncomingTransport_getIncomingFile(SymFileIncomingTransport *this, char *extension) {
+
+    SymFileUtils_mkdir(this->offlineIncomingDir);
+
     DIR *dir;
     struct dirent *dirEntries;
     dir = opendir(this->offlineIncomingDir);

@@ -33,6 +33,7 @@
 #include "common/Log.h"
 #include "util/StringUtils.h"
 #include "util/StringArray.h"
+#include "util/FileUtils.h"
 
 typedef struct SymFileIncomingTransport {
     SymIncomingTransport super;
