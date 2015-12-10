@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <curl/curl.h>
 #include <util/Properties.h>
 #include <dirent.h>
