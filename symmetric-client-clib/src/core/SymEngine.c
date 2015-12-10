@@ -182,6 +182,7 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->offlineTransportManager = SymTransportManagerFactory_create(SYM_PROTOCOL_FILE, this->parameterService);
     this->nodeService = SymNodeService_new(NULL, this->platform);
     this->nodeService->lastRestartTime = SymDate_new(NULL);
+    this->nodeCommunicationService = SymNodeCommunicationService_new(NULL,  this->nodeService, this->parameterService);
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
     this->outgoingBatchService = SymOutgoingBatchService_new(NULL, this->platform, this->parameterService, this->sequenceService);
     this->acknowledgeService = SymAcknowledgeService_new(NULL, this->outgoingBatchService, this->platform);
@@ -194,12 +195,15 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
             this->triggerRouterService, this->parameterService, this->platform);
     this->registrationService = SymRegistrationService_new(NULL, this->nodeService, this->dataLoaderService, this->parameterService,
             this->configurationService);
-    this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
+    this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService,
+            this->configurationService, this->nodeCommunicationService);
     this->pushService = SymPushService_new(NULL, this->nodeService, this->dataExtractorService, this->transportManager, this->parameterService,
-            this->configurationService, this->acknowledgeService);
-    this->offlinePullService = SymOfflinePullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService, this->configurationService);
-    this->offlinePushService = SymOfflinePushService_new(NULL, this->nodeService, this->dataExtractorService, this->offlineTransportManager, this->parameterService,
-            this->configurationService, this->acknowledgeService);
+            this->configurationService, this->acknowledgeService, this->nodeCommunicationService);
+    this->offlinePullService = SymOfflinePullService_new(NULL, this->nodeService,
+            this->dataLoaderService, this->registrationService, this->configurationService, this->nodeCommunicationService);
+    this->offlinePushService = SymOfflinePushService_new(NULL, this->nodeService,
+            this->dataExtractorService, this->offlineTransportManager, this->parameterService,
+            this->configurationService, this->acknowledgeService, this->nodeCommunicationService);
     this->purgeService = SymPurgeService_new(NULL, this->parameterService, this->dialect, this->platform);
 
     return this;

@@ -27,6 +27,7 @@
 #include "model/RemoteNodeStatus.h"
 #include "model/RemoteNodeStatuses.h"
 #include "service/NodeService.h"
+#include "service/NodeCommunicationService.h"
 #include "service/ParameterService.h"
 #include "service/ConfigurationService.h"
 #include "service/DataExtractorService.h"
@@ -37,6 +38,7 @@
 #include "common/Log.h"
 
 typedef struct SymPushService {
+    SymNodeCommunicationService *nodeCommunicationService;
     SymNodeService *nodeService;
     SymDataExtractorService *dataExtractorService;
     SymTransportManager *transportManager;
@@ -49,6 +51,6 @@ typedef struct SymPushService {
 
 SymPushService * SymPushService_new(SymPushService *this, SymNodeService *nodeService, SymDataExtractorService *dataExtractorService,
     SymTransportManager *transportManager, SymParameterService *parameterService, SymConfigurationService *configurationService,
-    SymAcknowledgeService *acknowledgeService);
+    SymAcknowledgeService *acknowledgeService, SymNodeCommunicationService *nodeCommunicationService);
 
 #endif

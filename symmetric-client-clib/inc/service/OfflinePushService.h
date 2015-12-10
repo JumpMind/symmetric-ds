@@ -32,6 +32,7 @@
 #include "service/ConfigurationService.h"
 #include "service/DataExtractorService.h"
 #include "service/AcknowledgeService.h"
+#include "service/NodeCommunicationService.h"
 #include "transport/TransportManager.h"
 #include "transport/file/FileOutgoingTransport.h"
 #include "util/List.h"
@@ -45,13 +46,14 @@ typedef struct SymOfflinePushService {
     SymParameterService *parameterService;
     SymConfigurationService *configurationService;
     SymAcknowledgeService *acknowledgeService;
+    SymNodeCommunicationService *nodeCommunicationService;
     SymRemoteNodeStatuses * (*pushData)(struct SymOfflinePushService *this);
     void (*destroy)(struct SymOfflinePushService *);
 } SymOfflinePushService;
 
-SymOfflinePushService * SymOfflinePushService_new(SymOfflinePushService *this, SymNodeService *nodeService, SymDataExtractorService *dataExtractorService,
-    SymTransportManager *transportManager, SymParameterService *parameterService, SymConfigurationService *configurationService,
-    SymAcknowledgeService *acknowledgeService);
-
+SymOfflinePushService * SymOfflinePushService_new(SymOfflinePushService *this, SymNodeService *nodeService,
+        SymDataExtractorService *dataExtractorService, SymTransportManager *transportManager,
+        SymParameterService *parameterService, SymConfigurationService *configurationService,
+        SymAcknowledgeService *acknowledgeService, SymNodeCommunicationService *nodeCommunicationService);
 
 #endif
