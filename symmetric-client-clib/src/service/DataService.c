@@ -74,55 +74,55 @@ SymList * SymDataService_selectDataFor(SymDataService *this, SymBatch *batch) {
 void SymDataService_heartbeat(SymDataService *this, unsigned short force) {
     SymNode *me = this->nodeService->findIdentity(this->nodeService);
 
-    if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HEARTBEAT_ENABLED, 1)) {
-        unsigned short updateWithBatchStatus = this->parameterService->is(this->parameterService,
-                SYM_PARAMETER_HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS, 0);
+    if (me != NULL) {
+        if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HEARTBEAT_ENABLED, 1)) {
+            unsigned short updateWithBatchStatus = this->parameterService->is(this->parameterService,
+                    SYM_PARAMETER_HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS, 0);
 
-        char *syncUrl = this->parameterService->getSyncUrl(this->parameterService);
-        char *schemaVersion = this->parameterService->getString(this->parameterService, SYM_PARAMETER_SCHEMA_VERSION, "");
+            char *syncUrl = this->parameterService->getSyncUrl(this->parameterService);
+            char *schemaVersion = this->parameterService->getString(this->parameterService, SYM_PARAMETER_SCHEMA_VERSION, "");
 
-        int outgoingErrorCount = -1;
-        int outgoingUnsentCount = -1;
-        if (updateWithBatchStatus) {
-            outgoingUnsentCount = this->outgoingBatchService->countOutgoingBatchesUnsent(this->outgoingBatchService);
-            outgoingErrorCount = this->outgoingBatchService->countOutgoingBatchesInError(this->outgoingBatchService);
-        }
-
-        if (! SymStringUtils_equals(this->parameterService->getExternalId(this->parameterService), me->externalId)
-                || ! SymStringUtils_equals(this->parameterService->getNodeGroupId(this->parameterService), me->nodeGroupId)
-                || (syncUrl != NULL && ! SymStringUtils_equals(syncUrl, me->syncUrl))
-                || ! SymStringUtils_equals(schemaVersion, me->schemaVersion)  // TODO empty string vs. null is causing refresh everytime.
-                || ! SymStringUtils_equals(SYM_VERSION, me->symmetricVersion)
-                || ! SymStringUtils_equals(this->platform->name, me->databaseType)
-                || ! SymStringUtils_equals(this->platform->version, me->databaseVersion)
-                || me->batchInErrorCount != outgoingErrorCount
-                || me->batchToSendCount != outgoingUnsentCount) {
-            SymLog_info("Some attribute(s) of node changed.  Recording changes");
-
-            me->deploymentType = SYM_DEPLOYMENT_TYPE;
-            me->symmetricVersion = SYM_VERSION;
-            me->databaseType = this->platform->name;
-            me->databaseVersion = this->platform->version;
-            me->batchInErrorCount = outgoingErrorCount;
-            me->batchToSendCount = outgoingUnsentCount;
-            me->schemaVersion = schemaVersion;
-            if (this->parameterService->is(this->parameterService, SYM_PARAMETER_AUTO_UPDATE_NODE_VALUES, 0)) {
-                SymLog_info("Updating my node configuration info according to the symmetric properties");
-                me->externalId = this->parameterService->getExternalId(this->parameterService);
-                me->nodeGroupId = this->parameterService->getNodeGroupId(this->parameterService);
-                if (SymStringUtils_isNotBlank(this->parameterService->getSyncUrl(this->parameterService))) {
-                    me->syncUrl = this->parameterService->getSyncUrl(this->parameterService);
-                }
+            int outgoingErrorCount = -1;
+            int outgoingUnsentCount = -1;
+            if (updateWithBatchStatus) {
+                outgoingUnsentCount = this->outgoingBatchService->countOutgoingBatchesUnsent(this->outgoingBatchService);
+                outgoingErrorCount = this->outgoingBatchService->countOutgoingBatchesInError(this->outgoingBatchService);
             }
 
-            this->nodeService->save(this->nodeService, me);
+            if (! SymStringUtils_equals(this->parameterService->getExternalId(this->parameterService), me->externalId)
+                    || ! SymStringUtils_equals(this->parameterService->getNodeGroupId(this->parameterService), me->nodeGroupId)
+                    || (syncUrl != NULL && ! SymStringUtils_equals(syncUrl, me->syncUrl))
+                    || ! SymStringUtils_equals(schemaVersion, me->schemaVersion)  // TODO empty string vs. null is causing refresh everytime.
+                    || ! SymStringUtils_equals(SYM_VERSION, me->symmetricVersion)
+                    || ! SymStringUtils_equals(this->platform->name, me->databaseType)
+                    || ! SymStringUtils_equals(this->platform->version, me->databaseVersion)
+                    || me->batchInErrorCount != outgoingErrorCount
+                    || me->batchToSendCount != outgoingUnsentCount) {
+                SymLog_info("Some attribute(s) of node changed.  Recording changes");
+
+                me->deploymentType = SYM_DEPLOYMENT_TYPE;
+                me->symmetricVersion = SYM_VERSION;
+                me->databaseType = this->platform->name;
+                me->databaseVersion = this->platform->version;
+                me->batchInErrorCount = outgoingErrorCount;
+                me->batchToSendCount = outgoingUnsentCount;
+                me->schemaVersion = schemaVersion;
+                if (this->parameterService->is(this->parameterService, SYM_PARAMETER_AUTO_UPDATE_NODE_VALUES, 0)) {
+                    SymLog_info("Updating my node configuration info according to the symmetric properties");
+                    me->externalId = this->parameterService->getExternalId(this->parameterService);
+                    me->nodeGroupId = this->parameterService->getNodeGroupId(this->parameterService);
+                    if (SymStringUtils_isNotBlank(this->parameterService->getSyncUrl(this->parameterService))) {
+                        me->syncUrl = this->parameterService->getSyncUrl(this->parameterService);
+                    }
+                }
+
+                this->nodeService->save(this->nodeService, me);
+            }
         }
-
+        SymLog_debug("Updating my node info");
+        this->nodeService->updateNodeHostForCurrentNode(this->nodeService);
+        SymLog_debug("Done updating my node info");
     }
-
-    SymLog_debug("Updating my node info");
-    this->nodeService->updateNodeHostForCurrentNode(this->nodeService);
-    SymLog_debug("Done updating my node info");
 }
 
 void SymDataService_insertDataEvents(SymDataService *this, SymSqlTransaction *transaction, SymList *events) {
