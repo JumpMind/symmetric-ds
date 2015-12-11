@@ -34,7 +34,7 @@ static void append(SymStringBuilder *sb, char *name, char *value) {
 
 static char * buildUrl(char *action, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
     SymStringBuilder *sb = SymStringBuilder_new();
-    if (strcmp(remote->syncUrl, "") == 0) {
+    if (SymStringUtils_isBlank(remote->syncUrl)) {
         sb->append(sb, registrationUrl);
     } else {
         sb->append(sb, remote->syncUrl);
