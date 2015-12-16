@@ -186,8 +186,8 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->incomingBatchService = SymIncomingBatchService_new(NULL, this->platform, this->parameterService);
     this->outgoingBatchService = SymOutgoingBatchService_new(NULL, this->platform, this->parameterService, this->sequenceService);
     this->acknowledgeService = SymAcknowledgeService_new(NULL, this->outgoingBatchService, this->platform);
-    this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->transportManager, this->offlineTransportManager,
-            this->platform, this->dialect, this->incomingBatchService);
+    this->dataLoaderService = SymDataLoaderService_new(NULL, this->parameterService, this->nodeService, this->triggerRouterService,
+            this->transportManager, this->offlineTransportManager, this->platform, this->dialect, this->incomingBatchService);
     this->dataService = SymDataService_new(NULL, this->platform, this->triggerRouterService, this->nodeService, this->dialect, this->outgoingBatchService, this->parameterService);
     this->routerService = SymRouterService_new(NULL, this->outgoingBatchService, this->sequenceService, this->dataService, this->nodeService, this->configurationService,
             this->parameterService, this->triggerRouterService, this->platform);

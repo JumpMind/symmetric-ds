@@ -40,10 +40,15 @@
 #include "db/SymDialect.h"
 #include "model/IncomingBatch.h"
 #include "service/IncomingBatchService.h"
+#include "service/ParameterService.h"
+#include "common/TableConstants.h"
+#include "common/ParameterConstants.h"
+#include "common/Constants.h"
 
 typedef struct SymDefaultDatabaseWriter {
     SymDataWriter super;
     SymIncomingBatchService *incomingBatchService;
+    SymParameterService *parameterService;
     SymDatabasePlatform *platform;
     SymDialect *dialect;
     SymDatabaseWriterSettings *settings;
@@ -59,6 +64,6 @@ typedef struct SymDefaultDatabaseWriter {
 } SymDefaultDatabaseWriter;
 
 SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter *this, SymIncomingBatchService *incomingBatchService,
-        SymDatabasePlatform *platform, SymDialect *dialect, SymDatabaseWriterSettings *settings);
+        SymParameterService *parameterService, SymDatabasePlatform *platform, SymDialect *dialect, SymDatabaseWriterSettings *settings);
 
 #endif
