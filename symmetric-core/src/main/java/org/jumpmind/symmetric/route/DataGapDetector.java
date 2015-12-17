@@ -93,7 +93,7 @@ public class DataGapDetector {
             final int dataIdIncrementBy = parameterService
                     .getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
             final long maxDataToSelect = parameterService
-                    .getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
+                    .getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
             long databaseTime = symmetricDialect.getDatabaseTime();
             int idsFilled = 0;
             int newGapsInserted = 0;
