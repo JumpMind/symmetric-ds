@@ -54,6 +54,7 @@ import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.web.WebConstants;
 
 /**
  * @see IPushService
@@ -145,7 +146,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         if (StringUtils.isNotBlank(node.getSyncUrl()) || 
                 !parameterService.isRegistrationServer()) {
             try {
-                startTimesOfNodesBeingPushedTo.put(node.getNodeId(), new Date());
+                startTimesOfNodesBeingPushedTo.put(nodeCommunication.getIdentifier(), new Date());
                 long reloadBatchesProcessed = 0;
                 long lastBatchCount = 0;
                 do {
@@ -155,7 +156,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                 node);
                     }
                     reloadBatchesProcessed = status.getReloadBatchesProcessed();
-                    log.debug("Push requested for {}", node);
+                    log.debug("Push requested for {} {}", node, 
+                    		nodeCommunication.isThreadChannel() ? " channel " + nodeCommunication.getChannelId() : "");
                     pushToNode(node, status);
                     if (!status.failed() && status.getBatchesProcessed() > 0 
                             && status.getBatchesProcessed() != lastBatchCount) {
@@ -169,7 +171,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                 new Object[] { node, status.getDataProcessed(),
                                         status.getBatchesProcessed()});                        
                     }
-                    log.debug("Push completed for {}", node);
+                    log.debug("Push completed for {} {}", node, 
+                    		nodeCommunication.isThreadChannel() ? " channel " + nodeCommunication.getChannelId() : "");
                     lastBatchCount = status.getBatchesProcessed();
                 } while (status.getReloadBatchesProcessed() > reloadBatchesProcessed && !status.failed());
             } finally {
@@ -187,12 +190,15 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
         IOutgoingWithResponseTransport transport = null;
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
-                .getNodeId(), remote.getNodeId(), ProcessType.PUSH_JOB));
+                .getNodeId(), status.getChannelId(), remote.getNodeId(), ProcessType.PUSH_JOB));
+        Map<String, String> requestProperties = new HashMap<String, String>();
+        requestProperties.put(WebConstants.THREAD_CHANNEL, status.getChannelId());
+        
         try {
             transport = transportManager.getPushTransport(remote, identity,
-                    identitySecurity.getNodePassword(), parameterService.getRegistrationUrl());
+                    identitySecurity.getNodePassword(), requestProperties, parameterService.getRegistrationUrl());
 
-            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(processInfo, remote, transport);
+            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(processInfo, remote, status.getChannelId(), transport);
             if (extractedBatches.size() > 0) {
                 
                 log.info("Push data sent to {}", remote);

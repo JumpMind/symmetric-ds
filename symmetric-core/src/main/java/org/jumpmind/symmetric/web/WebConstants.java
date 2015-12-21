@@ -106,5 +106,7 @@ public class WebConstants {
     public static final String SUSPENDED_CHANNELS = "Suspended-Channels";
 
     public static final String IGNORED_CHANNELS = "Ignored-Channels";
+    
+    public static final String THREAD_CHANNEL = "threadChannel";
 
 }

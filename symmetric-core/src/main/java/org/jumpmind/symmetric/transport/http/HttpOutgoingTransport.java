@@ -28,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
@@ -78,6 +79,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private boolean fileUpload = false;
 
+    private Map<String, String> requestProperties;
+    
     public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression,
             int compressionStrategy, int compressionLevel, String basicAuthUsername,
             String basicAuthPassword, boolean streamOutputEnabled, int streamOutputSize,
@@ -92,6 +95,23 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         this.streamOutputChunkSize = streamOutputSize;
         this.streamOutputEnabled = streamOutputEnabled;
         this.fileUpload = fileUpload;
+    }
+    
+    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression,
+            int compressionStrategy, int compressionLevel, String basicAuthUsername,
+            String basicAuthPassword, boolean streamOutputEnabled, int streamOutputSize,
+            boolean fileUpload, Map<String, String> requestProperties) {
+        this.url = url;
+        this.httpTimeout = httpTimeout;
+        this.useCompression = useCompression;
+        this.compressionLevel = compressionLevel;
+        this.compressionStrategy = compressionStrategy;
+        this.basicAuthUsername = basicAuthUsername;
+        this.basicAuthPassword = basicAuthPassword;
+        this.streamOutputChunkSize = streamOutputSize;
+        this.streamOutputEnabled = streamOutputEnabled;
+        this.fileUpload = fileUpload;
+        this.requestProperties = requestProperties;
     }
 
     public void close() {
@@ -197,7 +217,13 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setUseCaches(false);
             connection.setConnectTimeout(httpTimeout);
             connection.setReadTimeout(httpTimeout);
-
+            
+            if (this.requestProperties != null) {
+	            for (Map.Entry<String, String> requestProperty : this.requestProperties.entrySet()) {
+	            	connection.setRequestProperty(requestProperty.getKey(), requestProperty.getValue());
+	            }
+            }
+            
             boundary = Long.toHexString(System.currentTimeMillis());
             if (!fileUpload) {
                 connection.setRequestMethod("PUT");

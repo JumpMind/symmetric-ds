@@ -47,6 +47,8 @@ public interface IOutgoingBatchService {
 
     public OutgoingBatches getOutgoingBatches(String nodeId, boolean includeDisabledChannels);
 
+    public OutgoingBatches getOutgoingBatches(String nodeId, String channelId, boolean includeDisabledChannels);
+
     public OutgoingBatches getOutgoingBatchRange(long startBatchId, long endBatchId);
     
     public int cancelLoadBatches(long loadId);
