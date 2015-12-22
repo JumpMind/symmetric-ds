@@ -94,8 +94,8 @@ void  SymLog_cleanupLogs(char *logFileName) {
         time_t timeToKeepInSeconds = SymLog_daysToKeep*24*60*60;
         time_t logExpiryTime = nowInSeconds-timeToKeepInSeconds;
 
-        char* logFileNameClone1 = SymStringUtils_format("%s", logFileName);
-        char* logFileNameClone2 = SymStringUtils_format("%s", logFileName);
+        char *logFileNameClone1 = SymStringUtils_format("%s", logFileName);
+        char *logFileNameClone2 = SymStringUtils_format("%s", logFileName);
         char *logFileBaseName = basename(logFileNameClone1); // basename() and dirname() may modify the input string.
         char *logDirName = dirname(logFileNameClone2);
         DIR *logDir;
