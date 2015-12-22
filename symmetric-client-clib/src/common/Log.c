@@ -94,8 +94,10 @@ void  SymLog_cleanupLogs(char *logFileName) {
         time_t timeToKeepInSeconds = SymLog_daysToKeep*24*60*60;
         time_t logExpiryTime = nowInSeconds-timeToKeepInSeconds;
 
-        char *logFileBaseName = basename(logFileName);
-        char *logDirName = dirname(logFileName);
+        char* logFileNameClone1 = SymStringUtils_format("%s", logFileName);
+        char* logFileNameClone2 = SymStringUtils_format("%s", logFileName);
+        char *logFileBaseName = basename(logFileNameClone1); // basename() and dirname() may modify the input string.
+        char *logDirName = dirname(logFileNameClone2);
         DIR *logDir;
 
         logDir = opendir(logDirName);
@@ -122,6 +124,8 @@ void  SymLog_cleanupLogs(char *logFileName) {
             }
             closedir(logDir);
         }
+        free(logFileNameClone1);
+        free(logFileNameClone2);
     }
 }
 
@@ -135,11 +139,12 @@ void SymLog_rollLogFile(char *logFileName) {
 
     int result = rename(logFileName, rolledFileName);
     if (result != 0) {
-        printf("Failed to rename '%s' to '%s' %s\n", logFileName, dateTimeString,
+        printf("Failed to rename '%s' to '%s' %s\n", logFileName, rolledFileName,
                 strerror(errno));
     }
 
     SymLog_cleanupLogs(logFileName);
+    free(rolledFileName);
 }
 
 void SymLog_rollIfNeeded(char *logFileName) {
@@ -196,7 +201,7 @@ void SymLog_log(SymLogLevel logLevel, const char *functionName, const char *file
     else {
         destination = fopen(SymLog_destination, "a+");
         if (!destination) {
-            printf("Failed to open log file destination '%s'.  Check the path our use 'console'\n", SymLog_destination);
+            printf("Failed to open log file destination '%s'.  Check the path or use 'console'\n", SymLog_destination);
             destination = stdout;
         }
         else  {

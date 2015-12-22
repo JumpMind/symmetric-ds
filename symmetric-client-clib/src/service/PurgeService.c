@@ -307,7 +307,6 @@ SymDate *SymPurgeService_getRetentionCutoff(SymPurgeService *this) {
 long SymPurgeService_purgeIncoming(SymPurgeService *this) {
     long rowsPurged = 0;
     SymDate *retentionCutoff = SymPurgeService_getRetentionCutoff(this);
-    printf("%s\n", retentionCutoff->dateTimeString);
     rowsPurged += SymPurgeService_purgeIncomingBeforeDate(this, retentionCutoff);
     retentionCutoff->destroy(retentionCutoff);
     return rowsPurged;
