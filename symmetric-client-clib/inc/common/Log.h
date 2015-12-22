@@ -27,6 +27,7 @@
 #include <time.h>
 #include <libgen.h>
 #include <dirent.h>
+#include <sys/stat.h>
 #include "util/StringBuilder.h"
 #include "util/Properties.h"
 #include "util/Date.h"

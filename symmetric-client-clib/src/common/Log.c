@@ -19,7 +19,6 @@
  * under the License.
  */
 #include "common/Log.h"
-#include <sys/stat.h>
 
 static int SymLog_logLevel = SYM_LOG_LEVEL_DEBUG;
 static unsigned short SymLog_showSourceFile = 0;
