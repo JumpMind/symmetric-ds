@@ -19,10 +19,14 @@
  * under the License.
  */
 #include "common/Log.h"
+#include <sys/stat.h>
 
 static int SymLog_logLevel = SYM_LOG_LEVEL_DEBUG;
 static unsigned short SymLog_showSourceFile = 0;
 static char* SymLog_destination = "console";
+static int SymLog_maxLogSize = 10485760;
+static char* SymLog_backupAppend = "%Y-%m-%dT%H.%M.%S";
+static int SymLog_daysToKeep = 10;
 
 static char* SymLog_getlogLevelDescription(SymLogLevel logLevel) {
 	switch (logLevel) {
@@ -67,6 +71,84 @@ void SymLog_configure(SymProperties *settings) {
     if (! SymStringUtils_isBlank(showSourceFile)) {
         SymLog_showSourceFile = SymStringUtils_equals(showSourceFile, "1")
                 || SymStringUtils_equalsIgnoreCase(showSourceFile, "true");
+    }
+
+    char *maxLogSize = settings->get(settings, SYM_LOG_SETTINGS_LOG_MAX_FILE_SIZE, "10485760");
+    if (! SymStringUtils_isBlank(maxLogSize)) {
+        SymLog_maxLogSize = atoi(maxLogSize);
+    }
+
+    char *backupAppend = settings->get(settings, SYM_LOG_SETTINGS_LOG_BACKUP_APPEND, "%Y-%m-%dT%H.%M.%S");
+    if (! SymStringUtils_isBlank(backupAppend)) {
+        SymLog_backupAppend = backupAppend;
+    }
+
+    char *daysToKeep = settings->get(settings, SYM_LOG_SETTINGS_LOG_DAYS_TO_KEEP, "10");
+    if (! SymStringUtils_isBlank(daysToKeep)) {
+        SymLog_daysToKeep = atoi(daysToKeep);
+    }
+}
+
+void  SymLog_cleanupLogs(char *logFileName) {
+    if (SymLog_daysToKeep > 0) {
+        time_t nowInSeconds = time(NULL);
+        time_t timeToKeepInSeconds = SymLog_daysToKeep*24*60*60;
+        time_t logExpiryTime = nowInSeconds-timeToKeepInSeconds;
+
+        char *logFileBaseName = basename(logFileName);
+        char *logDirName = dirname(logFileName);
+        DIR *logDir;
+
+        logDir = opendir(logDirName);
+        struct dirent *directoryEntry;
+
+        struct stat fileStatus;
+
+        if (logDir != NULL) {
+            while ((directoryEntry = readdir(logDir)) != NULL) {
+                char *name = directoryEntry->d_name;
+                if (SymStringUtils_startsWith(name, logFileBaseName)
+                        && ! SymStringUtils_equals(name, logFileBaseName)) {
+
+                    char *archivedLogFileName = SymStringUtils_format("%s/%s", logDirName, name);
+                    stat(archivedLogFileName, &fileStatus);
+                     if (fileStatus.st_mtime < logExpiryTime) {
+                         int result = remove(archivedLogFileName);
+                         if (result != 0) {
+                             printf("Failed to remove '%s' %s\n", archivedLogFileName, strerror(errno));
+                         }
+                     }
+                     free(archivedLogFileName);
+                }
+            }
+            closedir(logDir);
+        }
+    }
+}
+
+void SymLog_rollLogFile(char *logFileName) {
+    char *dateTimeString = calloc(24, sizeof(char));
+    time_t now = time(NULL);
+    struct tm *timeInfo = localtime(&now);
+    strftime(dateTimeString, 24, SymLog_backupAppend, timeInfo);
+
+    char *rolledFileName = SymStringUtils_format("%s%s", logFileName, dateTimeString);
+
+    int result = rename(logFileName, rolledFileName);
+    if (result != 0) {
+        printf("Failed to rename '%s' to '%s' %s\n", logFileName, dateTimeString,
+                strerror(errno));
+    }
+
+    SymLog_cleanupLogs(logFileName);
+}
+
+void SymLog_rollIfNeeded(char *logFileName) {
+    if (SymLog_maxLogSize > 0) {
+        int fileSize = SymFileUtils_getFileSize(logFileName);
+        if (fileSize > SymLog_maxLogSize) {
+            SymLog_rollLogFile(logFileName);
+        }
     }
 }
 
@@ -131,9 +213,13 @@ void SymLog_log(SymLogLevel logLevel, const char *functionName, const char *file
 	fflush(destination);
 	if (physicalFile) {
 	    fclose(destination);
+	    SymLog_rollIfNeeded(SymLog_destination);
+
 	}
 
 	date->destroy(date);
 	messageBuffer->destroy(messageBuffer);
 }
+
+
 
