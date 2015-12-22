@@ -56,3 +56,21 @@ int SymFileUtils_mkdir(char* dirName) {
 
     return result;
 }
+
+int SymFileUtils_getFileSize(char *filename) {
+    struct stat st;
+
+    if (stat(filename, &st) == 0) {
+        return st.st_size;
+    }
+
+    return -1;
+}
+
+unsigned short SymFileUtils_exists(char *filename) {
+    if( access( filename, F_OK ) != -1 ) {
+        return 1;
+    } else {
+        return 0;
+    }
+}

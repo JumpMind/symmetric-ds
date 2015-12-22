@@ -23,12 +23,15 @@
 #define SYM_LOG_H
 
 #include <stdio.h>
-#include <stdarg.h>
+#include <errno.h>
 #include <time.h>
+#include <libgen.h>
+#include <dirent.h>
 #include "util/StringBuilder.h"
 #include "util/Properties.h"
 #include "util/Date.h"
 #include "util/StringUtils.h"
+#include "util/FileUtils.h"
 
 typedef enum {SYM_LOG_LEVEL_DEBUG, SYM_LOG_LEVEL_INFO, SYM_LOG_LEVEL_WARN, SYM_LOG_LEVEL_ERROR} SymLogLevel;
 
@@ -37,6 +40,9 @@ typedef enum {SYM_LOG_LEVEL_DEBUG, SYM_LOG_LEVEL_INFO, SYM_LOG_LEVEL_WARN, SYM_L
 #define SYM_LOG_SETTINGS_LOG_LEVEL "client.log.level"
 #define SYM_LOG_SETTINGS_LOG_DESTINATION "client.log.destination"
 #define SYM_LOG_SETTINGS_LOG_SHOW_SOURCE_FILE "client.log.show.source.file"
+#define SYM_LOG_SETTINGS_LOG_MAX_FILE_SIZE "client.log.max.file.size"
+#define SYM_LOG_SETTINGS_LOG_BACKUP_APPEND "client.log.backup.append"
+#define SYM_LOG_SETTINGS_LOG_DAYS_TO_KEEP "client.log.backup.days.to.keep"
 
 #define SYM_LOG_LEVEL_DESC_DEBUG "DEBUG"
 #define SYM_LOG_LEVEL_DESC_INFO "INFO"

@@ -28,5 +28,7 @@
 #include "common/Log.h"
 
 int SymFileUtils_mkdir(char* dirName);
+int SymFileUtils_getFileSize(char *filename);
+unsigned short SymFileUtils_exists(char *filename);
 
 #endif
