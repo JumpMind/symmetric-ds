@@ -23,7 +23,7 @@
 
 #include <stdlib.h>
 
-#define SYM_VERSION "3.7.27.3"
+#define SYM_VERSION "3.7.28"
 
 typedef enum SymNodeStatus {
     SYM_NODE_STATUS_DATA_LOAD_NOT_STARTED,
