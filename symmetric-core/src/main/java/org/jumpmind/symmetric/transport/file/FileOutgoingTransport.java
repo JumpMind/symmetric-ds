@@ -50,9 +50,12 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
 
     boolean open = true;
     
+    Node remoteNode;
+    
     public FileOutgoingTransport(Node remoteNode, Node localNode, String outgoingDir) throws IOException {
         this.fileName = outgoingDir + File.separator + localNode.getNodeGroupId() + "-" + localNode.getNodeId() + "_to_" + 
                 remoteNode.getNodeGroupId() + "-" + remoteNode.getNodeId() + "_" + System.currentTimeMillis();
+        this.remoteNode = remoteNode;
     }
 
     @Override
@@ -80,6 +83,7 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
         StringBuilder resp = new StringBuilder();
         for (String batchId : writer.getBatchIds()) {
             resp.append(WebConstants.ACK_BATCH_NAME).append(batchId).append("=").append(WebConstants.ACK_BATCH_OK).append("&");
+            resp.append(WebConstants.ACK_NODE_ID).append(batchId).append("=").append(remoteNode.getNodeId()).append("&");
         }
         return new BufferedReader(new StringReader(resp.toString()));
     }
