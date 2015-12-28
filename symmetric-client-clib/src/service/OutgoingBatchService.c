@@ -182,7 +182,6 @@ SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *t
     this->platform = platform;
     this->parameterService = parameterService;
     this->sequenceService = sequenceService;
-
     this->findOutgoingBatch = (void *) &SymOutgoingBatchService_findOutgoingBatch;
     this->getOutgoingBatches = (void *) &SymOutgoingBatchService_getOutgoingBatches;
     this->insertOutgoingBatch = (void *) &SymOutgoingBatchService_insertOutgoingBatch;
