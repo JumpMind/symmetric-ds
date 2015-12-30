@@ -27,7 +27,7 @@
 
 #define SYM_BINARY_ENCODING_NONE "none"
 #define SYM_BINARY_ENCODING_BASE64 "base64"
-#define SYM_BINARY_ENCODING_HEX "hex"
+#define SYM_BINARY_ENCODING_HEX "HEX"
 
 typedef enum SymBinaryEncoding {
     SymBinaryEncoding_NONE, SymBinaryEncoding_BASE64, SymBinaryEncoding_HEX

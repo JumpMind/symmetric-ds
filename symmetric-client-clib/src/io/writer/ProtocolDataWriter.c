@@ -56,6 +56,7 @@ static void SymProtocolDataWriter_startBatch(SymProtocolDataWriter *this, SymBat
     if (this->isFirstBatch) {
         this->isFirstBatch = 0;
         SymProtocolDataWriter_println(this->sb, SYM_CSV_NODEID, this->sourceNodeId);
+        SymProtocolDataWriter_println(this->sb, SYM_CSV_BINARY, SYM_BINARY_ENCODING_HEX);
     }
     if (!SymStringUtils_isBlank(batch->channelId)) {
         SymProtocolDataWriter_println(this->sb, SYM_CSV_CHANNEL, batch->channelId);
@@ -75,6 +76,8 @@ static void SymProtocolDataWriter_endBatch(SymProtocolDataWriter *this, SymBatch
 
 static void SymProtocolDataWriter_startTable(SymProtocolDataWriter *this, SymTable *table, SymBatch *batch) {
     if (!batch->isIgnore) {
+        this->table = table;
+
         SymProtocolDataWriter_println(this->sb, SYM_CSV_CATALOG, table->catalog);
         SymProtocolDataWriter_println(this->sb, SYM_CSV_SCHEMA, table->schema);
 
