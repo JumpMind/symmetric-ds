@@ -160,7 +160,7 @@ size_t SymProtocolDataWriter_process(SymProtocolDataWriter *this, char *buffer, 
 
     if (numBytes > 0) {
         memcpy(buffer, this->sb->str, numBytes);
-        SymLog_debug("Writing data: %s\n", this->sb->str);
+        SymLog_debug("Writing data: %.*s\n", numBytes, this->sb->str);
     }
 
     if (bufferFull) {
