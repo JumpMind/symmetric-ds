@@ -161,7 +161,7 @@ int SymDefaultDatabaseWriter_delete(SymDefaultDatabaseWriter *this, SymCsvData *
             this->dmlStatement->destroy(this->dmlStatement);
         }
         // TODO: pass nullKeyIndiciators
-        this->dmlStatement = SymDmlStatement_new(NULL, SYM_DML_TYPE_UPDATE, this->targetTable, NULL, &this->platform->databaseInfo);
+        this->dmlStatement = SymDmlStatement_new(NULL, SYM_DML_TYPE_DELETE, this->targetTable, NULL, &this->platform->databaseInfo);
         this->sqlTransaction->prepare(this->sqlTransaction, this->dmlStatement->sql, &error);
         this->isError = error != 0;
     }
@@ -206,6 +206,17 @@ unsigned short SymDefaultDatabaseWriter_write(SymDefaultDatabaseWriter *this, Sy
             return 1;
         } else {
             this->targetTable = this->sourceTable;
+        }
+    } else if (!this->super.isSyncTriggersNeeded) {
+        unsigned short autoSync = this->parameterService->is(this->parameterService, SYM_PARAMETER_AUTO_SYNC_CONFIGURATION, 1) ||
+                this->incomingBatch->batchId == SYM_VIRTUAL_BATCH_FOR_REGISTRATION;
+        if (autoSync && (SymStringUtils_equalsIgnoreCase(this->targetTable->name, SYM_TRIGGER) ||
+            SymStringUtils_equalsIgnoreCase(this->targetTable->name, SYM_ROUTER) ||
+            SymStringUtils_equalsIgnoreCase(this->targetTable->name, SYM_TRIGGER_ROUTER) ||
+            SymStringUtils_equalsIgnoreCase(this->targetTable->name, SYM_TRIGGER_ROUTER_GROUPLET) ||
+            SymStringUtils_equalsIgnoreCase(this->targetTable->name, SYM_GROUPLET_LINK) ||
+            SymStringUtils_equalsIgnoreCase(this->targetTable->name, SYM_NODE_GROUP_LINK))) {
+            this->super.isSyncTriggersNeeded = 1;
         }
     }
     int error = 0;
@@ -292,12 +303,13 @@ void SymDefaultDatabaseWriter_destroy(SymDefaultDatabaseWriter *this) {
 }
 
 SymDefaultDatabaseWriter * SymDefaultDatabaseWriter_new(SymDefaultDatabaseWriter *this, SymIncomingBatchService *incomingBatchService,
-        SymDatabasePlatform *platform, SymDialect *dialect, SymDatabaseWriterSettings *settings) {
+        SymParameterService *parameterService, SymDatabasePlatform *platform, SymDialect *dialect, SymDatabaseWriterSettings *settings) {
     if (this == NULL) {
         this = (SymDefaultDatabaseWriter *) calloc(1, sizeof(SymDefaultDatabaseWriter));
     }
     SymDataWriter *super = &this->super;
     this->incomingBatchService = incomingBatchService;
+    this->parameterService = parameterService;
     this->platform = platform;
     this->dialect = dialect;
     this->settings = settings;

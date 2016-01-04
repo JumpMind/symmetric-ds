@@ -34,7 +34,7 @@ static void append(SymStringBuilder *sb, char *name, char *value) {
 
 static char * buildUrl(char *action, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
     SymStringBuilder *sb = SymStringBuilder_new();
-    if (strcmp(remote->syncUrl, "") == 0) {
+    if (SymStringUtils_isBlank(remote->syncUrl)) {
         sb->append(sb, registrationUrl);
     } else {
         sb->append(sb, remote->syncUrl);
@@ -88,7 +88,7 @@ static char * getAcknowledgementData(SymList *batches) {
 
 static int sendMessage(SymHttpTransportManager *this, char *url, char *postData) {
     long httpResponseCode = -1;
-    SymLog_info("Sending message '%s' to URL '%s'", postData, url);
+    SymLog_debug("Sending message '%s' to URL '%s'", postData, url);
     CURL *curl = curl_easy_init();
     if (curl) {
         if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_VERIFIED_SERVERS, 1)) {

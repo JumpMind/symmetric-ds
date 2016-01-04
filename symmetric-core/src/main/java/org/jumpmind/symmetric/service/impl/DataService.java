@@ -1385,7 +1385,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public List<DataGap> findDataGaps() {
         final long maxDataToSelect = parameterService
-                .getInt(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
+                .getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         List<DataGap> gaps = findDataGapsByStatus(DataGap.Status.GP);
         boolean lastGapExists = false;
         long maxDataEventId = 0;

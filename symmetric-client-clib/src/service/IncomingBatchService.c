@@ -182,6 +182,12 @@ int SymIncomingBatchService_deleteIncomingBatch(SymIncomingBatchService *this, S
     return count;
 }
 
+int SymIncomingBatchService_countIncomingBatchesInError(SymIncomingBatchService *this) {
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    int error;
+    return sqlTemplate->queryForInt(sqlTemplate, SYM_SQL_COUNT_INCOMING_BATCHES_ERRORS, NULL, NULL, &error);
+}
+
 void SymIncomingBatchService_destroy(SymIncomingBatchService *this) {
     free(this);
 }
@@ -198,6 +204,7 @@ SymIncomingBatchService * SymIncomingBatchService_new(SymIncomingBatchService *t
     this->updateIncomingBatch = (void *) &SymIncomingBatchService_updateIncomingBatch;
     this->deleteIncomingBatch = (void *) &SymIncomingBatchService_deleteIncomingBatch;
     this->isRecordOkBatchesEnabled = (void *) &SymIncomingBatchService_isRecordOkBatchesEnabled;
+    this->countIncomingBatchesInError = (void *) &SymIncomingBatchService_countIncomingBatchesInError;
     this->destroy = (void *) &SymIncomingBatchService_destroy;
     return this;
 }

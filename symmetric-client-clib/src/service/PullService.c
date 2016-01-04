@@ -53,7 +53,7 @@ SymRemoteNodeStatuses * SymPullService_pullData(SymPullService *this) {
         identity = this->nodeService->findIdentity(this->nodeService);
     }
     if (identity->syncEnabled) {
-        SymList *nodes = this->nodeService->findNodesToPull(this->nodeService);
+        SymList *nodes = this->nodeCommunicationService->list(this->nodeCommunicationService, SYM_COMMUNICATION_TYPE_PULL);
         SymMap *channels = this->configurationService->getChannels(this->configurationService, 0);
         statuses = SymRemoteNodeStatuses_new(NULL, channels);
         SymIterator *iter = nodes->iterator(nodes);
@@ -74,7 +74,8 @@ void SymPullService_destroy(SymPullService *this) {
 }
 
 SymPullService * SymPullService_new(SymPullService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,
-        SymRegistrationService *registrationService, SymConfigurationService *configurationService) {
+        SymRegistrationService *registrationService, SymConfigurationService *configurationService,
+        SymNodeCommunicationService *nodeCommunicationService) {
     if (this == NULL) {
         this = (SymPullService *) calloc(1, sizeof(SymPullService));
     }
@@ -82,6 +83,7 @@ SymPullService * SymPullService_new(SymPullService *this, SymNodeService *nodeSe
     this->dataLoaderService = dataLoaderService;
     this->registrationService = registrationService;
     this->configurationService = configurationService;
+    this->nodeCommunicationService = nodeCommunicationService;
     this->pullData = (void *) &SymPullService_pullData;
     this->destroy = (void *) &SymPullService_destroy;
     return this;

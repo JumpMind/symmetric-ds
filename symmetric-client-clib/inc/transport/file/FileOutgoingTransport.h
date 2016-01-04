@@ -22,6 +22,7 @@
 #define SYM_FILEOUTGOINGTRANSPORT_H
 
 #include <stdlib.h>
+#include <errno.h>
 #include "common/Log.h"
 #include "model/Node.h"
 #include "service/ParameterService.h"

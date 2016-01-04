@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <curl/curl.h>
 #include <util/Properties.h>
 #include <dirent.h>
@@ -32,6 +33,7 @@
 #include "common/Log.h"
 #include "util/StringUtils.h"
 #include "util/StringArray.h"
+#include "util/FileUtils.h"
 
 typedef struct SymFileIncomingTransport {
     SymIncomingTransport super;

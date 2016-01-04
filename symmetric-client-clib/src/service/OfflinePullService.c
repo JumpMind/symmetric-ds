@@ -48,7 +48,7 @@ SymRemoteNodeStatuses * SymOfflinePullService_pullData(SymOfflinePullService *th
         identity = this->nodeService->findIdentity(this->nodeService);
     }
     if (identity->syncEnabled) {
-        SymList *nodes = this->nodeService->findNodesToPull(this->nodeService);
+        SymList *nodes = this->nodeCommunicationService->list(this->nodeCommunicationService, SYM_COMMUNICATION_TYPE_OFFLN_PULL);
         SymMap *channels = this->configurationService->getChannels(this->configurationService, 0);
         statuses = SymRemoteNodeStatuses_new(NULL, channels);
         SymIterator *iter = nodes->iterator(nodes);
@@ -68,8 +68,9 @@ void SymOfflinePullService_destroy(SymOfflinePullService *this) {
     free(this);
 }
 
-SymOfflinePullService * SymOfflinePullService_new(SymOfflinePullService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,
-        SymRegistrationService *registrationService, SymConfigurationService *configurationService) {
+SymOfflinePullService * SymOfflinePullService_new(SymOfflinePullService *this, SymNodeService *nodeService,
+        SymDataLoaderService *dataLoaderService, SymRegistrationService *registrationService,
+        SymConfigurationService *configurationService, SymNodeCommunicationService *nodeCommunicationService) {
     if (this == NULL) {
         this = (SymOfflinePullService *) calloc(1, sizeof(SymOfflinePullService));
     }
@@ -77,6 +78,7 @@ SymOfflinePullService * SymOfflinePullService_new(SymOfflinePullService *this, S
     this->dataLoaderService = dataLoaderService;
     this->registrationService = registrationService;
     this->configurationService = configurationService;
+    this->nodeCommunicationService = nodeCommunicationService;
     this->pullData = (void *) &SymOfflinePullService_pullData;
     this->destroy = (void *) &SymOfflinePullService_destroy;
     return this;

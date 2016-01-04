@@ -37,6 +37,7 @@ import org.jumpmind.db.platform.mssql.MsSql2008DdlBuilder;
 import org.jumpmind.db.platform.mysql.MySqlDdlBuilder;
 import org.jumpmind.db.platform.oracle.OracleDdlBuilder;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDdlBuilder;
+import org.jumpmind.db.platform.redshift.RedshiftDdlBuilder;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDdlBuilder;
 import org.jumpmind.db.platform.sqlite.SqliteDdlBuilder;
 
@@ -91,6 +92,8 @@ final public class DdlBuilderFactory {
             return new AseDdlBuilder();
         } else if (DatabaseNamesConstants.SQLANYWHERE.equalsIgnoreCase(databaseName)) {
             return new SqlAnywhereDdlBuilder();
+        } else if (DatabaseNamesConstants.REDSHIFT.equalsIgnoreCase(databaseName)) {
+            return new RedshiftDdlBuilder();
         } else {
             return null;
         }

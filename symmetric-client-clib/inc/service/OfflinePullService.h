@@ -29,6 +29,7 @@
 #include "service/DataLoaderService.h"
 #include "service/RegistrationService.h"
 #include "service/ConfigurationService.h"
+#include "service/NodeCommunicationService.h"
 #include "util/Map.h"
 #include "common/Log.h"
 
@@ -37,12 +38,14 @@ typedef struct SymOfflinePullService {
     SymDataLoaderService *dataLoaderService;
     SymRegistrationService *registrationService;
     SymConfigurationService *configurationService;
+    SymNodeCommunicationService *nodeCommunicationService;
     SymRemoteNodeStatuses * (*pullData)(struct SymOfflinePullService *this);
     void (*destroy)(struct SymOfflinePullService *this);
 } SymOfflinePullService;
 
-SymOfflinePullService * SymOfflinePullService_new(SymOfflinePullService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,
-        SymRegistrationService *registrationService, SymConfigurationService *configurationService);
+SymOfflinePullService * SymOfflinePullService_new(SymOfflinePullService *this, SymNodeService *nodeService,
+        SymDataLoaderService *dataLoaderService, SymRegistrationService *registrationService,
+        SymConfigurationService *configurationService, SymNodeCommunicationService *nodeCommunicationService);
 
 
 #endif

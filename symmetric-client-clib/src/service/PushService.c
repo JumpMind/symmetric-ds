@@ -107,7 +107,7 @@ SymRemoteNodeStatuses * SymPushService_pushData(SymPushService *this, unsigned i
     SymRemoteNodeStatuses *statuses = SymRemoteNodeStatuses_new(NULL, channels);
     SymNode *identity = this->nodeService->findIdentity(this->nodeService);
     if (identity && identity->syncEnabled) {
-        SymList *nodes = this->nodeService->findNodesToPushTo(this->nodeService);
+        SymList *nodes = this->nodeCommunicationService->list(this->nodeCommunicationService, SYM_COMMUNICATION_TYPE_PUSH);
         if (nodes->size > 0) {
             SymNodeSecurity *identitySecurity = this->nodeService->findNodeSecurity(this->nodeService, identity->nodeId);
             if (identitySecurity) {
@@ -136,7 +136,7 @@ void SymPushService_destroy(SymPushService *this) {
 
 SymPushService * SymPushService_new(SymPushService *this, SymNodeService *nodeService, SymDataExtractorService *dataExtractorService,
         SymTransportManager *transportManager, SymParameterService *parameterService, SymConfigurationService *configurationService,
-        SymAcknowledgeService *acknowledgeService) {
+        SymAcknowledgeService *acknowledgeService, SymNodeCommunicationService *nodeCommunicationService) {
     if (this == NULL) {
         this = (SymPushService *) calloc(1, sizeof(SymPushService));
     }
@@ -146,6 +146,7 @@ SymPushService * SymPushService_new(SymPushService *this, SymNodeService *nodeSe
     this->parameterService = parameterService;
     this->configurationService = configurationService;
     this->acknowledgeService = acknowledgeService;
+    this->nodeCommunicationService = nodeCommunicationService;
     this->pushData = (void *) &SymPushService_pushData;
     this->destroy = (void *) &SymPushService_destroy;
     return this;

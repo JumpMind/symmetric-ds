@@ -246,14 +246,20 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     @Override
     protected String getNativeDefaultValue(Column column) {
         // Sql Server wants BIT default values as 0 or 1
-        if ((column.getMappedTypeCode() == Types.BIT)
-                || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
-                        .determineBooleanTypeCode()))) {
-            return getDefaultValueHelper().convert(column.getDefaultValue(),
-                    column.getMappedTypeCode(), Types.SMALLINT).toString();
-        } else {
-            return super.getNativeDefaultValue(column);
-        }
+		if ((column.getMappedTypeCode() == Types.BIT)
+				|| (PlatformUtils.supportsJava14JdbcTypes() && (column
+						.getMappedTypeCode() == PlatformUtils
+						.determineBooleanTypeCode()))) {
+			return getDefaultValueHelper().convert(column.getDefaultValue(),
+					column.getMappedTypeCode(), Types.SMALLINT).toString();
+		}
+		if ((column.getMappedTypeCode() == Types.TIMESTAMP) || (column.getMappedTypeCode() == Types.TIME) || (column.getMappedTypeCode() == Types.DATE)) {
+		    String defaultValue = super.getNativeDefaultValue(column);
+		    if (defaultValue != null && (defaultValue.equalsIgnoreCase("CURRENT_DATE") || defaultValue.equalsIgnoreCase("CURRENT DATE"))) {
+		        return "CURRENT_TIMESTAMP";
+		    }
+		}
+		return super.getNativeDefaultValue(column);
     }
 
     @Override

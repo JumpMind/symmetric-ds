@@ -21,6 +21,9 @@
 #include "transport/file/FileIncomingTransport.h"
 
 char* SymFileIncomingTransport_getIncomingFile(SymFileIncomingTransport *this, char *extension) {
+
+    SymFileUtils_mkdir(this->offlineIncomingDir);
+
     DIR *dir;
     struct dirent *dirEntries;
     dir = opendir(this->offlineIncomingDir);
@@ -96,25 +99,28 @@ long SymFileIncomingTransport_process(SymFileIncomingTransport *this, SymDataPro
 
     processor->close(processor);
     fclose(file);
+    file = NULL;
 
     if (success) {
         if (SymStringUtils_isNotBlank(this->offlineArchiveDir)) {
+            SymFileUtils_mkdir(this->offlineArchiveDir);
             char *archivePath = SymStringUtils_format("%s/%s", this->offlineArchiveDir, fileName);
             int result = rename(path, archivePath);
-            if (result) {
-                SymLog_warn("Failed to archive '%s' to '%s'", path, archivePath);
+            if (result != 0) {
+                SymLog_warn("Failed to archive '%s' to '%s' %s", path, archivePath, strerror(errno));
             }
         } else {
             int result = remove(path);
-            if (result) {
-                SymLog_warn("Failed to delete '%s'", path);
+            if (result != 0) {
+                SymLog_warn("Failed to delete '%s' %s", path, strerror(errno));
             }
         }
     } else if (SymStringUtils_isNotBlank(this->offlineErrorDir)) {
+        SymFileUtils_mkdir(this->offlineErrorDir);
         char *errorPath = SymStringUtils_format("%s/%s", this->offlineErrorDir, fileName);
           int result = rename(path, errorPath);
-          if (result) {
-              SymLog_warn("Failed to archive '%s' to '%s'", path, errorPath);
+          if (result != 0) {
+              SymLog_warn("Failed to archive '%s' to '%s' %s", path, errorPath, strerror(errno));
           }
     }
 

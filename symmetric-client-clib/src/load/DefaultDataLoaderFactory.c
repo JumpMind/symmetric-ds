@@ -29,7 +29,8 @@ static SymDatabaseWriterSettings * buildDatabaseWriterSettings(SymDefaultDataLoa
 
 SymDataWriter * SymDefaultDataLoaderFactory_getDataWriter(SymDefaultDataLoaderFactory *this) {
     SymDatabaseWriterSettings *settings = buildDatabaseWriterSettings(this);
-    SymDataWriter *writer = (SymDataWriter *) SymDefaultDatabaseWriter_new(NULL, this->incomingBatchService, this->platform, this->dialect, settings);
+    SymDataWriter *writer = (SymDataWriter *) SymDefaultDatabaseWriter_new(NULL, this->incomingBatchService, this->parameterService,
+            this->platform, this->dialect, settings);
     return writer;
 }
 

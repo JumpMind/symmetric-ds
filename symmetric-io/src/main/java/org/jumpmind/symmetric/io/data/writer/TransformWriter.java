@@ -317,6 +317,8 @@ public class TransformWriter extends NestedDataWriter {
                 TargetDmlAction targetAction = null;
                 switch (data.getTargetDmlType()) {
                     case INSERT:
+                        targetAction = TargetDmlAction.INS_ROW;
+                        break;
                     case UPDATE:
                         targetAction = transformation.evaluateTargetDmlAction(context, data);
                         break;
