@@ -76,6 +76,15 @@ public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
         }
         return status;
     }
+    
+    public RemoteNodeStatus add(String nodeId) {
+        RemoteNodeStatus status = null;
+        if (nodeId != null) {
+            status = new RemoteNodeStatus(nodeId, null, channels);
+            add(status);
+        }
+        return status;
+    }
 
     public boolean isComplete() {
         boolean complete = false;
