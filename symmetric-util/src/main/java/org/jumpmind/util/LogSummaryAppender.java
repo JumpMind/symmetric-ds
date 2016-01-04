@@ -59,8 +59,10 @@ public class LogSummaryAppender extends AppenderSkeleton {
                     summaries.put(engineName, byMessage);
                 }
 
-                String message = (String) event.getMessage();
-                if (message == null) {
+                String message = null;
+                if (message instanceof String) {
+                    message = (String) event.getMessage();
+                } else {
                     message = "No Message";
                 }
                 LogSummary summary = byMessage.get(message);
