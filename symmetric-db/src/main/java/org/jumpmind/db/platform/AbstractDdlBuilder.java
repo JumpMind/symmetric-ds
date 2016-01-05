@@ -2334,18 +2334,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
                 for (int idx = 0; idx < index.getColumnCount(); idx++) {
                     IndexColumn idxColumn = index.getColumn(idx);
-                    Column col = table.findColumn(idxColumn.getName());
-
-                    if (col == null) {
-                        // would get null pointer on next line anyway, so throw
-                        // exception
-                        throw new ModelException("Invalid column '" + idxColumn.getName()
-                                + "' on index " + index.getName() + " for table " + table.getName());
-                    }
                     if (idx > 0) {
                         ddl.append(", ");
                     }
-                    printIdentifier(getColumnName(col), ddl);
+                    printIdentifier(shortenName(idxColumn.getName(), databaseInfo.getMaxColumnNameLength()), ddl);
                 }
 
                 ddl.append(")");
