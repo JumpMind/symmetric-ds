@@ -213,13 +213,6 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             ddl.append(" FROM dual");
             ddl.append(databaseInfo.getSqlCommandDelimiter());
             ddl.append(" END");
-            /*
-             * It is important that there is a semicolon at the end of the
-             * statement (or more precisely, at the end of the PL/SQL block),
-             * and thus we put two semicolons here because the tokenizer will
-             * remove the one at the end
-             */
-            ddl.append(databaseInfo.getSqlCommandDelimiter());
             printEndOfStatement(ddl);
         }
     }
