@@ -35,6 +35,13 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
 
     static final Logger log = LoggerFactory.getLogger(SymmetricLauncher.class);
 
+
+    private static final String OPTION_PUSH = "push";
+    private static final String OPTION_PULL = "pull";
+    private static final String OPTION_PURGE = "purge";
+    private static final String OPTION_HEARTBEAT = "heartbeat";
+    private static final String OPTION_ROUTE = "route";
+
     private static final String OPTION_PORT_SERVER = "port";
 
     private static final String OPTION_HOST_SERVER = "host";
@@ -109,6 +116,11 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         addOption(options, "JD", OPTION_JMX_DISABLE, false);
         addOption(options, "J", OPTION_JMX_PORT, true);
         addOption(options, OPTION_WINXP, OPTION_WINXP, false);
+        addOption(options, OPTION_PUSH, OPTION_PUSH, false);
+        addOption(options, OPTION_PULL, OPTION_PULL, false);
+        addOption(options, OPTION_ROUTE, OPTION_ROUTE, false);
+        addOption(options, OPTION_PURGE, OPTION_PURGE, false);
+        addOption(options, OPTION_HEARTBEAT, OPTION_HEARTBEAT, false);
     }
 
     protected boolean executeWithOptions(CommandLine line) throws Exception {
@@ -192,7 +204,28 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             };
         }
 
-        if (line.hasOption(OPTION_START_CLIENT)) {
+        boolean push = line.hasOption(OPTION_PUSH);
+        boolean pull = line.hasOption(OPTION_PULL);
+        boolean route = line.hasOption(OPTION_ROUTE);
+        boolean purge = line.hasOption(OPTION_PURGE);
+        boolean heartbeat = line.hasOption(OPTION_HEARTBEAT);
+        if (push || pull || route || purge || heartbeat) {
+            ISymmetricEngine engine = getSymmetricEngine(false);
+            engine.start(false);
+            if(route)
+                engine.route();
+            if(push)
+                engine.push();
+            if(pull)
+                engine.pull();
+            if(purge)
+                engine.purge();
+            if(heartbeat)
+                engine.heartbeat(true);
+
+            return true;
+        }
+        else if (line.hasOption(OPTION_START_CLIENT)) {
             getSymmetricEngine(false).start();
             return true;
         } else {
