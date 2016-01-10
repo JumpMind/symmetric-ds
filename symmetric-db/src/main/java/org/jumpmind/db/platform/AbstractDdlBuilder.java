@@ -2337,7 +2337,13 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                     if (idx > 0) {
                         ddl.append(", ");
                     }
-                    printIdentifier(shortenName(idxColumn.getName(), databaseInfo.getMaxColumnNameLength()), ddl);
+                    String name = shortenName(idxColumn.getName(), databaseInfo.getMaxColumnNameLength());
+                    if (name.startsWith("(")) {
+                        // When a column name starts with parenthesis, it's a grouping syntax for an aggregate column, so don't quote it
+                        ddl.append(name);
+                    } else {
+                        printIdentifier(name, ddl);
+                    }
                 }
 
                 ddl.append(")");
