@@ -495,7 +495,7 @@ public class DbExport {
                     if (format == Format.SQL) {
                         IDdlBuilder target = DdlBuilderFactory.createDdlBuilder(databaseName);
                         target.setDelimitedIdentifierModeOn(useQuotedIdentifiers);
-                        write(target.createTables(getDatabase(table), addDropTable));
+                        write(cleanupSQL(target.createTables(getDatabase(table), addDropTable)));
                     } else if (format == Format.XML) {
                         DatabaseXmlUtil.write(table, writer);
                     }
@@ -523,6 +523,16 @@ public class DbExport {
                 throw new IoException(e);
             }
 
+        }
+
+        protected String cleanupSQL(String createTables) {
+            // Avoid the unfortunate situation where we have a trigger definition ending in ;;
+            // -- which works when put through the SqlScriptReader (which will trim off the second ;), 
+            // but doesn't work when exported as a script.
+            
+            String cleanedSQL = createTables.replaceAll("[;;\\s]+$", ";\n");
+            
+            return cleanedSQL;
         }
 
         protected void writeComment(String commentStr) {

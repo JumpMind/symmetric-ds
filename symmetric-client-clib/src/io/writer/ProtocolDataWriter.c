@@ -120,14 +120,16 @@ static void SymProtocolDataWriter_writeData(SymProtocolDataWriter *this, SymTabl
 }
 
 size_t SymProtocolDataWriter_process(SymProtocolDataWriter *this, char *buffer, size_t size, size_t count) {
-    SymBatch *batch;
-    SymTable *table;
-    SymData *data;
+    SymBatch *batch = NULL;
+    SymTable *table = NULL;
+    SymData *data = NULL;
     unsigned short bufferFull = 0;
 
     while (!bufferFull && (this->batch || (batch = this->reader->nextBatch(this->reader)))) {
         if (!this->batch) {
             SymProtocolDataWriter_startBatch(this, batch);
+        } else {
+           batch = this->batch;
         }
 
         while (!bufferFull && (this->table || (table = this->reader->nextTable(this->reader)))) {

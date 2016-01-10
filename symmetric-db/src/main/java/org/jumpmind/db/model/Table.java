@@ -32,12 +32,16 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a table in the database model.
  */
 public class Table implements Serializable, Cloneable, Comparable<Table> {
 
+    final static Logger log = LoggerFactory.getLogger(Table.class);
+    
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -5541154961302342608L;
 
@@ -1094,6 +1098,9 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                     orderedColumns[i] = column;
                     break;
                 }
+            }
+            if (orderedColumns[i] == null) {
+                log.warn("Could not find column with the name of {} on table {}", name, table.toVerboseString());
             }
         }
         return orderedColumns;
