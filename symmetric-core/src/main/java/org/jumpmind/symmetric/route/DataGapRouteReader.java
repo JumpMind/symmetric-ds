@@ -214,8 +214,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
             if (cursor != null) {
                 cursor.close();
             }
-            reading = false;
             copyToQueue(new EOD());
+            reading = false;
         }
 
     }
