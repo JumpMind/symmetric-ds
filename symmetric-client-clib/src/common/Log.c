@@ -63,7 +63,7 @@ void SymLog_configure(SymProperties *settings) {
 
     char *logDestination = settings->get(settings, SYM_LOG_SETTINGS_LOG_DESTINATION, "console");
     if (! SymStringUtils_isBlank(logDestination)) {
-        SymLog_destination = logDestination;
+        SymLog_destination = SymStringUtils_format("%s", logDestination);
     }
 
     char *showSourceFile = settings->get(settings, SYM_LOG_SETTINGS_LOG_SHOW_SOURCE_FILE, "0");
@@ -79,7 +79,7 @@ void SymLog_configure(SymProperties *settings) {
 
     char *backupAppend = settings->get(settings, SYM_LOG_SETTINGS_LOG_BACKUP_APPEND, "%Y-%m-%dT%H.%M.%S");
     if (! SymStringUtils_isBlank(backupAppend)) {
-        SymLog_backupAppend = backupAppend;
+        SymLog_backupAppend = SymStringUtils_format("%s", backupAppend);
     }
 
     char *daysToKeep = settings->get(settings, SYM_LOG_SETTINGS_LOG_DAYS_TO_KEEP, "10");
