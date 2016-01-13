@@ -54,6 +54,7 @@ SymTriggerRouter * SymTriggerRouter_new(SymTriggerRouter *this) {
     if (this == NULL) {
         this = (SymTriggerRouter *) calloc(1, sizeof(SymTriggerRouter));
     }
+    this->enabled = 1;
     this->isRouted = (void *) &SymTriggerRouter_isRouted;
     this->isSame = (void *) &SymTriggerRouter_isSame;
     this->destroy = (void *) &SymTriggerRouter_destroy;
