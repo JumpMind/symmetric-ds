@@ -68,8 +68,8 @@
 
 #define SYM_PARAMETER_JOB_MANAGER_SLEEP_PERIOD_MS "job.manager.sleep.period.ms"
 #define SYM_PARAMETER_START_ROUTE_JOB "start.route.job"
-#define SYM_PARAMETER_START_PUSH_JOB "start.pull.job"
-#define SYM_PARAMETER_START_PULL_JOB "start.push.job"
+#define SYM_PARAMETER_START_PUSH_JOB "start.push.job"
+#define SYM_PARAMETER_START_PULL_JOB "start.pull.job"
 #define SYM_PARAMETER_START_HEARTBEAT_JOB "start.heartbeat.job"
 #define SYM_PARAMETER_START_PURGE_JOB "start.purge.job"
 #define SYM_PARAMETER_START_SYNCTRIGGERS_JOB "start.synctriggers.job"

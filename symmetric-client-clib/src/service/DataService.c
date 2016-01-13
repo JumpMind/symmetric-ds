@@ -80,7 +80,7 @@ void SymDataService_heartbeat(SymDataService *this, unsigned short force) {
                     SYM_PARAMETER_HEARTBEAT_UPDATE_NODE_WITH_BATCH_STATUS, 0);
 
             char *syncUrl = this->parameterService->getSyncUrl(this->parameterService);
-            char *schemaVersion = this->parameterService->getString(this->parameterService, SYM_PARAMETER_SCHEMA_VERSION, "");
+            char *schemaVersion = this->parameterService->getString(this->parameterService, SYM_PARAMETER_SCHEMA_VERSION, NULL);
 
             int outgoingErrorCount = -1;
             int outgoingUnsentCount = -1;
@@ -90,12 +90,12 @@ void SymDataService_heartbeat(SymDataService *this, unsigned short force) {
             }
 
             if (! SymStringUtils_equals(this->parameterService->getExternalId(this->parameterService), me->externalId)
-                    || ! SymStringUtils_equals(this->parameterService->getNodeGroupId(this->parameterService), me->nodeGroupId)
-                    || (syncUrl != NULL && ! SymStringUtils_equals(syncUrl, me->syncUrl))
-                    || ! SymStringUtils_equals(schemaVersion, me->schemaVersion)  // TODO empty string vs. null is causing refresh everytime.
-                    || ! SymStringUtils_equals(SYM_VERSION, me->symmetricVersion)
-                    || ! SymStringUtils_equals(this->platform->name, me->databaseType)
-                    || ! SymStringUtils_equals(this->platform->version, me->databaseVersion)
+                    || !SymStringUtils_equals(this->parameterService->getNodeGroupId(this->parameterService), me->nodeGroupId)
+                    || (syncUrl != NULL && !SymStringUtils_equals(syncUrl, me->syncUrl))
+                    || (schemaVersion != NULL && !SymStringUtils_equals(schemaVersion, me->schemaVersion))
+                    || !SymStringUtils_equals(SYM_VERSION, me->symmetricVersion)
+                    || !SymStringUtils_equals(this->platform->name, me->databaseType)
+                    || !SymStringUtils_equals(this->platform->version, me->databaseVersion)
                     || me->batchInErrorCount != outgoingErrorCount
                     || me->batchToSendCount != outgoingUnsentCount) {
                 SymLog_info("Some attribute(s) of node changed.  Recording changes");
