@@ -165,7 +165,7 @@ public class DataGapDetector {
                             if (symmetricDialect.supportsTransactionViews()) {
                                 long transactionViewClockSyncThresholdInMs = parameterService.getLong(
                                         ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS, 60000);
-                                Date createTime = dataService.findCreateTimeOfData(dataGap.getEndId() + 1);
+                                Date createTime = dataGap.getCreateTime();
                                 if (createTime != null
                                         && !symmetricDialect.areDatabaseTransactionsPendingSince(createTime.getTime()
                                                 + transactionViewClockSyncThresholdInMs)) {
@@ -184,7 +184,7 @@ public class DataGapDetector {
                                         gapsDeleted++;
                                     }
                                 }
-                            } else if (isDataGapExpired(dataGap.getEndId() + 1, databaseTime)) {
+                            } else if (isDataGapExpired(dataGap, databaseTime)) {
                                 if (dataGap.getStartId() == dataGap.getEndId()) {
                                     log.info("Found a gap in data_id at {}.  Skipping it because the gap expired", dataGap.getStartId());
                                 } else {
@@ -244,13 +244,11 @@ public class DataGapDetector {
 
     }
 
-    protected boolean isDataGapExpired(long dataId, long databaseTime) {
+    protected boolean isDataGapExpired(DataGap dataGap, long databaseTime) {
         long gapTimoutInMs = parameterService
                 .getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
-        Date createTime = dataService.findCreateTimeOfData(dataId);
-        if (createTime == null) {
-            createTime = dataService.findNextCreateTimeOfDataStartingAt(dataId);
-        }        
+
+        Date createTime = dataGap.getCreateTime();
         if (createTime != null && databaseTime - createTime.getTime() > gapTimoutInMs) {
             return true;
         } else {
