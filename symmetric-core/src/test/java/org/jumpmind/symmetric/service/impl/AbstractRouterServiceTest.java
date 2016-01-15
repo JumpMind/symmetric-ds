@@ -1041,7 +1041,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
             Calendar time = Calendar.getInstance();
             time.add(Calendar.DATE, -10);
-            getSqlTemplate().update("update sym_data set create_time=?", time.getTime());
+            getSqlTemplate().update("update sym_data_gap set create_time=?", time.getTime());
 
             routeAndCreateGaps();
             ;
