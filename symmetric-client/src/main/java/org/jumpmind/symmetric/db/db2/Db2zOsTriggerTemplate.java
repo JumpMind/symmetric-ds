@@ -35,7 +35,7 @@ public class Db2zOsTriggerTemplate extends Db2TriggerTemplate {
 "                                WHEN ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition))                                                                                                    \n" +
 "                                BEGIN ATOMIC                                                                                                                                                           \n" +
 "                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 \n" +
-"                                          SVN  (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                             \n" +
+"                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                \n" +
 "                                        VALUES('$(targetTableName)', 'I', $(triggerHistoryId),                                                                                                         \n" +
 "                                            $(columns),                                                                                                                                                \n" +
 "                                            $(channelExpression), $(txIdExpression), $(sourceNodeExpression),                                                                                          \n" +
@@ -63,7 +63,7 @@ public class Db2zOsTriggerTemplate extends Db2TriggerTemplate {
 "                                                $(externalSelect),                                                                                                                                     \n"+
 "                                                CURRENT_TIMESTAMP);                                                                                                                                    \n"+
 "                                    $(custom_on_update_text)                                                                                                                                           \n"+
-"                                END                                                                                                                                                                    \n" );
+"                                END                                                                                                                                                                    " );
         
         sqlTemplates.put("deleteTriggerTemplate" ,
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n" +
