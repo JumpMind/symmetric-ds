@@ -150,7 +150,7 @@ static void initSequence(SymSequenceService *this, char *name, long initialValue
     if (initialValue < 1) {
         initialValue = 1;
     }
-    SymSequence *sequence = SymSequence_newWithValues(NULL, name, initialValue, 1, 1, 9999999999l, "system", 0);
+    SymSequence *sequence = SymSequence_newWithValues(NULL, name, initialValue, 1, 1, 2147483647l, "system", 0);
     create(this, sequence);
     sequence->destroy(sequence);
 }
