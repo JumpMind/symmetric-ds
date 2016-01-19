@@ -2,3 +2,5 @@
 *.d
 *.so
 /Debug/
+/Debug (Linux)/
+/Debug (Windows)/
