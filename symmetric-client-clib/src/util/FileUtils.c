@@ -26,7 +26,7 @@ static int SymFileUtils_makeDirectory(const char *filename) {
 }
 #else
 static int SymFileUtils_makeDirectory(const char *filename) {
-	return mkdir(tmp, S_IRWXU);
+	return mkdir(filename, S_IRWXU);
 }
 #endif
 

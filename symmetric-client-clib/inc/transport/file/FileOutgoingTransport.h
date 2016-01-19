@@ -31,6 +31,7 @@
 #include "util/StringBuilder.h"
 #include "util/StringUtils.h"
 #include "util/StringArray.h"
+#include "util/FileUtils.h"
 #include "transport/TransportManager.h"
 #include "web/WebConstants.h"
 
