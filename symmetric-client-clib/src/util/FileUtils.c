@@ -20,6 +20,16 @@
  */
 #include "util/FileUtils.h"
 
+#ifdef SYM_WIN32
+static int SymFileUtils_makeDirectory(const char *filename) {
+	return CreateDirectory(filename, NULL);
+}
+#else
+static int SymFileUtils_makeDirectory(const char *filename) {
+	return mkdir(tmp, S_IRWXU);
+}
+#endif
+
 int SymFileUtils_mkdir(char* dirName) {
 
     int result = 0;
@@ -40,7 +50,7 @@ int SymFileUtils_mkdir(char* dirName) {
         for (p = tmp + 1; *p; p++) {
             if(*p == '/') {
                 *p = 0;
-                result = mkdir(tmp, S_IRWXU);
+                result = SymFileUtils_makeDirectory(tmp);
                 if (result != 0) {
                     SymLog_warn("Failed to create dir '%s' %s", tmp, strerror(errno));
                 }
@@ -48,7 +58,7 @@ int SymFileUtils_mkdir(char* dirName) {
             }
         }
 
-        result = mkdir(tmp, S_IRWXU);
+        result = SymFileUtils_makeDirectory(tmp);
         if (result != 0) {
             SymLog_warn("Failed to create dir '%s' %s", tmp, strerror(errno));
         }

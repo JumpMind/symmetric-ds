@@ -26,6 +26,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include "common/Log.h"
+#ifdef SYM_WIN32
+#include <Windows.h>
+#endif
 
 int SymFileUtils_mkdir(char* dirName);
 int SymFileUtils_getFileSize(char *filename);
