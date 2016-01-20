@@ -40,6 +40,55 @@ public class Db2zOsDdlReader extends Db2DdlReader {
     
     @Override
     protected void enhanceTableMetaData(Connection connection, DatabaseMetaDataWrapper metaData, Table table) throws SQLException {
+        setAutoIncrementMetaData(connection, metaData, table);
+        setIsAccessControlledMetaData(connection, metaData, table);
+        
+    }
+
+    /**
+     * @param connection
+     * @param metaData
+     * @param table
+     */
+    protected void setIsAccessControlledMetaData(Connection connection, DatabaseMetaDataWrapper metaData, Table table)  throws SQLException {
+        log.debug("about to read access control meta data.");
+
+        String sql = "SELECT COUNT(*) AS ACCESS_CONTROLS FROM SYSIBM.SYSCONTROLS WHERE TBNAME = ?";
+        if (StringUtils.isNotBlank(table.getSchema())) {
+            sql = sql + " AND TBSCHEMA=?";
+        }
+
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            pstmt = connection.prepareStatement(sql);
+            pstmt.setString(1, table.getName());
+            if (StringUtils.isNotBlank(table.getSchema())) {
+                pstmt.setString(2, table.getSchema());
+            }
+
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                int accessControlCount = rs.getInt(1);
+                if (accessControlCount > 0) {
+                    table.setAccessControlled(true);
+                    log.debug("Table {} has {} access controls.", table.getName(), accessControlCount);
+                }
+            }
+        } finally {
+            JdbcSqlTemplate.close(rs);
+            JdbcSqlTemplate.close(pstmt);
+        }
+        log.debug("done reading access control meta data."); 
+    }
+
+    /**
+     * @param connection
+     * @param metaData
+     * @param table
+     * @throws SQLException
+     */
+    protected void setAutoIncrementMetaData(Connection connection, DatabaseMetaDataWrapper metaData, Table table) throws SQLException {
         log.debug("about to read additional column data");
         /* DB2 does not return the auto-increment status via the database
          metadata */
@@ -75,7 +124,6 @@ public class Db2zOsDdlReader extends Db2DdlReader {
             JdbcSqlTemplate.close(pstmt);
         }
         log.debug("done reading additional column data");
-        
     }
     
 

@@ -20,7 +20,13 @@
  */
 package org.jumpmind.symmetric.db.db2;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.util.FormatUtils;
 
 public class Db2zOsTriggerTemplate extends Db2TriggerTemplate {
 
@@ -31,7 +37,7 @@ public class Db2zOsTriggerTemplate extends Db2TriggerTemplate {
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n" +
 "                                AFTER INSERT ON $(schemaName)$(tableName)                                                                                                                              \n" +
 "                                REFERENCING NEW AS NEW                                                                                                                                                 \n" +
-"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               \n" +
+"                                FOR EACH ROW MODE DB2SQL $(isAccessControlled)                                                                                                                         \n" +
 "                                WHEN ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition))                                                                                                    \n" +
 "                                BEGIN ATOMIC                                                                                                                                                           \n" +
 "                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 \n" +
@@ -48,7 +54,7 @@ public class Db2zOsTriggerTemplate extends Db2TriggerTemplate {
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n"+
 "                                AFTER UPDATE ON $(schemaName)$(tableName)                                                                                                                              \n"+
 "                                REFERENCING OLD AS OLD NEW AS NEW                                                                                                                                      \n"+
-"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               \n"+
+"                                FOR EACH ROW MODE DB2SQL $(isAccessControlled)                                                                                                                        \n"+
 "                                WHEN ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition))                                                                                                    \n"+
 "                                BEGIN ATOMIC                                                                                                                                                           \n"+
 "                                            INSERT into $(defaultSchema)$(prefixName)_data                                                                                                             \n"+
@@ -69,7 +75,7 @@ public class Db2zOsTriggerTemplate extends Db2TriggerTemplate {
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n" +
 "                                AFTER DELETE ON $(schemaName)$(tableName)                                                                                                                              \n" +
 "                                REFERENCING OLD AS OLD                                                                                                                                                 \n" +
-"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               \n" +
+"                                FOR EACH ROW MODE DB2SQL $(isAccessControlled)                                                                                                                         \n" +
 "                                WHEN ($(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition))                                                                                                    \n" +
 "                                BEGIN ATOMIC                                                                                                                                                           \n" +
 "                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 \n" +
@@ -86,5 +92,14 @@ public class Db2zOsTriggerTemplate extends Db2TriggerTemplate {
 "                                END                                                                                                                                                                    \n" );
         
     }
-
+    
+    @Override
+    protected String replaceTemplateVariables(DataEventType dml, Trigger trigger,
+            TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
+            String defaultCatalog, String defaultSchema, String ddl) {
+        ddl = super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, 
+                originalTable, table, defaultCatalog, defaultSchema, ddl);
+        ddl = FormatUtils.replace("isAccessControlled", table.isAccessControlled() ? " SECURED" : "", ddl);
+        return ddl;
+    }
 }
