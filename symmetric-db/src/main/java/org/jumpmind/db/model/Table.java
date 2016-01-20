@@ -63,6 +63,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
 
     /** The table's type as read from the database. */
     private String type = null;
+    
+    private boolean isAccessControlled;
 
     /** The columns in this table. */
     private ArrayList<Column> columns = new ArrayList<Column>();
@@ -1120,6 +1122,20 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
 
     public void setOldSchema(String oldSchema) {
         this.oldSchema = oldSchema;
+    }
+
+    /**
+     * @return the isAccessControlled
+     */
+    public boolean isAccessControlled() {
+        return isAccessControlled;
+    }
+
+    /**
+     * @param isAccessControlled the isAccessControlled to set
+     */
+    public void setAccessControlled(boolean isAccessControlled) {
+        this.isAccessControlled = isAccessControlled;
     }
 
     public Table copy() {
