@@ -36,6 +36,10 @@ public class IoException extends RuntimeException {
         super(e);
     }
     
+    public IoException(String message, Throwable cause) {
+        super(message, cause);
+    }    
+    
     public IoException(String msg, Object... args) {
         super(String.format(msg, args));
     }
