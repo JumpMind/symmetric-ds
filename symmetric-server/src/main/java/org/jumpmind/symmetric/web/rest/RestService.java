@@ -305,7 +305,7 @@ public class RestService {
      * and can be used to diagnose state of the node
      */
     @ApiOperation(value = "Take a diagnostic snapshot for the single engine")
-    @RequestMapping(value = "engine/snapshot", method = RequestMethod.GET)
+    @RequestMapping(value = "engine/snapshot", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final void getSnapshot(HttpServletResponse resp) {
@@ -321,7 +321,7 @@ public class RestService {
      * 
      */
     @ApiOperation(value = "Execute the specified SQL statement on the single engine")
-    @RequestMapping(value = "engine/querynode", method = RequestMethod.GET)
+    @RequestMapping(value = "engine/querynode", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final QueryResults getQueryNode(@RequestParam(value = "query") String sql) {
