@@ -24,6 +24,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.IOException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +58,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
@@ -215,19 +217,41 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return triggerTemplate.createInitalLoadSql(node, trigger, table, triggerHistory, channel, overrideSelectSql)
                 .trim();
     }
+    
 
-    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory) {    	
-    	String sql = null;        	    	
-    	if (StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt())) {
-    	    sql = String.format(
-	                parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL),
-	                triggerRouter.qualifiedTargetTableName(triggerHistory));
-    	} else {
-    		sql = triggerRouter.getInitialLoadDeleteStmt();
-    	}
-        return sql;
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory) {
+        return createPurgeSqlFor(node, triggerRouter, triggerHistory, null);
     }
 
+    @Override
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory, List<TransformTableNodeGroupLink> transforms) {
+        String sql = null;        	    	
+        if (StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt())) {
+            List<String> tableNames = new ArrayList<String>();
+            if (transforms != null) {
+                for (TransformTableNodeGroupLink transform : transforms) {
+                    tableNames.add(transform.getFullyQualifiedTargetTableName());
+                }
+            } else {
+                tableNames.add(triggerRouter.qualifiedTargetTableName(triggerHistory));
+            }
+            
+            StringBuilder statements = new StringBuilder(128);
+            
+            for (String tableName : tableNames) {
+                statements.append(String.format(
+                        parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL),
+                        tableName)).append(";");
+            }
+            
+            statements.setLength(statements.length()-1); // Lose the last ;
+            sql = statements.toString();
+        } else {
+            sql = triggerRouter.getInitialLoadDeleteStmt();
+        }
+        return sql;
+    }
+    
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel,
             String whereClause) {
         return triggerTemplate.createCsvDataSql(
