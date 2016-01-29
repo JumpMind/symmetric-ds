@@ -103,6 +103,9 @@ public class SecurityService implements ISecurityService {
 
     protected void checkThatKeystoreFileExists() {
         String keyStoreLocation = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
+        if (keyStoreLocation == null) {
+            throw new RuntimeException("System property '" + SecurityConstants.SYSPROP_KEYSTORE + "' is not defined.");
+        }
         if (!new File(keyStoreLocation).exists()) {
             throw new IoException(
                     "Could not find the keystore file.  We expected it to exist here: "
