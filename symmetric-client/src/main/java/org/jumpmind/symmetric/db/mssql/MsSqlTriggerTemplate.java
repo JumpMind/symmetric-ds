@@ -182,7 +182,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
                 buildKeyVariablesDeclare(columns, "new"), ddl);
         
         ddl = FormatUtils.replace("anyNonBlobColumnChanged",
-        		buildNonLobColumnsAreNotEqualString(table, "inserted", "deleted"), ddl);
+        		buildNonLobColumnsAreNotEqualString(table, newTriggerValue, oldTriggerValue), ddl);
         
         ddl = FormatUtils.replace("nonBlobColumns", buildNonLobColumnsString(table), ddl);
         return ddl;
@@ -198,15 +198,15 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
     			continue;
     		}
     		if(builder.length() > 0){
-    			builder.append(" and ");
+    			builder.append(" or ");
     		}
     	
-    		builder.append(String.format("%s.\"%s\"=%s.\"%s\"", 
-    				table1Name, column.getName(), table2Name, column.getName()));
+    		builder.append(String.format("((%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NOT NULL AND %1$s.\"%2$s\"<>%3$s.\"%2$s\") or (%1$s.\"%2$s\" IS NULL AND %3$s.\"%2$s\" IS NOT NULL) or (%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NULL))", 
+    				table1Name, column.getName(), table2Name));
     		
     	}
     	
-    	return "not (" + builder.toString() + ")";
+    	return "(" + builder.toString() + ")";
     }
     
     private String buildNonLobColumnsString(Table table){
