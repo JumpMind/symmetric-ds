@@ -79,10 +79,11 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "          select '$(targetTableName)','I', $(triggerHistoryId), $(columns), \n" +
 "                  $(channelExpression), $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp \n" +
 "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
-"          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)\n" +
+"          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) \n" +
 "       $(else:containsBlobClobColumns)                                                                                                                                    \n" +
-"          from inserted where $(syncOnInsertCondition)                                                                                   \n" +
+"          from inserted                                                                                   \n" +
 "       $(end:containsBlobClobColumns)                                                                                                                                     \n" +
+"          where $(syncOnInsertCondition)               \n" +
 "     end                                                                                                                                                                  \n" +
 "     $(custom_on_insert_text)                                                                                                                                             \n" +
 "     if (@NCT = 0) set nocount off                                                                                                                                        \n" +
@@ -104,10 +105,11 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "             select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns), $(channelExpression), "+
 "               $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp\n" +
 "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
-"          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)\n" +
+"          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) \n" +
 "       $(else:containsBlobClobColumns)                                                                                                                                    \n" +
-"          from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)                                    \n" +
+"          from inserted inner join deleted on $(oldNewPrimaryKeyJoin)                                   \n" +
 "       $(end:containsBlobClobColumns)                                                                                                                                     \n" +
+"          where $(syncOnUpdateCondition) and ($(dataHasChangedCondition))                                                    \n" +
 "       end                                                                                                                                                                \n" +
 "       $(custom_on_update_text)                                                                                                                                             \n" +
 "     if (@NCT = 0) set nocount off                                                                                                                                        \n" +
@@ -130,10 +132,11 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "             select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns), $(channelExpression), "+
 "               $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp\n" +
 "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
-"          from (select $(nonBlobColumns), row_number() over (order by (select 1)) as __row_num from inserted) inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join (select $(nonBlobColumns), row_number() over (order by (select 1)) as __row_num from deleted)deleted on (inserted.__row_num = deleted.__row_num) where $(syncOnUpdateCondition)\n" +
+"          from (select $(nonBlobColumns), row_number() over (order by (select 1)) as __row_num from inserted) inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join (select $(nonBlobColumns), row_number() over (order by (select 1)) as __row_num from deleted)deleted on (inserted.__row_num = deleted.__row_num)\n" +
 "       $(else:containsBlobClobColumns)                                                                                                                                    \n" +
-"          from (select *, row_number() over (order by (select 1)) as __row_num from inserted) inserted inner join (select *, row_number() over (order by (select 1)) as __row_num from deleted) deleted on (inserted.__row_num = deleted.__row_num) where $(syncOnUpdateCondition)                                    \n" +
+"          from (select *, row_number() over (order by (select 1)) as __row_num from inserted) inserted inner join (select *, row_number() over (order by (select 1)) as __row_num from deleted) deleted on (inserted.__row_num = deleted.__row_num)                                    \n" +
 "       $(end:containsBlobClobColumns)                                                                                                                                     \n" +
+"          where $(syncOnUpdateCondition) and ($(dataHasChangedCondition))                                                                     \n" +
 "       end                                                                                                                                                                \n" +
 "       $(custom_on_update_text)                                                                                                                                             \n" +
 "     if (@NCT = 0) set nocount off                                                                                                                                        \n" +
@@ -178,8 +181,32 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         ddl = FormatUtils.replace("declareNewKeyVariables",
                 buildKeyVariablesDeclare(columns, "new"), ddl);
         
+        ddl = FormatUtils.replace("anyNonBlobColumnChanged",
+        		buildNonLobColumnsAreNotEqualString(table, "inserted", "deleted"), ddl);
+        
         ddl = FormatUtils.replace("nonBlobColumns", buildNonLobColumnsString(table), ddl);
         return ddl;
+    }
+    
+    private String buildNonLobColumnsAreNotEqualString(Table table, String table1Name, String table2Name){
+    	StringBuilder builder = new StringBuilder();
+    	
+    	for(Column column : table.getColumns()){
+    		boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
+
+    		if(isLob || column.isPrimaryKey()){
+    			continue;
+    		}
+    		if(builder.length() > 0){
+    			builder.append(" and ");
+    		}
+    	
+    		builder.append(String.format("%s.\"%s\"=%s.\"%s\"", 
+    				table1Name, column.getName(), table2Name, column.getName()));
+    		
+    	}
+    	
+    	return "not (" + builder.toString() + ")";
     }
     
     private String buildNonLobColumnsString(Table table){
