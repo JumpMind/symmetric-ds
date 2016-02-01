@@ -23,6 +23,7 @@ package org.jumpmind.db.platform.sqlite;
 import java.sql.Connection;
 import java.sql.Types;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
@@ -163,9 +164,21 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
                     return defaultValueStr.substring(beginIndex);
                 }
             }
+        }else if (defaultValue != null){
+        	String defaultValueStr = defaultValue.toString();
+        	if(defaultValueStr.equalsIgnoreCase("newsequentialid()") || StringUtils.containsIgnoreCase(defaultValueStr, "newid()")){
+        		return "(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(6)))";
+        	}
         }
         return super.mapDefaultValue(defaultValue, typeCode);
     }
+	
+	@Override
+    protected boolean isShouldUseQuotes(String defaultValue) {
+    	boolean shouldUse = !(defaultValue.toLowerCase().startsWith("(hex(randomblob"));
+    	
+    	return shouldUse;
+    };
 
     @Override
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {

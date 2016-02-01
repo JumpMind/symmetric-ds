@@ -2057,7 +2057,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                                 || defaultValueStr.toUpperCase().startsWith("TIME '")
                                 || defaultValueStr.toUpperCase().startsWith("TIMESTAMP '")
                                 || defaultValueStr.toUpperCase().startsWith("INTERVAL '")
-                                )) &&
+                                )) && isShouldUseQuotes(defaultValueStr) &&
                 !(defaultValueStr.toUpperCase().startsWith("N'") && defaultValueStr.endsWith("'"));
 
         if (shouldUseQuotes) {
@@ -2068,6 +2068,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         } else {
             ddl.append(defaultValueStr);
         }
+	
+    }
+
+    protected boolean isShouldUseQuotes(String defaultValue){
+    	return true;
     }
 
     protected String mapDefaultValue(Object defaultValue, int typeCode) {
