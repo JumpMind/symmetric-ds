@@ -27,6 +27,7 @@ public class SqlTemplateSettings {
     protected int batchSize = 100;
     protected boolean readStringsAsBytes;
     protected boolean treatBinaryAsLob;
+    protected boolean rightTrimCharValues;
     protected int overrideIsolationLevel = -1;
     protected int resultSetType = java.sql.ResultSet.TYPE_FORWARD_ONLY;
     protected LogSqlBuilder logSqlBuilder;
@@ -96,6 +97,14 @@ public class SqlTemplateSettings {
 
     public void setResultSetType(int resultSetType) {
         this.resultSetType = resultSetType;
+    }
+    
+    public boolean isRightTrimCharValues() { 
+        return rightTrimCharValues; 
+    }
+
+    public void setRightTrimCharValues(boolean rightTrimCharValues) { 
+        this.rightTrimCharValues = rightTrimCharValues; 
     }
 
 }
