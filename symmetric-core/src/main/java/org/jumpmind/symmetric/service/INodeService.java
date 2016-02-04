@@ -103,6 +103,8 @@ public interface INodeService {
     public boolean deleteIdentity();
 
     public List<Node> findAllNodes();
+    
+    public Map<String, Node> findAllNodesAsMap();
 
     public List<Node> findNodesToPull();
 
