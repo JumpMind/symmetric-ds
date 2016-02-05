@@ -5,7 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -111,4 +113,26 @@ public class Db2As400DdlReader extends Db2DdlReader {
         log.debug("done reading additional column data");
     }
 
+    
+    @Override
+    protected Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData, String tableName)
+    		throws SQLException {
+    	Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
+        if (getPlatformInfo().isIndicesSupported()) {
+            ResultSet indexData = null;
+    
+            try {
+                indexData = metaData.getIndices(getTableNamePatternForConstraints(tableName), true, false);
+    
+                while (indexData.next()) {
+                    Map<String, Object> values = readMetaData(indexData, getColumnsForIndex());
+    
+                    readIndex(metaData, values, indices);
+                }
+            } finally {
+                close(indexData);
+            }
+        }
+        return indices.values();
+    }
 }
