@@ -883,11 +883,11 @@ void SymTriggerRouterService_updateOrCreateDatabaseTriggers(SymTriggerRouterServ
 
     newestHistory = SymTriggerRouterService_rebuildTriggerIfNecessary(this, forceRebuildOfTriggers,
             trigger, SYM_DATA_EVENT_UPDATE, reason, latestHistoryBeforeRebuild, newestHistory,
-            trigger->syncOnInsert && supportsTriggers, table, activeTriggerHistories);
+            trigger->syncOnUpdate && supportsTriggers, table, activeTriggerHistories);
 
     newestHistory = SymTriggerRouterService_rebuildTriggerIfNecessary(this, forceRebuildOfTriggers,
             trigger, SYM_DATA_EVENT_DELETE, reason, latestHistoryBeforeRebuild, newestHistory,
-            trigger->syncOnInsert && supportsTriggers, table, activeTriggerHistories);
+            trigger->syncOnDelete && supportsTriggers, table, activeTriggerHistories);
 
     if (latestHistoryBeforeRebuild != NULL && newestHistory != NULL) {
         SymTriggerRouterService_inactivateTriggerHistory(this, latestHistoryBeforeRebuild);

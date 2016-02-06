@@ -29,5 +29,10 @@ public class Db2zOsDatabasePlatform extends Db2DatabasePlatform {
     public Db2zOsDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
     }
+    
+    @Override
+    protected Db2DdlReader createDdlReader() {
+        return new Db2zOsDdlReader(this);
+    }    
 
 }

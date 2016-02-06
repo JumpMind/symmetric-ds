@@ -1426,7 +1426,7 @@ public class RestService {
     }
 
     private void uninstallImpl(ISymmetricEngine engine) {
-        engine.uninstall();
+        getSymmetricEngineHolder().uninstallEngine(engine);
     }
 
     private void reinitializeImpl(ISymmetricEngine engine) {

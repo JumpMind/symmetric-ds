@@ -54,6 +54,7 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.job.PushHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Channel;
@@ -78,6 +79,7 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 
@@ -719,9 +721,15 @@ public class DataService extends AbstractService implements IDataService {
     protected void insertPurgeEvent(ISqlTransaction transaction, Node targetNode,
             TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad,
             String overrideDeleteStatement, long loadId, String createBy) {
+
         Node sourceNode = engine.getNodeService().findIdentity();
+        
+        List<TransformTableNodeGroupLink> transforms = 
+                this.engine.getTransformService().findTransformsFor(
+                        sourceNode.getNodeGroupId(), targetNode.getNodeGroupId(), triggerRouter.getTargetTable(triggerHistory));
+        
         String sql = StringUtils.isNotBlank(overrideDeleteStatement) ? overrideDeleteStatement
-                : symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory);
+                : symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory, transforms);
         sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
         sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
         sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
