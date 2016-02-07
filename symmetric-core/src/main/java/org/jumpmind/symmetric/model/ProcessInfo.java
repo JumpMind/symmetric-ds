@@ -76,6 +76,8 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     private String currentChannelId;
 
+    private boolean threadPerChannel;
+    
     private String currentTableName;
 
     private transient Thread thread;
@@ -174,6 +176,9 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     }
 
     public String getCurrentChannelId() {
+    	if (getKey().getChannelId() != null && getKey().getChannelId().length() > 0) {
+    		return getKey().getChannelId();
+    	}
         return currentChannelId;
     }
 
@@ -221,7 +226,15 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         return dataCount;
     }
     
-    public Date getCurrentBatchStartTime() {
+    public boolean isThreadPerChannel() {
+		return threadPerChannel;
+	}
+
+	public void setThreadPerChannel(boolean threadPerChannel) {
+		this.threadPerChannel = threadPerChannel;
+	}
+
+	public Date getCurrentBatchStartTime() {
         if (currentBatchStartTime == null) {
             return startTime;
         } else {

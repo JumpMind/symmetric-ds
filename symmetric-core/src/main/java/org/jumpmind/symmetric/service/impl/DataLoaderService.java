@@ -228,8 +228,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * Connect to the remote node and pull data. The acknowledgment of
      * commit/error status is sent separately after the data is processed.
      */
-    public RemoteNodeStatus loadDataFromPull(Node remote) throws IOException {
+    public RemoteNodeStatus loadDataFromPull(Node remote, String channelId) throws IOException {
         RemoteNodeStatus status = new RemoteNodeStatus(remote != null ? remote.getNodeId() : null,
+        		channelId,
                 configurationService.getChannels(false));
         loadDataFromPull(remote, status);
         return status;
@@ -251,6 +252,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         suspendIgnoreChannels.getSuspendChannelsAsString());
                 requestProperties.put(WebConstants.IGNORED_CHANNELS,
                         suspendIgnoreChannels.getIgnoreChannelsAsString());
+                requestProperties.put(WebConstants.THREAD_CHANNEL, status.getChannelId());
                 transport = transportManager.getPullTransport(remote, local,
                         localSecurity.getNodePassword(), requestProperties,
                         parameterService.getRegistrationUrl());
@@ -263,7 +265,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
 
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
-                    .getNodeId(), local.getNodeId(), ProcessType.PULL_JOB));
+                    .getNodeId(), status.getChannelId(), local.getNodeId(), ProcessType.PULL_JOB));
             try {
                 List<IncomingBatch> list = loadDataFromTransport(processInfo, remote, transport);
                 if (list.size() > 0) {
@@ -337,10 +339,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      */
     public void loadDataFromPush(Node sourceNode, InputStream in, OutputStream out)
             throws IOException {
+        loadDataFromPush(sourceNode, null, in, out);
+    }
+
+    /**
+     * Load database from input stream and write acknowledgment to output
+     * stream. This is used for a "push" request with a response of an
+     * acknowledgment.
+     */
+    public void loadDataFromPush(Node sourceNode, String channelId, InputStream in, OutputStream out)
+            throws IOException {
         Node local = nodeService.findIdentity();
         if (local != null) {
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(sourceNode
-                    .getNodeId(), local.getNodeId(), ProcessInfoKey.ProcessType.PUSH_HANDLER));
+                    .getNodeId(), channelId, local.getNodeId(), ProcessInfoKey.ProcessType.PUSH_HANDLER));
             try {
                 List<IncomingBatch> batchList = loadDataFromTransport(processInfo, sourceNode,
                         new InternalIncomingTransport(in));
@@ -362,7 +374,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw new SymmetricException("Could not load data because the node is not registered");
         }
     }
-
+    
     private void logDataReceivedFromPush(Node sourceNode, List<IncomingBatch> batchList) {
         int okBatchesCount = 0;
         int errorBatchesCount = 0;

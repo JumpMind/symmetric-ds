@@ -33,7 +33,7 @@ public interface INodeCommunicationService {
 
     public void save(NodeCommunication nodeCommunication);
     
-    public NodeCommunication find(String nodeId, CommunicationType communicationType);
+    public NodeCommunication find(String nodeId, String channelId, CommunicationType communicationType);
 
     public boolean execute(NodeCommunication nodeCommunication, RemoteNodeStatuses statuses, INodeCommunicationExecutor executor);
 

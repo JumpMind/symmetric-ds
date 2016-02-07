@@ -652,7 +652,7 @@ public class DataService extends AbstractService implements IDataService {
 
                         }
                         engine.getDataExtractorService().requestExtractRequest(transaction,
-                                targetNode.getNodeId(), triggerRouter, startBatchId, endBatchId);
+                                targetNode.getNodeId(), channel.getChannelId(), triggerRouter, startBatchId, endBatchId);
                     } else {
                         insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
                                 null, true, loadId, createBy, Status.NE);

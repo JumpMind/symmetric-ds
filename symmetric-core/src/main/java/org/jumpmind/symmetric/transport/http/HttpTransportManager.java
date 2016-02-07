@@ -204,6 +204,15 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local,
+            String securityToken, Map<String, String> requestProperties, 
+            String registrationUrl) throws IOException {
+        URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
+        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),
+                getCompressionStrategy(), getCompressionLevel(), getBasicAuthUsername(),
+                getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize(), false, requestProperties);
+    }
+    
+    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local,
             String securityToken, String registrationUrl) throws IOException {
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
         return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),

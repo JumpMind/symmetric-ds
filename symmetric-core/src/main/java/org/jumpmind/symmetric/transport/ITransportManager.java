@@ -48,6 +48,8 @@ public interface ITransportManager {
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String registrationUrl) throws IOException;
 
+    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException;
+
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException;
     
     /**

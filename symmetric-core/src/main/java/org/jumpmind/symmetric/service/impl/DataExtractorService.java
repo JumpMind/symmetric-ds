@@ -375,6 +375,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             batches.removeNonLoadBatches();
         }
 
+        if (suspendIgnoreChannelsList.getThreadChannel() != null && !suspendIgnoreChannelsList.getThreadChannel().equals("0")) {
+        	batches.removeThreadChannelBatches(suspendIgnoreChannelsList.getThreadChannel());
+        }
+        
         return batches.getBatches();
     }
 
@@ -429,6 +433,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
             IOutgoingTransport transport) {
 
+        return extract(processInfo, targetNode, null, transport);
+    }
+    
+    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode, String channelId,
+            IOutgoingTransport transport) {
+
         /*
          * make sure that data is routed before extracting if the route job is
          * not configured to start automatically
@@ -437,8 +447,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             routerService.routeData(true);
         }
 
-        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(),
-                false);
+        
+        OutgoingBatches batches = null;
+        if (channelId != null) {
+        	batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), channelId, false);
+        }
+        else {
+        	batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
+        }
 
         if (batches.containsBatches()) {
 
@@ -1003,9 +1019,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (identity != null) {
             if (force || clusterService.lock(ClusterConstants.INITIAL_LOAD_EXTRACT)) {
                 try {
-                    List<String> nodeIds = getExtractRequestNodes();
-                    for (String nodeId : nodeIds) {
-                        queue(nodeId, statuses);
+                    Map<String, String> nodes = getExtractRequestNodes();
+                    for (Map.Entry<String, String> entry : nodes.entrySet()) {
+                        queue(entry.getKey(), entry.getValue(), statuses);
                     }
                 } finally {
                     if (!force) {
@@ -1019,35 +1035,36 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return statuses;
     }
 
-    protected void queue(String nodeId, RemoteNodeStatuses statuses) {
+    protected void queue(String nodeId, String channelId, RemoteNodeStatuses statuses) {
         final NodeCommunication.CommunicationType TYPE = NodeCommunication.CommunicationType.EXTRACT;
         int availableThreads = nodeCommunicationService.getAvailableThreads(TYPE);
-        NodeCommunication lock = nodeCommunicationService.find(nodeId, TYPE);
+        NodeCommunication lock = nodeCommunicationService.find(nodeId, channelId, TYPE);
         if (availableThreads > 0) {
             nodeCommunicationService.execute(lock, statuses, this);
         }
     }
 
-    public List<String> getExtractRequestNodes() {
-        return sqlTemplate.query(getSql("selectNodeIdsForExtractSql"), SqlConstants.STRING_MAPPER,
+    public Map<String, String> getExtractRequestNodes() {
+    	return sqlTemplate.queryForMap(getSql("selectNodeIdsForExtractSql"), "node_id", "channel_id",
                 ExtractStatus.NE.name());
     }
 
-    public List<ExtractRequest> getExtractRequestsForNode(String nodeId) {
+    public List<ExtractRequest> getExtractRequestsForNode(NodeCommunication nodeCommunication) {
         return sqlTemplate.query(getSql("selectExtractRequestForNodeSql"),
-                new ExtractRequestMapper(), nodeId, ExtractRequest.ExtractStatus.NE.name());
+                new ExtractRequestMapper(), nodeCommunication.getNodeId(), nodeCommunication.getChannelId()
+                , ExtractRequest.ExtractStatus.NE.name());
     }
 
     protected void resetExtractRequest(OutgoingBatch batch) {
         sqlTemplate.update(getSql("resetExtractRequestStatus"), ExtractStatus.NE.name(),
-                batch.getBatchId(), batch.getBatchId(), batch.getNodeId());
+                batch.getBatchId(), batch.getBatchId(), batch.getNodeId(), batch.getChannelId());
     }
 
-    public void requestExtractRequest(ISqlTransaction transaction, String nodeId,
+    public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String channelId,
             TriggerRouter triggerRouter, long startBatchId, long endBatchId) {
         long requestId = sequenceService.nextVal(transaction, Constants.SEQUENCE_EXTRACT_REQ);
         transaction.prepareAndExecute(getSql("insertExtractRequestSql"),
-                new Object[] { requestId, nodeId, ExtractStatus.NE.name(), startBatchId,
+                new Object[] { requestId, nodeId, channelId, ExtractStatus.NE.name(), startBatchId,
                         endBatchId, triggerRouter.getTrigger().getTriggerId(),
                         triggerRouter.getRouter().getRouterId() }, new int[] { Types.BIGINT, Types.VARCHAR,
                         Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR });
@@ -1064,7 +1081,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * in the background.
      */
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
-        List<ExtractRequest> requests = getExtractRequestsForNode(nodeCommunication.getNodeId());
+        List<ExtractRequest> requests = getExtractRequestsForNode(nodeCommunication);
         long ts = System.currentTimeMillis();
         /*
          * Process extract requests until it has taken longer than 30 seconds, and then

@@ -41,11 +41,13 @@ public interface IDataLoaderService {
     
     public boolean refreshFromDatabase();
 
-    public RemoteNodeStatus loadDataFromPull(Node remote) throws IOException;
+    public RemoteNodeStatus loadDataFromPull(Node remote, String channelId) throws IOException;
 
     public void loadDataFromPull(Node sourceNode, RemoteNodeStatus status) throws IOException;
 
     public void loadDataFromPush(Node sourceNode, InputStream in, OutputStream out) throws IOException;
+
+    public void loadDataFromPush(Node sourceNode, String channelId, InputStream in, OutputStream out) throws IOException;
 
     public List<IncomingBatch> loadDataFromOfflineTransport(Node remote, RemoteNodeStatus status, IIncomingTransport transport) throws IOException;
 

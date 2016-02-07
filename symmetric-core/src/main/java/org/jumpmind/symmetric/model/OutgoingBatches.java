@@ -128,6 +128,15 @@ public class OutgoingBatches implements Serializable {
         }
     }
 
+    public void removeThreadChannelBatches(String channelId) {
+        for (Iterator<OutgoingBatch> iterator = batches.iterator(); iterator.hasNext();) {
+            OutgoingBatch b = iterator.next();
+            if (!b.getChannelId().equals(channelId)) {
+                iterator.remove();
+            }
+        }
+    }
+    
     public boolean containsLoadBatches() {
         for (OutgoingBatch b : batches) {
             if (b.isLoadFlag()) {
