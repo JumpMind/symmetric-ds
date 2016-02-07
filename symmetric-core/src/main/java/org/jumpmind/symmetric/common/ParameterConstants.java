@@ -300,7 +300,7 @@ final public class ParameterConstants {
 
     public final static String EXTENSIONS_XML = "extensions.xml";
 
-    public final static String CHANNEL_THREADING = "channel.threading";
+    public final static String CHANNEL_THREADING = "channel.threading.enabled";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

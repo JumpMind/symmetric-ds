@@ -202,8 +202,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             		nodeCommunication.setNode(node);
             		nodeCommunications.add(nodeCommunication);
     			}
-    		}
-    		else {
+    		} else {
     			NodeCommunication nodeCommunication = new NodeCommunication();
         		nodeCommunication.setNodeId(node.getNodeId());
         		nodeCommunication.setNode(node);
