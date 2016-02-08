@@ -288,4 +288,12 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.service.INodeService#getExternalId(java.lang.String)
+     */
+    @Override
+    public String getExternalId(String nodeId) {
+        return nodeId;
+    }
+
 }
