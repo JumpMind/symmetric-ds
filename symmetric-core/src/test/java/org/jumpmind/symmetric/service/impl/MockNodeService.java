@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +49,19 @@ public class MockNodeService implements INodeService {
     public List<Node> findAllNodes() {
         return null;
     }
+    
+    public Map<String, Node> findAllNodesAsMap() {
+        List<Node> nodes = findAllNodes();
+        Map<String, Node> nodeMap = new HashMap<String, Node>();
+        if (nodes == null) {
+            return nodeMap;
+        }
+        
+        for (Node node : nodes) {
+            nodeMap.put(node.getNodeId(), node);
+        }
+        return nodeMap;
+    }    
     
     public void deleteNodeHost(String nodeId) {
     }
@@ -272,6 +286,14 @@ public class MockNodeService implements INodeService {
 
     public Map<String, Date> findLastHeartbeats() {
         return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.service.INodeService#getExternalId(java.lang.String)
+     */
+    @Override
+    public String getExternalId(String nodeId) {
+        return nodeId;
     }
 
 }
