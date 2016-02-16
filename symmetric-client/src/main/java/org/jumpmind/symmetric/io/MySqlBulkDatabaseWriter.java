@@ -26,6 +26,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -137,15 +139,17 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                                 out.write('"');
                                 if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
                                     out.write(escape(Hex.decodeHex(parsedData[i].toCharArray())));
+//                                    out.write(parsedData[i].getBytes());
                                 } else if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
-                                    out.write(escape(Base64.decodeBase64(parsedData[i].getBytes())));
+//                                    out.write(escape(Base64.decodeBase64(parsedData[i].getBytes())));
+                                    out.write(new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes()))).getBytes());
                                 }
                                 out.write('"');
                                 lastWasBinary = true;
                             } else {
-                                if (lastWasBinary) {
-                                    out.write(',');
-                                } 
+//                                if (lastWasBinary) {
+//                                    out.write(',');
+//                                } 
                                 writer.write(parsedData[i], true);
                                 writer.flush();
                                 lastWasBinary = false;
@@ -195,8 +199,8 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            		"INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
 	            		(isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
 	            		this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) +
-                                " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY ''" +
-                                " (" + getCommaDeliminatedColumns(table.getColumns()) + ")";
+                                " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY '' " +
+                                getCommaDeliminatedColumns(table.getColumns());
 	            Statement stmt = c.createStatement();
 	
 	            //TODO:  clean this up, deal with errors, etc.?
@@ -220,14 +224,55 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
         DatabaseInfo dbInfo = platform.getDatabaseInfo();
         String quote = dbInfo.getDelimiterToken();
         StringBuilder columns = new StringBuilder();
+        columns.append("(");
+        
+        // The target syntax is (where BLOB is involved):
+        // ('column1', 'column2', @hexColumn3) SET 'column3'=UNHEX(@hexColumn3);
+        
+        Map<String, String> blobColumns = new LinkedHashMap<String, String>();
+        
         if (cols != null && cols.length > 0) {
             for (Column column : cols) {
-                columns.append(quote);
-                columns.append(column.getName());
-                columns.append(quote);
+                boolean blob = column.isOfBinaryType(); 
+                if (blob) {
+                    String hexVariable = String.format("@%s_hex", column.getName());
+                    blobColumns.put(column.getName(), hexVariable);
+                    columns.append(hexVariable);
+                } else {
+                    columns.append(quote);
+                    columns.append(column.getName());
+                    columns.append(quote);                                    
+                }
+                
                 columns.append(",");
             }
             columns.replace(columns.length() - 1, columns.length(), "");
+            
+            columns.append(")");
+            
+            // Build this (optional) clause:
+            // SET 'column3'=UNHEX(@hexColumn3);
+            
+            StringBuilder setClause = new StringBuilder();
+            
+            for (String columnName : blobColumns.keySet()) {
+                if (setClause.length() == 0) {
+                    setClause.append(" SET ");
+                }
+                
+                setClause.append(quote);
+                setClause.append(columnName);
+                setClause.append(quote);
+                setClause.append("=UNHEX(");
+                setClause.append(blobColumns.get(columnName));
+                setClause.append("),");
+            }
+            
+            if (setClause.length() > 0) {
+                setClause.setLength(setClause.length()-1);
+                columns.append(setClause);
+            }
+            
             return columns.toString();
         } else {
             return " ";
