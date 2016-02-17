@@ -122,17 +122,35 @@ public class Db2As400DdlReader extends Db2DdlReader {
             ResultSet indexData = null;
     
             try {
-                indexData = metaData.getIndices(getTableNamePatternForConstraints(tableName), true, false);
-    
+                indexData = metaData.getIndices(getTableNamePatternForConstraints(tableName), false, false);
+                
+                Collection<Column> columns = readColumns(metaData, tableName);
+                
                 while (indexData.next()) {
                     Map<String, Object> values = readMetaData(indexData, getColumnsForIndex());
     
-                    readIndex(metaData, values, indices);
+                    String columnName = (String) values.get("COLUMN_NAME");
+                    if (hasColumn(columns, columnName)) {
+                    	readIndex(metaData, values, indices);
+                    }
                 }
             } finally {
                 close(indexData);
             }
         }
         return indices.values();
+    }
+    
+    private boolean hasColumn(Collection<Column> columns, String targetColumn) {
+    	if (targetColumn == null || columns == null || columns.size() == 0) {
+    		return false;
+    	}
+    	boolean found = false;
+    	for(Column column : columns) {
+    		if (targetColumn.equals(column.getName())) {
+    			found = true;
+    		}
+    	}
+    	return found;
     }
 }
