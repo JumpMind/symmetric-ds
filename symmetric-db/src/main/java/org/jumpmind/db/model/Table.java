@@ -1102,7 +1102,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                 }
             }
             if (orderedColumns[i] == null) {
-                log.warn("Could not find column with the name of {} on table {}", name, table.toVerboseString());
+                log.debug("Could not find column with the name of {} on table {}", name, table.toVerboseString());
             }
         }
         return orderedColumns;
