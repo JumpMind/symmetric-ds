@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io.data.transform;
 
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -41,6 +42,8 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
 
     protected static final String OPTION_TIMESTAMP = "system_timestamp";
 
+    protected static final String OPTION_TIMESTAMP_UTC = "system_timestamp_utc";
+
     protected static final String OPTION_DATE = "system_date";
 
     protected static final String OPTION_SOURCE_NODE_ID = "source_node_id";
@@ -57,7 +60,7 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
     
     protected static final String OPTION_SOURCE_SCHEMA_NAME = "source_schema_name";
 
-    private static final String[] OPTIONS = new String[] { OPTION_TIMESTAMP, OPTION_DATE,
+    private static final String[] OPTIONS = new String[] { OPTION_TIMESTAMP, OPTION_TIMESTAMP_UTC, OPTION_DATE,
             OPTION_SOURCE_NODE_ID, OPTION_TARGET_NODE_ID, OPTION_NULL, OPTION_OLD_VALUE, OPTION_SOURCE_CATALOG_NAME,
             OPTION_SOURCE_SCHEMA_NAME, OPTION_SOURCE_TABLE_NAME };
 
@@ -85,6 +88,8 @@ public class VariableColumnTransform implements ISingleValueColumnTransform, IBu
         if (varName != null) {
             if (varName.equalsIgnoreCase(OPTION_TIMESTAMP)) {
                 return DateFormatUtils.format(System.currentTimeMillis(), TS_PATTERN);
+            } else if (varName.equalsIgnoreCase(OPTION_TIMESTAMP_UTC)) {
+                return DateFormatUtils.format(System.currentTimeMillis(), TS_PATTERN, TimeZone.getTimeZone("GMT"));
             } else if (varName.equalsIgnoreCase(OPTION_DATE)) {
                 return DateFormatUtils.format(System.currentTimeMillis(), DATE_PATTERN);
             } else if (varName.equalsIgnoreCase(OPTION_SOURCE_NODE_ID)) {
