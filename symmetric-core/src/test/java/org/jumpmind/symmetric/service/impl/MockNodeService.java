@@ -62,6 +62,11 @@ public class MockNodeService implements INodeService {
     public NetworkedNode getRootNetworkedNode() {
         return null;
     }
+    
+    @Override
+    public String getExternalId(String nodeId) {
+        return null;
+    }
 
     public List<String> findOfflineNodeIds(long minutesOffline) {
         return null;
