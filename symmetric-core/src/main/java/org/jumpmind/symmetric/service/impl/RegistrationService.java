@@ -426,9 +426,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 String channelId = null;
                 registered = dataLoaderService.loadDataFromPull(null, channelId).getStatus() == Status.DATA_PROCESSED;
             } catch (ConnectException e) {
-                log.warn("The request to register failed because the client failed to connect to the server");
+                log.warn("The request to register failed because the client failed to connect to the server.  The connection error message was: {}", e.getMessage());
             } catch (UnknownHostException e) {
-                log.warn("The request to register failed because the host was unknown");
+                log.warn("The request to register failed because the host was unknown.  The unknow host exception was {}", e.getMessage());
             } catch (ConnectionRejectedException ex) {
                 log.warn("The request to register was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
             } catch (Exception e) {
