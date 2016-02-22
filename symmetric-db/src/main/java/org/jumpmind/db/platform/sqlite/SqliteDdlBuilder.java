@@ -73,8 +73,8 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.BINARY, Integer.MAX_VALUE);
         databaseInfo.setDefaultSize(Types.VARBINARY, Integer.MAX_VALUE);
 
-        databaseInfo.setHasSize(Types.CHAR, true);
-        databaseInfo.setHasSize(Types.VARCHAR, true);
+        databaseInfo.setHasSize(Types.CHAR, false);
+        databaseInfo.setHasSize(Types.VARCHAR, false);
         databaseInfo.setHasSize(Types.BINARY, false);
         databaseInfo.setHasSize(Types.VARBINARY, false);
 
