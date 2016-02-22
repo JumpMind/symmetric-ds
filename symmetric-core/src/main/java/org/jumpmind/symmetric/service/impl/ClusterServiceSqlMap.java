@@ -63,7 +63,8 @@ public class ClusterServiceSqlMap extends AbstractSqlMap {
             "where lock_action=? and lock_type=?");
 
         putSql("initLockSql", 
-            "update $(lock) set locking_server_id=null, lock_time=null, shared_count=0, shared_enable=0 " +
+            "update $(lock) set last_locking_server_id=locking_server_id, locking_server_id=null, last_lock_time=lock_time, " +
+            "lock_time=null, shared_count=0, shared_enable=0 " +
             "where locking_server_id=?");
 
         putSql("insertLockSql", "insert into $(lock) (lock_action, lock_type) values(?,?)");
