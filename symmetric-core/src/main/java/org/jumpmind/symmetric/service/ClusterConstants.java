@@ -42,6 +42,7 @@ public class ClusterConstants {
     public static final String WATCHDOG = "WATCHDOG";
     public static final String STATISTICS = "STATISTICS";
     public static final String FILE_SYNC_TRACKER = "FILE_SYNC_TRACKER";
+    public static final String FILE_SYNC_SCAN = "FILE_SYNC_SCAN";
     public static final String FILE_SYNC_SHARED = "FILE_SYNC_SHARED";
     public static final String FILE_SYNC_PULL = "FILE_SYNC_PULL";
     public static final String FILE_SYNC_PUSH = "FILE_SYNC_PUSH";

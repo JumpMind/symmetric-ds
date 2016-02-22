@@ -44,7 +44,6 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
 
         putSql("triggerIdWhere", "where trigger_id=?");
 
-
         putSql("updateFileTriggerSql",
                 " update $(file_trigger) set base_dir=?, recurse=?, includes_files=?,         " +
         		"  excludes_files=?, sync_on_create=?, sync_on_modified=?, sync_on_delete=?,  " +
@@ -67,6 +66,8 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
                 " last_event_type, crc32_checksum, " +
                 "  file_size, file_modified_time, create_time, last_update_time, last_update_by        " +
                 " from $(file_snapshot) where trigger_id=? and router_id=?                             ");
+        
+        putSql("relativeDirWhere", "and relative_dir=?");
 
         putSql("updateFileSnapshotSql",
                 " update $(file_snapshot) set   " +

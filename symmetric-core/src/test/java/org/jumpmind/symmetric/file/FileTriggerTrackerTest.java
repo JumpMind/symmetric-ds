@@ -52,7 +52,7 @@ public class FileTriggerTrackerTest {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), true, null, null);
         Router router = new Router();
         FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
-        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
+        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null, null, false);
         DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         tracker.takeFullSnapshot(snapshot);
         assertEquals(4, snapshot.size());        
@@ -63,7 +63,7 @@ public class FileTriggerTrackerTest {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), false, null, null);
         Router router = new Router();
         FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
-        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
+        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null, null, false);
         DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         tracker.takeFullSnapshot(snapshot);
         assertEquals(2, snapshot.size());        
@@ -74,7 +74,7 @@ public class FileTriggerTrackerTest {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), false, "*.txt", null);
         Router router = new Router();
         FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
-        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
+        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null, null, false);
         DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);       
         tracker.takeFullSnapshot(snapshot);
         assertEquals(1, snapshot.size());
@@ -86,7 +86,7 @@ public class FileTriggerTrackerTest {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), false, null,  "*.txt");
         Router router = new Router();
         FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
-        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
+        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null, null, false);
         DirectorySnapshot snapshot = new DirectorySnapshot(fileTriggerRouter);
         
         tracker.takeFullSnapshot(snapshot);
@@ -99,7 +99,7 @@ public class FileTriggerTrackerTest {
         FileTrigger fileTrigger = new FileTrigger(directory.getAbsolutePath(), true, null, null);
         Router router = new Router();
         FileTriggerRouter fileTriggerRouter = new FileTriggerRouter(fileTrigger, router);
-        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null);
+        FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, null, null, false);
         tracker.trackChanges();
         FileUtils.deleteQuietly(fileInDirectory1);
         DirectorySnapshot snapshot = tracker.trackChanges();
