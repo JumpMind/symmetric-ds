@@ -63,7 +63,7 @@ public class UnixService extends WrapperService {
         try {
             FileWriter writer = new FileWriter(runFile);
             BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(
-                "/" + config.getName().toLowerCase() + ".initd")));
+                "/symmetricds.initd")));
             String line = null;
             while ((line = reader.readLine()) != null) {
                 line = line.replaceAll("\\$\\{wrapper.name}", config.getName());

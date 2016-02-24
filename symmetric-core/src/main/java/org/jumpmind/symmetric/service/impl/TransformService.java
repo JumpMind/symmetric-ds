@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -42,7 +43,6 @@ import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransfor
 import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.TargetDmlAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.JavaColumnTransform;
@@ -53,6 +53,7 @@ import org.jumpmind.symmetric.io.data.transform.MultiplierColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ParameterColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.RemoveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.SubstrColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.TargetDmlAction;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
@@ -141,6 +142,10 @@ public class TransformService extends AbstractService implements ITransformServi
         return false;
     }
 
+    public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink nodeGroupLink) {
+        return findTransformsFor(nodeGroupLink, null);
+    }
+    
     public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink nodeGroupLink,
             TransformPoint transformPoint) {
         Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> byLinkByTransformPoint = 
@@ -167,6 +172,26 @@ public class TransformService extends AbstractService implements ITransformServi
             }
         }
         return null;
+    }
+    
+    public List<TransformTableNodeGroupLink> findTransformsFor(String sourceNodeGroupId, String targetNodeGroupId, String table) {
+        NodeGroupLink nodeGroupLink = new NodeGroupLink(sourceNodeGroupId, targetNodeGroupId);
+        
+        List<TransformTableNodeGroupLink> transformsForNodeGroupLink = findTransformsFor(nodeGroupLink);
+        
+        List<TransformTableNodeGroupLink> transforms = new ArrayList<TransformTableNodeGroupLink>();
+        
+        for (TransformTableNodeGroupLink transform : transformsForNodeGroupLink) {
+            if (StringUtils.equalsIgnoreCase(table, transform.getSourceTableName())) {
+                transforms.add(transform);
+            }
+        }
+        
+        if (!transforms.isEmpty()) {
+            return transforms;
+        } else {            
+            return null;
+        }
     }
 
     public void clearCache() {

@@ -27,6 +27,7 @@
 #include "service/NodeService.h"
 #include "service/IncomingBatchService.h"
 #include "service/ParameterService.h"
+#include "service/TriggerRouterService.h"
 #include "transport/TransportManager.h"
 #include "transport/IncomingTransport.h"
 #include "model/Node.h"
@@ -44,6 +45,7 @@
 typedef struct SymDataLoaderService {
     SymParameterService *parameterService;
     SymNodeService *nodeService;
+    SymTriggerRouterService *triggerRouterService;
     SymTransportManager *transportManager;
     SymTransportManager *fileTransportManager;
     SymDatabasePlatform *platform;
@@ -56,7 +58,7 @@ typedef struct SymDataLoaderService {
     void (*destroy)(struct SymDataLoaderService *this);
 } SymDataLoaderService;
 
-SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService, SymNodeService *nodeService,
+SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService, SymNodeService *nodeService, SymTriggerRouterService *triggerRouterService,
         SymTransportManager *transportManager, SymTransportManager *fileTransportManager, SymDatabasePlatform *platform, SymDialect *dialect, SymIncomingBatchService *incomingBatchService);
 
 #endif

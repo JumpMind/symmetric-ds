@@ -335,6 +335,11 @@ public class ModelComparator {
             scaleMatters = false;
         }
         
+        if (sourceColumn.getMappedTypeCode() == Types.BLOB && targetColumn.getMappedTypeCode() == Types.LONGVARCHAR) {
+            // This is probably a conversion from CLOB to BLOB because the database collation is set to binary
+            compatible = true;
+        }
+        
         if (!compatible && targetColumn.getMappedTypeCode() != sourceColumn.getMappedTypeCode()
                 && platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()) != sourceColumn
                         .getMappedTypeCode()) {

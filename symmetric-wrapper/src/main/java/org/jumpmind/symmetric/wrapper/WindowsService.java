@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.wrapper;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +62,11 @@ public class WindowsService extends WrapperService {
 
     @Override
     protected boolean setWorkingDirectory(String dir) {
+        try {
+            System.setProperty("user.dir", new File(dir).getCanonicalPath());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return Kernel32Ex.INSTANCE.SetCurrentDirectory(dir);
     }
 

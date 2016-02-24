@@ -18,25 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef SYM_SQLITE_PLATFORM_H
-#define SYM_SQLITE_PLATFORM_H
+#ifndef SYM_FILEUTILS_H
+#define SYM_FILEUTILS_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sqlite3.h>
-#include "db/platform/DatabasePlatform.h"
-#include "db/platform/sqlite/SqliteDdlReader.h"
-#include "db/sqlite/SqliteSqlTemplate.h"
-#include "util/StringArray.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <errno.h>
+#include "common/Log.h"
+#ifdef SYM_WIN32
+#include <Windows.h>
+#endif
 
-#define SYM_SQLITE_DEFAULT_BUSY_TIMEOUT_MS "30000"
-
-typedef struct SymSqlitePlatform {
-    SymDatabasePlatform super;
-    sqlite3 *db;
-    SymSqlTemplate *sqlTemplate;
-} SymSqlitePlatform;
-
-SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties *properties);
+int SymFileUtils_mkdir(char* dirName);
+int SymFileUtils_getFileSize(char *filename);
+unsigned short SymFileUtils_exists(char *filename);
 
 #endif

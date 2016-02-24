@@ -42,22 +42,22 @@ unsigned short SymJobManager_shouldRun(SymJobManager *this, char* startJobProper
 
 void SymJobManager_invoke(SymJobManager *this) {
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_SYNCTRIGGERS_JOB, SYM_PARAMETER_SYNCTRIGGERS_PERIOD_MS, this->lastSyncTriggersTime)) {
-        SymLog_info("SYNC TRIGGERS ============================)");
+        SymLog_debug("SYNC TRIGGERS ============================");
         this->engine->syncTriggers(this->engine);
         time(&this->lastSyncTriggersTime);
     }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_ROUTE_JOB, SYM_PARAMETER_ROUTE_PERIOD_MS, this->lastRouteTime)) {
-        SymLog_info("ROUTE ============================)");
+        SymLog_debug("ROUTE ============================");
         this->engine->route(this->engine);
         time(&this->lastRouteTime);
     }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_PUSH_JOB, SYM_PARAMETER_PUSH_PERIOD_MS, this->lastPushTime)) {
+        SymLog_debug("PUSH ============================");
         SymRemoteNodeStatuses *pushStatus = this->engine->push(this->engine);
-        if (pushStatus->wasBatchProcessed(pushStatus)
-                || pushStatus->wasDataProcessed(pushStatus)) {
+        if (pushStatus->errorOccurred(pushStatus) == 0) {
             // Only run heartbeat after a successful push to avoid queueing up lots of offline heartbeats.
             if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_HEARTBEAT_JOB, SYM_PARAMETER_HEARTBEAT_JOB_PERIOD_MS, this->lastHeartbeatTime)) {
-                SymLog_info("HEARTBEAT ============================)");
+                SymLog_debug("HEARTBEAT ============================");
                 this->engine->heartbeat(this->engine, 0);
                 time(&this->lastHeartbeatTime);
             }
@@ -66,24 +66,24 @@ void SymJobManager_invoke(SymJobManager *this) {
         pushStatus->destroy(pushStatus);
     }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_PULL_JOB, SYM_PARAMETER_PULL_PERIOD_MS, this->lastPullTime)) {
-        SymLog_info("PULL ============================)");
+        SymLog_debug("PULL ============================");
         SymRemoteNodeStatuses *statuses = this->engine->pull(this->engine);
         time(&this->lastPullTime);
         statuses->destroy(statuses);
     }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_PURGE_JOB, SYM_PARAMETER_PURGE_PERIOD_MS, this->lastPurgeTime)) {
-        SymLog_info("PURGE ============================)");
+        SymLog_debug("PURGE ============================");
         this->engine->purge(this->engine);
         time(&this->lastPurgeTime);
     }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_OFFLINE_PUSH_JOB, SYM_PARAMETER_OFFLINE_PUSH_PERIOD_MS, this->lastOfflinePushTime)) {
-        SymLog_info("OFFLINE PUSH ============================)");
+        SymLog_debug("OFFLINE PUSH ============================");
         SymRemoteNodeStatuses *statuses = this->engine->offlinePushService->pushData(this->engine->offlinePushService);
         time(&this->lastOfflinePushTime);
         statuses->destroy(statuses);
     }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_OFFLINE_PULL_JOB, SYM_PARAMETER_OFFLINE_PULL_PERIOD_MS, this->lastOfflinePullTime)) {
-        SymLog_info("OFFLINE PULL ============================)");
+        SymLog_debug("OFFLINE PULL ============================");
         SymRemoteNodeStatuses *statuses = this->engine->offlinePullService->pullData(this->engine->offlinePullService);
         time(&this->lastOfflinePullTime);
         statuses->destroy(statuses);

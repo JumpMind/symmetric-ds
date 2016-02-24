@@ -43,6 +43,8 @@ import org.jumpmind.symmetric.model.NodeStatus;
 public interface INodeService {
 
     public Node findNode(String nodeId);
+    
+    public String getExternalId(String nodeId);
 
     public List<NodeHost> findNodeHosts(String nodeId);
 
@@ -103,6 +105,8 @@ public interface INodeService {
     public boolean deleteIdentity();
 
     public List<Node> findAllNodes();
+    
+    public Map<String, Node> findAllNodesAsMap();
 
     public List<Node> findNodesToPull();
 

@@ -35,6 +35,7 @@
 #include "service/ParameterService.h"
 #include "service/PushService.h"
 #include "service/NodeService.h"
+#include "service/NodeCommunicationService.h"
 #include "service/PullService.h"
 #include "service/RegistrationService.h"
 #include "service/RouterService.h"
@@ -72,6 +73,7 @@ typedef struct SymEngine {
     SymOfflinePushService *offlinePushService;
     SymOfflinePullService *offlinePullService;
     SymNodeService *nodeService;
+    SymNodeCommunicationService *nodeCommunicationService;
     SymIncomingBatchService *incomingBatchService;
     SymOutgoingBatchService *outgoingBatchService;
     SymAcknowledgeService *acknowledgeService;

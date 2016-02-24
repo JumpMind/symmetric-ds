@@ -32,12 +32,16 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a table in the database model.
  */
 public class Table implements Serializable, Cloneable, Comparable<Table> {
 
+    final static Logger log = LoggerFactory.getLogger(Table.class);
+    
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -5541154961302342608L;
 
@@ -59,6 +63,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
 
     /** The table's type as read from the database. */
     private String type = null;
+    
+    private boolean isAccessControlled;
 
     /** The columns in this table. */
     private ArrayList<Column> columns = new ArrayList<Column>();
@@ -1095,6 +1101,9 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                     break;
                 }
             }
+            if (orderedColumns[i] == null) {
+                log.debug("Could not find column with the name of {} on table {}", name, table.toVerboseString());
+            }
         }
         return orderedColumns;
     }
@@ -1113,6 +1122,20 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
 
     public void setOldSchema(String oldSchema) {
         this.oldSchema = oldSchema;
+    }
+
+    /**
+     * @return the isAccessControlled
+     */
+    public boolean isAccessControlled() {
+        return isAccessControlled;
+    }
+
+    /**
+     * @param isAccessControlled the isAccessControlled to set
+     */
+    public void setAccessControlled(boolean isAccessControlled) {
+        this.isAccessControlled = isAccessControlled;
     }
 
     public Table copy() {

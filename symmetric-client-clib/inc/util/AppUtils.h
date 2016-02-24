@@ -22,16 +22,22 @@
 #define SYM_APP_UTILS_H
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "common/Log.h"
+#include "util/StringUtils.h"
+
+#ifdef SYM_WIN32
+#include <Windows.h>
+#include <Winsock2.h>
+#else
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <ifaddrs.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/utsname.h>
-#include "common/Log.h"
-#include "util/StringUtils.h"
+#endif
 
 #define SYM_MAX_HOSTNAME 64
 #define SYM_MAX_IP_ADDRESS 64

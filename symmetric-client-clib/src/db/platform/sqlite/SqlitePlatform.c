@@ -49,7 +49,7 @@ SymSqliteSqlTemplate * SymSqlitePlatform_getSqlTemplate(SymSqlitePlatform *this)
 void SymSqlitePlatform_destroy(SymDatabasePlatform *super) {
 	SymLog_info("Closing SQLite database");
     SymSqlitePlatform *this = (SymSqlitePlatform *) super;
-//    sqlite3_close(this->db);
+    sqlite3_close(this->db);
     this->sqlTemplate->destroy(this->sqlTemplate);
 //	  free(super->ddlReader);
     free(this);
@@ -93,6 +93,19 @@ SymSqlitePlatform * SymSqlitePlatform_new(SymSqlitePlatform *this, SymProperties
     this->sqlTemplate = (SymSqlTemplate *) SymSqliteSqlTemplate_new(NULL, this->db);
 
     SymLog_info("Detected database '%s', version '%s'", super->name, super->version);
+
+    char *initSql = properties->get(properties, SYM_PARAMETER_SQLITE_INIT_SQL, NULL);
+    if (SymStringUtils_isNotBlank(initSql)) {
+        int error, i;
+        SymLog_debug("Initializing database with '%s'", initSql);
+        SymStringArray *array = SymStringArray_split(initSql, ";");
+        for (i = 0; i < array->size; i++) {
+            char *sql = array->get(array, i);
+            if (SymStringUtils_isNotBlank(sql)) {
+                this->sqlTemplate->update(this->sqlTemplate, sql, NULL, NULL, &error);
+            }
+        }
+    }
 
     return this;
 }

@@ -186,6 +186,8 @@ SymOutgoingBatchService * SymOutgoingBatchService_new(SymOutgoingBatchService *t
     this->getOutgoingBatches = (void *) &SymOutgoingBatchService_getOutgoingBatches;
     this->insertOutgoingBatch = (void *) &SymOutgoingBatchService_insertOutgoingBatch;
     this->updateOutgoingBatch = (void *) &SymOutgoingBatchService_updateOutgoingBatch;
+    this->countOutgoingBatchesUnsent = (void *) &SymOutgoingBatchService_countOutgoingBatchesUnsent;
+    this->countOutgoingBatchesInError = (void *) &SymOutgoingBatchService_countOutgoingBatchesInError;
     this->destroy = (void *) &SymOutgoingBatchService_destroy;
     return this;
 }
