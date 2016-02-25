@@ -72,6 +72,7 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
         this.stagingManager = stagingManager;
         this.writerSettings.setDatabaseWriterFilters(filters);
         this.writerSettings.setDatabaseWriterErrorHandlers(errorHandlers);
+        this.writerSettings.setCreateTableFailOnError(false);
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
         this.maxBytesBeforeFlush = maxBytesBeforeFlush;
         this.bucket = bucket;
@@ -85,11 +86,13 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
         this.table = table;
         if (super.start(table)) {
             needsExplicitIds = false;
-            for (Column column : targetTable.getColumns()) {
-                if (column.isAutoIncrement()) {
-                    needsExplicitIds = true;
-                    break;
-                }
+            if (targetTable != null) {
+	            for (Column column : targetTable.getColumns()) {
+	                if (column.isAutoIncrement()) {
+	                    needsExplicitIds = true;
+	                    break;
+	                }
+	            }
             }
 
             if (stagedInputFile == null) {
