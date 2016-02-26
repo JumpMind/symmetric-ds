@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SyntaxParsingException;
@@ -58,12 +59,16 @@ import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.Router;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.route.AbstractFileParsingRouter;
 import org.jumpmind.symmetric.route.AuditTableDataRouter;
 import org.jumpmind.symmetric.route.BshDataRouter;
 import org.jumpmind.symmetric.route.ChannelRouterContext;
 import org.jumpmind.symmetric.route.ColumnMatchDataRouter;
 import org.jumpmind.symmetric.route.ConfigurationChangedDataRouter;
+import org.jumpmind.symmetric.route.DBFRouter;
 import org.jumpmind.symmetric.route.DataGapDetector;
 import org.jumpmind.symmetric.route.DataGapRouteReader;
 import org.jumpmind.symmetric.route.DefaultBatchAlgorithm;
@@ -124,6 +129,7 @@ public class RouterService extends AbstractService implements IRouterService {
         extensionService.addExtensionPoint("column", new ColumnMatchDataRouter(engine.getConfigurationService(),
                 engine.getSymmetricDialect()));
         extensionService.addExtensionPoint(FileSyncDataRouter.ROUTER_TYPE, new FileSyncDataRouter(engine));
+        extensionService.addExtensionPoint("dbf", new DBFRouter(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -721,6 +727,9 @@ public class RouterService extends AbstractService implements IRouterService {
         int numberOfDataEventsInserted = 0;
         List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
         Table table = symmetricDialect.getTable(data.getTriggerHistory(), true);
+        if (table == null) {
+        	table = buildTableFromTriggerHistory(data.getTriggerHistory());
+        }
         if (triggerRouters != null && triggerRouters.size() > 0) {
             for (TriggerRouter triggerRouter : triggerRouters) {
                 DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter.getRouter(),
@@ -890,6 +899,14 @@ public class RouterService extends AbstractService implements IRouterService {
                 triggerRouters = engine.getTriggerRouterService()
                         .getTriggerRoutersForCurrentNode(false)
                         .get((data.getTriggerHistory().getTriggerId()));
+                if (triggerRouters == null && data.getTriggerHistory().getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
+                	TriggerRouter dynamicTriggerRouter = new TriggerRouter();
+                	dynamicTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(data.getExternalData()));
+                	dynamicTriggerRouter.setTrigger(new Trigger());
+                	triggerRouters = new ArrayList<TriggerRouter>();
+                	triggerRouters.add(dynamicTriggerRouter);
+                	data.setDataEventType(DataEventType.INSERT);
+                }
                 if (triggerRouters == null || triggerRouters.size() == 0) {
                     triggerRouters = engine.getTriggerRouterService()
                             .getTriggerRoutersForCurrentNode(true)
@@ -928,4 +945,12 @@ public class RouterService extends AbstractService implements IRouterService {
         return extensionService.getExtensionPointMap(IDataRouter.class);
     }
 
+    protected Table buildTableFromTriggerHistory(TriggerHistory triggerHistory) {
+    	Table table = new Table(triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName());
+    	String[] columnNames = triggerHistory.getColumnNames().split(",");
+    	for (String columnName : columnNames) {
+    		table.addColumn(new Column(columnName));
+    	}
+    	return table;
+    }
 }

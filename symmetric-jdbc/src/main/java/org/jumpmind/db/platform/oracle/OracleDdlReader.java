@@ -382,4 +382,16 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         }
         return indices.values();
     }
+    
+    @Override
+    protected String getTableNamePattern(String tableName) {
+        /*
+         * When looking up a table definition, Oracle treats underscore (_) in
+         * the table name as a wildcard, so it needs to be escaped, or you'll
+         * get back column names for more than one table. Example:
+         * DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
+         */
+       return String.format("%s", tableName).replaceAll("\\_", "/_");
+       //return tableName;
+    }
 }

@@ -20,6 +20,9 @@
  */
 package org.jumpmind.symmetric.db.mssql;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.util.HashMap;
 
 import org.jumpmind.db.model.Column;
@@ -31,6 +34,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.FormatUtils;
 
 public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
@@ -41,7 +45,9 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         boolean castToNVARCHAR = symmetricDialect.getParameterService().is(ParameterConstants.MSSQL_USE_NTYPES_FOR_SYNC);
         
         String triggerExecuteAs = symmetricDialect.getParameterService().getString(ParameterConstants.MSSQL_TRIGGER_EXECUTE_AS, "self");
-                
+        
+        String defaultCatalog = symmetricDialect.getParameterService().is(ParameterConstants.MSSQL_INCLUDE_CATALOG_IN_TRIGGERS, true) ? "$(defaultCatalog)" : "";
+        
         // @formatter:off
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(convert("+
@@ -86,8 +92,8 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "          open DataCursor                                                                                                                                                 \n" +
 "          fetch next from DataCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                \n" +
 "          while @@FETCH_STATUS = 0 begin                                                                                                                                  \n" +
-"              insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"                values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp) \n" +
+"              insert into " + defaultCatalog + "$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"                values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, @ChannelId, $(txIdExpression), " + defaultCatalog + "dbo.sym_node_disabled(), $(externalSelect), current_timestamp) \n" +
 "              fetch next from DataCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                 \n" +
 "          end                                                                                                                                                             \n" +
 "          close DataCursor                                                                                                                                                \n" +
@@ -125,8 +131,8 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "          fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables), @ChannelId                                                              \n" +
 "          while @@FETCH_STATUS = 0 begin  \n" +
 "            if ($(dataHasChangedCondition)) begin                                                                                                                                \n" +
-"              insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"                values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)\n" +
+"              insert into " + defaultCatalog + "$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"                values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), " + defaultCatalog + "dbo.sym_node_disabled(), $(externalSelect), current_timestamp)\n" +
 "            end \n" +
 "            fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables), @ChannelId                                                           \n" +
 "          end                                                                                                                                                             \n" +
@@ -170,8 +176,8 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "          fetch next from InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                    \n" +
 "          while @@FETCH_STATUS = 0 begin                                                                                                                                  \n" +
 "            if ($(dataHasChangedCondition)) begin                                                                                                                                \n" +
-"              insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"                values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)\n" +
+"              insert into " + defaultCatalog + "$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"                values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), " + defaultCatalog + "dbo.sym_node_disabled(), $(externalSelect), current_timestamp)\n" +
 "            end                                                                                                                                                             \n" +
 "            fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                      \n" +
 "            fetch next from InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                              \n" +
@@ -206,8 +212,8 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "        open DataCursor                                                                                                                                                  \n" +
 "         fetch next from DataCursor into @OldPk, @OldDataRow $(oldKeyVariables), @ChannelId                                                                                      \n" +
 "         while @@FETCH_STATUS = 0 begin                                                                                                                                  \n" +
-"           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-"             values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)\n" +
+"           insert into " + defaultCatalog + "$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"             values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), " + defaultCatalog + "dbo.sym_node_disabled(), $(externalSelect), current_timestamp)\n" +
 "           fetch next from DataCursor into @OldPk,@OldDataRow $(oldKeyVariables), @ChannelId                                                                                      \n" +
 "         end                                                                                                                                                             \n" +
 "         close DataCursor                                                                                                                                                \n" +
@@ -235,6 +241,26 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         ddl = FormatUtils.replace("declareNewKeyVariables",
                 buildKeyVariablesDeclare(columns, "new"), ddl);
         return ddl;
+    }
+
+    protected String getSourceTablePrefix(TriggerHistory triggerHistory) {
+        String prefix = (isNotBlank(triggerHistory.getSourceSchemaName()) ? SymmetricUtils.quote(
+                symmetricDialect, triggerHistory.getSourceSchemaName()) + symmetricDialect.getPlatform().getDatabaseInfo().getSchemaSeparator() : "");
+        prefix = (isNotBlank(triggerHistory.getSourceCatalogName()) ? SymmetricUtils.quote(
+                symmetricDialect, triggerHistory.getSourceCatalogName()) + symmetricDialect.getPlatform().getDatabaseInfo().getCatalogSeparator() : "")
+                + prefix;
+        if (isBlank(prefix)) {
+            prefix = (isNotBlank(symmetricDialect.getPlatform().getDefaultSchema()) ? SymmetricUtils
+                    .quote(symmetricDialect, symmetricDialect.getPlatform().getDefaultSchema())
+                    + "." : "");
+            
+            if (symmetricDialect.getParameterService().is(ParameterConstants.MSSQL_INCLUDE_CATALOG_IN_TRIGGERS, true)) {
+	            prefix = (isNotBlank(symmetricDialect.getPlatform().getDefaultCatalog()) ? SymmetricUtils
+	                    .quote(symmetricDialect, symmetricDialect.getPlatform().getDefaultCatalog())
+	                    + "." : "") + prefix;
+            }
+        }
+        return prefix;
     }
 
     @Override

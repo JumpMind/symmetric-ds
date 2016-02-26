@@ -95,6 +95,10 @@ public class FileSnapshot implements Serializable {
     }
 
     public FileSnapshot(FileTriggerRouter fileTriggerRouter, File file, LastEventType lastEventType) {
+        this(fileTriggerRouter, file, lastEventType, false);
+    }
+    
+    public FileSnapshot(FileTriggerRouter fileTriggerRouter, File file, LastEventType lastEventType, boolean useCrc) {
         boolean isDelete = lastEventType == LastEventType.DELETE;
         this.triggerId = fileTriggerRouter.getFileTrigger().getTriggerId();
         this.channelId = fileTriggerRouter.getFileTrigger().getChannelId();
@@ -128,7 +132,7 @@ public class FileSnapshot implements Serializable {
         this.fileSize = isDelete ? 0 : file.length();
         this.fileModifiedTime = isDelete ? 0 : file.lastModified();
 
-        if (file.isFile() && !isDelete) {
+        if (useCrc && file.isFile() && !isDelete) {
             try {
                 this.crc32Checksum = FileUtils.checksumCRC32(file);
             } catch (FileNotFoundException ex) {

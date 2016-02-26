@@ -280,6 +280,12 @@ final public class ParameterConstants {
     public final static String SYNCHRONIZE_ALL_JOBS = "jobs.synchronized.enable";
 
     public final static String FILE_SYNC_ENABLE = "file.sync.enable";
+    
+    public final static String FILE_SYNC_FAST_SCAN = "file.sync.fast.scan";
+    
+    public final static String FILE_SYNC_USE_CRC = "file.sync.use.crc";
+    
+    public final static String FILE_SYNC_PREVENT_PING_BACK = "file.sync.prevent.ping.back";
 
     public final static String FILE_SYNC_LOCK_WAIT_MS = "file.sync.lock.wait.ms";
 
@@ -291,7 +297,10 @@ final public class ParameterConstants {
     
     public final static String MSSQL_USE_NTYPES_FOR_SYNC = "mssql.use.ntypes.for.sync";
 
-    
+    public final static String MSSQL_LOCK_ESCALATION_DISABLED = "mssql.lock.escalation.disabled";
+
+    public final static String MSSQL_INCLUDE_CATALOG_IN_TRIGGERS = "mssql.include.catalog.in.triggers";
+
     public final static String MSSQL_TRIGGER_EXECUTE_AS = "mssql.trigger.execute.as";
     
     public final static String SQLITE_TRIGGER_FUNCTION_TO_USE = "sqlite.trigger.function.to.use";

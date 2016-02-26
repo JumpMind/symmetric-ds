@@ -104,6 +104,7 @@ import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.route.AbstractFileParsingRouter;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -1426,7 +1427,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     } else {
                         Trigger trigger = triggerRouterService.getTriggerById(
                                 triggerHistory.getTriggerId(), false);
-                        if (trigger != null) {
+                        if (trigger != null || triggerHistory.getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
                             if (lastTriggerHistory == null || lastTriggerHistory
                                     .getTriggerHistoryId() != triggerHistory.getTriggerHistoryId() || 
                                     lastRouterId == null || !lastRouterId.equals(routerId)) {
@@ -1434,7 +1435,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         routerId, triggerHistory, false, true);
                                 this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                                         routerId, triggerHistory, true, false);
-                                this.requiresLobSelectedFromSource = trigger.isUseStreamLobs();
+                                this.requiresLobSelectedFromSource = trigger == null ? false : trigger.isUseStreamLobs();
                             }
 
                             data.setNoBinaryOldData(requiresLobSelectedFromSource

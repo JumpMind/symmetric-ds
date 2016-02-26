@@ -68,7 +68,7 @@ public class DirectorySnapshot extends ArrayList<FileSnapshot> {
         this.addAll(toAdd);
     }
 
-    protected DirectorySnapshot diff(DirectorySnapshot anotherSnapshot) {
+    public DirectorySnapshot diff(DirectorySnapshot anotherSnapshot) {
         DirectorySnapshot differences = new DirectorySnapshot(anotherSnapshot.getFileTriggerRouter());
         for (FileSnapshot anotherFile : anotherSnapshot) {
             boolean found = false;

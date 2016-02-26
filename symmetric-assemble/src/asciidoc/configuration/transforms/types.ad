@@ -98,7 +98,8 @@ The variable name is placed in transform expression. The following variables are
 |===
 
 |system_date|current system date
-|system_timestamp|current system date and time
+|system_timestamp|current system date and time using default timezone
+|system_timestamp_utc|current system date and time using UTC timezone
 |source_node_id|node id of the source
 |target_node_id|node id of the target
 |null|null value 

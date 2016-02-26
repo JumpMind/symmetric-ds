@@ -47,11 +47,11 @@ public class ClusterServiceSqlMap extends AbstractSqlMap {
             "where lock_action=? and ((lock_type=? and shared_count = 0) or lock_time is null or lock_time < ?)");
 
         putSql("releaseClusterLockSql",
-            "update $(lock) set locking_server_id=null, lock_time=null, last_lock_time=?, last_locking_server_id=? " +
+            "update $(lock) set last_locking_server_id=locking_server_id, locking_server_id=null, last_lock_time=lock_time, lock_time=null " +
             "where lock_action=? and lock_type=? and locking_server_id=?");
 
         putSql("releaseSharedLockSql",
-            "update $(lock) set last_lock_time=?, last_locking_server_id=?, " +
+            "update $(lock) set last_lock_time=lock_time, last_locking_server_id=locking_server_id, " +
             "shared_enable=(case when shared_count = 1 then 0 else shared_enable end), " +
             "locking_server_id = (case when shared_count = 1 then null else locking_server_id end), " +
             "lock_time = (case when shared_count = 1 then null else lock_time end), " +
@@ -59,11 +59,12 @@ public class ClusterServiceSqlMap extends AbstractSqlMap {
             "where lock_action=? and lock_type=?");
 
         putSql("releaseExclusiveLockSql",
-            "update $(lock) set locking_server_id=null, lock_time=null, last_lock_time=?, last_locking_server_id=? " +
+            "update $(lock) set last_locking_server_id=locking_server_id, locking_server_id=null, last_lock_time=lock_time, lock_time=null " +
             "where lock_action=? and lock_type=?");
 
         putSql("initLockSql", 
-            "update $(lock) set locking_server_id=null, lock_time=null, shared_count=0, shared_enable=0 " +
+            "update $(lock) set last_locking_server_id=locking_server_id, locking_server_id=null, last_lock_time=lock_time, " +
+            "lock_time=null, shared_count=0, shared_enable=0 " +
             "where locking_server_id=?");
 
         putSql("insertLockSql", "insert into $(lock) (lock_action, lock_type) values(?,?)");

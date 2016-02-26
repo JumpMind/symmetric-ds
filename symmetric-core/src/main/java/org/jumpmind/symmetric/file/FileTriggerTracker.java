@@ -29,6 +29,7 @@ import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,13 +42,21 @@ public class FileTriggerTracker {
     private DirectorySnapshot lastSnapshot;
     private DirectorySnapshot changesSinceLastSnapshot;
     private SnapshotUpdater currentListener;
+    private ProcessInfo processInfo;
+    protected boolean useCrc;
 
-    public FileTriggerTracker(FileTriggerRouter fileTriggerRouter, DirectorySnapshot lastSnapshot) {
+    long startTime = System.currentTimeMillis();
+    long ts = startTime;
+
+    public FileTriggerTracker(FileTriggerRouter fileTriggerRouter, DirectorySnapshot lastSnapshot, ProcessInfo processInfo,
+            boolean useCrc) {
         this.fileTriggerRouter = fileTriggerRouter;
+        this.processInfo = processInfo;
+        this.useCrc = useCrc;
 
         changesSinceLastSnapshot = new DirectorySnapshot(fileTriggerRouter);
-        fileObserver = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(),
-                fileTriggerRouter.getFileTrigger().createIOFileFilter());
+        fileObserver = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(), fileTriggerRouter.getFileTrigger()
+                .createIOFileFilter());
         currentListener = new SnapshotUpdater(changesSinceLastSnapshot);
         fileObserver.addListener(currentListener);
         try {
@@ -66,7 +75,6 @@ public class FileTriggerTracker {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 
     protected void pollForChanges() {
@@ -84,14 +92,17 @@ public class FileTriggerTracker {
         fileObserver.removeListener(currentListener);
         currentListener = newListener;
         lastSnapshot.merge(changes);
+        long runTime = (System.currentTimeMillis() - startTime) / 1000;
+        if (changes.size() > 0) {
+            log.info("Tracked {} files in {} seconds.  Found {} files changed.", new Object[] { lastSnapshot.size(), runTime, changes.size() });
+        }
         return changes;
     }
 
     synchronized protected void takeFullSnapshot(DirectorySnapshot snapshot) {
         // update the snapshot with every file in the directory spec
-        FileAlterationObserver observer = new FileAlterationObserver(fileTriggerRouter
-                .getFileTrigger().getBaseDir(), fileTriggerRouter.getFileTrigger()
-                .createIOFileFilter());
+        FileAlterationObserver observer = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(), fileTriggerRouter
+                .getFileTrigger().createIOFileFilter());
         observer.addListener(new SnapshotUpdater(snapshot));
         observer.checkAndNotify();
     }
@@ -105,53 +116,59 @@ public class FileTriggerTracker {
         }
 
         public void onFileDelete(File file) {
-                log.debug("File delete detected: {}", file.getAbsolutePath());
-                this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), file,
-                        LastEventType.DELETE));
+            log.debug("File delete detected: {}", file.getAbsolutePath());
+            addSnapshot(file, LastEventType.DELETE);
         }
 
         public void onFileCreate(File file) {
-            if (snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnCtlFile()){
+            if (snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnCtlFile()) {
                 onCtlFile(file);
             } else {
                 log.debug("File create detected: {}", file.getAbsolutePath());
-                this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), file,
-                        LastEventType.CREATE));
+                addSnapshot(file, LastEventType.CREATE);
             }
         }
-        
+
         public void onCtlFile(File file) {
-          if (snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnCtlFile()){
-              File ctlFile = new File(file.getAbsolutePath() + ".ctl");
-              if (ctlFile.exists()) {
-                  log.debug("Control file detected: {}", file.getAbsolutePath());
-                  this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), file,
-                          LastEventType.CREATE));
-              }
-          }
-      }
+            if (snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnCtlFile()) {
+                File ctlFile = new File(file.getAbsolutePath() + ".ctl");
+                if (ctlFile.exists()) {
+                    log.debug("Control file detected: {}", file.getAbsolutePath());
+                    addSnapshot(file, LastEventType.CREATE);
+                }
+            }
+        }
 
         public void onFileChange(File file) {
-                log.debug("File change detected: {}", file.getAbsolutePath());
-                this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), file,
-                        LastEventType.MODIFY));
+            log.debug("File change detected: {}", file.getAbsolutePath());
+            addSnapshot(file, LastEventType.MODIFY);
         }
 
         public void onDirectoryDelete(File directory) {
-                log.debug("File delete detected: {}", directory.getAbsolutePath());
-                this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), directory,
-                        LastEventType.DELETE));
+            log.debug("File delete detected: {}", directory.getAbsolutePath());
+            addSnapshot(directory, LastEventType.DELETE);
         }
 
         public void onDirectoryCreate(File directory) {
-                log.debug("File create detected: {}", directory.getAbsolutePath());
-                this.snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), directory,
-                        LastEventType.CREATE));
+            log.debug("File create detected: {}", directory.getAbsolutePath());
+            addSnapshot(directory, LastEventType.CREATE);
         }
 
         public void onDirectoryChange(File directory) {
         }
 
+        protected void addSnapshot(File file, LastEventType lastEventType) {
+            if (processInfo != null) {
+                processInfo.incrementCurrentDataCount();
+            }
+            snapshot.add(new FileSnapshot(snapshot.getFileTriggerRouter(), file, lastEventType, useCrc));
+            
+            if (System.currentTimeMillis() - ts > 60000) {
+                log.info("File tracker has been processing for {} seconds.  The following stats have been gathered: {}", new Object[] {
+                        (System.currentTimeMillis() - startTime) / 1000, "{ fileCount=" + snapshot.size() + " }" });
+                ts = System.currentTimeMillis();
+            }
+        }
     }
 
 }

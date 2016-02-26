@@ -27,7 +27,7 @@ public class ProcessInfoKey implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum ProcessType {
-        ANY, PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, REST_PULL_HANLDER, OFFLINE_PUSH, OFFLINE_PULL, ROUTER_JOB, INSERT_LOAD_EVENTS, GAP_DETECT, ROUTER_READER, MANUAL_LOAD, FILE_SYNC_PULL_JOB, FILE_SYNC_PUSH_JOB, FILE_SYNC_PULL_HANDLER, FILE_SYNC_PUSH_HANDLER, INITIAL_LOAD_EXTRACT_JOB;
+        ANY, PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, REST_PULL_HANLDER, OFFLINE_PUSH, OFFLINE_PULL, ROUTER_JOB, INSERT_LOAD_EVENTS, GAP_DETECT, ROUTER_READER, MANUAL_LOAD, FILE_SYNC_PULL_JOB, FILE_SYNC_PUSH_JOB, FILE_SYNC_PULL_HANDLER, FILE_SYNC_PUSH_HANDLER, FILE_SYNC_TRACKER, INITIAL_LOAD_EXTRACT_JOB;
 
         public String toString() {
             switch (this) {
@@ -61,6 +61,8 @@ public class ProcessInfoKey implements Serializable {
                     return "Service File Sync Pull";
                 case FILE_SYNC_PUSH_HANDLER:
                     return "Service File Sync Push";
+                case FILE_SYNC_TRACKER:
+                    return "File Sync Tracker";
                 case REST_PULL_HANLDER:
                     return "REST Pull";
                 case INSERT_LOAD_EVENTS:

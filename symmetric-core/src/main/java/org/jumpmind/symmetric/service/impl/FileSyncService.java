@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlReadCursor;
@@ -50,6 +51,8 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.file.DirectorySnapshot;
 import org.jumpmind.symmetric.file.FileConflictException;
 import org.jumpmind.symmetric.file.FileSyncZipDataWriter;
+import org.jumpmind.symmetric.file.FileTriggerFileModifiedListener;
+import org.jumpmind.symmetric.file.FileTriggerFileModifiedListener.FileModifiedCallback;
 import org.jumpmind.symmetric.file.FileTriggerTracker;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -64,6 +67,7 @@ import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
@@ -113,49 +117,24 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         if (force || engine.getClusterService().lock(ClusterConstants.FILE_SYNC_TRACKER)) {
             try {
                 log.debug("Attempting to get exclusive lock for file sync track changes");
-                if (engine.getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED,
-                        ClusterConstants.TYPE_EXCLUSIVE,
+                if (engine.getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE,
                         getParameterService().getLong(ParameterConstants.FILE_SYNC_LOCK_WAIT_MS))) {
                     try {
                         log.debug("Tracking changes for file sync");
-                        List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
-                        for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
-                            if (fileTriggerRouter.isEnabled()) {
-                                FileTriggerTracker tracker = new FileTriggerTracker(
-                                        fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter));
-                                try {
-                                    DirectorySnapshot dirSnapshot = tracker.trackChanges();
-                                    for (FileSnapshot fileSnapshot : dirSnapshot) {
-                                        File file = fileTriggerRouter.getFileTrigger()
-                                                .createSourceFile(fileSnapshot);
-                                        String filePath = file.getParentFile().getPath()
-                                                .replace('\\', '/');
-                                        String fileName = file.getName();
-                                        String nodeId = findSourceNodeIdFromFileIncoming(filePath,
-                                                fileName, fileSnapshot.getFileModifiedTime());
-                                        if (StringUtils.isNotBlank(nodeId)) {
-                                            fileSnapshot.setLastUpdateBy(nodeId);
-                                        } else {
-                                            fileSnapshot.setLastUpdateBy(null);
-                                        }
-                                        log.debug("Captured change "
-                                                + fileSnapshot.getLastEventType() + " change of "
-                                                + fileSnapshot.getFileName() + " (lastmodified="
-                                                + fileSnapshot.getFileModifiedTime() + ",size="
-                                                + fileSnapshot.getFileSize() + ") from "
-                                                + fileSnapshot.getLastUpdateBy());
-                                    }
-                                    save(dirSnapshot);
-                                } catch (Exception ex) {
-                                    log.error("Failed to track changes for file trigger router: "
-                                            + fileTriggerRouter.getFileTrigger().getTriggerId()
-                                            + "::" + fileTriggerRouter.getRouter().getRouterId(),
-                                            ex);
-                                }
-                            }
-                        }
+                        Node local = engine.getNodeService().findIdentity();
+                        ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
+                                new ProcessInfoKey(local.getNodeId(), null, ProcessInfoKey.ProcessType.FILE_SYNC_TRACKER));
+                        boolean useCrc = engine.getParameterService().is(ParameterConstants.FILE_SYNC_USE_CRC);
 
-                        deleteFromFileIncoming();
+                        if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_FAST_SCAN)) {
+                            trackChangesFastScan(processInfo, useCrc);
+                        } else {
+                            trackChanges(processInfo, useCrc);
+                        }
+                        if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_PREVENT_PING_BACK)) {
+                            deleteFromFileIncoming();
+                        }
+                        processInfo.setStatus(ProcessInfo.Status.OK);
                     } finally {
                         log.debug("Done tracking changes for file sync");
                         engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_SHARED,
@@ -171,7 +150,85 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             }
         } else {
             log.debug("Did not run the track file sync changes process because it was cluster locked");
+        }        
+    }
+    
+    protected void trackChanges(ProcessInfo processInfo, boolean useCrc) {
+        List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
+        for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
+            if (fileTriggerRouter.isEnabled()) {
+                try {
+                    FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter), 
+                            processInfo, useCrc);
+                    DirectorySnapshot dirSnapshot = tracker.trackChanges();
+                    saveDirectorySnapshot(fileTriggerRouter, dirSnapshot);
+                } catch (Exception ex) {
+                    log.error("Failed to track changes for file trigger router: "
+                            + fileTriggerRouter.getFileTrigger().getTriggerId()
+                            + "::" + fileTriggerRouter.getRouter().getRouterId(), ex);
+                }
+            }
         }
+    }
+
+    protected void trackChangesFastScan(ProcessInfo processInfo, boolean useCrc) {
+        boolean isLocked = engine.getClusterService().lock(ClusterConstants.FILE_SYNC_SCAN);
+        Lock lock = engine.getClusterService().findLocks().get(ClusterConstants.FILE_SYNC_SCAN);
+        log.debug("File tracker range of " + lock.getLastLockTime() + " to " + lock.getLockTime() + ", isLocked=" + isLocked);
+        int maxRowsBeforeCommit = engine.getParameterService().getInt(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
+
+        try {
+            List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
+            for (final FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
+                if (fileTriggerRouter.isEnabled()) {        
+                    FileAlterationObserver observer = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(),
+                            fileTriggerRouter.getFileTrigger().createIOFileFilter());
+                    FileTriggerFileModifiedListener listener = new FileTriggerFileModifiedListener(fileTriggerRouter, lock.getLastLockTime(),
+                            lock.getLockTime(), processInfo, useCrc, new FileModifiedCallback(maxRowsBeforeCommit) {
+                        public void commit(DirectorySnapshot dirSnapshot) {
+                            saveDirectorySnapshot(fileTriggerRouter, dirSnapshot);
+                        }
+                        
+                        public DirectorySnapshot getLastDirectorySnapshot(String relativeDir) {
+                            return getDirectorySnapshot(fileTriggerRouter, relativeDir);
+                        }
+                    });
+                    observer.addListener(listener);
+                    observer.checkAndNotify();
+                }
+            }
+            engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_SCAN);
+        } catch (Exception ex) {
+            log.error("Failed to track changes", ex);            
+        }
+    }
+
+    protected long saveDirectorySnapshot(FileTriggerRouter fileTriggerRouter, DirectorySnapshot dirSnapshot) {
+        long totalBytes = 0;
+        for (FileSnapshot fileSnapshot : dirSnapshot) {
+            File file = fileTriggerRouter.getFileTrigger().createSourceFile(fileSnapshot);
+            String filePath = file.getParentFile().getPath().replace('\\', '/');
+            String fileName = file.getName();
+            String nodeId = null;
+            if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_PREVENT_PING_BACK)) {
+                nodeId = findSourceNodeIdFromFileIncoming(filePath,
+                        fileName, fileSnapshot.getFileModifiedTime());
+            }
+            if (StringUtils.isNotBlank(nodeId)) {
+                fileSnapshot.setLastUpdateBy(nodeId);
+            } else {
+                fileSnapshot.setLastUpdateBy(null);
+            }
+            log.debug("Captured change "
+                    + fileSnapshot.getLastEventType() + " change of "
+                    + fileSnapshot.getFileName() + " (lastmodified="
+                    + fileSnapshot.getFileModifiedTime() + ",size="
+                    + fileSnapshot.getFileSize() + ") from "
+                    + fileSnapshot.getLastUpdateBy());
+            totalBytes += fileSnapshot.getFileSize();
+        }
+        save(dirSnapshot);
+        return totalBytes;
     }
 
     protected String findSourceNodeIdFromFileIncoming(String filePath, String fileName,
@@ -305,6 +362,13 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                 getSql("selectFileSnapshotSql"), new FileSnapshotMapper(), fileTriggerRouter
                         .getFileTrigger().getTriggerId(), fileTriggerRouter.getRouter()
                         .getRouterId()));
+    }
+
+    public DirectorySnapshot getDirectorySnapshot(FileTriggerRouter fileTriggerRouter, String relativeDir) {
+        return new DirectorySnapshot(fileTriggerRouter, sqlTemplate.query(
+                getSql("selectFileSnapshotSql", "relativeDirWhere"), new FileSnapshotMapper(), fileTriggerRouter
+                        .getFileTrigger().getTriggerId(), fileTriggerRouter.getRouter()
+                        .getRouterId(), relativeDir));
     }
 
     public void save(List<FileSnapshot> changes) {
@@ -616,6 +680,15 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                         engine.getTransportManager(), engine.getAcknowledgeService());
                 status.updateOutgoingStatus(batches, batchAcks);
             }
+            if (!status.failed() && batches.size() > 0) {
+                log.info("Pushed files to {}. {} files and {} batches were processed",
+                        new Object[] { nodeCommunication.getNodeId(), status.getDataProcessed(),
+                                status.getBatchesProcessed()});
+            } else if (status.failed()) {
+                log.info("There was a failure while pushing files to {}. {} files and {} batches were processed",
+                        new Object[] { nodeCommunication.getNodeId(), status.getDataProcessed(),
+                                status.getBatchesProcessed()});                        
+            }
         } catch (Exception e) {
             fireOffline(e, nodeCommunication.getNode(), status);
         } finally {
@@ -705,7 +778,9 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             @SuppressWarnings("unchecked")
                             Map<String, String> filesToEventType = (Map<String, String>) interpreter
                                     .eval(script);
-                            updateFileIncoming(sourceNodeId, filesToEventType);
+                            if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_PREVENT_PING_BACK)) {
+                                updateFileIncoming(sourceNodeId, filesToEventType);
+                            }
                             incomingBatch
                                     .setStatementCount(filesToEventType != null ? filesToEventType
                                             .size() : 0);
@@ -804,7 +879,15 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                 sendAck(nodeCommunication.getNode(), identity, security, batchesProcessed,
                         engine.getTransportManager());
             }
-
+            if (!status.failed() && batchesProcessed.size() > 0) {
+                log.info("Pull files received from {}.  {} files and {} batches were processed",
+                        new Object[] { nodeCommunication.getNodeId(), status.getDataProcessed(),
+                                status.getBatchesProcessed() });
+            } else if (status.failed()) {
+                log.info("There was a failure while pulling files from {}.  {} files and {} batches were processed",
+                        new Object[] { nodeCommunication.getNodeId(), status.getDataProcessed(),
+                                status.getBatchesProcessed() });
+            }
         } catch (Exception e) {
             fireOffline(e, nodeCommunication.getNode(), status);
         } finally {
