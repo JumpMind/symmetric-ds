@@ -33,7 +33,7 @@ public class IncomingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-       OK("Ok"), ER("Error"), LD("Loading"), IG("Ignored");
+       OK("Ok"), ER("Error"), LD("Loading"), IG("Ignored"), XX("Unknown");
 
         private String description;
 
@@ -147,6 +147,14 @@ public class IncomingBatch implements Serializable {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public void setStatus(String status) {
+        try {
+            this.status = Status.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            this.status = Status.XX;
+        }
     }
 
     public String getNodeId() {

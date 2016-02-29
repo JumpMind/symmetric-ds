@@ -39,7 +39,7 @@ public class OutgoingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        OK("Ok"), ER("Error"), RQ("Request"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), RT("Routing"), IG("Ignored"),;
+        OK("Ok"), ER("Error"), RQ("Request"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), RT("Routing"), IG("Ignored"), XX("Unknown");
 
         private String description;
 
@@ -243,7 +243,11 @@ public class OutgoingBatch implements Serializable {
     }
 
     public void setStatus(String status) {
-        this.status = Status.valueOf(status);
+        try {
+            this.status = Status.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            this.status = Status.XX;
+        }
     }
 
     public long getRouterMillis() {
