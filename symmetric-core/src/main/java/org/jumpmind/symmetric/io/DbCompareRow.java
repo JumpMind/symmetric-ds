@@ -30,76 +30,80 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.ISymmetricEngine;
 
 public class DbCompareRow {
-    
+
     private DbValueComparator dbValueComparator;
     private ISymmetricEngine engine;
     private Table table;
     private Row row;
     private Map<String, String> rowValues;
-    
+    private Map<String, String> rowPkValues;
+
     public DbCompareRow(ISymmetricEngine engine, DbValueComparator dbValueComparator, Table table, Row row) {
         this.engine = engine;
         this.table = table;
         this.row = row;
         this.dbValueComparator = dbValueComparator;
-        this.rowValues = loadRowValues();
+        loadRowValues();
     }
-    
-    public int comparePks(DbCompareRow targetRow) {
-        Table targetTable = targetRow.getTable();
 
-        for (int i = 0; i < table.getPrimaryKeyColumnCount(); i++) {
-            String sourcePkColumn = table.getPrimaryKeyColumnNames()[i];
-            String targetPkColumn = targetTable.getPrimaryKeyColumnNames()[i];
+    public int comparePks(DbCompareTables tables, DbCompareRow targetRow) {
+        for (Column sourcePkColumn : table.getPrimaryKeyColumns()) {
+            Column targetPkColumn = tables.getColumnMapping().get(sourcePkColumn);           
 
-            int result = dbValueComparator.compareValues(table.getPrimaryKeyColumns()[i], targetTable.getPrimaryKeyColumns()[i], 
-                    rowValues.get(sourcePkColumn), targetRow.getRowValues().get(targetPkColumn));
-            
+            int result = dbValueComparator.compareValues(sourcePkColumn, targetPkColumn, 
+                    rowValues.get(sourcePkColumn.getName()), targetRow.getRowValues().get(targetPkColumn.getName()));
+
             if (result != 0) {
                 return result;
             }
-        }    
+        }
+
         return 0;
     }
-    
-    public Map<Column, String> compareTo(DbCompareRow targetRow) {
-        
+
+    public Map<Column, String> compareTo(DbCompareTables tables, DbCompareRow targetRow) {
+
         Map<Column, String> deltas = new LinkedHashMap<Column, String>();
         // TODO maybe should operate on non-pk columns here.
-        for (int i = 0; i < table.getColumnCount(); i++) {
-            Table targetTable = targetRow.getTable();
-            
-            String sourceColumn = table.getColumnNames()[i];
-            String targetColumn = targetTable.getColumnNames()[i];
-            
-            int result = dbValueComparator.compareValues(table.getColumns()[i], targetTable.getColumns()[i], 
-                    rowValues.get(sourceColumn), targetRow.getRowValues().get(targetColumn));
-            
+        for (Column sourceColumn : table.getColumns()) {
+            Column targetColumn = tables.getColumnMapping().get(sourceColumn);
+            if (targetColumn == null) {
+                continue;
+            }
+
+            int result = dbValueComparator.compareValues(sourceColumn, targetColumn, 
+                    rowValues.get(sourceColumn.getName()), targetRow.getRowValues().get(targetColumn.getName()));
+
             if (result != 0) {
-                deltas.put(targetTable.getColumns()[i], rowValues.get(sourceColumn));
-            }            
+                deltas.put(targetColumn, rowValues.get(sourceColumn.getName()));
+            }                	
         }
-        
+
         return deltas;
     }
-    
-    protected Map<String, String> loadRowValues() {
+
+    protected void loadRowValues() {
         String[] stringValues = engine.getDatabasePlatform().
                 getStringValues(BinaryEncoding.HEX, table.getColumns(), row, false, false);
-        
+
         Map<String, String> localRowValues = new LinkedHashMap<String, String>();
-        
+        Map<String, String> localPkRowValues = new LinkedHashMap<String, String>();
+
         for (int i = 0; i < stringValues.length; i++) {
-            String columnName;
             if (i < table.getColumnCount()) {
-                columnName = table.getColumn(i).getName();
+                String columnName = table.getColumn(i).getName();
                 String stringValue = stringValues[i];
                 localRowValues.put(columnName, stringValue);
             } 
+            if (i < table.getPrimaryKeyColumnCount()) {
+                String columnName = table.getPrimaryKeyColumns()[i].getName();
+                String stringValue = stringValues[i];
+                localPkRowValues.put(columnName, stringValue);                
+            }
         }
-        
-        return localRowValues;
 
+       this.rowValues = localRowValues;
+       this.rowPkValues = localPkRowValues;
     }
 
     public DbValueComparator getDbValueComparator() {
@@ -140,6 +144,14 @@ public class DbCompareRow {
 
     public void setRowValues(Map<String, String> rowValues) {
         this.rowValues = rowValues;
+    }
+
+    public Map<String, String> getRowPkValues() {
+        return rowPkValues;
+    }
+
+    public void setRowPkValues(Map<String, String> rowPkValues) {
+        this.rowPkValues = rowPkValues;
     }
 
 

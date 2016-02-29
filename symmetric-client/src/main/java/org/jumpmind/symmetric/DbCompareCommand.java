@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -95,6 +96,9 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_EXCLUDE)) {
             dbCompare.setExcludedTableNames(Arrays.asList(line.getOptionValue(OPTION_EXCLUDE).split(",")));
         }
+        if (!CollectionUtils.isEmpty(line.getArgList())) {
+        	dbCompare.setIncludedTableNames(Arrays.asList(line.getArgList().get(0).toString().split(",")));
+        }
         
         DbCompareReport report = dbCompare.compare();
         for (TableReport tableReport : report.getTableReports()) {
@@ -117,9 +121,9 @@ public class DbCompareCommand extends AbstractCommandLauncher {
 
     private static final String OPTION_EXCLUDE = "exclude";
 
-    private static final String OPTION_USE_SYM_CONFIG = "use_sym_config";
+    private static final String OPTION_USE_SYM_CONFIG = "use-sym-config";
 
-    private static final String OPTION_OUTPUT_SQL = "output_sql";
+    private static final String OPTION_OUTPUT_SQL = "output-sql";
 
     @Override
     protected void printHelp(CommandLine cmd, Options options) {

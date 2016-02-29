@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
@@ -80,13 +81,29 @@ public class DbValueComparator {
     }
 
     public int compareNumeric(Column sourceColumn, Column targetColumn, String sourceValue, String targetValue) {
-        if (sourceValue != null && targetValue != null) {
-            BigDecimal source = NumberUtils.createBigDecimal(sourceValue.toString());
-            BigDecimal target = NumberUtils.createBigDecimal(targetValue.toString());
-            return source.compareTo(target);
-        } else {
-            return compareDefault(sourceColumn, targetColumn, sourceValue, targetValue);            
+    	if (StringUtils.isBlank(sourceValue) && StringUtils.isBlank(targetValue)) {
+    		return 0;
+    	}
+        if (!StringUtils.isBlank(sourceValue) && StringUtils.isBlank(targetValue)) {
+            return 1;
         }
+        if (StringUtils.isBlank(sourceValue) && !StringUtils.isBlank(targetValue)) {
+        	return -1;
+        }
+        
+        try {        	
+        	BigDecimal source = NumberUtils.createBigDecimal(sourceValue);
+        	BigDecimal target = NumberUtils.createBigDecimal(targetValue);
+        	return source.compareTo(target);
+        } catch (NumberFormatException ex) {
+        	System.out.println(sourceColumn + " " + sourceValue + " " + targetColumn + " " + targetValue  + " " + ex);
+        }
+        
+        return sourceValue.compareTo(targetValue);
+        
+        
+        
+
     }
 
     public int compareDateTime(Column sourceColumn, Column targetColumn, String sourceValue, String targetValue) {

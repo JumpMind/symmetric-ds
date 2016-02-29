@@ -32,6 +32,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlReadCursor;
@@ -54,7 +55,7 @@ import org.slf4j.LoggerFactory;
 public class DbCompare {
 
     final Logger log = LoggerFactory.getLogger(getClass());
-    
+
     ISqlRowMapper<Row> defaultRowMapper = new ISqlRowMapper<Row>() {
         @Override
         public Row mapRow(Row row) {
@@ -79,20 +80,18 @@ public class DbCompare {
 
     public DbCompareReport compare() {
         DbCompareReport report = new DbCompareReport();
-        Map<Table, Table> tables = getTablesToCompare();
-
-        for (Table sourceTable : tables.keySet()) {
-            Table targetTable = tables.get(sourceTable);
-            TableReport tableReport = compareTables(sourceTable, targetTable);
+        List<DbCompareTables> tablesToCompare = getTablesToCompare();
+        for (DbCompareTables tables : tablesToCompare) {
+            TableReport tableReport = compareTables(tables);
             report.addTableReport(tableReport);
         }
 
         return report;
     }
 
-    protected TableReport compareTables(Table sourceTable, Table targetTable) {
-        String sourceSelect = getComparisonSQL(sourceTable, sourceEngine.getDatabasePlatform());
-        String targetSelect = getComparisonSQL(targetTable, targetEngine.getDatabasePlatform());
+    protected TableReport compareTables(DbCompareTables tables) {
+        String sourceSelect = getComparisonSQL(tables.getSourceTable(), sourceEngine.getDatabasePlatform());
+        String targetSelect = getComparisonSQL(tables.getTargetTable(), targetEngine.getDatabasePlatform());
 
         CountingSqlReadCursor sourceCursor = new CountingSqlReadCursor(sourceEngine.getDatabasePlatform().
                 getSqlTemplate().queryForCursor(sourceSelect, defaultRowMapper));
@@ -100,12 +99,12 @@ public class DbCompare {
                 getSqlTemplate().queryForCursor(targetSelect, defaultRowMapper));
 
         TableReport tableReport = new TableReport();
-        tableReport.setSourceTable(sourceTable.getFullyQualifiedTableName());
-        tableReport.setTargetTable(targetTable.getFullyQualifiedTableName());
+        tableReport.setSourceTable(tables.getSourceTable().getFullyQualifiedTableName());
+        tableReport.setTargetTable(tables.getTargetTable().getFullyQualifiedTableName());
 
         Row sourceRow = sourceCursor.next();
         Row targetRow = targetCursor.next();
-        
+
         int counter = 0;
         long startTime = System.currentTimeMillis();
 
@@ -113,39 +112,41 @@ public class DbCompare {
             if (sourceRow == null && targetRow == null) {
                 break;
             }
-            
+
             counter++;
             if ((counter % 10000) == 0) {
                 log.info("{} rows processed for table {}. Elapsed time {}.", 
-                        counter, sourceTable.getName(), (System.currentTimeMillis()-startTime));
+                        counter, tables.getSourceTable().getName(), (System.currentTimeMillis()-startTime));
             }
 
             DbCompareRow sourceCompareRow = sourceRow != null ? 
-                    new DbCompareRow(sourceEngine, dbValueComparator, sourceTable, sourceRow) : null;
+                    new DbCompareRow(sourceEngine, dbValueComparator, tables.getSourceTable(), sourceRow) : null;
             DbCompareRow targetCompareRow = targetRow != null ? 
-                    new DbCompareRow(targetEngine, dbValueComparator,  targetTable, targetRow) : null;
+                new DbCompareRow(targetEngine, dbValueComparator,  tables.getTargetTable(), targetRow) : null;
 
-            int comparePk = comparePk(sourceCompareRow, targetCompareRow);
-            if (comparePk == 0) {
-                Map<Column, String> deltas = sourceCompareRow.compareTo(targetCompareRow);
-                if (deltas.isEmpty()) {
-                    tableReport.countMatchedRow();                    
+//                System.out.println("Source: " + sourceCompareRow.getRowPkValues() + " -> " + targetCompareRow.getRowPkValues());
+                
+                int comparePk = comparePk(tables, sourceCompareRow, targetCompareRow);
+                if (comparePk == 0) {
+                    Map<Column, String> deltas = sourceCompareRow.compareTo(tables, targetCompareRow);
+                    if (deltas.isEmpty()) {
+                        tableReport.countMatchedRow();                    
+                    } else {
+                        writeUpdate(targetCompareRow, deltas);
+                        tableReport.countDifferentRow();
+                    }
+
+                    sourceRow = sourceCursor.next();
+                    targetRow = targetCursor.next();
+                } else if (comparePk < 0) {
+                    writeInsert(sourceCompareRow,  tables);
+                    tableReport.countMissingRow();
+                    sourceRow = sourceCursor.next();
                 } else {
-                    writeUpdate(targetCompareRow, deltas);
-                    tableReport.countDifferentRow();
+                    writeDelete(targetCompareRow);
+                    tableReport.countExtraRow();
+                    targetRow = targetCursor.next();
                 }
-
-                sourceRow = sourceCursor.next();
-                targetRow = targetCursor.next();
-            } else if (comparePk < 0) {
-                writeInsert(sourceCompareRow, targetTable);
-                tableReport.countMissingRow();
-                sourceRow = sourceCursor.next();
-            } else {
-                writeDelete(targetCompareRow);
-                tableReport.countExtraRow();
-                targetRow = targetCursor.next();
-            }
         }
 
         tableReport.setSourceRows(sourceCursor.count);
@@ -153,7 +154,6 @@ public class DbCompare {
 
         return tableReport;
     }
-
     protected void writeDelete(DbCompareRow targetCompareRow) {
         if (sqlDiffStream == null) {
             return;
@@ -178,10 +178,12 @@ public class DbCompare {
         writeStatement(sql);
     }
 
-    protected void writeInsert(DbCompareRow sourceCompareRow, Table targetTable) { 
+    protected void writeInsert(DbCompareRow sourceCompareRow, DbCompareTables tables) { 
         if (sqlDiffStream == null) {
             return;
         }
+        
+        Table targetTable = tables.getTargetTable();
 
         DmlStatement statement =  targetEngine.getDatabasePlatform().createDmlStatement(DmlType.INSERT,
                 targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
@@ -190,20 +192,21 @@ public class DbCompare {
 
         Row row = new Row(targetTable.getColumnCount());
 
-        for (int i = 0; i < targetTable.getColumnCount(); i++) {
-            row.put(targetTable.getColumn(i).getName(), 
-                    sourceCompareRow.getRowValues().get(sourceCompareRow.getTable().getColumn(i).getName())); // TODO cleaner TableA->TableB mapping would be nice.
+        for (Column sourceColumn : tables.getSourceTable().getColumns()) {
+            Column targetColumn = tables.getColumnMapping().get(sourceColumn);
+            if (targetColumn == null) {
+                continue;
+            }
+            
+            row.put(targetColumn.getName(), sourceCompareRow.getRowValues().
+                    get(sourceColumn.getName()));
         }
-
-        String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
+        
+        String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, false);
 
         writeStatement(sql);
     }
 
-    /**
-     * @param targetCompareRow
-     * @param deltas
-     */
     protected void writeUpdate(DbCompareRow targetCompareRow, Map<Column, String> deltas) { 
         if (sqlDiffStream == null) {
             return;
@@ -241,7 +244,7 @@ public class DbCompare {
         }
     }
 
-    protected int comparePk(DbCompareRow sourceCompareRow, DbCompareRow targetCompareRow) {
+    protected int comparePk(DbCompareTables tables, DbCompareRow sourceCompareRow, DbCompareRow targetCompareRow) {
         if (sourceCompareRow != null && targetCompareRow == null) {
             return -1;
         }
@@ -249,7 +252,7 @@ public class DbCompare {
             return 1;
         }
 
-        return sourceCompareRow.comparePks(targetCompareRow);
+        return sourceCompareRow.comparePks(tables, targetCompareRow);
     }
 
     protected String getComparisonSQL(Table table, IDatabasePlatform platform) {
@@ -260,8 +263,9 @@ public class DbCompare {
 
         StringBuilder sql = new StringBuilder(statement.getSql());
         sql.append("1=1 ");
-        sql.append(buildOrderBy(table, platform));
 
+        sql.append(buildOrderBy(table, platform));
+        log.info("Comparison SQL: {}", sql);
         return sql.toString();
     }
 
@@ -270,27 +274,33 @@ public class DbCompare {
         String quote = databaseInfo.getDelimiterToken() == null ? "" : databaseInfo.getDelimiterToken(); 
         StringBuilder orderByClause = new StringBuilder("ORDER BY ");
         for (Column pkColumn : table.getPrimaryKeyColumns()) {
-            String columnName = pkColumn.getName();        
-            orderByClause.append(quote).append(columnName).append(quote).append(",");
+            String columnName = new StringBuilder(quote).append(pkColumn.getName()).append(quote).toString();
+            if (platform instanceof Db2DatabasePlatform && pkColumn.isOfTextType() ) {
+                orderByClause.append("TRANSLATE ")
+                        .append("(").append(columnName).append(", 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',")
+                        .append("'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz')");
+            } else {
+                orderByClause.append(columnName);
+            }
+            orderByClause.append(",");
         }
         orderByClause.setLength(orderByClause.length()-1);
-        return orderByClause.toString();
+        return orderByClause.toString();       
     }
 
-    protected Map<Table, Table> getTablesToCompare() {
-        Map<Table, Table> tablesToCompare;
+    protected List<DbCompareTables> getTablesToCompare() {
+        List<DbCompareTables> tablesToCompare;
         if (useSymmetricConfig) {
             tablesToCompare = loadTablesFromConfig();
         } else {
             tablesToCompare = loadTablesFromArguments();
         }
 
-        tablesToCompare = removeExcludedTables(tablesToCompare);
         return tablesToCompare;
     }
 
 
-    protected Map<Table, Table> loadTablesFromConfig() {        
+    protected  List<DbCompareTables> loadTablesFromConfig() {        
         List<Trigger> triggers = sourceEngine.getTriggerRouterService().getTriggersForCurrentNode(true);
         List<String> configTables = TableConstants.getConfigTables(sourceEngine.getTablePrefix());
 
@@ -305,10 +315,12 @@ public class DbCompare {
         return loadTables(tableNames);
     }
 
-    protected Map<Table, Table> loadTables(List<String> tableNames) {
-        Map<Table, Table> tablesFromConfig = new LinkedHashMap<Table, Table>();
+    protected List<DbCompareTables> loadTables(List<String> tableNames) {
+        List<DbCompareTables> tablesFromConfig = new ArrayList<DbCompareTables>();
+        
+        List<String> filteredTablesNames = filterTables(tableNames);
 
-        for (String tableName : tableNames) {
+        for (String tableName : filteredTablesNames) {
             Table sourceTable = sourceEngine.getDatabasePlatform().getTableFromCache(tableName, true);
             if (sourceTable == null) {
                 log.warn("No source table found for table name {}", tableName);
@@ -318,49 +330,43 @@ public class DbCompare {
                 log.warn("Source table {} doesn't have any primary key columns and will not be considered in the comparison.", sourceTable);
                 continue;                
             }
-            Table targetTable = loadTargetTable(sourceTable);
+
+            DbCompareTables tables = new DbCompareTables(sourceTable, null);
+
+            Table targetTable = loadTargetTable(tables);
             if (targetTable == null) {
                 log.warn("No target table found for table {}", tableName);
+                continue;
             } else if (targetTable.getPrimaryKeyColumnCount() == 0) {
                 log.warn("Target table {} doesn't have any primary key columns and will not be considered in the comparison.", targetTable);
                 continue;                
-            }            
-            tablesFromConfig.put(sourceTable, targetTable);
+            }          
+
+            tables.applyColumnMappings();
+            tablesFromConfig.add(tables);
         }
 
         return tablesFromConfig;        
     }
 
-    protected Table loadTargetTable(Table sourceTable) {
+    protected Table loadTargetTable(DbCompareTables tables) {
+        Table targetTable = null;
         if (useSymmetricConfig) {
-            TransformTableNodeGroupLink transform = getTransformFor(sourceTable);
+            TransformTableNodeGroupLink transform = getTransformFor(tables.getSourceTable());
             if (transform != null) {
-                return loadTargetTableUsingTransform(sourceTable, transform);                
+                targetTable =  loadTargetTableUsingTransform(transform);
+                tables.setTargetTable(targetTable);
+                tables.setTransform(transform);
+                return targetTable;
             }
         } 
 
-        Table targetTable = targetEngine.getDatabasePlatform().
-                getTableFromCache(sourceTable.getName(), true);
-        alignColumns(sourceTable, targetTable);
+        targetTable = targetEngine.getDatabasePlatform().
+                getTableFromCache(tables.getSourceTable().getName(), true);
+        tables.setTargetTable(targetTable);
 
         return targetTable;
     }
-
-    protected void alignColumns(Table sourceTable, Table targetTable) {
-        if (sourceTable == null || targetTable == null) {
-            return;
-        }
-
-        Table targetTableClone = cloneTable(targetTable);
-        targetTable.removeAllColumns(); 
-
-        for (Column sourceColumn : sourceTable.getColumns()) {
-            Column targetColumn = targetTableClone.getColumnWithName(sourceColumn.getName());
-            if (targetColumn != null) {
-                targetTable.addColumn(targetColumn);
-            }
-        }
-    } 
 
     protected TransformTableNodeGroupLink getTransformFor(Table sourceTable) {
         String sourceNodeGroupId = sourceEngine.getNodeService().findIdentity().getNodeGroupId(); 
@@ -377,31 +383,10 @@ public class DbCompare {
         return null;
     }
 
-    protected Table loadTargetTableUsingTransform(Table sourceTable, TransformTableNodeGroupLink transform) {
-        Table targetTable = targetEngine.getDatabasePlatform().
-                getTableFromCache(transform.getTargetTableName(), true);
+    protected Table loadTargetTableUsingTransform(TransformTableNodeGroupLink transform) {
+        Table targetTable = targetEngine.getDatabasePlatform().	
+                getTableFromCache(transform.getTargetCatalogName(), transform.getTargetSchemaName(), transform.getTargetTableName(), true); 
 
-        if (targetTable == null) {
-            return targetTable;
-        }
-
-        if (!CollectionUtils.isEmpty(transform.getTransformColumns())) {
-            // attempt to arrange the columns to map the transform.
-
-            Table targetTableClone = cloneTable(targetTable);
-            targetTable.removeAllColumns();
-
-            for (Column sourceColumn : sourceTable.getColumns()) {
-                List<TransformColumn> sourceTransformColumns = transform.getTransformColumnFor(sourceColumn.getName());
-                if (!sourceTransformColumns.isEmpty()) {
-                    TransformColumn transformColumn = sourceTransformColumns.get(0);
-                    Column targetColumn = targetTableClone.getColumnWithName(transformColumn.getTargetColumnName());
-                    targetTable.addColumn(targetColumn);  
-                }
-            }
-        } else {
-            alignColumns(sourceTable, targetTable);
-        }
         return targetTable;
     }
 
@@ -413,39 +398,44 @@ public class DbCompare {
         }        
     }
 
-    protected Map<Table, Table> loadTablesFromArguments() {
+    protected List<DbCompareTables> loadTablesFromArguments() {
         if (CollectionUtils.isEmpty(includedTableNames)) {
             throw new RuntimeException("includedTableNames not provided,  includedTableNames must be provided "
                     + "when not comparing using SymmetricDS config.");
         }
 
-        Map<Table, Table> tablesToCompare = new LinkedHashMap<Table, Table>();
-
-        for (String tableName : includedTableNames) {
-            Table sourceTable = new Table(tableName);
-            Table destinationTable = new Table(tableName);
-            tablesToCompare.put(sourceTable, destinationTable);
-        }
-
-        return tablesToCompare;
+        return loadTables(includedTableNames);
     }
 
-    protected Map<Table, Table> removeExcludedTables(Map<Table, Table> tablesToCompare) {
-        if (CollectionUtils.isEmpty(excludedTableNames)) {
-            return tablesToCompare;
-        }
+    protected List<String> filterTables(List<String> tables) {        
+        List<String> filteredTables = new ArrayList<String>(tables.size());
 
-        Map<Table, Table> filteredTablesToCompare = new LinkedHashMap<Table, Table>(tablesToCompare);
-        for (String excludedTableName : excludedTableNames) {            
-            for (Table sourceTable : tablesToCompare.keySet()) {
-
-                if (sourceTable.getName().trim().equalsIgnoreCase(excludedTableName.trim())) {
-                    filteredTablesToCompare.remove(sourceTable);
+        if (!CollectionUtils.isEmpty(includedTableNames)) {
+            for (String includedTableName : includedTableNames) {                
+                for (String tableName : tables) {
+                    if (StringUtils.equalsIgnoreCase(tableName.trim(), includedTableName.trim())) {
+                        filteredTables.add(tableName);
+                    }
                 }
             }
+        } else {
+            filteredTables.addAll(tables);
         }
 
-        return filteredTablesToCompare;
+        if (!CollectionUtils.isEmpty(excludedTableNames)) {
+            List<String> excludedTables = new ArrayList<String>(filteredTables);
+
+            for (String excludedTableName : excludedTableNames) {            
+                    for (String tableName : filteredTables) {
+                        if (StringUtils.equalsIgnoreCase(tableName.trim(), excludedTableName.trim())) {
+                            excludedTables.remove(tableName);
+                        }
+                }
+            }
+            return excludedTables;
+        }        
+
+        return filteredTables;
     }
 
     public OutputStream getSqlDiffStream() {
