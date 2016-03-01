@@ -32,7 +32,6 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlReadCursor;
@@ -275,7 +274,7 @@ public class DbCompare {
         StringBuilder orderByClause = new StringBuilder("ORDER BY ");
         for (Column pkColumn : table.getPrimaryKeyColumns()) {
             String columnName = new StringBuilder(quote).append(pkColumn.getName()).append(quote).toString();
-            if (platform instanceof Db2DatabasePlatform && pkColumn.isOfTextType() ) {
+            if (platform.getName().startsWith("db2") && pkColumn.isOfTextType() ) {
                 orderByClause.append("TRANSLATE ")
                         .append("(").append(columnName).append(", 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',")
                         .append("'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz')");
