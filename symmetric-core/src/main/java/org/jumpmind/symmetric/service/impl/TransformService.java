@@ -22,11 +22,13 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -179,19 +181,21 @@ public class TransformService extends AbstractService implements ITransformServi
         
         List<TransformTableNodeGroupLink> transformsForNodeGroupLink = findTransformsFor(nodeGroupLink);
         
-        List<TransformTableNodeGroupLink> transforms = new ArrayList<TransformTableNodeGroupLink>();
-        
-        for (TransformTableNodeGroupLink transform : transformsForNodeGroupLink) {
-            if (StringUtils.equalsIgnoreCase(table, transform.getSourceTableName())) {
-                transforms.add(transform);
+        if (!CollectionUtils.isEmpty(transformsForNodeGroupLink)) {            
+            List<TransformTableNodeGroupLink> transforms = new ArrayList<TransformTableNodeGroupLink>();
+            
+            for (TransformTableNodeGroupLink transform : transformsForNodeGroupLink) {
+                if (StringUtils.equalsIgnoreCase(table, transform.getSourceTableName())) {
+                    transforms.add(transform);
+                }
             }
+            
+            if (!transforms.isEmpty()) {
+                return transforms;
+            } 
         }
         
-        if (!transforms.isEmpty()) {
-            return transforms;
-        } else {            
-            return null;
-        }
+        return null;
     }
 
     public void clearCache() {
