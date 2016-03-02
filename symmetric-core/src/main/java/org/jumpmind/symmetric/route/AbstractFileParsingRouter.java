@@ -75,7 +75,7 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 				
 				try {
 					for (Map.Entry<String, Integer> entry : bookmarkMap.entrySet()) {
-						resource.getWriter().write(entry.getKey() + "=" + entry.getValue());
+						resource.getWriter().write("\n" + entry.getKey() + "=" + entry.getValue());
 					}
 					resource.getWriter().close();
 					resource.setState(State.DONE);
@@ -109,7 +109,9 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 			if (resource.exists()) {
 	         while ((thisLine = resource.getReader().readLine()) != null) {
 	            String[] split = thisLine.split("=");
-	            bookmarkMap.put(split[0], new Integer(split[1]));
+	            if (split.length == 2) {
+	            	bookmarkMap.put(split[0].trim(), new Integer(split[1].trim()));
+	            }
 	         }     
 			}
 	      }catch(Exception e){

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.platform.redshift.RedshiftDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -43,6 +44,8 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.FormatUtils;
+
+import com.oracle.xmlns.internal.webservices.jaxws_databinding.ExistingAnnotationsType;
 
 /**
  * @see IIncomingBatchService
@@ -241,26 +244,34 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     
     public void insertIncomingBatch(ISqlTransaction transaction, IncomingBatch batch) {
         if (batch.isPersistable()) {
-            batch.setLastUpdatedHostName(clusterService.getServerId());
-            batch.setLastUpdatedTime(new Date());
-            transaction.prepareAndExecute(
-                    getSql("insertIncomingBatchSql"),
-                    new Object[] { batch.getBatchId(), batch.getNodeId(), batch.getChannelId(),
-                            batch.getStatus().name(), batch.getNetworkMillis(),
-                            batch.getFilterMillis(), batch.getDatabaseMillis(),
-                            batch.getFailedRowNumber(), batch.getFailedLineNumber(),
-                            batch.getByteCount(), batch.getStatementCount(),
-                            batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(),
-                            batch.getIgnoreCount(), batch.getMissingDeleteCount(),
-                            batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
-                            FormatUtils.abbreviateForLogging(batch.getSqlMessage()),
-                            batch.getLastUpdatedHostName(), batch.getLastUpdatedTime() },
-                    new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.CHAR,
-                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR,
-                            Types.TIMESTAMP });
+        	boolean alreadyExists = false;
+        	if (symmetricDialect.getPlatform() instanceof RedshiftDatabasePlatform) {
+        		if (findIncomingBatch(batch.getBatchId(), batch.getNodeId()) != null) {
+        			alreadyExists = true;
+        		}
+        	}
+        	if (!alreadyExists) {
+	        	batch.setLastUpdatedHostName(clusterService.getServerId());
+	            batch.setLastUpdatedTime(new Date());
+	            transaction.prepareAndExecute(
+	                    getSql("insertIncomingBatchSql"),
+	                    new Object[] { batch.getBatchId(), batch.getNodeId(), batch.getChannelId(),
+	                            batch.getStatus().name(), batch.getNetworkMillis(),
+	                            batch.getFilterMillis(), batch.getDatabaseMillis(),
+	                            batch.getFailedRowNumber(), batch.getFailedLineNumber(),
+	                            batch.getByteCount(), batch.getStatementCount(),
+	                            batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(),
+	                            batch.getIgnoreCount(), batch.getMissingDeleteCount(),
+	                            batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
+	                            FormatUtils.abbreviateForLogging(batch.getSqlMessage()),
+	                            batch.getLastUpdatedHostName(), batch.getLastUpdatedTime() },
+	                    new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.CHAR,
+	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+	                            Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR,
+	                            Types.TIMESTAMP });
+        	}
         }
     }
     
