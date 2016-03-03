@@ -59,20 +59,14 @@ import org.slf4j.LoggerFactory;
 public class SimpleClassCompiler {
 
     protected final static String REGEX_CLASS = "public\\s*class\\s*(\\w*)";
-        
-    protected static SimpleClassCompiler instance;
     
     protected Map<Integer, Object> objectMap = new HashMap<Integer, Object>();
     
     protected int classSuffix;
     
-    private static Logger log = LoggerFactory.getLogger(SimpleClassCompiler.class);
+    private Logger log = LoggerFactory.getLogger(SimpleClassCompiler.class);
 
-    public static SimpleClassCompiler getInstance() {
-        if (instance == null) {
-            instance = new SimpleClassCompiler();
-        }
-        return instance;
+    public SimpleClassCompiler() {
     }
     
     public Object getCompiledClass(String javaCode) throws Exception {

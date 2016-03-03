@@ -140,7 +140,6 @@ public class TransformWriterTest extends AbstractWriterTest {
     public static Map<String, IColumnTransform<?>> buildDefaultColumnTransforms() {
         Map<String, IColumnTransform<?>> columnTransforms = new HashMap<String, IColumnTransform<?>>();
         addColumnTransform(AdditiveColumnTransform.NAME, columnTransforms, new AdditiveColumnTransform());
-        addColumnTransform(JavaColumnTransform.NAME, columnTransforms, new JavaColumnTransform());
         addColumnTransform(ConstantColumnTransform.NAME, columnTransforms, new ConstantColumnTransform());
         addColumnTransform(CopyColumnTransform.NAME, columnTransforms, new CopyColumnTransform());
         addColumnTransform(IdentityColumnTransform.NAME, columnTransforms, new IdentityColumnTransform());
