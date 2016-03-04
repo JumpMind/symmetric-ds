@@ -25,7 +25,7 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.util.SimpleClassCompiler;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,16 @@ public class JavaColumnTransform implements ISingleValueColumnTransform, IBuiltI
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected final String TRANSFORM_KEY = String.format("%d.JavaRouter", hashCode());
+    
+    protected IExtensionService extensionService;
 
+    public JavaColumnTransform() {
+    }
+
+    public JavaColumnTransform(IExtensionService extensionService) {
+        this.extensionService = extensionService;
+    }
+    
     public String getName() {
         return NAME;
     }
@@ -74,7 +83,7 @@ public class JavaColumnTransform implements ISingleValueColumnTransform, IBuiltI
         ISingleValueColumnTransform colTransform = (ISingleValueColumnTransform) context.get(TRANSFORM_KEY);
         if (colTransform == null) {
             String javaCode = CODE_START + column.getTransformExpression() + CODE_END;    
-            colTransform = (ISingleValueColumnTransform) SimpleClassCompiler.getInstance().getCompiledClass(javaCode);
+            colTransform = (ISingleValueColumnTransform) extensionService.getCompiledClass(javaCode);
             context.put(TRANSFORM_KEY, colTransform);
         }
         return colTransform;

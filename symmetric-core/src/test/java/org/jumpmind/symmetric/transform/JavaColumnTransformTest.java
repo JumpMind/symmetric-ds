@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.io.data.transform;
+package org.jumpmind.symmetric.transform;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -27,11 +27,21 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.transform.JavaColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.TransformColumn;
+import org.jumpmind.symmetric.io.data.transform.TransformPoint;
+import org.jumpmind.symmetric.io.data.transform.TransformTable;
+import org.jumpmind.symmetric.io.data.transform.TransformedData;
+import org.jumpmind.symmetric.service.IExtensionService;
+import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.impl.ExtensionService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,16 +50,27 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 public class JavaColumnTransformTest {
 
+    IExtensionService extensionService;
     IDatabasePlatform platform;
-    ISqlTemplate sqlTemplate;
-    ISqlTransaction sqlTransaction;
     DataContext context;
 
     @Before
     public void setUp() throws Exception {        
-        sqlTemplate = mock(ISqlTemplate.class);
-        sqlTransaction = mock(ISqlTransaction.class);
+        ISqlTransaction sqlTransaction = mock(ISqlTransaction.class);
         platform = mock(IDatabasePlatform.class);
+        
+        ISymmetricEngine engine = mock(ISymmetricEngine.class);
+        IParameterService parameterService = mock(IParameterService.class);
+        IDatabasePlatform platform = mock(IDatabasePlatform.class);
+        ISymmetricDialect dialect = mock(ISymmetricDialect.class);
+        when(dialect.getPlatform()).thenReturn(platform);
+        when(platform.getDatabaseInfo()).thenReturn(new DatabaseInfo());
+        when(engine.getParameterService()).thenReturn(parameterService);
+        when(engine.getSymmetricDialect()).thenReturn(dialect);
+
+        extensionService = new ExtensionService(engine);
+        when(engine.getExtensionService()).thenReturn(extensionService);
+        
         context = mock(DataContext.class);
         when(context.findTransaction()).thenReturn(sqlTransaction);
     }
@@ -67,7 +88,7 @@ public class JavaColumnTransformTest {
         oldSourceValues.put("sColumn", "anOldValue");
         TransformedData data = new TransformedData(table, DataEventType.INSERT, sourceKeyValues, oldSourceValues, sourceValues);
 
-        JavaColumnTransform transform = new JavaColumnTransform();
+        JavaColumnTransform transform = new JavaColumnTransform(extensionService);
         String out = transform.transform(platform, context, column, data, sourceValues, "aNewValue", "anOldValue");
         assertEquals("transValue", out);
     }
@@ -93,7 +114,7 @@ public class JavaColumnTransformTest {
         oldSourceValues.put("sColumn", "anOldValue");
         TransformedData data = new TransformedData(table, DataEventType.INSERT, sourceKeyValues, oldSourceValues, sourceValues);
 
-        JavaColumnTransform transform = new JavaColumnTransform();
+        JavaColumnTransform transform = new JavaColumnTransform(extensionService);
         String out = transform.transform(platform, context, column, data, sourceValues, "aNewValue", "anOldValue");
         assertEquals("transValue", out);
     }
