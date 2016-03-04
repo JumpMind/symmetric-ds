@@ -170,6 +170,8 @@ public interface IDatabasePlatform {
     public boolean isMetadataIgnoreCase();
 
     public java.util.Date parseDate(int type, String value, boolean useVariableDates);
+    
+    public Map<String, String> parseQualifiedTableName(String tableName);
 
     public Table makeAllColumnsPrimaryKeys(Table table);
     

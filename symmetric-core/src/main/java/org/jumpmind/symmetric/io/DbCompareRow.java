@@ -50,6 +50,9 @@ public class DbCompareRow {
         for (Column sourcePkColumn : table.getPrimaryKeyColumns()) {
             Column targetPkColumn = tables.getColumnMapping().get(sourcePkColumn);           
 
+            if (targetPkColumn == null) {
+                return 0;
+            }
             int result = dbValueComparator.compareValues(sourcePkColumn, targetPkColumn, 
                     rowValues.get(sourcePkColumn.getName()), targetRow.getRowValues().get(targetPkColumn.getName()));
 

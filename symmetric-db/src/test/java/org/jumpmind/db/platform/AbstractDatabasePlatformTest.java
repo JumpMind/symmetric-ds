@@ -55,6 +55,29 @@ public class AbstractDatabasePlatformTest {
         assertEquals(-18000000, testDatabasePlatform.getTimeZone("-05:00").getRawOffset());
     }
     
+    @Test
+    public void testParseQualifiedTableName() {
+        assertEquals("SIMPLE_TABLE_NAME", testDatabasePlatform.parseQualifiedTableName("SIMPLE_TABLE_NAME").get("table"));
+        assertEquals(1, testDatabasePlatform.parseQualifiedTableName("SIMPLE_TABLE_NAME").size());
+        
+        assertEquals("\"QUOTED_TABLE_NAME\"", testDatabasePlatform.parseQualifiedTableName("\"QUOTED_TABLE_NAME\"").get("table"));
+        assertEquals(1, testDatabasePlatform.parseQualifiedTableName("\"QUOTED_TABLE_NAME\"").size());
+        
+        assertEquals("TABLE", testDatabasePlatform.parseQualifiedTableName("SCHEMA.TABLE").get("table"));
+        assertEquals("SCHEMA", testDatabasePlatform.parseQualifiedTableName("SCHEMA.TABLE").get("schema"));
+        assertEquals(2, testDatabasePlatform.parseQualifiedTableName("SCHEMA.TABLE").size());
+        
+        assertEquals("CATALOG", testDatabasePlatform.parseQualifiedTableName("CATALOG.SCHEMA.TABLE").get("catalog"));
+        assertEquals("TABLE", testDatabasePlatform.parseQualifiedTableName("CATALOG.SCHEMA.TABLE").get("table"));
+        assertEquals("SCHEMA", testDatabasePlatform.parseQualifiedTableName("CATALOG.SCHEMA.TABLE").get("schema"));
+        assertEquals(3, testDatabasePlatform.parseQualifiedTableName("CATALOG.SCHEMA.TABLE").size());
+        
+        assertEquals("\"CATALOG\"", testDatabasePlatform.parseQualifiedTableName("\"CATALOG\".\"SCHEMA\".\"TABLE\"").get("catalog"));
+        assertEquals("\"TABLE\"", testDatabasePlatform.parseQualifiedTableName("\"CATALOG\".\"SCHEMA\".\"TABLE\"").get("table"));
+        assertEquals("\"SCHEMA\"", testDatabasePlatform.parseQualifiedTableName("\"CATALOG\".\"SCHEMA\".\"TABLE\"").get("schema"));
+        assertEquals(3, testDatabasePlatform.parseQualifiedTableName("\"CATALOG\".\"SCHEMA\".\"TABLE\"").size());
+    }
+    
     private AbstractDatabasePlatform testDatabasePlatform = new AbstractDatabasePlatform() {
         @Override
         public String getName() {

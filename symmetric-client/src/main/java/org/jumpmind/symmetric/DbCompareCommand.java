@@ -101,8 +101,10 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         }
         
         DbCompareReport report = dbCompare.compare();
-        for (TableReport tableReport : report.getTableReports()) {
-            System.out.println(tableReport);
+        if (report.getTableReports() != null) {            
+            for (TableReport tableReport : report.getTableReports()) {
+                System.out.println(tableReport);
+            }
         }
         
         return false;
