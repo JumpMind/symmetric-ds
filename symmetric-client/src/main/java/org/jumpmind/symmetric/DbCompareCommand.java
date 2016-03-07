@@ -90,8 +90,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         DbCompare dbCompare = new DbCompare(sourceEngine, targetEngine);
         
         if (line.hasOption(OPTION_OUTPUT_SQL)) {
-            FileOutputStream fos = new FileOutputStream(line.getOptionValue(OPTION_OUTPUT_SQL));
-            dbCompare.setSqlDiffStream(fos);            
+            dbCompare.setSqlDiffFileName(line.getOptionValue(OPTION_OUTPUT_SQL));
         }
         if (line.hasOption(OPTION_EXCLUDE)) {
             dbCompare.setExcludedTableNames(Arrays.asList(line.getOptionValue(OPTION_EXCLUDE).split(",")));
