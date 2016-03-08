@@ -68,7 +68,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         
         File sourceProperies = new File(source);
         if (!sourceProperies.exists()) {
-            throw new SymmetricException("The source properties file '{}' does not exist.", sourceProperies); 
+            throw new SymmetricException("Source properties file '" + sourceProperies + "' does not exist."); 
         }
         
         String target = line.getOptionValue('t');
@@ -81,7 +81,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         
         File targetProperties = new File(target);
         if (!targetProperties.exists()) {
-            throw new SymmetricException("File {} does not exist.", targetProperties); 
+            throw new SymmetricException("Target properties file '" + targetProperties + "' does not exist."); 
         }
         
         ISymmetricEngine sourceEngine = new ClientSymmetricEngine(sourceProperies);
