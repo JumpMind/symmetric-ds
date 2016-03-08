@@ -100,11 +100,11 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         }
         
         DbCompareReport report = dbCompare.compare();
-        if (report.getTableReports() != null) {            
-            for (TableReport tableReport : report.getTableReports()) {
-                System.out.println(tableReport);
-            }
-        }
+//        if (report.getTableReports() != null) {            
+//            for (TableReport tableReport : report.getTableReports()) {
+//                System.out.println(tableReport);
+//            }
+//        }
         
         return false;
     }
@@ -135,7 +135,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
 
     @Override
     protected void buildOptions(Options options) {
-        super.buildOptions(options);
+        addCommonOption(options, "h", HELP, false);
         addOption(options, "s", OPTION_SOURCE, true);
         addOption(options, "t", OPTION_TARGET, true);
         addOption(options, null, OPTION_EXCLUDE, true);

@@ -85,11 +85,17 @@ public class DbCompare {
         long start = System.currentTimeMillis();
         List<DbCompareTables> tablesToCompare = getTablesToCompare();
         for (DbCompareTables tables : tablesToCompare) {
-            TableReport tableReport = compareTables(tables);
-            report.addTableReport(tableReport);
-            long elapsed = System.currentTimeMillis() - start;
-            log.info("Completed table {}.  Elapsed time: {}", tableReport, 
-                    DurationFormatUtils.formatDurationWords((elapsed), true, true));
+            try {
+                TableReport tableReport = compareTables(tables);
+                report.addTableReport(tableReport);
+                long elapsed = System.currentTimeMillis() - start;
+                log.info("Completed table {}.  Elapsed time: {}", tableReport, 
+                        DurationFormatUtils.formatDurationWords((elapsed), true, true));
+                System.out.println(tableReport);                
+            } catch (Exception e) {
+                log.error("Exception while comparing " + tables.getSourceTable() + 
+                        " to " + tables.getTargetTable(), e);
+            }
         }
 
         long totalTime = System.currentTimeMillis() - start;
