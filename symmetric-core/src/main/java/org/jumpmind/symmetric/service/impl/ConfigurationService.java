@@ -104,6 +104,15 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return masterToMaster;
     }
 
+    public boolean isMasterToMasterOnly() {
+        boolean masterToMasterOnly = false;
+        Node me = nodeService.findIdentity();
+        if (me != null) {
+            masterToMasterOnly = sqlTemplate.queryForInt(getSql("countGroupLinksForSql"), me.getNodeGroupId(), me.getNodeGroupId()) == 1;
+        }
+        return masterToMasterOnly;
+    }
+
     public boolean refreshFromDatabase() {
         Date date1 = sqlTemplate.queryForObject(getSql("selectMaxChannelLastUpdateTime"),
                 Date.class);

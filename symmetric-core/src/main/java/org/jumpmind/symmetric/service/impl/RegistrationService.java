@@ -540,8 +540,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 node.setNodeId(nodeId);
                 node.setSyncEnabled(false);
                 
-                boolean masterToMaster = configurationService.isMasterToMaster();
-                node.setCreatedAtNodeId(masterToMaster ? null: me.getNodeId());
+                boolean masterToMasterOnly = configurationService.isMasterToMasterOnly();
+                node.setCreatedAtNodeId(masterToMasterOnly ? null: me.getNodeId());
                 nodeService.save(node);
 
                 // make sure there isn't a node security row lying around w/out
@@ -550,7 +550,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 String password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(node);
                 password = filterPasswordOnSaveIfNeeded(password);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
-                        nodeId, password, masterToMaster ? null : me.getNodeId() });
+                        nodeId, password, masterToMasterOnly ? null : me.getNodeId() });
                 nodeService.insertNodeGroup(node.getNodeGroupId(), null);
                 log.info(
                         "Just opened registration for external id of {} and a node group of {} and a node id of {}",
