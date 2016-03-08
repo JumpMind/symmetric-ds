@@ -31,7 +31,6 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.LoadFilter;
-import org.jumpmind.util.SimpleClassCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,8 +120,8 @@ public class JavaDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
         return CODE_START.split("\n").length;
     }
 
-    public static JavaLoadFilter getCompiledClass(String javaExpression) throws Exception {
+    public JavaLoadFilter getCompiledClass(String javaExpression) throws Exception {
         String javaCode = CODE_START + javaExpression + CODE_END;    
-        return (JavaLoadFilter) SimpleClassCompiler.getInstance().getCompiledClass(javaCode);
+        return (JavaLoadFilter) engine.getExtensionService().getCompiledClass(javaCode);
     }
 }

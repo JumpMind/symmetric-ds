@@ -34,6 +34,11 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
+	// DB2 Variables
+	public static final String VAR_SOURCE_NODE_ID = "_source_node_id";
+	public static final String VAR_TRIGGER_DISABLED = "_trigger_disabled";
+	
+	
     public Db2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new Db2TriggerTemplate(this);
@@ -77,7 +82,21 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {        
+    public void createRequiredDatabaseObjects() {  
+    	try {
+    		String sql = "select " + getSourceNodeExpression() + " from " + parameterService.getTablePrefix() + "_node_identity";
+    		platform.getSqlTemplate().query(sql);                                                                                                                                                    
+        }
+    	catch (Exception e) {
+    		platform.getSqlTemplate().update("create variable " + getSourceNodeExpression() + " varchar(50)");
+    	}
+    	try {
+    		String sql = "select " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " from " + parameterService.getTablePrefix() + "_node_identity";
+    		platform.getSqlTemplate().query(sql);                                                                                                                                                    
+        }
+    	catch (Exception e) {
+    		platform.getSqlTemplate().update("create variable " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " varchar(50)");
+    	}
     }
     
     @Override
@@ -103,10 +122,14 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
+    	transaction.prepareAndExecute("set " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " = 1");
+    	if (nodeId != null) {
+            transaction.prepareAndExecute("set " + getSourceNodeExpression() + " = '" + nodeId + "'");
+        }
     }
 
     public String getSyncTriggersExpression() {
-        return "1=1";
+        return parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " is null";
     }
 
     @Override
@@ -135,6 +158,6 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     @Override
     public String getSourceNodeExpression() {
-        return "null";
+        return parameterService.getTablePrefix() + VAR_SOURCE_NODE_ID;
     }
 }

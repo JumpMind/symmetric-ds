@@ -21,13 +21,20 @@
 package org.jumpmind.symmetric.io;
 
 import java.math.BigDecimal;
+import java.sql.Types;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.util.FormatUtils;
 
 public class DbValueComparator {
 
@@ -35,10 +42,17 @@ public class DbValueComparator {
     private ISymmetricEngine targetEngine;
     private boolean stringIgnoreWhiteSpace = true;
     private boolean stringNullEqualsEmptyString = true;
+    private List<SimpleDateFormat> dateFormats = new ArrayList<SimpleDateFormat>();
 
     public DbValueComparator(ISymmetricEngine sourceEngine, ISymmetricEngine targetEngine) {
         this.sourceEngine = sourceEngine;
         this.targetEngine = targetEngine;
+        initDateFormats();
+    }
+    
+    protected void initDateFormats() {
+        dateFormats.add(new SimpleDateFormat("MM-dd-yyyy HH:mm:ss:S"));
+        dateFormats.add(new SimpleDateFormat("MM-dd-yyyy HH:mm:ss.S"));
     }
 
     @SuppressWarnings("unchecked")
@@ -100,10 +114,6 @@ public class DbValueComparator {
         }
         
         return sourceValue.compareTo(targetValue);
-        
-        
-        
-
     }
 
     public int compareDateTime(Column sourceColumn, Column targetColumn, String sourceValue, String targetValue) {
@@ -111,8 +121,15 @@ public class DbValueComparator {
             return compareDefault(sourceColumn, targetColumn, sourceValue, targetValue);
         }
         
-        Date sourceDate = sourceEngine.getDatabasePlatform().parseDate(sourceColumn.getJdbcTypeCode(), sourceValue, false);
-        Date targetDate = targetEngine.getDatabasePlatform().parseDate(targetColumn.getJdbcTypeCode(), targetValue, false);
+        Date sourceDate = parseDate(sourceEngine, sourceColumn, sourceValue);
+        Date targetDate = parseDate(targetEngine, targetColumn, targetValue);
+        
+        // if either column is a simple date, clear the time for comparison purposes.
+        if (sourceColumn.getJdbcTypeCode() == Types.DATE
+                || targetColumn.getJdbcTypeCode() == Types.DATE) {
+            sourceDate = DateUtils.truncate(sourceDate, Calendar.DATE);
+            targetDate = DateUtils.truncate(targetDate, Calendar.DATE);
+        }
         
         return compareDefault(sourceColumn, targetColumn, sourceDate, targetDate);
     }
@@ -141,5 +158,26 @@ public class DbValueComparator {
             }
         }
     }
+
+    protected Date parseDate(ISymmetricEngine engine, Column column, String value) {
+        Date date = null;
+        try {            
+            // Just because the source was a date doesn't mean the target column is actually a date type.
+            date = engine.getDatabasePlatform().parseDate(column.getJdbcTypeCode(), value, false);
+        } catch (Exception e) {
+            for (SimpleDateFormat format : dateFormats) {
+                try {                
+                    date = format.parse(value);
+                    if (date != null) {
+                        break;
+                    }
+                } catch (Exception e2) {
+                    continue;
+                }
+            }
+        }
+        return date;
+    }    
+
 
 }
