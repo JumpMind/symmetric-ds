@@ -50,6 +50,9 @@ public class DbCompareRow {
         for (Column sourcePkColumn : table.getPrimaryKeyColumns()) {
             Column targetPkColumn = tables.getColumnMapping().get(sourcePkColumn);           
 
+            if (targetPkColumn == null) {
+                return 0;
+            }
             int result = dbValueComparator.compareValues(sourcePkColumn, targetPkColumn, 
                     rowValues.get(sourcePkColumn.getName()), targetRow.getRowValues().get(targetPkColumn.getName()));
 
@@ -64,7 +67,6 @@ public class DbCompareRow {
     public Map<Column, String> compareTo(DbCompareTables tables, DbCompareRow targetRow) {
 
         Map<Column, String> deltas = new LinkedHashMap<Column, String>();
-        // TODO maybe should operate on non-pk columns here.
         for (Column sourceColumn : table.getColumns()) {
             Column targetColumn = tables.getColumnMapping().get(sourceColumn);
             if (targetColumn == null) {

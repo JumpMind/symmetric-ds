@@ -21,10 +21,13 @@
 package org.jumpmind.symmetric.io;
 
 import java.math.BigDecimal;
+import java.sql.Types;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -110,9 +113,16 @@ public class DbValueComparator {
         if (sourceValue == null || targetValue == null) {
             return compareDefault(sourceColumn, targetColumn, sourceValue, targetValue);
         }
-        
+                
         Date sourceDate = sourceEngine.getDatabasePlatform().parseDate(sourceColumn.getJdbcTypeCode(), sourceValue, false);
         Date targetDate = targetEngine.getDatabasePlatform().parseDate(targetColumn.getJdbcTypeCode(), targetValue, false);
+        
+        // if either column is a simple date, clear the time for comparison purposes.
+        if (sourceColumn.getJdbcTypeCode() == Types.DATE
+                || targetColumn.getJdbcTypeCode() == Types.DATE) {
+            sourceDate = DateUtils.truncate(sourceDate, Calendar.DATE);
+            targetDate = DateUtils.truncate(targetDate, Calendar.DATE);
+        }
         
         return compareDefault(sourceColumn, targetColumn, sourceDate, targetDate);
     }

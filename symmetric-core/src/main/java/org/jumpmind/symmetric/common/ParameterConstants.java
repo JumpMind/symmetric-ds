@@ -308,6 +308,8 @@ final public class ParameterConstants {
     public final static String AS400_CAST_CLOB_TO = "as400.cast.clob.to";
 
     public final static String EXTENSIONS_XML = "extensions.xml";
+    
+    public final static String DATA_CREATE_TIME_TIMEZONE = "data.create_time.timezone";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

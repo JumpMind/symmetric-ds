@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -96,7 +95,7 @@ public class TransformService extends AbstractService implements ITransformServi
         addColumnTransform(LookupColumnTransform.NAME, new LookupColumnTransform());
         addColumnTransform(BshColumnTransform.NAME, new BshColumnTransform(parameterService));
         addColumnTransform(AdditiveColumnTransform.NAME, new AdditiveColumnTransform());
-        addColumnTransform(JavaColumnTransform.NAME, new JavaColumnTransform());
+        addColumnTransform(JavaColumnTransform.NAME, new JavaColumnTransform(extensionService));
         addColumnTransform(ConstantColumnTransform.NAME, new ConstantColumnTransform());
         addColumnTransform(CopyColumnTransform.NAME, new CopyColumnTransform());
         addColumnTransform(IdentityColumnTransform.NAME, new IdentityColumnTransform());

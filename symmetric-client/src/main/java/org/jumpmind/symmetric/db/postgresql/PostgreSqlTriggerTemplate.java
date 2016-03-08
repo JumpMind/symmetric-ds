@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.db.postgresql;
 
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
@@ -69,7 +71,6 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
         otherColumnTemplate = stringColumnTemplate;
-
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                \n" +
@@ -86,7 +87,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(txIdExpression),                                                                                                                                               \n" +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   \n" +
 "                                      $(externalSelect),                                                                                                                                               \n" +
-"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
+"                                      " + getCreateTimeExpression(symmetricDialect) + "                                                                                                                \n" +
 "                                    );                                                                                                                                                                 \n" +
 "                                  end if;                                                                                                                                                              \n" +
 "                                  $(custom_on_insert_text)                                                                                                                                             \n" +
@@ -120,7 +121,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(txIdExpression),                                                                                                                                               \n" +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   \n" +
 "                                      $(externalSelect),                                                                                                                                               \n" +
-"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
+"                                      " + getCreateTimeExpression(symmetricDialect) + "                                                                                                                \n" +
 "                                    );                                                                                                                                                                 \n" +
 "                                  end if;                                                                                                                                                              \n" +
 "                                  end if;                                                                                                                                                              \n" +
@@ -149,7 +150,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(txIdExpression),                                                                                                                                               \n" +
 "                                      $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                   \n" +
 "                                      $(externalSelect),                                                                                                                                               \n" +
-"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
+"                                      " + getCreateTimeExpression(symmetricDialect) + "                                                                                                                \n" +
 "                                    );                                                                                                                                                                 \n" +
 "                                  end if;                                                                                                                                                              \n" +
 "                                  $(custom_on_delete_text)                                                                                                                                             \n" +
@@ -168,6 +169,15 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
     @Override
     protected boolean requiresWrappedBlobTemplateForBlobType() {
         return true;
+    }
+    
+    protected String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
+        String timezone = symmetricDialect.getParameterService().getString(ParameterConstants.DATA_CREATE_TIME_TIMEZONE);
+        if (StringUtils.isEmpty(timezone)) {
+            return "CURRENT_TIMESTAMP";
+        } else {
+            return String.format("CURRENT_TIMESTAMP AT TIME ZONE '%s'", timezone);
+        }    
     }
 
 }

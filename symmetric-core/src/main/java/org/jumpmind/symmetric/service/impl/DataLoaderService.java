@@ -37,8 +37,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -121,6 +123,7 @@ import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
+import org.jumpmind.util.LogSuppressor;
 
 /**
  * Responsible for writing batch data to the database
@@ -154,6 +157,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private ISymmetricEngine engine = null;
 
     private Date lastUpdateTime;
+    
+    private final LogSuppressor logSuppressor = new LogSuppressor(log);
 
     public DataLoaderService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -974,9 +979,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             this.currentBatch.getNodeBatchId(), ex.getMessage());
                     this.currentBatch.setSqlMessage(ex.getMessage());
                 } else {
-                    log.error(
-                            String.format("Failed to load batch %s because: %s",
-                                    this.currentBatch.getNodeBatchId(), ex.getMessage()), ex);
+                    logBatchInError(ex);
+                    
                     SQLException se = unwrapSqlException(ex);
                     if (ex instanceof ConflictException) {
                         String message = ex.getMessage();
@@ -1064,6 +1068,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
                                 .getBatch().getNodeBatchId(), e);
             }
+        }
+
+        protected void logBatchInError(Throwable ex) {
+            final String ERROR_KEY = this.currentBatch.getNodeBatchId() + ex.getMessage();
+            logSuppressor.logError(ERROR_KEY, String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
         }
 
         public List<IncomingBatch> getBatchesProcessed() {
