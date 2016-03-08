@@ -131,19 +131,20 @@ public class Db2zOsDmlStatement extends DmlStatement {
         return newSql + databaseInfo.getSqlCommandDelimiter();  
     }  
     
+    @Override
     protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
         String columnName = column.getName();        
         
         if (select && column.isPrimaryKey() && column.isOfTextType()) {
             // CAST to ASCII to support standard ORDER BY ordering.
-      //      CAST("VALD_VAL" AS VARCHAR(4096)CCSID ASCII) AS "VALD_VAL"
             String quotedColumn = quote+columnName+quote;
-            sql.append("CAST(").append(quotedColumn).append(" AS VARCHAR(4096)CCSID ASCII) AS ").append(quotedColumn);
+            String typeName = column.getJdbcTypeName();
+            String size = column.getSize();
+            sql.append("CAST(").append(quotedColumn).append(" AS ").append(typeName) 
+                    .append("(").append(size).append(")CCSID ASCII) AS ").append(quotedColumn);
         } else {            
             sql.append(quote).append(columnName).append(quote);
         }
-        
-        
     }
 
 }
