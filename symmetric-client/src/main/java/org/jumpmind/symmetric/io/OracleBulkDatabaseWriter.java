@@ -298,6 +298,8 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
                     errors = new int[0];
                 }
 
+                stmt.close();
+                
                 if (errors.length > 0) {
                     // set the statement count so the failed row number get reported correctly
                     statistics.get(batch).set(DataWriterStatisticConstants.STATEMENTCOUNT,
