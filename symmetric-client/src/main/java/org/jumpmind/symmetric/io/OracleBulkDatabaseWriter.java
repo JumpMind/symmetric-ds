@@ -297,7 +297,14 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
                 } else {
                     errors = new int[0];
                 }
-
+                
+                try{ 
+                	stmt.close();
+                }
+                catch (SQLException e) {
+                	log.info("Unable to close the prepared statment after user.", e);
+                }
+                
                 if (errors.length > 0) {
                     // set the statement count so the failed row number get reported correctly
                     statistics.get(batch).set(DataWriterStatisticConstants.STATEMENTCOUNT,
