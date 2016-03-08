@@ -115,5 +115,7 @@ public interface IConfigurationService {
      * @return
      */
     public boolean isMasterToMaster();
+    
+    public boolean isMasterToMasterOnly();
 
 }
