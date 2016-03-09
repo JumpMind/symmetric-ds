@@ -84,6 +84,7 @@ public class DbCompare {
         DbCompareReport report = new DbCompareReport();
         long start = System.currentTimeMillis();
         List<DbCompareTables> tablesToCompare = getTablesToCompare();
+        report.printReportHeader(System.out);
         for (DbCompareTables tables : tablesToCompare) {
             try {
                 TableReport tableReport = compareTables(tables);
@@ -91,12 +92,14 @@ public class DbCompare {
                 long elapsed = System.currentTimeMillis() - start;
                 log.info("Completed table {}.  Elapsed time: {}", tableReport, 
                         DurationFormatUtils.formatDurationWords((elapsed), true, true));
-                System.out.println(tableReport);                
+                report.printTableReport(tableReport, System.out);               
             } catch (Exception e) {
                 log.error("Exception while comparing " + tables.getSourceTable() + 
                         " to " + tables.getTargetTable(), e);
             }
         }
+        
+        report.printReportFooter(System.out);
 
         long totalTime = System.currentTimeMillis() - start;
         log.info("dbcompare complete.  Total Time: {}", 
@@ -115,8 +118,8 @@ public class DbCompare {
                 getSqlTemplate().queryForCursor(targetSelect, defaultRowMapper));
 
         TableReport tableReport = new TableReport();
-        tableReport.setSourceTable(tables.getSourceTable().getFullyQualifiedTableName());
-        tableReport.setTargetTable(tables.getTargetTable().getFullyQualifiedTableName());
+        tableReport.setSourceTable(tables.getSourceTable().getName());
+        tableReport.setTargetTable(tables.getTargetTable().getName());
 
         Row sourceRow = sourceCursor.next();
         Row targetRow = targetCursor.next();
