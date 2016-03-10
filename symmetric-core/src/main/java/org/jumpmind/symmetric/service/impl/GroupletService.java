@@ -120,10 +120,10 @@ public class GroupletService extends AbstractService implements IGroupletService
     }
 
     public Set<Node> getTargetEnabled(TriggerRouter triggerRouter, Set<Node> nodes) {
-        Set<Node> matchedNodes = new HashSet<Node>();
-        Set<Node> excludedNodes = new HashSet<Node>();
         List<Grouplet> grouplets = getGroupletsFor(triggerRouter, AppliesWhen.T, false);
         if (grouplets != null && grouplets.size() > 0) {
+            Set<Node> matchedNodes = new HashSet<Node>();
+            Set<Node> excludedNodes = new HashSet<Node>();
             for (Grouplet grouplet : grouplets) {
                 GroupletLinkPolicy policy = grouplet.getGroupletLinkPolicy();
                 List<GroupletLink> links = grouplet.getGroupletLinks();
