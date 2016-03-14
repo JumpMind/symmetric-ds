@@ -186,4 +186,7 @@ public interface INodeService {
     public List<String> findOfflineNodeIds(long minutesOffline);
 
     public NetworkedNode getRootNetworkedNode();
+    
+    public void clearCache();
+    
 }
