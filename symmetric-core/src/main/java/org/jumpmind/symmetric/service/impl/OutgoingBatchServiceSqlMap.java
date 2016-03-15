@@ -66,6 +66,9 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("selectOutgoingBatchSql", ""
                 + "where node_id = ? and status in (?, ?, ?, ?, ?, ?, ?) order by batch_id asc   ");
 
+        putSql("selectOutgoingBatchChannelSql", ""
+                + "where node_id = ? and channel_id = ? and status in (?, ?, ?, ?, ?, ?, ?) order by batch_id asc   ");
+
         putSql("selectOutgoingBatchRangeSql", ""
                 + "where batch_id between ? and ? order by batch_id   ");
 
@@ -109,12 +112,12 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("getLoadSummariesSql",
                 "select b.load_id, b.node_id, b.status, b.create_by, max(error_flag) as error_flag, count(*) as cnt, min(b.create_time) as create_time,          "
               + "       max(b.last_update_time) as last_update_time, min(b.batch_id) as current_batch_id,  "
-              + "       min(b.data_event_count) as current_data_event_count                                                                                      "
+              + "       min(b.data_event_count) as current_data_event_count, b.channel_id                                                                        "
               + "from sym_outgoing_batch b inner join                                                                                                            "
               + "     sym_data_event e on b.batch_id=e.batch_id inner join                                                                                       "
               + "     sym_data d on d.data_id=e.data_id                                                                                                          "
-              + "where b.channel_id='reload'                                                                                                                     "
-              + "group by b.load_id, b.node_id, b.status, b.create_by                                                                              "
+              + "where b.channel_id in (select channel_id from sym_channel where reload_flag = 1)                                                                                                                         "
+              + "group by b.load_id, b.node_id, b.channel_id, b.status, b.create_by                                                                              "
               + "order by b.load_id desc                                                                                                                         ");
 
         putSql("getNextOutgoingBatchForEachNodeSql",

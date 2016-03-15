@@ -38,7 +38,8 @@ public class OutgoingLoadSummary implements Serializable {
     private Date createTime;
     private Date lastUpdateTime;
     private int reloadBatchCount;
-
+    private String channelId;
+    
     public boolean isActive() {
         return pendingBatchCount > 0;
     }
@@ -134,5 +135,15 @@ public class OutgoingLoadSummary implements Serializable {
     public String getLoadNodeId() {
         return String.format("%010d-%s", loadId, nodeId);
     }
+
+	public String getChannelId() {
+		return channelId;
+	}
+
+	public void setChannelId(String channelId) {
+		this.channelId = channelId;
+	}
+    
+    
 
 }

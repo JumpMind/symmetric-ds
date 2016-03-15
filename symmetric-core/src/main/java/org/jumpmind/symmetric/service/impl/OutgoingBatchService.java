@@ -545,6 +545,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     summary = new OutgoingLoadSummary();
                     summary.setLoadId(loadId);
                     summary.setNodeId(nodeId);
+                    summary.setChannelId(rs.getString("channel_id"));
                     summary.setCreateBy(rs.getString("create_by"));
                     loadSummaries.put(loadNodeId, summary);
                 }
