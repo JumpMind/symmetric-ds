@@ -39,8 +39,8 @@ void SymRegistrationService_registerWithServer(SymRegistrationService *this) {
             if (isRegistered) {
                 SymNode *node = this->nodeService->findIdentity(this->nodeService);
                 if (node != NULL) {
-                	SymLog_info("Successfully registered node [id=%s]\n", node->nodeId);
-                    // TODO: this->dataService->heartbeat(this->dataService);
+                	SymLog_info("Successfully registered node [id=%s]", node->nodeId);
+                    this->dataService->heartbeat(this->dataService, 1);
                 } else {
                     SymLog_error("Node identity is missing after registration.  The registration server may be misconfigured or have an error");
                     isRegistered = 0;
@@ -73,8 +73,9 @@ void SymRegistrationService_destroy(SymRegistrationService *this) {
     free(this);
 }
 
-SymRegistrationService * SymRegistrationService_new(SymRegistrationService *this, SymNodeService *nodeService, SymDataLoaderService *dataLoaderService,
-        SymParameterService *parameterService, SymConfigurationService *configurationService) {
+SymRegistrationService * SymRegistrationService_new(SymRegistrationService *this, SymNodeService *nodeService,
+        SymDataLoaderService *dataLoaderService, SymParameterService *parameterService,
+        SymConfigurationService *configurationService, SymDataService *dataService) {
     if (this == NULL) {
         this = (SymRegistrationService *) calloc(1, sizeof(SymRegistrationService));
     }
@@ -82,6 +83,7 @@ SymRegistrationService * SymRegistrationService_new(SymRegistrationService *this
     this->dataLoaderService = dataLoaderService;
     this->parameterService = parameterService;
     this->configurationService = configurationService;
+    this->dataService = dataService;
     this->isRegisteredWithServer = (void *) &SymRegistrationService_isRegisteredWithServer;
     this->registerWithServer = (void *) &SymRegistrationService_registerWithServer;
     this->destroy = (void *) &SymRegistrationService_destroy;

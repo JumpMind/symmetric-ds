@@ -50,6 +50,10 @@ static SymList * SymDataLoaderService_loadDataFromTransport(SymDataLoaderService
     SymLog_debug("Transport rc = %ld" , rc);
 
     SymList *batchesProcessed = processor->getBatchesProcessed(processor);
+    if (writer->isSyncTriggersNeeded) {
+        this->triggerRouterService->syncTriggers(this->triggerRouterService, 0);
+    }
+
     processor->destroy(processor);
     writer->destroy(writer);
     return batchesProcessed;
@@ -150,13 +154,14 @@ void SymDataLoaderService_destroy(SymDataLoaderService *this) {
     free(this);
 }
 
-SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService, SymNodeService *nodeService,
+SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService, SymNodeService *nodeService, SymTriggerRouterService *triggerRouterService,
         SymTransportManager *transportManager, SymTransportManager *fileTransportManager, SymDatabasePlatform *platform, SymDialect *dialect, SymIncomingBatchService *incomingBatchService) {
     if (this == NULL) {
         this = (SymDataLoaderService *) calloc(1, sizeof(SymDataLoaderService));
     }
     this->parameterService = parameterService;
     this->nodeService = nodeService;
+    this->triggerRouterService = triggerRouterService;
     this->transportManager = transportManager;
     this->fileTransportManager = fileTransportManager;
     this->platform = platform;

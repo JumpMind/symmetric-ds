@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.transport.ConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
 import org.slf4j.Logger;
@@ -63,6 +64,8 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         String nodeId = getNodeId(req);
         String method = req.getMethod();
 
+        String threadChannel = req.getHeader(WebConstants.THREAD_CHANNEL);
+        
         if (method.equals(WebConstants.METHOD_HEAD) && 
                 ServletUtils.normalizeRequestUri(req).contains("push")) {
             // I read here:
@@ -71,26 +74,44 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             // that HEAD is better if no content is going to be returned.
             resp.setContentLength(0);
             if (!concurrentConnectionManager
-                    .reserveConnection(nodeId, poolId, ReservationType.SOFT)) {
+                    .reserveConnection(nodeId, threadChannel, poolId, ReservationType.SOFT)) {
                 statisticManager.incrementNodesRejected(1);
                 ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
             } else {
                 try {
                     buildSuspendIgnoreResponseHeaders(nodeId, resp);
                 } catch (Exception ex) {
-                    concurrentConnectionManager.releaseConnection(nodeId, poolId);
+                    concurrentConnectionManager.releaseConnection(nodeId, threadChannel, poolId);
                     log.error("Error building response headers", ex);
                     ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
                 }
             }
             return false;
+        // Support for channel threading
+        } else if (threadChannel != null) {
+        	if (concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.HARD)) {
+        		try {
+                    buildSuspendIgnoreResponseHeaders(nodeId, resp);
+                    return true;
+                } catch (Exception ex) {
+                    concurrentConnectionManager.releaseConnection(nodeId, threadChannel, poolId);
+                    log.error("Error building response headers", ex);
+                    ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
+                    return false;
+                }
+        	}
+        	else {
+                statisticManager.incrementNodesRejected(1);
+                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
+                return false;
+            }
         } else if (concurrentConnectionManager.reserveConnection(nodeId, poolId,
                 ReservationType.HARD)) {
             try {
                 buildSuspendIgnoreResponseHeaders(nodeId, resp);
                 return true;
             } catch (Exception ex) {
-                concurrentConnectionManager.releaseConnection(nodeId, poolId);
+                concurrentConnectionManager.releaseConnection(nodeId, threadChannel, poolId);
                 log.error("Error building response headers", ex);
                 ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
                 return false;
@@ -116,7 +137,9 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             ServletException {
         String poolId = req.getRequestURI();
         String nodeId = getNodeId(req);
-        concurrentConnectionManager.releaseConnection(nodeId, poolId);
+        String threadChannel = req.getHeader(WebConstants.THREAD_CHANNEL);
+        
+        concurrentConnectionManager.releaseConnection(nodeId, threadChannel, poolId);
     }
 
     protected void buildSuspendIgnoreResponseHeaders(final String nodeId, final ServletResponse resp) {

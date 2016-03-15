@@ -43,6 +43,7 @@ import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.AbstractCommandLauncher;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricAdmin;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroup;
@@ -58,7 +59,7 @@ import org.springframework.context.ApplicationContext;
 public class SymmetricEngineHolder {
 
     final Logger log = LoggerFactory.getLogger(getClass());
-    
+
     private static Map<String, ServerSymmetricEngine> staticEngines = new HashMap<String, ServerSymmetricEngine>();
 
     private static Set<EngineStarter> staticEnginesStarting = new HashSet<SymmetricEngineHolder.EngineStarter>();
@@ -68,13 +69,13 @@ public class SymmetricEngineHolder {
     private Set<EngineStarter> enginesStarting = new HashSet<SymmetricEngineHolder.EngineStarter>();
 
     private boolean staticEnginesMode = false;
-    
+
     private boolean multiServerMode = false;
 
     private boolean autoStart = true;
-    
+
     private boolean autoCreate = true;
-    
+
     private ApplicationContext springContext;
 
     private String singleServerPropertiesFile;
@@ -84,7 +85,7 @@ public class SymmetricEngineHolder {
     private int engineCount;
 
     private String deploymentType = "server";
-    
+
     private boolean holderHasBeenStarted = false;
 
     public Map<String, ServerSymmetricEngine> getEngines() {
@@ -102,22 +103,22 @@ public class SymmetricEngineHolder {
     public boolean isMultiServerMode() {
         return multiServerMode;
     }
-    
+
     public void setAutoCreate(boolean autoCreate) {
-		this.autoCreate = autoCreate;
-	}
-    
+        this.autoCreate = autoCreate;
+    }
+
     public boolean isAutoCreate() {
-		return autoCreate;
-	}
-    
+        return autoCreate;
+    }
+
     public void setStaticEnginesMode(boolean staticEnginesMode) {
-		this.staticEnginesMode = staticEnginesMode;
-	}
-    
+        this.staticEnginesMode = staticEnginesMode;
+    }
+
     public boolean isStaticEnginesMode() {
-		return staticEnginesMode;
-	}
+        return staticEnginesMode;
+    }
 
     public void setSingleServerPropertiesFile(String singleServerPropertiesFile) {
         this.singleServerPropertiesFile = singleServerPropertiesFile;
@@ -208,7 +209,24 @@ public class SymmetricEngineHolder {
         }
 
     }
-    
+
+    public void uninstallEngine(ISymmetricEngine engine) {
+        Node node = engine.getNodeService().getCachedIdentity();
+        String engineName = engine.getEngineName();
+        File file = new SymmetricAdmin("uninstall", "", "")
+                .findPropertiesFileForEngineWithName(engineName);
+        engine.uninstall();
+        engine.destroy();
+        if (file != null) {
+            file.delete();
+        }
+        getEngines().remove(engineName);
+
+        for (ISymmetricEngine existingEngine : this.getEngines().values()) {
+            existingEngine.removeAndCleanupNode(node.getNodeId());
+        }        
+    }
+
     public void setSpringContext(ApplicationContext applicationContext) {
         this.springContext = applicationContext;
     }
@@ -422,13 +440,13 @@ public class SymmetricEngineHolder {
         }
         return engineName;
     }
-    
+
     public static Date getCreateTime() {
         return createTime;
     }
 
     static int threadNumber = 0;
-    
+
     class EngineStarter extends Thread {
 
         String propertiesFile;

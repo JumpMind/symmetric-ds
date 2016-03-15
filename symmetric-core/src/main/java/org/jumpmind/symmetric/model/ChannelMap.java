@@ -38,6 +38,8 @@ public class ChannelMap {
 
     public static final String CHANNELS_IGNORE = "Ignored-Channels";
 
+    private String threadChannel;
+    
     private Map<String, Set<String>> map;
 
     public ChannelMap() {
@@ -89,4 +91,14 @@ public class ChannelMap {
     public Set<String> getIgnoreChannels() {
         return map.get(CHANNELS_IGNORE);
     }
+
+	public String getThreadChannel() {
+		return threadChannel;
+	}
+
+	public void setThreadChannel(String threadChannel) {
+		this.threadChannel = threadChannel;
+	}
+
+    
 }

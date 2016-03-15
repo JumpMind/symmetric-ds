@@ -25,35 +25,52 @@ char *SymFileOutgoingTransport_getFileName(SymFileOutgoingTransport *this) {
     time(&currentTimeMillis);
     currentTimeMillis *= 1000;
 
-    return SymStringUtils_format("%s/%s-%s_to_%s-%s_%ld.tmp", this->offlineOutgoingDir,
+    return SymStringUtils_format("%s/%s-%s_to_%s-%s_%ld", this->offlineOutgoingDir,
             this->localNode->nodeGroupId, this->localNode->nodeId,  this->remoteNode->nodeGroupId, this->remoteNode->nodeId, currentTimeMillis);
 }
 
 long SymFileOutgoingTransport_process(SymFileOutgoingTransport *this, SymDataProcessor *processor) {
 
+    SymFileUtils_mkdir(this->offlineOutgoingDir);
+
     processor->open(processor);
 
     int BUFFER_SIZE = 2048;
     char inputBuffer[BUFFER_SIZE];
-    char* fileName = SymFileOutgoingTransport_getFileName(this);
-    SymLog_debug("Writing file %s", fileName);
+    char* fileNameBase = SymFileOutgoingTransport_getFileName(this);
+    char *tmpFileName = SymStringUtils_format("%s%s", fileNameBase, ".tmp");
+    char *csvFileName = SymStringUtils_format("%s%s", fileNameBase, ".csv");
+
+    SymLog_debug("Writing file %s", tmpFileName);
 
     long result = SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE;
 
-    FILE *file = fopen(SymFileOutgoingTransport_getFileName(this), "w");
+    FILE *file = fopen(tmpFileName, "w");
 
     if (file) {
         int size;
         while ((size = processor->process(processor, inputBuffer, 1, BUFFER_SIZE)) > 0) {
-            fprintf(file, "%.*s", size, inputBuffer);
+            int result = fprintf(file, "%.*s", size, inputBuffer);
+            if (result < 0) {
+                SymLog_warn("failed to write to file %s rc=%d", tmpFileName, result);
+            }
         }
         fclose(file);
         result = SYM_TRANSPORT_OK;
     } else {
-        SymLog_error("Failed to open file for writing. %s", fileName);
+        SymLog_error("Failed to open file for writing. %s", fileNameBase);
         result = SYM_TRANSPORT_SC_SERVICE_UNAVAILABLE;
     }
-    free(fileName);
+
+    SymLog_debug("Rename '%s' to '%s'", tmpFileName, csvFileName);
+    int renameResult = rename(tmpFileName, csvFileName);
+    if (renameResult != 0) {
+        SymLog_warn("Failed to rename '%s' to '%s' %s", tmpFileName, csvFileName, strerror(errno));
+    }
+
+    free(csvFileName);
+    free(tmpFileName);
+    free(fileNameBase);
 
     SymList *batchIds = processor->getBatchesProcessed(processor);
     SymStringBuilder *buff = SymStringBuilder_new(NULL);

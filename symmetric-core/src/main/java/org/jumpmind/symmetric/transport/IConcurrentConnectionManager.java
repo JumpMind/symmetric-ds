@@ -55,7 +55,11 @@ public interface IConcurrentConnectionManager {
      */
     public boolean reserveConnection(String nodeId, String poolId, ReservationType reservationRequest);
 
+    public boolean reserveConnection(String nodeId, String channelId, String poolId, ReservationType reservationRequest);
+
     public boolean releaseConnection(String nodeId, String poolId);
+
+    public boolean releaseConnection(String nodeId, String channelId, String poolId);
 
     public int getReservationCount(String poolId);
 

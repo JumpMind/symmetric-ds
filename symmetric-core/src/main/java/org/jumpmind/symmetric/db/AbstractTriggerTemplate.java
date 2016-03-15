@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
+import java.lang.reflect.Field;
 import java.sql.Types;
 import java.util.Map;
 
@@ -1055,6 +1056,20 @@ abstract public class AbstractTriggerTemplate {
         if (sqlTemplates != null) {
             for (String key : sqlTemplates.keySet()) {
                 hashedValue += sqlTemplates.get(key).hashCode();
+            }
+            
+            Field[] fields = getClass().getSuperclass().getDeclaredFields();
+            for (Field field : fields) {
+                if (field.getType().equals(String.class)) {
+                    try {
+                        String value = (String)field.get(this);
+                        if (value != null) {
+                            hashedValue += value.hashCode();
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to get hash code for field " + field.getName());
+                    }
+                }
             }
         }
         return hashedValue;

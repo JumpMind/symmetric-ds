@@ -51,6 +51,8 @@ public interface IDataExtractorService {
      */
     public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, IOutgoingTransport transport);    
     
+    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node node, String channelId, IOutgoingTransport transport);    
+    
     public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId, long endBatchId);
     
     public boolean extractBatchRange(Writer writer, String nodeId, Date startBatchTime,
@@ -60,7 +62,7 @@ public interface IDataExtractorService {
     
     public RemoteNodeStatuses queueWork(boolean force);
     
-    public void requestExtractRequest(ISqlTransaction transaction, String nodeId, TriggerRouter triggerRouter, long startBatchId, long endBatchId);
+    public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String channelId, TriggerRouter triggerRouter, long startBatchId, long endBatchId);
 
 
 }

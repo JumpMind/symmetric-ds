@@ -38,6 +38,7 @@ typedef struct SymDataWriter {
     void (*endTable)(struct SymDataWriter *this, SymTable *table);
     void (*endBatch)(struct SymDataWriter *this, SymBatch *batch);
     void (*destroy)(struct SymDataWriter *this);
+    unsigned short isSyncTriggersNeeded;
 } SymDataWriter;
 
 SymDataWriter * SymDataWriter_new(SymDataWriter *this);

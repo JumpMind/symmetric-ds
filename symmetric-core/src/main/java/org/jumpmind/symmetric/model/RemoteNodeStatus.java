@@ -37,6 +37,7 @@ public class RemoteNodeStatus implements Serializable {
     };
 
     private String nodeId;
+    private String channelId;
     private Status status;
     private long dataProcessed;
     private long batchesProcessed;
@@ -44,10 +45,11 @@ public class RemoteNodeStatus implements Serializable {
     private boolean complete = false;
     private Map<String, Channel> channels;
 
-    public RemoteNodeStatus(String nodeId, Map<String, Channel> channels) {
+    public RemoteNodeStatus(String nodeId, String channelId, Map<String, Channel> channels) {
         this.status = Status.NO_DATA;
         this.nodeId = nodeId;
         this.channels = channels;
+        this.channelId = channelId;
     }
     
     public boolean failed() {
@@ -61,8 +63,16 @@ public class RemoteNodeStatus implements Serializable {
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
     }
+    
+    public String getChannelId() {
+		return channelId;
+	}
 
-    public Status getStatus() {
+	public void setChannelId(String channelId) {
+		this.channelId = channelId;
+	}
+
+	public Status getStatus() {
         return status;
     }
 

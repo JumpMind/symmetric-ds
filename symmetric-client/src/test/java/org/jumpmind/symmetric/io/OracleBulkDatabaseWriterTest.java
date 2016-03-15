@@ -23,11 +23,13 @@ package org.jumpmind.symmetric.io;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
@@ -121,7 +123,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
             Connection connection = datasource.getConnection();
             Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
 
-            final String EXPECTED_TIMESTAMPTZ = "2007-01-02 03:20:10.0 America/New_York";
+            final String[] EXPECTED_TIMESTAMPTZ = {"2007-01-02 03:20:10.0 America/New_York","2007-01-02 03:20:10.0 US/Eastern"};
 
             checkTimestampTZ(rowData.get("TIMESTAMPTZ0_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
             checkTimestampTZ(rowData.get("TIMESTAMPTZ3_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
@@ -233,7 +235,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
             Connection connection = datasource.getConnection();
             Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
             
-            checkTimestampLTZ(rowData.get("TIMESTAMPLTZ9_VALUE"), oracleConnection, "2007-01-02 03:20:10.123456789 America/New_York");
+            checkTimestampLTZ(rowData.get("TIMESTAMPLTZ9_VALUE"), oracleConnection, new String[]{"2007-01-02 03:20:10.123456789 America/New_York","2007-01-02 03:20:10.123456789 US/Eastern"});
             
             Assert.assertEquals(count, countRows("test_bulkload_table_1"));
         }
@@ -245,18 +247,36 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
      * @param EXPECTED_TIMESTAMPTZ
      * @throws SQLException
      */
-    private void checkTimestampTZ(Object value, Connection oracleConnection, final String EXPECTED_TIMESTAMPTZ)
+    private void checkTimestampTZ(Object value, Connection oracleConnection, final String... expectedValues)
             throws SQLException {
         TIMESTAMPTZ timestamp = (TIMESTAMPTZ) value;
         String actualTimestampString = timestamp.stringValue(oracleConnection);
-        Assert.assertEquals(EXPECTED_TIMESTAMPTZ, actualTimestampString);
+        boolean match = false;
+        for (String expectedValue : expectedValues) {
+            if (StringUtils.equals(expectedValue, actualTimestampString)) {
+                match = true;
+                break;
+            }
+        }
+        
+        Assert.assertTrue(actualTimestampString + 
+                " not found in " + Arrays.toString(expectedValues), match);
     }
     
-    private void checkTimestampLTZ(Object value, Connection oracleConnection, final String EXPECTED_TIMESTAMPTZ)
+    private void checkTimestampLTZ(Object value, Connection oracleConnection, final String... expectedValues)
             throws SQLException {
         TIMESTAMPLTZ timestamp = (TIMESTAMPLTZ) value;
         String actualTimestampString = timestamp.stringValue(oracleConnection);
-        Assert.assertEquals(EXPECTED_TIMESTAMPTZ, actualTimestampString);
+        boolean match = false;
+        for (String expectedValue : expectedValues) {
+            if (StringUtils.equals(expectedValue, actualTimestampString)) {
+                match = true;
+                break;
+            }
+        }
+        
+        Assert.assertTrue(actualTimestampString + 
+                " not found in " + Arrays.toString(expectedValues), match);
     }
 
     @Test

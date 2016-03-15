@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.ocsp.RespData;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -87,7 +88,8 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         ChannelMap map = new ChannelMap();
         map.addSuspendChannels(req.getHeader(WebConstants.SUSPENDED_CHANNELS));
         map.addIgnoreChannels(req.getHeader(WebConstants.IGNORED_CHANNELS));
-
+        map.setThreadChannel(req.getHeader(WebConstants.THREAD_CHANNEL));
+        
         // pull out headers and pass to pull() method
         pull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET), map);
 
@@ -115,7 +117,9 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                     IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream, encoding, 
                             map);
                     ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
-                            nodeService.findIdentityNodeId(), nodeId, ProcessType.PULL_HANDLER));
+                            nodeService.findIdentityNodeId(), map.getThreadChannel(), nodeId, ProcessType.PULL_HANDLER));
+                    processInfo.setThreadPerChannel(map.getThreadChannel() != null && !map.getThreadChannel().equals("0"));
+                    
                     try {
                         Node targetNode = nodeService.findNode(nodeId);
                         List<OutgoingBatch> batchList = dataExtractorService.extract(processInfo, targetNode,

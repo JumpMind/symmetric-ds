@@ -28,6 +28,7 @@ public class Db2zOsSymmetricDialect extends Db2SymmetricDialect implements ISymm
 
     public Db2zOsSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
+        this.triggerTemplate = new Db2zOsTriggerTemplate(this);
     }
 
     // TODO: add check to trigger template if CURRENT SQLID = '${db.user}'

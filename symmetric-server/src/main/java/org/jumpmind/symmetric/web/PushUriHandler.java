@@ -63,7 +63,9 @@ public class PushUriHandler extends AbstractUriHandler {
         InputStream inputStream = createInputStream(req);
         OutputStream outputStream = res.getOutputStream();
 
-        push(nodeId, inputStream, outputStream);
+        String threadChannel = req.getHeader(WebConstants.THREAD_CHANNEL);
+        
+        push(nodeId, threadChannel, inputStream, outputStream);
 
         res.flushBuffer();
         log.debug("Push completed for {}", nodeId);
@@ -71,10 +73,14 @@ public class PushUriHandler extends AbstractUriHandler {
     }
 
     protected void push(String sourceNodeId, InputStream inputStream, OutputStream outputStream) throws IOException {
+        push(sourceNodeId, null, inputStream, outputStream);
+    }
+    
+    protected void push(String sourceNodeId, String channelId, InputStream inputStream, OutputStream outputStream) throws IOException {
         long ts = System.currentTimeMillis();
         try {
             Node sourceNode = nodeService.findNode(sourceNodeId);
-            dataLoaderService.loadDataFromPush(sourceNode, inputStream, outputStream);
+            dataLoaderService.loadDataFromPush(sourceNode, channelId, inputStream, outputStream);
         } finally {
             statisticManager.incrementNodesPushed(1);
             statisticManager.incrementTotalNodesPushedTime(System.currentTimeMillis() - ts);

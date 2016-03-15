@@ -108,10 +108,10 @@ SymList * SymNodeCommunicationService_list(SymNodeCommunicationService *this, Sy
             nodesToCommunicateWith = SymNodeCommunicationService_removeOfflineNodes(this, this->nodeService->findNodesToPushTo(this->nodeService));
             break;
         case SYM_COMMUNICATION_TYPE_OFFLN_PUSH:
-            nodesToCommunicateWith = SymNodeCommunicationService_getNodesToCommunicateWithOffline(this, SYM_COMMUNICATION_TYPE_FILE_PUSH);
+            nodesToCommunicateWith = SymNodeCommunicationService_getNodesToCommunicateWithOffline(this, SYM_COMMUNICATION_TYPE_PUSH);
             break;
         case SYM_COMMUNICATION_TYPE_OFFLN_PULL:
-            nodesToCommunicateWith = SymNodeCommunicationService_getNodesToCommunicateWithOffline(this, SYM_COMMUNICATION_TYPE_FILE_PULL);
+            nodesToCommunicateWith = SymNodeCommunicationService_getNodesToCommunicateWithOffline(this, SYM_COMMUNICATION_TYPE_PULL);
             break;
         default:
             nodesToCommunicateWith = SymList_new(NULL);
@@ -125,11 +125,13 @@ void SymNodeCommunicationService_destroy(SymNodeCommunicationService *this) {
     free(this);
 }
 
-SymNodeCommunicationService * SymNodeCommunicationService_new(SymNodeCommunicationService *this, SymNodeService * nodeService) {
+SymNodeCommunicationService * SymNodeCommunicationService_new(SymNodeCommunicationService *this,
+        SymNodeService * nodeService, SymParameterService *parameterService) {
     if (this == NULL) {
         this = (SymNodeCommunicationService *) calloc(1, sizeof(SymNodeCommunicationService));
     }
     this->nodeService = nodeService;
+    this->parameterService = parameterService;
     this->list = (void *) &SymNodeCommunicationService_list;
     this->destroy = (void *) &SymNodeCommunicationService_destroy;
     return this;

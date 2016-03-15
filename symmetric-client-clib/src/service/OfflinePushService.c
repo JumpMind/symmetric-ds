@@ -107,7 +107,7 @@ SymRemoteNodeStatuses * SymOfflinePushService_pushData(SymOfflinePushService *th
     SymRemoteNodeStatuses *statuses = SymRemoteNodeStatuses_new(NULL, channels);
     SymNode *identity = this->nodeService->findIdentity(this->nodeService);
     if (identity && identity->syncEnabled) {
-        SymList *nodes = this->nodeService->findNodesToPushTo(this->nodeService);
+        SymList *nodes = this->nodeCommunicationService->list(this->nodeCommunicationService, SYM_COMMUNICATION_TYPE_OFFLN_PUSH);
         if (nodes->size > 0) {
             SymNodeSecurity *identitySecurity = this->nodeService->findNodeSecurity(this->nodeService, identity->nodeId);
             if (identitySecurity) {
@@ -134,9 +134,10 @@ void SymOfflinePushService_destroy(SymOfflinePushService *this) {
     free(this);
 }
 
-SymOfflinePushService * SymOfflinePushService_new(SymOfflinePushService *this, SymNodeService *nodeService, SymDataExtractorService *dataExtractorService,
-        SymTransportManager *transportManager, SymParameterService *parameterService, SymConfigurationService *configurationService,
-        SymAcknowledgeService *acknowledgeService) {
+SymOfflinePushService * SymOfflinePushService_new(SymOfflinePushService *this, SymNodeService *nodeService,
+        SymDataExtractorService *dataExtractorService, SymTransportManager *transportManager,
+        SymParameterService *parameterService, SymConfigurationService *configurationService,
+        SymAcknowledgeService *acknowledgeService, SymNodeCommunicationService *nodeCommunicationService) {
     if (this == NULL) {
         this = (SymOfflinePushService *) calloc(1, sizeof(SymOfflinePushService));
     }
@@ -146,6 +147,7 @@ SymOfflinePushService * SymOfflinePushService_new(SymOfflinePushService *this, S
     this->parameterService = parameterService;
     this->configurationService = configurationService;
     this->acknowledgeService = acknowledgeService;
+    this->nodeCommunicationService = nodeCommunicationService;
     this->pushData = (void *) &SymOfflinePushService_pushData;
     this->destroy = (void *) &SymOfflinePushService_destroy;
     return this;
