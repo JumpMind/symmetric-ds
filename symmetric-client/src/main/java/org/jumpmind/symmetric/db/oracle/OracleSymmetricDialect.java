@@ -306,6 +306,21 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
+    public Date getEarliestTransactionStartTime() {
+        Date date = null;
+        String returnValue = platform.getSqlTemplate().queryForObject(SQL_SELECT_TRANSACTIONS, String.class);
+        if (returnValue != null) {
+            try {
+                date = DateUtils.parseDate(returnValue, new String[] { "MM/dd/yy HH:mm:ss" });
+            } catch (ParseException e) {
+                log.error("", e);
+                date = new Date();
+            }
+        }
+        return date;
+    }
+
+    @Override
     public boolean supportsTransactionViews() {
         return supportsTransactionViews
                 && parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW);

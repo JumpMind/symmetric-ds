@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.db;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -169,6 +170,8 @@ public interface ISymmetricDialect {
     public long getDatabaseTime();
 
     public boolean areDatabaseTransactionsPendingSince(long time);
+    
+    public Date getEarliestTransactionStartTime();
 
     /*
      * Returns true if the trigger select lob data back from the original table.
