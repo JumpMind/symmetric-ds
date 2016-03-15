@@ -299,7 +299,7 @@ public class DerbyFunctions {
                     case Types.CHAR:
                     case Types.VARCHAR:
                     case Types.LONGVARCHAR:
-                        b.append("\"").append(rs.getString(index)).append("\"");
+                        b.append("'").append(rs.getString(index)).append("'");
                         break;
                     case Types.DATE:
                     case Types.TIMESTAMP:
