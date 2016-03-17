@@ -73,6 +73,8 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private long maxPeekAheadQueueSize;
     private List<DataGap> dataGaps = new ArrayList<DataGap>();
     private Set<String> transactions = new HashSet<String>();
+    private long lastDataId;
+    private List<Long> dataIds = new ArrayList<Long>();
 
     public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction)
             throws SQLException {
@@ -91,6 +93,10 @@ public class ChannelRouterContext extends SimpleRouterContext {
 
     public void addDataEvent(long dataId, long batchId, String routerId) {
         dataEventsToSend.add(new DataEvent(dataId, batchId, routerId));
+        if (dataId != lastDataId) {
+            dataIds.add(dataId);
+            lastDataId = dataId;
+        }
     }
 
     public Map<String, OutgoingBatch> getBatchesByNodes() {
@@ -268,4 +274,8 @@ public class ChannelRouterContext extends SimpleRouterContext {
         return onlyDefaultRoutersAssigned;
     }
 
+    public List<Long> getDataIds() {
+        return dataIds;
+    }
+    
 }

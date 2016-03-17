@@ -258,4 +258,16 @@ public class DataGapDetector {
         }
     }
 
+    public void afterRouting() {
+    }
+
+    public List<DataGap> getDataGaps() {
+        return dataService.findDataGaps();
+    }
+    
+    public void addDataIds(List<Long> dataIds) {
+    }
+
+    public void setIsAllDataRead(boolean isAllDataRead) {
+    }
 }

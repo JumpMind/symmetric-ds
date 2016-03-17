@@ -111,6 +111,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         if (lastSelectUsedGreaterThanQueryByEngineName.get(engineName) == null) {
             lastSelectUsedGreaterThanQueryByEngineName.put(engineName, Boolean.FALSE);
         }
+        this.dataGaps = new ArrayList<DataGap>(context.getDataGaps());
     }
 
     public void run() {
@@ -264,11 +265,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL, 100);
         
         int maxGapsBeforeGreaterThanQuery = parameterService.getInt(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY, 100);
-
-        this.dataGaps = engine.getDataService().findDataGaps();
-        if (this.dataGaps != null) {
-            context.setDataGaps(new ArrayList<DataGap>(this.dataGaps));
-        }
                 
         boolean useGreaterThanDataId = false;
         if (maxGapsBeforeGreaterThanQuery > 0 && this.dataGaps.size() > maxGapsBeforeGreaterThanQuery) {

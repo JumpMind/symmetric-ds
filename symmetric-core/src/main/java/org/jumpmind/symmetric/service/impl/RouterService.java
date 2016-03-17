@@ -65,6 +65,7 @@ import org.jumpmind.symmetric.route.ChannelRouterContext;
 import org.jumpmind.symmetric.route.ColumnMatchDataRouter;
 import org.jumpmind.symmetric.route.ConfigurationChangedDataRouter;
 import org.jumpmind.symmetric.route.DataGapDetector;
+import org.jumpmind.symmetric.route.DataGapFastDetector;
 import org.jumpmind.symmetric.route.DataGapRouteReader;
 import org.jumpmind.symmetric.route.DefaultBatchAlgorithm;
 import org.jumpmind.symmetric.route.DefaultDataRouter;
@@ -171,14 +172,24 @@ public class RouterService extends AbstractService implements IRouterService {
                     insertInitialLoadEvents();
                     
                     long ts = System.currentTimeMillis();
-                    DataGapDetector gapDetector = new DataGapDetector(
-                            engine.getDataService(), parameterService, symmetricDialect, 
-                            this, engine.getStatisticManager(), engine.getNodeService());
+                    DataGapDetector gapDetector = null;
+                    if (parameterService.is("routing.use.fast.gap.detector")) {
+                        gapDetector = new DataGapFastDetector(
+                                engine.getDataService(), parameterService, symmetricDialect, 
+                                this, engine.getStatisticManager(), engine.getNodeService());
+                    } else {
+                        gapDetector = new DataGapDetector(
+                                engine.getDataService(), parameterService, symmetricDialect, 
+                                this, engine.getStatisticManager(), engine.getNodeService());                        
+                    }
                     gapDetector.beforeRouting();
                     dataCount = routeDataForEachChannel(gapDetector);
                     ts = System.currentTimeMillis() - ts;
                     if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
                         log.info("Routed {} data events in {} ms", dataCount, ts);
+                    }
+                    if (dataCount > 0) {
+                        gapDetector.afterRouting();
                     }
                 } finally {
                     if (!force) {
@@ -332,6 +343,7 @@ public class RouterService extends AbstractService implements IRouterService {
                             sourceNode
                             , gapDetector);
                 } else {
+                    gapDetector.setIsAllDataRead(false);
                     if (log.isDebugEnabled()) {
                         log.debug(
                                 "Not routing the {} channel.  It is either disabled or suspended.",
@@ -466,7 +478,8 @@ public class RouterService extends AbstractService implements IRouterService {
                     symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction());
             context.setProduceCommonBatches(producesCommonBatches);
             context.setOnlyDefaultRoutersAssigned(onlyDefaultRoutersAssigned);
-            
+            context.setDataGaps(gapDetector.getDataGaps());
+
             dataCount = selectDataAndRoute(processInfo, context);
             return dataCount;
         } catch (DelayRoutingException ex) {
@@ -506,6 +519,8 @@ public class RouterService extends AbstractService implements IRouterService {
                             context.getDataEventList());
                     context.clearDataEventsList();
                     completeBatchesAndCommit(context);
+                    gapDetector.addDataIds(context.getDataIds());
+                    gapDetector.setIsAllDataRead(context.getDataIds().size() < context.getChannel().getMaxDataToRoute());
                     context.incrementStat(System.currentTimeMillis() - insertTs,
                             ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
                     Data lastDataProcessed = context.getLastDataProcessed();
@@ -545,6 +560,12 @@ public class RouterService extends AbstractService implements IRouterService {
         Set<IDataRouter> usedRouters = new HashSet<IDataRouter>(context.getUsedDataRouters());
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
                 .values());
+
+        // TODO: use context variable instead
+        if (!engine.getParameterService().is("routing.full.gap.analysis")) {
+            engine.getParameterService().saveParameter(parameterService.getExternalId(), parameterService.getNodeGroupId(),
+                    "routing.full.gap.analysis", "true", "RouterService");
+        }
         context.commit();
 
         if (engine.getParameterService().is(ParameterConstants.ROUTING_LOG_STATS_ON_BATCH_ERROR)) {
