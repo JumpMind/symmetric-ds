@@ -646,6 +646,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         throw new UnsupportedOperationException();
     }
 
+    public Date getEarliestTransactionStartTime() {
+        throw new UnsupportedOperationException();
+    }
+    
     public long getDatabaseTime() {
         try {
             String sql = "select current_timestamp from " + this.parameterService.getTablePrefix()
