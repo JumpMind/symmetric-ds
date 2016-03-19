@@ -32,6 +32,7 @@ SYM_OPTIONS="-Dfile.encoding=utf-8 \
 -Dsym.keystore.file=$SYM_HOME/security/keystore \
 -Djavax.net.ssl.trustStore=$SYM_HOME/security/cacerts \
 -Dlog4j.configuration=file:$SYM_HOME/conf/log4j.xml \
+-Djava.util.logging.config.file=conf/logging.properties \
 -Dsun.net.client.defaultReadTimeout=1800000 \
 -Dsun.net.client.defaultConnectTimeout=1800000 \
 -Djava.net.preferIPv4Stack=true \
