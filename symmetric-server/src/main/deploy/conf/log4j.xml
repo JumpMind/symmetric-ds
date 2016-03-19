@@ -132,7 +132,7 @@
     </category>        
     -->
     
-    <!-- In order to see http headers enable this
+    <!-- In order to see http headers enable this, and also edit logging.properties
     <category name="sun.net.www.protocol.http.HttpURLConnection">
         <priority value="ALL" />
     </category>                    
