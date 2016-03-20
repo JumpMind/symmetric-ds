@@ -41,6 +41,7 @@ typedef struct SymIncomingBatchService {
     int (*updateIncomingBatch)(struct SymIncomingBatchService *this, SymIncomingBatch *incomingBatch);
     int (*deleteIncomingBatch)(struct SymIncomingBatchService *this, SymIncomingBatch *incomingBatch);
     unsigned short (*isRecordOkBatchesEnabled)(struct SymIncomingBatchService *this);
+    int (*countIncomingBatchesInError)(struct SymIncomingBatchService *this);
     void (*destroy)(struct SymIncomingBatchService *this);
 } SymIncomingBatchService;
 
@@ -68,5 +69,7 @@ missing_delete_count = ?, skip_count = ?,  sql_state = ?, sql_code = ?, sql_mess
 where batch_id = ? and node_id = ?"
 
 #define SYM_SQL_DELETE_INCOMING_BATCH "delete from sym_incoming_batch where batch_id = ? and node_id = ?"
+
+#define SYM_SQL_COUNT_INCOMING_BATCHES_ERRORS "select count(*) from sym_incoming_batch where error_flag = 1"
 
 #endif

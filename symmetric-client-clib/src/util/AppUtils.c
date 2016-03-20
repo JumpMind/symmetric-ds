@@ -27,6 +27,24 @@ char * SymAppUtils_getHostName() {
     return name;
 }
 
+#ifdef SYM_WIN32
+char * SymAppUtils_getIpAddress() {
+	char *hostname = SymAppUtils_getHostName();
+    struct hostent *he = gethostbyname(SymAppUtils_getHostName());
+    free(hostname);
+    if (he != 0) {
+    	int i;
+		for (i = 0; he->h_addr_list[i] != 0; ++i) {
+			struct in_addr addr;
+			memcpy(&addr, he->h_addr_list[i], sizeof(struct in_addr));
+			if (strcmp(he->h_addr_list[i], "localhost") != 0) {
+				return inet_ntoa(addr);
+			}
+		}
+    }
+	return "127.0.0.1";
+}
+#else
 char * SymAppUtils_getIpAddress() {
     struct ifaddrs *ifaddr, *ifa;
     int rc;
@@ -49,7 +67,13 @@ char * SymAppUtils_getIpAddress() {
     }
     return ipaddr;
 }
+#endif
 
+#ifdef SYM_WIN32
+char * SymAppUtils_getTimezoneOffset() {
+	return "-00:00";
+}
+#else
 char * SymAppUtils_getTimezoneOffset() {
     time_t t = time(NULL);
     struct tm lt = {0};
@@ -73,28 +97,68 @@ char * SymAppUtils_getTimezoneOffset() {
 
     return timezoneOffset;
 }
+#endif
 
+#ifdef SYM_WIN32
+char * SymAppUtils_getOsName() {
+	return "Windows";
+}
+#else
 char * SymAppUtils_getOsName() {
     struct utsname unameData;
     uname(&unameData);
     return SymStringUtils_format("%s", unameData.sysname);
 }
+#endif
 
+#ifdef SYM_WIN32
+char * SymAppUtils_getOsVersion() {
+	DWORD version = GetVersion();
+	DWORD major = (DWORD) (LOBYTE(LOWORD(version)));
+	DWORD minor = (DWORD) (HIBYTE(LOWORD(version)));
+	return SymStringUtils_format("%d.%d", major, minor);
+}
+#else
 char * SymAppUtils_getOsVersion() {
     struct utsname unameData;
     uname(&unameData);
     return SymStringUtils_format("%s", unameData.release);
 }
+#endif
 
+#ifdef SYM_WIN32
+char * SymAppUtils_getOsArch() {
+	SYSTEM_INFO sysinfo;
+	GetSystemInfo(&sysinfo);
+	if (sysinfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64) {
+		return "x64";
+	} else if (sysinfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_ARM) {
+		return "ARM";
+	} else if (sysinfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64) {
+		return "IA64";
+	} else if (sysinfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL) {
+		return "x86";
+	}
+	return "UNK";
+}
+#else
 char * SymAppUtils_getOsArch() {
     struct utsname unameData;
     uname(&unameData);
     return SymStringUtils_format("%s", unameData.machine);
 }
+#endif
 
+#ifdef SYM_WIN32
+char * SymAppUtils_getOsUser() {
+	char username[100];
+	DWORD size = 100;
+	GetUserName(username, &size);
+	return SymStringUtils_rtrim(username);
+}
+#else
 char * SymAppUtils_getOsUser() {
     char *username = getlogin();
     return username;
 }
-
-
+#endif

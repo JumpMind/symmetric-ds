@@ -26,7 +26,7 @@
 #include <time.h>
 #include "util/StringBuilder.h"
 
-#define SYM_DATE_FORMAT "%F %T"
+#define SYM_DATE_FORMAT "%Y-%m-%d %H:%M:%S"
 
 typedef struct SymDate {
     char *dateTimeString;

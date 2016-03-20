@@ -62,6 +62,8 @@ public class ExtensionService extends AbstractService implements IExtensionServi
     private final static Logger log = LoggerFactory.getLogger(ExtensionService.class);
 
     protected ISymmetricEngine engine;
+    
+    protected SimpleClassCompiler simpleClassCompiler;
    
     protected Map<Class, Map<String, IExtensionPoint>> staticExtensionsByClassByName = new HashMap<Class, Map<String, IExtensionPoint>>();
     
@@ -72,6 +74,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
     public ExtensionService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.engine = engine;
+        simpleClassCompiler = new SimpleClassCompiler();
         setSqlMap(new ExtensionServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
 
@@ -103,7 +106,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         if (extension.getExtensionText() != null) {
             if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_JAVA)) {
                 try {
-                    Object ext = SimpleClassCompiler.getInstance().getCompiledClass(extension.getExtensionText());
+                    Object ext = simpleClassCompiler.getCompiledClass(extension.getExtensionText());
                     registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
                 } catch (Exception e) {
                     log.error("Error while compiling Java extension " + extension.getExtensionId(), e);
@@ -290,6 +293,10 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         refresh();
     }
 
+    public Object getCompiledClass(String javaCode) throws Exception {
+        return simpleClassCompiler.getCompiledClass(javaCode);
+    }
+    
     class ExtensionRowMapper implements ISqlRowMapper<Extension> {
         @Override
         public Extension mapRow(Row row) {

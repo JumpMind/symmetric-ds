@@ -86,12 +86,23 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         if ("YEAR".equals(typeName)) {
             // it is safe to map a YEAR to INTEGER
             return Types.INTEGER;
-        } else if ("LONGTEXT".equals(typeName)) {
-            return Types.CLOB;
-        } else if ("MEDIUMTEXT".equals(typeName)) {
-            return Types.LONGVARCHAR;
-        } else if ("TINYTEXT".equals(typeName)) {
-            return Types.LONGVARCHAR;
+        } else if (typeName != null && typeName.endsWith("TEXT")) {
+            String catalog = (String) values.get("TABLE_CAT");
+            String tableName = (String) values.get("TABLE_NAME");
+            String columnName = (String) values.get("COLUMN_NAME");
+            String collation = platform.getSqlTemplate().queryForString("select collation_name from information_schema.columns " +
+                    "where table_schema = ? and table_name = ? and column_name = ?",
+                    catalog, tableName, columnName);
+            boolean isBinary = collation != null && collation.equalsIgnoreCase("utf8_bin");
+
+            if ("LONGTEXT".equals(typeName)) {
+                return isBinary ? Types.BLOB : Types.CLOB;
+            } else if ("MEDIUMTEXT".equals(typeName)) {
+                return isBinary ? Types.BLOB : Types.LONGVARCHAR;
+            } else if ("TINYTEXT".equals(typeName)) {
+                return isBinary ? Types.BLOB : Types.LONGVARCHAR;
+            }
+            return super.mapUnknownJdbcTypeForColumn(values);
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }

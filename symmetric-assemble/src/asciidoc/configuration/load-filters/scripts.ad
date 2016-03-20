@@ -27,7 +27,7 @@ Batch Rollback Script:: The script to execute if the batch rolls back.
 Handle Error Script:: A script to execute if data cannot be processed.
 
 .Variables available within scripts
-[cols="3,^1,^1,5"]
+[cols="3,^1,^1,^1,5"]
 |===
 |Variable|BSH|SQL|JAVA|Description
 

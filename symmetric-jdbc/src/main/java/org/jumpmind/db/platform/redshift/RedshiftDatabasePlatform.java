@@ -20,12 +20,14 @@
  */
 package org.jumpmind.db.platform.redshift;
 
+import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.SqlTemplateSettings;
@@ -83,4 +85,7 @@ public class RedshiftDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return sqlScriptReplacementTokens;
     }
 
+    public boolean isClob(int type) {
+        return type == Types.CLOB;
+    }
 }

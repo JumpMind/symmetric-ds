@@ -289,11 +289,30 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
             row.addContent(dataElement);
             dataElement.setAttribute("key", col);
             if (data[i] != null) {
-                dataElement.setText(data[i]);
+                dataElement.setText(replaceInvalidChars(data[i]));
             } else {
                 dataElement.setAttribute("nil", "true", getXmlNamespace());
             }
         }
+    }
+
+    public String replaceInvalidChars(String in) {
+        if (in == null || in.equals("")) {
+            return "";
+        }
+        
+        StringBuffer out = new StringBuffer();
+        char current;
+        for (int i = 0; i < in.length(); i++) {
+            current = in.charAt(i);
+            if ((current == 0x9) || (current == 0xA) || (current == 0xD) ||
+                ((current >= 0x20) && (current <= 0xD7FF)) ||
+                ((current >= 0xE000) && (current <= 0xFFFD)) ||
+                ((current >= 0x10000) && (current <= 0x10FFFF))) {
+                out.append(current);
+            }
+        }
+        return out.toString();
     }
 
     /**

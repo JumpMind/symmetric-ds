@@ -22,6 +22,7 @@ package org.jumpmind.db.platform.db2;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class Db2zOsDatabasePlatform extends Db2DatabasePlatform {
@@ -29,5 +30,15 @@ public class Db2zOsDatabasePlatform extends Db2DatabasePlatform {
     public Db2zOsDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
     }
+    
+    @Override
+    public String getName() {
+        return DatabaseNamesConstants.DB2ZOS;
+    }
+    
+    @Override
+    protected Db2DdlReader createDdlReader() {
+        return new Db2zOsDdlReader(this);
+    }    
 
 }

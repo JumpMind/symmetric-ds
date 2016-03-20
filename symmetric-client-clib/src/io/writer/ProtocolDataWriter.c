@@ -56,6 +56,7 @@ static void SymProtocolDataWriter_startBatch(SymProtocolDataWriter *this, SymBat
     if (this->isFirstBatch) {
         this->isFirstBatch = 0;
         SymProtocolDataWriter_println(this->sb, SYM_CSV_NODEID, this->sourceNodeId);
+        SymProtocolDataWriter_println(this->sb, SYM_CSV_BINARY, SYM_BINARY_ENCODING_HEX);
     }
     if (!SymStringUtils_isBlank(batch->channelId)) {
         SymProtocolDataWriter_println(this->sb, SYM_CSV_CHANNEL, batch->channelId);
@@ -75,6 +76,8 @@ static void SymProtocolDataWriter_endBatch(SymProtocolDataWriter *this, SymBatch
 
 static void SymProtocolDataWriter_startTable(SymProtocolDataWriter *this, SymTable *table, SymBatch *batch) {
     if (!batch->isIgnore) {
+        this->table = table;
+
         SymProtocolDataWriter_println(this->sb, SYM_CSV_CATALOG, table->catalog);
         SymProtocolDataWriter_println(this->sb, SYM_CSV_SCHEMA, table->schema);
 
@@ -117,14 +120,16 @@ static void SymProtocolDataWriter_writeData(SymProtocolDataWriter *this, SymTabl
 }
 
 size_t SymProtocolDataWriter_process(SymProtocolDataWriter *this, char *buffer, size_t size, size_t count) {
-    SymBatch *batch;
-    SymTable *table;
-    SymData *data;
+    SymBatch *batch = NULL;
+    SymTable *table = NULL;
+    SymData *data = NULL;
     unsigned short bufferFull = 0;
 
     while (!bufferFull && (this->batch || (batch = this->reader->nextBatch(this->reader)))) {
         if (!this->batch) {
             SymProtocolDataWriter_startBatch(this, batch);
+        } else {
+           batch = this->batch;
         }
 
         while (!bufferFull && (this->table || (table = this->reader->nextTable(this->reader)))) {
@@ -157,7 +162,7 @@ size_t SymProtocolDataWriter_process(SymProtocolDataWriter *this, char *buffer, 
 
     if (numBytes > 0) {
         memcpy(buffer, this->sb->str, numBytes);
-        SymLog_debug("Writing data: %s\n", this->sb->str);
+        SymLog_debug("Writing data: %.*s\n", numBytes, this->sb->str);
     }
 
     if (bufferFull) {

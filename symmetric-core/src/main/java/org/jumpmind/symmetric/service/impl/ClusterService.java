@@ -24,6 +24,7 @@ import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PULL;
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PUSH;
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_SCAN;
 import static org.jumpmind.symmetric.service.ClusterConstants.HEARTBEAT;
 import static org.jumpmind.symmetric.service.ClusterConstants.INITIAL_LOAD_EXTRACT;
 import static org.jumpmind.symmetric.service.ClusterConstants.PULL;
@@ -81,7 +82,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         if (isClusteringEnabled()) {
             for (String action : new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING, PURGE_STATISTICS, SYNCTRIGGERS,
                     PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL, FILE_SYNC_PUSH, FILE_SYNC_TRACKER,
-                    INITIAL_LOAD_EXTRACT, OFFLINE_PUSH, OFFLINE_PULL }) {
+                    FILE_SYNC_SCAN, INITIAL_LOAD_EXTRACT, OFFLINE_PUSH, OFFLINE_PULL }) {
                 if (allLocks.get(action) == null) {
                     initLockTable(action, TYPE_CLUSTER);
                 }
@@ -266,19 +267,18 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     protected boolean unlockCluster(String action, String serverId) {
-        String lastLockingServerId = serverId.equals(Lock.STOPPED) ? null : serverId;
-        return sqlTemplate.update(getSql("releaseClusterLockSql"), new Object[] { new Date(), lastLockingServerId, action,
+        return sqlTemplate.update(getSql("releaseClusterLockSql"), new Object[] { action,
                 TYPE_CLUSTER, serverId }) > 0;
     }
 
     protected boolean unlockShared(final String action) {
         return sqlTemplate.update(getSql("releaseSharedLockSql"), new Object[] {
-                new Date(), getServerId(), action, TYPE_SHARED }) == 1;
+                action, TYPE_SHARED }) == 1;
     }
 
     protected boolean unlockExclusive(final String action) {
         return sqlTemplate.update(getSql("releaseExclusiveLockSql"), new Object[] {
-                new Date(), getServerId(), action, TYPE_EXCLUSIVE }) == 1;
+                action, TYPE_EXCLUSIVE }) == 1;
     }
 
     public boolean isClusteringEnabled() {

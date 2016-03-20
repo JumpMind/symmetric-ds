@@ -337,6 +337,7 @@ SymNodeService * SymNodeService_new(SymNodeService *this, SymDatabasePlatform *p
         this = (SymNodeService *) calloc(1, sizeof(SymNodeService));
     }
     this->platform = platform;
+    this->lastRestartTime = SymDate_new();
     this->findIdentity = (void *) &SymNodeService_findIdentity;
     this->findIdentityWithCache = (void *) &SymNodeService_findIdentityWithCache;
     this->findNodeSecurity = (void *) &SymNodeService_findNodeSecurity;

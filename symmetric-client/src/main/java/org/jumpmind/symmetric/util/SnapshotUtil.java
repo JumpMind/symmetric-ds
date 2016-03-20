@@ -227,6 +227,9 @@ public class SnapshotUtil {
         extract(export, 5000, "order by start_id, end_id desc", new File(tmpDir, "sym_data_gap.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_DATA_GAP));
 
+        extract(export, 5000, "order by relative_dir, file_name", new File(tmpDir, "sym_file_snapshot.csv"), 
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));        
+
         if (engine.getSymmetricDialect() instanceof FirebirdSymmetricDialect) {
             final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements",
                     "mon$io_stats", "mon$record_stats", "mon$memory_usage", "mon$call_stack", "mon$context_variables"};

@@ -97,6 +97,10 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();        
         String tablePrefix = getTablePrefix();
         try {
+        	String lockEscalationClause = "";
+        	if (parameterService.is(ParameterConstants.MSSQL_LOCK_ESCALATION_DISABLED, true)) {
+        		lockEscalationClause = "or t.lock_escalation != 1  or i.allow_page_locks = 'true' ";
+        	}
             if (parameterService.is(ParameterConstants.MSSQL_ROW_LEVEL_LOCKS_ONLY, true) && sqlTemplate
                     .queryForInt("select count(*) from sys.indexes i inner join sys.tables t on t.object_id=i.object_id where t.name in ('"
                             + tablePrefix.toLowerCase()
@@ -105,8 +109,8 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                             + "_data', '"
                             + tablePrefix.toLowerCase()
                             + "_data_event') and (i.allow_row_locks !='true' "
-                            + "or t.lock_escalation != 1 "
-                            + "or i.allow_page_locks = 'true')") > 0) {
+                            + lockEscalationClause
+                            + ")") > 0) {
                 log.info("Updating indexes to prevent lock escalation");
                 
                 String dataTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_data");
@@ -120,19 +124,21 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 sqlTemplate.update("ALTER INDEX ALL ON " + outgoingBatchTable
                         + " SET (ALLOW_ROW_LOCKS = ON)");
                 
-                sqlTemplate.update("ALTER INDEX ALL ON " + dataTable
-                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
-                sqlTemplate.update("ALTER INDEX ALL ON " + dataEventTable
-                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
-                sqlTemplate.update("ALTER INDEX ALL ON " + outgoingBatchTable
-                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
-                
-                sqlTemplate.update("ALTER TABLE " + dataTable
-                        + " SET (LOCK_ESCALATION = DISABLE)");
-                sqlTemplate.update("ALTER TABLE " + dataEventTable
-                        + " SET (LOCK_ESCALATION = DISABLE)");
-                sqlTemplate.update("ALTER TABLE " + outgoingBatchTable
-                        + " SET (LOCK_ESCALATION = DISABLE)");
+                if (parameterService.is(ParameterConstants.MSSQL_LOCK_ESCALATION_DISABLED, true)) {
+	                sqlTemplate.update("ALTER INDEX ALL ON " + dataTable
+	                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
+	                sqlTemplate.update("ALTER INDEX ALL ON " + dataEventTable
+	                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
+	                sqlTemplate.update("ALTER INDEX ALL ON " + outgoingBatchTable
+	                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
+	              
+	                sqlTemplate.update("ALTER TABLE " + dataTable
+	                        + " SET (LOCK_ESCALATION = DISABLE)");
+	                sqlTemplate.update("ALTER TABLE " + dataEventTable
+	                        + " SET (LOCK_ESCALATION = DISABLE)");
+	                sqlTemplate.update("ALTER TABLE " + outgoingBatchTable
+	                        + " SET (LOCK_ESCALATION = DISABLE)");
+                }
                 return true;
             } else {
                 return false;
@@ -336,8 +342,10 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public String getSyncTriggersExpression() {
-        return "$(defaultCatalog)dbo." + parameterService.getTablePrefix()
-                + "_triggers_disabled() = 0";
+        //return "$(defaultCatalog)dbo." + parameterService.getTablePrefix()
+        //        + "_triggers_disabled() = 0";
+        return "dbo." + parameterService.getTablePrefix()
+        	+ "_triggers_disabled() = 0";
     }
 
     @Override

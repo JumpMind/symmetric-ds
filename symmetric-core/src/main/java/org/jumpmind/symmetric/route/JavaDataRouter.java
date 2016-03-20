@@ -29,7 +29,6 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.util.SimpleClassCompiler;
 
 /**
  * This java data router is invoked when the router_type is 'java'. The router_expression is Java code for the routeToNodes() method
@@ -75,7 +74,7 @@ public class JavaDataRouter extends AbstractDataRouter implements IBuiltInExtens
         if (javaRouter == null) {
             long ts = System.currentTimeMillis();
             String javaCode = CODE_START + router.getRouterExpression() + CODE_END;    
-            javaRouter = (IDataRouter) SimpleClassCompiler.getInstance().getCompiledClass(javaCode);
+            javaRouter = (IDataRouter) engine.getExtensionService().getCompiledClass(javaCode);
             context.getContextCache().put(ROUTER_KEY, javaRouter);
             context.incrementStat(System.currentTimeMillis() - ts, "javarouter.compile.ms");
         }

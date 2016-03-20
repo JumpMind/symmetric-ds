@@ -171,6 +171,7 @@ public abstract class WrapperService {
                 startCount++;
             } else {
                 try {
+                    logger.log(Level.INFO, "Watching output of java process");
                     childReader = new BufferedReader(new InputStreamReader(child.getInputStream()));
                     String line = null;
 
@@ -190,11 +191,13 @@ public abstract class WrapperService {
                             restartDetected = true;
                         }
                     }
+                    logger.log(Level.INFO, "End of output from java process");
                 } catch (IOException e) {
                     logger.log(Level.SEVERE, "Error while reading from process");
                 }
 
                 if (restartDetected) {
+                    logger.log(Level.INFO, "Restart detected");
                     restartDetected = false;
                     startProcess = true;
                 } else if (keepRunning) {

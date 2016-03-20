@@ -321,7 +321,7 @@ public class RestService {
      * 
      */
     @ApiOperation(value = "Execute the specified SQL statement on the single engine")
-    @RequestMapping(value = "engine/querynode", method = RequestMethod.GET)
+    @RequestMapping(value = "engine/querynode", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final QueryResults getQueryNode(@RequestParam(value = "query") String sql) {
@@ -332,7 +332,7 @@ public class RestService {
      * Executes a select statement on the node and returns results.
      */
     @ApiOperation(value = "Execute the specified SQL statement for the specified engine")
-    @RequestMapping(value = "engine/{engine}/querynode", method = RequestMethod.GET)
+    @RequestMapping(value = "engine/{engine}/querynode", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final QueryResults getQueryNode(@PathVariable("engine") String engineName,
@@ -1426,7 +1426,7 @@ public class RestService {
     }
 
     private void uninstallImpl(ISymmetricEngine engine) {
-        engine.uninstall();
+        getSymmetricEngineHolder().uninstallEngine(engine);
     }
 
     private void reinitializeImpl(ISymmetricEngine engine) {

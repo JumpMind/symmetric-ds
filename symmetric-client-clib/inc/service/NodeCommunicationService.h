@@ -37,6 +37,7 @@ typedef struct SymNodeCommunicationService {
     void (*destroy)(struct SymNodeCommunicationService *this);
 } SymNodeCommunicationService;
 
-SymNodeCommunicationService * SymNodeCommunicationService_new(SymNodeCommunicationService *this, SymNodeService * nodeService);
+SymNodeCommunicationService * SymNodeCommunicationService_new(SymNodeCommunicationService *this,
+        SymNodeService * nodeService, SymParameterService *parameterService);
 
 #endif

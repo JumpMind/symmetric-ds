@@ -246,6 +246,7 @@ project(':symmetric-server') {
                     exclude 'bin/dbfill'
                     exclude 'bin/jmx'
                     exclude 'bin/dbsql'
+                    exclude 'bin/dbcompare'
                     exclude 'bin/sym_service'
                     exclude 'bin/setenv'
                 }
@@ -257,6 +258,7 @@ project(':symmetric-server') {
                     include 'bin/dbfill'
                     include 'bin/jmx'
                     include 'bin/dbsql'
+                    include 'bin/dbcompare'
                     include 'bin/sym_service'
                     include 'bin/setenv'
                     fileMode 0755

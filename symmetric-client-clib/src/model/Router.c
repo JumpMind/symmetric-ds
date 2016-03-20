@@ -36,6 +36,11 @@ SymRouter * SymRouter_new(SymRouter *this) {
     if (this == NULL) {
         this = (SymRouter *) calloc(1, sizeof(SymRouter));
     }
+    this->routerType = "default";
+    this->syncOnInsert = 1;
+    this->syncOnUpdate = 1;
+    this->syncOnDelete = 1;
+
     this->equals = (void *) &SymRouter_equals;
     this->destroy = (void *) &SymRouter_destroy;
     return this;

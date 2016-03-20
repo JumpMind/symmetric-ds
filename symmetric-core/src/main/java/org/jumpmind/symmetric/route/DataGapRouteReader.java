@@ -74,7 +74,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     protected ISymmetricEngine engine;
 
-    protected boolean reading = true;
+    protected volatile boolean reading = true;
     
     protected int peekAheadCount = 1000;
     
@@ -215,8 +215,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
             if (cursor != null) {
                 cursor.close();
             }
-            reading = false;
             copyToQueue(new EOD());
+            reading = false;
         }
 
     }
@@ -252,6 +252,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 throw new SymmetricException("The read of the data to route queue has timed out");
             } else if (data instanceof EOD) {
                 data = null;
+                break;
             } 
             
         } while (data == null && reading);

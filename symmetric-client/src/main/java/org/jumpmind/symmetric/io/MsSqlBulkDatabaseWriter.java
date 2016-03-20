@@ -216,7 +216,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	            String sql = String.format("BULK INSERT " + 
 	            		this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) + 
 	            		" FROM '" + filename) + "'" +
-	            		" WITH ( FIELDTERMINATOR='"+StringEscapeUtils.escapeJava(fieldTerminator)+"', KEEPIDENTITY" + 
+	            		" WITH (DATAFILETYPE='widechar', FIELDTERMINATOR='"+StringEscapeUtils.escapeJava(fieldTerminator)+"', KEEPIDENTITY" + 
 	            		(fireTriggers ? ", FIRE_TRIGGERS" : "") + rowTerminatorString +");";
 	            Statement stmt = c.createStatement();
 	
