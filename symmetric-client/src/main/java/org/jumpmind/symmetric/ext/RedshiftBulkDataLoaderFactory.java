@@ -76,7 +76,7 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory, ISymme
                     maxRowsBeforeFlush, maxBytesBeforeFlush, bucket, accessKey, secretKey, appendToCopyCommand, s3Endpoint);
 
         } catch (Exception e) {
-            log.warn("Failed to create the mongo database writer.  Check to see if all of the required jars have been added");
+            log.warn("Failed to create the redshift database writer.  Check to see if all of the required jars have been added");
             if (e instanceof RuntimeException) {
                 throw (RuntimeException)e;
             } else {
