@@ -95,7 +95,11 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         this.settings = settings == null ? new SqlTemplateSettings() : settings;
         this.lobHandler = lobHandler == null ? new SymmetricLobHandler(new DefaultLobHandler())
                 : lobHandler;
-        this.isolationLevel = databaseInfo.getMinIsolationLevelToPreventPhantomReads();
+        if (settings.getOverrideIsolationLevel() >= 0) {
+            this.isolationLevel = settings.getOverrideIsolationLevel();
+        } else {
+            this.isolationLevel = databaseInfo.getMinIsolationLevelToPreventPhantomReads();
+        }
     }
 
     protected Connection getConnection() throws SQLException {
@@ -346,7 +350,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public int update(final boolean autoCommit, final boolean failOnError, final boolean failOnDrops,
             final boolean failOnSequenceCreate, final int commitRate, final ISqlResultsListener resultsListener, final ISqlStatementSource source) {
         return execute(new IConnectionCallback<Integer>() {
-            @SuppressWarnings("resource")
             public Integer execute(Connection con) throws SQLException {
                 int totalUpdateCount = 0;
                 boolean oldAutoCommitSetting = con.getAutoCommit();

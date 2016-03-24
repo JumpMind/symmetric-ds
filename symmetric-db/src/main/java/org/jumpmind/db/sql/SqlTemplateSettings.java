@@ -26,6 +26,7 @@ public class SqlTemplateSettings {
     protected int queryTimeout;
     protected int batchSize = 100;
     protected boolean readStringsAsBytes;
+    protected int overrideIsolationLevel = -1;
     
     public SqlTemplateSettings() {     
     }      
@@ -60,6 +61,14 @@ public class SqlTemplateSettings {
     
     public boolean isReadStringsAsBytes() {
         return readStringsAsBytes;
+    }
+
+    public int getOverrideIsolationLevel() {
+        return overrideIsolationLevel;
+    }
+
+    public void setOverrideIsolationLevel(int overrideIsolationLevel) {
+        this.overrideIsolationLevel = overrideIsolationLevel;
     }
 
 }
