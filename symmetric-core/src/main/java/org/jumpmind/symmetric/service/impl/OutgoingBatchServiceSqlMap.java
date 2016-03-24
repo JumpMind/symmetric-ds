@@ -110,16 +110,16 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 "select b.load_id, b.node_id, b.status, b.create_by, max(error_flag) as error_flag, count(*) as cnt, min(b.create_time) as create_time,          "
               + "       max(b.last_update_time) as last_update_time, min(b.batch_id) as current_batch_id,  "
               + "       min(b.data_event_count) as current_data_event_count                                                                                      "
-              + "from sym_outgoing_batch b inner join                                                                                                            "
-              + "     sym_data_event e on b.batch_id=e.batch_id inner join                                                                                       "
-              + "     sym_data d on d.data_id=e.data_id                                                                                                          "
+              + "from $(outgoing_batch) b inner join                                                                                                            "
+              + "     $(data_event) e on b.batch_id=e.batch_id inner join                                                                                       "
+              + "     $(data) d on d.data_id=e.data_id                                                                                                          "
               + "where b.channel_id='reload'                                                                                                                     "
               + "group by b.load_id, b.node_id, b.status, b.create_by                                                                              "
               + "order by b.load_id desc                                                                                                                         ");
 
         putSql("getNextOutgoingBatchForEachNodeSql",
                 "select min(b.batch_id) as batch_id, b.node_id, b.status, b.channel_id        "
-              + "  from sym_outgoing_batch b where status != 'OK' and status != 'RT'          "
+              + "  from $(outgoing_batch) b where status != 'OK' and status != 'RT'          "
               + "  group by b.node_id, b.status, b.channel_id");
 
         putSql("deleteOutgoingBatchesForNodeSql", 
