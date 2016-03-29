@@ -54,7 +54,6 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.job.PushHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Channel;
@@ -1407,7 +1406,9 @@ public class DataService extends AbstractService implements IDataService {
             if (maxDataEventId > 0) {
                 maxDataEventId++;
             }
-            insertDataGap(new DataGap(maxDataEventId, maxDataEventId + maxDataToSelect));
+            DataGap gap = new DataGap(maxDataEventId, maxDataEventId + maxDataToSelect);
+            insertDataGap(gap);
+            log.info("Inserting last data gap: {}", gap);
             gaps = findDataGaps();
         }
         return gaps;
