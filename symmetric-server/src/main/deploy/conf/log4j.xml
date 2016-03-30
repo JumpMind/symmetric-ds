@@ -113,7 +113,7 @@
 
     <!-- Uncomment to see SQL statements from loading batches -->
     <!--
-    <category name="org.jumpmind.symmetric.io.data.writer.DatabaseWriter">
+    <category name="org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter">
         <priority value="DEBUG" />
     </category>
     -->
