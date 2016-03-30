@@ -386,7 +386,21 @@ public class SymmetricWebServer {
             SslContextFactory sslConnectorFactory = new SslContextFactory();
             sslConnectorFactory.setKeyManagerPassword(keyStorePassword);
             /* Prevent POODLE attack */
-            sslConnectorFactory.addExcludeProtocols("SSLv3");
+            String ignoredProtocols = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_PROTOCOLS);
+            if (ignoredProtocols != null && ignoredProtocols.length() > 0) {
+            	String[] protocols = ignoredProtocols.split(",");
+            	sslConnectorFactory.addExcludeProtocols(protocols);
+            }
+            else {
+            	sslConnectorFactory.addExcludeProtocols("SSLv3");
+            }
+            
+            String ignoredCiphers = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_CIPHERS);
+            if (ignoredCiphers != null && ignoredCiphers.length() > 0) {
+            	String[] ciphers = ignoredCiphers.split(",");
+            	sslConnectorFactory.addExcludeCipherSuites(ciphers);
+            }
+            
             sslConnectorFactory.setCertAlias(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS,
                     SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
             sslConnectorFactory.setKeyStore(securityService.getKeyStore());
