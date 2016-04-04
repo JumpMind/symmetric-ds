@@ -88,6 +88,8 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("findMinDataSql", ""
                 + "select min(data_id) from $(data) where data_id >= ?");
 
+        putSql("countDataGapsByStatusSql", "select count(*) from $(data_gap) where status = ?");
+
         putSql("findDataGapsByStatusSql",
                 ""
                         + "select start_id, end_id, create_time from $(data_gap) where status=? order by start_id asc   ");

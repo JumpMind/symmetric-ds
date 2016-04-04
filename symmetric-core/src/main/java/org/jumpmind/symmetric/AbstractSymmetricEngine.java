@@ -79,8 +79,10 @@ import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
+import org.jumpmind.symmetric.service.IMailService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.INotificationService;
 import org.jumpmind.symmetric.service.IOfflinePullService;
 import org.jumpmind.symmetric.service.IOfflinePushService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -106,8 +108,10 @@ import org.jumpmind.symmetric.service.impl.FileSyncService;
 import org.jumpmind.symmetric.service.impl.GroupletService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
 import org.jumpmind.symmetric.service.impl.LoadFilterService;
+import org.jumpmind.symmetric.service.impl.MailService;
 import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
 import org.jumpmind.symmetric.service.impl.NodeService;
+import org.jumpmind.symmetric.service.impl.NotificationService;
 import org.jumpmind.symmetric.service.impl.OfflinePullService;
 import org.jumpmind.symmetric.service.impl.OfflinePushService;
 import org.jumpmind.symmetric.service.impl.OutgoingBatchService;
@@ -219,7 +223,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected INodeCommunicationService nodeCommunicationService;
     
-    protected IFileSyncService fileSyncService;    
+    protected IFileSyncService fileSyncService;
+    
+    protected INotificationService notificationService;
+    
+    protected IMailService mailService;
 
     protected Date lastRestartTime = null;
 
@@ -344,6 +352,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 nodeService, dataLoaderService, clusterService, nodeCommunicationService, 
                 configurationService, extensionService, offlineTransportManager);
         this.fileSyncService = new FileSyncService(this);
+        this.notificationService = new NotificationService(parameterService, symmetricDialect, extensionService);
+        this.mailService = new MailService(parameterService, symmetricDialect);
         this.jobManager = createJobManager();
 
         extensionService.addExtensionPoint(new DefaultOfflineServerListener(
@@ -1044,6 +1054,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return extensionService;
     }
 
+    public INotificationService getNotificationService() {
+    	return notificationService;
+    }
+    
+    public IMailService getMailService() {
+        return mailService;
+    }
+
     public IStagingManager getStagingManager() {
         return stagingManager;
     }
@@ -1059,7 +1077,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public IGroupletService getGroupletService() {
         return groupletService;
     }
-
+    
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
         Set<String> keys = new HashSet<String>(map.keySet());
         for (String key : keys) {

@@ -56,6 +56,7 @@ final public class ParameterConstants {
     public final static String START_STATISTIC_FLUSH_JOB = "start.stat.flush.job";
     public final static String START_STAGE_MGMT_JOB = "start.stage.management.job";
     public final static String START_WATCHDOG_JOB = "start.watchdog.job";
+    public final static String START_NOTIFICATION_JOB = "start.notification.job";
 
     public final static String PULL_THREAD_COUNT_PER_SERVER = "pull.thread.per.server.count";
     public final static String PULL_MINIMUM_PERIOD_MS = "pull.period.minimum.ms";
@@ -310,6 +311,15 @@ final public class ParameterConstants {
     public final static String EXTENSIONS_XML = "extensions.xml";
     
     public final static String DATA_CREATE_TIME_TIMEZONE = "data.create_time.timezone";
+
+    public static final String SMTP_HOST = "smtp.host";
+    public static final String SMTP_TRANSPORT = "smtp.transport";
+    public static final String SMTP_PORT = "smtp.port";
+    public static final String SMTP_FROM = "smtp.from";
+    public static final String SMTP_USER = "smtp.user";
+    public static final String SMTP_PASSWORD = "smtp.password";
+    public static final String SMTP_USE_STARTTLS = "smtp.starttls";    
+    public static final String SMTP_USE_AUTH = "smtp.auth";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

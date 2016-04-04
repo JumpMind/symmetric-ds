@@ -111,6 +111,8 @@ public interface IDataService {
     
     public void checkForAndUpdateMissingChannelIds(long firstDataId, long lastDataId);
 
+    public long countDataGapsByStatus(DataGap.Status status);
+
     public List<DataGap> findDataGapsByStatus(DataGap.Status status);
     
     public List<DataGap> findDataGaps();

@@ -54,7 +54,6 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.job.PushHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Channel;
@@ -1382,6 +1381,10 @@ public class DataService extends AbstractService implements IDataService {
         return data;
     }
 
+    public long countDataGapsByStatus(DataGap.Status status) {
+        return sqlTemplate.queryForLong(getSql("countDataGapsByStatusSql"), new Object[] { status.name() });
+    }
+    
     public List<DataGap> findDataGapsByStatus(DataGap.Status status) {
         return sqlTemplate.query(getSql("findDataGapsByStatusSql"), new ISqlRowMapper<DataGap>() {
             public DataGap mapRow(Row rs) {

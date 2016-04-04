@@ -1,0 +1,18 @@
+
+=== Mail Server
+
+A mail server can be configured for sending email notifications.
+
+Target Nodes:: The node group ID that will use this configuration.
+Hostname:: The hostname or IP address of the mail server to contact for sending mail.
+Transport:: The transport mechanism is either SMTP (Simple Mail Transfer Protocol) or SMTPS (encrypted with SSL). 
+Port:: The default port for SMTP is 25, while the default port for SMTPS is 465.
+Use StartTLS:: After connecting over SMTP, the TLS protocol is used to encrypt content.
+Use Authentication:: The mail server requires a login and password before email can be sent.
+User:: The user login to use for authentication.
+Password:: The login password to use for authentication.
+
+ifdef::pro[]
+The "Test" button will use the current settings on the screen to connect to the mail server with the configured
+transport and report any errors.
+endif::pro[]
