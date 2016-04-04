@@ -1410,7 +1410,9 @@ public class DataService extends AbstractService implements IDataService {
             if (maxDataEventId > 0) {
                 maxDataEventId++;
             }
-            insertDataGap(new DataGap(maxDataEventId, maxDataEventId + maxDataToSelect));
+            DataGap gap = new DataGap(maxDataEventId, maxDataEventId + maxDataToSelect);
+            insertDataGap(gap);
+            log.info("Inserting last data gap: {}", gap);
             gaps = findDataGaps();
         }
         return gaps;

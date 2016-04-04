@@ -20,6 +20,7 @@
  */
 package org.jumpmind.db.sql;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPLTZ;
 import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPTZ;
 
@@ -95,7 +96,11 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         this.settings = settings == null ? new SqlTemplateSettings() : settings;
         this.lobHandler = lobHandler == null ? new SymmetricLobHandler(new DefaultLobHandler())
                 : lobHandler;
-        this.isolationLevel = databaseInfo.getMinIsolationLevelToPreventPhantomReads();
+        if (settings.getOverrideIsolationLevel() >= 0) {
+            this.isolationLevel = settings.getOverrideIsolationLevel();
+        } else {
+            this.isolationLevel = databaseInfo.getMinIsolationLevelToPreventPhantomReads();
+        }
     }
 
     protected Connection getConnection() throws SQLException {
@@ -357,48 +362,47 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     int statementCount = 0;
                     for (String statement = source.readSqlStatement(); statement != null; statement = source
                             .readSqlStatement()) {
-                        logSql(statement, null);
-                        try {
-                            boolean hasResults = stmt.execute(statement);
-                            int updateCount = stmt.getUpdateCount();
-                            totalUpdateCount += updateCount;
-                            int rowsRetrieved = 0;
-                            if (hasResults) {
-                                ResultSet rs = null;
-                                try {
-                                    rs = stmt.getResultSet();
-                                    while (rs.next()) {
-                                        rowsRetrieved++;
+                        if (isNotBlank(statement)) {
+                            logSql(statement, null);
+                            try {
+                                boolean hasResults = stmt.execute(statement);
+                                int updateCount = stmt.getUpdateCount();
+                                totalUpdateCount += updateCount;
+                                int rowsRetrieved = 0;
+                                if (hasResults) {
+                                    ResultSet rs = null;
+                                    try {
+                                        rs = stmt.getResultSet();
+                                        while (rs.next()) {
+                                            rowsRetrieved++;
+                                        }
+                                    } finally {
+                                        close(rs);
                                     }
-                                } finally {
-                                    close(rs);
+                                }
+                                if (resultsListener != null) {
+                                    resultsListener.sqlApplied(statement, updateCount, rowsRetrieved, statementCount);
+                                }
+                                statementCount++;
+                                if (statementCount % commitRate == 0 && !autoCommit) {
+                                    con.commit();
+                                }
+                            } catch (SQLException ex) {
+                                boolean isDrop = statement.toLowerCase().trim().startsWith("drop");
+                                boolean isSequenceCreate = statement.toLowerCase().trim().startsWith("create sequence");
+                                if (resultsListener != null) {
+                                    resultsListener.sqlErrored(statement, translate(statement, ex), statementCount, isDrop, isSequenceCreate);
+                                }
+
+                                if ((isDrop && !failOnDrops) || (isSequenceCreate && !failOnSequenceCreate)) {
+                                    log.debug("{}.  Failed to execute: {}", ex.getMessage(), statement);
+                                } else {
+                                    log.warn("{}.  Failed to execute: {}", ex.getMessage(), statement);
+                                    if (failOnError) {
+                                        throw ex;
+                                    }
                                 }
                             }
-                            if (resultsListener != null) {
-                                resultsListener.sqlApplied(statement, updateCount, rowsRetrieved,
-                                        statementCount);
-                            }
-                            statementCount++;
-                            if (statementCount % commitRate == 0 && !autoCommit) {
-                                con.commit();
-                            }
-                        } catch (SQLException ex) {
-                            boolean isDrop = statement.toLowerCase().trim().startsWith("drop");
-                            boolean isSequenceCreate = statement.toLowerCase().trim().startsWith("create sequence");
-                            if (resultsListener != null) {
-                                resultsListener.sqlErrored(statement, translate(statement, ex),
-                                        statementCount, isDrop, isSequenceCreate);
-                            }
-
-                            if ((isDrop && !failOnDrops) || (isSequenceCreate && !failOnSequenceCreate)) {
-                                log.debug("{}.  Failed to execute: {}", ex.getMessage(), statement);
-                            } else {
-                                log.warn("{}.  Failed to execute: {}", ex.getMessage(), statement);
-                                if (failOnError) {
-                                    throw ex;
-                                }
-                            }
-
                         }
                     }
 
