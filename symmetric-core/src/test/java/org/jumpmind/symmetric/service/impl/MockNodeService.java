@@ -76,6 +76,11 @@ public class MockNodeService implements INodeService {
     public NetworkedNode getRootNetworkedNode() {
         return null;
     }
+    
+    @Override
+    public String getExternalId(String nodeId) {
+        return null;
+    }
 
     public List<String> findOfflineNodeIds(long minutesOffline) {
         return null;
@@ -286,14 +291,6 @@ public class MockNodeService implements INodeService {
 
     public Map<String, Date> findLastHeartbeats() {
         return null;
-    }
-
-    /* (non-Javadoc)
-     * @see org.jumpmind.symmetric.service.INodeService#getExternalId(java.lang.String)
-     */
-    @Override
-    public String getExternalId(String nodeId) {
-        return nodeId;
     }
 
     public void clearCache() {       

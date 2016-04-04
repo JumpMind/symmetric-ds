@@ -350,17 +350,35 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * order.
      */
     public OutgoingBatches getOutgoingBatches(String nodeId, boolean includeDisabledChannels) {
+    	return getOutgoingBatches(nodeId, null, includeDisabledChannels);
+    }
+
+    @Override
+    public OutgoingBatches getOutgoingBatches(String nodeId, String channelId, boolean includeDisabledChannels) {
         long ts = System.currentTimeMillis();
         final int maxNumberOfBatchesToSelect = parameterService.getInt(
                 ParameterConstants.OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
+        
+        String sql = null;
+        Object[] params = null;
+        
+        if (channelId != null) {
+        	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchChannelSql");
+        	params = new Object[] { nodeId, channelId, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
+                    OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
+                    OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
+                    OutgoingBatch.Status.IG.name() };
+        }
+        else {
+        	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql");
+        	params = new Object[] { nodeId, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
+                    OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
+                    OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
+                    OutgoingBatch.Status.IG.name() };
+        }
+        
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
-                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql"),
-                maxNumberOfBatchesToSelect,
-                new OutgoingBatchMapper(includeDisabledChannels),
-                new Object[] { nodeId, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
-                        OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
-                        OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
-                        OutgoingBatch.Status.IG.name() }, null);
+                sql, maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels), params, null);
         
         OutgoingBatches batches = new OutgoingBatches(list);
 
@@ -397,7 +415,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         return batches;
     }
-
+    
     public List<OutgoingBatch> getBatchesForChannelWindows(OutgoingBatches batches,
             String targetNodeId, NodeChannel channel, List<NodeGroupChannelWindow> windows) {
         List<OutgoingBatch> keeping = new ArrayList<OutgoingBatch>();
@@ -545,6 +563,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     summary = new OutgoingLoadSummary();
                     summary.setLoadId(loadId);
                     summary.setNodeId(nodeId);
+                    summary.setChannelId(rs.getString("channel_id"));
                     summary.setCreateBy(rs.getString("create_by"));
                     loadSummaries.put(loadNodeId, summary);
                 }

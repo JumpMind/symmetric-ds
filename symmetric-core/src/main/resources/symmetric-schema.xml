@@ -128,6 +128,7 @@
     <table name="extract_request" description="This table is used internally to request the extract of initial loads asynchronously when the initial load extract job is enabled.">
         <column name="request_id" type="BIGINT" required="true" primaryKey="true" description="Unique identifier for a request." />
         <column name="node_id" type="VARCHAR" size="50" required="true" description="The node_id of the batch being loaded." />
+       	<column name="channel_id" type="VARCHAR" size="128" description="The channel_id of the batch being loaded." />
         <column name="status" type="CHAR" size="2"  description="NE, OK" />
         <column name="start_batch_id" type="BIGINT" required="true" description="A load can be split across multiple batches.  This is the first of N batches the load will be split across." />
         <column name="end_batch_id" type="BIGINT" required="true" description="This is the last of N batches the load will be split across." />
@@ -333,6 +334,7 @@
 
     <table name="node_communication" description="This table is used to coordinate communication with other nodes.">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />
+        <column name="channel_id" type="VARCHAR" size="128" primaryKey="true" default="0" description="Unique identifier for a channel." />
         <column name="communication_type" type="VARCHAR" size="10"  required="true" primaryKey="true" description="The type of communication that is taking place with this node.  Valid values are: PULL, PUSH"/>
         <column name="lock_time" type="TIMESTAMP" description="The timestamp when this node was locked" />
         <column name="locking_server_id" type="VARCHAR" size="255" description="The name of the server that currently has a pull lock for the node.  This is typically a host name, but it can be overridden using the -Druntime.symmetric.cluster.server.id=name System property."/>
@@ -340,7 +342,8 @@
         <column name="last_lock_millis" type="BIGINT"  default="0" description="The amount of time the last communication took." />
         <column name="success_count" type="BIGINT" default="0" description="The number of successive successful communication attempts." />
         <column name="fail_count" type="BIGINT"  default="0" description="The number of successive failed communication attempts." />
-        <column name="total_success_count" type="BIGINT"  default="0" description="The total number of successful communication attempts with the node." />
+       	<column name="skip_count" type="BIGINT"  default="0" description="The number of skipped communication attempts." />
+         <column name="total_success_count" type="BIGINT"  default="0" description="The total number of successful communication attempts with the node." />
         <column name="total_fail_count" type="BIGINT"  default="0" description="The total number of failed communication attempts with the node." />
         <column name="total_success_millis" type="BIGINT"  default="0" description="The total amount of time spent during successful communication attempts with the node." />
         <column name="total_fail_millis" type="BIGINT"  default="0" description="The total amount of time spent during failed communication attempts with the node." />

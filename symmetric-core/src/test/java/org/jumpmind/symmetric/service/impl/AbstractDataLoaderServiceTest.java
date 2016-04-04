@@ -552,7 +552,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     protected void load(ByteArrayOutputStream out) throws Exception {
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         getTransportManager().setIncomingTransport(new InternalIncomingTransport(in));
-        getDataLoaderService().loadDataFromPull(client);
+        String channelId = null;
+        getDataLoaderService().loadDataFromPull(client, channelId);
     }
 
     protected IncomingBatch.Status findIncomingBatchStatus(int batchId, String nodeId) {

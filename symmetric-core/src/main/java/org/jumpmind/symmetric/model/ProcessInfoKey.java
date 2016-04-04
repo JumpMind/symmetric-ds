@@ -81,10 +81,20 @@ public class ProcessInfoKey implements Serializable {
 
     private ProcessType processType;
 
+    private String channelId;
+    
     public ProcessInfoKey(String sourceNodeId, String targetNodeId, ProcessType processType) {
         this.sourceNodeId = sourceNodeId;
         this.targetNodeId = targetNodeId;
         this.processType = processType;
+        this.channelId = null;
+    }
+    
+    public ProcessInfoKey(String sourceNodeId, String channelId, String targetNodeId, ProcessType processType) {
+        this.sourceNodeId = sourceNodeId;
+        this.targetNodeId = targetNodeId;
+        this.processType = processType;
+        this.channelId = channelId;
     }
 
     public String getSourceNodeId() {
@@ -99,6 +109,10 @@ public class ProcessInfoKey implements Serializable {
         return processType;
     }
 
+    public String getChannelId() {
+    	return channelId;
+    }
+    
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -106,6 +120,7 @@ public class ProcessInfoKey implements Serializable {
         result = prime * result + ((processType == null) ? 0 : processType.hashCode());
         result = prime * result + ((sourceNodeId == null) ? 0 : sourceNodeId.hashCode());
         result = prime * result + ((targetNodeId == null) ? 0 : targetNodeId.hashCode());
+        result = prime * result + ((channelId == null) ? 0 : channelId.hashCode());
         return result;
     }
 
@@ -130,13 +145,18 @@ public class ProcessInfoKey implements Serializable {
                 return false;
         } else if (!targetNodeId.equals(other.targetNodeId))
             return false;
+        if (channelId == null) {
+            if (other.channelId != null)
+                return false;
+        } else if (!channelId.equals(other.channelId))
+            return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return String.format("processType=%s,sourceNodeId=%s,targetNodeId=%s",
-                processType.toString(), sourceNodeId, targetNodeId);
+        return String.format("processType=%s,sourceNodeId=%s,targetNodeId=%s,channelId=%s",
+                processType.toString(), sourceNodeId, targetNodeId, channelId);
     }
 
 }

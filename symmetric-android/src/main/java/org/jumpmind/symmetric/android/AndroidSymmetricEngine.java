@@ -45,6 +45,7 @@ import org.jumpmind.symmetric.route.ChannelRouterContext;
 import org.jumpmind.symmetric.route.DataGapRouteReader;
 import org.jumpmind.symmetric.route.IDataToRouteReader;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -159,20 +160,21 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected INodeCommunicationService buildNodeCommunicationService(IClusterService clusterService, INodeService nodeService,
-            IParameterService parameterService, ISymmetricDialect symmetricDialect) {
-        return new AndroidNodeCommunicationService(clusterService, nodeService, parameterService, symmetricDialect);
+            IParameterService parameterService, IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {
+        return new AndroidNodeCommunicationService(clusterService, nodeService, parameterService, configurationService, symmetricDialect);
     }
 
     class AndroidNodeCommunicationService extends NodeCommunicationService {
 
         public AndroidNodeCommunicationService(IClusterService clusterService, INodeService nodeService,
-                IParameterService parameterService, ISymmetricDialect symmetricDialect) {
-            super(clusterService, nodeService, parameterService, symmetricDialect);
+                IParameterService parameterService, IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {
+            super(clusterService, nodeService, parameterService, configurationService, symmetricDialect);
         }
 
         @Override
         public boolean execute(NodeCommunication nodeCommunication, RemoteNodeStatuses statuses,
                 INodeCommunicationExecutor executor) {
+        	
             final RemoteNodeStatus status = statuses.add(nodeCommunication.getNodeId());
             long ts = System.currentTimeMillis();
             boolean failed = false;

@@ -322,6 +322,8 @@ final public class ParameterConstants {
     public static final String SMTP_USE_STARTTLS = "smtp.starttls";    
     public static final String SMTP_USE_AUTH = "smtp.auth";
 
+    public final static String CHANNEL_THREADING = "channel.threading.enabled";
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

@@ -78,8 +78,22 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         return stats;
     }
 
+    synchronized public boolean releaseConnection(String nodeId, String channelId, String poolId) {
+		String reservationId = getReservationIdentifier(nodeId, channelId);
+    	
+		Map<String, Reservation> reservations = getReservationMap(poolId);
+        Reservation reservation = reservations.remove(reservationId);
+        if (reservation != null) {
+            logConnectedTimePeriod(reservationId, reservation.createTime, System.currentTimeMillis(),
+                    poolId);
+            return true;
+        } else {
+            return false;
+        }
+	}
+    
     synchronized public boolean releaseConnection(String nodeId, String poolId) {
-        Map<String, Reservation> reservations = getReservationMap(poolId);
+		Map<String, Reservation> reservations = getReservationMap(poolId);
         Reservation reservation = reservations.remove(nodeId);
         if (reservation != null) {
             logConnectedTimePeriod(nodeId, reservation.createTime, System.currentTimeMillis(),
@@ -88,7 +102,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         } else {
             return false;
         }
-    }
+	}
 
     synchronized public void addToWhitelist(String nodeId) {
         whiteList.add(nodeId);
@@ -106,30 +120,38 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         return getReservationMap(poolId).size();
     }
 
-    synchronized public boolean reserveConnection(String nodeId, String poolId,
+    synchronized public boolean reserveConnection(String nodeId, String channelId, String poolId,
             ReservationType reservationRequest) {
+    	
+    	String reservationId = getReservationIdentifier(nodeId, channelId);
+    	
         Map<String, Reservation> reservations = getReservationMap(poolId);
         int maxPoolSize = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
         long timeout = parameterService.getLong(ParameterConstants.CONCURRENT_RESERVATION_TIMEOUT);
         removeTimedOutReservations(reservations);
-        if (reservations.size() < maxPoolSize || reservations.containsKey(nodeId)
-                || whiteList.contains(nodeId)) {
-            Reservation existingReservation = reservations.get(nodeId);
+        if (reservations.size() < maxPoolSize || reservations.containsKey(reservationId)
+                || whiteList.contains(reservationId)) {
+            Reservation existingReservation = reservations.get(reservationId);
             if (existingReservation == null
                     || existingReservation.getType() == ReservationType.SOFT) {
-                reservations.put(nodeId, new Reservation(nodeId,
+                reservations.put(reservationId, new Reservation(reservationId,
                         reservationRequest == ReservationType.SOFT ? System.currentTimeMillis()
                                 + timeout : Long.MAX_VALUE, reservationRequest));
                 return true;
             } else {
                 log.warn(
-                        "Node '{}' requested a {} connection, but was rejected because it already has one",
-                        nodeId, poolId);
+                        "Node '{}' Channel '{}' requested a {} connection, but was rejected because it already has one",
+                        nodeId, channelId, poolId);
                 return false;
             }
         } else {
             return false;
         }
+    }
+    
+    synchronized public boolean reserveConnection(String nodeId, String poolId,
+            ReservationType reservationRequest) {
+        return reserveConnection(nodeId, null, poolId, reservationRequest);
     }
 
     public Map<String, Date> getPullReservationsByNodeId() {
@@ -182,11 +204,19 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
 
     public static class Reservation {
         String nodeId;
+        String channelId = "0";
+        
         long timeToLiveInMs;
         long createTime = System.currentTimeMillis();
         ReservationType type;
 
         public Reservation(String nodeId, long timeToLiveInMs, ReservationType type) {
+            this.nodeId = nodeId;
+            this.timeToLiveInMs = timeToLiveInMs;
+            this.type = type;
+        }
+        
+        public Reservation(String nodeId, String channelId, long timeToLiveInMs, ReservationType type) {
             this.nodeId = nodeId;
             this.timeToLiveInMs = timeToLiveInMs;
             this.type = type;
@@ -210,6 +240,10 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         public String getNodeId() {
             return nodeId;
         }
+        
+        public String getChannelId() {
+        	return channelId;
+        }
 
         public long getTimeToLiveInMs() {
             return timeToLiveInMs;
@@ -222,8 +256,16 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         public ReservationType getType() {
             return type;
         }
+        
+        public String getIdentifier() {
+        	return ConcurrentConnectionManager.getReservationIdentifier(getNodeId(), getChannelId());
+        }
     }
 
+    public static String getReservationIdentifier(String nodeId, String channelId) {
+    	return channelId == null || channelId.equals("0") ? nodeId : nodeId + "-" + channelId;
+    }
+    
     public Map<String, Map<String, NodeConnectionStatistics>> getNodeConnectionStatisticsByPoolByNodeId() {
         return this.nodeConnectionStatistics;
     }
@@ -255,5 +297,6 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
     public Map<String, Map<String, Reservation>> getActiveReservationsByNodeByPool() {
         return activeReservationsByNodeByPool;
     }
+
 
 }

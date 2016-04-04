@@ -35,6 +35,8 @@ public class NodeCommunication implements Serializable {
 
     private String nodeId;
 
+    private String channelId = "0";
+    
     private CommunicationType communicationType;
 
     private Date lockTime;
@@ -64,8 +66,16 @@ public class NodeCommunication implements Serializable {
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
     }
+    
+    public String getChannelId() {
+		return channelId;
+	}
 
-    public CommunicationType getCommunicationType() {
+	public void setChannelId(String channelId) {
+		this.channelId = channelId;
+	}
+
+	public CommunicationType getCommunicationType() {
         return communicationType;
     }
 
@@ -179,6 +189,13 @@ public class NodeCommunication implements Serializable {
         } else {
             return 0l;
         }
-    }    
+    }   
+    
+    public String getIdentifier() {
+    	return getChannelId() == null || getChannelId().equals("0") ? getNodeId() : getNodeId() + "-" + getChannelId();
+    }
 
+    public boolean isThreadChannel() {
+    	return getChannelId() != null && !getChannelId().equals("0");
+    }
 }

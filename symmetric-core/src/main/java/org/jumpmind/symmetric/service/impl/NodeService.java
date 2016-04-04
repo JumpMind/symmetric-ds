@@ -93,6 +93,16 @@ public class NodeService extends AbstractService implements INodeService {
         Node node = findIdentity();
         return node != null ? node.getNodeId() : null;
     }
+    
+    @Override
+    public String getExternalId(String nodeId) {
+        String externalId = null;
+        Node node = findNode(nodeId);
+        if (node != null) {
+            externalId = node.getExternalId();
+        }
+        return externalId;
+    }
 
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId) {
         return sqlTemplate.query(getSql("selectNodePrefixSql", "findEnabledNodesFromNodeGroupSql"),
@@ -130,16 +140,7 @@ public class NodeService extends AbstractService implements INodeService {
      */
     public Node findNode(String id) {
         return findAllNodesAsMap().get(id);
-    }
-    
-    public String getExternalId(String nodeId) {
-        Node node = findNode(nodeId);
-        String externalId = "";
-        if (node != null) {
-            externalId = node.getExternalId();
-        }
-        return externalId;
-    }    
+    } 
 
     public Node findNodeByExternalId(String nodeGroupId, String externalId) {
         List<Node> list = sqlTemplate.query(
