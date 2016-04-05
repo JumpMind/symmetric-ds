@@ -22,8 +22,17 @@ package org.jumpmind.symmetric;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -126,6 +135,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         String httpBasicAuthPassword = null;
 
         configureCrypto(line);
+        removeOldHeapDumps();
 
         if (line.hasOption(OPTION_HTTP_BASIC_AUTH_USER) && 
                 line.hasOption(OPTION_HTTP_BASIC_AUTH_PASSWORD)) {
@@ -194,7 +204,6 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
 
         if (line.hasOption(OPTION_START_CLIENT)) {
             getSymmetricEngine(false).start();
-            return true;
         } else {
             SymmetricWebServer webServer = new SymmetricWebServer(chooseWebDir(line, webDir),
                     maxIdleTime, propertiesFile != null ? propertiesFile.getCanonicalPath() : null,
@@ -238,10 +247,51 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             }
             
             webServer.start();
+        }
+        return true;
+    }
 
-            return true;
+    protected void removeOldHeapDumps() {
+        String heapDumpPath = null;
+        List<String> options = ManagementFactory.getRuntimeMXBean().getInputArguments();
+        for (String option : options) {
+            if (option.startsWith("-XX:HeapDumpPath=")) {
+                heapDumpPath = option.split("=")[1];
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Heap dump path is " + (heapDumpPath == null ? null : new File(heapDumpPath).getAbsolutePath()));
         }
 
+        if (heapDumpPath != null) {
+            File directory = new File(heapDumpPath);
+            Collection<File> files = FileUtils.listFiles(directory, new String[] { "hprof" }, false);        
+            List<File> recentFiles = new ArrayList<File>();
+            List<File> oldFiles = new ArrayList<File>();
+            
+            for (File file : files) {
+                if (file.lastModified() < (System.currentTimeMillis() - 604800000)) {
+                    oldFiles.add(file);
+                } else {
+                    recentFiles.add(file);
+                }
+            }
+            
+            Collections.sort(recentFiles, new Comparator<File>() {
+                public int compare(File f1, File f2) {
+                    return f1.lastModified() > f2.lastModified() ? -1 : 1;
+                }
+            });
+    
+            for (int i = 2; i < recentFiles.size(); i++) {
+                oldFiles.add(recentFiles.get(i));
+            }
+    
+            for (File file : oldFiles) {
+                log.info("Removing old heap dump " + file.getName());
+                file.delete();
+            }
+        }
     }
 
     protected String chooseWebDir(CommandLine line, String webDir) {
