@@ -37,6 +37,7 @@ import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -300,6 +301,8 @@ public interface ISymmetricEngine {
     public ISqlTemplate getSqlTemplate();
     
     public IFileSyncService getFileSyncService();
+
+    public IContextService getContextService();
     
     public Date getLastRestartTime();
     

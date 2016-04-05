@@ -74,6 +74,7 @@ public class TableConstants {
     public static final String SYM_CONSOLE_USER = "console_user";
     public static final String SYM_EXTENSION = "extension";
     public static final String SYM_NOTIFICATION = "notification";
+    public static final String SYM_CONTEXT = "context";
 
     private static List<String> tablesWithPrefix;
 
@@ -178,6 +179,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_INCOMING));
         tables.add(getTableName(tablePrefix, SYM_EXTENSION));
         tables.add(getTableName(tablePrefix, SYM_NOTIFICATION));
+        tables.add(getTableName(tablePrefix, SYM_CONTEXT));
         return tables;
     }
 

@@ -34,6 +34,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataGap;
@@ -41,6 +42,7 @@ import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -60,6 +62,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     protected IDataService dataService;
 
     protected IParameterService parameterService;
+    
+    protected IContextService contextService;
 
     protected ISymmetricDialect symmetricDialect;
 
@@ -71,10 +75,11 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     
     protected boolean isAllDataRead;
 
-    public DataGapFastDetector(IDataService dataService, IParameterService parameterService,
+    public DataGapFastDetector(IDataService dataService, IParameterService parameterService, IContextService contextService,
             ISymmetricDialect symmetricDialect, IRouterService routerService, IStatisticManager statisticManager, INodeService nodeService) {
         this.dataService = dataService;
         this.parameterService = parameterService;
+        this.contextService = contextService;
         this.routerService = routerService;
         this.symmetricDialect = symmetricDialect;
         this.statisticManager = statisticManager;
@@ -89,14 +94,13 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         gaps = dataService.findDataGaps();
         processInfo.setStatus(Status.OK);
 
-        // TODO: use context variable instead
-        if (parameterService.is("routing.full.gap.analysis")) {
+        if (contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)) {
             log.info("Full gap analysis is running");
             long ts = System.currentTimeMillis();
             queryDataIdMap();
             log.info("Querying data in gaps from database took {} ms", System.currentTimeMillis() - ts);
             afterRouting();
-            log.info("Full gap analysis took {} ms", System.currentTimeMillis() - ts);
+            log.info("Full gap analysis is done after {} ms", System.currentTimeMillis() - ts);
         }
     }
 
@@ -254,9 +258,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 }
             }
 
-            // TODO: use context variable instead
-            parameterService.deleteParameterWithUpdate(parameterService.getExternalId(), parameterService.getNodeGroupId(), 
-                    "routing.full.gap.analysis");
+            contextService.save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, "false");
 
             long updateTimeInMs = System.currentTimeMillis() - ts;
             if (updateTimeInMs > 10000) {

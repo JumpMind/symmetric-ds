@@ -70,6 +70,13 @@
         </foreign-key>
     </table>
 
+    <table name="context" description="Context variables used by runtime services on a single node">
+        <column name="name" type="VARCHAR" size="80" required="true" primaryKey="true" description="The name of the context variable."/>
+        <column name="value" type="LONGVARCHAR" description="The value of the context variable." />
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when emtry was last updated." />
+    </table>
+
     <table name="data" description="The captured data change that occurred to a row in the database. Entries in data are created by database triggers.">
         <column name="data_id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a data." />
         <column name="table_name" type="VARCHAR" size="255" required="true"  description="The name of the table in which a change occurred that this entry records." />

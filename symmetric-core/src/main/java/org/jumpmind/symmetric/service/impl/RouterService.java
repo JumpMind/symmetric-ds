@@ -42,6 +42,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
@@ -179,9 +180,9 @@ public class RouterService extends AbstractService implements IRouterService {
                     
                     long ts = System.currentTimeMillis();
                     DataGapDetector gapDetector = null;
-                    if (parameterService.is("routing.use.fast.gap.detector")) {
+                    if (parameterService.is(ParameterConstants.ROUTING_USE_FAST_GAP_DETECTOR)) {
                         gapDetector = new DataGapFastDetector(
-                                engine.getDataService(), parameterService, symmetricDialect, 
+                                engine.getDataService(), parameterService, engine.getContextService(), symmetricDialect, 
                                 this, engine.getStatisticManager(), engine.getNodeService());
                     } else {
                         gapDetector = new DataGapDetector(
@@ -568,10 +569,8 @@ public class RouterService extends AbstractService implements IRouterService {
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
                 .values());
 
-        // TODO: use context variable instead
-        if (!engine.getParameterService().is("routing.full.gap.analysis")) {
-            engine.getParameterService().saveParameter(parameterService.getExternalId(), parameterService.getNodeGroupId(),
-                    "routing.full.gap.analysis", "true", "RouterService");
+        if (!engine.getContextService().is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)) {
+            engine.getContextService().save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, "true");
         }
         context.commit();
 

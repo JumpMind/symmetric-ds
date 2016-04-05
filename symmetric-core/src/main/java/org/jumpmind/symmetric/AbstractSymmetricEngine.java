@@ -71,6 +71,7 @@ import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -100,6 +101,7 @@ import org.jumpmind.symmetric.service.impl.AcknowledgeService;
 import org.jumpmind.symmetric.service.impl.BandwidthService;
 import org.jumpmind.symmetric.service.impl.ClusterService;
 import org.jumpmind.symmetric.service.impl.ConfigurationService;
+import org.jumpmind.symmetric.service.impl.ContextService;
 import org.jumpmind.symmetric.service.impl.DataExtractorService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
@@ -228,6 +230,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected INotificationService notificationService;
     
     protected IMailService mailService;
+    
+    protected IContextService contextService;
 
     protected Date lastRestartTime = null;
 
@@ -354,6 +358,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.fileSyncService = new FileSyncService(this);
         this.notificationService = new NotificationService(parameterService, symmetricDialect, extensionService);
         this.mailService = new MailService(parameterService, symmetricDialect);
+        this.contextService = new ContextService(parameterService, symmetricDialect);
         this.jobManager = createJobManager();
 
         extensionService.addExtensionPoint(new DefaultOfflineServerListener(
@@ -1061,6 +1066,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     
     public IMailService getMailService() {
         return mailService;
+    }
+
+    public IContextService getContextService() {
+        return contextService;
     }
 
     public IStagingManager getStagingManager() {
