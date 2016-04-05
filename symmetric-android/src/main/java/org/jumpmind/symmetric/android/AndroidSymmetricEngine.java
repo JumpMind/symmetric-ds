@@ -124,7 +124,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected ISymmetricDialect createSymmetricDialect() {
-        return new SqliteSymmetricDialect(parameterService, platform);
+        return new SqliteSymmetricDialect(parameterService, contextService, platform);
     }
 
     @Override

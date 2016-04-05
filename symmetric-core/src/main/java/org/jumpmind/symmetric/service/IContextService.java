@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service;
 
+import org.jumpmind.db.sql.ISqlTransaction;
+
 public interface IContextService {
 
     public boolean is(String key);
@@ -29,6 +31,12 @@ public interface IContextService {
     public long getLong(String key);
 
     public String getString(String key);
+
+    public int insert(ISqlTransaction transaction, String name, String value);
+
+    public int update(ISqlTransaction transaction, String name, String value);
+
+    public int delete(ISqlTransaction transaction, String name);
 
     public void save(String name, String value);
 

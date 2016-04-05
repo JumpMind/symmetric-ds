@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -46,6 +47,18 @@ public class ContextService extends AbstractService implements IContextService {
 
     public String getString(String name) {
         return sqlTemplate.queryForString(getSql("selectSql"), name);
+    }
+
+    public int insert(ISqlTransaction transaction, String name, String value) {
+        return transaction.prepareAndExecute(getSql("insertSql"), name, value);
+    }
+
+    public int update(ISqlTransaction transaction, String name, String value) {
+        return transaction.prepareAndExecute(getSql("updateSql"), value, name);
+    }
+
+    public int delete(ISqlTransaction transaction, String name) {
+        return transaction.prepareAndExecute(getSql("deleteSql"), name);
     }
 
     public void save(String name, String value) {

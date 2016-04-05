@@ -34,5 +34,7 @@ public class ContextServiceSqlMap extends AbstractSqlMap {
         putSql("updateSql", "update $(context) set value = ?, last_update_time = current_timestamp where name = ?");
         
         putSql("insertSql", "insert into $(context) (name, value, create_time) values (?, ?, current_timestamp)");
+        
+        putSql("deleteSql", "delete from $(context) where name = ?");
     }
 }

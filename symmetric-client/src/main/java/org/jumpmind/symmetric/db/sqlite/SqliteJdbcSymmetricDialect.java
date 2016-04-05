@@ -7,12 +7,13 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
+import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class SqliteJdbcSymmetricDialect extends SqliteSymmetricDialect {
 
-    public SqliteJdbcSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
-        super(parameterService, platform);
+    public SqliteJdbcSymmetricDialect(IParameterService parameterService, IContextService contextService, IDatabasePlatform platform) {
+        super(parameterService, contextService, platform);
     }
 
     @Override
