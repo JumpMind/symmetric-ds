@@ -20,6 +20,8 @@ apply from: symAssembleDir + '/common.gradle'
 task generateJavadoc(type: Javadoc) {
     destinationDir = new File(buildDir, 'doc/javadoc')
     title = "SymmetricDS API $version"
+	group = 'SymmetricDS'
+	description = 'Generate JavaDoc HTML pages for API documentation'
 }
 
 subprojects { subproject ->
@@ -295,6 +297,8 @@ project(':symmetric-server') {
 }
 
 task buildSymmetric {
+	group = 'SymmetricDS'
+	description = 'Build software, documentation, and distribution ZIP files'
     generateDocs.dependsOn(project(':symmetric-server').jar)    
     project(':symmetric-server').serverDistZip.dependsOn(project(':symmetric-server').jar)
     project(':symmetric-server').serverDistZip.dependsOn(generateDocs)
@@ -303,6 +307,8 @@ task buildSymmetric {
 
 task publishSymmetric {
     dependsOn buildSymmetric
+	group = 'SymmetricDS'
+	description = 'Publish software to SourceForge website'
     doLast {
         ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
         classpath: configurations.sshAntTask.asPath)
@@ -332,6 +338,8 @@ task publishSymmetric {
 task releaseSymmetric {
     dependsOn publishSymmetric
     dependsOn publishDoc
+	group = 'SymmetricDS'
+	description = 'Publish software to SourceForge website and online documentation to SymmetricDS website'
 }
 
 task wrapper(type: Wrapper) { gradleVersion = '2.7' }

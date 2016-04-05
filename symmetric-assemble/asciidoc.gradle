@@ -64,6 +64,8 @@ task generateAppendixes {
 task generateDocs(type: Copy) {
     
     dependsOn asciidoctor
+	group = 'SymmetricDS'
+	description = 'Generates user manual and documentation'
     
     destinationDir = file("$buildDir/doc")
     if (project.properties.containsKey('pro')) {
@@ -106,6 +108,8 @@ task generateDocs(type: Copy) {
 
 task publishDoc {
     dependsOn generateDocs
+	group = 'SymmetricDS'
+	description = 'Publish online documentation to SymmetricDS website'
     doLast {
         ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
         classpath: configurations.sshAntTask.asPath)
