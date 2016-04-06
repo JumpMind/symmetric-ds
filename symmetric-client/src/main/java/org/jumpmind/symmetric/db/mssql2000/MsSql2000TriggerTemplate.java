@@ -39,8 +39,8 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar(40), $(tableAlias).\"$(columnName)\",2) + '\"') end" ;
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar,$(tableAlias).\"$(columnName)\",121) + '\"') end" ;
         clobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(cast($(origTableAlias).\"$(columnName)\" as varchar(8000)),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
-        blobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace($(defaultCatalog)dbo.sym_base64_encode(CONVERT(VARBINARY(8000), $(origTableAlias).\"$(columnName)\")),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
-        binaryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace($(defaultCatalog)dbo.sym_base64_encode(CONVERT(VARBINARY(8000), $(tableAlias).\"$(columnName)\")),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
+        blobColumnTemplate = "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace($(defaultCatalog)dbo.$(prefixName)_base64_encode(CONVERT(VARBINARY(8000), $(origTableAlias).\"$(columnName)\")),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
+        binaryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace($(defaultCatalog)dbo.$(prefixName)_base64_encode(CONVERT(VARBINARY(8000), $(tableAlias).\"$(columnName)\")),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" = 1 then '\"1\"' else '\"0\"' end" ;
         triggerConcatCharacter = "+" ;
         newTriggerValue = "inserted" ;
@@ -74,7 +74,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "          fetch next from DataCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                     \n" +
             "          while @@FETCH_STATUS = 0 begin                                                                                                                                  \n" +
             "              insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-            "                values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)                                   \n" +
+            "                values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp)                                   \n" +
             "              fetch next from DataCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                 \n" +
             "          end                                                                                                                                                             \n" +
             "          close DataCursor                                                                                                                                                \n" +
@@ -111,7 +111,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "          fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables), @ChannelId                                                             \n" +
             "          while @@FETCH_STATUS = 0 begin                                                                                                                                  \n" +
             "            insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-            "              values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)\n" +
+            "              values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp)\n" +
             "            fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables), @ChannelId                                                            \n" +
             "          end                                                                                                                                                             \n" +
             "          close DataCursor                                                                                                                                                \n" +
@@ -152,7 +152,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "          fetch next from InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                    \n" +
             "          while @@FETCH_STATUS = 0 begin                                                                                                                                  \n" +
             "            insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-            "              values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)\n" +
+            "              values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp)\n" +
             "            fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                 \n" +
             "            fetch next from InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                  \n" +
             "          end                                                                                                                                                             \n" +
@@ -186,7 +186,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "         fetch next from DataCursor into @OldPk, @OldDataRow $(oldKeyVariables), @ChannelId                                                                                          \n" +
             "         while @@FETCH_STATUS = 0 begin                                                                                                                                  \n" +
             "           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
-            "             values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.sym_node_disabled(), $(externalSelect), current_timestamp)\n" +
+            "             values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, @ChannelId, $(txIdExpression), $(defaultCatalog)dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp)\n" +
             "           fetch next from DataCursor into @OldPk,@OldDataRow $(oldKeyVariables), @ChannelId                                                                                          \n" +
             "         end                                                                                                                                                             \n" +
             "         close DataCursor                                                                                                                                                \n" +
