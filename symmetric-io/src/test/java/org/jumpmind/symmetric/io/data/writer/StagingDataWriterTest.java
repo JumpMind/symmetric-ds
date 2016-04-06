@@ -86,7 +86,7 @@ public class StagingDataWriterTest {
         processor.process(new DataContext());
 
         assertEquals(1, batchesWritten.size());
-        assertEquals(origCsv, batchesWritten.get(0));
+        assertEquals(convertEol(origCsv), convertEol(batchesWritten.get(0)));
 
         StagedResource resource = (StagedResource) stagingManager.find("test", "aaa", 1);
         assertNotNull(resource);
@@ -99,6 +99,10 @@ public class StagingDataWriterTest {
         resource.delete();
         assertFalse(resource.getFile().exists());
 
+    }
+    
+    private String convertEol(String str) {
+        return str.replaceAll("\\r\\n", "\n").replaceAll("\\r", "\n");
     }
 
     class BatchListener implements IProtocolDataWriterListener {
