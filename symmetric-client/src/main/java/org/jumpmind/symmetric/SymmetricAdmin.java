@@ -34,12 +34,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,6 +49,7 @@ import org.h2.util.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -65,6 +68,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     @SuppressWarnings("unused")
     private static final Log log = LogFactory.getLog(SymmetricAdmin.class);
 
+    private static final String CMD_LIST_ENGINES = "list-engines";
+    
     private static final String CMD_RELOAD_NODE = "reload-node";
 
     private static final String CMD_RELOAD_TABLE = "reload-table";
@@ -73,6 +78,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private static final String CMD_IMPORT_BATCH = "import-batch";
 
+    private static final String CMD_RUN_JOB = "run-job";
+    
     private static final String CMD_RUN_PURGE = "run-purge";
 
     private static final String CMD_ENCRYPT_TEXT = "encrypt-text";
@@ -99,7 +106,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private static final String CMD_SEND_SCHEMA = "send-schema";
 
-    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES };
+    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_LIST_ENGINES };
 
     private static final String OPTION_NODE = "node";
 
@@ -136,7 +143,12 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     }
 
     @Override
-    protected boolean requiresPropertiesFile() {
+    protected boolean requiresPropertiesFile(CommandLine line) {
+        String[] args = line.getArgs();
+        if (args.length >= 1) {
+            String cmd = args[0];
+            return !ArrayUtils.contains(NO_ENGINE_REQUIRED, cmd);
+        }
         return true;
     }
 
@@ -156,11 +168,13 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                     .println("\nType 'symadmin help <subcommand>' for help on a specific subcommand.\n");
             System.out.println("Available subcommands:");
             PrintWriter pw = new PrintWriter(System.out);
+            printHelpLine(pw, CMD_LIST_ENGINES);
             printHelpLine(pw, CMD_OPEN_REGISTRATION);
             printHelpLine(pw, CMD_RELOAD_NODE);
             printHelpLine(pw, CMD_RELOAD_TABLE);
             printHelpLine(pw, CMD_EXPORT_BATCH);
             printHelpLine(pw, CMD_IMPORT_BATCH);
+            printHelpLine(pw, CMD_RUN_JOB);
             printHelpLine(pw, CMD_RUN_PURGE);
             printHelpLine(pw, CMD_ENCRYPT_TEXT);
             printHelpLine(pw, CMD_CREATE_WAR);
@@ -264,11 +278,17 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         if (cmd.equals(CMD_EXPORT_PROPERTIES)) {
             exportDefaultProperties(line, args);
             return true;
+        } else if (cmd.equals(CMD_LIST_ENGINES)) {
+            listEngines(line, args);
+            return true;
         } else if (cmd.equals(CMD_CREATE_WAR)) {
             generateWar(line, args);
             return true;
         } else if (cmd.equals(CMD_EXPORT_SYM_TABLES)) {
             exportSymTables(line, args);
+            return true;
+        } else if (cmd.equals(CMD_RUN_JOB)) {
+            runJob(line, args);
             return true;
         } else if (cmd.equals(CMD_RUN_PURGE)) {
             runPurge(line, args);
@@ -313,8 +333,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             sendScript(line, args);
             return true;
         } else {
-        	System.err.println("ERROR: no subcommand '" + cmd + "' was found.");
-        	System.err.println("For a list of subcommands, use " + app + " --" + HELP + "\n");
+            System.err.println("ERROR: no subcommand '" + cmd + "' was found.");
+            System.err.println("For a list of subcommands, use " + app + " --" + HELP + "\n");
         }
 
         return false;
@@ -326,6 +346,44 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             System.exit(1);
         }
         return args.remove(0);
+    }
+
+    private void listEngines(CommandLine line, List<String> args) {
+        System.out.println("Engines directory is " + new File(getEnginesDir()).getAbsolutePath()); 
+        System.out.println("The following engines and properties files are available:");
+        int count = 0;
+        File[] files = findEnginePropertiesFiles();
+        for (File file : files) {
+            Properties properties = new Properties();
+            FileInputStream is = null;
+            try {
+                is = new FileInputStream(file);
+                properties.load(is);
+                String name = properties.getProperty(ParameterConstants.ENGINE_NAME);
+                System.out.println(name + " -> " + file.getAbsolutePath());
+            } catch (IOException ex) {
+            } finally {
+                IOUtils.closeQuietly(is);
+            }
+        }
+        System.out.println(count + " engines returned");
+    }
+
+    private void runJob(CommandLine line, List<String> args) {
+        String jobName = popArg(args, "job name");
+        if (jobName.equals("pull")) {
+            getSymmetricEngine().pull();
+        } else if (jobName.equals("push")) {
+            getSymmetricEngine().push();
+        } else if (jobName.equals("route")) {
+            getSymmetricEngine().route();
+        } else if (jobName.equals("purge")) {
+            getSymmetricEngine().purge();
+        } else if (jobName.equals("heartbeat")) {
+            getSymmetricEngine().heartbeat(false);
+        } else {
+            System.err.println("ERROR: no job named '" + jobName + "' was found.");
+        }
     }
 
     private void runPurge(CommandLine line, List<String> args) {

@@ -56,7 +56,7 @@ public class DbSqlCommand extends AbstractCommandLauncher {
     }
 
     @Override
-    protected boolean requiresPropertiesFile() {
+    protected boolean requiresPropertiesFile(CommandLine line) {
         return true;
     }
 

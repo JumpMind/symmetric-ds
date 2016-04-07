@@ -159,8 +159,8 @@ public abstract class AbstractCommandLauncher {
     }
 
     abstract protected boolean printHelpIfNoOptionsAreProvided();
-
-    abstract protected boolean requiresPropertiesFile();
+    
+    abstract protected boolean requiresPropertiesFile(CommandLine line);
 
     public void execute(String args[]) {
         PosixParser parser = new PosixParser();
@@ -299,7 +299,7 @@ public abstract class AbstractCommandLauncher {
         } else {
             propertiesFile = findSingleEnginesPropertiesFile();
 
-            if (propertiesFile == null && requiresPropertiesFile()) {
+            if (propertiesFile == null && requiresPropertiesFile(line)) {
                 throw new ParseException(String.format("You must specify either --%s or --%s",
                         OPTION_ENGINE, OPTION_PROPERTIES_FILE));
             }

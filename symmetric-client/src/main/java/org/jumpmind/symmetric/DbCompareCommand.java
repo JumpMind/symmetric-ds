@@ -51,7 +51,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
     }
 
     @Override
-    protected boolean requiresPropertiesFile() {
+    protected boolean requiresPropertiesFile(CommandLine line) {
         return false;
     }
 

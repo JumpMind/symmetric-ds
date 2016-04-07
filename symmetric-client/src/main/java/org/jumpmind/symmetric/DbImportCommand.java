@@ -78,7 +78,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
     }
     
     @Override
-    protected boolean requiresPropertiesFile() {
+    protected boolean requiresPropertiesFile(CommandLine line) {
         return true;
     }
     
