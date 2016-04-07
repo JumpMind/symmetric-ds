@@ -825,7 +825,7 @@ public class RestService {
     }
 
     @ApiOperation(value = "Register the specified node for the specified engine")
-    @RequestMapping(value = "/engine/{engine}/registernode", method = RequestMethod.GET)
+    @RequestMapping(value = "/engine/{engine}/registernode", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final RegistrationInfo postRegisterNode(@PathVariable("engine") String engineName,
