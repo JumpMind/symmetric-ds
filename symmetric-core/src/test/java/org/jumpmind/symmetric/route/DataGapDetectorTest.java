@@ -186,13 +186,11 @@ public class DataGapDetectorTest {
         List<Long> dataIds = new ArrayList<Long>();
 
         when(symmetricDialect.getDatabaseTime()).thenReturn(System.currentTimeMillis() + 60001L);
-        when(dataService.countDataInRange(4, 7)).thenReturn(1);
         runGapDetector(dataGaps, dataIds, true);
 
         verify(dataService).findDataGaps();
-        verify(dataService).countDataInRange(2, 4);
-        verify(dataService).countDataInRange(4, 7);
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(3, 3));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(5, 6));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -227,13 +225,11 @@ public class DataGapDetectorTest {
 
         when(symmetricDialect.supportsTransactionViews()).thenReturn(true);
         when(symmetricDialect.getEarliestTransactionStartTime()).thenReturn(new Date(System.currentTimeMillis() + 60001L));
-        when(dataService.countDataInRange(4, 7)).thenReturn(1);
         runGapDetector(dataGaps, dataIds, true);
 
         verify(dataService).findDataGaps();
-        verify(dataService).countDataInRange(2, 4);
-        verify(dataService).countDataInRange(4, 7);
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(3, 3));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(5, 6));
         verifyNoMoreInteractions(dataService);
     }
 

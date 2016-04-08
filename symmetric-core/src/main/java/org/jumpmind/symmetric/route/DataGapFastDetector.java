@@ -73,7 +73,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     
     protected List<Long> dataIds;
     
-    protected boolean isAllDataRead;
+    protected boolean isAllDataRead = true;
 
     public DataGapFastDetector(IDataService dataService, IParameterService parameterService, IContextService contextService,
             ISymmetricDialect symmetricDialect, IRouterService routerService, IStatisticManager statisticManager, INodeService nodeService) {
