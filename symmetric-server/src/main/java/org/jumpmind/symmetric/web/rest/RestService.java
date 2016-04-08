@@ -1279,7 +1279,7 @@ public class RestService {
 
     private void startImpl(ISymmetricEngine engine) {
         engine.getParameterService().saveParameter(ParameterConstants.AUTO_START_ENGINE, "true", Constants.SYSTEM_USER);
-        if (engine.start()) {
+        if (!engine.start()) {
             throw new InternalServerErrorException();
         }
     }
