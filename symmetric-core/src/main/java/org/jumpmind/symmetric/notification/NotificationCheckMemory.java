@@ -24,12 +24,12 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Method;
 
 import org.jumpmind.symmetric.model.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.management.ThreadMXBean;
 
 public class NotificationCheckMemory extends AbstractNotificationCheck {
 
@@ -70,11 +70,11 @@ public class NotificationCheckMemory extends AbstractNotificationCheck {
 
         ThreadInfo infos[] = new ThreadInfo[TOP_THREADS];
         long byteUsages[] = new long[TOP_THREADS];
-        ThreadMXBean threadBean = (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
+        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
         for (long threadId : threadBean.getAllThreadIds()) {
             ThreadInfo info = threadBean.getThreadInfo(threadId);
             if (info.getThreadState() != Thread.State.TERMINATED) {
-                rankTopUsage(infos, byteUsages, info, threadBean.getThreadAllocatedBytes(threadId));
+                rankTopUsage(infos, byteUsages, info, getThreadAllocatedBytes(threadBean, threadId));
             }
         }
 
@@ -84,6 +84,17 @@ public class NotificationCheckMemory extends AbstractNotificationCheck {
             text += logStackTrace(threadBean.getThreadInfo(infos[i].getThreadId(), MAX_STACK_DEPTH));
         }
         return text;
+    }
+
+    protected long getThreadAllocatedBytes(ThreadMXBean threadBean, long threadId) {
+        long size = 0;
+        try {
+            Method method = threadBean.getClass().getMethod("getThreadAllocatedBytes");
+            method.setAccessible(true);
+            size = (Long) method.invoke(threadBean, threadId);
+        } catch (Exception ignore) {
+        }
+        return size;
     }
 
     @Override

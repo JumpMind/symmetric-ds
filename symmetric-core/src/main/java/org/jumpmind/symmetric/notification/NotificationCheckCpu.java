@@ -24,11 +24,10 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Method;
 
 import org.jumpmind.symmetric.model.Notification;
-
-import com.sun.management.ThreadMXBean;
 
 public class NotificationCheckCpu extends AbstractNotificationCheck {
 
@@ -79,7 +78,7 @@ public class NotificationCheckCpu extends AbstractNotificationCheck {
     protected String getNotificationMessage(long value, long threshold, long period) {
         ThreadInfo infos[] = new ThreadInfo[TOP_THREADS];
         long cpuUsages[] = new long[TOP_THREADS];
-        ThreadMXBean threadBean = (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
+        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
         for (long threadId : threadBean.getAllThreadIds()) {
             ThreadInfo info = threadBean.getThreadInfo(threadId);
             if (info.getThreadState() != Thread.State.TERMINATED) {

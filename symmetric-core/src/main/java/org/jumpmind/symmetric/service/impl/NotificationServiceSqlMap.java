@@ -46,5 +46,7 @@ public class NotificationServiceSqlMap extends AbstractSqlMap {
         putSql("deleteNotificationSql",
                 "delete from $(notification) where notification_id = ?");
 
+        putSql("selectNotificationEventSql",
+                "select notification_id, node_id, host_name, event_time, value, threshold, period, severity_level from $(notification_event)");
     }
 }
