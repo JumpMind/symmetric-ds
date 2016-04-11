@@ -115,8 +115,8 @@ excluded_column_names=column1,column2
 
 Resolve Changes Only:: Indicates that when applying changes during an update that only data that has changed should be applied.  
 Otherwise, all the columns will be updated.  This really only applies to updates.
-Resolve Row Only:: Indicates that an action should take place for the entire batch if possible.  This applies to a resolve type of 'ignore'.  
-If a row is in conflict and the resolve type is 'ignore', then the entire batch will be ignored.
+Resolve Row Only:: When 'resolve row only' is set to true, the system will ignore only the rows in conflict.  When 'resolve row only' is set to false, the system will ignore the entire batch.
+This applies to a resolve type of 'ignore'.  
 Channel:: Optional channel that this setting will be applied to.
 Target Catalog:: Optional database catalog that the target table belongs to. Only use this if the target table is not in the default catalog.
 Target Schema:: Optional database schema that the target table belongs to. Only use this if the target table is not in the default schema.
