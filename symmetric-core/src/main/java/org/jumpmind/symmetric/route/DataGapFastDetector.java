@@ -253,6 +253,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             if (lastDataId != -1) {
                 DataGap newGap = new DataGap(lastDataId + 1, lastDataId + maxDataToSelect);
                 if (!gapCheck.contains(newGap)) {
+                    log.debug("Inserting new last data gap: {}", newGap);
                     dataService.insertDataGap(newGap);
                     gapCheck.add(newGap);
                 }

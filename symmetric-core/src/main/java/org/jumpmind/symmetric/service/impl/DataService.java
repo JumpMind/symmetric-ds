@@ -1411,8 +1411,8 @@ public class DataService extends AbstractService implements IDataService {
                 maxDataEventId++;
             }
             DataGap gap = new DataGap(maxDataEventId, maxDataEventId + maxDataToSelect);
+            log.info("Inserting missing last data gap: {}", gap);
             insertDataGap(gap);
-            log.info("Inserting last data gap: {}", gap);
             gaps = findDataGaps();
         }
         return gaps;
@@ -1445,6 +1445,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataGap(ISqlTransaction transaction, DataGap gap) {
+        log.debug("Inserting data gap: {}", gap);
         transaction.prepareAndExecute(getSql("insertDataGapSql"),
                 new Object[] { DataGap.Status.GP.name(), AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC });
@@ -1483,6 +1484,7 @@ public class DataService extends AbstractService implements IDataService {
     
     @Override
     public void deleteDataGap(ISqlTransaction transaction, DataGap gap) {
+        log.debug("Deleting data gap: {}", gap);
         transaction.prepareAndExecute(
                 getSql("deleteDataGapSql"),
                 new Object[] { gap.getStartId(), gap.getEndId() },
