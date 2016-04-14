@@ -1485,11 +1485,14 @@ public class DataService extends AbstractService implements IDataService {
     @Override
     public void deleteDataGap(ISqlTransaction transaction, DataGap gap) {
         log.debug("Deleting data gap: {}", gap);
-        transaction.prepareAndExecute(
+        int count = transaction.prepareAndExecute(
                 getSql("deleteDataGapSql"),
                 new Object[] { gap.getStartId(), gap.getEndId() },
                 new int[] { symmetricDialect.getSqlTypeForIds(),
                         symmetricDialect.getSqlTypeForIds() });
+        if (count == 0) {
+            log.error("Failed to delete data gap: {}", gap);
+        }
     }
 
     public Date findCreateTimeOfEvent(long dataId) {

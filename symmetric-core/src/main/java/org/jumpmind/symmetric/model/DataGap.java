@@ -77,7 +77,12 @@ public class DataGap implements Serializable {
     public boolean contains(DataGap gap) {
         return startId <= gap.startId && endId >= gap.endId;
     }
-    
+
+    public boolean overlaps(DataGap gap) {
+        return (startId >= gap.startId && startId <= gap.endId) || (endId >= gap.startId && endId <= gap.endId) ||
+                (startId <= gap.startId && endId >= gap.endId);
+    }
+
     public long gapSize() {
     	return endId-startId;
     }
