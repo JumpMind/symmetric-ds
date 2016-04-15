@@ -77,9 +77,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     
     protected long maxDataToSelect;
     
-    protected Set<DataGap> gapsAdded = new HashSet<DataGap>();
+    protected Set<DataGap> gapsAdded;
     
-    protected Set<DataGap> gapsDeleted = new HashSet<DataGap>();
+    protected Set<DataGap> gapsDeleted;
 
     public DataGapFastDetector(IDataService dataService, IParameterService parameterService, IContextService contextService,
             ISymmetricDialect symmetricDialect, IRouterService routerService, IStatisticManager statisticManager, INodeService nodeService) {
@@ -90,7 +90,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         this.symmetricDialect = symmetricDialect;
         this.statisticManager = statisticManager;
         this.nodeService = nodeService;
-        dataIds = new ArrayList<Long>();
+        reset();
     }
 
     public void beforeRouting() {
@@ -107,8 +107,15 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             log.info("Querying data in gaps from database took {} ms", System.currentTimeMillis() - ts);
             afterRouting();
             log.info("Full gap analysis is done after {} ms", System.currentTimeMillis() - ts);
-            dataIds = new ArrayList<Long>();
+            gaps = dataService.findDataGaps();
+            reset();
         }
+    }
+
+    protected void reset() {
+        dataIds = new ArrayList<Long>();
+        gapsAdded = new HashSet<DataGap>();
+        gapsDeleted = new HashSet<DataGap>();
     }
 
     /**
