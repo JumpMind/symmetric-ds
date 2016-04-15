@@ -12,6 +12,9 @@ However, if the NOCOUNT option is ON for SQL-Server, SymmetricDS will not behave
 The NOCOUNT setting can be checked with "select case when (512 & @@OPTIONS) = 512 then 'on' else 'off' end".
 If you're unable to change NOCOUNT for the server, the "db.init.sql" parameter can be set to "SET NOCOUNT OFF" in the engine properties file.
 
+Connections are pooled and expected to be in the database context like a new connection, so avoid using the "USE database" 
+Transact-SQL statement in extension code.
+
 ==== SQL Server Permissions
 
 SymmetricDS can be configured to work with a variety SQL Server configurations.  It is possible to install SymmetricDS in the same database and schema with the same user account your application runs.   

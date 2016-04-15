@@ -21,3 +21,5 @@ The DONEINPROC setting can be checked with "sp_configure 'send doneinproc tokens
 The commands "sp_configure 'send doneinproc tokens', 1" and "SET NOCOUNT OFF" will enable row counts. 
 If you're unable to change NOCOUNT for the server, the "db.init.sql" parameter can be set to "SET NOCOUNT OFF" in the engine properties file.
 
+Connections are pooled and expected to be in the database context like a new connection, so avoid using the "USE database" 
+Transact-SQL statement in extension code.
