@@ -28,6 +28,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.io.data.transform.ColumnPolicy;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 
@@ -65,22 +66,39 @@ public class DbCompareTables {
     }
 
     protected void applyColumnMappingsFromTransform() {
+        
       for (Column sourceColumn : sourceTable.getColumns()) {
           List<TransformColumn> sourceTransformColumns = transform.getTransformColumnFor(sourceColumn.getName());
           if (!sourceTransformColumns.isEmpty()) {
               TransformColumn transformColumn = sourceTransformColumns.get(0);
               Column targetColumn = targetTable.getColumnWithName(transformColumn.getTargetColumnName());
+              if (transformColumn.isPk()) {
+                  sourceColumn.setPrimaryKey(true);
+              }
               columnMapping.put(sourceColumn, targetColumn);
+          } else {
+              if (transform.getColumnPolicy() == ColumnPolicy.SPECIFIED) {                  
+                  sourceTable.removeColumn(sourceColumn);
+              } else {
+                  mapColumnDefault(sourceColumn);
+              }
           }
-      }        
+      }
+      
+      // when column policy is specified, make sure 
+      
     }
 
     protected void applyColumnMappingsDefault() {
         for (Column sourceColumn : sourceTable.getColumns()) {
-            for (Column targetColumn : targetTable.getColumns()) {
-                if (StringUtils.equalsIgnoreCase(sourceColumn.getName(), targetColumn.getName())) {
-                    columnMapping.put(sourceColumn, targetColumn);
-                }
+            mapColumnDefault(sourceColumn);
+        }
+    }
+    
+    protected void mapColumnDefault(Column sourceColumn) {
+        for (Column targetColumn : targetTable.getColumns()) {
+            if (StringUtils.equalsIgnoreCase(sourceColumn.getName(), targetColumn.getName())) {
+                columnMapping.put(sourceColumn, targetColumn);
             }
         }
     }

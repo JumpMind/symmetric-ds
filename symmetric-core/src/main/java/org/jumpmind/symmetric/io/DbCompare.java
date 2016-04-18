@@ -208,7 +208,7 @@ public class DbCompare {
             }
         }
         
-        return getComparisonSQL(tables.getTargetTable(), mappedPkColumns.toArray(new Column[0]), platform);
+        return getComparisonSQL(tables.getTargetTable(), tables.getTargetTable().getPrimaryKeyColumns(), platform);
     }
     
     protected String getComparisonSQL(Table table, Column[] sortByColumns, IDatabasePlatform platform) {
@@ -267,7 +267,7 @@ public class DbCompare {
 
     protected List<DbCompareTables> loadTables(List<String> tableNames) {
 
-        List<DbCompareTables> tablesFromConfig = new ArrayList<DbCompareTables>(1);
+        List<DbCompareTables> compareTables = new ArrayList<DbCompareTables>(1);
 
         List<String> filteredTablesNames = filterTables(tableNames);
 
@@ -297,16 +297,55 @@ public class DbCompare {
                 log.warn("No target table found for table {}", tableName);
                 continue;
             } 
-//            else if (targetTable.getPrimaryKeyColumnCount() == 0) {
-//                log.warn("Target table {} doesn't have any primary key columns and will not be considered in the comparison.", targetTable);
-//                continue;                
-//            }          
-
+  
             tables.applyColumnMappings();
-            tablesFromConfig.add(tables);
+            
+            boolean success = mapPrimaryKey(tables);
+            if (success) {
+                compareTables.add(tables);                
+            }
         }
 
-        return tablesFromConfig;        
+        return compareTables;        
+    }
+
+    protected boolean mapPrimaryKey(DbCompareTables tables) {
+        List<Column> mappedPkColumns = new ArrayList<Column>();
+        
+        for (Column sourcePkColumn : tables.getSourceTable().getPrimaryKeyColumns()) {
+            Column targetColumn = tables.getColumnMapping().get(sourcePkColumn);
+            if (targetColumn == null) {
+                log.warn("No target column mapped to source PK column {}. Unable to perform dbcompare on table {}", 
+                        sourcePkColumn, tables.getSourceTable());
+                return false;
+            } else {
+                mappedPkColumns.add(targetColumn);
+            }
+        }
+        
+        Column[] targetColumns = tables.getTargetTable().getColumns();
+        
+        for (Column column : targetColumns) {
+            column.setPrimaryKey(false);
+        }
+        
+        List<Column> reorderedColumns = new ArrayList<Column>();
+        
+        for (Column mappedPkColumn : mappedPkColumns) {
+            mappedPkColumn.setPrimaryKey(true);
+            reorderedColumns.add(mappedPkColumn);
+        }
+        
+        for (Column column : targetColumns) {
+            if (!reorderedColumns.contains(column)) {
+                reorderedColumns.add(column);
+            }
+        }
+        
+        tables.getTargetTable().removeAllColumns();
+        tables.getTargetTable().addColumns(reorderedColumns);
+        
+        return true;
     }
 
     protected Table loadTargetTable(DbCompareTables tables) {
