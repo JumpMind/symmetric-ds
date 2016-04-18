@@ -42,19 +42,19 @@
       would need to be added to symmetric.properties or another property file specified by the
       sym launcher command.
       
-      jms.msg.publish.enabled=true
-      jms.topic.username=
-      jms.topic.password=
-      jms.topic.destinationname=jms/SomeTopic
-      jms.topic.maxconsumers=1
-      jms.topic.hostname=
-      jms.topic.port=
-      jms.topic.useconnectionpooling=true
-      jms.topic.transporttype=1
-      jms.topic.queuemanager=
-      jms.topic.pubsubdomain=true
-      jms.topic.clientid=
+      sym.jms.publisher.enabled=true
+      sym.jms.mq.topic.hostname=
+      sym.jms.mq.topic.port=
+      sym.jms.mq.topic.useconnectionpooling=
+      sym.jms.mq.topic.transporttype=
+      sym.jms.mq.topic.queuemanager=
+      sym.jms.mq.topic.clientid=
+      sym.jms.mq.topic.username=
+      sym.jms.mq.topic.password=
+      sym.jms.mq.topic.destinationname=jms/SomeTopic
+      sym.jms.mq.topic.pubsubdomain=
 
+	
     <bean id="jmsPublisher" class="org.jumpmind.symmetric.integrate.XmlPublisherDatabaseWriterFilter">
         <property name="publisher">
             <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
