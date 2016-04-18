@@ -74,6 +74,8 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 				bookmarkMap.put(filePath, lineNumber);
 				
 				try {
+					resource.delete();
+					resource = getEngine().getStagingManager().create(0, STAGING_DIR);
 					for (Map.Entry<String, Integer> entry : bookmarkMap.entrySet()) {
 						resource.getWriter().write("\n" + entry.getKey() + "=" + entry.getValue());
 					}
@@ -81,7 +83,7 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 					resource.setState(State.DONE);
 				}
 				catch (Exception e) {
-					
+					e.printStackTrace();
 				}
 			}
 		}

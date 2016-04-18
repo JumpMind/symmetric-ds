@@ -1146,8 +1146,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                     if (!areBatchesOk) {
                         for (OutgoingBatch outgoingBatch : batches) {
-                            outgoingBatch.setStatus(Status.NE);
-                            outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
+                            if (parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)) {
+                            	if (outgoingBatch.getStatus() == Status.RQ) {
+                            		outgoingBatch.setStatus(Status.NE);
+                                	outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
+                            	}
+                            } else {
+                            	outgoingBatch.setStatus(Status.NE);
+                            	outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
+                            }
                         }
                     } else {
                         log.info("Batches already had an OK status for request {}, batches {} to {}.  Not updating the status to NE", new Object[] { request.getRequestId(), request.getStartBatchId(),
@@ -1272,12 +1279,39 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 Statistics stats = this.currentDataWriter.getStatistics().get(batch);
                 this.outgoingBatch.setByteCount(stats.get(DataWriterStatisticConstants.BYTECOUNT));
                 this.outgoingBatch.setExtractMillis(System.currentTimeMillis() - batch.getStartTime().getTime());
-                this.currentDataWriter.close();                
+                this.currentDataWriter.close();   
+                checkSend();
                 startNewBatch();
             }
 
         }
 
+        public void checkSend() {
+        	if (parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)) {
+        		this.outgoingBatch.setStatus(Status.NE);
+            	ISqlTransaction transaction = null;
+                try {
+                    transaction = sqlTemplate.startSqlTransaction();
+                    outgoingBatchService.updateOutgoingBatch(transaction, this.outgoingBatch);
+                    transaction.commit();
+                } catch (Error ex) {
+                    if (transaction != null) {
+                        transaction.rollback();
+                    }
+                    throw ex;
+                } catch (RuntimeException ex) {
+                    if (transaction != null) {
+                        transaction.rollback();
+                    }
+                    throw ex;
+                } finally {
+                	if (transaction != null) {
+                        transaction.close();
+                    }
+                }
+            }
+        }
+        
         public void end(Table table) {
             if (this.currentDataWriter != null) {
                 this.currentDataWriter.end(table);
