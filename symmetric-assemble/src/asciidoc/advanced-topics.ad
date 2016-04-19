@@ -306,6 +306,14 @@ keytool -keystore keystore -storetype jceks -alias sym -keypasswd
 keytool -keystore keystore -storetype jceks -alias sym.secret -keypasswd
 ----
 
+* (Optional) Obfuscate the password to prevent casual observation from the configuration files.  An obfuscated password starts with "obf:"
+while a cleartext password does not.
+
+[source, cli]
+----
+syadmin obfuscate-text changeit
+----
+
 * Edit `bin/setenv` (or `bin\setenv.bat` on Windows) and `conf/sym_service.conf` files to find a similar line as below to change the password. 
 
 [source, cli]
