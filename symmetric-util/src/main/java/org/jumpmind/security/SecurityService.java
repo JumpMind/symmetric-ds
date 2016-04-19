@@ -68,8 +68,8 @@ public class SecurityService implements ISecurityService {
             KeyStore ks = KeyStore.getInstance(keyStoreType);
             FileInputStream is = new FileInputStream(
                     System.getProperty(SecurityConstants.SYSPROP_TRUSTSTORE));
-            String password = System.getProperty(SecurityConstants.SYSPROP_TRUSTSTORE_PASSWORD);            
-            ks.load(is, password != null ? unobfuscateIfNeeded(password).toCharArray() : null);
+            String password = unobfuscateIfNeeded(SecurityConstants.SYSPROP_TRUSTSTORE_PASSWORD);
+            ks.load(is, password != null ? password.toCharArray() : null);
             is.close();
             return ks;
         } catch (RuntimeException e) {
@@ -147,11 +147,13 @@ public class SecurityService implements ISecurityService {
         return new String(rot13(new String(Base64.decodeBase64(obfText.getBytes()))));
     }
 
-    private String unobfuscateIfNeeded(String text) {
-        if (text != null && text.startsWith(SecurityConstants.PREFIX_OBF)) {
-            text = unobfuscate(text);
+    private String unobfuscateIfNeeded(String systemPropertyName) {
+        String value = System.getProperty(systemPropertyName);
+        if (value != null && value.startsWith(SecurityConstants.PREFIX_OBF)) {
+            value = unobfuscate(value.substring(SecurityConstants.PREFIX_OBF.length()));
+            System.setProperty(systemPropertyName, value);
         }
-        return text;
+        return value;
     }
     
     private String rot13(String text) {
@@ -200,7 +202,7 @@ public class SecurityService implements ISecurityService {
     }
 
     protected String getKeyStorePassword() {
-        String password = unobfuscateIfNeeded(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD));
+        String password = unobfuscateIfNeeded(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
         password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
         return password;
     }
