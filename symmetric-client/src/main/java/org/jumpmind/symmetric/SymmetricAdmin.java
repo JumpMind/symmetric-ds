@@ -83,6 +83,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_RUN_PURGE = "run-purge";
 
     private static final String CMD_ENCRYPT_TEXT = "encrypt-text";
+    
+    private static final String CMD_OBFUSCATE_TEXT = "obfuscate-text";
 
     private static final String CMD_CREATE_WAR = "create-war";
 
@@ -177,6 +179,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             printHelpLine(pw, CMD_RUN_JOB);
             printHelpLine(pw, CMD_RUN_PURGE);
             printHelpLine(pw, CMD_ENCRYPT_TEXT);
+            printHelpLine(pw, CMD_OBFUSCATE_TEXT);
             printHelpLine(pw, CMD_CREATE_WAR);
             printHelpLine(pw, CMD_CREATE_SYM_TABLES);
             printHelpLine(pw, CMD_EXPORT_SYM_TABLES);
@@ -317,6 +320,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         } else if (cmd.equals(CMD_ENCRYPT_TEXT)) {
             encryptText(line, args);
             return true;
+        } else if (cmd.equals(CMD_OBFUSCATE_TEXT)) {
+            obfuscateText(line, args);
+            return true;
         } else if (cmd.equals(CMD_SEND_SQL)) {
             sendSql(line, args);
             return true;
@@ -425,6 +431,12 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         String plainText = popArg(args, "Text");
         ISecurityService service = getSymmetricEngine().getSecurityService();
         System.out.println(SecurityConstants.PREFIX_ENC + service.encrypt(plainText));
+    }
+
+    private void obfuscateText(CommandLine line, List<String> args) {
+        String plainText = popArg(args, "Text");
+        ISecurityService service = getSymmetricEngine().getSecurityService();
+        System.out.println(SecurityConstants.PREFIX_OBF + service.obfuscate(plainText));
     }
 
     private void openRegistration(CommandLine line, List<String> args) {
