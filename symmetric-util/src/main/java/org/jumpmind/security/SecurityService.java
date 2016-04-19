@@ -69,7 +69,7 @@ public class SecurityService implements ISecurityService {
             FileInputStream is = new FileInputStream(
                     System.getProperty(SecurityConstants.SYSPROP_TRUSTSTORE));
             String password = System.getProperty(SecurityConstants.SYSPROP_TRUSTSTORE_PASSWORD);            
-            ks.load(is, password != null ? password.toCharArray() : null);
+            ks.load(is, password != null ? unobfuscateIfNeeded(password).toCharArray() : null);
             is.close();
             return ks;
         } catch (RuntimeException e) {
@@ -139,6 +139,39 @@ public class SecurityService implements ISecurityService {
         }
     }
 
+    public String obfuscate(String plainText) {
+        return new String(Base64.encodeBase64(rot13(plainText).getBytes()));
+    }
+
+    public String unobfuscate(String obfText) {
+        return new String(rot13(new String(Base64.decodeBase64(obfText.getBytes()))));
+    }
+
+    private String unobfuscateIfNeeded(String text) {
+        if (text != null && text.startsWith(SecurityConstants.PREFIX_OBF)) {
+            text = unobfuscate(text);
+        }
+        return text;
+    }
+    
+    private String rot13(String text) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c >= 'a' && c <= 'm') {
+                c += 13;
+            } else if (c >= 'A' && c <= 'M') {
+                c += 13;
+            } else if (c >= 'n' && c <= 'z') {
+                c -= 13;
+            } else if (c >= 'N' && c <= 'Z') {
+                c -= 13;
+            }
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
     protected Cipher getCipher(int mode) throws Exception {
         if (secretKey == null) {
             secretKey = getSecretKey();
@@ -167,7 +200,7 @@ public class SecurityService implements ISecurityService {
     }
 
     protected String getKeyStorePassword() {
-        String password = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
+        String password = unobfuscateIfNeeded(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD));
         password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
         return password;
     }
