@@ -108,7 +108,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private static final String CMD_SEND_SCHEMA = "send-schema";
 
-    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_LIST_ENGINES };
+    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_LIST_ENGINES };
 
     private static final String OPTION_NODE = "node";
 
