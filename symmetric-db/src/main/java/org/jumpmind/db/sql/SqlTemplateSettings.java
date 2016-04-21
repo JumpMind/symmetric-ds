@@ -27,6 +27,7 @@ public class SqlTemplateSettings {
     protected int batchSize = 100;
     protected boolean readStringsAsBytes;
     protected int overrideIsolationLevel = -1;
+    protected LogSqlBuilder logSqlBuilder;
     
     public SqlTemplateSettings() {     
     }      
@@ -69,6 +70,14 @@ public class SqlTemplateSettings {
 
     public void setOverrideIsolationLevel(int overrideIsolationLevel) {
         this.overrideIsolationLevel = overrideIsolationLevel;
+    }
+
+    public LogSqlBuilder getLogSqlBuilder() {
+        return logSqlBuilder;
+    }
+
+    public void setLogSqlBuilder(LogSqlBuilder logSqlBuilder) {
+        this.logSqlBuilder = logSqlBuilder;
     }
 
 }

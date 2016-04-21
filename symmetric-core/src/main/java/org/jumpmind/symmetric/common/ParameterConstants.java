@@ -313,6 +313,10 @@ final public class ParameterConstants {
     public final static String EXTENSIONS_XML = "extensions.xml";
     
     public final static String DATA_CREATE_TIME_TIMEZONE = "data.create_time.timezone";
+    
+    public final static String LOG_SLOW_SQL_THRESHOLD_MILLIS = "log.slow.sql.threshold.millis";
+    
+    public final static String LOG_SQL_PARAMETERS_INLINE = "log.sql.parameters.inline";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

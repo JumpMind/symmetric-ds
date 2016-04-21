@@ -20,6 +20,8 @@
  */
 package org.jumpmind.db.sql;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,15 +39,8 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     protected boolean dateOverrideToTimestamp;
 
     protected String identifierQuoteString;
-
-    protected void logSql(String sql, Object[] args) {
-        if (log.isDebugEnabled()) {
-            log.debug(sql);
-            if (args != null && args.length > 0) {
-                log.debug("sql args: {}", Arrays.toString(args));
-            }
-        }
-    }
+    
+    protected LogSqlBuilder logSqlBuilder = new LogSqlBuilder();
 
     public <T> T queryForObject(String sql, ISqlRowMapper<T> mapper, Object... args) {
         List<T> list = query(sql, mapper, args);
