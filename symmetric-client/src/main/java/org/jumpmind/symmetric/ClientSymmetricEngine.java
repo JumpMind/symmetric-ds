@@ -43,6 +43,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.LogSqlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BasicDataSourceFactory;
 import org.jumpmind.properties.TypedProperties;
@@ -317,6 +318,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         settings.setBatchSize(properties.getInt(ParameterConstants.JDBC_EXECUTE_BATCH_SIZE, 100));
         settings.setOverrideIsolationLevel(properties.getInt(ParameterConstants.JDBC_ISOLATION_LEVEL, -1));
         settings.setReadStringsAsBytes(properties.is(ParameterConstants.JDBC_READ_STRINGS_AS_BYTES, false));
+        LogSqlBuilder logSqlBuilder = new LogSqlBuilder();
+        logSqlBuilder.setLogSlowSqlThresholdMillis(properties.getInt(ParameterConstants.LOG_SLOW_SQL_THRESHOLD_MILLIS, 20000));
+        logSqlBuilder.setLogSqlParametersInline(properties.is(ParameterConstants.LOG_SQL_PARAMETERS_INLINE, true));
+        settings.setLogSqlBuilder(logSqlBuilder);
         
         if (settings.getOverrideIsolationLevel() >=0 ) {
             log.info("Overriding isolation level to " + settings.getOverrideIsolationLevel());
