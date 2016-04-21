@@ -5,10 +5,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doAnswer;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -398,8 +401,136 @@ public class DataGapDetectorTest {
         verifyNoMoreInteractions(dataService);
     }
 
-    // Uncomment to run random data through data gap detector
     //@Test
+    public void testGapsOverlap() throws Exception {
+        List<Long> dataIds = new ArrayList<Long>();
+
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(30953883, 80953883));
+        dataGaps.add(new DataGap(30953884, 80953883));
+        
+        runGapDetector(dataGaps, dataIds, true);
+
+        verify(dataService).findDataGaps();
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953884, 80953883));
+        verifyNoMoreInteractions(dataService);
+    }
+
+    //@Test
+    public void testGapsOverlapMultiple() throws Exception {
+        List<Long> dataIds = new ArrayList<Long>();
+
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(1, 10));
+        dataGaps.add(new DataGap(3, 8));
+        dataGaps.add(new DataGap(4, 6));
+        dataGaps.add(new DataGap(4, 8));
+        dataGaps.add(new DataGap(4, 5));
+        dataGaps.add(new DataGap(5, 10));
+        dataGaps.add(new DataGap(6, 11));
+        
+        runGapDetector(dataGaps, dataIds, true);
+
+        verify(dataService).findDataGaps();
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(3, 8));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 10));
+        
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(4, 6));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 10));
+
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(4, 8));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 10));
+
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(4, 5));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 10));
+
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(5, 10));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 10));
+
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(6, 11));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 11));
+
+        verifyNoMoreInteractions(dataService);
+    }
+
+    //@Test
+    public void testGapsOverlapThenData() throws Exception {
+        List<Long> dataIds = new ArrayList<Long>();
+        dataIds.add(30953883L);
+
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(30953883, 80953883));
+        dataGaps.add(new DataGap(30953884, 80953883));
+        
+        runGapDetector(dataGaps, dataIds, true);
+
+        verify(dataService).findDataGaps();
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953884, 80953883));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953883, 80953883));
+        verify(dataService).insertDataGap(new DataGap(30953884, 80953883));
+        verifyNoMoreInteractions(dataService);
+    }
+
+    //@Test
+    public void testGapsOverlapThenDataFull() throws Exception {
+        when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
+        List<Long> dataIds = new ArrayList<Long>();
+        dataIds.add(30953883L);
+
+        @SuppressWarnings("unchecked")
+        ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) Matchers.anyObject();
+        String sql = Matchers.anyString();
+        when(sqlTemplate.query(sql, mapper, Matchers.eq(30953883L), Matchers.eq(80953883L))).thenReturn(dataIds);
+
+        List<DataGap> dataGaps1 = new ArrayList<DataGap>();
+        dataGaps1.add(new DataGap(30953883, 80953883));
+        dataGaps1.add(new DataGap(30953884, 80953883));
+
+        List<DataGap> dataGaps2 = new ArrayList<DataGap>();
+        dataGaps2.add(new DataGap(30953884, 80953883));
+
+        dataIds = new ArrayList<Long>();
+        dataIds.add(30953883L);
+        
+        runGapDetector(dataGaps1, dataGaps2, dataIds, true);
+
+        verify(dataService, VerificationModeFactory.times(2)).findDataGaps();
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953884, 80953883));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953883, 80953883));
+        verify(dataService).insertDataGap(new DataGap(30953884, 80953883));
+        verifyNoMoreInteractions(dataService);
+    }
+
+    //@Test
+    public void testGapsOverlapAfterLastGap() throws Exception {
+        List<Long> dataIds = new ArrayList<Long>();
+        dataIds.add(30953883L);
+
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(30953883, 80953883));
+        dataGaps.add(new DataGap(30953884, 80953883));
+        dataGaps.add(new DataGap(30953885, 81953883));
+        dataGaps.add(new DataGap(30953885, 30953885));
+        
+        runGapDetector(dataGaps, dataIds, true);
+
+        verify(dataService).findDataGaps();
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953884, 80953883));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953885, 81953883));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953885, 30953885));
+        
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953883, 80953883));
+        verify(dataService).insertDataGap(new DataGap(30953884, 80953883));
+        verifyNoMoreInteractions(dataService);
+    }
+    
+    @Test
     public void testRandom() throws Exception {
         ThreadLocalRandom rand = ThreadLocalRandom.current();
         for (int loop = 0; loop < 5000; loop++) {
@@ -421,10 +552,38 @@ public class DataGapDetectorTest {
                     }
                 }
             }
-    
+
+            final Set<DataGap> allGaps = new HashSet<DataGap>(dataGaps);
+            doAnswer(new Answer<Void>() {
+                public Void answer(InvocationOnMock invocation) {
+                  Object[] args = invocation.getArguments();
+                  DataGap gap = (DataGap) args[1];
+                  checkDeleteGap(allGaps, gap);
+                  return null;
+                }
+            }).when(dataService).deleteDataGap(Matchers.eq(sqlTransaction), (DataGap) Matchers.anyObject());
+
+            doAnswer(new Answer<Void>() {
+                public Void answer(InvocationOnMock invocation) {
+                  Object[] args = invocation.getArguments();
+                  DataGap gap = (DataGap) args[1];
+                  checkInsertGap(allGaps, gap);
+                  return null;
+                }
+            }).when(dataService).insertDataGap(Matchers.eq(sqlTransaction), (DataGap) Matchers.anyObject());
+
+            doAnswer(new Answer<Void>() {
+                public Void answer(InvocationOnMock invocation) {
+                  Object[] args = invocation.getArguments();
+                  DataGap gap = (DataGap) args[0];
+                  checkInsertGap(allGaps, gap);
+                  return null;
+                }
+            }).when(dataService).insertDataGap((DataGap) Matchers.anyObject());
+
             runGapDetector(dataGaps, dataIds, true);
     
-            verify(dataService).findDataGaps();            
+            verify(dataService).findDataGaps();
 
             int index = 0;
             int lastIndex = dataGaps.size() - 1;
@@ -470,6 +629,35 @@ public class DataGapDetectorTest {
 
             verifyNoMoreInteractions(dataService);
             Mockito.reset(dataService);
+        }
+    }
+    
+    private void checkInsertGap(Set<DataGap> allGaps, DataGap gap) {
+        checkGap(allGaps, gap);
+        if (allGaps.contains(gap)) {
+            throw new RuntimeException("Detected a duplicate data gap: " + gap);
+        }
+        for (DataGap gapAdded : allGaps) {
+            if (gap.overlaps(gapAdded)) {
+                throw new RuntimeException("Detected an overlapping data gap: " + gap);
+            }
+        }
+        allGaps.add(gap);
+    }
+
+    private void checkDeleteGap(Set<DataGap> allGaps, DataGap gap) {
+        checkGap(allGaps, gap);
+        if (!allGaps.contains(gap)) {
+            throw new RuntimeException("Detected a delete of a non-existent data gap: " + gap);
+        }
+        allGaps.remove(gap);
+    }
+
+    private void checkGap(Set<DataGap> allGaps, DataGap gap) {
+        if (gap.getStartId() > gap.getEndId()) {
+            throw new RuntimeException("Detected an invalid gap range: " + gap);
+        } else if (gap.gapSize() < 50000000 - 1 && gap.gapSize() >= (long) (50000000 * 0.75)) {
+            throw new RuntimeException("Detected a very large gap range: " + gap);
         }
     }
 
