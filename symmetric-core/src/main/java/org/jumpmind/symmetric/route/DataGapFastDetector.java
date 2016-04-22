@@ -77,6 +77,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     
     protected long maxDataToSelect;
     
+    protected boolean isBusyExpire;
+        
     protected Set<DataGap> gapsAll;
     
     protected Set<DataGap> gapsAdded;
@@ -148,11 +150,18 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             }
         }
 
+        if (!isAllDataRead) {
+            long lastBusyExpireRunTime = contextService.getLong(ContextConstants.ROUTING_LAST_BUSY_EXPIRE_RUN_TIME);
+            long busyExpireMillis = parameterService.getLong(ParameterConstants.ROUTING_STALE_GAP_BUSY_EXPIRE_TIME);
+            isBusyExpire = lastBusyExpireRunTime == 0 || System.currentTimeMillis() - lastBusyExpireRunTime >= busyExpireMillis;
+        }
+
         try {
             long ts = System.currentTimeMillis();
             long lastDataId = -1;
             int dataIdCount = 0;
             int rangeChecked = 0;
+            int expireChecked = 0;
             gapsAll.addAll(gaps);
             Map<DataGap, List<Long>> dataIdMap = getDataIdMap();
 
@@ -175,32 +184,28 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                         gapsAll.remove(dataGap);
 
                     // if we did not find data in the gap and it was not the last gap
-                    } else if (!lastGap) {
+                    } else if (!lastGap && (isAllDataRead || isBusyExpire)) {
                         Date createTime = dataGap.getCreateTime();
+                        boolean isExpired = false;
                         if (supportsTransactionViews) {
-                            if (createTime != null && (createTime.getTime() < earliestTransactionTime || earliestTransactionTime == 0)) {
-                                if (isAllDataRead || dataService.countDataInRange(dataGap.getStartId() - 1, dataGap.getEndId() + 1) == 0) {
-                                    if (dataGap.getStartId() == dataGap.getEndId()) {
-                                        log.info(
-                                                "Found a gap in data_id at {}.  Skipping it because there are no pending transactions in the database",
-                                                dataGap.getStartId());
-                                    } else {
-                                        log.info(
-                                                "Found a gap in data_id from {} to {}.  Skipping it because there are no pending transactions in the database",
-                                                dataGap.getStartId(), dataGap.getEndId());
-                                    }
+                            isExpired = createTime != null && (createTime.getTime() < earliestTransactionTime || earliestTransactionTime == 0);
+                        } else {
+                            isExpired = createTime != null && databaseTime - createTime.getTime() > gapTimoutInMs;
+                        }
 
-                                    dataService.deleteDataGap(transaction, dataGap);
-                                    gapsDeleted.add(dataGap);
-                                    gapsAll.remove(dataGap);
-                                }
+                        if (isExpired) {
+                            boolean isGapEmpty = false;
+                            if (!isAllDataRead) {
+                                isGapEmpty = dataService.countDataInRange(dataGap.getStartId() - 1, dataGap.getEndId() + 1) == 0;
+                                expireChecked++;
                             }
-                        } else if (createTime != null && databaseTime - createTime.getTime() > gapTimoutInMs) {
-                            if (isAllDataRead || dataService.countDataInRange(dataGap.getStartId() - 1, dataGap.getEndId() + 1) == 0) {
+                            if (isAllDataRead || isGapEmpty) {
                                 if (dataGap.getStartId() == dataGap.getEndId()) {
-                                    log.info("Found a gap in data_id at {}.  Skipping it because the gap expired", dataGap.getStartId());
+                                    log.info("Found a gap in data_id at {}.  Skipping it because " +
+                                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), dataGap.getStartId());
                                 } else {
-                                    log.info("Found a gap in data_id from {} to {}.  Skipping it because the gap expired",
+                                    log.info("Found a gap in data_id from {} to {}.  Skipping it because " +
+                                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), 
                                             dataGap.getStartId(), dataGap.getEndId());
                                 }
                                 dataService.deleteDataGap(transaction, dataGap);
@@ -240,8 +245,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     if (System.currentTimeMillis() - printStats > 30000) {
                         log.info(
                                 "The data gap detection process has been running for {}ms, detected {} rows that have been previously routed over a total gap range of {}, "
-                                        + "inserted {} new gaps, and deleted {} gaps", new Object[] { System.currentTimeMillis() - ts,
-                                        dataIdCount, rangeChecked, gapsAdded.size(), gapsDeleted.size() });
+                                        + "inserted {} new gaps, deleted {} gaps, and checked data in {} gaps", new Object[] { System.currentTimeMillis() - ts,
+                                        dataIdCount, rangeChecked, gapsAdded.size(), gapsDeleted.size(), expireChecked });
                         printStats = System.currentTimeMillis();
                     }
 
@@ -272,6 +277,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             }
 
             contextService.save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, "false");
+            if (!isAllDataRead && expireChecked > 0) {
+                contextService.save(ContextConstants.ROUTING_LAST_BUSY_EXPIRE_RUN_TIME, String.valueOf(System.currentTimeMillis()));
+            }            
 
             long updateTimeInMs = System.currentTimeMillis() - ts;
             if (updateTimeInMs > 10000) {

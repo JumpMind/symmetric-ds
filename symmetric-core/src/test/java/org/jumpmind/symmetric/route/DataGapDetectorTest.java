@@ -1,11 +1,11 @@
 package org.jumpmind.symmetric.route;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doAnswer;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -86,7 +86,8 @@ public class DataGapDetectorTest {
         when(parameterService.getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME)).thenReturn(60000L);
         when(parameterService.getInt(ParameterConstants.DATA_ID_INCREMENT_BY)).thenReturn(1);
         when(parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE)).thenReturn(50000000L);
-        when(parameterService.getLong(ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS)).thenReturn(60000L);        
+        when(parameterService.getLong(ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS)).thenReturn(60000L);
+        when(parameterService.getLong(ParameterConstants.ROUTING_STALE_GAP_BUSY_EXPIRE_TIME)).thenReturn(60000L);
 
         IExtensionService extensionService = mock(ExtensionService.class);
         ISymmetricEngine engine = mock(AbstractSymmetricEngine.class);
@@ -333,6 +334,40 @@ public class DataGapDetectorTest {
     }
 
     @Test
+    public void testGapBusyExpireRun() throws Exception {
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(3, 3));
+        dataGaps.add(new DataGap(5, 6));
+        dataGaps.add(new DataGap(7, 50000006));
+
+        when(symmetricDialect.getDatabaseTime()).thenReturn(System.currentTimeMillis() + 60001L);
+        when(contextService.getLong(ContextConstants.ROUTING_LAST_BUSY_EXPIRE_RUN_TIME)).thenReturn(System.currentTimeMillis() - 61000);
+        runGapDetector(dataGaps, new ArrayList<Long>(), false);
+
+        verify(dataService).findDataGaps();
+        verify(dataService).countDataInRange(2, 4);
+        verify(dataService).countDataInRange(4, 7);
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(3, 3));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(5, 6));
+        verifyNoMoreInteractions(dataService);
+    }
+
+    @Test
+    public void testGapBusyExpireNoRun() throws Exception {
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(3, 3));
+        dataGaps.add(new DataGap(5, 6));
+        dataGaps.add(new DataGap(7, 50000006));
+
+        when(symmetricDialect.getDatabaseTime()).thenReturn(System.currentTimeMillis() + 60001L);
+        when(contextService.getLong(ContextConstants.ROUTING_LAST_BUSY_EXPIRE_RUN_TIME)).thenReturn(System.currentTimeMillis());
+        runGapDetector(dataGaps, new ArrayList<Long>(), false);
+
+        verify(dataService).findDataGaps();
+        verifyNoMoreInteractions(dataService);
+    }
+
+    @Test
     public void testGapExpireOracle() throws Exception {
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
@@ -400,6 +435,9 @@ public class DataGapDetectorTest {
         verify(dataService).insertDataGap(new DataGap(846, 50000845));
         verifyNoMoreInteractions(dataService);
     }
+
+    // Commenting out the overlap tests because these would need to be handled by
+    // a repair routine that runs at the beginning of the gap detection.
 
     //@Test
     public void testGapsOverlap() throws Exception {
@@ -529,7 +567,24 @@ public class DataGapDetectorTest {
         verify(dataService).insertDataGap(new DataGap(30953884, 80953883));
         verifyNoMoreInteractions(dataService);
     }
-    
+
+    @Test
+    public void testGapsDuplicate() throws Exception {
+        List<Long> dataIds = new ArrayList<Long>();
+        dataIds.add(31832439L);
+
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(31832006, 31832438));
+        dataGaps.add(new DataGap(31832439, 81832439));
+        dataGaps.add(new DataGap(31832440, 81832439));
+        
+        runGapDetector(dataGaps, dataIds, true);
+
+        verify(dataService).findDataGaps();
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(31832439, 81832439));
+        verifyNoMoreInteractions(dataService);
+    }
+
     @Test
     public void testRandom() throws Exception {
         ThreadLocalRandom rand = ThreadLocalRandom.current();

@@ -150,6 +150,7 @@ final public class ParameterConstants {
     public final static String ROUTING_PEEK_AHEAD_MEMORY_THRESHOLD = "routing.peek.ahead.memory.threshold.percent";
     public final static String ROUTING_PEEK_AHEAD_WINDOW = "routing.peek.ahead.window.after.max.size";
     public final static String ROUTING_STALE_DATA_ID_GAP_TIME = "routing.stale.dataid.gap.time.ms";
+    public final static String ROUTING_STALE_GAP_BUSY_EXPIRE_TIME = "routing.stale.gap.busy.expire.time.ms";
     public final static String ROUTING_LARGEST_GAP_SIZE = "routing.largest.gap.size";
 //    public final static String ROUTING_DATA_READER_TYPE_GAP_RETENTION_MINUTES = "routing.data.reader.type.gap.retention.period.minutes";
     public final static String ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED = "routing.data.reader.order.by.gap.id.enabled";
