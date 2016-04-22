@@ -569,7 +569,7 @@ public class DataGapDetectorTest {
     }
 
     @Test
-    public void testGapsDuplicate() throws Exception {
+    public void testGapsDuplicateDetection() throws Exception {
         List<Long> dataIds = new ArrayList<Long>();
         dataIds.add(31832439L);
 
@@ -582,6 +582,26 @@ public class DataGapDetectorTest {
 
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(31832439, 81832439));
+        verifyNoMoreInteractions(dataService);
+    }
+
+    @Test
+    public void testGapsOverlapDetection() throws Exception {
+        List<Long> dataIds = new ArrayList<Long>();
+        dataIds.add(31837983L);
+        dataIds.add(31837989L);
+
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(31837983, 81837982));
+        dataGaps.add(new DataGap(31837983, 81837983));
+        
+        runGapDetector(dataGaps, dataIds, true);
+
+        verify(dataService).findDataGaps();
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(31837983, 81837982));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(31837983, 81837983));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(31837984, 31837988));
+        verify(dataService).insertDataGap(new DataGap(31837990, 81837989));
         verifyNoMoreInteractions(dataService);
     }
 
