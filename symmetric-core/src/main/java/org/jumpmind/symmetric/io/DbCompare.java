@@ -406,7 +406,7 @@ public class DbCompare {
         if (!CollectionUtils.isEmpty(includedTableNames)) {
             for (String includedTableName : includedTableNames) {                
                 for (String tableName : tables) {
-                    if (StringUtils.equalsIgnoreCase(tableName.trim(), includedTableName.trim())) {
+                    if (compareTableNames(tableName, includedTableName)) {
                         filteredTables.add(tableName);
                     }
                 }
@@ -420,7 +420,7 @@ public class DbCompare {
 
             for (String excludedTableName : excludedTableNames) {            
                 for (String tableName : filteredTables) {
-                    if (StringUtils.equalsIgnoreCase(tableName.trim(), excludedTableName.trim())) {
+                    if (compareTableNames(tableName, excludedTableName)) {
                         excludedTables.remove(tableName);
                     }
                 }
@@ -429,6 +429,21 @@ public class DbCompare {
         }        
 
         return filteredTables;
+    }
+    
+    protected boolean compareTableNames(String sourceTableName, String targetTableName) {
+        sourceTableName = sourceTableName.trim();
+        targetTableName = targetTableName.trim();
+        
+        if (StringUtils.equalsIgnoreCase(sourceTableName, targetTableName)) {
+            return true;
+        } else {
+            Map<String, String> sourceTableNameParts = 
+                    sourceEngine.getDatabasePlatform().parseQualifiedTableName(sourceTableName);
+            Map<String, String> targetTableNameParts = 
+                    targetEngine.getDatabasePlatform().parseQualifiedTableName(targetTableName);
+            return StringUtils.equalsIgnoreCase(sourceTableNameParts.get("table"), targetTableNameParts.get("table"));
+        }                
     }
 
     public List<String> getIncludedTableNames() {
