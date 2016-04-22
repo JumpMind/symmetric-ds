@@ -25,7 +25,6 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IParameterService;
 
-// TODO: sqlite dialect should use this
 public class ContextService extends AbstractService implements IContextService {
 
     public ContextService(IParameterService parameterService, ISymmetricDialect dialect) {
@@ -41,8 +40,24 @@ public class ContextService extends AbstractService implements IContextService {
         return Integer.parseInt(getString(name));
     }
 
+    public int getInt(String name, int defaultVal) {
+        String val = getString(name);
+        if (val != null) {
+            return Integer.parseInt(val);
+        }
+        return defaultVal;
+    }
+
     public long getLong(String name) {
-        return Long.parseLong(getString(name));
+        return getLong(name, 0);
+    }
+
+    public long getLong(String name, long defaultVal) {
+        String val = getString(name);
+        if (val != null) {
+            return Long.parseLong(val);
+        }
+        return defaultVal;
     }
 
     public String getString(String name) {

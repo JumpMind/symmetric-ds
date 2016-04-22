@@ -28,8 +28,12 @@ public interface IContextService {
 
     public int getInt(String key);
     
+    public int getInt(String name, int defaultVal);
+    
     public long getLong(String key);
 
+    public long getLong(String name, long defaultVal);
+    
     public String getString(String key);
 
     public int insert(ISqlTransaction transaction, String name, String value);
