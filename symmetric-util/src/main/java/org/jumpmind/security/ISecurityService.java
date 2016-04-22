@@ -37,6 +37,10 @@ public interface ISecurityService {
     
     public String decrypt(String encText);
     
+    public String obfuscate(String plainText);
+    
+    public String unobfuscate(String obfText);
+    
     public KeyStore getKeyStore();
     
     public KeyStore getTrustStore();

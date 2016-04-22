@@ -20,17 +20,13 @@
  */
 package org.jumpmind.symmetric.io;
 
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
-import org.apache.xalan.templates.FuncKey;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -40,11 +36,9 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.DbCompareReport.TableReport;
-import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.slf4j.Logger;

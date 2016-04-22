@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 
 public class DbCompareTables {
+    
     private Table sourceTable;
     private Table targetTable;
     private TransformTableNodeGroupLink transform;
@@ -66,7 +67,6 @@ public class DbCompareTables {
     }
 
     protected void applyColumnMappingsFromTransform() {
-        
       for (Column sourceColumn : sourceTable.getColumns()) {
           List<TransformColumn> sourceTransformColumns = transform.getTransformColumnFor(sourceColumn.getName());
           if (!sourceTransformColumns.isEmpty()) {
@@ -84,9 +84,6 @@ public class DbCompareTables {
               }
           }
       }
-      
-      // when column policy is specified, make sure 
-      
     }
 
     protected void applyColumnMappingsDefault() {
