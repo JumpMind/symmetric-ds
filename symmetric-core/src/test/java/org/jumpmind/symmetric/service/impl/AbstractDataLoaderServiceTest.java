@@ -178,7 +178,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         assertNotNull(batch);
         assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status. " + printDatabase());
         assertEquals(batch.getFailedRowNumber(), 8l, "Wrong failed row number. " + batch.getSqlMessage() + ". " + printDatabase());
-        assertEquals(batch.getByteCount(), 496l, "Wrong byte count. " + printDatabase());
+        assertEquals(batch.getByteCount(), 483l, "Wrong byte count. " + printDatabase());
         assertEquals(batch.getStatementCount(), 8l, "Wrong statement count. " + printDatabase());
         assertEquals(batch.getFallbackInsertCount(), 1l, "Wrong fallback insert count. "
                 + printDatabase());
@@ -196,9 +196,9 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         insertValues[0] = getNextId();
         insertValues[2] = insertValues[4] = "inserted row for testUpdateCollision";
 
-        String[] updateValues = new String[TEST_COLUMNS.length];
+        String[] updateValues = new String[TEST_COLUMNS.length + 1];
         updateValues[0] = getId();
-        updateValues[TEST_COLUMNS.length - 1] = getNextId();
+        updateValues[TEST_COLUMNS.length] = getNextId();
         updateValues[2] = updateValues[4] = "update will become an insert that violates PK";
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -284,7 +284,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         assertNotNull(batch);
         assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status. " + printDatabase());
         assertEquals(batch.getFailedRowNumber(), 3l, "Wrong failed row number. " + printDatabase());
-        Assert.assertEquals("Wrong byte count: " + batch.getByteCount() + ". " + printDatabase(), 407,
+        Assert.assertEquals("Wrong byte count: " + batch.getByteCount() + ". " + printDatabase(), 394l,
                 batch.getByteCount());
         assertEquals(batch.getStatementCount(), 3l, "Wrong statement count. " + printDatabase());
         assertEquals(batch.getFallbackInsertCount(), 0l, "Wrong fallback insert count. "

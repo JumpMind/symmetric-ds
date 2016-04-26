@@ -37,10 +37,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -60,7 +58,6 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
-import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
@@ -75,7 +72,7 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
-import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
+import org.jumpmind.symmetric.io.data.writer.SimpleStagingDataWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
@@ -460,20 +457,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 l.syncStarted(ctx);
             }
 
-            long memoryThresholdInBytes = parameterService
-                    .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
-            long totalNetworkMillis = System.currentTimeMillis();
+            long memoryThresholdInBytes = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
             String targetNodeId = nodeService.findIdentityNodeId();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
-                IDataReader dataReader = new ProtocolDataReader(BatchType.LOAD, targetNodeId,
-                        transport.openReader());
-                IDataWriter dataWriter = new StagingDataWriter(memoryThresholdInBytes,
-                        sourceNode.getNodeId(), Constants.STAGING_CATEGORY_INCOMING,
-                        stagingManager, new LoadIntoDatabaseOnArrivalListener(processInfo,
-                                sourceNode.getNodeId(), listener));
-                new DataProcessor(dataReader, dataWriter, "transfer to stage").process(ctx);
-                totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
+                LoadIntoDatabaseOnArrivalListener loadListener = new LoadIntoDatabaseOnArrivalListener(processInfo,
+                        sourceNode.getNodeId(), listener);
+                new SimpleStagingDataWriter(transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING, 
+                        memoryThresholdInBytes, BatchType.LOAD, targetNodeId, ctx, loadListener).process();
             } else {
                 DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
                         targetNodeId, transport.openReader()), null, listener, "data load") {
