@@ -780,6 +780,7 @@ public class RestService {
     public final void postRemoveNodeByEngine(@RequestParam(value = "nodeId") String nodeId,
             @PathVariable("engine") String engineName) {
         getSymmetricEngine(engineName).removeAndCleanupNode(nodeId);
+        getSymmetricEngine(engineName).getNodeService().clearCache();
     }
 
     /**
