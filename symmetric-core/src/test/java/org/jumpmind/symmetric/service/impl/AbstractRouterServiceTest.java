@@ -1047,7 +1047,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             ;
 
             gaps = getDataService().findDataGaps();
-            Assert.assertEquals("Gap should have expired", 1, gaps.size());
+            Assert.assertEquals("Gap should have expired", 2, gaps.size());
         }
     }
 

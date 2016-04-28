@@ -354,7 +354,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     @Override
-    public OutgoingBatches getOutgoingBatches(String nodeId, String channelId, boolean includeDisabledChannels) {
+    public OutgoingBatches getOutgoingBatches(String nodeId, String channelThread, boolean includeDisabledChannels) {
         long ts = System.currentTimeMillis();
         final int maxNumberOfBatchesToSelect = parameterService.getInt(
                 ParameterConstants.OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
@@ -362,9 +362,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         String sql = null;
         Object[] params = null;
         
-        if (channelId != null) {
+        if (channelThread != null) {
         	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchChannelSql");
-        	params = new Object[] { nodeId, channelId, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
+        	params = new Object[] { nodeId, channelThread, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
                     OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                     OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                     OutgoingBatch.Status.IG.name() };

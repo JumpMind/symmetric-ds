@@ -157,7 +157,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     }
                     reloadBatchesProcessed = status.getReloadBatchesProcessed();
                     log.debug("Push requested for {} {}", node, 
-                    		nodeCommunication.isThreadChannel() ? " channel " + nodeCommunication.getChannelId() : "");
+                    		" channel " + nodeCommunication.getQueue());
                     pushToNode(node, status);
                     if (!status.failed() && status.getBatchesProcessed() > 0 
                             && status.getBatchesProcessed() != lastBatchCount) {
@@ -172,7 +172,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                         status.getBatchesProcessed()});                        
                     }
                     log.debug("Push completed for {} {}", node, 
-                    		nodeCommunication.isThreadChannel() ? " channel " + nodeCommunication.getChannelId() : "");
+                    		" channel " + nodeCommunication.getQueue());
                     lastBatchCount = status.getBatchesProcessed();
                 } while (status.getReloadBatchesProcessed() > reloadBatchesProcessed && !status.failed());
             } finally {

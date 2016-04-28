@@ -35,7 +35,7 @@ public class NodeCommunication implements Serializable {
 
     private String nodeId;
 
-    private String channelId = "0";
+    private String queue = "default";
     
     private CommunicationType communicationType;
 
@@ -67,12 +67,12 @@ public class NodeCommunication implements Serializable {
         this.nodeId = nodeId;
     }
     
-    public String getChannelId() {
-		return channelId;
+    public String getQueue() {
+		return queue;
 	}
 
-	public void setChannelId(String channelId) {
-		this.channelId = channelId;
+	public void setQueue(String queue) {
+		this.queue = queue;
 	}
 
 	public CommunicationType getCommunicationType() {
@@ -192,10 +192,7 @@ public class NodeCommunication implements Serializable {
     }   
     
     public String getIdentifier() {
-    	return getChannelId() == null || getChannelId().equals("0") ? getNodeId() : getNodeId() + "-" + getChannelId();
+    	return getNodeId() + "-" + getQueue();
     }
 
-    public boolean isThreadChannel() {
-    	return getChannelId() != null && !getChannelId().equals("0");
-    }
 }

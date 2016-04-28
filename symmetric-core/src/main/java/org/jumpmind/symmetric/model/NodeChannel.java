@@ -231,4 +231,11 @@ public class NodeChannel implements Serializable {
         return this.channel.getLastUpdateTime();
     }
     
+    public void setQueue(String queue) {
+    	this.channel.setQueue(queue);
+    }
+    
+    public String getQueue() {
+    	return this.channel.getQueue();
+    }
 }

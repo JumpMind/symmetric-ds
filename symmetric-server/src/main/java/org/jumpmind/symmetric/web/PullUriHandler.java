@@ -118,12 +118,11 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                             map);
                     ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
                             nodeService.findIdentityNodeId(), map.getThreadChannel(), nodeId, ProcessType.PULL_HANDLER));
-                    processInfo.setThreadPerChannel(map.getThreadChannel() != null && !map.getThreadChannel().equals("0"));
                     
                     try {
                         Node targetNode = nodeService.findNode(nodeId);
                         List<OutgoingBatch> batchList = dataExtractorService.extract(processInfo, targetNode,
-                                outgoingTransport);
+                        		map.getThreadChannel(), outgoingTransport);
                         logDataReceivedFromPush(targetNode, batchList);
                         if (processInfo.getStatus() != Status.ERROR) {
                             processInfo.setStatus(Status.OK);

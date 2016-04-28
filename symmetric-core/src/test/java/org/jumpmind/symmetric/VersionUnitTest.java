@@ -44,7 +44,7 @@ public class VersionUnitTest {
         assertTrue(Version.isOlderVersion("1.5.5"));
         assertTrue(Version.isOlderVersion("1.6.0"));
         assertTrue(Version.isOlderVersion("1.6.1"));
-        assertFalse(Version.isOlderVersion("3.7.1"));
+        assertTrue(Version.isOlderVersion("3.7.1"));
     }
     
     @Test

@@ -152,14 +152,16 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                             (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0)) {
                         log.info(
                                 "Pull data received from {} {}.  {} rows and {} batches were processed",
-                                new Object[] { node.toString(), nodeCommunication.isThreadChannel() ? "on channel " + nodeCommunication.getChannelId() : "", 
+                                new Object[] { node.toString(), 
+                                		"on channel thread " + nodeCommunication.getQueue(), 
                                 		status.getDataProcessed(),
                                         status.getBatchesProcessed() });
 
                     } else if (status.failed()) {
                         log.info(
                                 "There was a failure while pulling data from {} {}.  {} rows and {} batches were processed",
-                                new Object[] { node.toString(), nodeCommunication.isThreadChannel() ? "on channel " + nodeCommunication.getChannelId() : "",
+                                new Object[] { node.toString(), 
+                                		"on channel thread " + nodeCommunication.getQueue(),
                                 		status.getDataProcessed(),
                                         status.getBatchesProcessed() });
                     }

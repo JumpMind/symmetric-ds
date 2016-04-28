@@ -68,6 +68,8 @@ public class Channel implements Serializable {
     
     private boolean fileSyncFlag = false;
 
+    private String queue;
+    
     public Channel() {
     }
 
@@ -97,6 +99,7 @@ public class Channel implements Serializable {
         this.enabled = enabled;
         this.extractPeriodMillis = extractPeriodMillis;
         this.containsBigLob = containsBigLobs;
+        this.queue = "default";
     }
 
     public String getChannelId() {
@@ -265,7 +268,15 @@ public class Channel implements Serializable {
         return reloadFlag;
     }
     
-    @Override
+    public String getQueue() {
+		return queue;
+	}
+
+	public void setQueue(String queue) {
+		this.queue = queue;
+	}
+
+	@Override
     public int hashCode() {
         if (channelId != null) {
             return channelId.hashCode();

@@ -36,25 +36,25 @@ public class NodeCommunicationServiceSqlMap extends AbstractSqlMap {
                 "select * from $(node_communication) where communication_type=? order by last_lock_time");
         
         putSql("selectNodeCommunicationByNodeAndChannelSql",
-                "select * from $(node_communication) where node_id=? and channel_id=? and communication_type=?");
+                "select * from $(node_communication) where node_id=? and queue=? and communication_type=?");
 
         putSql("insertNodeCommunicationSql", "insert into $(node_communication) ("
                 + "lock_time,locking_server_id,last_lock_millis,success_count,fail_count,"
                 + "total_success_count,total_fail_count,total_success_millis,total_fail_millis,last_lock_time,"
-                + "node_id,channel_id,communication_type) values(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                + "node_id,queue,communication_type) values(?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
         putSql("updateNodeCommunicationSql",
                 "update $(node_communication) set lock_time=?,locking_server_id=?,last_lock_millis=?,"
                         + "success_count=?,fail_count=?,total_success_count=?,total_fail_count=?,"
                         + "total_success_millis=?,total_fail_millis=?, last_lock_time=? "
-                        + "where node_id=? and channel_id=? and communication_type=?");
+                        + "where node_id=? and queue=? and communication_type=?");
 
         putSql("deleteNodeCommunicationSql",
-                "delete from $(node_communication) where node_id=? and channel_id=? and communication_type=?");
+                "delete from $(node_communication) where node_id=? and queue=? and communication_type=?");
 
         putSql("aquireLockSql",
                 "update $(node_communication) set locking_server_id=?, lock_time=?, last_lock_time=? where "
-                        + "  node_id=? and channel_id=? and communication_type=? and "
+                        + "  node_id=? and queue=? and communication_type=? and "
                         + " (lock_time is null or lock_time < ?)   ");
 
     }

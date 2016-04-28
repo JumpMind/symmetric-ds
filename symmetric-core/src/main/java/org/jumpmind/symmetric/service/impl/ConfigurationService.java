@@ -252,6 +252,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         channel.getExtractPeriodMillis(), channel.getDataLoaderType(),
                         channel.getLastUpdateTime(), channel.getLastUpdateBy(),
                         channel.isReloadFlag() ? 1 : 0, channel.isFileSyncFlag() ? 1 : 0,
+                        channel.getQueue(), 
                         channel.getChannelId() })) {
             channel.setCreateTime(new Date());
             sqlTemplate.update(
@@ -265,7 +266,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             channel.getBatchAlgorithm(), channel.getExtractPeriodMillis(),
                             channel.getDataLoaderType(), channel.getLastUpdateTime(),
                             channel.getLastUpdateBy(), channel.getCreateTime(),
-                            channel.isReloadFlag() ? 1 : 0, channel.isFileSyncFlag() ? 1 : 0, });
+                            channel.isReloadFlag() ? 1 : 0, channel.isFileSyncFlag() ? 1 : 0, 
+                            channel.getQueue() });
         }
         if (reloadChannels) {
             clearCache();
@@ -383,6 +385,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                         nodeChannel.setFileSyncFlag(row
                                                 .getBoolean("file_sync_flag"));
                                         nodeChannel.setReloadFlag(row.getBoolean("reload_flag"));
+                                        nodeChannel.setQueue(row.getString("queue"));
                                         return nodeChannel;
                                     };
                                 }, nodeId);
@@ -563,6 +566,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                     channel.setLastUpdateTime(row.getDateTime("last_update_time"));
                                     channel.setReloadFlag(row.getBoolean("reload_flag"));
                                     channel.setFileSyncFlag(row.getBoolean("file_sync_flag"));
+                                    channel.setQueue(row.getString("queue"));
                                     return channel;
                                 }
                             });
