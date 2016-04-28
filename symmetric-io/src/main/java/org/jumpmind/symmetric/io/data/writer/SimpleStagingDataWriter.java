@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 public class SimpleStagingDataWriter {
 
-    final static int MAX_WRITE_LENGTH = 262144;
+    final static int MAX_WRITE_LENGTH = 32768;
     
     protected final Logger log = LoggerFactory.getLogger(getClass());
 

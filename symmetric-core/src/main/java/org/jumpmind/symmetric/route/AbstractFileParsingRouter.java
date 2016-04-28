@@ -2,6 +2,7 @@ package org.jumpmind.symmetric.route;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -88,7 +89,7 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 			}
 		}
 
-		return toNodeIds(nodes, null);
+		return new HashSet<String>();
 
 	}
 

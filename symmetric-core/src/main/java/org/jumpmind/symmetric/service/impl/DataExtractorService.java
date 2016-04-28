@@ -35,7 +35,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
@@ -505,10 +512,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return extracted;
     }
 
-    protected List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
-            List<OutgoingBatch> activeBatches, IDataWriter dataWriter, BufferedWriter writer, ExtractMode mode) {
-        boolean streamToFileEnabled = parameterService
-                .is(ParameterConstants.STREAM_TO_FILE_ENABLED);
+    protected List<OutgoingBatch> extract(final ProcessInfo processInfo, final Node targetNode,
+            List<OutgoingBatch> activeBatches, final IDataWriter dataWriter, final BufferedWriter writer, final ExtractMode mode) {
+        boolean streamToFileEnabled = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED);
         List<OutgoingBatch> processedBatches = new ArrayList<OutgoingBatch>(activeBatches.size());
         if (activeBatches.size() > 0) {
             Set<String> channelsProcessed = new HashSet<String>();
@@ -518,8 +524,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                 long bytesSentCount = 0;
                 int batchesSentCount = 0;
-                long maxBytesToSync = parameterService
-                        .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+                long maxBytesToSync = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+                ExecutorService executor = null;
+                List<Future<OutgoingBatch>> futures = null;
+                if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT) {
+                    executor = Executors.newFixedThreadPool(1, new DataExtractorThreadFactory());
+                    futures = new ArrayList<Future<OutgoingBatch>>();
+                }
 
                 for (int i = 0; i < activeBatches.size(); i++) {
                     currentBatch = activeBatches.get(i);
@@ -564,30 +575,41 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         
                     if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT) {
                         processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
-                        currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch,
-                                dataWriter, writer, mode);
+                        final OutgoingBatch sendBatch = currentBatch;
+                        Callable<OutgoingBatch> callable = new Callable<OutgoingBatch>() {
+                            public OutgoingBatch call() throws Exception {
+                                return sendOutgoingBatch(processInfo, targetNode, sendBatch, dataWriter, writer, mode);
+                            }
+                        };
+                        futures.add(executor.submit(callable));
+                    } else {
+                        if (currentBatch.getStatus() != Status.OK) {
+                            currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
+                            changeBatchStatus(Status.LD, currentBatch, mode);
+                        }
                     }
                     
                     processedBatches.add(currentBatch);
-
-                    if (currentBatch.getStatus() != Status.OK) {
-                        currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
-                        changeBatchStatus(Status.LD, currentBatch, mode);
-
-                        bytesSentCount += currentBatch.getByteCount();
-                        batchesSentCount++;
-                        
-                        if (bytesSentCount >= maxBytesToSync && processedBatches.size() < activeBatches.size()) {
-                            log.info(
-                                    "Reached the total byte threshold after {} of {} batches were extracted for node '{}'.  The remaining batches will be extracted on a subsequent sync",
-                                    new Object[] { batchesSentCount, activeBatches.size(),
-                                            targetNode.getNodeId() });
-                            break;
-                        }
-                    }                                       
+                    bytesSentCount += currentBatch.getByteCount();
+                    batchesSentCount++;
+                    
+                    if (bytesSentCount >= maxBytesToSync && processedBatches.size() < activeBatches.size()) {
+                        log.info(
+                                "Reached the total byte threshold after {} of {} batches were extracted for node '{}'.  The remaining batches will be extracted on a subsequent sync",
+                                new Object[] { batchesSentCount, activeBatches.size(),
+                                        targetNode.getNodeId() });
+                        break;
+                    }
                 }
 
-            } catch (RuntimeException e) {
+                if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT) {
+                    executor.shutdown();
+                    executor.awaitTermination(12, TimeUnit.HOURS);
+                    for (Future<OutgoingBatch> future : futures) {
+                        currentBatch = future.get();
+                    }
+                }
+            } catch (Exception e) {
                 SQLException se = unwrapSqlException(e);
                 if (currentBatch != null) {
                     /* Reread batch in case the ignore flag has been set */
@@ -1819,6 +1841,23 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             return initialLoadSelect;
         }
 
+    }
+
+    class DataExtractorThreadFactory implements ThreadFactory {
+        AtomicInteger threadNumber = new AtomicInteger(1);
+        String namePrefix = parameterService.getEngineName().toLowerCase() + "-data-extractor-";
+
+        public Thread newThread(Runnable runnable) {
+            Thread thread = new Thread(runnable);
+            thread.setName(namePrefix + threadNumber.getAndIncrement());
+            if (thread.isDaemon()) {
+                thread.setDaemon(false);
+            }
+            if (thread.getPriority() != Thread.NORM_PRIORITY) {
+                thread.setPriority(Thread.NORM_PRIORITY);
+            }
+            return thread;
+        }
     }
 
 }

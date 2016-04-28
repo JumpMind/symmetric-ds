@@ -137,6 +137,58 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  set nocount off      \n" +
 "                                  end                                                                                                                                                                  " );
 
+        sqlTemplates.put("updateHandleKeyUpdatesTriggerTemplate" ,
+"create trigger $(triggerName) on $(schemaName)$(tableName) for update as                                                                                                                             \n" +
+"   begin                                                                                                                                                                  \n" +
+"     declare @NCT int \n" +
+"     set @NCT = @@OPTIONS & 512 \n" +
+"     set nocount on                                                                                                                                                       \n" +
+"     declare @TransactionId varchar(1000)                                                                                                                                 \n" +
+"     declare @DataRow varchar(16384)                                                                                                                                      \n" +
+"     declare @OldPk varchar(2000)                                                                                                                                         \n" +
+"     declare @OldDataRow varchar(16384)                                                                                                                                     \n" +                                                                                                                                       
+"     declare @clientapplname varchar(50)  \n" +
+"     select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   \n" +
+"     declare @clientname varchar(50)    \n" +
+"     select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +
+"     declare @ChannelId varchar(128)                                                                                                                                       \n" +
+"     $(declareOldKeyVariables)                                                                                                                                            \n" +
+"     $(declareNewKeyVariables)                                                                                                                                            \n" +
+"                                  declare @txid varchar(50)                                                                                                                                            \n" +
+"                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
+"                                      select @txid = $(txIdExpression)                             \n" +
+"                                  end                                                                                                                                                                \n" +
+"     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
+"       declare DeleteCursor cursor  for                                                                                                                                \n" +
+"          select $(oldKeys), $(oldColumns) $(oldKeyNames) from deleted where $(syncOnDeleteCondition)                                                                      \n" +
+"       declare InsertCursor cursor for                                                                                                                                \n" +
+"          $(if:containsBlobClobColumns)                                                                                                                                      \n" +
+"             select $(columns) $(newKeyNames), $(channelExpression) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)\n" +
+"          $(else:containsBlobClobColumns)                                                                                                                                    \n" +
+"             select $(columns) $(newKeyNames), $(channelExpression) from inserted where $(syncOnInsertCondition)                                                                                   \n" +
+"          $(end:containsBlobClobColumns)                                                                                                                                     \n" +
+"          open DeleteCursor                                                                                                                                                 \n" +
+"          open InsertCursor                                                                                                                                                 \n" +
+"          fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          \n" +
+"          fetch next from InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                    \n" +
+"          while @@sqlstatus = 0 begin                                                                                                                                  \n" +
+"            if ($(dataHasChangedCondition)) begin                                                                                                                                \n" +
+"              insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"                values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, @txid, @clientname, $(externalSelect), getdate())\n" +
+"            end                                                                                                                                                             \n" +
+"            fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                      \n" +
+"            fetch next from InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                              \n" +
+"          end                                                                                                                                                             \n" +
+"          close DeleteCursor                                                                                                                                                \n" +
+"          close InsertCursor                                                                                                                                                \n" +
+"          deallocate cursor DeleteCursor                                                                                                                                           \n" +
+"          deallocate cursor InsertCursor                                                                                                                                           \n" +
+"       end                                                                                                                                                                \n" +
+"       $(custom_on_update_text)                                                                                                                                             \n" +
+"     set nocount off                                                                                                                                        \n" +
+"   end                                                                                                                                                                    \n"
+);
+
 
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for delete as                                                                                                                               \n" +
