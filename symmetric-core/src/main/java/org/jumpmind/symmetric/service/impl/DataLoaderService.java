@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
@@ -42,6 +43,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
@@ -58,6 +60,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -217,7 +220,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 InternalIncomingTransport transport = new InternalIncomingTransport(
                         new BufferedReader(new StringReader(batchData)));
                 List<IncomingBatch> list = loadDataFromTransport(processInfo,
-                        nodeService.findIdentity(), transport);
+                        nodeService.findIdentity(), transport, null);
                 processInfo.setStatus(ProcessInfo.Status.OK);
                 return list;
             } catch (IOException ex) {
@@ -275,7 +278,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
                     .getNodeId(), status.getChannelId(), local.getNodeId(), ProcessType.PULL_JOB));
             try {
-                List<IncomingBatch> list = loadDataFromTransport(processInfo, remote, transport);
+                List<IncomingBatch> list = loadDataFromTransport(processInfo, remote, transport, null);
                 if (list.size() > 0) {
                     processInfo.setStatus(ProcessInfo.Status.ACKING);
                     status.updateIncomingStatus(list);
@@ -363,7 +366,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     .getNodeId(), channelId, local.getNodeId(), ProcessInfoKey.ProcessType.PUSH_HANDLER));
             try {
                 List<IncomingBatch> batchList = loadDataFromTransport(processInfo, sourceNode,
-                        new InternalIncomingTransport(in));
+                        new InternalIncomingTransport(in), out);
                 logDataReceivedFromPush(sourceNode, batchList);
                 NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
                 processInfo.setStatus(ProcessInfo.Status.ACKING);
@@ -410,7 +413,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 .getNodeId(), local.getNodeId(), ProcessType.OFFLINE_PULL));
         List<IncomingBatch> list = null;
         try {
-            list = loadDataFromTransport(processInfo, remote, transport);
+            list = loadDataFromTransport(processInfo, remote, transport, null);
             if (list.size() > 0) {
                 processInfo.setStatus(ProcessInfo.Status.ACKING);
                 status.updateIncomingStatus(list);
@@ -437,7 +440,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * acknowledgment is sent later.
      */
     protected List<IncomingBatch> loadDataFromTransport(final ProcessInfo processInfo,
-            final Node sourceNode, IIncomingTransport transport) throws IOException {
+            final Node sourceNode, IIncomingTransport transport, OutputStream out) throws IOException {
         final ManageIncomingBatchListener listener = new ManageIncomingBatchListener();
         final DataContext ctx = new DataContext();
         Throwable error = null;
@@ -472,10 +475,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         sourceNode.getNodeId(), listener, executor);
                 new SimpleStagingDataWriter(transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING, 
                         memoryThresholdInBytes, BatchType.LOAD, targetNodeId, ctx, loadListener).process();
+                executor.shutdown();
 
-                while (!loadListener.isDone()) {
-                    Thread.sleep(1000);
+                OutputStreamWriter outWriter = null;
+                if (out != null) {
+                    outWriter = new OutputStreamWriter(out, IoConstants.ENCODING);
+                    long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
+                    while (!executor.awaitTermination(keepAliveMillis, TimeUnit.MILLISECONDS)) {
+                        outWriter.write("1=1&");
+                        outWriter.flush();
+                    }
+                } else {
+                    executor.awaitTermination(12, TimeUnit.HOURS);
                 }
+                loadListener.isDone();
             } else {
                 DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
                         targetNodeId, transport.openReader()), null, listener, "data load") {
@@ -888,11 +901,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                     batch.getTargetNodeId(), resource), null, listener, "data load from stage") {
                                 @Override
                                 protected IDataWriter chooseDataWriter(Batch batch) {
-                                    return buildDataWriter(processInfo, sourceNodeId, batch.getChannelId(),
-                                            batch.getBatchId());
+                                    return buildDataWriter(processInfo, sourceNodeId, batch.getChannelId(), batch.getBatchId());
                                 }
                             };
-
                             processor.process(ctx);
                         } catch (Exception e) {
                             isError = true;

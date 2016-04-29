@@ -168,6 +168,7 @@ final public class ParameterConstants {
     public final static String DATA_LOADER_FIT_TO_COLUMN = "dataloader.fit.to.column";
     public final static String DATA_LOADER_ERROR_RECORD_CUR_VAL = "dataloader.error.save.curval";
     public final static String DATA_LOADER_NUM_OF_ACK_RETRIES = "num.of.ack.retries";
+    public final static String DATA_LOADER_SEND_ACK_KEEPALIVE = "send.ack.keepalive.ms";
     public final static String DATA_LOADER_TIME_BETWEEN_ACK_RETRIES = "time.between.ack.retries.ms";
     public final static String DATA_LOADER_MAX_ROWS_BEFORE_COMMIT = "dataloader.max.rows.before.commit";
     public final static String DATA_LOADER_CREATE_TABLE_ALTER_TO_MATCH_DB_CASE = "dataloader.create.table.alter.to.match.db.case";
