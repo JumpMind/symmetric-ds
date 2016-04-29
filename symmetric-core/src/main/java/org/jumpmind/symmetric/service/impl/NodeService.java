@@ -244,6 +244,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void deleteNode(String nodeId, boolean syncChange) {
+        clearCache();
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
@@ -334,6 +335,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean updateNode(Node node) {
+        clearCache();
         boolean updated = sqlTemplate.update(
                 getSql("updateNodeSql"),
                 new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
