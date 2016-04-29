@@ -36,6 +36,7 @@ public class RefreshCacheJob extends AbstractJob {
     
     @Override
     public void doJob(boolean force) throws Exception {
+        engine.getNodeService().refreshFromDatabase();
         engine.getParameterService().refreshFromDatabase();
         engine.getTriggerRouterService().refreshFromDatabase();
         engine.getGroupletService().refreshFromDatabase();
