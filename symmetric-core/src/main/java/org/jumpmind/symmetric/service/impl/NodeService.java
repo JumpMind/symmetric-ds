@@ -473,6 +473,12 @@ public class NodeService extends AbstractService implements INodeService {
     public void clearCache() {
         cachedNodeList.set(null);
     }
+    
+    public boolean refreshFromDatabase() {
+        clearCache();
+        findAllNodes();
+        return true;
+    }    
 
     public Map<String, Node> findAllNodesAsMap() {
         List<Node> nodes = findAllNodes();

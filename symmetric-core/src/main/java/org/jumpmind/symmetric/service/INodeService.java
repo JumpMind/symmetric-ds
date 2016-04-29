@@ -187,6 +187,6 @@ public interface INodeService {
 
     public NetworkedNode getRootNetworkedNode();
     
-    public void clearCache();
+    public boolean refreshFromDatabase();
     
 }
