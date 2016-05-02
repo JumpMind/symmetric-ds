@@ -31,7 +31,8 @@ static SymDatabaseParameter * databaseParameterMapper(SymRow *row) {
 
 void * parameterMapper(SymRow *row, SymParameterService *this) {
     if (row->getString(row, "param_value")) {
-        this->parameters->put(this->parameters, row->getStringNew(row, "param_key"), row->getStringNew(row, "param_value"));
+        char* name = row->getStringNew(row, "param_key");
+        this->parameters->put(this->parameters, name, row->getStringNew(row, "param_value"));
     }
     return NULL;
 }
