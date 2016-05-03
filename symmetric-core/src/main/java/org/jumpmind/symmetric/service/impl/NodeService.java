@@ -66,8 +66,6 @@ public class NodeService extends AbstractService implements INodeService {
 
     private Node cachedNodeIdentity;
     
-    private AtomicReference<List<Node>> cachedNodeList = new AtomicReference<List<Node>>(null);
-
     private Map<String, NodeSecurity> securityCache;
 
     private long securityCacheTime;
@@ -316,7 +314,6 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void save(Node node) {
-        clearCache();
         if (!updateNode(node)) {
             sqlTemplate.update(
                     getSql("insertNodeSql"),
@@ -458,18 +455,8 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public List<Node> findAllNodes() {
-        List<Node> nodeList = cachedNodeList.get(); 
-        if (nodeList != null) {
-            return nodeList;
-        } else {
-            nodeList = sqlTemplate.query(getSql("selectNodePrefixSql"), new NodeRowMapper());
-            cachedNodeList.set(nodeList);
-        }
+        List<Node> nodeList = sqlTemplate.query(getSql("selectNodePrefixSql"), new NodeRowMapper());
         return nodeList;
-    }
-    
-    public void clearCache() {
-        cachedNodeList.set(null);
     }
 
     public Map<String, Node> findAllNodesAsMap() {

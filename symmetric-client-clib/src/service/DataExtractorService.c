@@ -62,7 +62,8 @@ SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode
         SymDataReader *reader = (SymDataReader *) SymExtractDataReader_new(NULL, batches->batches, info.sourceNode->nodeId, targetNode->nodeId,
                 this->dataService, this->triggerRouterService, this->platform, (void *) SymDataExtractorService_batchProcessed, (void *) &info);
         SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataWriter_new(NULL, info.sourceNode->nodeId, reader);
-        long rc = transport->process(transport, processor);
+
+        long rc = transport->process(transport, processor, NULL);
         SymLog_debug("Transport rc = %ld" , rc);
 
         reader->destroy(reader);

@@ -27,6 +27,8 @@
 #include "util/StringBuilder.h"
 #include "util/StringArray.h"
 
+#define SYM_NOT_FOUND -1
+
 typedef struct {
     char *key;
     char *value;

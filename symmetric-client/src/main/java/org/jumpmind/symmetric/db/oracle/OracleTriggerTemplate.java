@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.db.oracle;
 
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
@@ -63,11 +65,11 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                  'I',                                                                   \n" +
 "                  $(triggerHistoryId),                                                   \n" +
 "                  $(oracleToClob)$(columns),                                             \n" +
-"                  $(channelExpression),                                                      \n" +
+"                  $(channelExpression),                                                  \n" +
 "                  $(txIdExpression),                                                     \n" +
 "                  $(prefixName)_pkg.disable_node_id,                                     \n" +
 "                  $(externalSelect),                                                     \n" +
-"                  CURRENT_TIMESTAMP                                                      \n" +
+"                                      " + getCreateTimeExpression(symmetricDialect) + "  \n" +
 "                 );                                                                      \n" +
 "           end if;                                                                       \n" +
 "           $(custom_on_insert_text)                                                      \n" +
@@ -93,11 +95,11 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                          $(oldKeys),                                                                                                                                                    \n" +
 "                                          var_row_data,                                                                                                                                                  \n" +
 "                                          var_old_data,                                                                                                                                                  \n" +
-"                                          $(channelExpression),                                                                                                                                              \n" +
+"                                          $(channelExpression),                                                                                                                                          \n" +
 "                                          $(txIdExpression),                                                                                                                                             \n" +
 "                                          $(prefixName)_pkg.disable_node_id,                                                                                                                             \n" +
 "                                          $(externalSelect),                                                                                                                                             \n" +
-"                                          CURRENT_TIMESTAMP                                                                                                                                              \n" +
+"                                      " + getCreateTimeExpression(symmetricDialect) + "                                                                                                                  \n" +
 "                                        );                                                                                                                                                               \n" +
 "                                      end if;                                                                                                                                                            \n" +
 "                                    end if;                                                                                                                                                              \n" +
@@ -110,18 +112,18 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                for each row begin                                                                                                                                                     \n" +
 "                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
-"                                    (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                                                \n" +
+"                                    (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               \n" +
 "                                    values(                                                                                                                                                            \n" +
 "                                      '$(targetTableName)',                                                                                                                                            \n" +
 "                                      'D',                                                                                                                                                             \n" +
 "                                      $(triggerHistoryId),                                                                                                                                             \n" +
 "                                      $(oldKeys),                                                                                                                                                      \n" +
 "                                      $(oracleToClob)$(oldColumns),                                                                                                                                    \n" +
-"                                      $(channelExpression),                                                                                                                                                \n" +
+"                                      $(channelExpression),                                                                                                                                            \n" +
 "                                      $(txIdExpression),                                                                                                                                               \n" +
 "                                      $(prefixName)_pkg.disable_node_id,                                                                                                                               \n" +
 "                                      $(externalSelect),                                                                                                                                               \n" +
-"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
+"                                      " + getCreateTimeExpression(symmetricDialect) + "                                                                                                                \n" + 
 "                                    );                                                                                                                                                                 \n" +
 "                                  end if;                                                                                                                                                              \n" +
 "                                  $(custom_on_delete_text)                                                                                                                                             \n" +
@@ -129,6 +131,15 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(oracleToClob)$(columns) from $(schemaName)$(tableName) t  where $(whereClause)                                                                                                                " );
+    }
+    
+    protected String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
+        String timezone = symmetricDialect.getParameterService().getString(ParameterConstants.DATA_CREATE_TIME_TIMEZONE);
+        if (StringUtils.isEmpty(timezone)) {
+            return "CURRENT_TIMESTAMP";
+        } else {
+            return String.format("CURRENT_TIMESTAMP AT TIME ZONE '%s'", timezone);
+        }    
     }
 
 }

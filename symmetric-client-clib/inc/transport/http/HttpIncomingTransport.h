@@ -31,6 +31,7 @@
 #include "util/Properties.h"
 #include "common/ParameterConstants.h"
 #include "common/Log.h"
+#include "model/RemoteNodeStatus.h"
 
 typedef struct SymHttpIncomingTransport {
     SymIncomingTransport super;

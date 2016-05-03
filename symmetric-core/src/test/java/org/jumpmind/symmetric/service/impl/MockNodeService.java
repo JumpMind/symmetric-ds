@@ -296,7 +296,4 @@ public class MockNodeService implements INodeService {
         return nodeId;
     }
 
-    public void clearCache() {       
-    }
-
 }

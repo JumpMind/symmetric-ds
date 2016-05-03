@@ -64,7 +64,7 @@ char* SymFileIncomingTransport_getIncomingFile(SymFileIncomingTransport *this, c
     return firstFile;
 }
 
-long SymFileIncomingTransport_process(SymFileIncomingTransport *this, SymDataProcessor *processor) {
+long SymFileIncomingTransport_process(SymFileIncomingTransport *this, SymDataProcessor *processor, SymRemoteNodeStatus *status) {
     FILE *file;
     int BUFFER_SIZE = 2048;
     char inputBuffer[BUFFER_SIZE];
