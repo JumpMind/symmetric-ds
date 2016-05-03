@@ -24,10 +24,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "io/data/DataProcessor.h"
+#include "model/RemoteNodeStatus.h"
 
 typedef struct SymIncomingTransport {
     char * (*getUrl)(struct SymIncomingTransport *this);
-    long (*process)(struct SymIncomingTransport *this, SymDataProcessor *processor);
+    long (*process)(struct SymIncomingTransport *this, SymDataProcessor *processor, SymRemoteNodeStatus *status);
     void (*destroy)(struct SymIncomingTransport *this);
 } SymIncomingTransport;
 

@@ -51,6 +51,7 @@ typedef struct SymRemoteNodeStatus {
     long reloadBatchesProcessed;
     int complete;
     int failed;
+    char *failureMessage;
     void (*updateIncomingStatus)(struct SymRemoteNodeStatus *this, SymList *incomingBatches);
     void (*updateOutgoingStatus)(struct SymRemoteNodeStatus *this, SymList *outgoingBatches, SymList *batchAcks);
     void (*destroy)(struct SymRemoteNodeStatus *this);

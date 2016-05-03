@@ -252,6 +252,30 @@ void SymHttpTransportManager_destroy(SymTransportManager *this) {
     free(this);
 }
 
+void SymHttpTransportManager_handleCurlRc(int curlRc, long httpCode, char* url, SymRemoteNodeStatus* status) {
+    if (status == NULL) {
+        status = SymRemoteNodeStatus_new(NULL, NULL, NULL);
+    }
+
+    if (curlRc != CURLE_OK) {
+        SymLog_error("Error %d from curl, cannot retrieve %s", curlRc, url);
+        SymLog_error("%s", curl_easy_strerror(curlRc));
+
+        status->failed = 1;
+        status->failureMessage = SymStringUtils_format("%s", curl_easy_strerror(curlRc));
+        status->status = SYM_REMOTE_NODE_STATUS_OFFLINE;
+    } else {
+        status->status = httpCode;
+        if (httpCode != SYM_TRANSPORT_OK) {
+            status->failed = 1;
+            status->failureMessage = SymHttpTransportManager_strerror(httpCode);
+            if (httpCode != SYM_TRANSPORT_OK) {
+                SymLog_error("HTTP response code of %ld, %s. URL: %s", httpCode, status->failureMessage, url);
+            }
+        }
+    }
+}
+
 SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *this, SymParameterService *parameterService) {
     if (this == NULL) {
         this = (SymHttpTransportManager *) calloc(1, sizeof(SymHttpTransportManager));
