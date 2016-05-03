@@ -187,6 +187,4 @@ public interface INodeService {
 
     public NetworkedNode getRootNetworkedNode();
     
-    public boolean refreshFromDatabase();
-    
 }
