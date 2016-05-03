@@ -296,9 +296,4 @@ public class MockNodeService implements INodeService {
         return nodeId;
     }
 
-    @Override
-    public boolean refreshFromDatabase() {
-        return false;
-    }
-
 }

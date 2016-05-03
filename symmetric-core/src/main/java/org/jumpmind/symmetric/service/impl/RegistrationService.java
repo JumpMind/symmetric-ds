@@ -480,7 +480,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
      * @see IRegistrationService#reOpenRegistration(String)
      */
     public synchronized void reOpenRegistration(String nodeId) {
-        nodeService.refreshFromDatabase();
         Node node = nodeService.findNode(nodeId);
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
         String password = null;
