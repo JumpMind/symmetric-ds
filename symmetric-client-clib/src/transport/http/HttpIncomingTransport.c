@@ -24,7 +24,7 @@ static size_t SymHttpIncomingTransport_writeCallback(char *data, size_t size, si
     return processor->process(processor, data, size, count);
 }
 
-long SymHttpIncomingTransport_process(SymHttpIncomingTransport *this, SymDataProcessor *processor) {
+long SymHttpIncomingTransport_process(SymHttpIncomingTransport *this, SymDataProcessor *processor, SymRemoteNodeStatus *status) {
     long httpCode = 0;
     CURLcode rc = CURLE_FAILED_INIT;
     CURL *curl = curl_easy_init();
@@ -40,10 +40,6 @@ long SymHttpIncomingTransport_process(SymHttpIncomingTransport *this, SymDataPro
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, processor);
         processor->open(processor);
         rc = curl_easy_perform(curl);
-        if (rc != CURLE_OK) {
-        	SymLog_error("Error %d from curl, cannot retrieve %s", rc, this->url);
-        	SymLog_error("%s", curl_easy_strerror(rc));
-        }
         curl_easy_cleanup(curl);
         processor->close(processor);
     } else {
@@ -51,10 +47,10 @@ long SymHttpIncomingTransport_process(SymHttpIncomingTransport *this, SymDataPro
     }
     if (rc == CURLE_OK) {
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
-        if (httpCode != SYM_TRANSPORT_OK) {
-        	SymLog_error("HTTP response code of %ld, %s", httpCode, SymHttpTransportManager_strerror(httpCode));
-        }
     }
+
+    SymHttpTransportManager_handleCurlRc(rc, httpCode, this->url, status);
+
     return httpCode;
 }
 

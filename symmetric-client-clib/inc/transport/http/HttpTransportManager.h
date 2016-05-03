@@ -35,6 +35,7 @@
 #include "util/Map.h"
 #include "util/StringUtils.h"
 #include "web/WebConstants.h"
+#include "model/RemoteNodeStatus.h"
 
 typedef struct SymHttpTransportManager {
     SymTransportManager super;
@@ -47,5 +48,6 @@ char * SymHttpTransportManager_strerror(long rc);
 
 SymMap * SymHttpTransportManager_getParametersFromQueryUrl(char *parameterString);
 SymBatchAck * SymHttpTransportManager_getBatchInfo(SymMap *parameters, char *batchId);
+void  SymHttpTransportManager_handleCurlRc(int curlRc, long httpCode, char* url, SymRemoteNodeStatus* status);
 
 #endif
