@@ -30,7 +30,7 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
     public Db2TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end" ;
+        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then $(oracleToClob)'' else '\"' || replace(replace($(oracleToClob)$(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end" ;
         xmlColumnTemplate = null;
         arrayColumnTemplate = null;
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || trim(char($(tableAlias).\"$(columnName)\")) || '\"' end" ;
@@ -59,7 +59,7 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 \n"+
 "                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                \n"+
 "                                        VALUES('$(targetTableName)', 'I', $(triggerHistoryId),                                                                                                         \n"+
-"                                            $(columns),                                                                                                                                                \n"+
+"                                            $(oracleToClob)$(columns),                                                                                                                                 \n"+
 "                                            $(channelExpression), $(txIdExpression), $(sourceNodeExpression),                                                                                              \n"+
 "                                            $(externalSelect),                                                                                                                                         \n"+
 "                                            CURRENT_TIMESTAMP);                                                                                                                                        \n"+
@@ -76,13 +76,13 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                    DECLARE var_row_data VARCHAR(16336);                                                                                                                               \n"+
 "                                    DECLARE var_old_data VARCHAR(16336);                                                                                                                               \n"+
 "                                    IF $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                               \n"+
-"                                        SET var_row_data = $(columns);                                                                                                                                 \n"+
-"                                        SET var_old_data = $(oldColumns);                                                                                                                              \n"+
+"                                        SET var_row_data = $(oracleToClob)$(columns);                                                                                                                                 \n"+
+"                                        SET var_old_data = $(oracleToClob)$(oldColumns);                                                                                                                              \n"+
 "                                        IF $(dataHasChangedCondition) THEN                                                                                                                             \n"+
 "                                            INSERT into $(defaultSchema)$(prefixName)_data                                                                                                             \n"+
 "                                                (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)         \n"+
 "                                            VALUES('$(targetTableName)', 'U', $(triggerHistoryId),                                                                                                     \n"+
-"                                                $(oldKeys),                                                                                                                                            \n"+
+"                                                $(oracleToClob)$(oldKeys),                                                                                                                             \n"+
 "                                                var_row_data,                                                                                                                                          \n"+
 "                                                var_old_data,                                                                                                                                          \n"+
 "                                                $(channelExpression),                                                                                                                                      \n"+
@@ -105,8 +105,8 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 \n"+
 "                                            (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                       \n"+
 "                                        VALUES ('$(targetTableName)', 'D', $(triggerHistoryId),                                                                                                        \n"+
-"                                            $(oldKeys),                                                                                                                                                \n"+
-"                                            $(oldColumns),                                                                                                                                             \n"+
+"                                            $(oracleToClob)$(oldKeys),                                                                                                                                 \n"+
+"                                            $(oracleToClob)$(oldColumns),                                                                                                                              \n"+
 "                                            $(channelExpression),                                                                                                                                          \n"+
 "                                            $(txIdExpression),                                                                                                                                         \n"+
 "                                            $(sourceNodeExpression),                                                                                                                                   \n"+
@@ -117,7 +117,7 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                END                                                                                                                                                                    " );
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
-"select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
+"select $(oracleToClob)$(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
     }
 
 }
