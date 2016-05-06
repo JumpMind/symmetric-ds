@@ -43,6 +43,7 @@ import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.platform.redshift.RedshiftDatabasePlatform;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
+import org.jumpmind.db.platform.voltdb.VoltDbDatabasePlatform;
 import org.jumpmind.symmetric.db.ase.AseSymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2As400SymmetricDialect;
 import org.jumpmind.symmetric.db.db2.Db2SymmetricDialect;
@@ -67,6 +68,7 @@ import org.jumpmind.symmetric.db.postgresql.PostgreSqlSymmetricDialect;
 import org.jumpmind.symmetric.db.redshift.RedshiftSymmetricDialect;
 import org.jumpmind.symmetric.db.sqlanywhere.SqlAnywhereSymmetricDialect;
 import org.jumpmind.symmetric.db.sqlite.SqliteJdbcSymmetricDialect;
+import org.jumpmind.symmetric.db.voltdb.VoltDbSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,6 +152,8 @@ public class JdbcSymmetricDialectFactory {
             dialect = new InterbaseSymmetricDialect(parameterService, platform);
         } else if (platform instanceof SqliteDatabasePlatform) {
             dialect = new SqliteJdbcSymmetricDialect(parameterService, platform);
+        } else if (platform instanceof VoltDbDatabasePlatform) {
+            dialect = new VoltDbSymmetricDialect(parameterService, platform);
         } else {
             throw new DbNotSupportedException();
         }
