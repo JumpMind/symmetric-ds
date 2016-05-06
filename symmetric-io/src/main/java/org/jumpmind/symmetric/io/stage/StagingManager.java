@@ -95,7 +95,8 @@ public class StagingManager implements IStagingManager {
                 if (resource != null) {
                     boolean resourceIsOld = (System.currentTimeMillis() - resource
                             .getLastUpdateTime()) > ttlInMs;
-                    if (resource.getState() == State.DONE && (resourceIsOld || !resource.exists())) {
+                    if ((resource.getState() == State.DONE || (resource.getState() == State.READY && ttlInMs == 0)) 
+                            && (resourceIsOld || !resource.exists())) {
                         if (!resource.isInUse()) {
                             boolean file = resource.isFileResource();
                             long size = resource.getSize();

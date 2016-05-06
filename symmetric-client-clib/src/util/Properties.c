@@ -20,20 +20,35 @@
  */
 #include "util/Properties.h"
 
-char * SymProperties_get(SymProperties *this, char *key, char *defaultValue) {
+int SymProperties_indexOf(SymProperties *this, char *key) {
     int i;
     for (i = 0; i < this->index; i++) {
         if (strcmp(this->propArray[i].key, key) == 0) {
-            return this->propArray[i].value;
+            return i;
         }
     }
-    return defaultValue;
+    return SYM_NOT_FOUND;
+}
+
+char * SymProperties_get(SymProperties *this, char *key, char *defaultValue) {
+    int indexOf = SymProperties_indexOf(this, key);
+    if (indexOf != SYM_NOT_FOUND) {
+        return this->propArray[indexOf].value;
+    } else {
+        return defaultValue;
+    }
 }
 
 void SymProperties_put(SymProperties *this, char *key, char *value) {
-    this->propArray[this->index].key = key;
-    this->propArray[this->index].value = value;
-    this->index++;
+    int indexOf = SymProperties_indexOf(this, key);
+    if (indexOf != SYM_NOT_FOUND) {
+        this->propArray[indexOf].key = key;
+        this->propArray[indexOf].value = value;
+    } else {
+        this->propArray[this->index].key = key;
+        this->propArray[this->index].value = value;
+        this->index++;
+    }
 }
 
 void SymProperties_putAll(SymProperties *this, SymProperties *properties) {

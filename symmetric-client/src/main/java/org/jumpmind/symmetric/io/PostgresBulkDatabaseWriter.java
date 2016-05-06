@@ -67,14 +67,16 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
     }
 
     public void write(CsvData data) {
+    	statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+        statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
+        statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        
+        
         DataEventType dataEventType = data.getDataEventType();
 
         switch (dataEventType) {
             case INSERT:
                 startCopy();
-                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-                statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
                 try {
                     String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
                     if (needsBinaryConversion) {
@@ -95,8 +97,6 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
                     loadedRows++;
                 } catch (Exception ex) {
                     throw getPlatform().getSqlTemplate().translate(ex);
-                } finally {
-                    statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
                 }
                 break;
             case UPDATE:
@@ -111,19 +111,18 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
             flush();
             loadedRows = 0;
         }
+        
+        statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
     }
 
     protected void flush() {
         if (copyIn != null) {
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             try {
                 if (copyIn.isActive()) {
                     copyIn.flushCopy();
                 }
             } catch (SQLException ex) {
                 throw getPlatform().getSqlTemplate().translate(ex);
-            } finally {
-                statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             }
         }
     }

@@ -42,11 +42,11 @@ static void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *re
     }
 }
 
-static SymList * SymDataLoaderService_loadDataFromTransport(SymDataLoaderService *this, SymNode *remote, SymIncomingTransport *transport, int *error) {
+static SymList * SymDataLoaderService_loadDataFromTransport(SymDataLoaderService *this, SymNode *remote, SymIncomingTransport *transport, SymRemoteNodeStatus *status) {
     SymDataWriter *writer = this->dataLoaderFactory->getDataWriter(this->dataLoaderFactory);
     SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataReader_new(NULL, remote->nodeId, writer);
 
-    long rc = transport->process(transport, processor);
+    long rc = transport->process(transport, processor, status);
     SymLog_debug("Transport rc = %ld" , rc);
 
     SymList *batchesProcessed = processor->getBatchesProcessed(processor);
@@ -76,7 +76,7 @@ void SymDataLoaderService_loadDataFromRegistration(SymDataLoaderService *this, S
     remote->syncUrl = registrationUrl;
 
     int error = 0;
-    SymList *incomingBatches = SymDataLoaderService_loadDataFromTransport(this, remote, transport, &error);
+    SymList *incomingBatches = SymDataLoaderService_loadDataFromTransport(this, remote, transport, status);
     if (incomingBatches->size > 0) {
         status->updateIncomingStatus(status, incomingBatches);
         local->destroy(local);
@@ -104,7 +104,7 @@ void SymDataLoaderService_loadDataFromPull(SymDataLoaderService *this, SymNode *
                     localSecurity->nodePassword, NULL, registrationUrl);
 
         int error = 0;
-        SymList *incomingBatches = SymDataLoaderService_loadDataFromTransport(this, remote, transport, &error);
+        SymList *incomingBatches = SymDataLoaderService_loadDataFromTransport(this, remote, transport, status);
         if (incomingBatches->size > 0) {
             status->updateIncomingStatus(status, incomingBatches);
             SymDataLoaderService_sendAck(this, remote, local, localSecurity, incomingBatches);
@@ -132,7 +132,7 @@ void SymDataLoaderService_loadDataFromOfflineTransport(SymDataLoaderService *thi
                     localSecurity->nodePassword, NULL, NULL);
 
         int error = 0;
-        SymList *incomingBatches = SymDataLoaderService_loadDataFromTransport(this, remote, transport, &error);
+        SymList *incomingBatches = SymDataLoaderService_loadDataFromTransport(this, remote, transport, status);
         if (incomingBatches->size > 0) {
             status->updateIncomingStatus(status, incomingBatches);
             SymDataLoaderService_sendAck(this, remote, local, localSecurity, incomingBatches);

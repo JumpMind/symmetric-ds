@@ -24,11 +24,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "io/data/DataProcessor.h"
+#include "model/RemoteNodeStatus.h"
 
 typedef struct SymOutgoingTransport {
     char *ackString;
     char *ackExtendedString;
-    long (*process)(struct SymOutgoingTransport *this, SymDataProcessor *processor);
+    long (*process)(struct SymOutgoingTransport *this, SymDataProcessor *processor, SymRemoteNodeStatus *status);
     void (*destroy)(struct SymOutgoingTransport *this);
 } SymOutgoingTransport;
 
