@@ -111,6 +111,7 @@ public class ThresholdFileWriter extends Writer {
         }
         file = null;
         buffer.setLength(0);
+        buffer.trimToSize();
     }
 
 }
