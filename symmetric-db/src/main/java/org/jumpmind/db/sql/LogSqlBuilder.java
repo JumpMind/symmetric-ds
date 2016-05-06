@@ -78,10 +78,12 @@ public class LogSqlBuilder {
     }     
     
     public SQLException logSqlAfterException(Logger loggerArg, String sql, Object[] args, SQLException e) {
-        loggerArg.error("SQL caused exception: [" + sql + "] " + e);
+        String msg = "SQL caused exception: [" + sql + "] ";
         if (args != null && args.length > 0) {            
-            loggerArg.error("sql args: {}", Arrays.toString(args));
+            msg += "sql args: " + Arrays.toString(args) + " ";
         }
+        
+        loggerArg.error(msg + e);
         return e;
     }    
     

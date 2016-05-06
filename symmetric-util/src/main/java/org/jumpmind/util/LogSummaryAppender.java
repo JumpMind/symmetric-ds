@@ -60,8 +60,8 @@ public class LogSummaryAppender extends AppenderSkeleton {
                 }
 
                 String message = null;
-                if (message instanceof String) {
-                    message = (String) event.getMessage();
+                if (event.getMessage() != null) {
+                    message = event.getMessage().toString();
                 } else {
                     message = "No Message";
                 }
