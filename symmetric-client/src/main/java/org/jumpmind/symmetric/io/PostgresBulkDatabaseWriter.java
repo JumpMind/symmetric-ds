@@ -67,49 +67,50 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
     }
 
     public void write(CsvData data) {
-    	statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+        statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
         statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
         statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
-        
-        
-        DataEventType dataEventType = data.getDataEventType();
 
-        switch (dataEventType) {
-            case INSERT:
-                startCopy();
-                try {
-                    String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
-                    if (needsBinaryConversion) {
-                        Column[] columns = targetTable.getColumns();
-                        for (int i = 0; i < columns.length; i++) {
-                            if (columns[i].isOfBinaryType() && parsedData[i] != null) {
-                                if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
-                                    parsedData[i] = encode(Hex.decodeHex(parsedData[i].toCharArray()));
-                                } else if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
-                                    parsedData[i] = encode(Base64.decodeBase64(parsedData[i].getBytes()));
+        if (targetTable != null) {
+            DataEventType dataEventType = data.getDataEventType();
+
+            switch (dataEventType) {
+                case INSERT:
+                    startCopy();
+                    try {
+                        String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
+                        if (needsBinaryConversion) {
+                            Column[] columns = targetTable.getColumns();
+                            for (int i = 0; i < columns.length; i++) {
+                                if (columns[i].isOfBinaryType() && parsedData[i] != null) {
+                                    if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
+                                        parsedData[i] = encode(Hex.decodeHex(parsedData[i].toCharArray()));
+                                    } else if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
+                                        parsedData[i] = encode(Base64.decodeBase64(parsedData[i].getBytes()));
+                                    }
                                 }
                             }
                         }
+                        String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '\'', CsvWriter.ESCAPE_MODE_DOUBLED);
+                        byte[] dataToLoad = formattedData.getBytes();
+                        copyIn.writeToCopy(dataToLoad, 0, dataToLoad.length);
+                        loadedRows++;
+                    } catch (Exception ex) {
+                        throw getPlatform().getSqlTemplate().translate(ex);
                     }
-                    String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '\'', CsvWriter.ESCAPE_MODE_DOUBLED);
-                    byte[] dataToLoad = formattedData.getBytes();
-                    copyIn.writeToCopy(dataToLoad, 0, dataToLoad.length);
-                    loadedRows++;
-                } catch (Exception ex) {
-                    throw getPlatform().getSqlTemplate().translate(ex);
-                }
-                break;
-            case UPDATE:
-            case DELETE:
-            default:
-                endCopy();
-                super.write(data);
-                break;
-        }
-
-        if (loadedRows >= maxRowsBeforeFlush) {
-            flush();
-            loadedRows = 0;
+                    break;
+                case UPDATE:
+                case DELETE:
+                default:
+                    endCopy();
+                    super.write(data);
+                    break;
+            }
+    
+            if (loadedRows >= maxRowsBeforeFlush) {
+                flush();
+                loadedRows = 0;
+            }
         }
         
         statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
@@ -140,7 +141,7 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
     }
 
     protected void startCopy() {
-        if (copyIn == null && targetTable != null) {
+        if (copyIn == null && targetTable != null) {            
             try {
                 String sql = createCopyMgrSql();
                 if (log.isDebugEnabled()) {
@@ -174,10 +175,6 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
     @Override
     public boolean start(Table table) {
         if (super.start(table)) {
-            /* If target table cannot be found the write method will decide 
-             * whether to ignore the write request or to log an error.  No 
-             * need to report the error right now.
-             */
             if (targetTable != null) {
                 needsBinaryConversion = false;
                 if (!batch.getBinaryEncoding().equals(BinaryEncoding.NONE)) {
@@ -187,6 +184,16 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
                             break;
                         }
                     }
+                }
+            } else if (sourceTable != null) {
+                String qualifiedName = sourceTable.getFullyQualifiedTableName();
+                if (writerSettings.isIgnoreMissingTables()) {
+                    if (!missingTables.contains(qualifiedName)) {
+                        log.warn("Did not find the {} table in the target database", qualifiedName);
+                        missingTables.add(qualifiedName);
+                    }
+                } else {
+                    throw new RuntimeException("Missing table in target database: " + qualifiedName);
                 }
             }
             return true;
