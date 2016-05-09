@@ -44,6 +44,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -74,6 +75,12 @@ public class DbFill {
     private String prefixed[] = null;
     
     private int inputLength = 1;
+    
+    private int repeat = 1;
+    
+    private int maxRowsCommit = 1;
+    
+    private int percentRollback = 0;
 
     private Random rand = null;
 
@@ -86,6 +93,8 @@ public class DbFill {
     private boolean continueOnError = false;
     
     private boolean print = false;
+    
+    private boolean useRandomCount = false;
     
     private String textColumnExpression;
     
@@ -102,8 +111,6 @@ public class DbFill {
     public final static int INSERT = 0;
     public final static int UPDATE = 1;
     public final static int DELETE = 2;
-
-    private boolean firstPass = true;
 
     public DbFill() {
     }
@@ -134,12 +141,14 @@ public class DbFill {
                             continue table_loop;
                         }
                     }
-                    for (String prefixedName : prefixed) {
-                        if (!table.getName().startsWith(prefixedName)) {
-                            if (verbose) {
-                                log.info("Non prefixed table (" + prefixedName + ")" + table.getName());
+                    if (prefixed != null) {
+                        for (String prefixedName : prefixed) {
+                            if (!table.getName().startsWith(prefixedName)) {
+                                if (verbose) {
+                                    log.info("Non prefixed table (" + prefixedName + ")" + table.getName());
+                                }
+                                continue table_loop;
                             }
-                            continue table_loop;
                         }
                     }
                     tableList.add(table);
@@ -232,17 +241,6 @@ public class DbFill {
     }
 
     /**
-     * Once we have an array of table objects we can begin sorting and IUD operations.
-     *
-     * @param tables Array of table objects.
-     */
-    private void fillTables(Table[] tables, Map<String,int[]> tableProperties) {
-        for (int i = 0; i < inputLength; i++) {
-            makePass(tables, tableProperties);
-        }
-    }
-
-    /**
      * Perform an INSERT, UPDATE, or DELETE on every table in tables.
      *
      * @param tables Array of tables to perform statement on. Tables must be in
@@ -250,39 +248,66 @@ public class DbFill {
      * @param tableProperties Map indicating IUD weights for each table name provided
      *          in the properties file.
      */
-    private void makePass(Table[] tables, Map<String,int[]> tableProperties) {
-        for (Table table : tables) {
-            // Sleep for the configured time between tables
-            if (!firstPass) {
-                AppUtils.sleep(interval);
-            } else {
-                firstPass = false;
+    private void fillTables(Table[] tables, Map<String,int[]> tableProperties) {
+        ISqlTransaction tran = platform.getSqlTemplate().startSqlTransaction();        
+        int rowsInTransaction = 0;
+        for (int x = 0; x < repeat; x++) {
+            int numRowsToGenerate = inputLength;
+            int numRowsToCommit = maxRowsCommit;
+            if (useRandomCount) {
+                numRowsToGenerate = getRand().nextInt(inputLength - 1) + 1;
+                numRowsToCommit = getRand().nextInt(maxRowsCommit - 1) + 1;
             }
-            int dmlType = INSERT;
-            if (tableProperties != null && tableProperties.containsKey(table.getName())) {
-                dmlType = randomIUD(tableProperties.get(table.getName()));
-            } else if (dmlWeight != null) {
-                dmlType = randomIUD(dmlWeight);
+            for (int i = 0; i < numRowsToGenerate; i++) {
+                for (Table table : tables) {
+                    int dmlType = INSERT;
+                    if (tableProperties != null && tableProperties.containsKey(table.getName())) {
+                        dmlType = randomIUD(tableProperties.get(table.getName()));
+                    } else if (dmlWeight != null) {
+                        dmlType = randomIUD(dmlWeight);
+                    }
+                    switch (dmlType) {
+                        case INSERT:
+                            if (verbose) {
+                                log.info("Inserting into table " + table.getName());
+                            }
+                            insertRandomRecord(tran, table);
+                            break;
+                        case UPDATE:
+                            if (verbose) {
+                                log.info("Updating record in table " + table.getName());
+                            }
+                            updateRandomRecord(tran, table);
+                            break;
+                        case DELETE:
+                            if (verbose) {
+                                log.info("Deleting record in table " + table.getName());
+                            }
+                            deleteRandomRecord(tran, table);
+                            break;
+                    }
+                    if (++rowsInTransaction >= numRowsToCommit) {
+                        if (percentRollback > 0 && getRand().nextInt(100) <= percentRollback) {
+                            if (verbose) {
+                                log.info("Rollback " + rowsInTransaction + " rows");
+                            }
+                            tran.rollback();
+                        } else {
+                            if (verbose) {
+                                log.info("Commit " + rowsInTransaction + " rows");
+                            }
+                            tran.commit();
+                        }
+                        rowsInTransaction = 0;
+                        AppUtils.sleep(interval);
+                    }
+                }
             }
-            switch (dmlType) {
-                case INSERT:
-                    if (verbose) {
-                        log.info("Inserting into table " + table.getName());
-                    }
-                    insertRandomRecord(table);
-                    break;
-                case UPDATE:
-                    if (verbose) {
-                        log.info("Updating record in table " + table.getName());
-                    }
-                    updateRandomRecord(table);
-                    break;
-                case DELETE:
-                    if (verbose) {
-                        log.info("Deleting record in table " + table.getName());
-                    }
-                    deleteRandomRecord(table);
-                    break;
+            if (rowsInTransaction > 0) {
+                if (verbose) {
+                    log.info("Commit " + rowsInTransaction + " rows");
+                }
+                tran.commit();                
             }
         }
     }
@@ -338,10 +363,11 @@ public class DbFill {
         return row;
     }
 
-    private void updateRandomRecord(Table table) {
+    private void updateRandomRecord(ISqlTransaction tran, Table table) {
     	DmlStatement updStatement = createUpdateDmlStatement(table); 
     	Row row = createRandomUpdateValues(updStatement, table);
         try {
+            tran.prepareAndExecute(updStatement.getSql(), row.toArray(table.getColumnNames()));
             platform.getSqlTemplate().update(updStatement.getSql(), row.toArray(table.getColumnNames()));
             if (verbose) {
                 log.info("Successful update in " + table.getName());
@@ -365,11 +391,11 @@ public class DbFill {
      * @param sqlTemplate
      * @param table
      */
-    private void insertRandomRecord(Table table) {
+    private void insertRandomRecord(ISqlTransaction tran, Table table) {
     	DmlStatement insertStatement = createInsertDmlStatement(table); 
     	Row row = createRandomInsertValues(insertStatement, table);
         try {
-            platform.getSqlTemplate().update(insertStatement.getSql(), insertStatement.getValueArray(row.toArray(table.getColumnNames()), 
+            tran.prepareAndExecute(insertStatement.getSql(), insertStatement.getValueArray(row.toArray(table.getColumnNames()), 
                     row.toArray(table.getPrimaryKeyColumnNames())));
             if (verbose) {
                 log.info("Successful update in " + table.getName());
@@ -412,11 +438,11 @@ public class DbFill {
      * @param table Table to delete from.
      * @param selectColumns If provided, the rows that match this criteria are deleted.
      */
-    private void deleteRandomRecord(Table table) {
+    private void deleteRandomRecord(ISqlTransaction tran, Table table) {
     	DmlStatement deleteStatement = createDeleteDmlStatement(table); 
     	Row row = selectRandomRow(table);
         try {
-            platform.getSqlTemplate().update(deleteStatement.getSql(), row.toArray(table.getColumnNames()));
+            tran.prepareAndExecute(deleteStatement.getSql(), row.toArray(table.getColumnNames()));
             if (verbose) {
                 log.info("Successful update in " + table.getName());
             }
@@ -777,6 +803,22 @@ public class DbFill {
     	return print;
     }
     
+    public void setUseRandomCount(boolean useRandomCount) {
+        this.useRandomCount = useRandomCount;
+    }
+
+    public void setRepeat(int repeat) {
+        this.repeat = repeat;
+    }
+
+    public void setMaxRowsCommit(int maxRowsCommit) {
+        this.maxRowsCommit = maxRowsCommit;
+    }
+    
+    public void setPercentRollback(int percentRollback) {
+        this.percentRollback = percentRollback;
+    }
+
     public int getInsertWeight() {
     	return dmlWeight[0];
     }

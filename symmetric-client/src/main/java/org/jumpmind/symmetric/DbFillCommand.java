@@ -54,6 +54,14 @@ public class DbFillCommand extends AbstractCommandLauncher {
     private static final String OPTION_CONTINUE = "continue";
     
     private static final String OPTION_PRINT = "print";
+    
+    private static final String OPTION_RAND = "rand";
+    
+    private static final String OPTION_REPEAT = "repeat";
+    
+    private static final String OPTION_COMMIT = "commit";
+    
+    private static final String OPTION_ROLLBACK = "rollback";
 
     public DbFillCommand() {
         super("dbfill", "[tablename...]", "DbFill.Option.");
@@ -93,6 +101,10 @@ public class DbFillCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_WEIGHTS, true);
         addOption(options, null, OPTION_CONTINUE, false);
         addOption(options, null, OPTION_PRINT, false);
+        addOption(options, null, OPTION_RAND, false);
+        addOption(options, null, OPTION_REPEAT, true);
+        addOption(options, null, OPTION_COMMIT, true);
+        addOption(options, null, OPTION_ROLLBACK, true);
     }
 
     @Override
@@ -144,6 +156,18 @@ public class DbFillCommand extends AbstractCommandLauncher {
         }
         if (line.hasOption(OPTION_PRINT)) {
         	dbFill.setPrint(true);
+        }
+        if (line.hasOption(OPTION_RAND)) {
+            dbFill.setUseRandomCount(true);
+        }
+        if (line.hasOption(OPTION_REPEAT)) {
+            dbFill.setRepeat(Integer.parseInt(line.getOptionValue(OPTION_REPEAT)));
+        }
+        if (line.hasOption(OPTION_COMMIT)) {
+            dbFill.setMaxRowsCommit(Integer.parseInt(line.getOptionValue(OPTION_COMMIT)));
+        }
+        if (line.hasOption(OPTION_ROLLBACK)) {
+            dbFill.setPercentRollback(Integer.parseInt(line.getOptionValue(OPTION_ROLLBACK)));
         }
         // Ignore the Symmetric config tables.
         getSymmetricEngine();
