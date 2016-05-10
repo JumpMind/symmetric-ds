@@ -41,12 +41,20 @@ public class VoltDbDdlBuilder extends AbstractDdlBuilder {
         
         databaseInfo.setMaxIdentifierLength(-1);
         
+        databaseInfo.addNativeTypeMapping(Types.DATE, "TIMESTAMP", Types.TIMESTAMP);
+        databaseInfo.addNativeTypeMapping(Types.TIME, "TIMESTAMP", Types.TIMESTAMP);
+        
+        databaseInfo.addNativeTypeMapping(Types.BIT, "TINYINT", Types.TINYINT);
+        databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DECIMAL", Types.DECIMAL);
+        
         databaseInfo.addNativeTypeMapping(Types.CLOB, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.CHAR, "VARCHAR", Types.VARCHAR);
 
+        databaseInfo.addNativeTypeMapping(Types.BINARY, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.BLOB, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "VARCHAR", Types.VARCHAR);
         
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
