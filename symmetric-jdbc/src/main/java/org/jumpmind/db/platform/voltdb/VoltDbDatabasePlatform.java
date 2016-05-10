@@ -21,9 +21,12 @@
 package org.jumpmind.db.platform.voltdb;
 
 import java.io.InputStream;
+import java.sql.Types;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.codec.DecoderException;
+import org.bouncycastle.util.encoders.Hex;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -32,6 +35,7 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
+import org.jumpmind.db.util.BinaryEncoding;
 
 public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
@@ -62,6 +66,19 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return database;
 
+    }
+    
+    @Override
+    protected Object getObjectValue(String value, Column column, BinaryEncoding encoding,
+            boolean useVariableDates, boolean fitToColumn) throws DecoderException {
+        Object objectValue = super.getObjectValue(value, column, encoding, useVariableDates, fitToColumn);
+        if (objectValue instanceof byte[]
+                && (column.getJdbcTypeCode() == Types.VARBINARY
+                    || column.getJdbcTypeCode() == Types.CLOB)) {
+            String rawString = new String((byte[])objectValue);
+            objectValue = new String(Hex.encode((byte[])objectValue));
+        }
+        return objectValue;
     }
 
     @Override

@@ -51,6 +51,12 @@ public class VoltDbJdbcSqlTemplate extends JdbcSqlTemplate {
         settings.setOverrideIsolationLevel(Connection.TRANSACTION_SERIALIZABLE);
     }
     
+    @Override
+    public boolean isUniqueKeyViolation(Throwable ex) {
+        SQLException sqlEx = findSQLException(ex);
+        return (sqlEx != null && sqlEx.getMessage() != null && sqlEx.getMessage().contains("Constraint Type UNIQUE"));
+    }    
+    
     public int getIsolationLevel() {
         return Connection.TRANSACTION_SERIALIZABLE; // All that VoltDB supports.
     }

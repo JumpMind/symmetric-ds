@@ -39,62 +39,17 @@ public class VoltDbDdlBuilder extends AbstractDdlBuilder {
     public VoltDbDdlBuilder() {
         super(DatabaseNamesConstants.VOLTDB);
         
-        // this is the default length though it might be changed when building
-        // PostgreSQL
-        // in file src/include/postgres_ext.h
         databaseInfo.setMaxIdentifierLength(-1);
-
-//        databaseInfo.setRequiresSavePointsInTransaction(true);
-//        databaseInfo.setRequiresAutoCommitForDdl(true);
         
         databaseInfo.addNativeTypeMapping(Types.CLOB, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.CHAR, "VARCHAR", Types.VARCHAR);
 
-//        databaseInfo.addNativeTypeMapping(Types.ARRAY, "BYTEA", Types.LONGVARBINARY);
-//        databaseInfo.addNativeTypeMapping(Types.BINARY, "BYTEA", Types.LONGVARBINARY);
-//        databaseInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN");
-//        databaseInfo.addNativeTypeMapping(Types.BLOB, "BYTEA", Types.LONGVARBINARY);
-//        databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
-//        databaseInfo.addNativeTypeMapping(Types.DECIMAL, "NUMERIC", Types.NUMERIC);
-//        databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BYTEA", Types.LONGVARBINARY);
-//        databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
-//        databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE P    RECISION", Types.DOUBLE);
-//        databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BYTEA", Types.LONGVARBINARY);
-//        databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BYTEA");
-//        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "TEXT", Types.LONGVARCHAR);
-//        databaseInfo.addNativeTypeMapping(Types.NULL, "BYTEA", Types.LONGVARBINARY);
-//        databaseInfo.addNativeTypeMapping(Types.OTHER, "BYTEA", Types.LONGVARBINARY);
-//        databaseInfo.addNativeTypeMapping(Types.REF, "BYTEA", Types.LONGVARBINARY);
-//        databaseInfo.addNativeTypeMapping(Types.STRUCT, "BYTEA", Types.LONGVARBINARY);
-//        databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT", Types.SMALLINT);
-//        databaseInfo.addNativeTypeMapping(Types.VARBINARY, "BYTEA", Types.LONGVARBINARY);
-//        databaseInfo.addNativeTypeMapping("BOOLEAN", "BOOLEAN", "BIT");
-//        databaseInfo.addNativeTypeMapping("DATALINK", "BYTEA", "LONGVARBINARY");
-//        databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "VARCHAR", Types.VARCHAR);
-//        databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "VARCHAR", Types.VARCHAR);
-//        databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "CHAR", Types.CHAR);
+        databaseInfo.addNativeTypeMapping(Types.BLOB, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.VARBINARY, "VARCHAR", Types.VARCHAR);
         
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
-
-//        // no support for specifying the size for these types (because they are
-//        // mapped to BYTEA which back-maps to BLOB)
-//        databaseInfo.setHasSize(Types.BINARY, false);
-//        databaseInfo.setHasSize(Types.VARBINARY, false);
-
-//        databaseInfo.setNonBlankCharColumnSpacePadded(true);
-//        databaseInfo.setBlankCharColumnSpacePadded(true);
-//        databaseInfo.setCharColumnSpaceTrimmed(false);
-//        databaseInfo.setEmptyStringNulled(false);
-        // we need to handle the backslash first otherwise the other
-        // already escaped sequences would be affected
-//        addEscapedCharSequence("\\", "\\\\");
-//        addEscapedCharSequence("\b", "\\b");
-//        addEscapedCharSequence("\f", "\\f");
-//        addEscapedCharSequence("\n", "\\n");
-//        addEscapedCharSequence("\r", "\\r");
-//        addEscapedCharSequence("\t", "\\t");
     }
     
     @Override
