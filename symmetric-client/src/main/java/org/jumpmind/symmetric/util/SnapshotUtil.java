@@ -144,28 +144,6 @@ public class SnapshotUtil {
 
         }
 
-        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService(); 
-        List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
-        TreeSet<Table> tables = new TreeSet<Table>();
-        for (TriggerHistory triggerHistory : triggerHistories) {
-            Table table = engine.getDatabasePlatform().getTableFromCache(triggerHistory.getSourceCatalogName(),
-                    triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
-                    false);
-            if (table != null && !table.getName().toUpperCase().startsWith(engine.getSymmetricDialect().getTablePrefix().toUpperCase())) {
-                tables.add(table);
-            }
-        }
-        
-        List<Trigger> triggers = triggerRouterService.getTriggers();
-        for (Trigger trigger : triggers) {
-            Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(),
-                    trigger.getSourceSchemaName(), trigger.getSourceTableName(),
-                    false);
-            if (table != null) {
-                tables.add(table);
-            }            
-        }               
-
         FileWriter fwriter = null;
         try {
             fwriter = new FileWriter(new File(tmpDir, "config-export.csv"));
@@ -173,20 +151,42 @@ public class SnapshotUtil {
                     fwriter, TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY,
                     TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST,
                     TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_USER);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.warn("Failed to export symmetric configuration", e);
         } finally {
             IOUtils.closeQuietly(fwriter);
         }
 
+        TreeSet<Table> tables = new TreeSet<Table>();
         FileOutputStream fos = null;
-        try {
+        try {            
+            ITriggerRouterService triggerRouterService = engine.getTriggerRouterService(); 
+            List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
+            for (TriggerHistory triggerHistory : triggerHistories) {
+                Table table = engine.getDatabasePlatform().getTableFromCache(triggerHistory.getSourceCatalogName(),
+                        triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
+                        false);
+                if (table != null && !table.getName().toUpperCase().startsWith(engine.getSymmetricDialect().getTablePrefix().toUpperCase())) {
+                    tables.add(table);
+                }
+            }
+            
+            List<Trigger> triggers = triggerRouterService.getTriggers();
+            for (Trigger trigger : triggers) {
+                Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(),
+                        trigger.getSourceSchemaName(), trigger.getSourceTableName(),
+                        false);
+                if (table != null) {
+                    tables.add(table);
+                }            
+            }
+
             fos = new FileOutputStream(new File(tmpDir, "table-definitions.xml"));
             DbExport export = new DbExport(engine.getDatabasePlatform());
             export.setFormat(Format.XML);
             export.setNoData(true);
             export.exportTables(fos, tables.toArray(new Table[tables.size()]));
-        } catch (IOException e) {
+        } catch(Exception e) {
             log.warn("Failed to export table definitions", e);
         } finally {
             IOUtils.closeQuietly(fos);
@@ -271,7 +271,7 @@ public class SnapshotUtil {
                     fwriter.append("\n");
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.warn("Failed to export thread information", e);
         } finally {
             IOUtils.closeQuietly(fwriter);
@@ -315,7 +315,7 @@ public class SnapshotUtil {
             }
             changedParameters.remove("db.password");
             changedParameters.store(fos, "parameters-changed.properties");
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.warn("Failed to export parameters-changed information", e);
         } finally {
             IOUtils.closeQuietly(fos);
@@ -334,7 +334,7 @@ public class SnapshotUtil {
             SortedProperties props = new SortedProperties();
             props.putAll(System.getProperties());
             props.store(fos, "system.properties");
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.warn("Failed to export thread information", e);
         } finally {
             IOUtils.closeQuietly(fos);
@@ -347,7 +347,7 @@ public class SnapshotUtil {
             builder.build();
             FileUtils.deleteDirectory(tmpDir);
             return jarFile;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IoException("Failed to package snapshot files into archive", e);
         }
     }
@@ -365,7 +365,7 @@ public class SnapshotUtil {
             export.exportTables(
                     fos,
                     tables);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.warn("Failed to export table definitions", e);
         } finally {
             IOUtils.closeQuietly(fos);
@@ -489,7 +489,7 @@ public class SnapshotUtil {
             runtimeProperties.setProperty("jvm.arguments", arguments.toString());
             
             runtimeProperties.store(fos, "runtime-stats.properties");
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.warn("Failed to export runtime-stats information", e);
         } finally {
             IOUtils.closeQuietly(fos);
@@ -532,7 +532,7 @@ public class SnapshotUtil {
                         StringUtils.rightPad(job.getLastExecutionTimeInMs() + "", 20) + 
                         StringUtils.rightPad(job.getAverageExecutionTimeInMs() + "", 20) + "\n");
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.warn("Failed to write jobs information", e);
         } finally {
             IOUtils.closeQuietly(writer);
