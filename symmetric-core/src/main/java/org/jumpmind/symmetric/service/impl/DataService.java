@@ -1267,7 +1267,7 @@ public class DataService extends AbstractService implements IDataService {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            String tableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE);
+            String tableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST);
             List<NodeGroupLink> links = engine.getConfigurationService().getNodeGroupLinksFor(
                     parameterService.getNodeGroupId(), false);
             for (NodeGroupLink nodeGroupLink : links) {
