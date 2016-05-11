@@ -342,9 +342,8 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public String getSyncTriggersExpression() {
-        //return "$(defaultCatalog)dbo." + parameterService.getTablePrefix()
-        //        + "_triggers_disabled() = 0";
-        return "dbo." + parameterService.getTablePrefix()
+    	String catalog = parameterService.is(ParameterConstants.MSSQL_INCLUDE_CATALOG_IN_TRIGGERS, true) ? "$(defaultCatalog)" : "";
+        return catalog + "dbo." + parameterService.getTablePrefix()
         	+ "_triggers_disabled() = 0";
     }
 
