@@ -2699,4 +2699,11 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         return caseSensitive;
     }
 
+    public String defineSavepoint(String savepointName) {
+        throw new DdlException("Platform does not support SQL savepoints.");
+    }
+
+    public String rollbackToSavepoint(String savepointName) {
+        throw new DdlException("Platform does not support SQL savepoints.");
+    }
 }
