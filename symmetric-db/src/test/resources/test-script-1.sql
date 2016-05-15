@@ -19,6 +19,8 @@
 -- under the License.
 --
 
+-- This is a comment with a single literal. It's
+
 -- This is a comment
 select * from 
   TEST where
