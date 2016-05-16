@@ -99,12 +99,16 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         	dbCompare.setIncludedTableNames(Arrays.asList(line.getArgList().get(0).toString().split(",")));
         }
         
+        String numericScaleArg = line.getOptionValue(OPTION_NUMERIC_SCALE);
+        if (!StringUtils.isEmpty(numericScaleArg)) {            
+            try {
+                dbCompare.setNumericScale(Integer.parseInt(numericScaleArg.trim()));
+            } catch (Exception ex) {
+                throw new ParseException("Failed to parse arg [" + numericScaleArg + "] " + ex);
+            }
+        }
+        
         DbCompareReport report = dbCompare.compare();
-//        if (report.getTableReports() != null) {            
-//            for (TableReport tableReport : report.getTableReports()) {
-//                System.out.println(tableReport);
-//            }
-//        }
         
         return false;
     }
@@ -125,6 +129,8 @@ public class DbCompareCommand extends AbstractCommandLauncher {
     private static final String OPTION_USE_SYM_CONFIG = "use-sym-config";
 
     private static final String OPTION_OUTPUT_SQL = "output-sql";
+    
+    private static final String OPTION_NUMERIC_SCALE = "numeric-scale";
 
     @Override
     protected void printHelp(CommandLine cmd, Options options) {
@@ -141,6 +147,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_EXCLUDE, true);
         addOption(options, null, OPTION_USE_SYM_CONFIG, false);
         addOption(options, null, OPTION_OUTPUT_SQL, true);
+        addOption(options, null, OPTION_NUMERIC_SCALE, true);
     }
 
 }

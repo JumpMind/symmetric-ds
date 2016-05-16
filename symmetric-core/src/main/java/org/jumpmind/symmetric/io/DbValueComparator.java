@@ -35,14 +35,19 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.util.FormatUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DbValueComparator {
+    
+    final Logger log = LoggerFactory.getLogger(getClass());
 
     private ISymmetricEngine sourceEngine;
     private ISymmetricEngine targetEngine;
     private boolean stringIgnoreWhiteSpace = true;
     private boolean stringNullEqualsEmptyString = true;
     private List<SimpleDateFormat> dateFormats = new ArrayList<SimpleDateFormat>();
+    private int numericScale = -1;
 
     public DbValueComparator(ISymmetricEngine sourceEngine, ISymmetricEngine targetEngine) {
         this.sourceEngine = sourceEngine;
@@ -105,14 +110,29 @@ public class DbValueComparator {
         	return -1;
         }
         
+        BigDecimal source = null;
+        BigDecimal target = null;
+        
         try {        	
-        	BigDecimal source = NumberUtils.createBigDecimal(sourceValue);
-        	BigDecimal target = NumberUtils.createBigDecimal(targetValue);
-        	return source.compareTo(target);
+        	source = NumberUtils.createBigDecimal(sourceValue);
         } catch (NumberFormatException ex) {
-        	System.out.println(sourceColumn + " " + sourceValue + " " + targetColumn + " " + targetValue  + " " + ex);
+        	log.debug("Failed to parse [" + sourceValue + "]", ex);
         }
         
+        try {        	
+            target = NumberUtils.createBigDecimal(targetValue);
+        } catch (NumberFormatException ex) {
+            log.debug("Failed to parse [" + targetValue + "]", ex);
+        }
+        
+        if (source != null && target != null) {
+            if (numericScale >= 0) {
+                source = source.setScale(numericScale, BigDecimal.ROUND_HALF_UP);
+                target = target.setScale(numericScale, BigDecimal.ROUND_HALF_UP);
+            }
+            return source.compareTo(target);
+        }
+                    
         return sourceValue.compareTo(targetValue);
     }
 
@@ -177,6 +197,14 @@ public class DbValueComparator {
             }
         }
         return date;
+    }
+
+    public int getNumericScale() {
+        return numericScale;
+    }
+
+    public void setNumericScale(int numericScale) {
+        this.numericScale = numericScale;
     }    
 
 

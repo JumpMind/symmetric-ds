@@ -67,6 +67,15 @@ public class DbCompare {
     private List<String> excludedTableNames;
     private boolean useSymmetricConfig = true;
     private DbValueComparator dbValueComparator;
+    private int numericScale = 3;
+
+    public int getNumericScale() {
+        return numericScale;
+    }
+
+    public void setNumericScale(int numericScale) {
+        this.numericScale = numericScale;
+    }
 
     public DbCompare(ISymmetricEngine sourceEngine, ISymmetricEngine targetEngine) {
         this.sourceEngine = sourceEngine;
@@ -75,6 +84,8 @@ public class DbCompare {
     }
 
     public DbCompareReport compare() {
+        dbValueComparator.setNumericScale(numericScale);
+        
         DbCompareReport report = new DbCompareReport();
         long start = System.currentTimeMillis();
         List<DbCompareTables> tablesToCompare = getTablesToCompare();
@@ -119,6 +130,8 @@ public class DbCompare {
         Row targetRow = targetCursor.next();
         
 
+        
+        
         int counter = 0;
         long startTime = System.currentTimeMillis();
         DbCompareDiffWriter diffWriter = new DbCompareDiffWriter(targetEngine, tables, sqlDiffFileName);
