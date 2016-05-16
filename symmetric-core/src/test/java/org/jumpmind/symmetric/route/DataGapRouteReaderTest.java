@@ -93,7 +93,7 @@ public class DataGapRouteReaderTest {
         nodeChannel.setBatchAlgorithm(DefaultBatchAlgorithm.NAME);
     }
 
-    protected DataGapRouteReader buildReader(int peekAheadMemoryThreshold) throws Exception {
+    protected DataGapRouteReader buildReader(int peekAheadMemoryThreshold, List<DataGap> dataGaps) throws Exception {
 
         when(parameterService.getEngineName()).thenReturn(ENGINE_NAME);
         when(parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)).thenReturn(true);
@@ -138,6 +138,7 @@ public class DataGapRouteReaderTest {
 
         ChannelRouterContext context = new ChannelRouterContext(NODE_ID, nodeChannel,
                 mock(ISqlTransaction.class));
+        context.setDataGaps(dataGaps);
 
         return new DataGapRouteReader(context, engine);
     }
@@ -151,8 +152,6 @@ public class DataGapRouteReaderTest {
 
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(2);
 
-        DataGapRouteReader dataGapRouteReader = buildReader(50);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, 3));
         dataGaps.add(new DataGap(4, Long.MAX_VALUE));
@@ -164,11 +163,10 @@ public class DataGapRouteReaderTest {
         data.add(new Data(4, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(5, null, null, null, TABLE1, null, null, null, TRAN2, null));
 
-        when(dataService.findDataGaps()).thenReturn(dataGaps);
-        when(
-                sqlTemplate.queryForCursor((String) any(), (ISqlRowMapper<Data>) any(),
-                        (Object[]) any(), (int[]) any())).thenReturn(new ListReadCursor(data));
+        when(sqlTemplate.queryForCursor((String) any(), (ISqlRowMapper<Data>) any(),
+            (Object[]) any(), (int[]) any())).thenReturn(new ListReadCursor(data));
 
+        DataGapRouteReader dataGapRouteReader = buildReader(50, dataGaps);
         dataGapRouteReader.execute();
 
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
@@ -192,8 +190,6 @@ public class DataGapRouteReaderTest {
 
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(100);
 
-        DataGapRouteReader dataGapRouteReader = buildReader(50);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
 
@@ -205,11 +201,11 @@ public class DataGapRouteReaderTest {
         data.add(new Data(5, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(6, null, null, null, TABLE1, null, null, null, TRAN1, null));
 
-        when(dataService.findDataGaps()).thenReturn(dataGaps);
         ISqlRowMapper<Data> mapper = any();
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any()))
                 .thenReturn(new ListReadCursor(data));
 
+        DataGapRouteReader dataGapRouteReader = buildReader(50, dataGaps);
         dataGapRouteReader.execute();
 
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
@@ -233,8 +229,6 @@ public class DataGapRouteReaderTest {
 
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(100);
 
-        DataGapRouteReader dataGapRouteReader = buildReader(50);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
 
@@ -246,11 +240,11 @@ public class DataGapRouteReaderTest {
         data.add(new Data(5, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(6, null, null, null, TABLE1, null, null, null, TRAN1, null));
 
-        when(dataService.findDataGaps()).thenReturn(dataGaps);
         ISqlRowMapper<Data> mapper = any();
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any()))
                 .thenReturn(new ListReadCursor(data));
 
+        DataGapRouteReader dataGapRouteReader = buildReader(50, dataGaps);
         dataGapRouteReader.execute();
 
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
@@ -274,8 +268,6 @@ public class DataGapRouteReaderTest {
 
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(100);
 
-        DataGapRouteReader dataGapRouteReader = buildReader(0);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
 
@@ -288,13 +280,12 @@ public class DataGapRouteReaderTest {
         data.add(new Data(6, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(7, null, null, null, TABLE1, null, null, null, TRAN2, null));
 
-        when(dataService.findDataGaps()).thenReturn(dataGaps);
-
         ISqlRowMapper<Data> mapper = any();
 
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any()))
                 .thenReturn(new ListReadCursor(data));
 
+        DataGapRouteReader dataGapRouteReader = buildReader(0, dataGaps);
         dataGapRouteReader.execute();
 
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
@@ -317,8 +308,6 @@ public class DataGapRouteReaderTest {
 
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(5);
 
-        DataGapRouteReader dataGapRouteReader = buildReader(100);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
 
@@ -328,13 +317,12 @@ public class DataGapRouteReaderTest {
                     null));
         }
 
-        when(dataService.findDataGaps()).thenReturn(dataGaps);
-
         ISqlRowMapper<Data> mapper = any();
 
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any()))
                 .thenReturn(new ListReadCursor(data));
 
+        DataGapRouteReader dataGapRouteReader = buildReader(100, dataGaps);
         dataGapRouteReader.execute();
         
         /*
@@ -363,8 +351,6 @@ public class DataGapRouteReaderTest {
 
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW)).thenReturn(2);
 
-        DataGapRouteReader dataGapRouteReader = buildReader(50);
-
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(0, Long.MAX_VALUE));
 
@@ -375,11 +361,11 @@ public class DataGapRouteReaderTest {
         data.add(new Data(4, null, null, null, TABLE1, null, null, null, TRAN1, null));
         data.add(new Data(5, null, null, null, TABLE1, null, null, null, TRAN2, null));
 
-        when(dataService.findDataGaps()).thenReturn(dataGaps);
         ISqlRowMapper<Data> mapper = any();
         when(sqlTemplate.queryForCursor((String) any(), mapper, (Object[]) any(), (int[]) any()))
                 .thenReturn(new ListReadCursor(data));
 
+        DataGapRouteReader dataGapRouteReader = buildReader(50, dataGaps);
         dataGapRouteReader.execute();
 
         BlockingQueue<Data> queue = dataGapRouteReader.getDataQueue();
