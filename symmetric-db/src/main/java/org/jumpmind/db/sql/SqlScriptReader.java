@@ -140,8 +140,9 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
         char prev = '\0';
         int index = 0;
         for (char cur : characters) {
-            
-            literalInfo = switchLiteral(literalInfo, index, characters);
+            if (!inLineComment) {
+                literalInfo = switchLiteral(literalInfo, index, characters);
+            }
 
             if (literalInfo == null && !inLineComment && !inBlockComment) {
                 inBlockComment = isBlockCommentStart(prev, cur);
@@ -227,7 +228,9 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
         char prev = '\0';
         int index = 0;        
         for (char cur : characters) {
-            literalInfo = switchLiteral(literalInfo, index, characters);
+            if (!inLineComment) {
+                literalInfo = switchLiteral(literalInfo, index, characters);
+            }
 
             if (literalInfo == null && !inLineComment && !inBlockComment) {
                 inBlockComment = isBlockCommentStart(prev, cur);
