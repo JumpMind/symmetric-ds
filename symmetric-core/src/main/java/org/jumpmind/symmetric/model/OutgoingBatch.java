@@ -39,7 +39,8 @@ public class OutgoingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        OK("Ok"), ER("Error"), RQ("Request"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), RT("Routing"), IG("Ignored"), XX("Unknown");
+        OK("Ok"), ER("Error"), RQ("Request"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), RT("Routing"), IG("Ignored"), 
+            RS("Resend"), XX("Unknown");
 
         private String description;
 
@@ -118,7 +119,7 @@ public class OutgoingBatch implements Serializable {
     private Date createTime;
     
     private String createBy;
-
+    
     private long oldDataEventCount = 0;
     private long oldByteCount = 0;
     private long oldFilterMillis = 0;
@@ -494,5 +495,4 @@ public class OutgoingBatch implements Serializable {
     public boolean isExtractJobFlag() {
         return extractJobFlag;
     }
-
 }

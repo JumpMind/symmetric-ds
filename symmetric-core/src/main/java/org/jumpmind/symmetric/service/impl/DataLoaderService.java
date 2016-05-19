@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -400,10 +401,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
         
         if (okBatchesCount > 0) {
-            log.info(
-                    "{} data and {} batches loaded during push request from {}.  There were {} batches in error",
-                    new Object[] { okDataCount, okBatchesCount, sourceNode.toString(),
-                            errorBatchesCount });
+            if (errorBatchesCount > 0) {
+                log.info("{} data and {} batches loaded during push request from {}.  There were {} batches in error",
+                        new Object[] { okDataCount, okBatchesCount, sourceNode.toString(), errorBatchesCount });
+            } else {
+                log.info("{} data and {} batches loaded during push request from {}.",
+                        new Object[] { okDataCount, okBatchesCount, sourceNode.toString() });                
+            }
         } 
     }
 
@@ -922,14 +926,29 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     return incomingBatch;
                 }
             };
-            futures.add(executor.submit(loadBatchFromStage));
+            
+            if (resource == null) {
+                IncomingBatch incomingBatch = new IncomingBatch(batch);
+                listener.getBatchesProcessed().add(incomingBatch);
+                if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
+                    log.warn("Unable to retry batch {} because it's not in staging.  Setting status to resend.", batch.getNodeBatchId());
+                    incomingBatch.setStatus(Status.RS);
+                    incomingBatchService.updateIncomingBatch(incomingBatch);
+                }
+            } else {
+                futures.add(executor.submit(loadBatchFromStage));
+            }
         }
         
-        public boolean isDone() throws Exception {
+        public boolean isDone() throws Throwable {
             boolean isDone = true;
             for (Future<IncomingBatch> future : futures) {
                 if (future.isDone()) {
-                    future.get();
+                    try {
+                        future.get();
+                    } catch (ExecutionException e) {
+                        throw e.getCause() != null ? e.getCause() : e;
+                    }
                 } else {
                     isDone = false;
                 }

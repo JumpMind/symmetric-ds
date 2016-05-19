@@ -367,14 +367,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         	params = new Object[] { nodeId, channelThread, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
                     OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                     OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
-                    OutgoingBatch.Status.IG.name() };
+                    OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name()};
         }
         else {
         	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql");
         	params = new Object[] { nodeId, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
                     OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                     OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
-                    OutgoingBatch.Status.IG.name() };
+                    OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name()};
         }
         
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(

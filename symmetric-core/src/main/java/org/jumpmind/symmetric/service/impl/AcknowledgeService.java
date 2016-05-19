@@ -73,7 +73,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         } else {
             OutgoingBatch outgoingBatch = outgoingBatchService
                     .findOutgoingBatch(batch.getBatchId(), batch.getNodeId());
-            Status status = batch.isOk() ? Status.OK : Status.ER;
+            Status status = batch.isOk() ? Status.OK : batch.isResend() ? Status.RS : Status.ER;
             if (outgoingBatch != null) {
                 // Allow an outside system/user to indicate that a batch
                 // is OK.
@@ -111,12 +111,14 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
                 if (status == Status.ER) {
                     log.error(
-                            "The outgoing batch {} failed{}",
+                            "The outgoing batch {} failed: {}",
                             outgoingBatch.getNodeBatchId(), batch.getSqlMessage() != null ? ". " + batch.getSqlMessage() : "");
                     RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
                     if (routerStats != null) {
                         log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
                     }
+                } else if (status == Status.RS) {
+                    log.info("The outgoing batch {} received resend request", outgoingBatch.getNodeBatchId());
                 } else if (!outgoingBatch.isCommonFlag()) {
                     IStagedResource stagingResource = stagingManager.find(
                             Constants.STAGING_CATEGORY_OUTGOING, outgoingBatch.getNodeId(),

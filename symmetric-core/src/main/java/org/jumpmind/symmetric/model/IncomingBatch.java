@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
@@ -33,7 +34,7 @@ public class IncomingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-       OK("Ok"), ER("Error"), LD("Loading"), IG("Ignored"), XX("Unknown");
+       OK("Ok"), ER("Error"), LD("Loading"), RS("Resend"), IG("Ignored"), XX("Unknown");
 
         private String description;
 
@@ -362,4 +363,17 @@ public class IncomingBatch implements Serializable {
         return Long.toString(batchId);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof IncomingBatch)) {
+            return false;
+        }
+        IncomingBatch b = (IncomingBatch) o;
+        return batchId == b.batchId && StringUtils.equals(nodeId, b.nodeId);
+    }
+    
+    @Override
+    public int hashCode() {
+        return (String.valueOf(batchId) + "-" + nodeId).hashCode();
+    }
 }

@@ -207,8 +207,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             }
 
             if (batch.isRetry()) {
-                if (existingBatch.getStatus() == Status.ER
-                        || existingBatch.getStatus() == Status.LD
+                if (existingBatch.getStatus() == Status.ER || existingBatch.getStatus() == Status.LD
+                        || existingBatch.getStatus() == Status.RS
                         || !parameterService
                                 .is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED)) {
                     okayToProcess = true;

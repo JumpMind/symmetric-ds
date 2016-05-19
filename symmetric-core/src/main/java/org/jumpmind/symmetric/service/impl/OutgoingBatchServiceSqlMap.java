@@ -64,10 +64,10 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("findOutgoingBatchByIdOnlySql", "where batch_id=? ");
 
         putSql("selectOutgoingBatchSql", ""
-                + "where node_id = ? and status in (?, ?, ?, ?, ?, ?, ?) order by batch_id asc   ");
+                + "where node_id = ? and status in (?, ?, ?, ?, ?, ?, ?, ?) order by batch_id asc   ");
 
         putSql("selectOutgoingBatchChannelSql", ""
-                + " join $(channel) c on c.channel_id = b.channel_id where node_id = ? and c.queue = ? and status in (?, ?, ?, ?, ?, ?, ?) order by batch_id asc   ");
+                + " join $(channel) c on c.channel_id = b.channel_id where node_id = ? and c.queue = ? and status in (?, ?, ?, ?, ?, ?, ?, ?) order by batch_id asc   ");
 
         putSql("selectOutgoingBatchRangeSql", ""
                 + "where batch_id between ? and ? order by batch_id   ");
