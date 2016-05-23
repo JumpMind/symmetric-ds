@@ -239,9 +239,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             StringBuilder statements = new StringBuilder(128);
             
             for (String tableName : tableNames) {
-                statements.append(String.format(
-                        parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL),
-                        tableName)).append(";");
+                String deleteSql = null;
+                if (tableName.startsWith(parameterService.getTablePrefix())) {
+                    deleteSql = "delete from %s";
+                } else {
+                    deleteSql = parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL);
+                } 
+                statements.append(String.format(deleteSql, tableName)).append(";");
             }
             
             statements.setLength(statements.length()-1); // Lose the last ;
