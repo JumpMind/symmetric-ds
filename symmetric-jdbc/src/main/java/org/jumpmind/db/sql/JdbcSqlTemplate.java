@@ -93,7 +93,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         this.dataSource = dataSource;
-        this.settings = settings == null ? new SqlTemplateSettings() : settings;
+        settings = settings == null ? new SqlTemplateSettings() : settings;
+        this.settings = settings;
         this.lobHandler = lobHandler == null ? new SymmetricLobHandler(new DefaultLobHandler())
                 : lobHandler;
         if (settings.getOverrideIsolationLevel() >= 0) {

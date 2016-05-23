@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
@@ -111,6 +112,11 @@ public class TriggerHistory implements Serializable {
 
     public TriggerHistory(Table table, Trigger trigger, AbstractTriggerTemplate triggerTemplate, TriggerReBuildReason reason) {
         this();
+        
+        if (triggerTemplate == null) {
+            throw new SymmetricException("triggerTemplate cannot be null. Does the current dialect have a TriggerTemplate?");
+        }
+        
         this.lastTriggerBuildReason = reason;
         this.sourceTableName = trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
                 .getSourceTableName();

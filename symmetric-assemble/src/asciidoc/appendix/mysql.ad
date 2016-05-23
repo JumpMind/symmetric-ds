@@ -39,3 +39,21 @@ If you are using UTF-8 encoding in the database, you might consider using the ch
 ----
 jdbc:mysql://hostname/databasename?tinyInt1isBit=false&characterEncoding=utf8
 ----
+
+.Supported Data Types
+|===
+|Data Type|Supported?
+
+|TinyInt, SmallInt, Int, MediumInt, BigInt|Yes
+|Decimal, Numeric|Yes
+|Float, Double|Yes
+|Bit|Yes
+|Date, DateTime, TimeStamp, Time, Year|Yes
+|Char, Varchar|Yes
+|Binary, VarBinary|Yes
+|TinyBlob, Blob, MediumBlob, BigBlob|Yes
+|TinyText, Text, MediumText, BigText|Yes
+|Enum|No
+|Set|No
+|Geometry, Point, LineString, Polygon, GeometryCollection, MultiPoint, MultiLinestring, MultiPolygon|No
+|===
