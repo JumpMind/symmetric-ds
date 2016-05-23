@@ -479,7 +479,7 @@ public class SnapshotUtil {
             runtimeProperties.setProperty("batch.incoming.errors.count",
                     Long.toString(engine.getIncomingBatchService().countIncomingBatchesInError()));
             
-            List<DataGap> gaps = engine.getDataService().findDataGaps();
+            List<DataGap> gaps = engine.getDataService().findDataGapsByStatus(DataGap.Status.GP);
             runtimeProperties.setProperty("data.gap.count",
                     Long.toString(gaps.size()));
             if (gaps.size() > 0) {
