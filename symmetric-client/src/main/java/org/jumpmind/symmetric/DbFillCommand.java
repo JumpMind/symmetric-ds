@@ -42,6 +42,8 @@ public class DbFillCommand extends AbstractCommandLauncher {
     private static final String OPTION_COUNT = "count";
 
     private static final String OPTION_CASCADE = "cascade";
+    
+    private static final String OPTION_CASCADE_SELECT = "select";
 
     private static final String OPTION_IGNORE_TABLES = "ignore";
     
@@ -95,6 +97,7 @@ public class DbFillCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_CATALOG, true);
         addOption(options, null, OPTION_COUNT, true);
         addOption(options, null, OPTION_CASCADE, false);
+        addOption(options, null, OPTION_CASCADE_SELECT, false);
         addOption(options, null, OPTION_IGNORE_TABLES, true);
         addOption(options, null, OPTION_PREFIXED_TABLES, true);
         addOption(options, null, OPTION_INTERVAL, true);
@@ -122,6 +125,9 @@ public class DbFillCommand extends AbstractCommandLauncher {
         }
         if (line.hasOption(OPTION_CASCADE)) {
             dbFill.setCascading(true);
+        }
+        if (line.hasOption(OPTION_CASCADE_SELECT)) {
+            dbFill.setCascadingSelect(true);
         }
         if (line.hasOption(OPTION_INTERVAL)) {
             dbFill.setInterval(Integer.parseInt(line.getOptionValue(OPTION_INTERVAL)));
