@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -214,7 +215,6 @@ public class DbFill {
                         missingTableNames);
             }
         }
-
         tables = Database.sortByForeignKeys(tables);
         buildForeignKeyReferences(tables);
         buildDependentColumnValues(tables);        
@@ -303,6 +303,7 @@ public class DbFill {
         if (fkDepList.size() > 0) {
             fkDepList.addAll(getForeignKeyTables(fkDepList, visited));
         }
+        Collections.reverse(fkDepList);
         return fkDepList;
     }
 

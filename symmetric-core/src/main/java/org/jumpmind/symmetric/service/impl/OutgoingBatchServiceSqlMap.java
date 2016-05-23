@@ -72,6 +72,9 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("selectOutgoingBatchRangeSql", ""
                 + "where batch_id between ? and ? order by batch_id   ");
 
+        putSql("selectOutgoingBatchLoadSql", ""
+                + "where load_id = ? order by batch_id   ");
+
         putSql("selectOutgoingBatchTimeRangeSql", ""
                 + "where node_id=? and channel_id=? and create_time >= ? and create_time <= ? ");
 
@@ -118,6 +121,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
               + "     $(data) d on d.data_id=e.data_id                                                                                                          "
               + "     join $(channel) c on c.channel_id = b.channel_id 																							"					
               + "where c.reload_flag = 1                                                                                                                    "
+              + " and b.load_id > 0                      				                                                                                    "
               + "group by b.load_id, b.node_id, b.status, b.channel_id, b.create_by                                                                              "
               + "order by b.load_id desc                                                                                                                         ");
 

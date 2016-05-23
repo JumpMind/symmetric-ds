@@ -482,6 +482,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return batches;
     }
 
+    public OutgoingBatches getOutgoingBatchByLoad(long loadId) {
+        OutgoingBatches batches = new OutgoingBatches();
+        batches.setBatches(sqlTemplate.query(
+                getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchLoadSql"),
+                new OutgoingBatchMapper(true), loadId));
+        return batches;
+    }
+    
     public OutgoingBatches getOutgoingBatchErrors(int maxRows) {
         OutgoingBatches batches = new OutgoingBatches();
         batches.setBatches(sqlTemplate.query(
