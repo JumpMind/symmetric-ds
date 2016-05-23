@@ -144,6 +144,15 @@ public class SnapshotUtil {
 
         }
 
+        File serviceConfFile = new File("conf/sym_service.conf");
+        try {
+            if (serviceConfFile.exists()) {
+                FileUtils.copyFileToDirectory(serviceConfFile, tmpDir);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to copy " + serviceConfFile.getName() + " to the snapshot directory", e);
+        }
+
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService(); 
         List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
         TreeSet<Table> tables = new TreeSet<Table>();
