@@ -167,6 +167,7 @@ subprojects { subproject ->
         servletVersion = '3.1.0'
         springVersion = '4.0.5.RELEASE'
         jtdsVersion = '1.2.8'
+        voltDbVersion = '6.2'
         bouncyCastleVersion = '140'
         animalSnifferVersion = '1.10'
         jnaVersion = '4.1.0'
@@ -189,6 +190,7 @@ subprojects { subproject ->
         provided "jdbc.postgresql:postgresql:$postgresqlVersion"
         provided "jdbc:ojdbc:11.2.0.3"
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
+        provided "org.voltdb:voltdbclient:$voltDbVersion"
         provided "org.hsqldb:hsqldb:$hsqldbVersion:jdk5"
         provided "com.h2database:h2:$h2Version"
         provided "org.xerial:sqlite-jdbc:$sqliteVersion"

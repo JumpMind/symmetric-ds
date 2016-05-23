@@ -40,6 +40,7 @@ import org.jumpmind.db.platform.postgresql.PostgreSqlDdlBuilder;
 import org.jumpmind.db.platform.redshift.RedshiftDdlBuilder;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDdlBuilder;
 import org.jumpmind.db.platform.sqlite.SqliteDdlBuilder;
+import org.jumpmind.db.platform.voltdb.VoltDbDdlBuilder;
 
 /**
  * Factory that creates {@link IDdlBuilder} from {@link DatabaseNamesConstants} values.
@@ -94,6 +95,8 @@ final public class DdlBuilderFactory {
             return new SqlAnywhereDdlBuilder();
         } else if (DatabaseNamesConstants.REDSHIFT.equalsIgnoreCase(databaseName)) {
             return new RedshiftDdlBuilder();
+        } else if (DatabaseNamesConstants.VOLTDB.equalsIgnoreCase(databaseName)) {
+            return new VoltDbDdlBuilder();
         } else {
             return null;
         }

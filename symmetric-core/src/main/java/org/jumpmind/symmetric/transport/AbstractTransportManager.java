@@ -89,6 +89,8 @@ abstract public class AbstractTransportManager {
                 Object value = null;
                 if (batch.getStatus() == Status.OK) {
                     value = WebConstants.ACK_BATCH_OK;
+                } else if (batch.getStatus() == Status.RS) {
+                    value = WebConstants.ACK_BATCH_RESEND;
                 } else {
                     value = batch.getFailedRowNumber();
                 }
@@ -175,6 +177,7 @@ abstract public class AbstractTransportManager {
         batchInfo.setIgnored(getParamAsBoolean(parameters, WebConstants.ACK_IGNORE_COUNT + batchId));
         String status = getParam(parameters, WebConstants.ACK_BATCH_NAME + batchId, "").trim();
         batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK));
+        batchInfo.setResend(status.equalsIgnoreCase(WebConstants.ACK_BATCH_RESEND));
 
         if (!batchInfo.isOk()) {
             batchInfo.setErrorLine(NumberUtils.toLong(status));

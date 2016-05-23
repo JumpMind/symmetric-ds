@@ -619,7 +619,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 changeBatchStatus(Status.LD, currentBatch, mode);
                             }
                         } catch (ExecutionException e) {
-                            throw new RuntimeException(e.getCause());
+                            throw new RuntimeException(e.getCause() != null ? e.getCause() : e);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         } catch (TimeoutException e) {
@@ -887,11 +887,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
+    protected boolean isRetry(OutgoingBatch currentBatch, Node remoteNode) {
+        IStagedResource previouslyExtracted = getStagedResource(currentBatch);
+        return previouslyExtracted != null && previouslyExtracted.exists() && previouslyExtracted.getState() != State.CREATE
+                && currentBatch.getStatus() != OutgoingBatch.Status.RS && remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0);
+    }
+
     protected OutgoingBatch sendOutgoingBatch(ProcessInfo processInfo, Node targetNode,
             OutgoingBatch currentBatch, IDataWriter dataWriter, BufferedWriter writer, ExtractMode mode) {
         if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode) {
             currentBatch.setSentCount(currentBatch.getSentCount() + 1);
-            changeBatchStatus(Status.SE, currentBatch, mode);
+            if (currentBatch.getStatus() != Status.RS) {
+                changeBatchStatus(Status.SE, currentBatch, mode);
+            }
 
             long ts = System.currentTimeMillis();
 
@@ -899,8 +907,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (extractedBatch != null) {
                 if (mode == ExtractMode.FOR_SYM_CLIENT && writer != null) {
                     DataContext ctx = new DataContext();
-                    SimpleStagingDataReader dataReader = new SimpleStagingDataReader(BatchType.EXTRACT,
-                            currentBatch.getBatchId(), currentBatch.getNodeId(), extractedBatch, writer, ctx);
+                    SimpleStagingDataReader dataReader = new SimpleStagingDataReader(BatchType.EXTRACT, currentBatch.getBatchId(), 
+                            currentBatch.getNodeId(), isRetry(currentBatch, targetNode), extractedBatch, writer, ctx);
                     dataReader.process();
                 } else {
                     IDataReader dataReader = new ProtocolDataReader(BatchType.EXTRACT,

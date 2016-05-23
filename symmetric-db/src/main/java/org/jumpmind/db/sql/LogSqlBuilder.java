@@ -83,7 +83,7 @@ public class LogSqlBuilder {
             msg += "sql args: " + Arrays.toString(args) + " ";
         }
         
-        loggerArg.error(msg + e);
+        loggerArg.debug(msg + e);
         return e;
     }    
     

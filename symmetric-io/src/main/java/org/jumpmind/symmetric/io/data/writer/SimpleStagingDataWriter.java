@@ -133,14 +133,31 @@ public class SimpleStagingDataWriter {
                     }
                 }
             } else if (line.startsWith(CsvConstants.COMMIT)) {
-                writeLine(line);
-                resource.close();
-                resource.setState(State.READY);
+                if (writer != null) {
+                    writeLine(line);
+                    resource.close();
+                    resource.setState(State.READY);
+                }
                 batchTableLines.clear();
                 
                 if (listeners != null) {
                     for (IProtocolDataWriterListener listener : listeners) {
                         listener.end(context, batch, resource);
+                    }
+                }
+            } else if (line.startsWith(CsvConstants.RETRY)) {
+                batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine),
+                        getBinaryEncoding(binaryLine), getArgLine(nodeLine), targetNodeId, false);
+                String location = batch.getStagedLocation();
+                resource = stagingManager.find(category, location, batch.getBatchId());
+                if (resource == null || resource.getState() == State.CREATE) {
+                    resource = null;
+                    writer = null;
+                }
+
+                if (listeners != null) {
+                    for (IProtocolDataWriterListener listener : listeners) {
+                        listener.start(context, batch);
                     }
                 }
             } else if (line.startsWith(CsvConstants.NODEID)) {
@@ -167,7 +184,7 @@ public class SimpleStagingDataWriter {
             if (System.currentTimeMillis() - ts > 60000) {
                 log.info("Batch '{}', for node '{}', for process 'transfer to stage' has been processing for {} seconds.  The following stats have been gathered: {}",
                         new Object[] { batch.getBatchId(), batch.getTargetNodeId(), (System.currentTimeMillis() - startTime) / 1000,
-                        "LINES=" + lineCount + ", BYTES=" + resource.getSize() });
+                        "LINES=" + lineCount + ", BYTES=" + ((resource == null) ? 0 : resource.getSize()) });
                 ts = System.currentTimeMillis();
             }
         }

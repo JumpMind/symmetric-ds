@@ -315,7 +315,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         Map<String, Lock> all = findLocks();
         Lock lock = all.get(action);
         if (lock != null && Lock.STOPPED.equals(lock.getLockingServerId())) {
-            unlockCluster(action, Lock.STOPPED);
+            sqlTemplate.update(getSql("resetClusterLockSql"), new Object[] { action, TYPE_CLUSTER, Lock.STOPPED});
         }
     }
 

@@ -193,7 +193,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     tokens = null;
                     return data;
 
-                } else if (tokens[0].equals(CsvConstants.BATCH)) {
+                } else if (tokens[0].equals(CsvConstants.BATCH) || tokens[0].equals(CsvConstants.RETRY)) {
                     Batch batch = new Batch(batchType, Long.parseLong(tokens[1]), channelId,
                             binaryEncoding, sourceNodeId, targetNodeId, false);
                     statistics.put(batch, new DataReaderStatistics());

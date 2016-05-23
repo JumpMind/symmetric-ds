@@ -38,6 +38,8 @@ public class BatchAck  implements Serializable {
 
     private boolean isOk;
 
+    private boolean isResend;
+
     private long errorLine;
 
     private long networkMillis;
@@ -79,6 +81,10 @@ public class BatchAck  implements Serializable {
         return isOk;
     }
 
+    public boolean isResend() {
+        return isResend;
+    }
+
     public void setBatchId(long batchId) {
         this.batchId = batchId;
     }
@@ -89,6 +95,10 @@ public class BatchAck  implements Serializable {
 
     public void setOk(boolean isOk) {
         this.isOk = isOk;
+    }
+
+    public void setResend(boolean isResend) {
+        this.isResend = isResend;
     }
 
     public long getByteCount() {

@@ -62,4 +62,6 @@ final public class CsvConstants {
     public static final String CHANNEL = "channel";
     
     public static final String IGNORE = "ignore";
+    
+    public static final String RETRY = "retry";
 }
