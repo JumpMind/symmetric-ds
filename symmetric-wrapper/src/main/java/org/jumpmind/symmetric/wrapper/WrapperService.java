@@ -27,6 +27,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -127,90 +129,101 @@ public abstract class WrapperService {
             throw new WrapperException(Constants.RC_FAIL_WRITE_LOG_FILE, 0, "Cannot open log file " + config.getLogFile(), e);
         }
 
-        int pid = getCurrentPid();
-        writePidToFile(pid, config.getWrapperPidFile());
-        logger.log(Level.INFO, "Started wrapper as PID " + pid);
-
-        ArrayList<String> cmd = config.getCommand(isConsole);
-        String cmdString = commandToString(cmd);
-        boolean usingHeapDump = cmdString.indexOf("-XX:+HeapDumpOnOutOfMemoryError") != -1;
-        logger.log(Level.INFO, "Working directory is " + System.getProperty("user.dir"));
-
-        long startTime = 0;
-        int startCount = 0;
-        boolean startProcess = true, restartDetected = false;
-        int serverPid = 0;
-
-        while (keepRunning) {
-            if (startProcess) {
-                logger.log(Level.INFO, "Executing " + cmdString);
-                if (startCount == 0) {
-                    updateStatus(Status.START_PENDING);
-                }
-                startTime = System.currentTimeMillis();
-                ProcessBuilder pb = new ProcessBuilder(cmd);
-                pb.redirectErrorStream(true);
-
-                try {
-                    child = pb.start();
-                } catch (IOException e) {
-                    logger.log(Level.SEVERE, "Failed to execute: " + e.getMessage());
-                    updateStatus(Status.STOPPED);
-                    throw new WrapperException(Constants.RC_FAIL_EXECUTION, -1, "Failed executing server", e);
-                }
-
-                serverPid = getProcessPid(child);
-                logger.log(Level.INFO, "Started server as PID " + serverPid);
-                writePidToFile(serverPid, config.getServerPidFile());
-
-                if (startCount == 0) {
-                    Runtime.getRuntime().addShutdownHook(new ShutdownHook());
-                    updateStatus(Status.RUNNING);
-                }
-                startProcess = false;
-                startCount++;
-            } else {
-                try {
-                    logger.log(Level.INFO, "Watching output of java process");
-                    childReader = new BufferedReader(new InputStreamReader(child.getInputStream()));
-                    String line = null;
-
-                    while ((line = childReader.readLine()) != null) {
-                        System.out.println(line);
-                        logger.log(Level.INFO, line, "java");
-                        if ((usingHeapDump && line.matches("Heap dump file created.*")) || 
-                                (!usingHeapDump && line.matches("java.lang.OutOfMemoryError.*")) ||
-                                line.matches(".*java.net.BindException.*")) {
-                            logger.log(Level.SEVERE, "Stopping server because its output matches a failure condition");
-                            child.destroy();
-                            childReader.close();
-                            stopProcess(serverPid, "symmetricds");
-                            break;
-                        }
-                        if (line.equalsIgnoreCase("Restarting")) {
-                            restartDetected = true;
-                        }
+        try {
+            int pid = getCurrentPid();
+            writePidToFile(pid, config.getWrapperPidFile());
+            logger.log(Level.INFO, "Started wrapper as PID " + pid);
+    
+            ArrayList<String> cmd = config.getCommand(isConsole);
+            String cmdString = commandToString(cmd);
+            boolean usingHeapDump = cmdString.indexOf("-XX:+HeapDumpOnOutOfMemoryError") != -1;
+            logger.log(Level.INFO, "Working directory is " + System.getProperty("user.dir"));
+    
+            long startTime = 0;
+            int startCount = 0;
+            boolean startProcess = true, restartDetected = false;
+            int serverPid = 0;
+    
+            while (keepRunning) {
+                if (startProcess) {
+                    logger.log(Level.INFO, "Executing " + cmdString);
+                    if (startCount == 0) {
+                        updateStatus(Status.START_PENDING);
                     }
-                    logger.log(Level.INFO, "End of output from java process");
-                } catch (IOException e) {
-                    logger.log(Level.SEVERE, "Error while reading from process");
-                }
-
-                if (restartDetected) {
-                    logger.log(Level.INFO, "Restart detected");
-                    restartDetected = false;
-                    startProcess = true;
-                } else if (keepRunning) {
-                    logger.log(Level.SEVERE, "Unexpected exit from server: " + child.exitValue());
-                    long runTime = System.currentTimeMillis() - startTime;
-                    if (System.currentTimeMillis() - startTime < 7000) {
-                        logger.log(Level.SEVERE, "Stopping because server exited too quickly after only " + runTime + " milliseconds");
+                    startTime = System.currentTimeMillis();
+                    ProcessBuilder pb = new ProcessBuilder(cmd);
+                    pb.redirectErrorStream(true);
+    
+                    try {
+                        child = pb.start();
+                    } catch (IOException e) {
+                        logger.log(Level.SEVERE, "Failed to execute: " + e.getMessage());
                         updateStatus(Status.STOPPED);
-                        throw new WrapperException(Constants.RC_SERVER_EXITED, child.exitValue(), "Unexpected exit from server");
-                    } else {
+                        throw new WrapperException(Constants.RC_FAIL_EXECUTION, -1, "Failed executing server", e);
+                    }
+    
+                    serverPid = getProcessPid(child);
+                    logger.log(Level.INFO, "Started server as PID " + serverPid);
+                    writePidToFile(serverPid, config.getServerPidFile());
+    
+                    if (startCount == 0) {
+                        Runtime.getRuntime().addShutdownHook(new ShutdownHook());
+                        updateStatus(Status.RUNNING);
+                    }
+                    startProcess = false;
+                    startCount++;
+                } else {
+                    try {
+                        logger.log(Level.INFO, "Watching output of java process");
+                        childReader = new BufferedReader(new InputStreamReader(child.getInputStream()));
+                        String line = null;
+    
+                        while ((line = childReader.readLine()) != null) {
+                            System.out.println(line);
+                            logger.log(Level.INFO, line, "java");
+                            if ((usingHeapDump && line.matches("Heap dump file created.*")) || 
+                                    (!usingHeapDump && line.matches("java.lang.OutOfMemoryError.*")) ||
+                                    line.matches(".*java.net.BindException.*")) {
+                                logger.log(Level.SEVERE, "Stopping server because its output matches a failure condition");
+                                child.destroy();
+                                childReader.close();
+                                stopProcess(serverPid, "symmetricds");
+                                break;
+                            }
+                            if (line.equalsIgnoreCase("Restarting")) {
+                                restartDetected = true;
+                            }
+                        }
+                        logger.log(Level.INFO, "End of output from java process");
+                    } catch (IOException e) {
+                        logger.log(Level.SEVERE, "Error while reading from process");
+                    }
+    
+                    if (restartDetected) {
+                        logger.log(Level.INFO, "Restart detected");
+                        restartDetected = false;
                         startProcess = true;
+                    } else if (keepRunning) {
+                        logger.log(Level.SEVERE, "Unexpected exit from server: " + child.exitValue());
+                        long runTime = System.currentTimeMillis() - startTime;
+                        if (System.currentTimeMillis() - startTime < 7000) {
+                            logger.log(Level.SEVERE, "Stopping because server exited too quickly after only " + runTime + " milliseconds");
+                            updateStatus(Status.STOPPED);
+                            throw new WrapperException(Constants.RC_SERVER_EXITED, child.exitValue(), "Unexpected exit from server");
+                        } else {
+                            startProcess = true;
+                        }
                     }
                 }
+            }
+        } catch (Throwable ex) {
+            // The default logging config doesn't show the stack trace here, so include it in the message.
+            try {                
+                logger.log(Level.SEVERE, "Exception caught.\r\n" + getStackTrace(ex));
+                updateStatus(Status.STOPPED);
+                throw new WrapperException(Constants.RC_SERVER_EXITED, child.exitValue(), "Exception caught.");                
+            } catch (Throwable ex2) {
+                ex.printStackTrace();
             }
         }
     }
@@ -371,6 +384,13 @@ public abstract class WrapperService {
     }
 
     protected void updateStatus(Status status) {
+    }
+    
+    private static String getStackTrace(Throwable throwable) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw, true);
+        throwable.printStackTrace(pw);
+        return sw.getBuffer().toString();
     }
 
     class ShutdownHook extends Thread {

@@ -141,7 +141,7 @@ public class WrapperConfig {
         String version = System.getProperty("java.version");
         boolean expandWildcard = version != null && version.startsWith("1.5");
 
-        ArrayList<String> cp = prop.get("wrapper.java.classpath");
+        List<String> cp = getListProperty(prop, "wrapper.java.classpath");
         StringBuilder sb = new StringBuilder(cp.size());
         for (int i = 0; i < cp.size(); i++) {
             if (i > 0) {
@@ -159,9 +159,10 @@ public class WrapperConfig {
         cmdList.add("-cp");
         cmdList.add(sb.toString());
 
-        cmdList.addAll(prop.get("wrapper.java.additional"));
+        List<String> javaAdditional = getListProperty(prop, "wrapper.java.additional");
+        cmdList.addAll(javaAdditional);
         
-        ArrayList<String> appParams = prop.get("wrapper.app.parameter");
+        List<String> appParams =  getListProperty(prop, "wrapper.app.parameter");
         appParams.remove("--no-log-console");
         cmdList.addAll(appParams);
         
@@ -236,6 +237,14 @@ public class WrapperConfig {
             value = values.get(0);
         } else {
             value = defaultValue;
+        }
+        return value;
+    }
+    
+    private List<String> getListProperty(Map<String, ArrayList<String>> prop, String name) {
+        ArrayList<String> value = prop.get(name);
+        if (value == null) {
+            value = new ArrayList<String>(0);
         }
         return value;
     }
