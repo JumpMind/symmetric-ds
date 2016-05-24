@@ -88,6 +88,12 @@ public class Trigger implements Serializable {
     
     private String channelExpression = null;
 
+    private String customBeforeUpdateText;
+
+    private String customBeforeInsertText;
+
+    private String customBeforeDeleteText;
+
     private String customOnUpdateText;
 
     private String customOnInsertText;
@@ -387,6 +393,30 @@ public class Trigger implements Serializable {
         this.syncOnDeleteCondition = syncOnDeleteCondition;
     }
 
+    public String getCustomBeforeUpdateText() {
+        return customBeforeUpdateText;
+    }
+
+    public void setCustomBeforeUpdateText(String customBeforeUpdateText) {
+        this.customBeforeUpdateText = customBeforeUpdateText;
+    }
+
+    public String getCustomBeforeInsertText() {
+        return customBeforeInsertText;
+    }
+
+    public void setCustomBeforeInsertText(String customBeforeInsertText) {
+        this.customBeforeInsertText = customBeforeInsertText;
+    }
+
+    public String getCustomBeforeDeleteText() {
+        return customBeforeDeleteText;
+    }
+
+    public void setCustomBeforeDeleteText(String customBeforeDeleteText) {
+        this.customBeforeDeleteText = customBeforeDeleteText;
+    }
+
     public String getCustomOnUpdateText() {
         return customOnUpdateText;
     }
@@ -567,6 +597,18 @@ public class Trigger implements Serializable {
 
         if (null != syncOnDeleteCondition) {
             hashedValue += syncOnDeleteCondition.hashCode();
+        }
+
+        if (null != customBeforeUpdateText) {
+            hashedValue += customBeforeUpdateText.hashCode();
+        }
+
+        if (null != customBeforeInsertText) {
+            hashedValue += customBeforeInsertText.hashCode();
+        }
+
+        if (null != customBeforeDeleteText) {
+            hashedValue += customBeforeDeleteText.hashCode();
         }
 
         if (null != customOnUpdateText) {

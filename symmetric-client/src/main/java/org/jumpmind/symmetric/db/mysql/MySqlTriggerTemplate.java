@@ -48,6 +48,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("insertTriggerTemplate" ,
 "create trigger $(triggerName) after insert on $(schemaName)$(tableName)                                                                                                                                \n" +
 "                                for each row begin                                                                                                                                                     \n" +
+"                                  $(custom_before_insert_text) \n" +
 "                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
 "                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)\n" +
 "                                    values(                                                                                                                                                            \n" +
@@ -69,6 +70,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                for each row begin                                                                                                                                                     \n" +
 "                                  DECLARE var_row_data mediumtext character set utf8;                                                                                                                                      \n" +
 "                                  DECLARE var_old_data mediumtext character set utf8;                                                                                                                                     \n" +
+"                                  $(custom_before_update_text) \n" +
 "                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
 "                                   set var_row_data = concat($(columns));                                                                                                                              \n" +
 "                                   set var_old_data = concat($(oldColumns));                                                                                                                           \n" +
@@ -94,6 +96,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger $(triggerName) after delete on $(schemaName)$(tableName)                                                                                                                                \n" +
 "                                for each row begin                                                                                                                                                     \n" +
+"                                  $(custom_before_delete_text) \n" +
 "                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
 "                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)\n" +
 "                                    values(                                                                                                                                                            \n" +

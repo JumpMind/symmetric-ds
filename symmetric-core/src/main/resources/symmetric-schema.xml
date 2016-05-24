@@ -727,6 +727,9 @@
         <column name="sync_on_update_condition" type="LONGVARCHAR"  description="Specify a condition for the update trigger firing using an expression specific to the database." />
         <column name="sync_on_insert_condition" type="LONGVARCHAR"  description="Specify a condition for the insert trigger firing using an expression specific to the database." />
         <column name="sync_on_delete_condition" type="LONGVARCHAR"  description="Specify a condition for the delete trigger firing using an expression specific to the database." />
+        <column name="custom_before_update_text" type="LONGVARCHAR"  description="Specify update trigger text to execute before the SymmetricDS trigger text runs.  This field is not applicable for H2, HSQLDB 1.x or Apachy Derby." />
+        <column name="custom_before_insert_text" type="LONGVARCHAR"  description="Specify insert trigger text to execute before the SymmetricDS trigger text runs.  This field is not applicable for H2, HSQLDB 1.x or Apachy Derby." />
+        <column name="custom_before_delete_text" type="LONGVARCHAR"  description="Specify delete trigger text to execute brefore the SymmetricDS trigger text runs.  This field is not applicable for H2, HSQLDB 1.x or Apachy Derby." />
         <column name="custom_on_update_text" type="LONGVARCHAR"  description="Specify update trigger text to execute after the SymmetricDS trigger text runs.  This field is not applicable for H2, HSQLDB 1.x or Apachy Derby." />
         <column name="custom_on_insert_text" type="LONGVARCHAR"  description="Specify insert trigger text to execute after the SymmetricDS trigger text runs.  This field is not applicable for H2, HSQLDB 1.x or Apachy Derby." />
         <column name="custom_on_delete_text" type="LONGVARCHAR"  description="Specify delete trigger text to execute after the SymmetricDS trigger text runs.  This field is not applicable for H2, HSQLDB 1.x or Apachy Derby." />

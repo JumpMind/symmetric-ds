@@ -56,6 +56,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "create or replace trigger $(triggerName)                                                 \n" +
 "    after insert on $(schemaName)$(tableName)                                            \n" +
 "        for each row begin                                                               \n" +
+"            $(custom_before_insert_text) \n" +
 "            if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then         \n" +
 "                insert into $(defaultSchema)$(prefixName)_data                           \n" +
 "                  (table_name, event_type, trigger_hist_id, row_data, channel_id,        \n" +
@@ -82,6 +83,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                    var_row_data $(oracleLobType);                                                                                                                                       \n" +
 "                                    var_old_data $(oracleLobType);                                                                                                                                       \n" +
 "                                  begin                                                                                                                                                                  \n" +
+"                                    $(custom_before_update_text) \n" +
 "                                    if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
 "                                      select $(oracleToClob)$(columns) into var_row_data from dual;                                                                                                      \n" +
 "                                      select $(oracleToClob)$(oldColumns) into var_old_data from dual;                                                                                                   \n" +
@@ -110,6 +112,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create or replace trigger  $(triggerName) after delete on $(schemaName)$(tableName)                                                                                                                    \n" +
 "                                for each row begin                                                                                                                                                     \n" +
+"                                  $(custom_before_delete_text) \n" +
 "                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
 "                                    (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               \n" +

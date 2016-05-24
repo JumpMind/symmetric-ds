@@ -75,6 +75,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("insertTriggerTemplate" ,
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                \n" +
 "                                begin                                                                                                                                                                  \n" +
+"                                  $(custom_before_insert_text) \n" +
 "                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
 "                                    (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                        \n" +
@@ -104,6 +105,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                declare var_row_data text; \n" +        
 "                                declare var_old_data text; \n" +
 "                                begin\n" +
+"                                  $(custom_before_update_text) \n" +
 "                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
 "                                    var_row_data := $(columns); \n" +
 "                                    var_old_data := $(oldColumns); \n" +
@@ -137,6 +139,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                \n" +
 "                                begin                                                                                                                                                                  \n" +
+"                                  $(custom_before_delete_text) \n" +
 "                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
 "                                    (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               \n" +

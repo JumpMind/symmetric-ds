@@ -426,6 +426,13 @@ abstract public class AbstractTriggerTemplate {
                 symmetricDialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()),
                 ddl);
 
+        ddl = FormatUtils.replace("custom_before_insert_text",
+                trigger.getCustomBeforeInsertText()==null ? "" : trigger.getCustomBeforeInsertText(), ddl);
+        ddl = FormatUtils.replace("custom_before_update_text",
+                trigger.getCustomBeforeUpdateText()==null ? "" : trigger.getCustomBeforeUpdateText(), ddl);
+        ddl = FormatUtils.replace("custom_before_delete_text",
+                trigger.getCustomBeforeDeleteText()==null ? "" : trigger.getCustomBeforeDeleteText(), ddl);
+
         ddl = FormatUtils.replace("custom_on_insert_text",
                 trigger.getCustomOnInsertText()==null ? "" : trigger.getCustomOnInsertText(), ddl);
         ddl = FormatUtils.replace("custom_on_update_text",

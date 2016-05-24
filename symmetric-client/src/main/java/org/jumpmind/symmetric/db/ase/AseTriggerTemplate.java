@@ -74,6 +74,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  declare @DataRow varchar(16384)  \n" + 
 "                                  declare @ChannelId varchar(128)   \n" +                                                                                             
 "                                  $(declareNewKeyVariables)                                                                                                                                            \n" +
+"                                  $(custom_before_insert_text) \n" +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "                                    declare DataCursor cursor for                                                                                                                                      \n" +
 "                                    $(if:containsBlobClobColumns)                                                                                                                                      \n" +
@@ -116,6 +117,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +
 "                                  $(declareOldKeyVariables)                                                                                                                                            \n" +
 "                                  $(declareNewKeyVariables)                                                                                                                                            \n" +
+"                                  $(custom_before_update_text) \n" +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "                                    declare DataCursor cursor for                                                                                                                                      \n" +
 "                                    $(if:containsBlobClobColumns)                                                                                                                                      \n" +
@@ -158,6 +160,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
 "                                      select @txid = $(txIdExpression)                             \n" +
 "                                  end                                                                                                                                                                \n" +
+"                                  $(custom_before_update_text) \n" +
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "       declare DeleteCursor cursor  for                                                                                                                                \n" +
 "          select $(oldKeys), $(oldColumns) $(oldKeyNames) from deleted where $(syncOnDeleteCondition)                                                                      \n" +
@@ -206,6 +209,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  declare @clientname varchar(50)    \n" +
 "                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +
 "                                  $(declareOldKeyVariables)                                                                                                                                            \n" +
+"                                  $(custom_before_delete_text) \n" +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "                                    declare DataCursor cursor for                                                                                                                                      \n" +
 "                                      select $(oldKeys), $(oldColumns) $(oldKeyNames), $(channelExpression) from deleted where $(syncOnDeleteCondition)                                                                      \n" +

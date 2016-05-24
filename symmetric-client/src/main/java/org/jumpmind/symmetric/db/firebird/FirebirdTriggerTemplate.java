@@ -55,6 +55,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("insertTriggerTemplate" ,
 "create trigger $(triggerName) for $(schemaName)$(tableName) after insert position 5 as                                                                                                                            \n" +
 "   begin                                                                                                                                                                  \n" +
+"     $(custom_before_insert_text) \n" +
 "     if ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
 "     begin                                                                                                                                                                \n" +
 "       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
@@ -77,6 +78,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) for $(schemaName)$(tableName) after update position 5 as                                                                                                                            \n" +
 "   begin                                                                                                                                                                  \n" +
+"     $(custom_before_update_text) \n" +
 "     if ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
 "     begin                                                                                                                                                                \n" +
 "       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
@@ -101,6 +103,7 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger  $(triggerName) for $(schemaName)$(tableName) after delete position 5 as                                                                                                                           \n" +
 "   begin                                                                                                                                                                  \n" +
+"     $(custom_before_delete_text) \n" +
 "     if ($(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
 "     begin                                                                                                                                                                \n" +
 "       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +

@@ -49,6 +49,7 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                declare variable sync_node_disabled varchar(30);                                                                                                                       " +
 "                                begin                                                                                                                                                                  " +
 "                                  select context_value from $(prefixName)_context where id = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
+"                                  $(custom_before_insert_text) \n" +
 "                                  if ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               " +
 "                                  begin                                                                                                                                                                " +
 "                                    select context_value from $(prefixName)_context where id = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
@@ -78,6 +79,7 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                declare variable sync_node_disabled varchar(30);                                                                                                                       " +
 "                                begin                                                                                                                                                                  " +
 "                                  select context_value from $(prefixName)_context where id = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
+"                                  $(custom_before_update_text) \n" +
 "                                  if ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               " +
 "                                  begin                                                                                                                                                                " +
 "                                    select context_value from $(prefixName)_context where id = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
@@ -109,6 +111,7 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                declare variable sync_node_disabled varchar(30);                                                                                                                       " +
 "                                begin                                                                                                                                                                  " +
 "                                  select context_value from $(prefixName)_context where id = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
+"                                  $(custom_before_delete_text) \n" +
 "                                  if ($(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               " +
 "                                  begin                                                                                                                                                                " +
 "                                    select context_value from $(prefixName)_context where id = 'sync_node_disabled' into :sync_node_disabled;                                                          " +

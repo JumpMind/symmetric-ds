@@ -82,6 +82,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
 "       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                     \n" +
 "     end                                                                                                                                                                  \n" +
+"     $(custom_before_insert_text) \n" +
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "       declare DataCursor cursor local for                                                                                                                                \n" +
 "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
@@ -120,6 +121,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
 "       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                     \n" +
 "     end                                                                                                                                                                  \n" +
+"     $(custom_before_update_text) \n" +
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "       declare DataCursor cursor local for                                                                                                                                \n" +
 "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
@@ -161,6 +163,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
 "       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                            \n" +
 "     end                                                                                                                                                                  \n" +
+"     $(custom_before_update_text) \n" +
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "       declare DeleteCursor cursor local for                                                                                                                                \n" +
 "          select $(oldKeys), $(oldColumns) $(oldKeyNames) from deleted where $(syncOnDeleteCondition)                                                                      \n" +
@@ -206,6 +209,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "    if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
 "       select @TransactionId = convert(VARCHAR(1000),transaction_id)    from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                                           \n" +
 "    end                                                                                                                                                                  \n" +
+"    $(custom_before_delete_text) \n" +
 "    if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "      declare DataCursor cursor local for                                                                                                                                \n" +
 "        select $(oldKeys), $(oldColumns) $(oldKeyNames), $(channelExpression) from deleted where $(syncOnDeleteCondition)                                                                      \n" +

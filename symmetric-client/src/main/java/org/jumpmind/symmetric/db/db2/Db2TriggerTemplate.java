@@ -55,6 +55,7 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                REFERENCING NEW AS NEW                                                                                                                                                 \n"+
 "                                FOR EACH ROW MODE DB2SQL                                                                                                                                               \n"+
 "                                BEGIN ATOMIC                                                                                                                                                           \n"+
+"                                    $(custom_before_insert_text) \n" +
 "                                    IF $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                               \n"+
 "                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 \n"+
 "                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                \n"+
@@ -75,6 +76,7 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                BEGIN ATOMIC                                                                                                                                                           \n"+
 "                                    DECLARE var_row_data VARCHAR(16336);                                                                                                                               \n"+
 "                                    DECLARE var_old_data VARCHAR(16336);                                                                                                                               \n"+
+"                                    $(custom_before_update_text) \n" +
 "                                    IF $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                               \n"+
 "                                        SET var_row_data = $(oracleToClob)$(columns);                                                                                                                                 \n"+
 "                                        SET var_old_data = $(oracleToClob)$(oldColumns);                                                                                                                              \n"+
@@ -101,6 +103,7 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                REFERENCING OLD AS OLD                                                                                                                                                 \n"+
 "                                FOR EACH ROW MODE DB2SQL                                                                                                                                               \n"+
 "                                BEGIN ATOMIC                                                                                                                                                           \n"+
+"                                    $(custom_before_delete_text) \n" +
 "                                    IF $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                               \n"+
 "                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 \n"+
 "                                            (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                       \n"+
