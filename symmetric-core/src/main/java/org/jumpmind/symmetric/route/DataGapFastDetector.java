@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -104,6 +105,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         maxDataToSelect = parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         gaps = dataService.findDataGaps();
         processInfo.setStatus(Status.OK);
+        fixOverlappingGaps(gaps, processInfo);
 
         if (contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)) {
             log.info("Full gap analysis is running");
@@ -303,14 +305,6 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         } else if (dataGap.gapSize() < maxDataToSelect - 1 && dataGap.gapSize() >= (long) (maxDataToSelect * 0.75)) {
             log.warn("Detected a very large gap range: " + dataGap);
             isOkay = false;
-        } else {
-            for (DataGap gapAdded : gapsAll) {
-                if (dataGap.overlaps(gapAdded)) {
-                    log.warn("Detected an overlapping data gap: " + dataGap);
-                    isOkay = false;
-                    break;
-                }
-            }
         }
 
         if (isOkay) {
@@ -341,10 +335,6 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         }
     }
 
-    public Long mapRow(Row row) {
-        return row.getLong("data_id");
-    }
-
     protected Map<DataGap, List<Long>> getDataIdMap() {
         HashMap<DataGap, List<Long>> map = new HashMap<DataGap, List<Long>>();
         Collections.sort(dataIds);
@@ -365,6 +355,78 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         return map;
     }
     
+    protected void fixOverlappingGaps(List<DataGap> gaps, ProcessInfo processInfo) {
+        try {
+            ISqlTransaction transaction = null;
+            log.debug("Looking for overlapping gaps");
+            try {
+                ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
+                transaction = sqlTemplate.startSqlTransaction();
+                DataGap prevGap = null, lastGap = null;
+                ListIterator<DataGap> iter = gaps.listIterator();
+                while (iter.hasNext()) {
+                    DataGap curGap = iter.next();
+                    if (lastGap != null) {
+                        log.warn("Removing gap found after last gap: " + curGap);
+                        dataService.deleteDataGap(transaction, curGap);
+                        iter.remove();
+                    } else {
+                        if (curGap.gapSize() >= maxDataToSelect - 1) {
+                            lastGap = curGap;
+                        }
+
+                        if (prevGap != null) {
+                            if (prevGap.overlaps(curGap)) {
+                                log.warn("Removing overlapping gaps: " + prevGap + ", " + curGap);
+                                dataService.deleteDataGap(transaction, prevGap);
+                                dataService.deleteDataGap(transaction, curGap);
+                                DataGap newGap = null;
+                                if (curGap.equals(lastGap)) {
+                                    newGap = new DataGap(prevGap.getStartId(), prevGap.getStartId() + maxDataToSelect - 1);
+                                } else {
+                                    newGap = new DataGap(prevGap.getStartId(), 
+                                            prevGap.getEndId() > curGap.getEndId() ? prevGap.getEndId() : curGap.getEndId());
+                                }
+                                log.warn("Inserting new gap to fix overlap: " + newGap);
+                                dataService.insertDataGap(transaction, newGap);
+                                iter.remove();
+                                iter.previous();
+                                iter.set(newGap);
+                                if (iter.hasNext()) {
+                                    iter.next();
+                                }
+                                curGap = newGap;
+                            }
+                        }
+                    }
+                    prevGap = curGap;
+                }
+                transaction.commit();
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
+                }
+            }
+        } catch (RuntimeException ex) {
+            processInfo.setStatus(Status.ERROR);
+            throw ex;
+        }
+    }
+
+    public Long mapRow(Row row) {
+        return row.getLong("data_id");
+    }
+
     public List<DataGap> getDataGaps() {
         return gaps;
     }

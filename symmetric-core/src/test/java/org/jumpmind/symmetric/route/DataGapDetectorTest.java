@@ -436,10 +436,7 @@ public class DataGapDetectorTest {
         verifyNoMoreInteractions(dataService);
     }
 
-    // Commenting out the overlap tests because these would need to be handled by
-    // a repair routine that runs at the beginning of the gap detection.
-
-    //@Test
+    @Test
     public void testGapsOverlap() throws Exception {
         List<Long> dataIds = new ArrayList<Long>();
 
@@ -454,7 +451,7 @@ public class DataGapDetectorTest {
         verifyNoMoreInteractions(dataService);
     }
 
-    //@Test
+    @Test
     public void testGapsOverlapMultiple() throws Exception {
         List<Long> dataIds = new ArrayList<Long>();
 
@@ -470,34 +467,22 @@ public class DataGapDetectorTest {
         runGapDetector(dataGaps, dataIds, true);
 
         verify(dataService).findDataGaps();
-        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
+
+        verify(dataService, VerificationModeFactory.times(6)).deleteDataGap(sqlTransaction, new DataGap(1, 10));
+        verify(dataService, VerificationModeFactory.times(5)).insertDataGap(sqlTransaction, new DataGap(1, 10));
+
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(3, 8));
-        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 10));
-        
-        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(4, 6));
-        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 10));
-
-        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(4, 8));
-        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 10));
-
-        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(4, 5));
-        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 10));
-
-        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(5, 10));
-        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 10));
-
-        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(1, 10));
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(6, 11));
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 11));
 
         verifyNoMoreInteractions(dataService);
     }
 
-    //@Test
+    @Test
     public void testGapsOverlapThenData() throws Exception {
         List<Long> dataIds = new ArrayList<Long>();
         dataIds.add(30953883L);
@@ -515,7 +500,7 @@ public class DataGapDetectorTest {
         verifyNoMoreInteractions(dataService);
     }
 
-    //@Test
+    @Test
     public void testGapsOverlapThenDataFull() throws Exception {
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
         List<Long> dataIds = new ArrayList<Long>();
@@ -545,7 +530,7 @@ public class DataGapDetectorTest {
         verifyNoMoreInteractions(dataService);
     }
 
-    //@Test
+    @Test
     public void testGapsOverlapAfterLastGap() throws Exception {
         List<Long> dataIds = new ArrayList<Long>();
         dataIds.add(30953883L);
@@ -581,7 +566,9 @@ public class DataGapDetectorTest {
         runGapDetector(dataGaps, dataIds, true);
 
         verify(dataService).findDataGaps();
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(31832440, 81832439));
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(31832439, 81832439));
+        verify(dataService).insertDataGap(new DataGap(31832440, 81832439));
         verifyNoMoreInteractions(dataService);
     }
 
