@@ -46,3 +46,18 @@ When multiple users are involved, the SymmetricDS user will need the following p
 GRANT USAGE ON SCHEMA {schema name} TO {user name};
 GRANT CREATE ON SCHEMA {schema name} TO {user name};
 ----
+
+.supported data types
+|===
+|Data Type|Supported?
+
+|SmallInt, Integer, BigInt|Yes
+|Decimal, Numeric|Yes
+|Real, Double Precesion|Yes
+|Serial, BigSerial|Yes
+|Char, Varchar, Text|Yes
+|Money|No
+|Timestamp, Date, Time, Interval|Yes
+|Enum|No
+|Point, Lseg, Box, Path, Polygon, Circle|Yes
+|===

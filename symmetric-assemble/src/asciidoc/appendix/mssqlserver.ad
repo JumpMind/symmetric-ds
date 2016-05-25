@@ -76,3 +76,20 @@ CREATE USER APP_DATABASE FOR LOGIN APP_DATABASE
 GRANT INSERT, EXECUTE ON DATABASE::SYM_DATABASE to APP_USER;
 ----
 ====
+
+.Supported Data Types
+|===
+|Data Type|Supported?
+
+|BigInt, Int, SmallInt, TinyInt|Yes
+|Decimal, Numeric|Yes
+|Bit|Yes
+|Money, SmallMoney|Yes
+|Float, Real|Yes
+|Date, DateTime, Datetime2, SmallDatetime, Time|Yes
+|Datetimeoffset|No
+|Char, Varchar, Text, Nchar, Nvarchar, Ntext|Yes
+|Binary, Varbinary|Yes
+|Image|No
+|Spatial Data Types|No
+|===
