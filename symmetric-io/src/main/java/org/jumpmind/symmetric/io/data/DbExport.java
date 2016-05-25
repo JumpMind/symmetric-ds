@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -88,6 +89,8 @@ public class DbExport {
     private boolean comments;
 
     private String whereClause;
+    
+    private String[] excludeColumns;
 
     private String catalog;
 
@@ -215,7 +218,13 @@ public class DbExport {
 
         if (!noData) {
             if (sql == null) {
-                sql = platform.createDmlStatement(DmlType.SELECT_ALL, table, null).getSql();
+                if (excludeColumns == null || excludeColumns.length == 0) {
+                    sql = platform.createDmlStatement(DmlType.SELECT_ALL, table, null).getSql();
+                } else {
+                    Column[] columnsToExport = getColumnsToExport(table);
+                    sql = platform.createDmlStatement(DmlType.SELECT_ALL, table.getCatalog(), table.getSchema(), table.getName(), 
+                            table.getPrimaryKeyColumns(), columnsToExport, null,null).getSql();
+                }
             }
 
             if (StringUtils.isNotBlank(whereClause)) {
@@ -238,6 +247,29 @@ public class DbExport {
 
     }
 
+    protected Column[] getColumnsToExport(Table table) {
+        Column[] tableColumns = table.getColumns();
+        List<Column> columnsToExport = new ArrayList<Column>();
+        for (int i=0;i<tableColumns.length;i++) {
+            boolean excluded = false;
+            for (int j=0;j<excludeColumns.length;j++) {
+                if (tableColumns[i].getName().equalsIgnoreCase(excludeColumns[j])) {
+                    excluded = true;
+                }
+            }
+            if (!excluded) {
+                try {
+                    columnsToExport.add((Column) tableColumns[i].clone()); 
+                } catch (CloneNotSupportedException e) {
+                    //clone will always supported on the Column object
+                }
+            }
+        }
+        Column[] columnArray = new Column[columnsToExport.size()];
+        columnArray = columnsToExport.toArray(columnArray);
+        return columnArray;
+    }
+    
     protected Database getDatabase(Table table) {
         return getDatabase(new Table[] { table });
     }
@@ -323,6 +355,14 @@ public class DbExport {
 
     public String getWhereClause() {
         return whereClause;
+    }
+
+    public void setExcludeColumns(String[] excludeColumns) {
+        this.excludeColumns = excludeColumns;
+    }
+
+    public String[] getExcludeColumns() {
+        return excludeColumns;
     }
 
     public boolean isComments() {
@@ -487,8 +527,15 @@ public class DbExport {
                         table.setSchema(null);
                     }
                     Table targetTable = table.copy();
-                    insertSql = DmlStatementFactory.createDmlStatement(databaseName, 
-                            DmlType.INSERT, targetTable, useQuotedIdentifiers);
+                    if (excludeColumns == null || excludeColumns.length == 0) {
+                        insertSql = DmlStatementFactory.createDmlStatement(databaseName, 
+                                DmlType.INSERT, targetTable, useQuotedIdentifiers);
+                    } else {
+                        Column[] columnsToExport = getColumnsToExport(table);
+                        insertSql = DmlStatementFactory.createDmlStatement(databaseName, 
+                                DmlType.INSERT, table.getCatalog(), table.getSchema(), table.getName(), 
+                                table.getPrimaryKeyColumns(), columnsToExport, null, startedWriting);
+                    }
                 }
 
                 if (!noCreateInfo) {
