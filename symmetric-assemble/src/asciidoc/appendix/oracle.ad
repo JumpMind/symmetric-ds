@@ -62,3 +62,31 @@ If the following Oracle error 'ORA-01489: result of string concatenation is too 
 might need to set use_capture_lobs to 1 on in the TRIGGER table and resync the triggers. The error can 
 happen when the captured data in a row exceeds 4k and lob columns do not exist in the table. By enabling 
 use_capture_lobs the concatanated varchar string is cast to a clob which allows a length of more than 4k.
+
+.Supported Data Types
+|===
+| Data Type | Supported?
+
+| Char | Yes
+| NChar | Yes
+| VarChar2 | Yes
+| NVarChar2 | Yes
+| Long | No
+| Number | Yes
+| Binary_Float | Yes
+| Binary_Double | Yes
+| Date | Yes
+| Timestamp | Yes
+| Timestamp With Time Zone | Yes
+| Timestamp With Local Time Zone | Yes
+| Interval Year to Month | Yes
+| Interval Day to Second | Yes
+| Raw | Yes
+| Long Raw | No
+| RowID | Yes
+| URowID | No
+| Clob | Yes
+| NClob | Yes
+| Blob | Yes
+| BFile | No
+|===
