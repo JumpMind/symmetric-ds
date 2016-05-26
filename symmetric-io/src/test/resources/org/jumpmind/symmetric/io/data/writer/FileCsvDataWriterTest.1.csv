@@ -6,10 +6,10 @@ catalog,
 schema,
 table,test
 keys,one
-columns,one,two,three
+columns,one,two,three,"unusual \"column\", \\ 'chars'"
 insert,"1","2","3"
 old,"1","2","3"
-update,"1","3","4","1"
+update,"1","3","4","1","6","extra"
 old,"1","2","3"
 delete,"1"
 commit,1
