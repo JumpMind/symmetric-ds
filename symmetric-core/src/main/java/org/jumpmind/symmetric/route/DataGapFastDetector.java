@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -363,15 +362,14 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
                 transaction = sqlTemplate.startSqlTransaction();
                 DataGap prevGap = null, lastGap = null;
-                ListIterator<DataGap> iter = gaps.listIterator();
-                while (iter.hasNext()) {
-                    DataGap curGap = iter.next();
+                for (int i = 0; i < gaps.size(); i++) {
+                    DataGap curGap = gaps.get(i);
                     if (lastGap != null) {
                         log.warn("Removing gap found after last gap: " + curGap);
                         dataService.deleteDataGap(transaction, curGap);
-                        iter.remove();
+                        gaps.remove(i--);
                     } else {
-                        if (curGap.gapSize() >= maxDataToSelect - 1) {
+                        if (lastGap == null && curGap.gapSize() >= maxDataToSelect - 1) {
                             lastGap = curGap;
                         }
 
@@ -389,12 +387,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                                 }
                                 log.warn("Inserting new gap to fix overlap: " + newGap);
                                 dataService.insertDataGap(transaction, newGap);
-                                iter.remove();
-                                iter.previous();
-                                iter.set(newGap);
-                                if (iter.hasNext()) {
-                                    iter.next();
-                                }
+                                gaps.remove(i--);
+                                gaps.set(i, newGap);
                                 curGap = newGap;
                             }
                         }

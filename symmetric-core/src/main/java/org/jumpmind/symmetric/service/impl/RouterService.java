@@ -555,11 +555,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 long totalTime = System.currentTimeMillis() - ts;
                 context.incrementStat(totalTime, ChannelRouterContext.STAT_ROUTE_TOTAL_TIME);
                 context.logStats(log, totalTime);
-                boolean detectGaps = context.isRequestGapDetection();
                 context.cleanup();
-                if (detectGaps) {
-                    gapDetector.beforeRouting();
-                }
             }
         }
     }
