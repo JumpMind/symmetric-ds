@@ -151,6 +151,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     private boolean setup = false;
 
+    private boolean isInitialized = false;
+    
     protected String deploymentType;
 
     protected ITypedPropertiesFactory propertiesFactory;
@@ -544,6 +546,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public synchronized boolean start(boolean startJobs) {
+        isInitialized = false;
         if (!starting && !started) {
             try {
                 starting = true;
@@ -565,6 +568,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                             node.getNodeGroupId(),
                                             getParameterService().getNodeGroupId() });
                         }
+                        isInitialized = true;
                    } else if (node != null) {
                         
                         log.info(
@@ -572,6 +576,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                 new Object[] { node.getNodeGroupId(), node.getNodeId(),
                                         node.getExternalId() });
 
+                        isInitialized = true;
                         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP,
                                 true)) {
                             triggerRouterService.syncTriggers();
@@ -591,6 +596,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     } else {
                         log.info("Starting unregistered node [group={}, externalId={}]",
                                 parameterService.getNodeGroupId(), parameterService.getExternalId());
+                        isInitialized = true;
                     }
 
                     if (startJobs && jobManager != null) {
@@ -930,6 +936,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public boolean isStarting() {
         return starting;
+    }
+
+    public boolean isInitialized() {
+        return isInitialized;
     }
 
     public IConfigurationService getConfigurationService() {
