@@ -2048,26 +2048,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
             String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories) {
 
-        List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(
-                getAllTriggerRoutersForReloadForCurrentNode(
-                        sourceNodeGroupId, targetNodeGroupId));
-
-        final Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>(
-                triggerHistories.size());
-
-        for (TriggerHistory triggerHistory : triggerHistories) {
-            List<TriggerRouter> triggerRoutersForTriggerHistory = new ArrayList<TriggerRouter>();
-            triggerRoutersByHistoryId.put(triggerHistory.getTriggerHistoryId(),
-                    triggerRoutersForTriggerHistory);
-
-            String triggerId = triggerHistory.getTriggerId();
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                if (triggerRouter.getTrigger().getTriggerId().equals(triggerId)) {
-                    triggerRoutersForTriggerHistory.add(triggerRouter);
-                }
-            }
-        }
-
+        final Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistId(
+                sourceNodeGroupId, targetNodeGroupId, triggerHistories);
         final List<Table> sortedTables = getSortedTablesFor(triggerHistories);
 
         Comparator<TriggerHistory> comparator = new Comparator<TriggerHistory>() {
@@ -2110,6 +2092,32 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         return triggerRoutersByHistoryId;
 
+    }
+
+    public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistId(
+            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories) {
+
+        List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(
+                getAllTriggerRoutersForReloadForCurrentNode(
+                        sourceNodeGroupId, targetNodeGroupId));
+
+        Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>(
+                triggerHistories.size());
+
+        for (TriggerHistory triggerHistory : triggerHistories) {
+            List<TriggerRouter> triggerRoutersForTriggerHistory = new ArrayList<TriggerRouter>();
+            triggerRoutersByHistoryId.put(triggerHistory.getTriggerHistoryId(),
+                    triggerRoutersForTriggerHistory);
+
+            String triggerId = triggerHistory.getTriggerId();
+            for (TriggerRouter triggerRouter : triggerRouters) {
+                if (triggerRouter.getTrigger().getTriggerId().equals(triggerId)) {
+                    triggerRoutersForTriggerHistory.add(triggerRouter);
+                }
+            }
+        }
+
+        return triggerRoutersByHistoryId;
     }
 
     protected List<Table> getSortedTablesFor(List<TriggerHistory> histories) {
