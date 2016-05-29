@@ -906,9 +906,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             IStagedResource extractedBatch = getStagedResource(currentBatch);
             if (extractedBatch != null) {
                 if (mode == ExtractMode.FOR_SYM_CLIENT && writer != null) {
+                    Channel channel = configurationService.getChannel(currentBatch.getChannelId());
                     DataContext ctx = new DataContext();
                     SimpleStagingDataReader dataReader = new SimpleStagingDataReader(BatchType.EXTRACT, currentBatch.getBatchId(), 
-                            currentBatch.getNodeId(), isRetry(currentBatch, targetNode), extractedBatch, writer, ctx);
+                            currentBatch.getNodeId(), isRetry(currentBatch, targetNode), extractedBatch, writer, ctx, 
+                            channel.getMaxKBytesPerSecond());
                     dataReader.process();
                 } else {
                     IDataReader dataReader = new ProtocolDataReader(BatchType.EXTRACT,

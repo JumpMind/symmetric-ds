@@ -171,6 +171,30 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         }
     }
 
+    public float getFloat(String columnName) {
+        Object obj = this.get(columnName);
+        if (obj instanceof Number) {
+            return ((Number) obj).floatValue();
+        } else if (obj instanceof String) {
+            return Float.parseFloat(obj.toString());
+        } else {
+            checkForColumn(columnName);
+            return 0;
+        }
+    }
+
+    public BigDecimal getBigDecimal(String columnName) {
+        Object obj = this.get(columnName);
+        if (obj instanceof BigDecimal) {
+            return (BigDecimal) obj;
+        } else if (obj instanceof String) {
+            return new BigDecimal(obj.toString());
+        } else {
+            checkForColumn(columnName);
+            return null;
+        }
+    }
+
     public boolean getBoolean(String columnName) {
         Object obj = this.get(columnName);
         if ("1".equals(obj)) {

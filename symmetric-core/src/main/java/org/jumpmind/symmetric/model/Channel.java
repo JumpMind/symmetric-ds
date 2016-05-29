@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 
@@ -41,6 +42,8 @@ public class Channel implements Serializable {
     private int maxBatchToSend = 100;
     
     private int maxDataToRoute = 10000;
+    
+    private BigDecimal maxKBytesPerSecond = BigDecimal.ZERO;
 
     private boolean enabled = true;
     
@@ -269,14 +272,22 @@ public class Channel implements Serializable {
     }
     
     public String getQueue() {
-		return queue;
-	}
+        return queue;
+    }
 
-	public void setQueue(String queue) {
-		this.queue = queue;
-	}
+    public void setQueue(String queue) {
+        this.queue = queue;
+    }
 
-	@Override
+    public BigDecimal getMaxKBytesPerSecond() {
+        return maxKBytesPerSecond;
+    }
+
+    public void setMaxKBytesPerSecond(BigDecimal maxKBytesPerSecond) {
+        this.maxKBytesPerSecond = maxKBytesPerSecond;
+    }
+
+    @Override
     public int hashCode() {
         if (channelId != null) {
             return channelId.hashCode();
