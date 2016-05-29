@@ -358,6 +358,10 @@ public class IncomingBatch implements Serializable {
         return ignoreCount;
     }
 
+    public String getStagedLocation() {
+        return Batch.getStagedLocation(false, nodeId);
+    }
+
     @Override
     public String toString() {
         return Long.toString(batchId);
