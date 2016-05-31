@@ -40,6 +40,8 @@ public interface IOutgoingBatchService {
     public void markAllAsSentForNode(String nodeId, boolean includeConfigChannel);
     
     public void markAllConfigAsSentForNode(String nodeId);
+    
+    public void markAllChannelAsSent(String channelId);
 
     public void updateAbandonedRoutingBatches();
 

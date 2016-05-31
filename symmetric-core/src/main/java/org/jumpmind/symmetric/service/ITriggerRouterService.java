@@ -188,6 +188,9 @@ public interface ITriggerRouterService {
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
             String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories);
     
+    public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistId(
+            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories);
+
     public TriggerHistory findTriggerHistoryForGenericSync();
     
     public void clearCache();

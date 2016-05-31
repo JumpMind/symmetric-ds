@@ -46,6 +46,7 @@ public class InformixTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("insertTriggerTemplate" ,
 "create trigger $(triggerName) insert on $(schemaName)$(tableName)                                                                                                                                      " +
 "                                referencing new as new                                                                                                                                                 " +
+"                                $(custom_before_insert_text) \n" +
 "                                for each row when ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) (                                                                                     " +
 "                                insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)" +
 "                                values(                                                                                                                                                                " +
@@ -63,6 +64,7 @@ public class InformixTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) update on $(schemaName)$(tableName)                                                                                                                                      " +
 "                                referencing old as old new as new                                                                                                                                      " +
+"                                $(custom_before_update_text) \n" +
 "                                for each row when ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) (                                                                                     " +
 "                                insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)" +
 "                                values(                                                                                                                                                                " +
@@ -82,6 +84,7 @@ public class InformixTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger $(triggerName) delete on $(schemaName)$(tableName)                                                                                                                                      " +
 "                                referencing old as old                                                                                                                                                 " +
+"                                $(custom_before_delete_text) \n" +
 "                                for each row when ($(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)) (                                                                                     " +
 "                                insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)" +
 "                                values(                                                                                                                                                                " +

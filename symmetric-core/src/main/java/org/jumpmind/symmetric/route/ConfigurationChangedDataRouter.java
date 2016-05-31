@@ -549,7 +549,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                             reloadRequestKey.getTargetNodeId(), reloadRequestKey.getTriggerId());
                 }
             }
-            routingContext.setRequestGapDetection(true);
         }
     }
 

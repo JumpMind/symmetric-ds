@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
@@ -87,6 +88,7 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
             }
 
             log.debug("Updating my node info");
+            engine.getOutgoingBatchService().markAllChannelAsSent(Constants.CHANNEL_HEARTBEAT);
             engine.getNodeService().updateNodeHostForCurrentNode();
             log.debug("Done updating my node info");
 

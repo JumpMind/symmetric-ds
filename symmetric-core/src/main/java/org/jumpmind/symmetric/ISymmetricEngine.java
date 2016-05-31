@@ -204,6 +204,8 @@ public interface ISymmetricEngine {
      */
     public boolean isStarted();
 
+    public boolean isInitialized();
+    
     /**
      * Check to see if this node is starting.
      * 

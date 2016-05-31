@@ -252,7 +252,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         channel.getExtractPeriodMillis(), channel.getDataLoaderType(),
                         channel.getLastUpdateTime(), channel.getLastUpdateBy(),
                         channel.isReloadFlag() ? 1 : 0, channel.isFileSyncFlag() ? 1 : 0,
-                        channel.getQueue(), 
+                        channel.getQueue(), channel.getMaxKBytesPerSecond(),
                         channel.getChannelId() })) {
             channel.setCreateTime(new Date());
             sqlTemplate.update(
@@ -267,7 +267,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             channel.getDataLoaderType(), channel.getLastUpdateTime(),
                             channel.getLastUpdateBy(), channel.getCreateTime(),
                             channel.isReloadFlag() ? 1 : 0, channel.isFileSyncFlag() ? 1 : 0, 
-                            channel.getQueue() });
+                            channel.getQueue(), channel.getMaxKBytesPerSecond() });
         }
         if (reloadChannels) {
             clearCache();
@@ -386,6 +386,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                                 .getBoolean("file_sync_flag"));
                                         nodeChannel.setReloadFlag(row.getBoolean("reload_flag"));
                                         nodeChannel.setQueue(row.getString("queue"));
+                                        nodeChannel.setMaxKBytesPerSecond(row.getBigDecimal("max_network_kbps"));
                                         return nodeChannel;
                                     };
                                 }, nodeId);
@@ -567,6 +568,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                     channel.setReloadFlag(row.getBoolean("reload_flag"));
                                     channel.setFileSyncFlag(row.getBoolean("file_sync_flag"));
                                     channel.setQueue(row.getString("queue"));
+                                    channel.setMaxKBytesPerSecond(row.getBigDecimal("max_network_kbps"));
                                     return channel;
                                 }
                             });

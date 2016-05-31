@@ -124,11 +124,4 @@ public class SimpleRouterContext extends Context {
         }
     }
     
-    public void setRequestGapDetection(boolean requestGapDetection) {
-        this.requestGapDetection = requestGapDetection;
-    }
-    
-    public boolean isRequestGapDetection() {
-        return requestGapDetection;
-    }
 }

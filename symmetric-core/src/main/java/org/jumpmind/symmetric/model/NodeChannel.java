@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -238,4 +239,13 @@ public class NodeChannel implements Serializable {
     public String getQueue() {
     	return this.channel.getQueue();
     }
+    
+    public BigDecimal getMaxKBytesPerSecond() {
+        return this.channel.getMaxKBytesPerSecond();
+    }
+
+    public void setMaxKBytesPerSecond(BigDecimal maxKBytesPerSecond) {
+        this.channel.setMaxKBytesPerSecond(maxKBytesPerSecond);
+    }
+
 }

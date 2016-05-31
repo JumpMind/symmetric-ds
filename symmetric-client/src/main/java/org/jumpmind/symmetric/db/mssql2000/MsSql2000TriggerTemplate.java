@@ -63,6 +63,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "     if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
             "       execute sp_getbindtoken @TransactionId output; \n" +
             "     end                                                                                                                                                                  \n" +
+            "     $(custom_before_insert_text) \n" +
             "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
             "       declare DataCursor cursor local for                                                                                                                                \n" +
             "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
@@ -100,6 +101,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "     if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
             "       execute sp_getbindtoken @TransactionId output; \n" +
             "     end                                                                                                                                                                  \n" +
+            "     $(custom_before_update_text) \n" +
             "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
             "       declare DataCursor cursor local for                                                                                                                                \n" +
             "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
@@ -137,6 +139,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "     if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
             "       execute sp_getbindtoken @TransactionId output; \n" +
             "     end                                                                                                                                                                  \n" +
+            "     $(custom_before_update_text) \n" +
             "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
             "       declare DeleteCursor cursor local for                                                                                                                                \n" +
             "          select $(oldKeys), $(oldColumns) $(oldKeyNames) from deleted where $(syncOnDeleteCondition)                                                                      \n" +
@@ -179,6 +182,7 @@ public class MsSql2000TriggerTemplate extends MsSqlTriggerTemplate {
             "    if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
             "       execute sp_getbindtoken @TransactionId output; \n" +
             "    end                                                                                                                                                                  \n" +
+            "    $(custom_before_delete_text) \n" +
             "    if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
             "      declare DataCursor cursor local for                                                                                                                                \n" +
             "        select $(oldKeys), $(oldColumns) $(oldKeyNames), $(channelExpression) from deleted where $(syncOnDeleteCondition)                                                                      \n" +

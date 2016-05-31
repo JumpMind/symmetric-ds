@@ -36,6 +36,7 @@ Channel ID:: Identifier used through the system to identify a given channel.
 [[max-batch-size]]Max Batch Size:: Specifies the maximum number of data events to process within a batch for this channel.
 [[max-batch-to-send]]Max Batch To Send:: Specifies the maximum number of batches to send for a given channel during a 'synchronization' between two nodes. A 'synchronization' is equivalent to a push or a pull. For example, if there are 12 batches ready to be sent for a channel and max_batch_to_send is equal to 10, then only the first 10 batches will be sent even though 12 batches are ready.
 [[max-data-to-route]]Max Data To Route:: Specifies the maximum number of data rows to route for a channel at a time.
+[[max-network-kbps]]Max KB/s:: Specifies the maximum network transfer rate in kilobytes per second.  Use zero to indicate unlimited.  When throttling the channel, make sure the channel is on its own queue or within a queue of channels that are throttled at the same rate.  This is currently only implemented when staging is enabled.
 Data Loader Types:: Determines how data will be loaded into the target tables.   These are used during an initial load or a reverse initial load.  Data loaders do not always 
 have to load into the target relational database.  They can write to a file, a web service, or any other type of non-relational data source.  
 Data loaders can also use other techniques to increase performance of data loads into the target relation database. 

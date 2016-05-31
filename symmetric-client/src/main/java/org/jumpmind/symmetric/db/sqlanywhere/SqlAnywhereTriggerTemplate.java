@@ -60,6 +60,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
 "                                  declare @DataRow varchar(16384)                                                                                                                                      " +
 "                                  $(declareNewKeyVariables)                                                                                                                                            " +
 "                                  declare @ChannelId varchar(20)                                                                                                                                      " +
+"                                  $(custom_before_insert_text) \n" +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
 "                                    declare DataCursor cursor for                                                                                                                                      " +
 "                                    $(if:containsBlobClobColumns)                                                                                                                                      " +
@@ -89,6 +90,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
 "                                  declare @ChannelId varchar(20)                                                                                                                                      " +
 "                                  $(declareOldKeyVariables)                                                                                                                                            " +
 "                                  $(declareNewKeyVariables)                                                                                                                                            " +
+"                                  $(custom_before_update_text) \n" +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
 "                                    declare DataCursor cursor for                                                                                                                                      " +
 "                                    $(if:containsBlobClobColumns)                                                                                                                                      " +
@@ -116,6 +118,7 @@ public class SqlAnywhereTriggerTemplate extends AbstractTriggerTemplate {
 "                                  declare @OldDataRow varchar(16384)                                                                                                                                   " +
 "                                  declare @ChannelId varchar(20)                                                                                                                                      " +
 "                                  $(declareOldKeyVariables)                                                                                                                                            " +
+"                                  $(custom_before_delete_text) \n" +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           " +
 "                                    declare DataCursor cursor for                                                                                                                                      " +
 "                                      select $(oldKeys), $(oldColumns) $(oldKeyNames), $(channelExpression) from deleted where $(syncOnDeleteCondition)                                                                      " +

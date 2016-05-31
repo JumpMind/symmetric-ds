@@ -377,6 +377,19 @@ public class SymmetricEngineHolder {
         return !holderHasBeenStarted || enginesStarting.size() > 0;
     }
 
+    public boolean hasAnyEngineInitialized() {
+        if (enginesStarting.size() < engines.size()) {
+            return true;
+        }
+        for (EngineStarter starter : enginesStarting) {
+            ISymmetricEngine engine = starter.getEngine();
+            if (engine != null && engine.isInitialized()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String getEngineName(Properties properties) {
         String engineName = properties.getProperty(ParameterConstants.ENGINE_NAME);
         if (StringUtils.isBlank(engineName)) {
@@ -450,6 +463,7 @@ public class SymmetricEngineHolder {
     class EngineStarter extends Thread {
 
         String propertiesFile;
+        ISymmetricEngine engine;
 
         public EngineStarter(String propertiesFile) {
             super("symmetric-engine-startup-"+threadNumber++);
@@ -458,12 +472,16 @@ public class SymmetricEngineHolder {
 
         @Override
         public void run() {
-            ISymmetricEngine engine = create(propertiesFile);        	
+            engine = create(propertiesFile);        	
             if (engine != null && autoStart &&
                     engine.getParameterService().is(ParameterConstants.AUTO_START_ENGINE)) {
                 engine.start();
             }
             enginesStarting.remove(this);
+        }
+        
+        public ISymmetricEngine getEngine() {
+            return engine;
         }
     }
 }

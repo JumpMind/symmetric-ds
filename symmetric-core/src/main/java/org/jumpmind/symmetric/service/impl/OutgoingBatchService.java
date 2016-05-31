@@ -141,7 +141,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         } while (updateCount > 0);
     }
-    
+
+    public void markAllChannelAsSent(String channelId) {
+        sqlTemplate.update(getSql("cancelChannelBatchesSql"), channelId);
+    }
+
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId) {
         log.info("Copying outgoing batches for channel '{}' from node '{}' to node '{}' starting at {}", new Object[] {channelId, fromNodeId, toNodeId, startBatchId});
         sqlTemplate.update(getSql("deleteOutgoingBatchesForNodeSql"), toNodeId, channelId, fromNodeId, channelId);

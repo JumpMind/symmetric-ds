@@ -52,6 +52,7 @@ public class GreenplumTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("insertTriggerTemplate" ,
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                " +
 "                                begin                                                                                                                                                                  " +
+"                                  $(custom_before_insert_text) \n" +
 "                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
 "                                    (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                        " +
@@ -79,6 +80,7 @@ public class GreenplumTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("updateTriggerTemplate" ,
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                " +
 "                                begin                                                                                                                                                                  " +
+"                                  $(custom_before_update_text) \n" +
 "                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
 "                                    (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                     " +
@@ -107,6 +109,7 @@ public class GreenplumTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                " +
 "                                begin                                                                                                                                                                  " +
+"                                  $(custom_before_delete_text) \n" +
 "                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
 "                                    (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               " +

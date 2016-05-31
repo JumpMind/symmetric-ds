@@ -64,6 +64,11 @@ ifdef::pro[]
 .Advanced Options
 endif::pro[]
 
+Update First:: This option overrides the default behavior for an Insert operation. Instead of attempting the Insert first, 
+SymmetricDS will always perform an Update first and then fall back to an Insert if that fails. Note that, by default, fall 
+back logic always applies for Insert and Updates. Here, all you a specifying is whether to always do an Update first, which 
+can have performance benefits under certain situations you may run into (see <<Operation Change>>).
+
 Delete Action:: An action to take upon delete of a row. 
 
 .Transform Points
@@ -77,10 +82,18 @@ on the defined transformation.
 |NONE|The delete results in no target changes.
 |===
 
-Update First:: This option overrides the default behavior for an Insert operation. Instead of attempting the Insert first, 
-SymmetricDS will always perform an Update first and then fall back to an Insert if that fails. Note that, by default, fall 
-back logic always applies for Insert and Updates. Here, all you a specifying is whether to always do an Update first, which 
-can have performance benefits under certain situations you may run into (see <<Operation Change>>).
+Update Action:: An action to take upon update of a row. 
+
+|===
+
+|UPD_ROW|The update performs normally.
+
+|INS_ROW|The update is transformed into an insert instead.
+
+|DEL_ROW|The update is transformed into a delete instead.
+
+|NONE|The update is ignored and no changes are made.
+|===
 
 Transform Order:: For a single source operation that is mapped to a transformation, there could be more than one 
 target operation that takes place. You may control the order in which the target operations are applied through a 

@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io.data.reader;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.math.BigDecimal;
 
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
@@ -43,9 +44,10 @@ public class SimpleStagingDataReader {
     protected IStagedResource stagedResource;
     protected BufferedWriter writer;
     protected DataContext context;
+    protected BigDecimal maxKBytesPerSec;
 
     public SimpleStagingDataReader(BatchType batchType, long batchId, String targetNodeId, boolean isRetry,
-            IStagedResource stagedResource, BufferedWriter writer, DataContext context) {
+            IStagedResource stagedResource, BufferedWriter writer, DataContext context, BigDecimal maxKBytesPerSec) {
         this.batchType = batchType;
         this.batchId = batchId;
         this.targetNodeId = targetNodeId;
@@ -53,6 +55,7 @@ public class SimpleStagingDataReader {
         this.stagedResource = stagedResource;
         this.writer = writer;
         this.context = context;
+        this.maxKBytesPerSec = maxKBytesPerSec;
     }
 
     public void process() {
@@ -74,10 +77,17 @@ public class SimpleStagingDataReader {
                     }
                 }
             } else {
-                char[] buffer = new char[MAX_WRITE_LENGTH];
-                long totalCharsRead = 0;
-                int numCharsRead = 0;
-                long startTime = System.currentTimeMillis(), ts = startTime;
+                long totalCharsRead = 0, totalBytesRead = 0;
+                int numCharsRead = 0, numBytesRead = 0;
+                long startTime = System.currentTimeMillis(), ts = startTime, bts = startTime;
+                boolean isThrottled = maxKBytesPerSec != null && maxKBytesPerSec.compareTo(BigDecimal.ZERO) > 0;
+                long totalThrottleTime = 0;
+                int bufferSize = MAX_WRITE_LENGTH;
+
+                if (isThrottled) {
+                    bufferSize = maxKBytesPerSec.multiply(new BigDecimal(1024)).intValue();
+                }
+                char[] buffer = new char[bufferSize];
         
                 while ((numCharsRead = reader.read(buffer)) != -1) {
                     writer.write(buffer, 0, numCharsRead);
@@ -86,15 +96,35 @@ public class SimpleStagingDataReader {
                     if (Thread.currentThread().isInterrupted()) {
                         throw new IoException("This thread was interrupted");
                     }
-            
+
                     if (System.currentTimeMillis() - ts > 60000) {
                         log.info("Batch '{}', for node '{}', for process 'send from stage' has been processing for {} seconds.  " +
                                 "The following stats have been gathered: {}",
                                 new Object[] { batchId, targetNodeId, (System.currentTimeMillis() - startTime) / 1000,
-                                "BYTES=" + totalCharsRead });
+                                "CHARS=" + totalCharsRead });
                         ts = System.currentTimeMillis();
                     }
-                }    
+
+                    if (isThrottled) {
+                        numBytesRead += new String(buffer, 0, numCharsRead).getBytes().length;
+                        totalBytesRead += numBytesRead;
+                        if (numBytesRead >= bufferSize) {                            
+                            long expectedMillis = (long) (((numBytesRead / 1024f) / maxKBytesPerSec.floatValue()) * 1000);
+                            long actualMillis = System.currentTimeMillis() - bts;
+                            if (actualMillis <  expectedMillis) {
+                                totalThrottleTime += expectedMillis - actualMillis;
+                                Thread.sleep(expectedMillis - actualMillis);
+                            }
+                            numBytesRead = 0;
+                            bts = System.currentTimeMillis();
+                        }
+                    }
+                }
+                if (log.isDebugEnabled() && totalThrottleTime > 0) {
+                    log.debug("Batch '{}' for node '{}' took {}ms for {} bytes and was throttled for {}ms because limit is set to {} KB/s", 
+                            batchId, targetNodeId, (System.currentTimeMillis() - startTime), totalBytesRead, totalThrottleTime,
+                            maxKBytesPerSec);
+                }
             }
         } catch (Throwable t) {
             throw new RuntimeException(t);

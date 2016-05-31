@@ -18,6 +18,7 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
 "                                REFERENCING NEW AS NEW                                                                                                                                                 " +
 "                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " +
 "                                BEGIN ATOMIC                                                                                                                                                           " +
+"                                    $(custom_before_insert_text) \n" +
 "                                    IF $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                               " +
 "                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 " +
 "                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                " +
@@ -37,6 +38,7 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
 "                                REFERENCING OLD AS OLD NEW AS NEW                                                                                                                                      \n"+
 "                                FOR EACH ROW MODE DB2SQL                                                                                                                                               \n"+
 "                                BEGIN ATOMIC                                                                                                                                                           \n"+
+"                                    $(custom_before_update_text) \n" +
 "                                    IF $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                             \n"+
 "                                            INSERT into $(defaultSchema)$(prefixName)_data                                                                                                             \n"+
 "                                                (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)         \n"+
@@ -59,6 +61,7 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
 "                                REFERENCING OLD AS OLD                                                                                                                                                 " +
 "                                FOR EACH ROW MODE DB2SQL                                                                                                                                               " +
 "                                BEGIN ATOMIC                                                                                                                                                           " +
+"                                    $(custom_before_delete_text) \n" +
 "                                    IF $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then                                                                                               " +
 "                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 " +
 "                                            (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                       " +
