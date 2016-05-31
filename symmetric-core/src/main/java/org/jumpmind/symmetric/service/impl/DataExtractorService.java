@@ -530,7 +530,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 Node sourceNode = nodeService.findIdentity();
                 final FutureExtractStatus status = new FutureExtractStatus();
                 ExecutorService executor = Executors.newFixedThreadPool(1, new DataExtractorThreadFactory());
-                List<Future<OutgoingBatch>> futures = new ArrayList<Future<OutgoingBatch>>();
+                List<Future<FutureOutgoingBatch>> futures = new ArrayList<Future<FutureOutgoingBatch>>();
 
                 for (int i = 0; i < activeBatches.size(); i++) {
                     currentBatch = activeBatches.get(i);
@@ -570,13 +570,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     } else {
                         processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
                         final OutgoingBatch extractBatch = currentBatch;
-                        Callable<OutgoingBatch> callable = new Callable<OutgoingBatch>() {
-                            public OutgoingBatch call() throws Exception {
-                                OutgoingBatch outgoingBatch = extractBatch;
+                        Callable<FutureOutgoingBatch> callable = new Callable<FutureOutgoingBatch>() {
+                            public FutureOutgoingBatch call() throws Exception {
+                                FutureOutgoingBatch outgoingBatch = new FutureOutgoingBatch(extractBatch, false);
                                 if (!status.shouldExtractSkip) {
                                     try {
-                                        outgoingBatch = extractOutgoingBatch(processInfo, targetNode, dataWriter, outgoingBatch, 
-                                                streamToFileEnabled, true, mode);
+                                        outgoingBatch = new FutureOutgoingBatch(extractOutgoingBatch(processInfo, targetNode, 
+                                                dataWriter, extractBatch, streamToFileEnabled, true, mode), isRetry(extractBatch, targetNode));
                                         status.batchExtractCount++;
                                         status.byteExtractCount += extractBatch.getByteCount();
                                         
@@ -599,16 +599,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
 
                 Iterator<OutgoingBatch> activeBatchIter = activeBatches.iterator();                
-                for (Future<OutgoingBatch> future : futures) {
+                for (Future<FutureOutgoingBatch> future : futures) {
                     currentBatch = activeBatchIter.next();
                     boolean isSent = false;
                     while (!isSent) {
                         try {
-                            currentBatch = future.get(keepAliveMillis, TimeUnit.MILLISECONDS);
+                            FutureOutgoingBatch extractBatch = future.get(keepAliveMillis, TimeUnit.MILLISECONDS); 
+                            currentBatch = extractBatch.getOutgoingBatch();
 
                             if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT) {
                                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
-                                currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch, dataWriter, writer, mode);
+                                currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch, extractBatch.isRetry(), 
+                                        dataWriter, writer, mode);
                             }
 
                             processedBatches.add(currentBatch);
@@ -894,7 +896,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected OutgoingBatch sendOutgoingBatch(ProcessInfo processInfo, Node targetNode,
-            OutgoingBatch currentBatch, IDataWriter dataWriter, BufferedWriter writer, ExtractMode mode) {
+            OutgoingBatch currentBatch, boolean isRetry, IDataWriter dataWriter, BufferedWriter writer, ExtractMode mode) {
         if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode) {
             currentBatch.setSentCount(currentBatch.getSentCount() + 1);
             if (currentBatch.getStatus() != Status.RS) {
@@ -909,8 +911,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     Channel channel = configurationService.getChannel(currentBatch.getChannelId());
                     DataContext ctx = new DataContext();
                     SimpleStagingDataReader dataReader = new SimpleStagingDataReader(BatchType.EXTRACT, currentBatch.getBatchId(), 
-                            currentBatch.getNodeId(), isRetry(currentBatch, targetNode), extractedBatch, writer, ctx, 
-                            channel.getMaxKBytesPerSecond());
+                            currentBatch.getNodeId(), isRetry, extractedBatch, writer, ctx, channel.getMaxKBytesPerSecond());
                     dataReader.process();
                 } else {
                     IDataReader dataReader = new ProtocolDataReader(BatchType.EXTRACT,
@@ -1899,6 +1900,24 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         boolean shouldExtractSkip;
         int batchExtractCount;
         int byteExtractCount;
+    }
+
+    class FutureOutgoingBatch {
+        OutgoingBatch outgoingBatch;
+        boolean isRetry;
+        
+        public FutureOutgoingBatch(OutgoingBatch outgoingBatch, boolean isRetry) {
+            this.outgoingBatch = outgoingBatch;
+            this.isRetry = isRetry;
+        }
+
+        public OutgoingBatch getOutgoingBatch() {
+            return outgoingBatch;
+        }
+
+        public boolean isRetry() {
+            return isRetry;
+        }
     }
 
 }
