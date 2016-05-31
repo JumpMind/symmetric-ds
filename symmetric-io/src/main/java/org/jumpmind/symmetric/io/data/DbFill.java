@@ -76,6 +76,8 @@ public class DbFill {
 
     private boolean cascadingSelect = false;
 
+    private boolean truncate = false;
+    
     private String ignore[] = null;
     
     private String prefixed[] = null;
@@ -373,6 +375,12 @@ public class DbFill {
                     }                    
                     groupTables.add(tableToProcess);
                     
+                    if (truncate) {
+                    	for (Table table : groupTables) {
+                    		truncateTable(tran, table);
+                    	}
+                    }
+                    
                     for (Table table : groupTables) {
                         switch (dmlType) {
                         case INSERT:
@@ -424,10 +432,16 @@ public class DbFill {
         }
     }
 
+    private void truncateTable(ISqlTransaction tran, Table table) {
+    	if (verbose) {
+    		log.info("Truncating table " + table.getFullyQualifiedTableName());
+    	}
+    	tran.execute("truncate table " + table.getFullyQualifiedTableName());
+    }
     private String toStringTables(List<Table> tables) {
-        StringBuilder sb = null;
+        StringBuilder sb = new StringBuilder("[");
         for (Table table : tables) {
-            sb = (sb == null) ?  new StringBuilder("[") : sb.append(", ");
+            sb.append(", ");
             sb.append(table.getName());
         }
         sb.append("]");
@@ -1008,7 +1022,15 @@ public class DbFill {
         this.cascadingSelect = cascadingSelect;
     }
 
-    public String[] getIgnore() {
+    public boolean isTruncate() {
+		return truncate;
+	}
+
+	public void setTruncate(boolean truncate) {
+		this.truncate = truncate;
+	}
+
+	public String[] getIgnore() {
         return ignore;
     }
 
