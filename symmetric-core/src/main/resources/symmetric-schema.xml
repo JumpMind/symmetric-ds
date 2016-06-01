@@ -741,6 +741,10 @@
         <column name="error_message" type="LONGVARCHAR" description="Record any errors or warnings that occurred when attempting to build the trigger." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="inactive_time" type="TIMESTAMP"  description="The date and time when a trigger was inactivated." />
+        <index name="idx_trigg_hist_1">
+            <index-column name="trigger_id"/>
+            <index-column name="inactive_time"/>
+        </index>
     </table>
 
     <table name="trigger_router" description="Map a trigger to a router.">
