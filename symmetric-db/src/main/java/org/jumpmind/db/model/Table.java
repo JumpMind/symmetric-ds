@@ -1241,8 +1241,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public static String getCommaDeliminatedColumns(Column[] cols) {
         StringBuilder columns = new StringBuilder();
         if (cols != null && cols.length > 0) {
-            for (Column column : cols) {
-                columns.append(column.getName());
+            for (Column column : cols) {            
+                columns.append(escapeColumnNameForCsv(column.getName()));
                 columns.append(",");
             }
             columns.replace(columns.length() - 1, columns.length(), "");
@@ -1304,6 +1304,26 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     
     public int compareTo(Table o) {
         return this.getFullyQualifiedTableName().compareTo(o.getFullyQualifiedTableName());
+    }
+    
+    public static String escapeColumnNameForCsv(String columnName) {
+        if (columnName != null && 
+                (columnName.indexOf('\\') != -1 
+                || columnName.indexOf(',') != -1 
+                || columnName.indexOf('"') != -1)) {
+            columnName = columnName.replace("\\", "\\\\");
+            columnName = columnName.replace("\"", "\\\"");            
+           return "\"" + columnName + "\""; 
+        } else {            
+            return columnName;
+        }
+    }    
+    
+    public static void main(String[] args) {
+        String result = escapeColumnNameForCsv("\\What, \"");
+        String result2 = escapeColumnNameForCsv("a_normal_column");
+        System.out.println(result);
+        System.out.println(result2);
     }
 
 }

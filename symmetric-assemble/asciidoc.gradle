@@ -76,6 +76,7 @@ task generateDocs(type: Copy) {
         from ("$buildDir/src/asciidoc/html5") { include "user-guide.html" }
         filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
             'appVersion': version,
+            'appMajorVersion': version.substring(0, version.lastIndexOf(".")),
             'buildTime': new java.text.SimpleDateFormat('yyyy-MM-dd HH:mm:ss').format(new java.util.Date()),
             'scmVersion' : scmVersion
         ])

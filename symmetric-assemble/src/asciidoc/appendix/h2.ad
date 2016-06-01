@@ -2,3 +2,15 @@
 === H2
 
 The H2 database allows only Java-based triggers. Therefore the H2 dialect requires that the SymmetricDS jar file be in the database's classpath.
+
+.Supported Data Types
+|===
+|Data Type|Supported?
+
+|Int, TinyInt, SmallInt, BigInt|Yes
+|Boolean|Yes
+|Decimal|Yes
+|Double, Real|Yes
+|Time, Date, Timestamp|Yes
+|Binary, Blob|Yes
+|===

@@ -23,3 +23,23 @@ The following limitations currently exist for this dialect:
 . Syncing of Binary Large Object (BLOB) is limited to 16K bytes per column.
 
 . Syncing of character data is limited to 32K bytes per column.
+
+
+.Supported Data Types
+|===
+|Data Type|Supported?
+
+| SmallInt | Yes
+| Integer | Yes
+| BigInt | Yes
+| Char | Yes
+| VarChar | Yes
+| Float | Yes
+| Decimal | Yes
+| Numeric | Yes
+| Double Precision | Yes
+| Date | Yes
+| Time | Yes
+| TimeStamp | Yes
+| Blob | No
+|===

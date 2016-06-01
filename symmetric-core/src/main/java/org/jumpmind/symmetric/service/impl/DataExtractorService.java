@@ -1805,8 +1805,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         return data;
                     } else {
                         throw new SymmetricException(
-                                "The extracted row data did not have the expected (%d) number of columns: %s.  The initial load sql was: %s",
-                                expectedCommaCount, csvRow, initialLoadSql);
+                                "The extracted row data did not have the expected (%d) number of columns (actual=%s): %s.  The initial load sql was: %s",
+                                expectedCommaCount, commaCount, csvRow, initialLoadSql);
                     }
                 }
             });

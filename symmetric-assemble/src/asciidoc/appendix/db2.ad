@@ -32,6 +32,21 @@ CREATE SYSTEM TEMPORARY TABLESPACE tmp_tbsp
      USING ('/home/db2inst1/tmp_tbsp')
 	 BUFFERPOOL tmp_bp     
 ----
+
+.Supported Data Types
+|===
+|Data Type|Supported?
+
+|Char, VarChar, Long VarChar|Yes
+|Graphic, VarGraphic, Long VarGraphic|Yes
+|SmallInt, Integer, BigInt|Yes
+|Double|Yes
+|Decimal|Yes
+|Date, Time, TimeStamp|Yes
+|Blob, Clob, DBClob|Yes
+|DecFloat|No
+|Binary, VarBinary|No
+|===    
     
 === DB2 for IBM i
 The DB2 for IBM i dialect is for connecting to a database on IBM iSeries (AS/400) machines.  It was tested with the
@@ -43,4 +58,19 @@ jdbc:as400://hostname/;libraries=myschema
 ----
 
 WARNING: Note that if the library is not configured to auto journal resources, then all tables need to be journaled.  A library will be auto journaled 
-if it is created using the `CREATE SCHEMA` or `CREATE COLLECTION` SQL commands.    
+if it is created using the `CREATE SCHEMA` or `CREATE COLLECTION` SQL commands.
+
+.Supported Data Types
+|===
+|Data Type|Supported?
+
+|Char, VarChar, Long VarChar|Yes
+|Graphic, VarGraphic, Long VarGraphic|Yes
+|SmallInt, Integer, BigInt|Yes
+|Double|Yes
+|Decimal|Yes
+|Date, Time, TimeStamp|Yes
+|Blob, Clob, DBClob|Yes
+|DecFloat|No
+|Binary, VarBinary|No
+|===    

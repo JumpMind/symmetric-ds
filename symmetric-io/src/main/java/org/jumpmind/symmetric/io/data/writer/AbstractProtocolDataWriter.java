@@ -234,7 +234,8 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
         StringBuilder buffer = new StringBuilder(key);
         for (int i = 0; i < columns.length; i++) {
             buffer.append(delimiter);
-            buffer.append(columns[i].getName());
+            String name = columns[i].getName();
+            buffer.append(Table.escapeColumnNameForCsv(name));
         }
         println(buffer.toString());
         return buffer.length();

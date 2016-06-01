@@ -2,3 +2,22 @@
 === MariaDB
 
 See MySQL notes.  You can use either the MySQL or MariaDB driver for this dialect.
+
+.Supported Data Types
+|===
+|Data Type|Supported?
+
+|TinyInt, SmallInt, MediumInt, Int, BigInt|Yes
+|Decimal, Numeric|Yes
+|Float, Double|Yes
+|Bit|Yes
+|Char, Varchar|Yes
+|Binary, VarBinary|Yes
+|TinyBlob|No
+|Blob, MediumBlob, Longblob|Yes
+|TinyText, Text, MediumText, LongText|Yes
+|Enum|No
+|Set|No
+|Date, Time, DateTime, TimeStamp, Year|Yes
+|Point, LineString, Polygon, MultiPoint, MultiLinestring, MultiPolygon, GeometryCollection, Geometry| No
+|===

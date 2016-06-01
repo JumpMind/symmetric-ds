@@ -16,3 +16,14 @@ The SQLite dialect has the following limitations:
   or set a max_batch_size on the CHANNEL table that will accommodate your transactional data.
 
 * Due to the single threaded access to SQLite, the following parameter should be set to true: jobs.synchronized.enable.
+
+.Suported Data Types
+|===
+|Data Type|Supported?
+
+|Text|Yes
+|Numeric|Yes
+|Integer|Yes
+|Real|Yes
+|Blob|Yes
+|===
