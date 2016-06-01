@@ -63,6 +63,8 @@ public class DbFillCommand extends AbstractCommandLauncher {
     
     private static final String OPTION_COMMIT = "commit";
     
+    private static final String OPTION_COMMIT_DELAY = "commit-delay";
+    
     private static final String OPTION_ROLLBACK = "rollback";
 
     public DbFillCommand() {
@@ -107,6 +109,7 @@ public class DbFillCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_RAND, false);
         addOption(options, null, OPTION_REPEAT, true);
         addOption(options, null, OPTION_COMMIT, true);
+        addOption(options, null, OPTION_COMMIT_DELAY, true);
         addOption(options, null, OPTION_ROLLBACK, true);
     }
 
@@ -172,6 +175,9 @@ public class DbFillCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_COMMIT)) {
             dbFill.setMaxRowsCommit(Integer.parseInt(line.getOptionValue(OPTION_COMMIT)));
         }
+        if (line.hasOption(OPTION_COMMIT_DELAY)) {
+            dbFill.setCommitDelay(Integer.parseInt(line.getOptionValue(OPTION_COMMIT_DELAY)));
+        }        
         if (line.hasOption(OPTION_ROLLBACK)) {
             dbFill.setPercentRollback(Integer.parseInt(line.getOptionValue(OPTION_ROLLBACK)));
         }
