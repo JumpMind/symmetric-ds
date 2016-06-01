@@ -6,11 +6,11 @@
 
 
 ifdef::pro[]
-= SymmetricDS Pro User Guide
+= SymmetricDS Pro @appMajorVersion@ User Guide
 endif::pro[]
 
 ifndef::pro[]
-= SymmetricDS User Guide
+= SymmetricDS @appMajorVersion@ User Guide
 endif::pro[]
 
 Copyright (C) 2007-2015 JumpMind, Inc
