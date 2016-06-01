@@ -375,14 +375,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public List<TriggerHistory> getActiveTriggerHistories(Trigger trigger) {
-        List<TriggerHistory> active = getActiveTriggerHistories();
-        List<TriggerHistory> list = new ArrayList<TriggerHistory>();
+        List<TriggerHistory> active = sqlTemplate.query(getSql("allTriggerHistSql", "activeTriggerHistSqlByTriggerId"),
+                new TriggerHistoryMapper(), trigger.getTriggerId());
         for (TriggerHistory triggerHistory : active) {
-            if (triggerHistory.getTriggerId().equals(trigger.getTriggerId())) {
-                list.add(triggerHistory);
-            }
+            historyMap.put(triggerHistory.getTriggerHistoryId(), triggerHistory);
         }
-        return list;
+        return active;
     }
 
     public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId, String catalogName,
@@ -867,15 +865,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 getTriggerRouterSql("activeTriggersForReloadSql"), new TriggerRouterMapper(),
                 sourceNodeGroupId, targetNodeGroupId, Constants.CHANNEL_CONFIG));
     }
+    
+    public TriggerRouter findTriggerRouterById(String triggerId, String routerId){
+    	return findTriggerRouterById(triggerId, routerId, true);
+    }
 
-    public TriggerRouter findTriggerRouterById(String triggerId, String routerId) {
+    public TriggerRouter findTriggerRouterById(String triggerId, String routerId, boolean refreshCache) {
         List<TriggerRouter> configs = (List<TriggerRouter>) sqlTemplate.query(
                 getTriggerRouterSql("selectTriggerRouterSql"), new TriggerRouterMapper(),
                 triggerId, routerId);
         if (configs.size() > 0) {
             TriggerRouter triggerRouter = configs.get(0);
-            triggerRouter.setRouter(getRouterById(triggerRouter.getRouter().getRouterId()));
-            triggerRouter.setTrigger(getTriggerById(triggerRouter.getTrigger().getTriggerId()));
+            triggerRouter.setRouter(getRouterById(triggerRouter.getRouter().getRouterId(), refreshCache));
+            triggerRouter.setTrigger(getTriggerById(triggerRouter.getTrigger().getTriggerId(), refreshCache));
             return triggerRouter;
         } else {
             return null;
