@@ -8,11 +8,11 @@
 :numbered:
 
 ifdef::pro[]
-= SymmetricDS Pro Tutorials
+= SymmetricDS Pro @appMajorVersion@ Tutorials
 endif::pro[]
 
 ifndef::pro[]
-= SymmetricDS Tutorials
+= SymmetricDS @appMajorVersion@ Tutorials
 endif::pro[]
 
 
