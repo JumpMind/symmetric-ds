@@ -575,8 +575,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 FutureOutgoingBatch outgoingBatch = new FutureOutgoingBatch(extractBatch, false);
                                 if (!status.shouldExtractSkip) {
                                     try {
+                                        boolean isRetry = isRetry(extractBatch, targetNode);
                                         outgoingBatch = new FutureOutgoingBatch(extractOutgoingBatch(processInfo, targetNode, 
-                                                dataWriter, extractBatch, streamToFileEnabled, true, mode), isRetry(extractBatch, targetNode));
+                                                dataWriter, extractBatch, streamToFileEnabled, true, mode), isRetry);
                                         status.batchExtractCount++;
                                         status.byteExtractCount += extractBatch.getByteCount();
                                         
