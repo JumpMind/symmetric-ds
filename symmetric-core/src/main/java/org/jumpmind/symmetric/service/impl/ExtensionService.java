@@ -217,7 +217,13 @@ public class ExtensionService extends AbstractService implements IExtensionServi
     }
     
     public synchronized <T extends IExtensionPoint> T getExtensionPoint(Class<T> extensionClass) {
-        for (T extension : getExtensionPointList(extensionClass)) {
+        List<T> availableExtensions = getExtensionPointList(extensionClass);
+        for (T extension : availableExtensions) {
+            if(!(extension instanceof IBuiltInExtensionPoint)){
+            	return extension;
+            }
+        }
+        for (T extension : availableExtensions) {
             return extension;
         }
         return null;
