@@ -33,17 +33,16 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Enumeration;
 
 import javax.management.Attribute;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-
-import mx4j.tools.adaptor.http.HttpAdaptor;
-import mx4j.tools.adaptor.http.XSLTProcessor;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.http.HttpVersion;
@@ -61,6 +60,7 @@ import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.session.AbstractSession;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.HashedSession;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -73,6 +73,7 @@ import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
+import org.jumpmind.symmetric.web.HttpMethodFilter;
 import org.jumpmind.symmetric.web.ServletUtils;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
 import org.jumpmind.symmetric.web.WebConstants;
@@ -82,6 +83,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import mx4j.tools.adaptor.http.HttpAdaptor;
+import mx4j.tools.adaptor.http.XSLTProcessor;
 
 /**
  * Start up SymmetricDS through an embedded Jetty instance.
@@ -149,6 +153,12 @@ public class SymmetricWebServer {
 
     protected String httpSslVerifiedServerNames = "all";
 
+    protected String allowDirListing = "false";
+    
+    protected String disallowedMethods = "OPTIONS";
+    
+    protected String allowedMethods = "";
+
     protected boolean allowSelfSignedCerts = true;
 
     public SymmetricWebServer() {
@@ -203,7 +213,9 @@ public class SymmetricWebServer {
                 System.getProperty(ServerConstants.HTTPS_VERIFIED_SERVERS, httpSslVerifiedServerNames));
         allowSelfSignedCerts = serverProperties.is(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS,
                 Boolean.parseBoolean(System.getProperty(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, "" + allowSelfSignedCerts)));
-
+        allowDirListing = serverProperties.get(ServerConstants.SERVER_ALLOW_DIR_LISTING, "false");
+        allowedMethods = serverProperties.get(ServerConstants.SERVER_ALLOW_HTTP_METHODS, "");
+        disallowedMethods = serverProperties.get(ServerConstants.SERVER_DISALLOW_HTTP_METHODS, "OPTIONS");
     }
 
     public SymmetricWebServer start(int httpPort, int jmxPort, String propertiesUrl) throws Exception {
@@ -257,11 +269,17 @@ public class SymmetricWebServer {
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
         webapp.setResourceBase(webAppDir);
-        // webapp.addServlet(DefaultServlet.class, "/*");
+
+        webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", allowDirListing);
 
         SessionManager sm = new SessionManager();
         webapp.getSessionHandler().setSessionManager(sm);
 
+        FilterHolder filterHolder = new FilterHolder(HttpMethodFilter.class);
+        filterHolder.setInitParameter("server.allow.http.methods", allowedMethods);
+        filterHolder.setInitParameter("server.disallow.http.methods", disallowedMethods);
+        webapp.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
+        
         webapp.getServletContext().getContextHandler()
                 .setMaxFormContentSize(Integer.parseInt(System.getProperty("org.eclipse.jetty.server.Request.maxFormContentSize", "800000")));
         webapp.getServletContext().getContextHandler()
@@ -388,25 +406,25 @@ public class SymmetricWebServer {
             /* Prevent POODLE attack */
             String ignoredProtocols = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_PROTOCOLS);
             if (ignoredProtocols != null && ignoredProtocols.length() > 0) {
-            	String[] protocols = ignoredProtocols.split(",");
-            	sslConnectorFactory.addExcludeProtocols(protocols);
+                String[] protocols = ignoredProtocols.split(",");
+                sslConnectorFactory.addExcludeProtocols(protocols);
             }
             else {
-            	sslConnectorFactory.addExcludeProtocols("SSLv3");
+                sslConnectorFactory.addExcludeProtocols("SSLv3");
             }
-            
+
             String ignoredCiphers = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_CIPHERS);
             if (ignoredCiphers != null && ignoredCiphers.length() > 0) {
-            	String[] ciphers = ignoredCiphers.split(",");
-            	sslConnectorFactory.addExcludeCipherSuites(ciphers);
+                String[] ciphers = ignoredCiphers.split(",");
+                sslConnectorFactory.addExcludeCipherSuites(ciphers);
             }
-            
+
             sslConnectorFactory.setCertAlias(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS,
                     SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
             sslConnectorFactory.setKeyStore(securityService.getKeyStore());
             sslConnectorFactory.setTrustStore(securityService.getTrustStore());
-            
 
+            
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
@@ -593,9 +611,9 @@ public class SymmetricWebServer {
             setLazyLoad(true);
             setDeleteUnrestorableSessions(true);
             setSessionCookie(getSessionCookie() + (httpPort > 0 ? httpPort
-             : httpsPort));
+                    : httpsPort));
         }
-        
+
         @Override
         protected AbstractSession newSession(HttpServletRequest request) {
             return new Session(this, request);

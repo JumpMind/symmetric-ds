@@ -47,8 +47,8 @@ public class VoltDbDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.BIT, "TINYINT", Types.TINYINT);
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DECIMAL", Types.DECIMAL);
         
-        databaseInfo.addNativeTypeMapping(Types.CLOB, "VARCHAR", Types.VARCHAR);
-        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "VARCHAR(100000)", Types.VARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "VARCHAR(100000)", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(Types.CHAR, "VARCHAR", Types.VARCHAR);
 
         databaseInfo.addNativeTypeMapping(Types.BINARY, "VARCHAR", Types.VARCHAR);

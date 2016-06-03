@@ -45,7 +45,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             sql.append("(");
             appendColumns(sql, columns, false);
             sql.append(") (select ");
-            appendColumnQuestions(sql, columns);
+            appendColumnParameters(sql, columns);
             sql.append(" where (select distinct 1 from ");
             sql.append(tableName);
             sql.append(" where  ");
@@ -112,7 +112,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
     }
 
     @Override
-    protected void appendColumnQuestion(StringBuilder sql, Column column) {
+    protected void appendColumnParameter(StringBuilder sql, Column column) {
         if (column.isTimestampWithTimezone()) {
             sql.append("cast(? as timestamp with time zone)").append(",");
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
@@ -126,7 +126,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("ST_GEOMFROMTEXT(?)").append(",");
         } else {
-            super.appendColumnQuestion(sql, column);
+            super.appendColumnParameter(sql, column);
         }
     }
     

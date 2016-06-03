@@ -34,6 +34,8 @@ public class VoltDbSymmetricDialect extends AbstractSymmetricDialect {
     public VoltDbSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new VoltDbTriggerTemplate(this);
+        this.supportsSubselectsInDelete = false;
+        this.supportsSubselectsInUpdate = false;
     }
 
     @Override

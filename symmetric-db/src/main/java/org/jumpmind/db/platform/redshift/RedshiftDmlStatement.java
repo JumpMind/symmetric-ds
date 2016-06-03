@@ -44,7 +44,7 @@ public class RedshiftDmlStatement extends DmlStatement {
             sql.append("(");
             appendColumns(sql, columns, false);
             sql.append(") (select ");
-            appendColumnQuestions(sql, columns);
+            appendColumnParameters(sql, columns);
             sql.append(" where (select count(*) from ");
             sql.append(tableName);
             sql.append(" where  ");

@@ -99,6 +99,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected boolean supportsTransactionViews = false;
     
+    protected boolean supportsSubselectsInDelete = true;
+    
+    protected boolean supportsSubselectsInUpdate = true;
+    
     protected Map<String,String> sqlReplacementTokens = new HashMap<String, String>();
 
     public AbstractSymmetricDialect() {
@@ -556,6 +560,20 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public boolean supportsTransactionViews() {
         return supportsTransactionViews;
+    }
+    
+    /*
+     * Indicates if this dialect supports subselects in delete statements.
+     */
+    public boolean supportsSubselectsInDelete() {
+        return supportsSubselectsInDelete;
+    }
+    
+    /*
+     * Indicates if this dialect supports subselects in update statements.
+     */
+    public boolean supportsSubselectsInUpdate() {
+        return supportsSubselectsInUpdate;
     }
 
     public long insertWithGeneratedKey(String sql, SequenceIdentifier sequenceId) {
