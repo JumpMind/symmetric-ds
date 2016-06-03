@@ -122,6 +122,10 @@ public class AndroidSqlTransaction implements ISqlTransaction {
     public int prepareAndExecute(String sql, Object... args) {
         return sqlTemplate.update(database, sql, args, null);
     }
+    
+    public int prepareAndExecute(String sql, Map<String, Object> args) {
+        throw new UnsupportedOperationException("Method not yet implemented for Android");
+    }
 
     public List<Object> getUnflushedMarkers(boolean clear) {
         return new ArrayList<Object>(0);

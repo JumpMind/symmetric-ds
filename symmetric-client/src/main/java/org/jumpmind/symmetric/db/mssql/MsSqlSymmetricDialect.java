@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -43,7 +44,10 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /*
@@ -287,6 +291,39 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
             } 
         } else {
             return null;
+        }
+    }
+
+    @Override
+    protected void postCreateTrigger(ISqlTransaction transaction, StringBuilder sqlBuffer, DataEventType dml,
+            Trigger trigger, TriggerHistory hist, Channel channel, String tablePrefix, Table table) {
+        if (parameterService.is(ParameterConstants.MSSQL_TRIGGER_ORDER_FIRST, false)) {
+            String schemaName = "";
+            if (StringUtils.isNotBlank(trigger.getSourceSchemaName())) {
+                schemaName = trigger.getSourceSchemaName() + ".";
+            }
+    
+            String triggerNameFirst = (String) transaction.queryForObject(
+                    "select tr.name " + 
+                    "from sys.triggers tr inner join sys.trigger_events te on te.object_id = tr.object_id " +
+                    "inner join sys.tables t on t.object_id = tr.parent_id " +
+                    "where t.name = ? and te.type_desc = ? and te.is_first = 1", String.class, table.getName(), dml.name());
+            if (StringUtils.isNotBlank(triggerNameFirst)) {
+                log.warn("Existing first trigger '{}{}' is being set to order of 'None'", schemaName, triggerNameFirst);
+                transaction.execute("exec sys.sp_settriggerorder @triggername = '" + schemaName +
+                        triggerNameFirst + "', @order = 'None', @stmttype = '" + dml.name() + "'");            
+            }
+    
+            String triggerName = null;
+            if (dml.equals(DataEventType.INSERT)) {
+                triggerName = hist.getNameForInsertTrigger();
+            } else if (dml.equals(DataEventType.UPDATE)) {
+                triggerName = hist.getNameForUpdateTrigger();
+            } else {
+                triggerName = hist.getNameForDeleteTrigger();
+            }
+            transaction.execute("exec sys.sp_settriggerorder @triggername = '" + schemaName +
+                    triggerName + "', @order = 'First', @stmttype = '" + dml.name() + "'");
         }
     }
 

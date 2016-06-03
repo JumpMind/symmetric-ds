@@ -35,13 +35,13 @@ public class MySqlDmlStatement extends DmlStatement {
     }
 
     @Override
-    protected void appendColumnQuestion(StringBuilder sql, Column column) {
+    protected void appendColumnParameter(StringBuilder sql, Column column) {
         if (column.getJdbcTypeName() != null && 
                 (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY)
                 || column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("geomfromtext(?)").append(",");
         } else {
-            super.appendColumnQuestion(sql, column);
+            super.appendColumnParameter(sql, column);
         }
     }
     

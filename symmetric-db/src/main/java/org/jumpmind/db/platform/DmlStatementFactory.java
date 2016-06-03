@@ -94,7 +94,18 @@ final public class DmlStatementFactory {
                     nullKeyValues, ddlBuilder.getDatabaseInfo(),
                     ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         }
-
+    }
+    
+    public static DmlStatement createDmlStatement (String databaseName, DmlType dmlType,
+            String catalogName, String schemaName, String tableName, Column[] keys,
+            Column[] columns, boolean[] nullKeyValues, IDdlBuilder ddlBuilder, String textColumnExpression,
+            boolean namedParameters) {
+        
+        return new DmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
+                nullKeyValues, ddlBuilder.getDatabaseInfo(),
+                ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression,
+                namedParameters);
+        
     }
 
 }

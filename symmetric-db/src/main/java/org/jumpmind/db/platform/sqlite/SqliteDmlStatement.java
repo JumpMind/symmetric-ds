@@ -38,7 +38,7 @@ public class SqliteDmlStatement extends DmlStatement {
         StringBuilder sql = new StringBuilder("insert or replace into " + tableName + " (");
         appendColumns(sql, columns, false);
         sql.append(") values (");
-        appendColumnQuestions(sql, columns);
+        appendColumnParameters(sql, columns);
         sql.append(")");
         return sql.toString();
 

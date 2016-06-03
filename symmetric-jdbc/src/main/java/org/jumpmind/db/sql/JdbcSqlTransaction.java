@@ -27,7 +27,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 /**
  * TODO Support Oracle's non-standard way of batching
@@ -323,6 +323,22 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         });
     }
 
+    public int prepareAndExecute(final String sql, final Map<String, Object> args) {
+        
+        return executeCallback(new IConnectionCallback<Integer>() {
+            public Integer execute(Connection con) throws SQLException {
+                
+                Integer rowsUpdated = null;
+                NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(new SingleConnectionDataSource(con,true));
+                long startTime = System.currentTimeMillis();
+                rowsUpdated = jdbcTemplate.update(sql, args);
+                long endTime = System.currentTimeMillis();
+                logSqlBuilder.logSql(log, sql, args.values().toArray(), null, (endTime-startTime));
+                return rowsUpdated;
+            }
+        });
+    }
+    
     public int prepareAndExecute(final String sql, final Object... args) {
         return executeCallback(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {

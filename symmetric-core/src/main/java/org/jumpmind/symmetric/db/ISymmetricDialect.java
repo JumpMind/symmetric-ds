@@ -114,6 +114,16 @@ public interface ISymmetricDialect {
      * a way to check on pending database transactions.
      */
     public boolean supportsTransactionViews();
+    
+    /*
+     * Indicates if this dialect supports subselects in delete statements.
+     */
+    public boolean supportsSubselectsInDelete();
+    
+    /*
+     * Indicates if this dialect supports subselects in update statements.
+     */
+    public boolean supportsSubselectsInUpdate();
 
     /*
      * Implement this if the database has some type of cleanup functionality

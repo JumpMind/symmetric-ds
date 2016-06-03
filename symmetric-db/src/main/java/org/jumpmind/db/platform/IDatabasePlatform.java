@@ -114,6 +114,10 @@ public interface IDatabasePlatform {
 
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
             String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression);
+    
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
+            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression, 
+            boolean namedParameters);    
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData);
