@@ -46,6 +46,8 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         getDatabaseInfo().setDelimitedIdentifiersSupported(false);
         getDatabaseInfo().setTriggersSupported(false);
         getDatabaseInfo().setForeignKeysSupported(false);
+        getDatabaseInfo().setHasPrecisionAndScale(Types.DECIMAL, false);
+        getDatabaseInfo().setHasPrecisionAndScale(Types.FLOAT, false);
     }
 
     public static final String JDBC_DRIVER = "org.voltdb.jdbc.Driver";
@@ -111,7 +113,7 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return new VoltDbDdlReader(this);
     }    
     
-    @Override
+    @Override   
     protected VoltDbJdbcSqlTemplate createSqlTemplate() {
         // TODO
         return new VoltDbJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), getDatabaseInfo());

@@ -23,12 +23,14 @@ package org.jumpmind.symmetric.service.impl;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -91,10 +93,16 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     log.info("The outgoing purge process is about to run for data older than {}",
                             SimpleDateFormat.getDateTimeInstance()
                                     .format(retentionCutoff.getTime()));
-                    rowsPurged += purgeStrandedBatches();
-                    rowsPurged += purgeDataRows(retentionCutoff);
-                    rowsPurged += purgeOutgoingBatch(retentionCutoff);
-                    rowsPurged += purgeExtractRequests();
+                    // VoltDB doesn't support capture, or subselects.  So we'll just be purging heartbeats
+                    // by date here.
+                    if (getSymmetricDialect().getName().equalsIgnoreCase(DatabaseNamesConstants.VOLTDB)) { 
+                        rowsPurged += purgeOutgoingByRetentionCutoff(retentionCutoff);
+                    } else {
+                        rowsPurged += purgeStrandedBatches();
+                        rowsPurged += purgeDataRows(retentionCutoff);
+                        rowsPurged += purgeOutgoingBatch(retentionCutoff);
+                        rowsPurged += purgeExtractRequests();                        
+                    }
                 } finally {
                     if (!force) {
                         clusterService.unlock(ClusterConstants.PURGE_OUTGOING);
@@ -108,6 +116,24 @@ public class PurgeService extends AbstractService implements IPurgeService {
             log.error("", ex);
         }
         return rowsPurged;
+    }
+
+    protected long purgeOutgoingByRetentionCutoff(Calendar retentionCutoff) {
+        int totalCount = 0;
+        totalCount += executePurgeDelete(getSql("deleteOutgoingBatchByCreateTimeSql"), retentionCutoff.getTime());
+        totalCount += executePurgeDelete(getSql("deleteDataEventByCreateTimeSql"), retentionCutoff.getTime());
+        totalCount += executePurgeDelete(getSql("deleteDataByCreateTimeSql"), retentionCutoff.getTime());
+        totalCount += executePurgeDelete(getSql("deleteExtractRequestByCreateTimeSql"), retentionCutoff.getTime());
+
+        log.info("Done purging {} rows", totalCount);        
+        return totalCount;
+    }
+
+    protected int executePurgeDelete(String deleteSql, Object argument) {
+        log.debug("Running the following statement: {} with the following arguments: {}", deleteSql, argument);
+        int count = sqlTemplate.update(deleteSql, argument);
+        log.debug("Deleted {} rows", count);
+        return count;
     }
 
     private long purgeOutgoingBatch(final Calendar time) {
@@ -287,10 +313,17 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private long purgeIncomingError() {
         log.info("Purging incoming error rows");
-        long rowCount = sqlTemplate.update(getSql("deleteIncomingErrorsSql"));
+        long rowCount = 0;
+        
+        if (getSymmetricDialect().supportsSubselectsInDelete()) {
+            rowCount = sqlTemplate.update(getSql("deleteIncomingErrorsSql"));
+        } else {
+            rowCount = selectIdsAndDelete(getSql("selectIncomingErrorsBatchIdsSql"), 
+                    "batch_id", getSql("deleteIncomingErrorsBatchIdsSql"));
+        }
+        
         log.info("Purged {} incoming error rows", rowCount);
         return rowCount;
-
     }
 
     private long purgeIncomingBatch(final Calendar time) {
@@ -395,6 +428,30 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int count = sqlTemplate.update(getSql("deleteIncomingBatchByNodeSql"),
                 new Object[] { nodeId });
         log.info("Purged all {} incoming batch for node {}", count, nodeId);
+    }
+    
+    protected int selectIdsAndDelete(String selectSql, String fieldName, String deleteSql) {
+        List<Row> results = sqlTemplate.query(selectSql);
+        int rowCount = 0;
+        if (! results.isEmpty()) {            
+            List<Integer> ids = new ArrayList<Integer>(results.size());
+            for (Row row : results) {
+                ids.add(row.getInt(fieldName));
+            }
+            
+            results = null;
+            
+            StringBuilder placeHolders = new StringBuilder(ids.size()*2);
+            for (int i = 0; i < ids.size(); i++) {
+                placeHolders.append("?,");
+            }
+            placeHolders.setLength(placeHolders.length()-1);
+            
+            String deleteStatement = deleteSql.replace("?", placeHolders);
+            
+            rowCount = sqlTemplate.update(deleteStatement, ids.toArray());
+        }
+        return rowCount;
     }
     
     
