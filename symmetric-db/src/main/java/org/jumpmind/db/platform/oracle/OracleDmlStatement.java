@@ -37,7 +37,7 @@ public class OracleDmlStatement extends DmlStatement {
     }
    
     @Override
-    protected void appendColumnQuestion(StringBuilder sql, Column column) {
+    protected void appendColumnParameter(StringBuilder sql, Column column) {
         String name = column.getJdbcTypeName();
         if (column.isTimestampWithTimezone()) {
             sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
@@ -47,7 +47,7 @@ public class OracleDmlStatement extends DmlStatement {
                 name.toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("SYM_WKT2GEOM(?)").append(",");
         } else {
-            super.appendColumnQuestion(sql, column);
+            super.appendColumnParameter(sql, column);
         }
     }
     
