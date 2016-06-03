@@ -324,9 +324,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         String triggerSql = triggerTemplate.createTriggerDDL(dml, trigger, hist, channel,
                 tablePrefix, table, defaultCatalog, defaultSchema);
 
-        String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix,
-                table);
-
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             ISqlTransaction transaction = null;
             try {
@@ -336,20 +333,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
                 try {
                     log.debug("Running: {}", triggerSql);
+                    logSql(triggerSql, sqlBuffer);
                     transaction.execute(triggerSql);
                 } catch (SqlException ex) {
                     log.info("Failed to create trigger: {}", triggerSql);
                     throw ex;
                 }
 
-                if (StringUtils.isNotBlank(postTriggerDml)) {
-                    try {
-                        transaction.execute(postTriggerDml);
-                    } catch (SqlException ex) {
-                        log.info("Failed to create post trigger: {}", postTriggerDml);
-                        throw ex;
-                    }
-                }
+                postCreateTrigger(transaction, sqlBuffer, dml, trigger, hist, channel, tablePrefix, table);
                 transaction.commit();
             } catch (SqlException ex) {
                 transaction.rollback();
@@ -366,10 +357,21 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
             }
         }
+    }
 
-        logSql(triggerSql, sqlBuffer);
-        logSql(postTriggerDml, sqlBuffer);
-
+    protected void postCreateTrigger(ISqlTransaction transaction, StringBuilder sqlBuffer, DataEventType dml,
+            Trigger trigger, TriggerHistory hist, Channel channel, String tablePrefix, Table table) {
+        String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix, table);
+        if (StringUtils.isNotBlank(postTriggerDml)) {
+            try {
+                log.debug("Running: {}", postTriggerDml);
+                logSql(postTriggerDml, sqlBuffer);
+                transaction.execute(postTriggerDml);
+            } catch (SqlException ex) {
+                log.info("Failed to create post trigger: {}", postTriggerDml);
+                throw ex;
+            }
+        }
     }
 
     /*
