@@ -33,6 +33,9 @@ public class NotificationServiceSqlMap extends AbstractSqlMap {
                 "select notification_id, external_id, node_group_id, type, enabled, threshold, period, sample_minutes, severity_level, window_minutes, " + 
                 "create_time, last_update_by, last_update_time from $(notification)");
 
+        putSql("whereNotificationByNodeSql",
+                "where (node_group_id = ? or node_group_id = 'ALL') and (external_id = ? or external_id = 'ALL' and enabled = 1)");
+
         putSql("insertNotificationSql",
                 "insert into $(notification) " +
                 "(notification_id, external_id, node_group_id, type, enabled, threshold, period, sample_minutes, severity_level, window_minutes, " + 
@@ -48,5 +51,11 @@ public class NotificationServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectNotificationEventSql",
                 "select notification_id, node_id, host_name, event_time, value, threshold, period, severity_level from $(notification_event)");
+ 
+        putSql("insertNotificationEventSql",
+                "insert into $(notification_event) " +
+                "(notification_id, node_id, host_name, event_time, value, threshold, period, severity_level) " + 
+                "values (?, ?, ?, ?, ?, ?, ?, ?)");
+
     }
 }

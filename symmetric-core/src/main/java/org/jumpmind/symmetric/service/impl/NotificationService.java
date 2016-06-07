@@ -20,28 +20,36 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Notification;
 import org.jumpmind.symmetric.model.NotificationEvent;
 import org.jumpmind.symmetric.notification.INotificationCheck;
 import org.jumpmind.symmetric.notification.NotificationCheckCpu;
 import org.jumpmind.symmetric.service.IExtensionService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.INotificationService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.util.AppUtils;
 
 public class NotificationService extends AbstractService implements INotificationService {
 
+    protected INodeService nodeService;
+    
     protected IExtensionService extensionService;
     
-    public NotificationService(IParameterService parameterService, ISymmetricDialect symmetricDialect, IExtensionService extensionService) {
+    public NotificationService(IParameterService parameterService, ISymmetricDialect symmetricDialect, INodeService nodeService,
+            IExtensionService extensionService) {
         super(parameterService, symmetricDialect);
         setSqlMap(new NotificationServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
 
+        this.nodeService = nodeService;
         this.extensionService = extensionService;
         
         extensionService.addExtensionPoint("cpu", new NotificationCheckCpu());
@@ -50,24 +58,37 @@ public class NotificationService extends AbstractService implements INotificatio
     @Override
     public synchronized void update() {
         Map<String, INotificationCheck> notificationChecks = extensionService.getExtensionPointMap(INotificationCheck.class);
+        Node identity = nodeService.findIdentity();
         // TODO: cache notifications until cleared by ConfigurationChangedDataRouter
-        List<Notification> notifications = getNotifications();
+        List<Notification> notifications = getNotificationsForNode(identity.getNodeGroupId(), identity.getExternalId());
 
         for (Notification notification : notifications) {
-            if (notification.isEnabled()) {
-                INotificationCheck notificationCheck = notificationChecks.get(notification.getType());
-                if (notificationCheck != null) {
-                    long value = notificationCheck.check(notification);
+            INotificationCheck notificationCheck = notificationChecks.get(notification.getType());
+            if (notificationCheck != null) {
+                long value = notificationCheck.check(notification);
+                //System.out.println("RUNNING [" + parameterService.getExternalId() + "] "+ notification.getType() + " = " + value);
+                
+                if (notificationCheck.requiresPeriod()) {
+                    // TODO: accumulate average over period, then check threshold
+                    notification.getPeriod();
                     
-                    if (notificationCheck.requiresPeriod()) {
-                        // TODO: accumulate average over period, then check threshold
-                        
-                    } else if (value >= notification.getThreshold()) {
-                        // TODO: record sym_notification_event
-                    }
-                } else {
-                    log.warn("Could not find notification of type '" + notification.getType() + "'");
                 }
+                if (value >= notification.getThreshold()) {
+                    
+                    NotificationEvent event = new NotificationEvent();
+                    event.setNotificationId(notification.getNotificationId());
+                    event.setNodeId(identity.getNodeId());
+                    event.setHostName(AppUtils.getHostName());
+                    event.setEventTime(new Date());
+                    event.setThreshold(notification.getThreshold());
+                    event.setPeriod(notification.getPeriod());
+                    event.setSeverityLevel(notification.getSeverityLevel());
+                    event.setValue(value);
+                    
+                    saveNotificationEvent(event);
+                }
+            } else {
+                log.warn("Could not find notification of type '" + notification.getType() + "'");
             }
         }
         
@@ -80,8 +101,9 @@ public class NotificationService extends AbstractService implements INotificatio
     }
 
     @Override
-    public List<NotificationEvent> getNotificationEvents() {
-        return sqlTemplate.query(getSql("selectNotificationEventSql"), new NotificationEventRowMapper());
+    public List<Notification> getNotificationsForNode(String nodeGroupId, String externalId) {
+        return sqlTemplate.query(getSql("selectNotificationSql", "whereNotificationByNodeSql"), new NotificationRowMapper(),
+                nodeGroupId, externalId);
     }
 
     @Override
@@ -101,6 +123,18 @@ public class NotificationService extends AbstractService implements INotificatio
                     notification.getSeverityLevel(), notification.getWindowMinutes(), notification.getCreateTime(), notification.getLastUpdateBy(), 
                     notification.getLastUpdateTime());
         }
+    }
+
+    @Override
+    public List<NotificationEvent> getNotificationEvents() {
+        return sqlTemplate.query(getSql("selectNotificationEventSql"), new NotificationEventRowMapper());
+    }
+
+    @Override
+    public void saveNotificationEvent(NotificationEvent event) {
+        sqlTemplate.update(getSql("insertNotificationEventSql"), event.getNotificationId(), event.getNodeId(),
+                event.getHostName(), event.getEventTime(), event.getValue(), event.getThreshold(), event.getPeriod(),
+                event.getSeverityLevel());
     }
 
     class NotificationRowMapper implements ISqlRowMapper<Notification> {

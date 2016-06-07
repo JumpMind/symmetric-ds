@@ -358,7 +358,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 nodeService, dataLoaderService, clusterService, nodeCommunicationService, 
                 configurationService, extensionService, offlineTransportManager);
         this.fileSyncService = new FileSyncService(this);
-        this.notificationService = new NotificationService(parameterService, symmetricDialect, extensionService);
+        this.notificationService = new NotificationService(parameterService, symmetricDialect, nodeService, extensionService);
         this.mailService = new MailService(parameterService, symmetricDialect);
         this.contextService = new ContextService(parameterService, symmetricDialect);
         this.jobManager = createJobManager();

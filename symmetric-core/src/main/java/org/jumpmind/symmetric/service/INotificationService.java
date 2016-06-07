@@ -31,10 +31,14 @@ public interface INotificationService {
 
     public List<Notification> getNotifications();
 
+    public List<Notification> getNotificationsForNode(String nodeGroupId, String externalId); 
+    
     public void deleteNotification(String notificationId);
 
     public void saveNotification(Notification notification);
     
     public List<NotificationEvent> getNotificationEvents();
+
+    public void saveNotificationEvent(NotificationEvent notificationEvent);
 
 }
