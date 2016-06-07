@@ -330,10 +330,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
                 ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
                 
-                boolean refreshCache = false;
                 if (routingContext.get(CTX_KEY_FLUSHED_TRIGGER_ROUTERS) == null) {
             	    triggerRouterService.clearCache();
-            	    refreshCache = true;
             	    routingContext.put(CTX_KEY_FLUSHED_TRIGGER_ROUTERS, true);
                 }
                 
@@ -343,13 +341,13 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 if (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)) {
                     String routerId = columnValues.get("ROUTER_ID");
                     TriggerRouter tr = triggerRouterService.findTriggerRouterById(triggerId,
-                            routerId, refreshCache);
+                            routerId, false);
                     if (tr != null) {
                         trigger = tr.getTrigger();
                         lastUpdateTime = tr.getLastUpdateTime();
                     }
                 } else {
-                    trigger = triggerRouterService.getTriggerById(triggerId, refreshCache);
+                    trigger = triggerRouterService.getTriggerById(triggerId, false);
                     if (trigger != null) {
                         lastUpdateTime = trigger.getLastUpdateTime();
                     }
