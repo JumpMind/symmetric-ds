@@ -139,6 +139,8 @@ public interface ITriggerRouterService {
     public Set<TriggerRouter> getTriggerRouterForTableForCurrentNode(String catalog, String schema, String tableName, boolean refreshCache); 
 
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId);
+    
+    public TriggerRouter findTriggerRouterById(String triggerId, String routerId, boolean refreshCache);
 
     public void inactivateTriggerHistory(TriggerHistory history);
 
