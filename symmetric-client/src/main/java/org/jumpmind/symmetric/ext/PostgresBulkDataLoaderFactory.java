@@ -39,14 +39,17 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class PostgresBulkDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware,
-        IBuiltInExtensionPoint {
+public class PostgresBulkDataLoaderFactory implements IDataLoaderFactory {
 
     private int maxRowsBeforeFlush;
     private NativeJdbcExtractor jdbcExtractor;
-
-    public PostgresBulkDataLoaderFactory() {
+    private ISymmetricEngine engine;
+    
+    public PostgresBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
+        this.engine = engine;
+        this.maxRowsBeforeFlush = engine.getParameterService().getInt(
+                "postgres.bulk.load.max.rows.before.flush", 10000);
     }
 
     public String getTypeName() {
@@ -62,8 +65,7 @@ public class PostgresBulkDataLoaderFactory implements IDataLoaderFactory, ISymme
     }
 
     public void setSymmetricEngine(ISymmetricEngine engine) {
-        this.maxRowsBeforeFlush = engine.getParameterService().getInt(
-                "postgres.bulk.load.max.rows.before.flush", 10000);
+        
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

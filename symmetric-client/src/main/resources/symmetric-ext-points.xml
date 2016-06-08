@@ -12,15 +12,7 @@
     <import resource="file:conf/*-extensions.xml" />
     <import resource="classpath*:/symmetric-console-extensions.xml" />
 
-    <bean id="postgresBulkLoaderFactory" class="org.jumpmind.symmetric.ext.PostgresBulkDataLoaderFactory" />
-
-    <bean id="oracleBulkLoaderFactory" class="org.jumpmind.symmetric.ext.OracleBulkDataLoaderFactory" />
-
-    <bean id="mssqlBulkLoaderFactory" class="org.jumpmind.symmetric.ext.MsSqlBulkDataLoaderFactory" />
-
-    <bean id="mysqlBulkLoaderFactory" class="org.jumpmind.symmetric.ext.MySqlBulkDataLoaderFactory" />
-
-    <bean id="redshiftBulkLoaderFactory" class="org.jumpmind.symmetric.ext.RedshiftBulkDataLoaderFactory" />
+    <bean id="bulkLoaderFactory" class="org.jumpmind.symmetric.ext.BulkDataLoaderFactory" />
 
     <bean id="mongoLoaderFactory" class="org.jumpmind.symmetric.io.MongoDataLoaderFactory">
         <property name="typeName" value="mongodb" />

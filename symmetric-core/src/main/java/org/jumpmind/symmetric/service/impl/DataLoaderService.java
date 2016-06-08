@@ -621,7 +621,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         String dataLoaderType = "default";
         IDataLoaderFactory factory = null;
         if (channel != null) {
-            dataLoaderType = channel.getDataLoaderType();
+            dataLoaderType = filterDataLoaderType(channel.getDataLoaderType());
         }
 
         Map<String, IDataLoaderFactory> dataLoaderFactories = getDataLoaderFactories();
@@ -1187,6 +1187,22 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public NodeGroupLink getNodeGroupLink() {
             return nodeGroupLink;
         }
+    }
+    
+    public static String filterDataLoaderType(String dataLoaderType) {
+        if (dataLoaderType == null) {
+            return dataLoaderType;
+        }
+        
+        // Check for deprecated data loaders and reset to just "bulk".
+        if (dataLoaderType.equals("mysql_bulk") 
+                || dataLoaderType.equals("mssql_bulk") 
+                || dataLoaderType.equals("oracle_bulk") 
+                || dataLoaderType.equals("postgres_bulk") 
+                || dataLoaderType.equals("redshift_bulk")) {
+            dataLoaderType = "bulk"; 
+        }
+        return dataLoaderType;
     }
 
 }

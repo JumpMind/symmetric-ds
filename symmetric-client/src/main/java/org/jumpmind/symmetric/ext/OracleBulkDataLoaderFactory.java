@@ -38,14 +38,15 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory implements ISymmetricEngineAware,
-        IBuiltInExtensionPoint {
+public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
 
     private ISymmetricEngine engine;
     private NativeJdbcExtractor jdbcExtractor;
 
-    public OracleBulkDataLoaderFactory() {
+    public OracleBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
+        this.engine = engine;
+        this.parameterService = engine.getParameterService();
     }
 
     public String getTypeName() {
@@ -60,11 +61,6 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory implem
                 "oracle.bulk.load.max.rows.before.flush", 1000);
         return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), engine.getTablePrefix(),
                 jdbcExtractor, maxRowsBeforeFlush, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
-    }
-
-    public void setSymmetricEngine(ISymmetricEngine engine) {
-        this.engine = engine;
-        this.parameterService = engine.getParameterService();
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
