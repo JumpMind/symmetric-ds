@@ -1,0 +1,296 @@
+
+if (target_platform!="windows32" && target_platform!="windows64" && target_platform!="osx32" && target_platform!="osx64" &&
+    target_platform!="linux32" && target_platform!="linux64" && target_platform!="linuxArm") {
+        throw new GradleException('no valid input for target_platform')
+}
+
+def csv_loc
+def curl_loc
+def sqlite_loc
+def cunit_loc
+def csv_header_loc
+def curl_header_loc
+def sqlite_header_loc
+def cunit_header_loc
+
+if (target_platform=="windows32" || target_platform=="windows64") {
+    csv_loc = csv_loc_windows
+    curl_loc = curl_loc_windows
+    sqlite_loc = sqlite_loc_windows
+    cunit_loc = cunit_loc_windows
+    csv_header_loc = csv_header_loc_windows
+    curl_header_loc = curl_header_loc_windows
+    sqlite_header_loc = sqlite_header_loc_windows
+    cunit_header_loc = cunit_header_loc_windows
+} else if (target_platform=="osx32" || target_platform=="osx64") {
+    csv_loc = csv_loc_mac
+    curl_loc = curl_loc_mac
+    sqlite_loc = sqlite_loc_mac
+    cunit_loc = cunit_loc_mac
+    csv_header_loc = csv_header_loc_mac
+    curl_header_loc = curl_header_loc_mac
+    sqlite_header_loc = sqlite_header_loc_mac
+    cunit_header_loc = cunit_header_loc_mac
+} else {
+    csv_loc = csv_loc_linux
+    curl_loc = curl_loc_linux
+    sqlite_loc = sqlite_loc_linux
+    cunit_loc = cunit_loc_linux
+    csv_header_loc = csv_header_loc_linux
+    curl_header_loc = curl_header_loc_linux
+    sqlite_header_loc = sqlite_header_loc_linux
+    cunit_header_loc = cunit_header_loc_linux
+}
+   
+subprojects {
+	model {
+        buildTypes {
+            debug
+            release
+        }
+        platforms {
+            osx32 {
+                architecture "x86"
+                operatingSystem "osx"
+            }
+            osx64 {
+                architecture "x86-64"
+                operatingSystem "osx"
+            }
+            linux32 {
+                architecture "x86"
+                operatingSystem "linux"
+            }
+            linux64 {
+                architecture "x86-64"
+                operatingSystem "linux"
+            }
+            linuxArm {
+                architecture "arm"
+                operatingSystem "linux"
+            }
+            windows32 {
+                architecture "x86"
+                operatingSystem "windows"
+            }
+            windows64 {
+                architecture "x86-64"
+                operatingSystem "windows"
+            }
+        }
+        toolChains {
+            gcc(Gcc) {
+                if (target_platform=="windows32" || target_platform=="windows64") {
+                    path gcc_loc_windows
+                    eachPlatform {
+                        cCompiler.withArguments { args ->
+                            args << "-D SYM_WIN32"
+                        }
+                    }
+                }
+            }
+            clang(Clang)
+        }
+    }
+    model {
+        repositories {
+            libs(PrebuiltLibraries) {
+                csv {
+                    if (csv_header_loc!="") {
+                        headers.srcDir "${csv_header_loc}"
+                    }
+                    binaries.withType(StaticLibraryBinary) {
+                        staticLibraryFile = file("${csv_loc}/libcsv.a")
+                    }
+                    binaries.withType(SharedLibraryBinary) {
+                        if (targetPlatform.operatingSystem.macOsX) {
+                            sharedLibraryFile = file("${csv_loc}/libcsv.dylib")
+                        } else {
+                            sharedLibraryFile = file("${csv_loc}/libcsv.so")
+                        }
+                    }
+                }
+                curl {
+                    if (curl_header_loc!="") {
+                        headers.srcDir "${curl_header_loc}"
+                    }
+                    binaries.withType(SharedLibraryBinary) {
+                        if (targetPlatform.operatingSystem.windows) {
+                            sharedLibraryFile = file("${curl_loc}/libcurl.dll")
+                        } else if (targetPlatform.operatingSystem.macOsX) {
+                            sharedLibraryFile = file("${curl_loc}/libcurl.dylib")
+                        } else {
+                            sharedLibraryFile = file("${curl_loc}/libcurl.so")
+                        }
+                    }
+                }
+				sqlite {
+                    if (sqlite_header_loc!="") {
+                        headers.srcDir "${sqlite_header_loc}"
+                    }
+                    binaries.withType(SharedLibraryBinary) {
+                        if (targetPlatform.operatingSystem.windows) {
+                            sharedLibraryFile = file("${sqlite_loc}/sqlite3.dll")
+                        } else if (targetPlatform.operatingSystem.macOsX) {
+                            sharedLibraryFile = file("${sqlite_loc}/libsqlite3.dylib")
+                        } else {
+                            sharedLibraryFile = file("${sqlite_loc}/libsqlite3.so")
+
+                        }
+                    }
+                }
+				cunit {
+                    if (cunit_header_loc!="") {
+                        headers.srcDir "${cunit_header_loc}"
+                    }
+                    binaries.withType(StaticLibraryBinary) {
+                        staticLibraryFile = file("${cunit_loc}/libcunit.a")
+                    }
+                    binaries.withType(SharedLibraryBinary) {
+                        if (targetPlatform.operatingSystem.macOsX) {
+                            sharedLibraryFile = file("${cunit_loc}/libcunit.dylib")
+                        } else {
+                            sharedLibraryFile = file("${cunit_loc}/libcunit.so")
+                        }
+                    }
+                }
+                wsock {
+                    binaries.withType(SharedLibraryBinary) {
+                        if (targetPlatform.operatingSystem.windows) {
+                            sharedLibraryFile = file("${wsock_loc_windows}/wsock32.dll")
+                        }
+                    }
+                }
+            }
+		}
+	}
+}
+
+project(":symmetric-client-clib") {
+    apply plugin: 'c'
+    model {
+        components {
+            sym(NativeLibrarySpec) {
+                targetPlatform target_platform
+                sources {
+                    c {
+                        source {
+                            srcDir "src"
+                            include "**/*.c"
+                        }
+                        exportedHeaders {
+                            if (target_platform=="windows32" || target_platform=="windows64") {
+                                srcDirs = [libgen_header_loc_windows,
+                                           'inc']
+                            } else {
+                                srcDir "inc"
+                            }
+                        }
+                        if (target_platform=="windows32" || target_platform=="windows64") {
+                            lib library: 'csv', linkage: 'static'
+                            lib library: 'wsock', linkage: 'shared'
+                        } else {
+                            lib library: 'csv', linkage: 'shared'
+                        }
+						lib library: 'curl', linkage: 'shared'
+                        lib library: 'sqlite', linkage: 'shared'
+                    }
+                }
+            }
+        }
+    }
+}
+
+project(":symmetric-client-clib-test") {
+    apply plugin: 'c'
+    model {
+		components {
+	    	test(NativeExecutableSpec) {
+                targetPlatform target_platform
+                sources {
+		    		c {
+						source {
+						    srcDir "src"
+			  				include "**/*.c"
+						}
+						exportedHeaders {
+			    			srcDir "inc"
+						}
+						lib project: ':symmetric-client-clib', library: 'sym'
+                        if (target_platform=="windows32" || target_platform=="windows64") {
+                            lib library: 'csv', linkage: 'static'
+                            lib library: 'cunit', linkage: 'static'
+                            lib library: 'wsock', linkage: 'shared'
+                        } else {
+                            lib library: 'csv', linkage: 'shared'
+                            lib library: 'cunit', linkage: 'shared'
+                        }
+                        lib library: 'curl', linkage: 'shared'
+                        lib library: 'sqlite', linkage: 'shared'
+		    		}
+				}
+	   		}
+		}
+    }
+}
+
+project(":symmetric-client-native") {
+    apply plugin: 'c'
+    model {
+		components {
+	    	sym(NativeExecutableSpec) {
+                targetPlatform target_platform
+                sources {
+		    		c {
+						source {
+			    			srcDir "src"
+			    			include "**/*.c"
+						}
+						exportedHeaders {
+			    			srcDir "inc"
+						}
+						lib project: ':symmetric-client-clib', library: 'sym'
+                        if (target_platform=="windows32" || target_platform=="windows64") {
+                            lib library: 'csv', linkage: 'static'
+                            lib library: 'wsock', linkage: 'shared'
+                        } else {
+                            lib library: 'csv', linkage: 'shared'
+                        }
+                        lib library: 'curl', linkage: 'shared'
+                        lib library: 'sqlite', linkage: 'shared'
+		    		}
+				}
+	    	}
+		}
+    }
+}
+  
+task clean_bin(type: Delete) {
+    delete "bin"
+}
+
+task relocate_lib(type: Copy) {
+    mustRunAfter clean_bin
+    from(file("../symmetric-client-clib/build/libs/sym/shared"))
+    into("bin")
+}
+
+task relocate_test(type: Copy) {
+    mustRunAfter clean_bin
+    from(file("../symmetric-client-clib-test/build/exe/test"))
+    into("bin")
+}
+
+task relocate_sym(type: Copy) {
+    mustRunAfter clean_bin
+    from(file("../symmetric-client-native/build/exe/sym"))
+    into("bin")
+}
+
+task relocate {
+    description ('Copies files from default build location to ./bin')
+    dependsOn clean_bin
+    dependsOn relocate_lib
+    dependsOn relocate_test
+    dependsOn relocate_sym
+}
