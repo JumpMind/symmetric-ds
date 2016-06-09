@@ -330,7 +330,7 @@ task upload {
         test_name = "test"
         sym_name = "sym"
     } else {
-        priavte_key = "~/.ssh/id_rsa"
+        private_key = "~/.ssh/id_rsa"
         lib_name = "libsym.so"
         test_name = "test"
         sym_name = "sym"
