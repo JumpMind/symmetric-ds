@@ -1,4 +1,5 @@
 
+//-----INIT-----//
 if (target_platform!="windows32" && target_platform!="windows64" && target_platform!="osx32" && target_platform!="osx64" &&
     target_platform!="linux32" && target_platform!="linux64" && target_platform!="linuxArm") {
         throw new GradleException('no valid input for target_platform')
@@ -42,6 +43,7 @@ if (target_platform=="windows32" || target_platform=="windows64") {
     cunit_header_loc = cunit_header_loc_linux
 }
    
+//-----BUILD-----//
 subprojects {
 	model {
         buildTypes {
@@ -264,7 +266,8 @@ project(":symmetric-client-native") {
 		}
     }
 }
-  
+ 
+//-----RELOCATE-----//
 task clean_bin(type: Delete) {
     delete "bin"
 }
@@ -288,9 +291,81 @@ task relocate_sym(type: Copy) {
 }
 
 task relocate {
-    description ('Copies files from default build location to ./bin')
+    description ('Copies files from default build location to \'bin\'.')
     dependsOn clean_bin
     dependsOn relocate_lib
     dependsOn relocate_test
     dependsOn relocate_sym
 }
+
+//-----SCP/UPLOAD-----//
+repositories { mavenCentral() }
+
+configurations { sshAntTask }
+
+dependencies {
+    sshAntTask 'org.apache.ant:ant-jsch:1.9.2'
+}
+
+ant.taskdef (
+    name: 'scp',
+    classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
+    classpath: configurations.sshAntTask.asPath
+)
+
+task upload {
+    description ('Secure copies built libraries and executables to build server.')
+    def private_key
+    def lib_name
+    def test_name
+    def sym_name
+    if (target_platform=="windows32" || target_platform=="windows64") {
+        private_key = "C:/Users/Administrator/.ssh/id_rsa"
+        lib_name = "sym.dll"
+        test_name = "test.exe"
+        sym_name = "sym.exe"
+    } else if (target_platform=="osx32" || target_platform=="osx64") {
+        private_key = "~/.ssh/id_rsa"
+        lib_name = "libsym.dylib"
+        test_name = "test"
+        sym_name = "sym"
+    } else {
+        priavte_key = "~/.ssh/id_rsa"
+        lib_name = "libsym.so"
+        test_name = "test"
+        sym_name = "sym"
+    }
+    doLast {
+        ant.scp(
+            file: file("../symmetric-client-clib/build/libs/sym/shared/release/${lib_name}"),
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/release",
+            keyfile: file(private_key)
+        )
+        ant.scp(
+            file: file("../symmetric-client-clib-test/build/exe/test/release/${test_name}"),
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/release",
+            keyfile: file(private_key)
+        )
+        ant.scp(
+            file: file("../symmetric-client-native/build/exe/sym/release/${sym_name}"),
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/release",
+            keyfile: file(private_key)
+        )
+        ant.scp(
+            file: file("../symmetric-client-clib/build/libs/sym/shared/debug/${lib_name}"),
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/debug",
+            keyfile: file(private_key)
+        )
+        ant.scp(
+            file: file("../symmetric-client-clib-test/build/exe/test/debug/${test_name}"),
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/debug",
+            keyfile: file(private_key)
+        )
+        ant.scp(
+            file: file("../symmetric-client-native/build/exe/sym/debug/${sym_name}"),
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/debug",
+            keyfile: file(private_key)
+        )
+    }
+}
+
