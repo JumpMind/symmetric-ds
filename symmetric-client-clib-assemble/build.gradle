@@ -343,12 +343,6 @@ task upload {
             trust: true
         )
         ant.scp(
-            file: file("../symmetric-client-clib-test/build/exe/test/release/${test_name}"),
-            todir: "jumpmind@raven.loc:/home/jumpmind/clib/${target_platform}/release",
-            keyfile: file(private_key),
-            trust: true
-        )
-        ant.scp(
             file: file("../symmetric-client-native/build/exe/sym/release/${sym_name}"),
             todir: "jumpmind@raven.loc:/home/jumpmind/clib/${target_platform}/release",
             keyfile: file(private_key),
@@ -372,6 +366,18 @@ task upload {
             keyfile: file(private_key),
             trust: true
         )
+    }
+}
+
+//-----CUNIT TEST EXECUTE-----//
+task test(type: Exec) {
+    description('Runs CUnit tests on built libraries')
+    dependsOn relocate
+    workingDir "bin/debug"
+    if (target_platform=="windows32" || target_platform=="windows64") {
+        commandLine 'cmd', '/c', 'test'
+    } else {
+        commandLine './test'
     }
 }
 
