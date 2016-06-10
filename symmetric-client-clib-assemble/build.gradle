@@ -330,7 +330,7 @@ task upload {
         test_name = "test"
         sym_name = "sym"
     } else {
-        private_key = "/home/jumpmind/.ssh/id_rsa_s"
+        private_key = "/home/jumpmind/id_rsa_s"
         lib_name = "libsym.so"
         test_name = "test"
         sym_name = "sym"
@@ -338,37 +338,37 @@ task upload {
     doLast {
         ant.scp(
             file: file("../symmetric-client-clib/build/libs/sym/shared/release/${lib_name}"),
-            todir: "jumpmind@raven.loc:/home/jumpmind/clib/release",
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/${target_platform}/release",
             keyfile: file(private_key),
             trust: true
         )
         ant.scp(
             file: file("../symmetric-client-clib-test/build/exe/test/release/${test_name}"),
-            todir: "jumpmind@raven.loc:/home/jumpmind/clib/release",
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/${target_platform}/release",
             keyfile: file(private_key),
             trust: true
         )
         ant.scp(
             file: file("../symmetric-client-native/build/exe/sym/release/${sym_name}"),
-            todir: "jumpmind@raven.loc:/home/jumpmind/clib/release",
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/${target_platform}/release",
             keyfile: file(private_key),
             trust: true
         )
         ant.scp(
             file: file("../symmetric-client-clib/build/libs/sym/shared/debug/${lib_name}"),
-            todir: "jumpmind@raven.loc:/home/jumpmind/clib/debug",
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/${target_platform}/debug",
             keyfile: file(private_key),
             trust: true
         )
         ant.scp(
             file: file("../symmetric-client-clib-test/build/exe/test/debug/${test_name}"),
-            todir: "jumpmind@raven.loc:/home/jumpmind/clib/debug",
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/${target_platform}/debug",
             keyfile: file(private_key),
             trust: true
         )
         ant.scp(
             file: file("../symmetric-client-native/build/exe/sym/debug/${sym_name}"),
-            todir: "jumpmind@raven.loc:/home/jumpmind/clib/debug",
+            todir: "jumpmind@raven.loc:/home/jumpmind/clib/${target_platform}/debug",
             keyfile: file(private_key),
             trust: true
         )
