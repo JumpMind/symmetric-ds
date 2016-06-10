@@ -373,11 +373,13 @@ task upload {
 task test(type: Exec) {
     description('Runs CUnit tests on built libraries')
     dependsOn relocate
-    workingDir "bin/debug"
+    workingDir "./bin/debug"
     if (target_platform=="windows32" || target_platform=="windows64") {
         commandLine 'cmd', '/c', 'test'
-    } else {
+    } else if (target_platform="osx32" || target_platform="osx64") {
         commandLine './test'
+    } else {
+        commandLine '/bin/sh', '-c', 'LD_LIBRARY_PATH=. ./test'
     }
 }
 
