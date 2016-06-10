@@ -51,6 +51,7 @@ import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -586,13 +587,27 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     }
 
     private void sendSchema(CommandLine line, List<String> args) {
-        String tableName = popArg(args, "Table Name");
         String catalog = line.getOptionValue(OPTION_CATALOG);
         String schema = line.getOptionValue(OPTION_SCHEMA);
         Collection<Node> nodes = getNodes(line);
-        for (Node node : nodes) {
-            getSymmetricEngine().getDataService().sendSchema(node.getNodeId(), catalog, schema,
-                    tableName, false);
+        
+        if (args.size() == 0) {
+            for (TriggerHistory hist : engine.getTriggerRouterService().getActiveTriggerHistories()) {
+                for (Node node : nodes) {
+                    if ((catalog == null || catalog.equals(hist.getSourceCatalogName())) &&
+                            (schema == null || schema.equals(hist.getSourceSchemaName()))) {
+                        getSymmetricEngine().getDataService().sendSchema(node.getNodeId(), hist.getSourceCatalogName(), 
+                                hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+                    }
+                }
+            }
+        } else {
+            for (String tableName : args) {
+                for (Node node : nodes) {
+                    getSymmetricEngine().getDataService().sendSchema(node.getNodeId(), catalog, 
+                            schema, tableName, false);
+                }                
+            }
         }
     }
 
