@@ -325,12 +325,12 @@ task upload {
         test_name = "test.exe"
         sym_name = "sym.exe"
     } else if (target_platform=="osx32" || target_platform=="osx64") {
-        private_key = "~/.ssh/id_rsa"
+        private_key = ".ssh/id_rsa"
         lib_name = "libsym.dylib"
         test_name = "test"
         sym_name = "sym"
     } else {
-        private_key = "~/.ssh/id_rsa"
+        private_key = ".ssh/id_rsa"
         lib_name = "libsym.so"
         test_name = "test"
         sym_name = "sym"
