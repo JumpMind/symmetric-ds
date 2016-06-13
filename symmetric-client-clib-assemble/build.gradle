@@ -132,7 +132,7 @@ subprojects {
                     }
                     binaries.withType(SharedLibraryBinary) {
                         if (targetPlatform.operatingSystem.windows) {
-                            sharedLibraryFile = file("${sqlite_loc}/sqlite3.dll")
+                            sharedLibraryFile = file("${sqlite_loc}/libsqlite3-0.dll")
                         } else if (targetPlatform.operatingSystem.macOsX) {
                             sharedLibraryFile = file("${sqlite_loc}/libsqlite3.dylib")
                         } else {
@@ -375,7 +375,7 @@ task test(type: Exec) {
     dependsOn relocate
     workingDir "./bin/debug"
     if (target_platform=="windows32" || target_platform=="windows64") {
-        commandLine 'cmd', '/c', 'test'
+        commandLine 'cmd', '/c', 'start', 'test.exe'
     } else if (target_platform=="osx32" || target_platform=="osx64") {
         commandLine './test'
     } else {
