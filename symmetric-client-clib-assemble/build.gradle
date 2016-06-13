@@ -130,6 +130,9 @@ subprojects {
                     if (sqlite_header_loc!="") {
                         headers.srcDir "${sqlite_header_loc}"
                     }
+                    binaries.withType(StaticLibraryBinary) {
+                    	staticLibraryFile = file("${sqlite_loc}/libsqlite3.a")
+                    }
                     binaries.withType(SharedLibraryBinary) {
                         if (targetPlatform.operatingSystem.windows) {
                             sharedLibraryFile = file("${sqlite_loc}/libsqlite3-0.dll")
@@ -191,11 +194,12 @@ project(":symmetric-client-clib") {
                         if (target_platform=="windows32" || target_platform=="windows64") {
                             lib library: 'csv', linkage: 'static'
                             lib library: 'wsock', linkage: 'shared'
+                            lib library: 'sqlite', linkage: 'static'
                         } else {
                             lib library: 'csv', linkage: 'shared'
+                            lib library: 'sqlite', linkage: 'shared'
                         }
 						lib library: 'curl', linkage: 'shared'
-                        lib library: 'sqlite', linkage: 'shared'
                     }
                 }
             }
@@ -223,12 +227,13 @@ project(":symmetric-client-clib-test") {
                             lib library: 'csv', linkage: 'static'
                             lib library: 'cunit', linkage: 'static'
                             lib library: 'wsock', linkage: 'shared'
+                            lib library: 'sqlite', linkage: 'static'
                         } else {
                             lib library: 'csv', linkage: 'shared'
                             lib library: 'cunit', linkage: 'shared'
+                            lib library: 'sqlite', linkage: 'shared'
                         }
                         lib library: 'curl', linkage: 'shared'
-                        lib library: 'sqlite', linkage: 'shared'
 		    		}
 				}
 	   		}
@@ -255,11 +260,12 @@ project(":symmetric-client-native") {
                         if (target_platform=="windows32" || target_platform=="windows64") {
                             lib library: 'csv', linkage: 'static'
                             lib library: 'wsock', linkage: 'shared'
+                            lib library: 'sqlite', linkage: 'static'
                         } else {
                             lib library: 'csv', linkage: 'shared'
+                            lib library: 'sqlite', linkage: 'shared'
                         }
                         lib library: 'curl', linkage: 'shared'
-                        lib library: 'sqlite', linkage: 'shared'
 		    		}
 				}
 	    	}
