@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.db.db2;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -31,9 +32,24 @@ public class Db2zOsSymmetricDialect extends Db2SymmetricDialect implements ISymm
         this.triggerTemplate = new Db2zOsTriggerTemplate(this);
     }
 
-    // TODO: add check to trigger template if CURRENT SQLID = '${db.user}'
-    //public String getSyncTriggersExpression() {
-    //    return "CURRENT SQLID = ";
-    //}
+    @Override
+    public void createRequiredDatabaseObjects() {
+        // TODO: Detect if DB2 for Z/OS is version 11, then use global variables
+        // TODO: On DB2 for Z/OS before version 11, check CURRENT SQLID = '${db.user}' instead
+    }
+    
+    @Override
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
+    }
+    
+    @Override
+    public String getSyncTriggersExpression() {
+        return "1=1";
+    }
+
+    @Override
+    public String getSourceNodeExpression() {
+        return "null";
+    }
 
 }
