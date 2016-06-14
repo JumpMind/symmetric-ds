@@ -235,6 +235,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (nodeSecurities != null) {
                         boolean reverseLoadFirst = parameterService
                                 .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
+                        boolean isInitialLoadQueued = false;
                         for (NodeSecurity security : nodeSecurities) {
                             if (engine.getTriggerRouterService().getActiveTriggerHistories().size() > 0) {
                                 boolean thisMySecurityRecord = security.getNodeId().equals(
@@ -251,6 +252,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                     engine.getDataService().insertReloadEvents(
                                             engine.getNodeService().findNode(security.getNodeId()),
                                             false);
+                                    isInitialLoadQueued = true;
                                     ts = System.currentTimeMillis() - ts;
                                     if (ts > Constants.LONG_OPERATION_THRESHOLD) {
                                         log.warn("Inserted reload events for node {} in {} ms",
@@ -278,6 +280,9 @@ public class RouterService extends AbstractService implements IRouterService {
                                     }
                                 }
                             }
+                        }
+                        if (isInitialLoadQueued) {
+                            engine.getContextService().save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, "true");
                         }
                     }
                 }
