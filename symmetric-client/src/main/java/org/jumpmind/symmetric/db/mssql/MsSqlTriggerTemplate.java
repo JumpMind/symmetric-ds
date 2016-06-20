@@ -39,10 +39,12 @@ import org.jumpmind.util.FormatUtils;
 
 public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 
+    boolean castToNVARCHAR;
+
     public MsSqlTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
 
-        boolean castToNVARCHAR = symmetricDialect.getParameterService().is(ParameterConstants.MSSQL_USE_NTYPES_FOR_SYNC);
+        castToNVARCHAR = symmetricDialect.getParameterService().is(ParameterConstants.MSSQL_USE_NTYPES_FOR_SYNC);
         
         String triggerExecuteAs = symmetricDialect.getParameterService().getString(ParameterConstants.MSSQL_TRIGGER_EXECUTE_AS, "self");
         
@@ -261,6 +263,14 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
             }
         }
         return prefix;
+    }
+
+    @Override
+    protected String getColumnSize(Column column) {
+        if (castToNVARCHAR && column.getSizeAsInt() > 4000) {
+            return "max";
+        }
+        return column.getSize();
     }
 
     @Override

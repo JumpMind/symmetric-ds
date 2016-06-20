@@ -857,7 +857,7 @@ abstract public class AbstractTriggerTemplate {
                 String.format("%s%s", columnPrefix, column.getName()), templateToUse);
         
         formattedColumnText = FormatUtils.replace("columnSize",
-                column.getSize(), formattedColumnText);
+                getColumnSize(column), formattedColumnText);
 
         formattedColumnText = FormatUtils.replace("masterCollation",
                 symmetricDialect.getMasterCollation(), formattedColumnText);
@@ -874,6 +874,10 @@ abstract public class AbstractTriggerTemplate {
 
         return new ColumnString(formattedColumnText, isLob);
 
+    }
+    
+    protected String getColumnSize(Column column) {
+        return column.getSize();
     }
 
     public String getOtherColumnTemplate() {
