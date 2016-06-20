@@ -1,10 +1,5 @@
 
 //-----INIT-----//
-if (target_platform!="windows32" && target_platform!="windows64" && target_platform!="osx32" && target_platform!="osx64" &&
-    target_platform!="linux32" && target_platform!="linux64" && target_platform!="linuxArm") {
-        throw new GradleException('no valid input for target_platform')
-}
-
 def csv_loc
 def curl_loc
 def sqlite_loc
@@ -32,7 +27,7 @@ if (target_platform=="windows32" || target_platform=="windows64") {
     curl_header_loc = curl_header_loc_mac
     sqlite_header_loc = sqlite_header_loc_mac
     cunit_header_loc = cunit_header_loc_mac
-} else {
+} else if (target_platform=="linux32" || target_platform=="linux64" || target_platform=="linuxArm") {
     csv_loc = csv_loc_linux
     curl_loc = curl_loc_linux
     sqlite_loc = sqlite_loc_linux
@@ -41,9 +36,23 @@ if (target_platform=="windows32" || target_platform=="windows64") {
     curl_header_loc = curl_header_loc_linux
     sqlite_header_loc = sqlite_header_loc_linux
     cunit_header_loc = cunit_header_loc_linux
+} else {
+    throw new GradleException('No valid input for \'target_platform\'.')
 }
-   
-//-----BUILD-----//
+    
+def majorMinorVersion = version.substring(0, version.indexOf(".", version.indexOf(".")+ 1))
+    
+repositories { mavenCentral() }
+configurations { sshAntTask }
+dependencies { sshAntTask 'org.apache.ant:ant-jsch:1.9.2' }
+
+ant.taskdef (
+    name: 'scp',
+    classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
+    classpath: configurations.sshAntTask.asPath
+)
+    
+    //-----BUILD-----//
 subprojects {
 	model {
         buildTypes {
@@ -193,8 +202,8 @@ project(":symmetric-client-clib") {
                         }
                         if (target_platform=="windows32" || target_platform=="windows64") {
                             lib library: 'csv', linkage: 'static'
-                            lib library: 'wsock', linkage: 'shared'
                             lib library: 'sqlite', linkage: 'static'
+                            lib library: 'wsock', linkage: 'shared'
                         } else {
                             lib library: 'csv', linkage: 'shared'
                             lib library: 'sqlite', linkage: 'shared'
@@ -225,13 +234,13 @@ project(":symmetric-client-clib-test") {
 						lib project: ':symmetric-client-clib', library: 'sym'
                         if (target_platform=="windows32" || target_platform=="windows64") {
                             lib library: 'csv', linkage: 'static'
+                            lib library: 'sqlite', linkage: 'static'
                             lib library: 'cunit', linkage: 'static'
                             lib library: 'wsock', linkage: 'shared'
-                            lib library: 'sqlite', linkage: 'static'
                         } else {
                             lib library: 'csv', linkage: 'shared'
-                            lib library: 'cunit', linkage: 'shared'
                             lib library: 'sqlite', linkage: 'shared'
+                            lib library: 'cunit', linkage: 'shared'
                         }
                         lib library: 'curl', linkage: 'shared'
 		    		}
@@ -259,8 +268,8 @@ project(":symmetric-client-native") {
 						lib project: ':symmetric-client-clib', library: 'sym'
                         if (target_platform=="windows32" || target_platform=="windows64") {
                             lib library: 'csv', linkage: 'static'
-                            lib library: 'wsock', linkage: 'shared'
                             lib library: 'sqlite', linkage: 'static'
+                            lib library: 'wsock', linkage: 'shared'
                         } else {
                             lib library: 'csv', linkage: 'shared'
                             lib library: 'sqlite', linkage: 'shared'
@@ -275,25 +284,25 @@ project(":symmetric-client-native") {
  
 //-----RELOCATE-----//
 task clean_bin(type: Delete) {
-    delete "bin"
+    delete "build/bin"
 }
 
 task relocate_lib(type: Copy) {
     mustRunAfter clean_bin
     from(file("../symmetric-client-clib/build/libs/sym/shared"))
-    into("bin")
+    into("build/bin")
 }
 
 task relocate_test(type: Copy) {
     mustRunAfter clean_bin
     from(file("../symmetric-client-clib-test/build/exe/test"))
-    into("bin")
+    into("build/bin")
 }
 
 task relocate_sym(type: Copy) {
     mustRunAfter clean_bin
     from(file("../symmetric-client-native/build/exe/sym"))
-    into("bin")
+    into("build/bin")
 }
 
 task relocate {
@@ -304,22 +313,8 @@ task relocate {
     dependsOn relocate_sym
 }
 
-//-----SCP/UPLOAD-----//
-repositories { mavenCentral() }
-
-configurations { sshAntTask }
-
-dependencies {
-    sshAntTask 'org.apache.ant:ant-jsch:1.9.2'
-}
-
-ant.taskdef (
-    name: 'scp',
-    classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
-    classpath: configurations.sshAntTask.asPath
-)
-
-task upload {
+//-----SCP/UPLOAD TO BUILD SERVER-----//
+task scp {
     description ('Secure copies built libraries and executables to build server.')
     def private_key
     def lib_name
@@ -375,8 +370,8 @@ task upload {
     }
 }
 
-//-----CUNIT TEST EXECUTE-----//
-task test(type: Exec) {
+//-----CUNIT TEST EXECUTION-----//
+task testLib(type: Exec) {
     description('Runs CUnit tests on built libraries')
     dependsOn relocate
     workingDir "./bin/debug"
@@ -388,4 +383,36 @@ task test(type: Exec) {
         commandLine '/bin/sh', '-c', 'LD_LIBRARY_PATH=. ./test'
     }
 }
+
+//-----UPLOAD ZIP-----//
+task zip(type: Zip) {
+    apply plugin: 'java'
+    dependsOn relocate
+    baseName 'symmetric-native'
+    classifier target_platform
+    from ('build')
+    include '**/**'
+    destinationDir file('zip')
+}
+
+task publishSymmetric {
+    dependsOn zip
+    doLast {
+        println "Publishing ${target_platform} native distribution to source forge"
+        ant.scp(
+                todir: "$sourceforgeUser:$sourceforgePassword@frs.sourceforge.net:/home/frs/project/symmetricds/symmetricds/symmetricds-$majorMinorVersion",
+                trust: 'true',
+                verbose: 'true') {
+            fileset(dir: "zip") {
+                include(name: 'symmetric-native-' + version+'-'+target_platform + '.zip')
+            }
+        }
+    }
+}
+
+task releaseSymmetric {
+    dependsOn publishSymmetric
+    //dependsOn publishDoc
+}
+
 
