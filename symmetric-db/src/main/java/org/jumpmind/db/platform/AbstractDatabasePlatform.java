@@ -406,7 +406,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 objectValue = parseBigInteger(value);
             } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT || type == Types.TINYINT) {
                 objectValue = parseInteger(value);
-            } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
+            } else if (type == Types.FLOAT) {
+                objectValue = parseFloat(value);
+            } else if (type == Types.NUMERIC || type == Types.DECIMAL
                     || type == Types.DOUBLE || type == Types.REAL) {
                 objectValue = parseBigDecimal(value);
             } else if (type == Types.BOOLEAN) {
@@ -441,6 +443,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
         return objectValue;
 
+    }
+    
+    protected Object parseFloat(String value) {
+        return parseBigDecimal(value);
     }
     
     protected Object parseBigDecimal(String value) {
