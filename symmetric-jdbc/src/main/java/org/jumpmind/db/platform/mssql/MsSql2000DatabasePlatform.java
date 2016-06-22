@@ -93,7 +93,11 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
     public boolean canColumnBeUsedInWhereClause(Column column) {
         return !column.isOfBinaryType();
     }
-    
+
+    @Override
+    protected Object parseFloat(String value) {
+        return cleanNumber(value);
+    }
 }
 
 
