@@ -39,8 +39,7 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MySqlBulkDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware,
-        IBuiltInExtensionPoint {
+public class MySqlBulkDataLoaderFactory implements IDataLoaderFactory {
 
     private int maxRowsBeforeFlush;
     private long maxBytesBeforeFlush;
@@ -48,9 +47,11 @@ public class MySqlBulkDataLoaderFactory implements IDataLoaderFactory, ISymmetri
     private boolean isReplace;
     private NativeJdbcExtractor jdbcExtractor;
     private IStagingManager stagingManager;
-
-    public MySqlBulkDataLoaderFactory() {
+    private ISymmetricEngine engine;
+    
+    public MySqlBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
+        this.engine = engine;
     }
 
     public String getTypeName() {

@@ -102,6 +102,8 @@ public class Trigger implements Serializable {
 
     private String excludedColumnNames = null;
 
+    private String includedColumnNames = null;
+
     private String syncKeyNames = null;
 
     /**
@@ -151,6 +153,10 @@ public class Trigger implements Serializable {
             sourceSchemaName = null;
         }
     }
+    
+    public Column[] filterExcludedAndIncludedColumns(Column[] src) {
+        return filterIncludedColumns(filterExcludedColumns(src));
+    }
 
     public Column[] filterExcludedColumns(Column[] src) {
         if (src != null) {
@@ -159,6 +165,25 @@ public class Trigger implements Serializable {
             for (int i = 0; i < src.length; i++) {
                 Column col = src[i];
                 if (!excludedColumnNames.contains(col.getName().toLowerCase())) {
+                    filtered.add(col);
+                }
+            }
+            return filtered.toArray(new Column[filtered.size()]);
+        } else {
+            return new Column[0];
+        }
+    }
+    
+    public Column[] filterIncludedColumns(Column[] src) {
+        if (src != null) {
+            List<String> includedColumnNames = getIncludedColumnNamesAsList();
+            if (includedColumnNames.size() == 0) {
+                return src;
+            }
+            List<Column> filtered = new ArrayList<Column>(src.length);
+            for (int i = 0; i < src.length; i++) {
+                Column col = src[i];
+                if (includedColumnNames.contains(col.getName().toLowerCase())) {
                     filtered.add(col);
                 }
             }
@@ -220,7 +245,7 @@ public class Trigger implements Serializable {
                 }
             }
             Column[] result = orderedColumns.toArray(new Column[orderedColumns.size()]);
-            return filterExcludedColumns(result);
+            return filterExcludedAndIncludedColumns(result);
         } else {
             return new Column[0];
         }
@@ -230,6 +255,20 @@ public class Trigger implements Serializable {
     private List<String> getExcludedColumnNamesAsList() {
         if (excludedColumnNames != null && excludedColumnNames.length() > 0) {
             StringTokenizer tokenizer = new StringTokenizer(excludedColumnNames, ",");
+            List<String> columnNames = new ArrayList<String>(tokenizer.countTokens());
+            while (tokenizer.hasMoreTokens()) {
+                columnNames.add(tokenizer.nextToken().toLowerCase().trim());
+            }
+            return columnNames;
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private List<String> getIncludedColumnNamesAsList() {
+        if (includedColumnNames != null && includedColumnNames.length() > 0) {
+            StringTokenizer tokenizer = new StringTokenizer(includedColumnNames, ",");
             List<String> columnNames = new ArrayList<String>(tokenizer.countTokens());
             while (tokenizer.hasMoreTokens()) {
                 columnNames.add(tokenizer.nextToken().toLowerCase().trim());
@@ -447,6 +486,14 @@ public class Trigger implements Serializable {
 
     public void setExcludedColumnNames(String excludedColumnNames) {
         this.excludedColumnNames = excludedColumnNames;
+    }
+    
+    public String getIncludedColumnNames() {
+        return includedColumnNames;
+    }
+
+    public void setIncludedColumnNames(String includedColumnNames) {
+        this.includedColumnNames = includedColumnNames;
     }
 
     public String getTxIdExpression() {

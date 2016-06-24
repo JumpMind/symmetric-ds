@@ -41,15 +41,18 @@ import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory,
-		ISymmetricEngineAware, IBuiltInExtensionPoint {
+public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory {
 
     private NativeJdbcExtractor jdbcExtractor;
     private IStagingManager stagingManager;
     private IParameterService parameterService;
-
-    public MsSqlBulkDataLoaderFactory() {
+    private ISymmetricEngine engine;
+    
+    public MsSqlBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
+        this.engine = engine;
+        this.stagingManager = engine.getStagingManager();
+        this.parameterService = engine.getParameterService();
     }
 
     public String getTypeName() {
@@ -72,13 +75,6 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory,
 		return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(),
 				stagingManager, jdbcExtractor, maxRowsBeforeFlush, fireTriggers, uncPath, fieldTerminator, rowTerminator);
 	}
-
-    public void setSymmetricEngine(ISymmetricEngine engine) {
-        //TODO: pass information about the destination database such that we can do the 
-        //TODO: bulk load to the remote server vs using the T-SQL  BULK INSERT statement
-        this.stagingManager = engine.getStagingManager();
-        this.parameterService = engine.getParameterService();
-    }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return (DatabaseNamesConstants.MSSQL2000.equals(platform.getName())

@@ -1089,15 +1089,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
                         trigger.getCustomOnUpdateText(), trigger.getCustomOnInsertText(),
                         trigger.getCustomOnDeleteText(), trigger.getTxIdExpression(),
-                        trigger.getExcludedColumnNames(), trigger.getSyncKeyNames(),
-                        trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
-                        trigger.getExternalSelect(), trigger.getChannelExpression(), trigger.getTriggerId() }, new int[] {
+                        trigger.getExcludedColumnNames(), trigger.getIncludedColumnNames(),
+                        trigger.getSyncKeyNames(), trigger.getLastUpdateBy(), 
+                        trigger.getLastUpdateTime(), trigger.getExternalSelect(), 
+                        trigger.getChannelExpression(), trigger.getTriggerId() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
+                        Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, 
+                        Types.VARCHAR })) {
             trigger.setCreateTime(trigger.getLastUpdateTime());
             sqlTemplate.update(
                     getSql("insertTriggerSql"),
@@ -1112,9 +1114,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
                             trigger.getCustomOnUpdateText(), trigger.getCustomOnInsertText(),
                             trigger.getCustomOnDeleteText(), trigger.getTxIdExpression(),
-                            trigger.getExcludedColumnNames(), trigger.getSyncKeyNames(),
-                            trigger.getCreateTime(), trigger.getLastUpdateBy(),
-                            trigger.getLastUpdateTime(), trigger.getExternalSelect(), trigger.getChannelExpression(),
+                            trigger.getExcludedColumnNames(), trigger.getIncludedColumnNames(),
+                            trigger.getSyncKeyNames(), trigger.getCreateTime(), 
+                            trigger.getLastUpdateBy(), trigger.getLastUpdateTime(), 
+                            trigger.getExternalSelect(), trigger.getChannelExpression(),
                             trigger.getTriggerId() }, new int[] {
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
@@ -1122,8 +1125,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR });
+                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, 
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         }
         
         clearCache();
@@ -1580,7 +1583,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         try {
 
             boolean foundPk = false;
-            Column[] columns = trigger.filterExcludedColumns(table.getColumns());
+            Column[] columns = trigger.filterExcludedAndIncludedColumns(table.getColumns());
             for (Column column : columns) {
                 foundPk |= column.isPrimaryKey();
             }
@@ -1990,6 +1993,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setLastUpdateTime(rs.getDateTime("t_last_update_time"));
             trigger.setLastUpdateBy(rs.getString("t_last_update_by"));
             trigger.setExcludedColumnNames(rs.getString("excluded_column_names"));
+            trigger.setIncludedColumnNames(rs.getString("included_column_names"));
             trigger.setSyncKeyNames(rs.getString("sync_key_names"));
 
             return trigger;

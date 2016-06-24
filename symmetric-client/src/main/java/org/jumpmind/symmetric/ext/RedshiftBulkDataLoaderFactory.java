@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.ext;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -39,13 +40,14 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware, IBuiltInExtensionPoint {
+public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
     
     private ISymmetricEngine engine;
 
-    public RedshiftBulkDataLoaderFactory() {
+    public RedshiftBulkDataLoaderFactory(ISymmetricEngine engine) {
+        this.engine = engine;
     }
 
     public String getTypeName() {
@@ -90,7 +92,7 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory, ISymme
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
-        return true;
+        return DatabaseNamesConstants.REDSHIFT.equals(platform.getName());
     }
 
 }
