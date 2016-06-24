@@ -18,19 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.notification;
+package org.jumpmind.symmetric.monitor;
 
 import org.jumpmind.extension.IExtensionPoint;
-import org.jumpmind.symmetric.model.Notification;
+import org.jumpmind.symmetric.model.Monitor;
 
-public interface INotificationCheck extends IExtensionPoint {
+public interface IMonitorType extends IExtensionPoint {
 
-    public long check(Notification notification);
+    public long check(Monitor monitor);
     
-    public boolean shouldLockCluster();
+    public boolean requiresClusterLock();
     
-    public boolean requiresPeriod();
-
-    public String getType();
+    public String getName();
 
 }

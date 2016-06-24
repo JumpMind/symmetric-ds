@@ -83,7 +83,6 @@ import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.IMailService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.INotificationService;
 import org.jumpmind.symmetric.service.IOfflinePullService;
 import org.jumpmind.symmetric.service.IOfflinePushService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -113,7 +112,6 @@ import org.jumpmind.symmetric.service.impl.LoadFilterService;
 import org.jumpmind.symmetric.service.impl.MailService;
 import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
 import org.jumpmind.symmetric.service.impl.NodeService;
-import org.jumpmind.symmetric.service.impl.NotificationService;
 import org.jumpmind.symmetric.service.impl.OfflinePullService;
 import org.jumpmind.symmetric.service.impl.OfflinePushService;
 import org.jumpmind.symmetric.service.impl.OutgoingBatchService;
@@ -228,8 +226,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected INodeCommunicationService nodeCommunicationService;
     
     protected IFileSyncService fileSyncService;
-    
-    protected INotificationService notificationService;
     
     protected IMailService mailService;
     
@@ -358,7 +354,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 nodeService, dataLoaderService, clusterService, nodeCommunicationService, 
                 configurationService, extensionService, offlineTransportManager);
         this.fileSyncService = new FileSyncService(this);
-        this.notificationService = new NotificationService(parameterService, symmetricDialect, nodeService, extensionService);
         this.mailService = new MailService(parameterService, symmetricDialect);
         this.contextService = new ContextService(parameterService, symmetricDialect);
         this.jobManager = createJobManager();
@@ -1068,10 +1063,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public IExtensionService getExtensionService() {
         return extensionService;
-    }
-
-    public INotificationService getNotificationService() {
-    	return notificationService;
     }
     
     public IMailService getMailService() {

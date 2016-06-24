@@ -18,14 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.notification;
+package org.jumpmind.symmetric.monitor;
 
 import java.lang.management.ThreadInfo;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 
-public abstract class AbstractNotificationCheck implements INotificationCheck, ISymmetricEngineAware {
+public abstract class AbstractMonitorType implements IMonitorType, ISymmetricEngineAware {
 
     protected final int TOP_THREADS = 3;
 
@@ -34,7 +34,7 @@ public abstract class AbstractNotificationCheck implements INotificationCheck, I
     protected ISymmetricEngine engine;
     
     @Override
-    public boolean shouldLockCluster() {
+    public boolean requiresClusterLock() {
         return true;
     }
 

@@ -58,7 +58,9 @@ import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
 import org.jumpmind.symmetric.service.IExtensionService;
+import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.impl.ClientExtensionService;
+import org.jumpmind.symmetric.service.impl.MonitorService;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.symmetric.util.SnapshotUtil;
 import org.jumpmind.symmetric.util.TypedPropertiesFactory;
@@ -87,6 +89,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     protected DataSource dataSource;
 
     protected ApplicationContext springContext;
+    
+    protected IMonitorService monitorService;
 
     /**
      * @param dataSource
@@ -171,6 +175,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
             super.init();
 
+            this.monitorService = new MonitorService(parameterService, symmetricDialect, nodeService, extensionService, 
+                    clusterService, contextService);
             this.dataSource = platform.getDataSource();
             
             PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
@@ -421,6 +427,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public File snapshot() {
         return SnapshotUtil.createSnapshot(this);
+    }
+
+    public IMonitorService getMonitorService() {
+        return monitorService;
     }
 
 }

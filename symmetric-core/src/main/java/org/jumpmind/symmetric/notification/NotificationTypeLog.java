@@ -20,39 +20,31 @@
  */
 package org.jumpmind.symmetric.notification;
 
-import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
-import org.jumpmind.symmetric.model.DataGap;
+import org.jumpmind.symmetric.model.Monitor;
+import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.model.Notification;
-import org.jumpmind.symmetric.service.IDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class NotificationCheckDataGap implements INotificationCheck, ISymmetricEngineAware {
+public class NotificationTypeLog implements INotificationType {
 
-    protected IDataService dataService;
-
-    @Override
-    public String getType() {
-        return "dataGap";
+    private final Logger log = LoggerFactory.getLogger(getClass());
+    
+    public void notify(MonitorEvent monitorEvent, Notification notification) {
+        String message = "Monitor " + monitorEvent.getType() + " on " + monitorEvent.getNodeId() + " recorded "
+                + monitorEvent.getValue() + " at " + monitorEvent.getEventTime();
+        if (monitorEvent.getSeverityLevel() >= Monitor.SEVERE) {
+            log.error(message);
+        } else if (monitorEvent.getSeverityLevel() >= Monitor.WARNING) {
+            log.warn(message);
+        } else {
+            log.info(message);
+        }
     }
 
     @Override
-    public long check(Notification notification) {
-        return dataService.countDataGapsByStatus(DataGap.Status.GP);
-    }
-
-    @Override
-    public boolean shouldLockCluster() {
-        return true;
-    }
-
-    @Override
-    public boolean requiresPeriod() {
-        return false;
-    }
-
-    @Override
-    public void setSymmetricEngine(ISymmetricEngine engine) {
-        dataService = engine.getDataService();
+    public String getName() {
+        return "log";
     }
 
 }

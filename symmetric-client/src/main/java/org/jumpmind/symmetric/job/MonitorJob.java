@@ -18,40 +18,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.notification;
+package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
-import org.jumpmind.symmetric.model.Notification;
-import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.ClusterConstants;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-public class NotificationCheckUnrouted implements INotificationCheck, ISymmetricEngineAware {
+public class MonitorJob extends AbstractJob {
 
-    protected IRouterService routerService;
-
-    @Override
-    public String getType() {
-        return "dataUnrouted";
+    public MonitorJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.monitor", true, engine.getParameterService().is("start.monitor.job"), engine, taskScheduler);
     }
 
     @Override
-    public long check(Notification notification) {
-        return routerService.getUnroutedDataCount();
+    public void doJob(boolean force) throws Exception {
+        if (engine != null) {
+            engine.getMonitorService().update();
+        }
     }
 
-    @Override
-    public boolean shouldLockCluster() {
-        return true;
-    }
-
-    @Override
-    public boolean requiresPeriod() {
-        return false;
-    }
-
-    @Override
-    public void setSymmetricEngine(ISymmetricEngine engine) {
-        routerService = engine.getRouterService();
+    public String getClusterLockName() {
+        return ClusterConstants.MONITOR;
     }
 
 }

@@ -218,6 +218,17 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return count;
     }
 
+    private long purgeMonitorEvents() {
+        Calendar retentionCutoff = Calendar.getInstance();
+        retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
+        log.info("Purging monitor events that are older than {}", retentionCutoff.getTime());
+        long count = sqlTemplate.update(getSql("deleteMonitorEventSql"), retentionCutoff.getTime());
+        if (count > 0) {
+            log.info("Purged {} monitor events", count);
+        }    
+        return count;
+    }
+
     private int purgeByMinMax(long[] minMax, MinMaxDeleteSql identifier, Date retentionTime,
             int maxNumtoPurgeinTx) {
         long minId = minMax[0];
@@ -295,6 +306,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     purgedRowCount = purgeIncomingBatch(retentionCutoff);
                     purgedRowCount += purgeIncomingError();
                     purgedRowCount += purgeRegistrationRequests();
+                    purgedRowCount += purgeMonitorEvents();
                 } finally {
                     if (!force) {
                         clusterService.unlock(ClusterConstants.PURGE_INCOMING);

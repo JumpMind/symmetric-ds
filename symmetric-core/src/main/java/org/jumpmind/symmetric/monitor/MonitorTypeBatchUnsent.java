@@ -18,27 +18,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.job;
+package org.jumpmind.symmetric.monitor;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.service.ClusterConstants;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
+import org.jumpmind.symmetric.model.Monitor;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
-public class NotificationJob extends AbstractJob {
+public class MonitorTypeBatchUnsent implements IMonitorType, ISymmetricEngineAware {
 
-    public NotificationJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.notification", true, engine.getParameterService().is("start.notification.job"), engine, taskScheduler);
+    protected IOutgoingBatchService outgoingBatchService;
+
+    @Override
+    public String getName() {
+        return "batchUnsent";
     }
 
     @Override
-    public void doJob(boolean force) throws Exception {
-        if (engine != null) {
-            engine.getNotificationService().update();
-        }
+    public long check(Monitor monitor) {
+        return outgoingBatchService.countOutgoingBatchesUnsent();
     }
 
-    public String getClusterLockName() {
-        return ClusterConstants.NOTIFICATION;
+    @Override
+    public boolean requiresClusterLock() {
+        return true;
+    }
+    
+    @Override
+    public void setSymmetricEngine(ISymmetricEngine engine) {
+        outgoingBatchService = engine.getOutgoingBatchService();
     }
 
 }

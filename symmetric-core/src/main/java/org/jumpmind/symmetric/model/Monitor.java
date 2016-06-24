@@ -21,39 +21,71 @@
 package org.jumpmind.symmetric.model;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 
-public class Notification {
+public class Monitor {
+    
+    public static final int INFO = 100;
+    
+    public static final int WARNING = 200;
+    
+    public static final int SEVERE = 300;
 
-    private String notificationId;
+    public static final String INFO_NAME = "INFO";
     
-    private String nodeGroupId;
+    public static final String WARNING_NAME = "WARNING";
+    
+    public static final String SEVERE_NAME = "SEVERE";
+    
+    public static Map<Integer, String> severityLevelNames;
 
-    private String externalId;
+    protected String monitorId;
+    
+    protected String nodeGroupId;
 
-    private int severityLevel;
+    protected String externalId;
+        
+    protected String type;
     
-    private String type;
-    
-    private String expression;
+    protected String expression;
 
-    private boolean enabled;
+    protected long threshold;
     
-    private Date createTime;
+    protected int runPeriod;
     
-    private String lastUpdateBy;
+    protected int runCount;
     
-    private Date lastUpdateTime;
+    protected int severityLevel;
     
-    private transient String targetNode;
+    protected boolean enabled;
 
-    public String getNotificationId() {
-        return notificationId;
+    protected Date createTime;
+    
+    protected String lastUpdateBy;
+    
+    protected Date lastUpdateTime;
+    
+    protected transient String targetNode;
+
+    static {
+        severityLevelNames = new HashMap<Integer, String>();
+        severityLevelNames.put(INFO, "INFO");
+        severityLevelNames.put(WARNING, "WARNING");
+        severityLevelNames.put(SEVERE, "SEVERE");
+    }
+    
+    public Monitor() {
     }
 
-    public void setNotificationId(String notificationId) {
-        this.notificationId = notificationId;
+    public String getMonitorId() {
+        return monitorId;
+    }
+
+    public void setMonitorId(String monitorId) {
+        this.monitorId = monitorId;
     }
 
     public String getExternalId() {
@@ -72,21 +104,13 @@ public class Notification {
         this.nodeGroupId = nodeGroupId;
     }
 
-    public int getSeverityLevel() {
-        return severityLevel;
-    }
-
-    public void setSeverityLevel(int severityLevel) {
-        this.severityLevel = severityLevel;
-    }
-
     public String getType() {
         return type;
     }
 
     public void setType(String type) {
         this.type = type;
-    }    
+    }
 
     public boolean isEnabled() {
         return enabled;
@@ -96,6 +120,38 @@ public class Notification {
         this.enabled = enabled;
     }
 
+    public long getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(long threshhold) {
+        this.threshold = threshhold;
+    }
+
+    public int getRunPeriod() {
+        return runPeriod;
+    }
+
+    public void setRunPeriod(int runPeriod) {
+        this.runPeriod = runPeriod;
+    }
+
+    public int getRunCount() {
+        return runCount;
+    }
+
+    public void setRunCount(int runCount) {
+        this.runCount = runCount;
+    }
+
+    public int getSeverityLevel() {
+        return severityLevel;
+    }
+
+    public void setSeverityLevel(int severityLevel) {
+        this.severityLevel = severityLevel;
+    }
+    
     public Date getCreateTime() {
         return createTime;
     }
@@ -119,7 +175,7 @@ public class Notification {
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-
+    
     public String getExpression() {
         return expression;
     }
@@ -128,10 +184,14 @@ public class Notification {
         this.expression = expression;
     }
 
+    public static Map<Integer, String> getSeverityLevelNames() {
+        return severityLevelNames;
+    }
+
     public String getSeverityLevelName() {
-        String name = Monitor.severityLevelNames.get(severityLevel);
+        String name = severityLevelNames.get(severityLevel);
         if (name == null) {
-            name = Monitor.INFO_NAME;
+            name = INFO_NAME;
         }
         return name;
     }
@@ -150,4 +210,5 @@ public class Notification {
     public void setTargetNode(String targetNode) {
         this.targetNode = targetNode;
     }
+
 }

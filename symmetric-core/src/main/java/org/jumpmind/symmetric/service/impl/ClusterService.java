@@ -43,6 +43,7 @@ import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
 import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PULL;
 import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PUSH;
+import static org.jumpmind.symmetric.service.ClusterConstants.MONITOR;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -82,7 +83,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         if (isClusteringEnabled()) {
             for (String action : new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING, PURGE_STATISTICS, SYNCTRIGGERS,
                     PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL, FILE_SYNC_PUSH, FILE_SYNC_TRACKER,
-                    FILE_SYNC_SCAN, INITIAL_LOAD_EXTRACT, OFFLINE_PUSH, OFFLINE_PULL }) {
+                    FILE_SYNC_SCAN, INITIAL_LOAD_EXTRACT, OFFLINE_PUSH, OFFLINE_PULL, MONITOR }) {
                 if (allLocks.get(action) == null) {
                     initLockTable(action, TYPE_CLUSTER);
                 }

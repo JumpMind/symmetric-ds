@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
@@ -47,6 +48,7 @@ import org.jumpmind.symmetric.route.IDataToRouteReader;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
+import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -221,6 +223,10 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     
     public List<File> listSnapshots() {
         return new ArrayList<File>(0);
+    }
+
+    public IMonitorService getMonitorService() {
+        throw new NotImplementedException();
     }
 
 }

@@ -518,31 +518,45 @@
         </foreign-key>
     </table>
 
-    <table name="notification" description="Defines notification checks that will run periodically to look for problems in the system.">
-        <column name="notification_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a notification." />
-        <column name="node_group_id" type="VARCHAR" size="50" description="Target the notification at a specific node group.  To target all groups, use a value of 'ALL'." />
-        <column name="external_id" type="VARCHAR" size="255" description="Target the notification at a specific node by its external ID.  To target all nodes, use a value of 'ALL'. "/>
-        <column name="type" type="VARCHAR" size="50" description="Notification type to execute.  Built-in types are cpu, disk, memory, batchError, batchUnsent, dataGap, dataUnrouted, and bsh." />
-        <column name="enabled" type="BOOLEANINT" size="1" description="Whether or not this notification is enable for execution." />
-        <column name="threshold" type="BIGINT" description="The minimum value returned when the notification type runs that will cause a notification event to be recorded." />
-        <column name="period" type="BIGINT" description="" />
-        <column name="sample_minutes" type="INTEGER" description="" />
-        <column name="window_minutes" type="INTEGER" description="" />
-        <column name="severity_level" type="INTEGER" description="" />
+    <table name="monitor" description="Defines monitors that will run periodically to look for problems in the system.">
+        <column name="monitor_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a monitor." />
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" default="ALL" description="Target a specific node group to run this monitor.  Target all groups, use a value of 'ALL'." />
+        <column name="external_id" type="VARCHAR" size="255" required="true" default="ALL" description="Target a specific node by its external ID to run this monitor.  Target all nodes, use a value of 'ALL'. "/>
+        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type to execute.  Built-in types are cpu, disk, memory, batchError, batchUnsent, dataGap, and dataUnrouted." />
+        <column name="expression" type="LONGVARCHAR" description="An expression used by the monitor to set options specific to the monitor type." />
+        <column name="threshold" type="BIGINT" required="true" default="0" description="The minimum value returned when the monitor runs that will cause a monitor event to be recorded." />
+        <column name="run_period" type="INTEGER" required="true" default="0" description="Run this monitor periodically every number of seconds." />        
+        <column name="run_count" type="INTEGER" required="true" default="0" description="Average the value across a number of runs before checking threshold." />
+        <column name="severity_level" type="INTEGER" required="true" default="0" description="" />
+        <column name="enabled" type="BOOLEANINT" size="1" required="true" default="0" description="Whether or not this monitor is enabled for execution." />
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
     </table>
 
-    <table name="notification_event" description="Records an event of when a system problem occurred.">
+    <table name="monitor_event" description="Records an event of when a system problem occurred.">
+        <column name="monitor_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a monitor that caused the event." />
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the node that created the event." />
+        <column name="event_time" type="TIMESTAMP" required="true" primaryKey="true" description="Timestamp when the event was created." />
+        <column name="host_name" type="VARCHAR" size="60" description="Host name of the node that created the event." />
+        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type that detected the value recorded." />
+        <column name="threshold" type="BIGINT" required="true" default="0" description="Minimum value for the monitor to cause an event." />
+        <column name="value" type="BIGINT" required="true" default="0" description="Actual value detected by the monitor." />
+        <column name="severity_level" type="INTEGER" required="true" default="0" description="Severity level configured for the monitor." />
+        <column name="is_notified" type="BOOLEANINT" required="true" default="0" description="Whether a notification was run." />
+    </table>
+
+    <table name="notification" description="Defines what notification to send when a monitor detects a problem in the system.">
         <column name="notification_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a notification." />
-        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
-        <column name="host_name" type="VARCHAR" size="60" required="true" primaryKey="true" description="The host name of a workstation or server. If more than one instance of SymmetricDS runs on the same server, then this value can be a 'server id' specified by -Druntime.symmetric.cluster.server.id" />
-        <column name="event_time" type="TIMESTAMP" required="true" primaryKey="true" description="Timestamp when this entry was created." />
-        <column name="value" type="BIGINT" description="The value returned from the notification type when it checked the system." />
-        <column name="threshold" type="BIGINT" description="The minimum value returned when the notification type runs that will cause a notification event to be recorded." />
-        <column name="period" type="BIGINT" description="" />
-        <column name="severity_level" type="INTEGER" description="" />
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" default="ALL" description="Target a specific node group to run this notification.  To target all groups, use a value of 'ALL'." />
+        <column name="external_id" type="VARCHAR" size="255" required="true" default="ALL" description="Target a specific node by its external ID to run this notification.  To target all nodes, use a value of 'ALL'. "/>
+        <column name="severity_level" type="INTEGER" required="true" default="0" description="Look for monitor events using this severity level or above.  To match all severity levels, use a value of 0." />
+        <column name="type" type="VARCHAR" size="50" required="true" description="Notification type that will send a message.  Built-in types are mail and log." />
+        <column name="expression" type="LONGVARCHAR" description="An expression used by the notification to set options specific to the notification type." />
+        <column name="enabled" type="BOOLEANINT" size="1" required="true" default="0" description="Whether or not this notication is enabled." />
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
     </table>
 
     <table name="outgoing_batch" description="Used for tracking the sending a collection of data to a node in the system. A new outgoing_batch is created and given a status of 'NE'. After sending the outgoing_batch to its target node, the status becomes 'SE'. The node responds with either a success status of 'OK' or an error status of 'ER'. An error while sending to the node also results in an error status of 'ER' regardless of whether the node sends that acknowledgement. ">
@@ -695,8 +709,8 @@
         <column name="target_schema_name" type="VARCHAR" size="255" description="Optional name of the schema a target table is in. Only use this if the target table is not in the default schema." />
         <column name="target_table_name" type="VARCHAR" size="255" description="The name of the target table." />
         <column name="update_first" type="BOOLEANINT" size="1" default="0" description="If true, the target actions are attempted as updates first, regardless of whether the source operation was an insert or an update."/>
-        <column name="update_action" type="VARCHAR" size="255" required="false" default="UPDATE_COL" description="An action to take upon update of a row. Possible values are: DEL_ROW, UPD_ROW, INS_ROW or NONE." />
-        <column name="delete_action" type="VARCHAR" size="10" required="true" description="An action to take upon delete of a row. Possible values are: DEL_ROW, UPDATE_COL, or NONE." />
+        <column name="update_action" type="VARCHAR" size="10" required="true" default="UPD_ROW" description="An action to take upon update of a row. Possible values are: DEL_ROW, UPD_ROW, INS_ROW or NONE." />
+        <column name="delete_action" type="VARCHAR" size="10" required="true" description="An action to take upon delete of a row. Possible values are: DEL_ROW, UPD_ROW, or NONE." />
         <column name="transform_order" type="INTEGER" required="true" default="1" description="Specifies the order in which to apply transforms if more than one target operation occurs."/>
         <column name="column_policy" type="VARCHAR" size="10" default="SPECIFIED" required="true" description="Specifies whether all columns need to be specified or whether they are implied.  Possible values are SPECIFIED or IMPLIED." />
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
