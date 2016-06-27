@@ -338,6 +338,8 @@ final public class ParameterConstants {
     public static final String SMTP_USE_AUTH = "smtp.auth";
 
     public final static String CHANNEL_THREADING = "channel.threading.enabled";
+    
+    public final static String MONITOR_EVENTS_CAPTURE_ENABLED = "monitor.events.capture.enabled";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

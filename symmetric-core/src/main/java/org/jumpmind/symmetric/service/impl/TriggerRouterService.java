@@ -488,8 +488,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         trigger.setSyncOnIncomingBatch(syncOnIncoming);
         trigger.setSourceTableName(tableName);
         trigger.setUseCaptureOldData(false);
-        if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST)
-                .equals(tableName)) {
+        if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST).equals(tableName)
+                || TableConstants.getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT).equals(tableName)) {
             trigger.setChannelId(Constants.CHANNEL_HEARTBEAT);
         } else if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT)
                 .equals(tableName)) {
@@ -506,6 +506,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setChannelId(Constants.CHANNEL_CONFIG);
         }
 
+        if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT).equals(tableName)
+                && !parameterService.is(ParameterConstants.MONITOR_EVENTS_CAPTURE_ENABLED)) {
+            trigger.setSyncOnInsert(false);
+            trigger.setSyncOnUpdate(false);
+            trigger.setSyncOnDelete(false);
+        }
+        
         if (!TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST)
                 .equals(tableName) &&
                 !TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE)

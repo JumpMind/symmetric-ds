@@ -120,7 +120,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
             if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
                     || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)
-                    || tableMatches(dataMetaData, TableConstants.SYM_NODE_HOST)) {
+                    || tableMatches(dataMetaData, TableConstants.SYM_NODE_HOST)
+                    || tableMatches(dataMetaData, TableConstants.SYM_MONITOR_EVENT)) {
                 /*
                  * If this is sym_node or sym_node_security determine which
                  * nodes it goes to.

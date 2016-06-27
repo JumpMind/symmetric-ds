@@ -21,20 +21,30 @@
 package org.jumpmind.symmetric.notification;
 
 import java.util.List;
+import java.util.Map;
 
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NotificationTypeLog implements INotificationType {
+public class NotificationTypeLog implements INotificationType, ISymmetricEngineAware {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     
+    protected ISymmetricEngine engine;
+    
     public void notify(Notification notification, List<MonitorEvent> monitorEvents) {
+        Map<String, Node> nodes = engine.getNodeService().findAllNodesAsMap();
+
         for (MonitorEvent monitorEvent : monitorEvents) {
-            String message = "Monitor " + monitorEvent.getType() + " on " + monitorEvent.getNodeId() + " recorded "
+            Node node = nodes.get(monitorEvent.getNodeId());
+            String nodeString = node != null ? node.toString() : monitorEvent.getNodeId();
+            String message = "Monitor " + monitorEvent.getType() + " on " + nodeString + " recorded "
                     + monitorEvent.getValue();
             if (monitorEvent.getSeverityLevel() >= Monitor.SEVERE) {
                 log.error(message);
@@ -49,6 +59,11 @@ public class NotificationTypeLog implements INotificationType {
     @Override
     public String getName() {
         return "log";
+    }
+
+    @Override
+    public void setSymmetricEngine(ISymmetricEngine engine) {
+        this.engine = engine;
     }
 
 }

@@ -132,6 +132,7 @@ public class TableConstants {
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_EXTENSION));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_MONITOR));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NOTIFICATION));
         return configTables;
     }

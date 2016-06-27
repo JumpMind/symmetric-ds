@@ -33,7 +33,6 @@ import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Notification;
-import org.jumpmind.symmetric.service.INodeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,8 +67,7 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
             subject = "Monitor events for " + typesString + " from " + nodeIds.size() + " nodes"; 
         }
 
-        INodeService nodeService = engine.getNodeService();
-        Map<String, Node> nodes = nodeService.findAllNodesAsMap();
+        Map<String, Node> nodes = engine.getNodeService().findAllNodesAsMap();
         StringBuilder text = new StringBuilder();
         for (MonitorEvent event : monitorEvents) {
             Node node = nodes.get(event.getNodeId());
