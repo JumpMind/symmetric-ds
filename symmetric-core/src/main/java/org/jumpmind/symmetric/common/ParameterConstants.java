@@ -213,6 +213,8 @@ final public class ParameterConstants {
     public final static String CACHE_TIMEOUT_LOAD_FILTER_IN_MS = "cache.load.filter.time.ms";
     public final static String CACHE_TIMEOUT_CONFLICT_IN_MS = "cache.conflict.time.ms";
     public final static String CACHE_TIMEOUT_TABLES_IN_MS = "cache.table.time.ms";
+    public final static String CACHE_TIMEOUT_MONITOR_IN_MS = "cache.monitor.time.ms";
+    public final static String CACHE_TIMEOUT_NOTIFICATION_IN_MS = "cache.notification.time.ms";
 
     public final static String TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY = "trigger.update.capture.changed.data.only.enabled";
     public final static String TRIGGER_CREATE_BEFORE_INITIAL_LOAD = "trigger.create.before.initial.load.enabled";

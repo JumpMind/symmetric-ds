@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.model.Monitor;
@@ -69,6 +70,14 @@ public class MonitorService extends AbstractService implements IMonitorService {
     protected Map<String, Long> checkTimesByType = new HashMap<String, Long>();
     
     protected Map<String, List<Long>> averagesByType = new HashMap<String, List<Long>>();
+    
+    protected List<Monitor> activeMonitorCache;
+    
+    protected long activeMonitorCacheTime;
+    
+    protected List<Notification> activeNotificationCache;
+    
+    protected long activeNotificationCacheTime;
 
     public MonitorService(IParameterService parameterService, ISymmetricDialect symmetricDialect, INodeService nodeService,
             IExtensionService extensionService, IClusterService clusterService, IContextService contextService) {
@@ -96,7 +105,6 @@ public class MonitorService extends AbstractService implements IMonitorService {
     @Override
     public synchronized void update() {
         Map<String, IMonitorType> monitorTypes = extensionService.getExtensionPointMap(IMonitorType.class);
-        // TODO: cache monitors until cleared by ConfigurationChangedDataRouter
         Node identity = nodeService.findIdentity();
         List<Monitor> activeMonitors = getActiveMonitorsForNode(identity.getNodeGroupId(), identity.getExternalId());
 
@@ -121,47 +129,50 @@ public class MonitorService extends AbstractService implements IMonitorService {
             Lock lock = clusterService.findLocks().get(ClusterConstants.MONITOR);
             long clusterLastCheckTime = lock.getLastLockTime().getTime();
             
-            for (Monitor monitor : activeMonitors) {
-                IMonitorType monitorType = monitorTypes.get(monitor.getType());
-                if (monitorType != null && monitorType.requiresClusterLock() && 
-                        (System.currentTimeMillis() - clusterLastCheckTime) / 60000 > monitor.getRunPeriod()) {
-                    updateMonitor(monitor, monitorType, identity);
-                }
-            }
-            
-            // TODO: cache notifications until cleared by ConfigurationChangedDataRouter
-            int minSeverityLevel = Integer.MAX_VALUE;
-            List<Notification> notifications = getActiveNotificationsForNode(identity.getNodeGroupId(), identity.getExternalId());
-            if (notifications.size() > 0) {
-                for (Notification notification : notifications) {
-                    if (notification.getSeverityLevel() < minSeverityLevel) {
-                        minSeverityLevel = notification.getSeverityLevel();
+            try {
+                for (Monitor monitor : activeMonitors) {
+                    IMonitorType monitorType = monitorTypes.get(monitor.getType());
+                    if (monitorType != null && monitorType.requiresClusterLock() && 
+                            (System.currentTimeMillis() - clusterLastCheckTime) / 60000 > monitor.getRunPeriod()) {
+                        updateMonitor(monitor, monitorType, identity);
                     }
                 }
-
-                Map<String, INotificationType> notificationTypes = extensionService.getExtensionPointMap(INotificationType.class);
-                List<MonitorEvent> allMonitorEvents = getMonitorEventsForNotification(minSeverityLevel);
-                for (Notification notification : notifications) {
-                    List<MonitorEvent> monitorEvents = new ArrayList<MonitorEvent>();
-                    for (MonitorEvent monitorEvent : allMonitorEvents) {
-                        if (monitorEvent.getSeverityLevel() >= notification.getSeverityLevel()) {
-                            monitorEvents.add(monitorEvent);
+                
+                int minSeverityLevel = Integer.MAX_VALUE;
+                List<Notification> notifications = getActiveNotificationsForNode(identity.getNodeGroupId(), identity.getExternalId());
+                if (notifications.size() > 0) {
+                    for (Notification notification : notifications) {
+                        if (notification.getSeverityLevel() < minSeverityLevel) {
+                            minSeverityLevel = notification.getSeverityLevel();
                         }
                     }
-                    if (monitorEvents.size() > 0) {
-                        INotificationType notificationType = notificationTypes.get(notification.getType());
-                        if (notificationType != null) {
-                            notificationType.notify(notification, monitorEvents);
-                            updateMonitorEventAsNotified(monitorEvents);
-                        } else {
-                            log.warn("Could not find notification of type '" + notification.getType() + "'");
+    
+                    Map<String, INotificationType> notificationTypes = extensionService.getExtensionPointMap(INotificationType.class);
+                    List<MonitorEvent> allMonitorEvents = getMonitorEventsForNotification(minSeverityLevel);
+                    for (Notification notification : notifications) {
+                        List<MonitorEvent> monitorEvents = new ArrayList<MonitorEvent>();
+                        for (MonitorEvent monitorEvent : allMonitorEvents) {
+                            if (monitorEvent.getSeverityLevel() >= notification.getSeverityLevel()) {
+                                monitorEvents.add(monitorEvent);
+                            }
                         }
-                    }
-                }                
+                        if (monitorEvents.size() > 0) {
+                            INotificationType notificationType = notificationTypes.get(notification.getType());
+                            if (notificationType != null) {
+                                notificationType.notify(notification, monitorEvents);
+                                updateMonitorEventAsNotified(monitorEvents);
+                            } else {
+                                log.warn("Could not find notification of type '" + notification.getType() + "'");
+                            }
+                        }
+                    }                
+                }
+            } finally {
+                clusterService.unlock(ClusterConstants.MONITOR);
             }
         }
     }
-    
+
     protected void updateMonitor(Monitor monitor, IMonitorType monitorType, Node identity) {
         long value = monitorType.check(monitor);
         boolean readyToCompare = true;
@@ -209,8 +220,12 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     @Override
     public List<Monitor> getActiveMonitorsForNode(String nodeGroupId, String externalId) {
-        return sqlTemplate.query(getSql("selectMonitorSql", "whereMonitorByNodeSql"), new MonitorRowMapper(),
-                nodeGroupId, externalId);
+        long cacheTimeout = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_MONITOR_IN_MS);
+        if (activeMonitorCache == null || System.currentTimeMillis() - activeMonitorCacheTime > cacheTimeout) {
+            activeMonitorCache = sqlTemplate.query(getSql("selectMonitorSql", "whereMonitorByNodeSql"), new MonitorRowMapper(),
+                    nodeGroupId, externalId);
+        }
+        return activeMonitorCache;
     }
 
     @Override
@@ -272,8 +287,12 @@ public class MonitorService extends AbstractService implements IMonitorService {
     
     @Override
     public List<Notification> getActiveNotificationsForNode(String nodeGroupId, String externalId) {
-        return sqlTemplate.query(getSql("selectNotificationSql", "whereNotificationByNodeSql"), new NotificationRowMapper(),
-                nodeGroupId, externalId);
+        long cacheTimeout = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NOTIFICATION_IN_MS);
+        if (activeNotificationCache == null || System.currentTimeMillis() - activeNotificationCacheTime > cacheTimeout) {
+            activeNotificationCache = sqlTemplate.query(getSql("selectNotificationSql", "whereNotificationByNodeSql"), 
+                    new NotificationRowMapper(), nodeGroupId, externalId);
+        }
+        return activeNotificationCache;
     }
 
     @Override
@@ -296,7 +315,17 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public void deleteNotification(String notificationId) {
         sqlTemplate.update(getSql("deleteNotificationSql"), notificationId);
     }
+
+    @Override
+    public void flushMonitorCache() {
+        activeMonitorCache = null;
+    }
     
+    @Override
+    public void flushNotificationCache() {
+        activeNotificationCache = null;
+    }
+
     class MonitorRowMapper implements ISqlRowMapper<Monitor> {
         public Monitor mapRow(Row row) {
             Monitor m = new Monitor();

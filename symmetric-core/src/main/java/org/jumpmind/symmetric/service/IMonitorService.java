@@ -52,4 +52,8 @@ public interface IMonitorService {
     
     public void deleteNotification(String notificationId);
     
+    public void flushMonitorCache();
+    
+    public void flushNotificationCache();
+    
 }
