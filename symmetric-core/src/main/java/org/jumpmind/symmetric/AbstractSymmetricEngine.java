@@ -353,9 +353,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.offlinePullService = new OfflinePullService(parameterService, symmetricDialect, 
                 nodeService, dataLoaderService, clusterService, nodeCommunicationService, 
                 configurationService, extensionService, offlineTransportManager);
-        this.fileSyncService = new FileSyncService(this);
+        this.fileSyncService = buildFileSyncService();
         this.mailService = new MailService(parameterService, symmetricDialect);
         this.contextService = new ContextService(parameterService, symmetricDialect);
+        
         this.jobManager = createJobManager();
 
         extensionService.addExtensionPoint(new DefaultOfflineServerListener(
@@ -375,6 +376,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IRouterService buildRouterService() {
         return new RouterService(this);
     }
+    
+    protected IFileSyncService buildFileSyncService() {
+        return new FileSyncService(this);
+    }    
 
     protected INodeCommunicationService buildNodeCommunicationService(IClusterService clusterService, INodeService nodeService, IParameterService parameterService, 
     		IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {

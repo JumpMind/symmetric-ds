@@ -169,6 +169,12 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         targetBaseDir = StringEscapeUtils.escapeJava(targetBaseDir);
 
                         command.append("targetBaseDir = \"").append(targetBaseDir).append("\";\n");
+                                                                                                             
+                        command.append("if (targetBaseDir.startsWith(\"${androidBaseDir}\")) {                  \n");
+                        command.append("    targetBaseDir = targetBaseDir.replace(\"${androidBaseDir}\", \"\"); \n");
+                        command.append("    targetBaseDir = androidBaseDir + targetBaseDir;                     \n");
+                        command.append("}                                                                       \n");
+                        
                         command.append("processFile = true;\n");
                         command.append("sourceFileName = \"").append(snapshot.getFileName())
                                 .append("\";\n");
@@ -357,5 +363,21 @@ public class FileSyncZipDataWriter implements IDataWriter {
     public boolean readyToSend() {
         return byteCount > maxBytesToSync;
     }
+    
+//    public static void main(String[] args) {
+//        String androidBaseDir = "/emulated/0/";
+//        
+//        String targetBaseDir = "${androidBaseDir}/manuals";
+//        if (targetBaseDir.startsWith("${androidBaseDir}")) {
+//            targetBaseDir = targetBaseDir.replace("${androidBaseDir}", "");
+//            targetBaseDir = androidBaseDir + targetBaseDir;
+//        }
+//        System.out.println(targetBaseDir);
+//        
+//        
+//        
+//        //command.append("targetBaseDir = \"").append(targetBaseDir).append("\";\n");
+////        command.append("targetBaseDir.replaceAll(\"${androidBaseDir}\", \" + androidBaseDir + \"); ;\n");
+//    }
 
 }

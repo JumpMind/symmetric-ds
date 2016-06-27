@@ -709,7 +709,15 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         FileUtils.deleteDirectory(unzipDir);
         unzipDir.mkdirs();
 
-        AppUtils.unzip(is, unzipDir);
+        try {
+            AppUtils.unzip(is, unzipDir);
+        } catch (IoException ex) {
+            if (ex.toString().contains("EOFException")) { // This happens on Android, when there is an empty zip.
+                //log.debug("Caught exception while unzipping.", ex);
+            } else {
+                throw ex;
+            }
+        }
 
         Set<Long> batchIds = new TreeSet<Long>();
         String[] files = unzipDir.list(DirectoryFileFilter.INSTANCE);
@@ -762,10 +770,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                     Interpreter interpreter = new Interpreter();
                     boolean isLocked = false;
                     try {
-                        interpreter.set("log", log);
-                        interpreter.set("batchDir", batchDir.getAbsolutePath().replace('\\', '/'));
-                        interpreter.set("engine", engine);
-                        interpreter.set("sourceNodeId", sourceNodeId);
+                        setInterpreterVariables(engine, sourceNodeId, batchDir, interpreter);
 
                         long waitMillis = getParameterService().getLong(
                                 ParameterConstants.FILE_SYNC_LOCK_WAIT_MS);
@@ -838,6 +843,13 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         }
 
         return batchesProcessed;
+    }
+    
+    protected void setInterpreterVariables(ISymmetricEngine engine, String sourceNodeId, File batchDir, Interpreter interpreter) throws EvalError {
+        interpreter.set("log", log);
+        interpreter.set("batchDir", batchDir.getAbsolutePath().replace('\\', '/'));
+        interpreter.set("engine", engine);
+        interpreter.set("sourceNodeId", sourceNodeId);
     }
 
     protected void updateFileIncoming(String nodeId, Map<String, String> filesToEventType) {

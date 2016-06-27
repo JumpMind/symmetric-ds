@@ -48,6 +48,7 @@ import org.jumpmind.symmetric.route.IDataToRouteReader;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
+import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -80,6 +81,15 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         this.databaseHelper = databaseHelper;
         this.androidContext = androidContext;
         init();
+    }
+    
+    protected void init() {
+        super.init();
+        if (symmetricDialect instanceof SqliteSymmetricDialect) {
+            // 
+            SqliteSymmetricDialect sqliteDialect = (SqliteSymmetricDialect)symmetricDialect;
+            sqliteDialect.setContextService(contextService);
+        }
     }
     
     @Override
@@ -126,7 +136,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected ISymmetricDialect createSymmetricDialect() {
-        return new SqliteSymmetricDialect(parameterService, contextService, platform);
+        return new SqliteSymmetricDialect(parameterService, platform);
     }
 
     @Override
@@ -143,6 +153,11 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     protected IRouterService buildRouterService() {
         return new AndroidRouterService(this);
     }
+    
+    @Override
+    protected IFileSyncService buildFileSyncService() {
+        return new AndroidFileSyncService(this);
+    }        
 
     class AndroidRouterService extends RouterService {
 
