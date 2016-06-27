@@ -71,6 +71,9 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
         putSql("updateMonitorEventNotifiedSql",
                 "update $(monitor_event) set is_notified = 1 where monitor_id = ? and node_id = ? and event_time = ?");
 
+        putSql("deleteMonitorEventSql",
+                "delete from $(monitor_event) where monitor_id = ? and node_id = ? and event_time = ?");
+
         // Notifications
         
         putSql("selectNotificationSql",

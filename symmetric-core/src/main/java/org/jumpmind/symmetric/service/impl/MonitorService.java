@@ -270,6 +270,11 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 event.getSeverityLevel(), event.isNotified());
     }
 
+    @Override
+    public void deleteMonitorEvent(MonitorEvent event) {
+        sqlTemplate.update(getSql("deleteMonitorEventSql"), event.getMonitorId(), event.getNodeId(), event.getEventTime());
+    }
+
     protected void updateMonitorEventAsNotified(List<MonitorEvent> events) {
         for (MonitorEvent event : events) {
             updateMonitorEventAsNotified(event);

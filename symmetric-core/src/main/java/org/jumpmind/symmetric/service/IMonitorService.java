@@ -44,6 +44,8 @@ public interface IMonitorService {
 
     public void saveMonitorEvent(MonitorEvent notificationEvent);
 
+    public void deleteMonitorEvent(MonitorEvent event);
+
     public List<Notification> getNotifications();
     
     public List<Notification> getActiveNotificationsForNode(String nodeGroupId, String externalId);
