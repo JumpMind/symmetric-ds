@@ -20,13 +20,15 @@
  */
 package org.jumpmind.symmetric.notification;
 
+import java.util.List;
+
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.model.Notification;
 
 public interface INotificationType extends IExtensionPoint {
 
-    public void notify(MonitorEvent monitorEvent, Notification notification);
+    public void notify(Notification notification, List<MonitorEvent> monitorEvents);
     
     public String getName();
 

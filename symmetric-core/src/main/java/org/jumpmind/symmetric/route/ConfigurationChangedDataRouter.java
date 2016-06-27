@@ -75,6 +75,12 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     final String CTX_KEY_FLUSH_CONFLICTS_NEEDED = "FlushConflicts."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
+    final String CTX_KEY_FLUSH_MONITORS_NEEDED = "FlushMonitors."
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+
+    final String CTX_KEY_FLUSH_NOTIFICATIONS_NEEDED = "FlushNotifcations."
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+
     final String CTX_KEY_RESTART_JOBMANAGER_NEEDED = "RestartJobManager."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
@@ -201,6 +207,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 
                 if (tableMatches(dataMetaData, TableConstants.SYM_EXTENSION)) {
                     routingContext.put(CTX_KEY_REFRESH_EXTENSIONS_NEEDED, Boolean.TRUE);
+                }
+
+                if (tableMatches(dataMetaData, TableConstants.SYM_MONITOR)) {
+                    routingContext.put(CTX_KEY_FLUSH_MONITORS_NEEDED, Boolean.TRUE);
+                }
+                
+                if (tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)) {
+                    routingContext.put(CTX_KEY_FLUSH_NOTIFICATIONS_NEEDED, Boolean.TRUE);
                 }
             }
         }
@@ -539,6 +553,16 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             if (routingContext.get(CTX_KEY_REFRESH_EXTENSIONS_NEEDED) != null) {
                 log.info("About to refresh the cache of extensions because new configuration came through the data router");
                 engine.getExtensionService().refresh();
+            }
+            
+            if (routingContext.get(CTX_KEY_FLUSH_MONITORS_NEEDED) != null) {
+                log.info("About to refresh the cache of monitors because new configuration came through the data router");
+                engine.getMonitorService().flushMonitorCache();
+            }
+
+            if (routingContext.get(CTX_KEY_FLUSH_NOTIFICATIONS_NEEDED) != null) {
+                log.info("About to refresh the cache of notifications because new configuration came through the data router");
+                engine.getMonitorService().flushNotificationCache();
             }
         }
     }
