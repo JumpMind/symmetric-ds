@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.notification;
 
+import java.util.List;
+
 import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.model.Notification;
@@ -30,15 +32,17 @@ public class NotificationTypeLog implements INotificationType {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     
-    public void notify(MonitorEvent monitorEvent, Notification notification) {
-        String message = "Monitor " + monitorEvent.getType() + " on " + monitorEvent.getNodeId() + " recorded "
-                + monitorEvent.getValue() + " at " + monitorEvent.getEventTime();
-        if (monitorEvent.getSeverityLevel() >= Monitor.SEVERE) {
-            log.error(message);
-        } else if (monitorEvent.getSeverityLevel() >= Monitor.WARNING) {
-            log.warn(message);
-        } else {
-            log.info(message);
+    public void notify(Notification notification, List<MonitorEvent> monitorEvents) {
+        for (MonitorEvent monitorEvent : monitorEvents) {
+            String message = "Monitor " + monitorEvent.getType() + " on " + monitorEvent.getNodeId() + " recorded "
+                    + monitorEvent.getValue();
+            if (monitorEvent.getSeverityLevel() >= Monitor.SEVERE) {
+                log.error(message);
+            } else if (monitorEvent.getSeverityLevel() >= Monitor.WARNING) {
+                log.warn(message);
+            } else {
+                log.info(message);
+            }
         }
     }
 
