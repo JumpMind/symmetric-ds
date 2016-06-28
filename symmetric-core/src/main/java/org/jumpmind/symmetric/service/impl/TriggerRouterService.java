@@ -324,12 +324,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected boolean isTriggerNameInUse(List<TriggerHistory> activeTriggerHistories, String triggerId, String triggerName) {
-        for (TriggerHistory triggerHistory : activeTriggerHistories) {
-            if (!triggerHistory.getTriggerId().equals(triggerId) && (
-                    (triggerHistory.getNameForDeleteTrigger() != null && triggerHistory.getNameForDeleteTrigger().equals(triggerName)) ||
-                    (triggerHistory.getNameForInsertTrigger() != null && triggerHistory.getNameForInsertTrigger().equals(triggerName)) || 
-                    (triggerHistory.getNameForUpdateTrigger() != null && triggerHistory.getNameForUpdateTrigger().equals(triggerName)))) {
-                return true;
+        synchronized (activeTriggerHistories) {
+            for (TriggerHistory triggerHistory : activeTriggerHistories) {
+                if (!triggerHistory.getTriggerId().equals(triggerId) && (
+                        (triggerHistory.getNameForDeleteTrigger() != null && triggerHistory.getNameForDeleteTrigger().equals(triggerName)) ||
+                        (triggerHistory.getNameForInsertTrigger() != null && triggerHistory.getNameForInsertTrigger().equals(triggerName)) || 
+                        (triggerHistory.getNameForUpdateTrigger() != null && triggerHistory.getNameForUpdateTrigger().equals(triggerName)))) {
+                    return true;
+                }
             }
         }
         return false;
@@ -1648,7 +1650,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
 
             if (newestHistory != null) {
-                activeTriggerHistories.add(newestHistory);
+                synchronized (activeTriggerHistories) {
+                    activeTriggerHistories.add(newestHistory);
+                }
                 newestHistory.setErrorMessage(errorMessage);
                 if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                     for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
