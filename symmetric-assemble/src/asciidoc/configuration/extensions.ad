@@ -12,9 +12,10 @@ and may be compiled to native code by the Just-In-Time (JIT) compiler, giving th
 parsed on first use and interpreted at runtime, but they are easier to write because of loose typing and short-cuts with syntax. 
 
 .Options for Extension Type
+[cols="<2,<7"]
 |===
 |Java|Indicates that Java code is provided in the extension text.
-|BSH|Indicates that BeanShell code is provided in the extension text.
+|BSH|Indicates that BeanShell code is provided in the extension text.  Built-in variables are available for engine, sqlTemplate, and log.
 |===
 
 Interface Name:: The full class name for the interface implemented by the extension, including the package name.

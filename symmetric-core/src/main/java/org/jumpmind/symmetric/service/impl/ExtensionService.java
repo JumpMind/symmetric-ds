@@ -115,6 +115,9 @@ public class ExtensionService extends AbstractService implements IExtensionServi
                 try {
                     Interpreter interpreter = new Interpreter();
                     interpreter.eval(extension.getExtensionText());
+                    interpreter.set("engine", engine);
+                    interpreter.set("sqlTemplate", engine.getDatabasePlatform().getSqlTemplate());
+                    interpreter.set("log", log);
                     Object ext = interpreter.getInterface(Class.forName(extension.getInterfaceName()));
                     registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
                 } catch (EvalError e) {
