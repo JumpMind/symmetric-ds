@@ -1,0 +1,47 @@
+
+=== Monitors
+
+A monitor watches some part of the system for a problem, checking to see if the monitored value exceeds a threshold.
+(To be notified immediately of new monitor events, configure a notification.)
+
+Monitor ID:: The monitor ID is a unique name to refer to the monitor.
+
+ifndef::pro[]
+Node Group ID:: The node group that will run this monitor.  Use "ALL" to match all groups.
+External ID:: The external ID of nodes that will run this monitor.  Use "ALL" to match all nodes. 
+endif::pro[]
+ifdef::pro[]
+Target Nodes:: The group of nodes that will run this monitor.
+endif::pro[]
+
+Monitor Type:: The monitor type is one of several built-in or custom types that run a specific check and return a numeric value that can
+be compared to a threshold value.
+
+[cols="<2,<7", options="header"]
+|===
+|Type
+|Description
+
+|cpu|Percentage from 0 to 100 of CPU usage for the server process.
+
+|disk|Percentage from 0 to 100 of disk usage (tmp folder staging area) available to the server process.
+
+|memory|Percentage from 0 to 100 of memory usage (tenured heap pool) available to the server process.
+
+|batchError|Number of incoming and outgoing batches in error.
+
+|batchUnsent|Number of outgoing batches waiting to be sent. 
+
+|dataUnrouted|Number of change capture rows that are waiting to be batched and sent.
+
+|dataGaps|Number of active data gaps that are being checked during routing for data to commit.
+
+|===
+
+Threshold:: When this threshold value is reached or exceeded, an event is recorded.
+Run Period:: The time in seconds of how often to run this monitor.  The monitor job runs on a period also, so the monitor can only run as often
+as the monitor job.
+Run Count:: The number of times to run the monitor before calculating an average value to compare against the threshold.
+Severity Level:: The importance of this monitor event when it exceeds the threshold.
+Enabled:: Whether or not this monitor is enabled to run.
+

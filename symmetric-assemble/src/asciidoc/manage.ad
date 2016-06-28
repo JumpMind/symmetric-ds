@@ -74,5 +74,7 @@ include::manage/jvm-properties.ad[]
 include::manage/jvm-threads.ad[]
 endif::pro[]
 
+include::manage/monitors.ad[]
+
 include::manage/logging.ad[]
 
