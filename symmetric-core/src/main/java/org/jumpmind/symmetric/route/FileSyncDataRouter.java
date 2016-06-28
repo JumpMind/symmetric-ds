@@ -97,8 +97,11 @@ public class FileSyncDataRouter extends AbstractDataRouter implements IBuiltInEx
                         ((ChannelRouterContext) context).addUsedDataRouter(dataRouter);
                     }
                     dataMetaData.setRouter(router);
-                    nodeIds.addAll(dataRouter.routeToNodes(context, dataMetaData, nodes, false,
-                            false, triggerRouter));
+                    Set<String> dataRouterNodeIds = dataRouter.routeToNodes(context, dataMetaData, nodes, false,
+                            false, triggerRouter); 
+                    if (dataRouterNodeIds != null) {                        
+                        nodeIds.addAll(dataRouterNodeIds);
+                    }
                     nodeIds.remove(sourceNodeId);
                 }
             }
