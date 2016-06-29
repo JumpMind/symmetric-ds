@@ -536,19 +536,22 @@ public class RouterService extends AbstractService implements IRouterService {
                     gapDetector.setIsAllDataRead(context.getDataIds().size() < context.getChannel().getMaxDataToRoute());
                     context.incrementStat(System.currentTimeMillis() - insertTs,
                             ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
-                    Data lastDataProcessed = context.getLastDataProcessed();
-                    if (lastDataProcessed != null && lastDataProcessed.getDataId() > 0) {
-                        String channelId = nodeChannel.getChannelId();
-                        long queryTs = System.currentTimeMillis();
-                        long dataLeftToRoute = sqlTemplate.queryForInt(
-                                getSql("selectUnroutedCountForChannelSql"), channelId,
-                                lastDataProcessed.getDataId());
-                        queryTs = System.currentTimeMillis() - queryTs;
-                        if (queryTs > Constants.LONG_OPERATION_THRESHOLD) {
-                            log.warn("Unrouted query for channel {} took longer than expected", channelId, queryTs);
-                            log.info("The query took {} ms", queryTs);
+
+                    if (parameterService.is(ParameterConstants.ROUTING_COLLECT_STATS_UNROUTED)) {
+                        Data lastDataProcessed = context.getLastDataProcessed();
+                        if (lastDataProcessed != null && lastDataProcessed.getDataId() > 0) {
+                            String channelId = nodeChannel.getChannelId();
+                            long queryTs = System.currentTimeMillis();
+                            long dataLeftToRoute = sqlTemplate.queryForInt(
+                                    getSql("selectUnroutedCountForChannelSql"), channelId,
+                                    lastDataProcessed.getDataId());
+                            queryTs = System.currentTimeMillis() - queryTs;
+                            if (queryTs > Constants.LONG_OPERATION_THRESHOLD) {
+                                log.warn("Unrouted query for channel {} took longer than expected", channelId, queryTs);
+                                log.info("The query took {} ms", queryTs);
+                            }
+                            engine.getStatisticManager().setDataUnRouted(channelId, dataLeftToRoute);
                         }
-                        engine.getStatisticManager().setDataUnRouted(channelId, dataLeftToRoute);
                     }
                 }
             } catch (Exception e) {
