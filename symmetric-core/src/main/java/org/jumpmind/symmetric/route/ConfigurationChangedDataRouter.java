@@ -80,6 +80,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
 
     final String CTX_KEY_REFRESH_EXTENSIONS_NEEDED = "RefreshExtensions."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+    
+    final String CTX_KEY_FLUSHED_TRIGGER_ROUTERS = "FlushedTriggerRouters."
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     public final static String KEY = "symconfig";
 
@@ -326,19 +329,27 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
 
                 ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+                
+                boolean refreshCache = false;
+                if (routingContext.get(CTX_KEY_FLUSHED_TRIGGER_ROUTERS) == null) {
+            	    triggerRouterService.clearCache();
+            	    refreshCache = true;
+            	    routingContext.put(CTX_KEY_FLUSHED_TRIGGER_ROUTERS, true);
+                }
+                
                 Trigger trigger = null;
                 Date lastUpdateTime = null;
                 String triggerId = columnValues.get("TRIGGER_ID");
                 if (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)) {
                     String routerId = columnValues.get("ROUTER_ID");
                     TriggerRouter tr = triggerRouterService.findTriggerRouterById(triggerId,
-                            routerId);
+                            routerId, refreshCache);
                     if (tr != null) {
                         trigger = tr.getTrigger();
                         lastUpdateTime = tr.getLastUpdateTime();
                     }
                 } else {
-                    trigger = triggerRouterService.getTriggerById(triggerId);
+                    trigger = triggerRouterService.getTriggerById(triggerId, refreshCache);
                     if (trigger != null) {
                         lastUpdateTime = trigger.getLastUpdateTime();
                     }
