@@ -127,7 +127,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
         
         if (clusterService.lock(ClusterConstants.MONITOR)) {
             Lock lock = clusterService.findLocks().get(ClusterConstants.MONITOR);
-            long clusterLastCheckTime = lock.getLastLockTime().getTime();
+            long clusterLastCheckTime = lock.getLastLockTime() != null ? lock.getLastLockTime().getTime() : 0;
             
             try {
                 for (Monitor monitor : activeMonitors) {
