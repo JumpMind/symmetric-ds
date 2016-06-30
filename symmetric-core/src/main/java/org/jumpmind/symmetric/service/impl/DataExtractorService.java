@@ -688,6 +688,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (executor != null) {                    
                     executor.shutdown(); 
                 }
+            } finally {
+                if (executor != null) {                    
+                    executor.shutdown(); 
+                }
             }
 
             // Next, we update the node channel controls to the

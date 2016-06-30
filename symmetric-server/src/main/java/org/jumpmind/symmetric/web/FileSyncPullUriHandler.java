@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
@@ -61,13 +62,19 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                 new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), nodeId,
                         ProcessType.FILE_SYNC_PULL_HANDLER));
-        try {
-            
-            res.setContentType("application/zip");
-            res.addHeader("Content-Disposition", "attachment; filename=\"file-sync.zip\"");
-            
+        try {            
             engine.getFileSyncService().sendFiles(processInfo,
                     engine.getNodeService().findNode(nodeId), outgoingTransport);
+            Node targetNode = engine.getNodeService().findNode(nodeId);
+            
+            if (processInfo.getBatchCount() == 0 && targetNode.isVersionGreaterThanOrEqualTo(3,8,0)) {
+                ServletUtils.sendError(res, HttpServletResponse.SC_NO_CONTENT,
+                        "No files to pull.");                
+            } else {                
+                res.setContentType("application/zip");
+                res.addHeader("Content-Disposition", "attachment; filename=\"file-sync.zip\"");
+            }
+            
             processInfo.setStatus(Status.OK);
         } catch (RuntimeException ex) {
             processInfo.setStatus(Status.ERROR);

@@ -89,6 +89,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
+import org.jumpmind.symmetric.transport.NoContentException;
 import org.jumpmind.util.AppUtils;
 
 import bsh.EvalError;
@@ -219,12 +220,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             } else {
                 fileSnapshot.setLastUpdateBy(null);
             }
-            log.debug("Captured change "
-                    + fileSnapshot.getLastEventType() + " change of "
-                    + fileSnapshot.getFileName() + " (lastmodified="
-                    + fileSnapshot.getFileModifiedTime() + ",size="
-                    + fileSnapshot.getFileSize() + ") from "
-                    + fileSnapshot.getLastUpdateBy());
+            log.debug("Captured change " + fileSnapshot);
             totalBytes += fileSnapshot.getFileSize();
         }
         save(dirSnapshot);
@@ -450,10 +446,14 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         List<OutgoingBatch> processedBatches = new ArrayList<OutgoingBatch>();
         List<OutgoingBatch> batchesToProcess = new ArrayList<OutgoingBatch>();
         List<Channel> fileSyncChannels = engine.getConfigurationService().getFileSyncChannels();
+        OutgoingBatches batches = engine.getOutgoingBatchService().getOutgoingBatches(
+                targetNode.getNodeId(), false);
         for (Channel channel : fileSyncChannels) {
-            OutgoingBatches batches = engine.getOutgoingBatchService().getOutgoingBatches(
-                    targetNode.getNodeId(), false);
             batchesToProcess.addAll(batches.filterBatchesForChannel(channel));
+        }
+        
+        if (batchesToProcess.isEmpty()) {
+            return batchesToProcess;
         }
 
         OutgoingBatch currentBatch = null;
@@ -900,6 +900,8 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                         new Object[] { nodeCommunication.getNodeId(), status.getDataProcessed(),
                                 status.getBatchesProcessed() });
             }
+        } catch (NoContentException noContentEx) {
+            log.debug("Server reported no batches. " + noContentEx);
         } catch (Exception e) {
             fireOffline(e, nodeCommunication.getNode(), status);
         } finally {
@@ -955,12 +957,18 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 
         return statuses;
     }
+    
+    protected String getEffectiveBaseDir(String baseDir) {
+        String effectiveBaseDir = baseDir == null ? null : baseDir.replace('\\', '/');
+        return effectiveBaseDir;
+    }
 
-    class FileTriggerMapper implements ISqlRowMapper<FileTrigger> {
+    protected class FileTriggerMapper implements ISqlRowMapper<FileTrigger> {
+        public FileTriggerMapper() {
+        }
         public FileTrigger mapRow(Row rs) {
             FileTrigger fileTrigger = new FileTrigger();
-            fileTrigger.setBaseDir(rs.getString("base_dir") == null ? null : rs.getString(
-                    "base_dir").replace('\\', '/'));
+            fileTrigger.setBaseDir(getEffectiveBaseDir(rs.getString("base_dir")));
             fileTrigger.setCreateTime(rs.getDateTime("create_time"));
             fileTrigger.setExcludesFiles(rs.getString("excludes_files"));
             fileTrigger.setIncludesFiles(rs.getString("includes_files"));
