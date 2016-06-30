@@ -38,6 +38,15 @@ public class AndroidFileSyncService extends FileSyncService {
     @Override
     protected void setInterpreterVariables(ISymmetricEngine engine, String sourceNodeId, File batchDir, Interpreter interpreter) throws EvalError {
         super.setInterpreterVariables(engine, sourceNodeId, batchDir, interpreter);
-        interpreter.set("androidBaseDir", Environment.getExternalStorageDirectory() + "/");
+        interpreter.set("androidBaseDir", Environment.getExternalStorageDirectory().getPath());
     }
+ 
+    @Override
+    protected String getEffectiveBaseDir(String baseDir) {
+        String effectiveBaseDir = super.getEffectiveBaseDir(baseDir);
+        if (effectiveBaseDir != null && effectiveBaseDir.startsWith("$")) {
+            effectiveBaseDir = effectiveBaseDir.replace("${androidBaseDir}", Environment.getExternalStorageDirectory().getPath());     
+        }
+        return effectiveBaseDir;
+    } 
 }

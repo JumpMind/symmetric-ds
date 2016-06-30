@@ -219,11 +219,10 @@ public class AndroidJobManager implements IJobManager {
                     }
                     
                     if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
-                            && parameterService.is("job.file.sync.push")
+                            && parameterService.is("start.file.sync.push.job")
                             && parameterService.getLong("job.file.sync.push.period.time.ms", 60000) < (System
-                            .currentTimeMillis() - lastFileSyncPullTime)) {
+                            .currentTimeMillis() - lastFileSyncPushTime)) {
                         try {
-                            
                             didWork = true;
                             engine.getFileSyncService().pushFilesToNodes(false);
                         } catch (Throwable ex) {
