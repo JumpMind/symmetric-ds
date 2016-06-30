@@ -24,4 +24,7 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
         return "";
     }
 
+    public String getDefaultSchema() {
+        return "";
+    }
 }

@@ -324,8 +324,8 @@ public class RestService {
     @RequestMapping(value = "engine/querynode", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public final QueryResults getQueryNode(@RequestParam(value = "query") String sql) {
-        return queryNodeImpl(getSymmetricEngine(), sql);
+    public final QueryResults getQueryNode(@RequestParam(value = "query") String sql, @RequestParam(value = "isquery", defaultValue = "true") boolean isQuery) {
+        return queryNodeImpl(getSymmetricEngine(), sql, isQuery);
     }
 
     /**
@@ -336,8 +336,8 @@ public class RestService {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final QueryResults getQueryNode(@PathVariable("engine") String engineName,
-            @RequestParam(value = "query") String sql) {
-        return queryNodeImpl(getSymmetricEngine(engineName), sql);
+            @RequestParam(value = "query") String sql, @RequestParam(value = "isquery", defaultValue = "true") boolean isQuery) {
+        return queryNodeImpl(getSymmetricEngine(engineName), sql, isQuery);
     }
 
     /**
@@ -1640,7 +1640,7 @@ public class RestService {
         return channelStatus;
     }
 
-    private QueryResults queryNodeImpl(ISymmetricEngine engine, String sql) {
+    private QueryResults queryNodeImpl(ISymmetricEngine engine, String sql, boolean isQuery) {
 
         QueryResults results = new QueryResults();
         org.jumpmind.symmetric.web.rest.model.Row xmlRow = null;
@@ -1648,6 +1648,12 @@ public class RestService {
 
         ISqlTemplate sqlTemplate = engine.getSqlTemplate();
         try {
+            if(!isQuery){
+                int updates = sqlTemplate.update(sql);
+                results.setNbrResults(updates);
+                return results;
+            }
+        	
             List<Row> rows = sqlTemplate.query(sql);
             int nbrRows = 0;
             for (Row row : rows) {
