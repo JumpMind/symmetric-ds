@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.android;
 import java.io.File;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.service.impl.FileSyncService;
 
 import android.os.Environment;
@@ -30,22 +31,31 @@ import bsh.EvalError;
 import bsh.Interpreter;
 
 public class AndroidFileSyncService extends FileSyncService {
+    
+    private AndroidSymmetricEngine androidEngine;
 
     public AndroidFileSyncService(ISymmetricEngine engine) {
         super(engine);
+        if (!(engine instanceof AndroidSymmetricEngine)) {
+            throw new SymmetricException("AndroidFileSyncService only works with AndroidSymmetricEngine but was given " + engine);
+        }
+        androidEngine = (AndroidSymmetricEngine) engine;
     }
     
     @Override
     protected void setInterpreterVariables(ISymmetricEngine engine, String sourceNodeId, File batchDir, Interpreter interpreter) throws EvalError {
         super.setInterpreterVariables(engine, sourceNodeId, batchDir, interpreter);
         interpreter.set("androidBaseDir", Environment.getExternalStorageDirectory().getPath());
+        interpreter.set("androidAppFilesDir", androidEngine.androidContext.getFilesDir().getPath());
     }
  
     @Override
     protected String getEffectiveBaseDir(String baseDir) {
         String effectiveBaseDir = super.getEffectiveBaseDir(baseDir);
         if (effectiveBaseDir != null && effectiveBaseDir.startsWith("$")) {
-            effectiveBaseDir = effectiveBaseDir.replace("${androidBaseDir}", Environment.getExternalStorageDirectory().getPath());     
+            effectiveBaseDir = effectiveBaseDir.replace("${androidBaseDir}", Environment.getExternalStorageDirectory().getPath());
+            effectiveBaseDir = effectiveBaseDir.replace("${androidAppFilesDir}", androidEngine.androidContext.getFilesDir().getPath());
+            
         }
         return effectiveBaseDir;
     } 
