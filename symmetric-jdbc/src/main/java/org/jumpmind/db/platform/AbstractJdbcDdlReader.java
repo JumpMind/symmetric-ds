@@ -1358,7 +1358,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 try {
                     rs = meta.getCatalogs();
                     while (rs.next()) {
-                        catalogs.add(rs.getString(1));
+                        String catalog = rs.getString(1);
+                        if (catalog != null) {
+                            catalogs.add(catalog);
+                        }
                     }
                     return catalogs;
                 } finally {

@@ -568,6 +568,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             currentBatch.setStatus(Status.NE);
                             currentBatch.setExtractJobFlag(false);
                         }
+                        
+                        processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+                        currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch, false,
+                                dataWriter, writer, mode);
+                        processedBatches.add(currentBatch);
+                        
                     } else {
                         processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
                         final OutgoingBatch extractBatch = currentBatch;
@@ -682,7 +688,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (executor != null) {                    
                     executor.shutdown(); 
                 }
-            }
+            } 
 
             // Next, we update the node channel controls to the
             // current timestamp
@@ -1106,17 +1112,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return statuses;
     }
 
-    protected void queue(String nodeId, String channelId, RemoteNodeStatuses statuses) {
+    protected void queue(String nodeId, String queue, RemoteNodeStatuses statuses) {
         final NodeCommunication.CommunicationType TYPE = NodeCommunication.CommunicationType.EXTRACT;
         int availableThreads = nodeCommunicationService.getAvailableThreads(TYPE);
-        NodeCommunication lock = nodeCommunicationService.find(nodeId, channelId, TYPE);
+        NodeCommunication lock = nodeCommunicationService.find(nodeId, queue, TYPE);
         if (availableThreads > 0) {
             nodeCommunicationService.execute(lock, statuses, this);
         }
     }
 
     public Map<String, String> getExtractRequestNodes() {
-    	return sqlTemplate.queryForMap(getSql("selectNodeIdsForExtractSql"), "node_id", "channel_id",
+    	return sqlTemplate.queryForMap(getSql("selectNodeIdsForExtractSql"), "node_id", "queue",
                 ExtractStatus.NE.name());
     }
 
@@ -1131,11 +1137,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 batch.getBatchId(), batch.getBatchId(), batch.getNodeId(), batch.getChannelId());
     }
 
-    public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String channelId,
+    public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String queue,
             TriggerRouter triggerRouter, long startBatchId, long endBatchId) {
         long requestId = sequenceService.nextVal(transaction, Constants.SEQUENCE_EXTRACT_REQ);
         transaction.prepareAndExecute(getSql("insertExtractRequestSql"),
-                new Object[] { requestId, nodeId, channelId, ExtractStatus.NE.name(), startBatchId,
+                new Object[] { requestId, nodeId, queue, ExtractStatus.NE.name(), startBatchId,
                         endBatchId, triggerRouter.getTrigger().getTriggerId(),
                         triggerRouter.getRouter().getRouterId() }, new int[] { Types.BIGINT, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR });
@@ -1285,6 +1291,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             request.setLastUpdateTime(row.getDateTime("last_update_time"));
             request.setTriggerRouter(triggerRouterService.findTriggerRouterById(
                     row.getString("trigger_id"), row.getString("router_id")));
+            request.setQueue(row.getString("queue"));
             return request;
         }
     }

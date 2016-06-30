@@ -39,7 +39,8 @@ public class ExtractRequest implements Serializable {
     private TriggerRouter triggerRouter;
     private Date lastUpdateTime;
     private Date createTime;
-
+    private String queue;
+    
     public long getRequestId() {
         return requestId;
     }
@@ -102,6 +103,14 @@ public class ExtractRequest implements Serializable {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public String getQueue() {
+        return queue;
+    }
+
+    public void setQueue(String queue) {
+        this.queue = queue;
     }
 
 }
