@@ -900,7 +900,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 triggerRouters = engine.getTriggerRouterService()
                         .getTriggerRoutersForCurrentNode(false)
                         .get((data.getTriggerHistory().getTriggerId()));
-                if (triggerRouters == null && data.getTriggerHistory().getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
+                if (triggerRouters == null && data.getTriggerHistory().getTriggerId() != null && data.getTriggerHistory().getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
                 	TriggerRouter dynamicTriggerRouter = new TriggerRouter();
                 	dynamicTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(data.getExternalData()));
                 	dynamicTriggerRouter.setTrigger(new Trigger());
@@ -926,7 +926,7 @@ public class RouterService extends AbstractService implements IRouterService {
         long maxDataIdAlreadyRouted = sqlTemplate
                 .queryForLong(getSql("selectLastDataIdRoutedUsingDataGapSql"));
         long leftToRoute = engine.getDataService().findMaxDataId() - maxDataIdAlreadyRouted;
-        List<DataGap> gaps = engine.getDataService().findDataGaps();
+        List<DataGap> gaps = engine.getDataService().findDataGapsByStatus(DataGap.Status.GP);
         for (int i = 0; i < gaps.size()-2; i++) {
             DataGap gap = gaps.get(i);
             leftToRoute += (gap.getEndId() - gap.getStartId());
