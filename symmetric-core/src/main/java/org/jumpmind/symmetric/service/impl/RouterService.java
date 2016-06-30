@@ -900,7 +900,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 triggerRouters = engine.getTriggerRouterService()
                         .getTriggerRoutersForCurrentNode(false)
                         .get((data.getTriggerHistory().getTriggerId()));
-                if (triggerRouters == null && data.getTriggerHistory().getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
+                if (triggerRouters == null && data.getTriggerHistory().getTriggerId() != null && data.getTriggerHistory().getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
                 	TriggerRouter dynamicTriggerRouter = new TriggerRouter();
                 	dynamicTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(data.getExternalData()));
                 	dynamicTriggerRouter.setTrigger(new Trigger());

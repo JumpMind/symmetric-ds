@@ -91,7 +91,7 @@ public class AbstractDatabasePlatformTest {
         
         @Override
         public String getDefaultCatalog() {
-            return null;
+            return "";
         }
         
         @Override

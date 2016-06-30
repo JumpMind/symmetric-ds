@@ -71,12 +71,22 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
         statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
         statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
 
-        if (targetTable != null) {
-            DataEventType dataEventType = data.getDataEventType();
+        DataEventType dataEventType = data.getDataEventType();
 
+        if (targetTable != null || dataEventType.equals(DataEventType.CREATE)) {
+        	needsBinaryConversion = false;
+            if (!batch.getBinaryEncoding().equals(BinaryEncoding.NONE) && targetTable != null) {
+                for (Column column : targetTable.getColumns()) {
+                    if (column.isOfBinaryType()) {
+                        needsBinaryConversion = true;
+                        break;
+                    }
+                }
+            }
+            
             switch (dataEventType) {
                 case INSERT:
-                    startCopy();
+                	startCopy();
                     try {
                         String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
                         if (needsBinaryConversion) {
@@ -105,14 +115,13 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
                     endCopy();
                     super.write(data);
                     break;
-            }
+            } 
     
             if (loadedRows >= maxRowsBeforeFlush) {
                 flush();
                 loadedRows = 0;
             }
-        }
-        
+        } 
         statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
     }
 
@@ -174,32 +183,7 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
 
     @Override
     public boolean start(Table table) {
-        if (super.start(table)) {
-            if (targetTable != null) {
-                needsBinaryConversion = false;
-                if (!batch.getBinaryEncoding().equals(BinaryEncoding.NONE)) {
-                    for (Column column : targetTable.getColumns()) {
-                        if (column.isOfBinaryType()) {
-                            needsBinaryConversion = true;
-                            break;
-                        }
-                    }
-                }
-            } else if (sourceTable != null) {
-                String qualifiedName = sourceTable.getFullyQualifiedTableName();
-                if (writerSettings.isIgnoreMissingTables()) {
-                    if (!missingTables.contains(qualifiedName)) {
-                        log.warn("Did not find the {} table in the target database", qualifiedName);
-                        missingTables.add(qualifiedName);
-                    }
-                } else {
-                    throw new RuntimeException("Missing table in target database: " + qualifiedName);
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
+        return super.start(table);
     }
 
     @Override
