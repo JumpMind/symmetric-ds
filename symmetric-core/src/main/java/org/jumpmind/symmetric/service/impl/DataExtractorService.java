@@ -523,13 +523,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             Set<String> channelsProcessed = new HashSet<String>();
             long batchesSelectedAtMs = System.currentTimeMillis();
             OutgoingBatch currentBatch = null;
+            ExecutorService executor = null;
             try {
                 final long maxBytesToSync = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
                 final boolean streamToFileEnabled = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED);
                 long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
                 Node sourceNode = nodeService.findIdentity();
                 final FutureExtractStatus status = new FutureExtractStatus();
-                ExecutorService executor = Executors.newFixedThreadPool(1, new DataExtractorThreadFactory());
+                executor = Executors.newFixedThreadPool(1, new DataExtractorThreadFactory());
                 List<Future<FutureOutgoingBatch>> futures = new ArrayList<Future<FutureOutgoingBatch>>();
 
                 for (int i = 0; i < activeBatches.size(); i++) {
@@ -676,6 +677,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 } else {
                     log.error("Could not log the outgoing batch status because the batch was null",
                             e);
+                }
+            } finally {
+                if (executor != null) {                    
+                    executor.shutdown(); 
                 }
             }
 
