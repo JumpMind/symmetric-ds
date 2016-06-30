@@ -33,8 +33,6 @@ public interface IClusterService {
 
     public void init();    
     
-    public void initLockTable(final String action);
-
     public boolean lock(String action);
     
     public boolean lock(String action, String lockType);
