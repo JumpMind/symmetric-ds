@@ -52,6 +52,7 @@ import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
 import org.jumpmind.db.sql.IConnectionCallback;
@@ -129,6 +130,12 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         _columnsForPK = initColumnsForPK();
         _columnsForFK = initColumnsForFK();
         _columnsForIndex = initColumnsForIndex();
+    }
+    
+    @Override
+    public List<Trigger> getTriggers(String catalog, String schema,
+    		String tableName) {
+    	return Collections.emptyList();
     }
 
     /*
@@ -1358,7 +1365,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 try {
                     rs = meta.getCatalogs();
                     while (rs.next()) {
-                        catalogs.add(rs.getString(1));
+                        String catalog = rs.getString(1);
+                        if (catalog != null) {
+                            catalogs.add(catalog);
+                        }
                     }
                     return catalogs;
                 } finally {
@@ -1441,6 +1451,22 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 }
             }
         });
+    }
+    
+    public List<String> getListOfTriggers() {
+    	return new ArrayList<String>();
+    }
+    
+    public Trigger getTriggerFor(Table table, String triggerName) {
+    	Trigger trigger = null;
+    	List<Trigger> triggers = getTriggers(table.getCatalog(), table.getSchema(), table.getName());
+    	for (Trigger t : triggers) {
+    		if (t.getName().equals(triggerName)) {
+    			trigger = t;
+    			break;
+    		}
+    	}
+    	return trigger;
     }
 
 }
