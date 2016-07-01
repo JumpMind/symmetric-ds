@@ -137,7 +137,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         Row mapOfColValues = new Row(columnCount);
         for (int i = 1; i <= columnCount; i++) {
             String key = JdbcSqlTemplate.lookupColumnName(argResultSetMetaData, i);
-            Object obj = JdbcSqlTemplate.getResultSetValue(rs, i, readStringsAsBytes);
+            Object obj = JdbcSqlTemplate.getResultSetValue(rs, argResultSetMetaData, i, readStringsAsBytes);
             mapOfColValues.put(key, obj);
         }
         return mapOfColValues;
