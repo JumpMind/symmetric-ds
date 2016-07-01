@@ -170,10 +170,13 @@ public class FileSyncZipDataWriter implements IDataWriter {
 
                         command.append("targetBaseDir = \"").append(targetBaseDir).append("\";\n");
                                                                                                              
-                        command.append("if (targetBaseDir.startsWith(\"${androidBaseDir}\")) {                  \n");
-                        command.append("    targetBaseDir = targetBaseDir.replace(\"${androidBaseDir}\", \"\"); \n");
-                        command.append("    targetBaseDir = androidBaseDir + targetBaseDir;                     \n");
-                        command.append("}                                                                       \n");
+                        command.append("if (targetBaseDir.startsWith(\"${androidBaseDir}\")) {                      \n");
+                        command.append("    targetBaseDir = targetBaseDir.replace(\"${androidBaseDir}\", \"\");     \n");
+                        command.append("    targetBaseDir = androidBaseDir + targetBaseDir;                         \n");
+                        command.append("} else if (targetBaseDir.startsWith(\"${androidAppFilesDir}\")) {           \n");
+                        command.append("    targetBaseDir = targetBaseDir.replace(\"${androidAppFilesDir}\", \"\"); \n");
+                        command.append("    targetBaseDir = androidAppFilesDir + targetBaseDir;                     \n");
+                        command.append("}                                                                           \n");
                         
                         command.append("processFile = true;\n");
                         command.append("sourceFileName = \"").append(snapshot.getFileName())
@@ -366,20 +369,4 @@ public class FileSyncZipDataWriter implements IDataWriter {
         return byteCount > maxBytesToSync;
     }
     
-//    public static void main(String[] args) {
-//        String androidBaseDir = "/emulated/0/";
-//        
-//        String targetBaseDir = "${androidBaseDir}/manuals";
-//        if (targetBaseDir.startsWith("${androidBaseDir}")) {
-//            targetBaseDir = targetBaseDir.replace("${androidBaseDir}", "");
-//            targetBaseDir = androidBaseDir + targetBaseDir;
-//        }
-//        System.out.println(targetBaseDir);
-//        
-//        
-//        
-//        //command.append("targetBaseDir = \"").append(targetBaseDir).append("\";\n");
-////        command.append("targetBaseDir.replaceAll(\"${androidBaseDir}\", \" + androidBaseDir + \"); ;\n");
-//    }
-
 }
