@@ -49,6 +49,10 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     protected int rowNumber;
     
     protected int originalIsolationLevel;
+    
+    protected ResultSetMetaData rsMetaData = null;
+    
+    protected int rsColumnCount;
 
     public JdbcSqlReadCursor() {
     }
@@ -111,7 +115,12 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     public T next() {
         try {
             while (rs!=null && rs.next()) {
-                Row row = getMapForRow(rs, sqlTemplate.getSettings().isReadStringsAsBytes());
+                if (rsMetaData == null) {
+                    rsMetaData = rs.getMetaData();
+                    rsColumnCount = rsMetaData.getColumnCount();
+                }
+                
+                Row row = getMapForRow(rs, rsMetaData, rsColumnCount, sqlTemplate.getSettings().isReadStringsAsBytes());
                 T value = mapper.mapRow(row);
                 if (value != null) {
                     return value;
@@ -123,12 +132,11 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         }
     }
 
-    protected static Row getMapForRow(ResultSet rs, boolean readStringsAsBytes) throws SQLException {
-        ResultSetMetaData rsmd = rs.getMetaData();
-        int columnCount = rsmd.getColumnCount();
+    protected static Row getMapForRow(ResultSet rs, ResultSetMetaData argResultSetMetaData, 
+            int columnCount, boolean readStringsAsBytes) throws SQLException {
         Row mapOfColValues = new Row(columnCount);
         for (int i = 1; i <= columnCount; i++) {
-            String key = JdbcSqlTemplate.lookupColumnName(rsmd, i);
+            String key = JdbcSqlTemplate.lookupColumnName(argResultSetMetaData, i);
             Object obj = JdbcSqlTemplate.getResultSetValue(rs, i, readStringsAsBytes);
             mapOfColValues.put(key, obj);
         }
