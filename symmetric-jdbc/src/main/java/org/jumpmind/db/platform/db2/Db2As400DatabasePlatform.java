@@ -21,7 +21,10 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
     }
 
     public String getDefaultCatalog() {
-        return null;
+        return "";
     }
 
+    public String getDefaultSchema() {
+        return "";
+    }
 }

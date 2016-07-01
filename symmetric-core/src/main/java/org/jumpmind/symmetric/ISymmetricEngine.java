@@ -49,7 +49,7 @@ import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.IMailService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.INotificationService;
+import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.IOfflinePullService;
 import org.jumpmind.symmetric.service.IOfflinePushService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -294,7 +294,7 @@ public interface ISymmetricEngine {
     
     public IExtensionService getExtensionService();
     
-    public INotificationService getNotificationService();
+    public IMonitorService getMonitorService();
     
     public IMailService getMailService();
     

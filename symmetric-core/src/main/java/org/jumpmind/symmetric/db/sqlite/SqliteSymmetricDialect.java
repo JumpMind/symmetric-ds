@@ -27,6 +27,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
@@ -43,11 +44,14 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     
     String sqliteFunctionToOverride;
     
-    public SqliteSymmetricDialect(IParameterService parameterService, IContextService contextService, IDatabasePlatform platform) {
+    public SqliteSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.contextService = contextService;
         this.triggerTemplate = new SqliteTriggerTemplate(this);
         sqliteFunctionToOverride = parameterService.getString(ParameterConstants.SQLITE_TRIGGER_FUNCTION_TO_USE);
+    }
+    
+    public void setContextService(IContextService contextService) {
+        this.contextService = contextService;
     }
     
     @Override
@@ -66,6 +70,10 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         if (isBlank(sqliteFunctionToOverride)) {
+            if (contextService == null) {
+                throw new SymmetricException("contextService can't be null by this point.  "
+                        + "Please provide a non-null contextService before using this functionality.");
+            }
             contextService.insert(transaction, SYNC_TRIGGERS_DISABLED_USER_VARIABLE, "1");
             if (nodeId != null) {
                 contextService.insert(transaction, SYNC_TRIGGERS_DISABLED_NODE_VARIABLE, nodeId);
@@ -78,6 +86,10 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
         if (isBlank(sqliteFunctionToOverride)) {
+            if (contextService == null) {
+                throw new SymmetricException("contextService can't be null by this point.  "
+                        + "Please provide a non-null contextService before using this functionality.");
+            }
             contextService.delete(transaction, SYNC_TRIGGERS_DISABLED_USER_VARIABLE);
             contextService.delete(transaction, SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
         } else {
@@ -88,7 +100,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     public String getSyncTriggersExpression() {
         if (isBlank(sqliteFunctionToOverride)) {
             String contextTableName = parameterService.getTablePrefix() + "_" + TableConstants.SYM_CONTEXT;
-            return "(not exists (select value from " + contextTableName + " where id = '" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "'))";
+            return "(not exists (select value from " + contextTableName + " where name = '" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "'))";
         } else {
             return "(" + sqliteFunctionToOverride + "() not like 'DISABLED%')";
         }

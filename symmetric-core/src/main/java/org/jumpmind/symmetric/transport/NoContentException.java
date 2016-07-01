@@ -18,19 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.notification;
+package org.jumpmind.symmetric.transport;
 
-import org.jumpmind.extension.IExtensionPoint;
-import org.jumpmind.symmetric.model.Notification;
+import org.jumpmind.exception.IoException;
 
-public interface INotificationCheck extends IExtensionPoint {
+public class NoContentException extends IoException {
 
-    public long check(Notification notification);
-    
-    public boolean shouldLockCluster();
-    
-    public boolean requiresPeriod();
-
-    public String getType();
+    private static final long serialVersionUID = 1L;
 
 }

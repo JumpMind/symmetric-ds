@@ -8,6 +8,7 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
     public Db2As400TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         
+        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end" ;
         String castClobTo = symmetricDialect.getParameterService().getString(ParameterConstants.AS400_CAST_CLOB_TO, "DCLOB");
         
         clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as "+castClobTo+"),'\\','\\\\'),'\"','\\\"') || '\"' end" ;
@@ -23,7 +24,7 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
 "                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 " +
 "                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                " +
 "                                        VALUES('$(targetTableName)', 'I', $(triggerHistoryId),                                                                                                         " +
-"                                            $(oracleToClob)$(columns),                                                                                                                                 " +
+"                                            $(columns),                                                                                                                                                " +
 "                                            $(channelExpression), $(txIdExpression), $(sourceNodeExpression),                                                                                          " +
 "                                            $(externalSelect),                                                                                                                                         " +
 "                                            CURRENT_TIMESTAMP);                                                                                                                                        " +
@@ -43,9 +44,9 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
 "                                            INSERT into $(defaultSchema)$(prefixName)_data                                                                                                             \n"+
 "                                                (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)         \n"+
 "                                            VALUES('$(targetTableName)', 'U', $(triggerHistoryId),                                                                                                     \n"+
-"                                                $(oracleToClob)$(oldKeys),                                                                                                                             \n"+
-"                                                $(oracleToClob)$(columns),                                                                                                                             \n"+
-"                                                $(oracleToClob)$(oldColumns),                                                                                                                          \n"+
+"                                                $(oldKeys),                                                                                                                                            \n"+
+"                                                $(columns),                                                                                                                                          \n"+
+"                                                $(oldColumns),                                                                                                                                          \n"+
 "                                                $(channelExpression),                                                                                                                                      \n"+
 "                                                $(txIdExpression),                                                                                                                                     \n"+
 "                                                $(sourceNodeExpression),                                                                                                                               \n"+
@@ -66,8 +67,8 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
 "                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 " +
 "                                            (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                       " +
 "                                        VALUES ('$(targetTableName)', 'D', $(triggerHistoryId),                                                                                                        " +
-"                                            $(oracleToClob)$(oldKeys),                                                                                                                                 " +
-"                                            $(oracleToClob)$(oldColumns),                                                                                                                              " +
+"                                            $(oldKeys),                                                                                                                                                " +
+"                                            $(oldColumns),                                                                                                                                             " +
 "                                            $(channelExpression),                                                                                                                                          " +
 "                                            $(txIdExpression),                                                                                                                                         " +
 "                                            $(sourceNodeExpression),                                                                                                                                   " +
@@ -77,6 +78,8 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
 "                                    $(custom_on_delete_text)                                                                                                                                           " +
 "                                END                                                                                                                                                                    " );
         
+        sqlTemplates.put("initialLoadSqlTemplate" ,
+"select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
 
     }
     

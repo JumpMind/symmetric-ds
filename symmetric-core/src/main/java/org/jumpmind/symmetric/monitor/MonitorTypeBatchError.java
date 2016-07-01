@@ -18,37 +18,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.notification;
+package org.jumpmind.symmetric.monitor;
 
 import java.util.List;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.Notification;
+import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
-public class NotificationCheckBatchError implements INotificationCheck, ISymmetricEngineAware {
+public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAware {
 
     protected IOutgoingBatchService outgoingBatchService;
     
     protected IIncomingBatchService incomingBatchService;
 
     @Override
-    public String getType() {
+    public String getName() {
         return "batchError";
     }
     
     @Override
-    public long check(Notification notification) {
+    public long check(Monitor monitor) {
         int outgoingErrorCount = 0;
         OutgoingBatches outgoingBatches = outgoingBatchService.getOutgoingBatchErrors(1000);
         for (OutgoingBatch batch : outgoingBatches.getBatches()) {
             int batchErrorMinutes = (int) (System.currentTimeMillis() - batch.getCreateTime().getTime()) / 60000;
-            if (batchErrorMinutes >= notification.getThreshold()) {
+            if (batchErrorMinutes >= monitor.getThreshold()) {
                 outgoingErrorCount++;
             }
         }
@@ -57,7 +57,7 @@ public class NotificationCheckBatchError implements INotificationCheck, ISymmetr
         List<IncomingBatch> incomingBatches = incomingBatchService.findIncomingBatchErrors(1000);
         for (IncomingBatch batch : incomingBatches) {
             int batchErrorMinutes = (int) (System.currentTimeMillis() - batch.getCreateTime().getTime()) / 60000;
-            if (batchErrorMinutes >= notification.getThreshold()) {
+            if (batchErrorMinutes >= monitor.getThreshold()) {
                 incomingErrorCount++;
             }
         }
@@ -66,13 +66,8 @@ public class NotificationCheckBatchError implements INotificationCheck, ISymmetr
     }
 
     @Override
-    public boolean shouldLockCluster() {
+    public boolean requiresClusterLock() {
         return true;
-    }
-
-    @Override
-    public boolean requiresPeriod() {
-        return false;
     }
 
     @Override

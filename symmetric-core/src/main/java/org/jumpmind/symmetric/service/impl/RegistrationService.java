@@ -336,7 +336,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                             request.getLastUpdateTime(), request.getRegisteredNodeId(),
                             request.getStatus().name(), request.getErrorMessage(), nodeGroupId,
                             externalId, request.getIpAddress(), request.getHostName() }, new int[] {
-                            Types.NUMERIC, Types.VARCHAR, Types.DATE, Types.VARCHAR, Types.VARCHAR,
+                            Types.NUMERIC, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR });
         }
@@ -347,7 +347,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     new Object[] { request.getLastUpdateBy(), request.getLastUpdateTime(),
                             request.getRegisteredNodeId(), request.getStatus().name(), nodeGroupId,
                             externalId, request.getIpAddress(), request.getHostName(),
-                            request.getErrorMessage() }, new int[] { Types.VARCHAR, Types.DATE,
+                            request.getErrorMessage() }, new int[] { Types.VARCHAR, Types.TIMESTAMP,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         }

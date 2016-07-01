@@ -18,35 +18,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.notification;
+package org.jumpmind.symmetric.monitor;
 
 import java.io.File;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
-import org.jumpmind.symmetric.model.Notification;
+import org.jumpmind.symmetric.model.Monitor;
 
-public class NotificationCheckDisk implements INotificationCheck, ISymmetricEngineAware {
+public class MonitorTypeDisk implements IMonitorType, ISymmetricEngineAware {
    
     protected File tempDirectory;
 
     @Override
-    public String getType() {
+    public String getName() {
         return "disk";
     }
 
     @Override
-    public long check(Notification notification) {
+    public long check(Monitor monitor) {
         return (long) ((1f - ((double) tempDirectory.getUsableSpace() / (double) tempDirectory.getTotalSpace())) * 100f);
     }
 
     @Override
-    public boolean shouldLockCluster() {
-        return false;
-    }
-
-    @Override
-    public boolean requiresPeriod() {
+    public boolean requiresClusterLock() {
         return false;
     }
 

@@ -35,6 +35,8 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
                 + "0 = (select count(1) from $(outgoing_batch) where status != 'OK' and batch_id between $(extract_request).start_batch_id and $(extract_request).end_batch_id)");
         
         putSql("deleteRegistrationRequestSql", "delete from $(registration_request) where status in (?,?,?) and last_update_time < ?");
+        
+        putSql("deleteMonitorEventSql", "delete from $(monitor_event) where event_time < ?");
 
         putSql("selectOutgoingBatchRangeSql" ,
 "select min(batch_id) as min_id, max(batch_id) as max_id from $(outgoing_batch) where                         " + 

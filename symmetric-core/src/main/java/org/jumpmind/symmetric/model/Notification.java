@@ -22,39 +22,34 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Date;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
+
 public class Notification {
 
-    protected String notificationId;
+    private String notificationId;
     
-    protected String externalId;
+    private String nodeGroupId;
+
+    private String externalId;
+
+    private int severityLevel;
     
-    protected String nodeGroupId;
+    private String type;
     
-    protected String type;
+    private String expression;
+
+    private boolean enabled;
     
-    protected boolean enabled;
+    private Date createTime;
     
-    protected long threshold;
+    private String lastUpdateBy;
     
-    protected int period;
+    private Date lastUpdateTime;
     
-    protected int sampleMinutes;
-    
-    protected int severityLevel;
-    
-    protected long windowMinutes;
-    
-    protected Date createTime;
-    
-    protected String lastUpdateBy;
-    
-    protected Date lastUpdateTime;
+    private transient String targetNode;
 
     public String getNotificationId() {
         return notificationId;
-    }
-
-    public Notification() {
     }
 
     public void setNotificationId(String notificationId) {
@@ -77,46 +72,6 @@ public class Notification {
         this.nodeGroupId = nodeGroupId;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public long getThreshold() {
-        return threshold;
-    }
-
-    public void setThreshold(long threshhold) {
-        this.threshold = threshhold;
-    }
-
-    public int getPeriod() {
-        return period;
-    }
-
-    public void setPeriod(int period) {
-        this.period = period;
-    }
-
-    public int getSampleMinutes() {
-        return sampleMinutes;
-    }
-
-    public void setSampleMinutes(int sampleMinutes) {
-        this.sampleMinutes = sampleMinutes;
-    }
-
     public int getSeverityLevel() {
         return severityLevel;
     }
@@ -125,12 +80,20 @@ public class Notification {
         this.severityLevel = severityLevel;
     }
 
-    public long getWindowMinutes() {
-        return windowMinutes;
+    public String getType() {
+        return type;
     }
 
-    public void setWindowMinutes(long windowMinutes) {
-        this.windowMinutes = windowMinutes;
+    public void setType(String type) {
+        this.type = type;
+    }    
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public Date getCreateTime() {
@@ -157,4 +120,34 @@ public class Notification {
         this.lastUpdateTime = lastUpdateTime;
     }
 
+    public String getExpression() {
+        return expression;
+    }
+
+    public void setExpression(String expression) {
+        this.expression = expression;
+    }
+
+    public String getSeverityLevelName() {
+        String name = Monitor.severityLevelNames.get(severityLevel);
+        if (name == null) {
+            name = Monitor.INFO_NAME;
+        }
+        return name;
+    }
+
+    public String getTargetNode() {
+        if (targetNode == null) {
+            if (externalId != null && !externalId.equals(ParameterConstants.ALL)) {
+                targetNode = externalId + " only";
+            } else {
+                targetNode = nodeGroupId;
+            }
+        }
+        return targetNode;
+    }
+    
+    public void setTargetNode(String targetNode) {
+        this.targetNode = targetNode;
+    }
 }

@@ -328,7 +328,7 @@ public class StagedResource implements IStagedResource {
     @Override
     public String toString() {
         return file.exists() ? file.getAbsolutePath() : String.format("%d bytes in memory",
-                memoryBuffer.length());
+                memoryBuffer != null ? memoryBuffer.length() : 0);
     }
 
 }

@@ -1,0 +1,28 @@
+=== Monitors
+
+ifdef::pro[]
+
+The Monitors screen allows you to view events of system problems recorded by both local and remote nodes.
+The list of events can be filtered to limit the number of events displayed, event type, severity level, and node ID.
+Filtering by severity level will match the level you choose and any level above it.
+Events are listed in descending order by event time, but the order can be changed by clicking column headings.
+The remove button will clear the event from the table on the current node.  Events are purged automatically each night
+using the `purge.retention.minutes` parameter to remove by event time.
+
+image::manage/manage-monitors.png[]
+
+endif::pro[]
+
+When a <<_monitors,Monitor>> is configured, it is run periodically to check the current value of a system metric and compare it to a threshold value.
+Different monitor types can check the CPU usage, disk usage, memory usage, batch errors, outstanding batches, unrouted data, and number
+of data gaps.
+Custom monitor types can be created using <<_extensions,Extensions>> that use the IMonitorType interface.
+When the value returned from the check meets or exceeds the threshold value, a <<_monitor_event>> is recorded.
+The <<_monitor_event>> table is synchronized on the heartbeat channel, which allows a central server to see events from remote nodes,
+but this behavior can be disabled by setting the `monitor.events.capture.enabled` parameter to false.
+
+To be immediately notified of a monitor event, use <<_notifications,Notifications>> to match on the severity level.
+Different notification type can send a message by writing to the log or sending an email.
+Custom notification types can be created using <<_extensions,Extensions>> that use the INotificationType interface.
+In order to send email, the <<_mail_server,Mail Server>> should be configured.
+

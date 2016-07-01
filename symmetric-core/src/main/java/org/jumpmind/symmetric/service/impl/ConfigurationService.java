@@ -77,8 +77,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         this.defaultChannels = new ArrayList<Channel>();
         this.defaultChannels
                 .add(new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 100, true, 0, true));
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false,
-                true, false));
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
+            this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 10000, 100, true, 0, false,
+                    true, false));
+        } else {
+            this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false,
+                    true, false));
+        }
+                
         this.defaultChannels.add(new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0,
                 false));
         this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0,

@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.notification;
+package org.jumpmind.symmetric.monitor;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -27,26 +27,26 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Method;
 
-import org.jumpmind.symmetric.model.Notification;
+import org.jumpmind.symmetric.model.Monitor;
 
-public class NotificationCheckCpu extends AbstractNotificationCheck {
+public class MonitorTypeCpu extends AbstractMonitorType {
 
     protected OperatingSystemMXBean osBean;
 
     protected RuntimeMXBean runtimeBean;
 
-    public NotificationCheckCpu() {
+    public MonitorTypeCpu() {
         osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         runtimeBean = ManagementFactory.getRuntimeMXBean();
     }
     
     @Override
-    public String getType() {
+    public String getName() {
         return "cpu";
     }
 
     @Override
-    public long check(Notification notification) {
+    public long check(Monitor monitor) {
         int availableProcessors = osBean.getAvailableProcessors();
         long prevUpTime = runtimeBean.getUptime();
         long prevProcessCpuTime = getProcessCpuTime();
@@ -95,12 +95,7 @@ public class NotificationCheckCpu extends AbstractNotificationCheck {
     }
 
     @Override
-    public boolean requiresPeriod() {
-        return true;
-    }
-
-    @Override
-    public boolean shouldLockCluster() {
+    public boolean requiresClusterLock() {
         return false;
     }
 

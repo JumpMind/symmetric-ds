@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.notification;
+package org.jumpmind.symmetric.monitor;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
@@ -27,22 +27,22 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Method;
 
-import org.jumpmind.symmetric.model.Notification;
+import org.jumpmind.symmetric.model.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NotificationCheckMemory extends AbstractNotificationCheck {
+public class MonitorTypeMemory extends AbstractMonitorType {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected MemoryPoolMXBean tenuredPool;
 
     @Override
-    public String getType() {
+    public String getName() {
         return "memory";
     }
 
-    public NotificationCheckMemory() {
+    public MonitorTypeMemory() {
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
             if (pool.getType() == MemoryType.HEAP && pool.isUsageThresholdSupported()) {
                 tenuredPool = pool;
@@ -55,7 +55,7 @@ public class NotificationCheckMemory extends AbstractNotificationCheck {
     }
 
     @Override
-    public long check(Notification notification) {
+    public long check(Monitor monitor) {
         long usage = 0;
         if (tenuredPool != null) {
             usage = (long) (tenuredPool.getUsage().getUsed() / tenuredPool.getUsage().getMax());
@@ -98,12 +98,7 @@ public class NotificationCheckMemory extends AbstractNotificationCheck {
     }
 
     @Override
-    public boolean requiresPeriod() {
-        return false;
-    }
-
-    @Override
-    public boolean shouldLockCluster() {
+    public boolean requiresClusterLock() {
         return false;
     }
 

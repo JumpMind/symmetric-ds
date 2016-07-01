@@ -52,6 +52,12 @@ public class AndroidJobManager implements IJobManager {
     protected long lastPurgeTime = System.currentTimeMillis();
 
     protected long lastRouteTime = System.currentTimeMillis();
+    
+    protected long lastFileSyncPullTime = System.currentTimeMillis();
+    
+    protected long lastFileSyncTrackerTime = System.currentTimeMillis();
+    
+    protected long lastFileSyncPushTime = System.currentTimeMillis();    
 
     public AndroidJobManager(ISymmetricEngine engine) {
         this.engine = engine;
@@ -183,6 +189,48 @@ public class AndroidJobManager implements IJobManager {
                             lastPurgeTime = System.currentTimeMillis();
                         }
                     }
+                    
+                    if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
+                            && parameterService.is("start.file.sync.tracker.job")
+                            && parameterService.getLong("job.file.sync.tracker.period.time.ms", 5000) < (System
+                                    .currentTimeMillis() - lastFileSyncTrackerTime)) {
+                        try {
+                            didWork = true;
+                            engine.getFileSyncService().trackChanges(false);
+                        } catch (Throwable ex) {
+                            log.error("", ex);
+                        } finally {
+                            lastFileSyncTrackerTime = System.currentTimeMillis();
+                        }
+                    }
+                    
+                    if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
+                            && parameterService.is("start.file.sync.pull.job")
+                            && parameterService.getLong("job.file.sync.pull.period.time.ms", 60000) < (System
+                            .currentTimeMillis() - lastFileSyncPullTime)) {
+                        try {
+                            didWork = true;
+                            engine.getFileSyncService().pullFilesFromNodes(false);
+                        } catch (Throwable ex) {
+                            log.error("", ex);
+                        } finally {
+                            lastFileSyncPullTime = System.currentTimeMillis();
+                        }
+                    }
+                    
+                    if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
+                            && parameterService.is("start.file.sync.push.job")
+                            && parameterService.getLong("job.file.sync.push.period.time.ms", 60000) < (System
+                            .currentTimeMillis() - lastFileSyncPushTime)) {
+                        try {
+                            didWork = true;
+                            engine.getFileSyncService().pushFilesToNodes(false);
+                        } catch (Throwable ex) {
+                            log.error("", ex);
+                        } finally {
+                            lastFileSyncPushTime = System.currentTimeMillis();
+                        }
+                    }                    
 
                 } finally {
                     if (didWork) {

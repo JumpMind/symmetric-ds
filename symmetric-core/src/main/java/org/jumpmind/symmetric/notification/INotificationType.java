@@ -20,39 +20,16 @@
  */
 package org.jumpmind.symmetric.notification;
 
-import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
-import org.jumpmind.symmetric.model.DataGap;
+import java.util.List;
+
+import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.model.Notification;
-import org.jumpmind.symmetric.service.IDataService;
 
-public class NotificationCheckDataGap implements INotificationCheck, ISymmetricEngineAware {
+public interface INotificationType extends IExtensionPoint {
 
-    protected IDataService dataService;
-
-    @Override
-    public String getType() {
-        return "dataGap";
-    }
-
-    @Override
-    public long check(Notification notification) {
-        return dataService.countDataGapsByStatus(DataGap.Status.GP);
-    }
-
-    @Override
-    public boolean shouldLockCluster() {
-        return true;
-    }
-
-    @Override
-    public boolean requiresPeriod() {
-        return false;
-    }
-
-    @Override
-    public void setSymmetricEngine(ISymmetricEngine engine) {
-        dataService = engine.getDataService();
-    }
+    public void notify(Notification notification, List<MonitorEvent> monitorEvents);
+    
+    public String getName();
 
 }

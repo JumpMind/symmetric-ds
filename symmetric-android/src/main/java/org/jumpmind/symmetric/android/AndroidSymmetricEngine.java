@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
@@ -36,6 +37,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.sqlite.SqliteSymmetricDialect;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
@@ -47,6 +49,8 @@ import org.jumpmind.symmetric.route.IDataToRouteReader;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
+import org.jumpmind.symmetric.service.IFileSyncService;
+import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -79,7 +83,16 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         this.androidContext = androidContext;
         init();
     }
-    
+
+    protected void init() {
+        super.init();
+        if (symmetricDialect instanceof SqliteSymmetricDialect) {
+            // 
+            SqliteSymmetricDialect sqliteDialect = (SqliteSymmetricDialect)symmetricDialect;
+            sqliteDialect.setContextService(contextService);
+        }
+    }
+
     @Override
     protected SecurityServiceType getSecurityServiceType() {
         return SecurityServiceType.CLIENT;
@@ -98,33 +111,14 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected IStagingManager createStagingManager() {
-        return new IStagingManager() {
-
-            public IStagedResource find(Object... path) {
-                return null;
-            }
-            
-            public IStagedResource create(long memoryThresholdInBytes, Object... path) {
-                return null;
-            }
-            
-            public long clean(long timeToLiveInMs) {
-                return 0;
-            }
-            
-            public IStagedResource find(String path) {
-                return null;
-            }
-            
-            public Collection<String> getResourceReferences() {
-                return null;
-            }
-        };
+        String directory = androidContext.getCacheDir().toString();
+        log.info("Staging manager directory: " + directory);
+        return new StagingManager(directory);
     }
 
     @Override
     protected ISymmetricDialect createSymmetricDialect() {
-        return new SqliteSymmetricDialect(parameterService, contextService, platform);
+        return new SqliteSymmetricDialect(parameterService, platform);
     }
 
     @Override
@@ -141,6 +135,11 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     protected IRouterService buildRouterService() {
         return new AndroidRouterService(this);
     }
+
+    @Override
+    protected IFileSyncService buildFileSyncService() {
+        return new AndroidFileSyncService(this);
+    }        
 
     class AndroidRouterService extends RouterService {
 
@@ -174,7 +173,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         @Override
         public boolean execute(NodeCommunication nodeCommunication, RemoteNodeStatuses statuses,
                 INodeCommunicationExecutor executor) {
-        	
+
             final RemoteNodeStatus status = statuses.add(nodeCommunication.getNodeId());
             long ts = System.currentTimeMillis();
             boolean failed = false;
@@ -197,7 +196,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
                 } else {
                     nodeCommunication.setSuccessCount(nodeCommunication.getSuccessCount() + 1);
                     nodeCommunication
-                            .setTotalSuccessCount(nodeCommunication.getTotalSuccessCount() + 1);
+                    .setTotalSuccessCount(nodeCommunication.getTotalSuccessCount() + 1);
                     nodeCommunication.setTotalSuccessMillis(nodeCommunication
                             .getTotalSuccessMillis() + millis);
                     nodeCommunication.setFailCount(0);
@@ -214,13 +213,17 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         }
 
     }
-    
+
     public File snapshot() {
         return null;
     }
-    
+
     public List<File> listSnapshots() {
         return new ArrayList<File>(0);
+    }
+
+    public IMonitorService getMonitorService() {
+        throw new NotImplementedException();
     }
 
 }

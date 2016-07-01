@@ -1,0 +1,40 @@
+
+=== Notifications
+
+A notification sends a message to the user when a monitor event records a system problem.
+First configure a monitor to watch the system and record events with a specific severity level.
+Then, configure a notification to match the severity level and write to the log or send an email.
+
+Notification ID:: The notification ID is a unique name to refer to the notification.
+
+ifndef::pro[]
+Node Group ID:: The node group that will run this monitor.  Use "ALL" to match all groups.
+External ID:: The external ID of nodes that will run this monitor.  Use "ALL" to match all nodes. 
+endif::pro[]
+ifdef::pro[]
+Target Nodes:: The group of nodes that will run this monitor.
+endif::pro[]
+
+Notification Type:: The notification type is either a built-in or custom type that is given the list of monitor events to send.
+
+[cols="<2,<7", options="header"]
+|===
+|Type
+|Description
+
+|log|The monitor events are written to the log using the same severity level.
+ifdef::pro[]
+The web console will indicate WARN and ERROR level notifications in the top-right corner, which are also displayed on the main Dashboard screen.
+endif::pro[]
+
+|email|The monitor events are sent in an email to a list of recipients.  Use the expression for the comma-separated list of email addresses.
+ifdef::pro[]
+Use the Configure->Mail Server screen to configure a mail server to use for sending emails.
+endif::pro[]
+
+|===
+
+Expression:: Additional information to configure the notification type.
+Severity Level:: Find monitor events that occur at this severity level or above.
+Enabled:: Whether or not this notification is enabled to run.
+

@@ -22,23 +22,40 @@ package org.jumpmind.symmetric.service;
 
 import java.util.List;
 
+import org.jumpmind.symmetric.model.Monitor;
+import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.model.Notification;
-import org.jumpmind.symmetric.model.NotificationEvent;
 
-public interface INotificationService {
+public interface IMonitorService {
 
     public void update();
 
-    public List<Notification> getNotifications();
+    public List<Monitor> getMonitors();
 
-    public List<Notification> getNotificationsForNode(String nodeGroupId, String externalId); 
+    public List<Monitor> getActiveMonitorsForNode(String nodeGroupId, String externalId); 
     
-    public void deleteNotification(String notificationId);
+    public void deleteMonitor(String notificationId);
 
+    public void saveMonitor(Monitor monitor);
+    
+    public List<MonitorEvent> getMonitorEvents();
+    
+    public List<MonitorEvent> getMonitorEventsFiltered(int limit, String type, int severityLevel, String nodeId);
+
+    public void saveMonitorEvent(MonitorEvent notificationEvent);
+
+    public void deleteMonitorEvent(MonitorEvent event);
+
+    public List<Notification> getNotifications();
+    
+    public List<Notification> getActiveNotificationsForNode(String nodeGroupId, String externalId);
+    
     public void saveNotification(Notification notification);
     
-    public List<NotificationEvent> getNotificationEvents();
-
-    public void saveNotificationEvent(NotificationEvent notificationEvent);
-
+    public void deleteNotification(String notificationId);
+    
+    public void flushMonitorCache();
+    
+    public void flushNotificationCache();
+    
 }

@@ -18,37 +18,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.notification;
+package org.jumpmind.symmetric.monitor;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
-import org.jumpmind.symmetric.model.Notification;
+import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
-public class NotificationCheckBatchUnsent implements INotificationCheck, ISymmetricEngineAware {
+public class MonitorTypeBatchUnsent implements IMonitorType, ISymmetricEngineAware {
 
     protected IOutgoingBatchService outgoingBatchService;
 
     @Override
-    public String getType() {
+    public String getName() {
         return "batchUnsent";
     }
 
     @Override
-    public long check(Notification notification) {
+    public long check(Monitor monitor) {
         return outgoingBatchService.countOutgoingBatchesUnsent();
     }
 
     @Override
-    public boolean shouldLockCluster() {
+    public boolean requiresClusterLock() {
         return true;
     }
     
-    @Override
-    public boolean requiresPeriod() {
-        return false;
-    }
-
     @Override
     public void setSymmetricEngine(ISymmetricEngine engine) {
         outgoingBatchService = engine.getOutgoingBatchService();

@@ -156,6 +156,7 @@ final public class ParameterConstants {
     public final static String ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED = "routing.data.reader.order.by.gap.id.enabled";
     public final static String ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY = "routing.data.reader.threshold.gaps.to.use.greater.than.query";
     public final static String ROUTING_LOG_STATS_ON_BATCH_ERROR = "routing.log.stats.on.batch.error";
+    public final static String ROUTING_COLLECT_STATS_UNROUTED = "routing.collect.stats.unrouted";
     public final static String ROUTING_USE_FAST_GAP_DETECTOR = "routing.use.fast.gap.detector";
 
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
@@ -213,6 +214,8 @@ final public class ParameterConstants {
     public final static String CACHE_TIMEOUT_LOAD_FILTER_IN_MS = "cache.load.filter.time.ms";
     public final static String CACHE_TIMEOUT_CONFLICT_IN_MS = "cache.conflict.time.ms";
     public final static String CACHE_TIMEOUT_TABLES_IN_MS = "cache.table.time.ms";
+    public final static String CACHE_TIMEOUT_MONITOR_IN_MS = "cache.monitor.time.ms";
+    public final static String CACHE_TIMEOUT_NOTIFICATION_IN_MS = "cache.notification.time.ms";
 
     public final static String TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY = "trigger.update.capture.changed.data.only.enabled";
     public final static String TRIGGER_CREATE_BEFORE_INITIAL_LOAD = "trigger.create.before.initial.load.enabled";
@@ -336,6 +339,8 @@ final public class ParameterConstants {
     public static final String SMTP_USE_AUTH = "smtp.auth";
 
     public final static String CHANNEL_THREADING = "channel.threading.enabled";
+    
+    public final static String MONITOR_EVENTS_CAPTURE_ENABLED = "monitor.events.capture.enabled";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

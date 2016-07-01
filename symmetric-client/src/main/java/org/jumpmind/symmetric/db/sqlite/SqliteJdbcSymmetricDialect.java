@@ -13,7 +13,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 public class SqliteJdbcSymmetricDialect extends SqliteSymmetricDialect {
 
     public SqliteJdbcSymmetricDialect(IParameterService parameterService, IContextService contextService, IDatabasePlatform platform) {
-        super(parameterService, contextService, platform);
+        super(parameterService, platform);
+        setContextService(contextService);
     }
 
     @Override

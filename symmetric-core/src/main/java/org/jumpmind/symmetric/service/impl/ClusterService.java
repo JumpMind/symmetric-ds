@@ -43,6 +43,7 @@ import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
 import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PULL;
 import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PUSH;
+import static org.jumpmind.symmetric.service.ClusterConstants.MONITOR;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -67,7 +68,15 @@ import org.jumpmind.util.AppUtils;
  */
 public class ClusterService extends AbstractService implements IClusterService {
 
+    private static final String[] actions = new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING,
+            PURGE_STATISTICS, SYNCTRIGGERS, PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL,
+            FILE_SYNC_PUSH, FILE_SYNC_TRACKER, FILE_SYNC_SCAN, INITIAL_LOAD_EXTRACT, OFFLINE_PUSH, OFFLINE_PULL, MONITOR };
+    
+    private static final String[] sharedActions = new String[] { FILE_SYNC_SHARED };
+
     private String serverId = null;
+    
+    private Map<String, Lock> lockCache;
 
     public ClusterService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
@@ -76,31 +85,31 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     public void init() {
-        sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
-
-        Map<String, Lock> allLocks = findLocks();
         if (isClusteringEnabled()) {
-            for (String action : new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING, PURGE_STATISTICS, SYNCTRIGGERS,
-                    PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL, FILE_SYNC_PUSH, FILE_SYNC_TRACKER,
-                    FILE_SYNC_SCAN, INITIAL_LOAD_EXTRACT, OFFLINE_PUSH, OFFLINE_PULL }) {
+            sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
+
+            Map<String, Lock> allLocks = findLocks();
+
+            for (String action : actions) {
                 if (allLocks.get(action) == null) {
                     initLockTable(action, TYPE_CLUSTER);
                 }
             }
-        }
-
-        for (String action : new String[] { FILE_SYNC_SHARED }) {
-            if (allLocks.get(action) == null) {
-                initLockTable(action, TYPE_SHARED);
+            
+            for (String action : sharedActions) {
+                if (allLocks.get(action) == null) {
+                    initLockTable(action, TYPE_SHARED);
+                }
             }
         }
+        initCache();
     }
 
-    public void initLockTable(final String action) {
+    protected void initLockTable(final String action) {
         initLockTable(action, TYPE_CLUSTER);
     }
     
-    public void initLockTable(final String action, final String lockType) {
+    protected void initLockTable(final String action, final String lockType) {
         try {
             sqlTemplate.update(getSql("insertLockSql"), new Object[] { action, lockType });
             log.debug("Inserted into the LOCK table for {}, {}", action, lockType);
@@ -110,8 +119,28 @@ public class ClusterService extends AbstractService implements IClusterService {
         }
     }
 
+    protected void initCache() {
+        lockCache = new HashMap<String, Lock>();
+        for (String action : actions) {
+            Lock lock = new Lock();
+            lock.setLockAction(action);
+            lock.setLockType(TYPE_CLUSTER);
+            lockCache.put(action, lock);
+        }
+        for (String action : sharedActions) {
+            Lock lock = new Lock();
+            lock.setLockAction(action);
+            lock.setLockType(TYPE_SHARED);
+            lockCache.put(action, lock);
+        }
+    }
+
     public void clearAllLocks() {
-        sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
+        if (isClusteringEnabled()) {
+            sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
+        } else {
+            initCache();
+        }
     }
 
     public boolean lock(final String action, final String lockType) {
@@ -135,38 +164,85 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     public boolean lock(final String action) {
-        if (isClusteringEnabled()) {
-            final Date timeout = DateUtils.addMilliseconds(new Date(), 
-                    (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
-            return lockCluster(action, timeout, new Date(), getServerId());
-        } else {
-            return true;
-        }
+        final Date timeout = DateUtils.addMilliseconds(new Date(), 
+                (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
+        return lockCluster(action, timeout, new Date(), getServerId());
     }
 
     protected boolean lockCluster(String action, Date timeToBreakLock, Date timeLockAcquired,
             String serverId) {
-        try {
-            return sqlTemplate.update(getSql("acquireClusterLockSql"), new Object[] { serverId,
-                    timeLockAcquired, action, TYPE_CLUSTER, timeToBreakLock, serverId }) == 1;
-        } catch (ConcurrencySqlException ex) {
-            log.debug("Ignoring concurrency error and reporting that we failed to get the cluster lock: {}", ex.getMessage());
-            return false;
+        if (isClusteringEnabled()) {
+            try {
+                return sqlTemplate.update(getSql("acquireClusterLockSql"), new Object[] { serverId,
+                        timeLockAcquired, action, TYPE_CLUSTER, timeToBreakLock, serverId }) == 1;
+            } catch (ConcurrencySqlException ex) {
+                log.debug("Ignoring concurrency error and reporting that we failed to get the cluster lock: {}", ex.getMessage());
+            }
+        } else {
+            Lock lock = lockCache.get(action);
+            if (lock != null) {
+                synchronized (lock) {
+                    if (lock.getLockType().equals(TYPE_CLUSTER) && (lock.getLockTime() == null 
+                            || lock.getLockTime().before(timeToBreakLock) || serverId.equals(lock.getLockingServerId()))) {
+                        lock.setLockingServerId(serverId);
+                        lock.setLockTime(timeLockAcquired);
+                        return true;
+                    }
+                }
+            }
         }
+        return false;
     }
 
     protected boolean lockShared(final String action) {
         final Date timeout = DateUtils.addMilliseconds(new Date(),
                 (int) -parameterService.getLong(ParameterConstants.LOCK_TIMEOUT_MS));    
-        return sqlTemplate.update(getSql("acquireSharedLockSql"), new Object[] {
-                TYPE_SHARED, getServerId(), new Date(), action, TYPE_SHARED, timeout }) == 1;
+        if (isClusteringEnabled()) {
+            return sqlTemplate.update(getSql("acquireSharedLockSql"), new Object[] {
+                    TYPE_SHARED, getServerId(), new Date(), action, TYPE_SHARED, timeout }) == 1;
+        } else {
+            Lock lock = lockCache.get(action);
+            if (lock != null) {
+                synchronized (lock) {
+                    if ((lock.getLockType().equals(TYPE_SHARED) || lock.getLockTime() == null || lock.getLockTime().before(timeout))
+                            && (lock.isSharedEnable() || lock.getSharedCount() == 0)) {
+                        lock.setLockType(TYPE_SHARED);
+                        lock.setLockingServerId(getServerId());
+                        lock.setLockTime(new Date());
+                        if (lock.getSharedCount() == 0) {
+                            lock.setSharedEnable(true);
+                        }
+                        lock.setSharedCount(lock.getSharedCount() + 1);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     protected boolean lockExclusive(final String action) {
         final Date timeout = DateUtils.addMilliseconds(new Date(),
                 (int) -parameterService.getLong(ParameterConstants.LOCK_TIMEOUT_MS));    
-        return sqlTemplate.update(getSql("acquireExclusiveLockSql"), new Object[] {
-                TYPE_EXCLUSIVE, getServerId(), new Date(), action, TYPE_SHARED, timeout }) == 1;
+        if (isClusteringEnabled()) {
+            return sqlTemplate.update(getSql("acquireExclusiveLockSql"), new Object[] {
+                    TYPE_EXCLUSIVE, getServerId(), new Date(), action, TYPE_SHARED, timeout }) == 1;
+        } else {
+            Lock lock = lockCache.get(action);
+            if (lock != null) {
+                synchronized (lock) {
+                    if ((lock.getLockType().equals(TYPE_SHARED) && lock.getSharedCount() == 0) ||
+                            lock.getLockTime() == null || lock.getLockTime().before(timeout)) {
+                        lock.setLockType(TYPE_EXCLUSIVE);
+                        lock.setLockingServerId(getServerId());
+                        lock.setLockTime(new Date());
+                        lock.setSharedCount(0);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     protected boolean lockWait(final String action, final String lockType, long waitMillis) {
@@ -179,7 +255,16 @@ public class ClusterService extends AbstractService implements IClusterService {
             } else if (lockType.equals(TYPE_EXCLUSIVE)) {
                 isLocked = lockExclusive(action);
                 if (!isLocked) {
-                    sqlTemplate.update(getSql("disableSharedLockSql"), new Object[] { action, TYPE_SHARED });
+                    if (isClusteringEnabled()) {
+                        sqlTemplate.update(getSql("disableSharedLockSql"), new Object[] { action, TYPE_SHARED });
+                    } else {
+                        Lock lock = lockCache.get(action);
+                        if (lock != null) {
+                            synchronized (lock) {
+                                lock.setSharedEnable(false);
+                            }
+                        }
+                    }
                 }
             }
             if (isLocked) {
@@ -191,23 +276,27 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     public Map<String, Lock> findLocks() {
-        final Map<String, Lock> locks = new HashMap<String, Lock>();
-        sqlTemplate.query(getSql("findLocksSql"), new ISqlRowMapper<Lock>() {
-            public Lock mapRow(Row rs) {
-                Lock lock = new Lock();
-                lock.setLockAction(rs.getString("lock_action"));
-                lock.setLockType(rs.getString("lock_type"));
-                lock.setLockingServerId(rs.getString("locking_server_id"));
-                lock.setLockTime(rs.getDateTime("lock_time"));
-                lock.setSharedCount(rs.getInt("shared_count"));
-                lock.setSharedEnable(rs.getBoolean("shared_enable"));
-                lock.setLastLockingServerId(rs.getString("last_locking_server_id"));
-                lock.setLastLockTime(rs.getDateTime("last_lock_time"));
-                locks.put(lock.getLockAction(), lock);
-                return lock;
-            }
-        });
-        return locks;
+        if (isClusteringEnabled()) {
+            final Map<String, Lock> locks = new HashMap<String, Lock>();
+            sqlTemplate.query(getSql("findLocksSql"), new ISqlRowMapper<Lock>() {
+                public Lock mapRow(Row rs) {
+                    Lock lock = new Lock();
+                    lock.setLockAction(rs.getString("lock_action"));
+                    lock.setLockType(rs.getString("lock_type"));
+                    lock.setLockingServerId(rs.getString("locking_server_id"));
+                    lock.setLockTime(rs.getDateTime("lock_time"));
+                    lock.setSharedCount(rs.getInt("shared_count"));
+                    lock.setSharedEnable(rs.getBoolean("shared_enable"));
+                    lock.setLastLockingServerId(rs.getString("last_locking_server_id"));
+                    lock.setLastLockTime(rs.getDateTime("last_lock_time"));
+                    locks.put(lock.getLockAction(), lock);
+                    return lock;
+                }
+            });
+            return locks;
+        } else {
+            return lockCache;
+        }
     }
 
     /**
@@ -259,26 +348,80 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     public void unlock(final String action) {
-        if (isClusteringEnabled()) {
-            if (!unlockCluster(action, getServerId())) {
-                log.warn("Failed to release lock for action:{} server:{}", action, getServerId());
-            }
+        if (!unlockCluster(action, getServerId())) {
+            log.warn("Failed to release lock for action:{} server:{}", action, getServerId());
         }
     }
 
     protected boolean unlockCluster(String action, String serverId) {
-        return sqlTemplate.update(getSql("releaseClusterLockSql"), new Object[] { action,
-                TYPE_CLUSTER, serverId }) > 0;
+        if (isClusteringEnabled()) {
+            return sqlTemplate.update(getSql("releaseClusterLockSql"), new Object[] { action,
+                    TYPE_CLUSTER, serverId }) > 0;
+        } else {
+            Lock lock = lockCache.get(action);
+            if (lock != null) {
+                synchronized (lock) {
+                    if (lock.getLockType().equals(TYPE_CLUSTER) && serverId.equals(lock.getLockingServerId())) {
+                        lock.setLastLockingServerId(lock.getLockingServerId());
+                        lock.setLockingServerId(null);
+                        lock.setLastLockTime(lock.getLockTime());
+                        lock.setLockTime(null);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     protected boolean unlockShared(final String action) {
-        return sqlTemplate.update(getSql("releaseSharedLockSql"), new Object[] {
-                action, TYPE_SHARED }) == 1;
+        if (isClusteringEnabled()) {
+            return sqlTemplate.update(getSql("releaseSharedLockSql"), new Object[] {
+                    action, TYPE_SHARED }) == 1;
+        } else {
+            Lock lock = lockCache.get(action);
+            if (lock != null) {
+                synchronized (lock) {
+                    if (lock.getLockType().equals(TYPE_SHARED)) {
+                        lock.setLastLockTime(lock.getLockTime());
+                        lock.setLastLockingServerId(lock.getLockingServerId());
+                        if (lock.getSharedCount() == 1) {
+                            lock.setSharedEnable(false);
+                            lock.setLockingServerId(null);
+                            lock.setLockTime(null);
+                        }
+                        if (lock.getSharedCount() > 1) {
+                            lock.setSharedCount(lock.getSharedCount() - 1);
+                        } else {
+                            lock.setSharedCount(0);
+                        }
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     protected boolean unlockExclusive(final String action) {
-        return sqlTemplate.update(getSql("releaseExclusiveLockSql"), new Object[] {
-                action, TYPE_EXCLUSIVE }) == 1;
+        if (isClusteringEnabled()) {
+            return sqlTemplate.update(getSql("releaseExclusiveLockSql"), new Object[] {
+                    action, TYPE_EXCLUSIVE }) == 1;
+        } else {
+            Lock lock = lockCache.get(action);
+            if (lock != null) {
+                synchronized (lock) {
+                    if (lock.getLockType().equals(TYPE_EXCLUSIVE)) {
+                        lock.setLastLockingServerId(lock.getLockingServerId());
+                        lock.setLockingServerId(null);
+                        lock.setLastLockTime(lock.getLockTime());
+                        lock.setLockTime(null);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public boolean isClusteringEnabled() {
@@ -315,7 +458,14 @@ public class ClusterService extends AbstractService implements IClusterService {
         Map<String, Lock> all = findLocks();
         Lock lock = all.get(action);
         if (lock != null && Lock.STOPPED.equals(lock.getLockingServerId())) {
-            sqlTemplate.update(getSql("resetClusterLockSql"), new Object[] { action, TYPE_CLUSTER, Lock.STOPPED});
+            if (isClusteringEnabled()) {
+                sqlTemplate.update(getSql("resetClusterLockSql"), new Object[] { action, TYPE_CLUSTER, Lock.STOPPED});
+            } else if (lock.getLockType().equals(TYPE_CLUSTER) && Lock.STOPPED.equals(lock.getLockingServerId())) {
+                lock.setLastLockingServerId(null);
+                lock.setLockingServerId(null);
+                lock.setLastLockTime(null);
+                lock.setLockTime(null);
+            }
         }
     }
 

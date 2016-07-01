@@ -536,19 +536,22 @@ public class RouterService extends AbstractService implements IRouterService {
                     gapDetector.setIsAllDataRead(context.getDataIds().size() < context.getChannel().getMaxDataToRoute());
                     context.incrementStat(System.currentTimeMillis() - insertTs,
                             ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
-                    Data lastDataProcessed = context.getLastDataProcessed();
-                    if (lastDataProcessed != null && lastDataProcessed.getDataId() > 0) {
-                        String channelId = nodeChannel.getChannelId();
-                        long queryTs = System.currentTimeMillis();
-                        long dataLeftToRoute = sqlTemplate.queryForInt(
-                                getSql("selectUnroutedCountForChannelSql"), channelId,
-                                lastDataProcessed.getDataId());
-                        queryTs = System.currentTimeMillis() - queryTs;
-                        if (queryTs > Constants.LONG_OPERATION_THRESHOLD) {
-                            log.warn("Unrouted query for channel {} took longer than expected", channelId, queryTs);
-                            log.info("The query took {} ms", queryTs);
+
+                    if (parameterService.is(ParameterConstants.ROUTING_COLLECT_STATS_UNROUTED)) {
+                        Data lastDataProcessed = context.getLastDataProcessed();
+                        if (lastDataProcessed != null && lastDataProcessed.getDataId() > 0) {
+                            String channelId = nodeChannel.getChannelId();
+                            long queryTs = System.currentTimeMillis();
+                            long dataLeftToRoute = sqlTemplate.queryForInt(
+                                    getSql("selectUnroutedCountForChannelSql"), channelId,
+                                    lastDataProcessed.getDataId());
+                            queryTs = System.currentTimeMillis() - queryTs;
+                            if (queryTs > Constants.LONG_OPERATION_THRESHOLD) {
+                                log.warn("Unrouted query for channel {} took longer than expected", channelId, queryTs);
+                                log.info("The query took {} ms", queryTs);
+                            }
+                            engine.getStatisticManager().setDataUnRouted(channelId, dataLeftToRoute);
                         }
-                        engine.getStatisticManager().setDataUnRouted(channelId, dataLeftToRoute);
                     }
                 }
             } catch (Exception e) {
@@ -921,7 +924,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 triggerRouters = engine.getTriggerRouterService()
                         .getTriggerRoutersForCurrentNode(false)
                         .get((data.getTriggerHistory().getTriggerId()));
-                if (triggerRouters == null && data.getTriggerHistory().getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
+                if (triggerRouters == null && data.getTriggerHistory().getTriggerId() != null && data.getTriggerHistory().getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
                 	TriggerRouter dynamicTriggerRouter = new TriggerRouter();
                 	dynamicTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(data.getExternalData()));
                 	dynamicTriggerRouter.setTrigger(new Trigger());
@@ -947,7 +950,7 @@ public class RouterService extends AbstractService implements IRouterService {
         long maxDataIdAlreadyRouted = sqlTemplate
                 .queryForLong(getSql("selectLastDataIdRoutedUsingDataGapSql"));
         long leftToRoute = engine.getDataService().findMaxDataId() - maxDataIdAlreadyRouted;
-        List<DataGap> gaps = engine.getDataService().findDataGaps();
+        List<DataGap> gaps = engine.getDataService().findDataGapsByStatus(DataGap.Status.GP);
         for (int i = 0; i < gaps.size()-2; i++) {
             DataGap gap = gaps.get(i);
             leftToRoute += (gap.getEndId() - gap.getStartId());

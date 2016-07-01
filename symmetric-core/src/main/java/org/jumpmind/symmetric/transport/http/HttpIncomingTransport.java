@@ -35,13 +35,14 @@ import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
+import org.jumpmind.symmetric.transport.NoContentException;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpIncomingTransport implements IIncomingTransport {
-
+    
     private HttpURLConnection connection;
 
     private BufferedReader reader;
@@ -60,10 +61,12 @@ public class HttpIncomingTransport implements IIncomingTransport {
         this.httpTimeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
     }
     
+    @Override
     public String getUrl() {
         return this.connection.getURL().toExternalForm();
     }
 
+    @Override
     public void close() {
         if (reader != null) {
             IOUtils.closeQuietly(reader);
@@ -76,14 +79,17 @@ public class HttpIncomingTransport implements IIncomingTransport {
         }
     }
 
+    @Override
     public boolean isOpen() {
         return reader != null;
     }
     
+    @Override
     public String getRedirectionUrl() {
         return redirectionUrl;
     }
     
+    @Override
     public InputStream openStream() throws IOException {
         
         boolean manualRedirects = parameterService.is(ParameterConstants.TRANSPORT_HTTP_MANUAL_REDIRECTS_ENABLED, true);
@@ -104,19 +110,21 @@ public class HttpIncomingTransport implements IIncomingTransport {
             throw new ServiceUnavailableException();
         case WebConstants.SC_FORBIDDEN:
             throw new AuthenticationException();
+        case WebConstants.SC_NO_CONTENT:
+            throw new NoContentException();
         default:
             is = HttpTransportManager.getInputStreamFrom(connection);
             return is;
         }
     }
-    
 
+    @Override
     public BufferedReader openReader() throws IOException {
-        InputStream is = openStream();
-        reader = TransportUtils.toReader(is);
+        InputStream stream = openStream();
+        reader = TransportUtils.toReader(stream);
         return reader;
     }
-    
+        
     /**
      * This method support redirection from an http connection to an https connection.
      * See {@link http://java.sun.com/j2se/1.4.2/docs/guide/deployment/deployment-guide/upgrade-guide/article-17.html}

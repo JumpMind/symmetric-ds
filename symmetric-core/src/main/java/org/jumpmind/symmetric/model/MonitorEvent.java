@@ -22,30 +22,32 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Date;
 
-public class NotificationEvent {
+public class MonitorEvent {
 
-    protected String notificationId;
+    protected String monitorId;
     
     protected String nodeId;
-    
-    protected String hostName;
-    
+        
     protected Date eventTime;
-    
-    protected long value;
+
+    protected String hostName;
+
+    protected String type;
     
     protected long threshold;
-    
-    protected long period;
-    
-    protected int severityLevel;
 
-    public String getNotificationId() {
-        return notificationId;
+    protected long value;
+
+    protected int severityLevel;
+    
+    protected boolean isNotified;
+
+    public String getMonitorId() {
+        return monitorId;
     }
 
-    public void setNotificationId(String notificationId) {
-        this.notificationId = notificationId;
+    public void setMonitorId(String monitorId) {
+        this.monitorId = monitorId;
     }
 
     public String getNodeId() {
@@ -72,6 +74,14 @@ public class NotificationEvent {
         this.eventTime = eventTime;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public long getValue() {
         return value;
     }
@@ -88,20 +98,20 @@ public class NotificationEvent {
         this.threshold = threshold;
     }
 
-    public long getPeriod() {
-        return period;
-    }
-
-    public void setPeriod(long period) {
-        this.period = period;
-    }
-
     public int getSeverityLevel() {
         return severityLevel;
     }
 
     public void setSeverityLevel(int severityLevel) {
         this.severityLevel = severityLevel;
+    }
+
+    public boolean isNotified() {
+        return isNotified;
+    }
+
+    public void setNotified(boolean isNotified) {
+        this.isNotified = isNotified;
     }
 
 }

@@ -324,12 +324,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected boolean isTriggerNameInUse(List<TriggerHistory> activeTriggerHistories, String triggerId, String triggerName) {
-        for (TriggerHistory triggerHistory : activeTriggerHistories) {
-            if (!triggerHistory.getTriggerId().equals(triggerId) && (
-                    (triggerHistory.getNameForDeleteTrigger() != null && triggerHistory.getNameForDeleteTrigger().equals(triggerName)) ||
-                    (triggerHistory.getNameForInsertTrigger() != null && triggerHistory.getNameForInsertTrigger().equals(triggerName)) || 
-                    (triggerHistory.getNameForUpdateTrigger() != null && triggerHistory.getNameForUpdateTrigger().equals(triggerName)))) {
-                return true;
+        synchronized (activeTriggerHistories) {
+            for (TriggerHistory triggerHistory : activeTriggerHistories) {
+                if (!triggerHistory.getTriggerId().equals(triggerId) && (
+                        (triggerHistory.getNameForDeleteTrigger() != null && triggerHistory.getNameForDeleteTrigger().equals(triggerName)) ||
+                        (triggerHistory.getNameForInsertTrigger() != null && triggerHistory.getNameForInsertTrigger().equals(triggerName)) || 
+                        (triggerHistory.getNameForUpdateTrigger() != null && triggerHistory.getNameForUpdateTrigger().equals(triggerName)))) {
+                    return true;
+                }
             }
         }
         return false;
@@ -488,8 +490,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         trigger.setSyncOnIncomingBatch(syncOnIncoming);
         trigger.setSourceTableName(tableName);
         trigger.setUseCaptureOldData(false);
-        if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST)
-                .equals(tableName)) {
+        if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST).equals(tableName)
+                || TableConstants.getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT).equals(tableName)) {
             trigger.setChannelId(Constants.CHANNEL_HEARTBEAT);
         } else if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT)
                 .equals(tableName)) {
@@ -506,6 +508,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setChannelId(Constants.CHANNEL_CONFIG);
         }
 
+        if (TableConstants.getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT).equals(tableName)
+                && !parameterService.is(ParameterConstants.MONITOR_EVENTS_CAPTURE_ENABLED)) {
+            trigger.setSyncOnInsert(false);
+            trigger.setSyncOnUpdate(false);
+            trigger.setSyncOnDelete(false);
+        }
+        
         if (!TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST)
                 .equals(tableName) &&
                 !TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE)
@@ -1641,7 +1650,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
 
             if (newestHistory != null) {
-                activeTriggerHistories.add(newestHistory);
+                synchronized (activeTriggerHistories) {
+                    activeTriggerHistories.add(newestHistory);
+                }
                 newestHistory.setErrorMessage(errorMessage);
                 if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                     for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
