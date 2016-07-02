@@ -409,7 +409,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public void setup() {
-        getParameterService().rereadParameters();
         if (!setup) {
             setupDatabase(false);
             parameterService.setDatabaseHasBeenInitialized(true);
@@ -428,7 +427,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         clusterService.init();
         sequenceService.init();
         autoConfigRegistrationServer();
-        parameterService.rereadParameters();
         log.info("Done initializing SymmetricDS database");
     }
 
@@ -438,6 +436,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (node == null) {
             buildTablesFromDdlUtilXmlIfProvided();
             loadFromScriptIfProvided();
+            parameterService.rereadParameters();
         }
 
         node = nodeService.findIdentity();

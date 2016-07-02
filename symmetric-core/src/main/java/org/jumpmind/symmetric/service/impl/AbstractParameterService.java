@@ -204,8 +204,10 @@ abstract public class AbstractParameterService {
     }
 
     public void setDatabaseHasBeenInitialized(boolean databaseHasBeenInitialized) {
-        this.databaseHasBeenInitialized = databaseHasBeenInitialized;
-        this.parameters = null;
+        if (this.databaseHasBeenInitialized != databaseHasBeenInitialized) {
+            this.databaseHasBeenInitialized = databaseHasBeenInitialized;
+            this.parameters = null;
+        }
     }
 
     abstract public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId);
