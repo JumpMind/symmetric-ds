@@ -103,7 +103,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     synchronized public RemoteNodeStatuses pushData(boolean force) {
         RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
         
-        Node identity = nodeService.findIdentity(false);
+        Node identity = nodeService.findIdentity();
         if (identity != null && identity.isSyncEnabled()) {
             long minimumPeriodMs = parameterService.getLong(ParameterConstants.PUSH_MINIMUM_PERIOD_MS, -1);
             if (force || !clusterService.isInfiniteLocked(ClusterConstants.PUSH)) {
@@ -186,7 +186,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     }
 
     private void pushToNode(Node remote, RemoteNodeStatus status) {
-        Node identity = nodeService.findIdentity(false);
+        Node identity = nodeService.findIdentity();
         NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
         IOutgoingWithResponseTransport transport = null;
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity

@@ -1516,7 +1516,7 @@ public class RestService {
         Node xmlNode = new Node();
         if (isRegistered(engine)) {
             INodeService nodeService = engine.getNodeService();
-            org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
+            org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
             List<NodeHost> nodeHosts = nodeService.findNodeHosts(modelNode.getNodeId());
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
             xmlNode.setNodeId(modelNode.getNodeId());
@@ -1559,7 +1559,7 @@ public class RestService {
     private boolean isRegistered(ISymmetricEngine engine) {
         boolean registered = true;
         INodeService nodeService = engine.getNodeService();
-        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
+        org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
         if (modelNode == null) {
             registered = false;
         } else {
@@ -1576,7 +1576,7 @@ public class RestService {
         NodeStatus status = new NodeStatus();
         if (isRegistered(engine)) {
             INodeService nodeService = engine.getNodeService();
-            org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity(false);
+            org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
             List<NodeHost> nodeHost = nodeService.findNodeHosts(modelNode.getNodeId());
             status.setStarted(engine.isStarted());

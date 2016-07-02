@@ -80,13 +80,13 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
     synchronized public RemoteNodeStatuses pullData(boolean force) {
         final RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
-        Node identity = nodeService.findIdentity(false);
+        Node identity = nodeService.findIdentity();
         if (identity == null || identity.isSyncEnabled()) {
             long minimumPeriodMs = parameterService.getLong(ParameterConstants.PULL_MINIMUM_PERIOD_MS, -1);
             if (force || !clusterService.isInfiniteLocked(ClusterConstants.PULL)) {
                     // register if we haven't already been registered
                     registrationService.registerWithServer();
-                    identity = nodeService.findIdentity(false);
+                    identity = nodeService.findIdentity();
                     if (identity != null) {
                         List<NodeCommunication> nodes = nodeCommunicationService
                                 .list(CommunicationType.PULL);

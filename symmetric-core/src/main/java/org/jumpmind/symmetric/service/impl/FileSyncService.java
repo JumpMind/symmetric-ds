@@ -919,7 +919,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     protected RemoteNodeStatuses queueJob(boolean force, long minimumPeriodMs, String clusterLock,
             CommunicationType type) {
         final RemoteNodeStatuses statuses = new RemoteNodeStatuses(engine.getConfigurationService().getChannels(false));
-        Node identity = engine.getNodeService().findIdentity(false);
+        Node identity = engine.getNodeService().findIdentity();
         if (identity != null && identity.isSyncEnabled()) {
             if (force || !engine.getClusterService().isInfiniteLocked(clusterLock)) {
 
