@@ -257,7 +257,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         if (parameterService.is(ParameterConstants.NODE_OFFLINE)) {
             nodes.clear();
         } else {
-            List<DatabaseParameter> parms = parameterService.getDatabaseParametersFor(ParameterConstants.NODE_OFFLINE);
+            List<DatabaseParameter> parms = parameterService.getOfflineNodeParameters();
             for (DatabaseParameter parm : parms) {
                 Iterator<Node> iter = nodes.iterator();
                 while (iter.hasNext()) {
@@ -284,7 +284,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 nodesToCommunicateWith.addAll(nodeService.findNodesToPull());
             }
         } else {
-            List<DatabaseParameter> parms = parameterService.getDatabaseParametersFor(ParameterConstants.NODE_OFFLINE);
+            List<DatabaseParameter> parms = parameterService.getOfflineNodeParameters();
             nodesToCommunicateWith = new ArrayList<Node>(parms.size());
             if (parms.size() > 0) {
                 List<Node> sourceNodes = null;

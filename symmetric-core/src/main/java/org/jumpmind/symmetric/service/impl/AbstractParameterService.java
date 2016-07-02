@@ -144,21 +144,26 @@ abstract public class AbstractParameterService {
     }
 
     protected TypedProperties getParameters() {
-        if (parameters == null
-                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached < (System
-                        .currentTimeMillis() - cacheTimeoutInMs))) {
-            try {
-                parameters = rereadApplicationParameters();
-                lastTimeParameterWereCached = System.currentTimeMillis();
-                cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
-            } catch (SqlException ex) {
-                if (parameters != null) {
-                    log.warn("Could not read database parameters.  We will try again later", ex);
-                } else {
-                    log.error("Could not read database parameters and they have not yet been initialized");
-                    throw ex;
+        long timeoutTime = System.currentTimeMillis() - cacheTimeoutInMs;
+        // Quick check if cache is timed out
+        if (parameters == null || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached < timeoutTime)) {
+            synchronized (this) {
+                // Synchronized check to prevent calling reread parameters multiple times
+                if (parameters == null || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached < timeoutTime)) {
+                    try {
+                        parameters = rereadApplicationParameters();
+                        lastTimeParameterWereCached = System.currentTimeMillis();
+                        cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
+                    } catch (SqlException ex) {
+                        if (parameters != null) {
+                            log.warn("Could not read database parameters.  We will try again later", ex);
+                        } else {
+                            log.error("Could not read database parameters and they have not yet been initialized");
+                            throw ex;
+                        }
+                        throw ex;
+                    }
                 }
-                throw ex;
             }
         }
         return parameters;
