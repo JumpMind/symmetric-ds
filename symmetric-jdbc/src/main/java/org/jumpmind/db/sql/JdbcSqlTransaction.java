@@ -24,6 +24,7 @@ import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -248,8 +249,11 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     long endTime = System.currentTimeMillis();
                     logSqlBuilder.logSql(log, sql, args, null, (endTime-startTime));
                     List<T> list = new ArrayList<T>();
+                    ResultSetMetaData rsMetaData = rs.getMetaData();
+                    int columnCount = rsMetaData.getColumnCount();
                     while (rs.next()) {
-                        Row row = JdbcSqlReadCursor.getMapForRow(rs, jdbcSqlTemplate.getSettings().isReadStringsAsBytes());
+                        Row row = JdbcSqlReadCursor.getMapForRow(rs, rsMetaData, columnCount, 
+                                jdbcSqlTemplate.getSettings().isReadStringsAsBytes());
                         T value = mapper.mapRow(row);
                         list.add(value);
                     }

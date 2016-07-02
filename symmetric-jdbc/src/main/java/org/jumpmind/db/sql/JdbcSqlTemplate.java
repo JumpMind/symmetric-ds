@@ -533,6 +533,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      *
      * @param rs
      *            is the ResultSet holding the data
+     * @param metaData 
      * @param index
      *            is the column index
      * @param readStringsAsBytes TODO
@@ -543,8 +544,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      * @see java.sql.Clob
      * @see java.sql.Timestamp
      */
-    public static Object getResultSetValue(ResultSet rs, int index, boolean readStringsAsBytes) throws SQLException {
-        ResultSetMetaData metaData = rs.getMetaData();
+    public static Object getResultSetValue(ResultSet rs, ResultSetMetaData metaData, int index, boolean readStringsAsBytes) throws SQLException {
         Object obj = null;
         int jdbcType = metaData.getColumnType(index);
         String jdbcTypeName = metaData.getColumnTypeName(index);
