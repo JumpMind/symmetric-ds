@@ -177,7 +177,9 @@ public class ParameterService extends AbstractParameterService implements IParam
     }
 
     protected synchronized void rereadOfflineNodeParameters() {
-        offlineParameters = getDatabaseParametersFor(ParameterConstants.NODE_OFFLINE);
+        if (databaseHasBeenInitialized) {
+            offlineParameters = getDatabaseParametersFor(ParameterConstants.NODE_OFFLINE);
+        }
     }
 
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey) {

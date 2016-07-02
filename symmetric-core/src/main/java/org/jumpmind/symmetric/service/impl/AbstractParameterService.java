@@ -51,7 +51,7 @@ abstract public class AbstractParameterService {
 
     protected Properties systemProperties;
 
-    private boolean databaseHasBeenInitialized = false;
+    protected boolean databaseHasBeenInitialized = false;
 
     public AbstractParameterService() {
         this.systemProperties = (Properties) System.getProperties().clone();
