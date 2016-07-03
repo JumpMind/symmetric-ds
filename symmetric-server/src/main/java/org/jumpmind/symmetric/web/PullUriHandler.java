@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.bouncycastle.ocsp.RespData;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -99,7 +98,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         
     public void pull(String nodeId, String remoteHost, String remoteAddress,
             OutputStream outputStream,  String encoding, ChannelMap map) throws IOException {
-        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
+        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
         long ts = System.currentTimeMillis();
         try {
             ChannelMap remoteSuspendIgnoreChannelsList = configurationService

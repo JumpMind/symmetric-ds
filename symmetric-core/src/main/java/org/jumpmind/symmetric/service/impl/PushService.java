@@ -110,8 +110,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     List<NodeCommunication> nodes = nodeCommunicationService
                             .list(CommunicationType.PUSH);
                     if (nodes.size() > 0) {
-                        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity
-                                .getNodeId());
+                        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId(), true);
                         if (identitySecurity != null) {
                             int availableThreads = nodeCommunicationService
                                     .getAvailableThreads(CommunicationType.PUSH);
@@ -187,7 +186,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
     private void pushToNode(Node remote, RemoteNodeStatus status) {
         Node identity = nodeService.findIdentity();
-        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
+        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId(), true);
         IOutgoingWithResponseTransport transport = null;
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
                 .getNodeId(), status.getChannelId(), remote.getNodeId(), ProcessType.PUSH_JOB));

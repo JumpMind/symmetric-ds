@@ -226,7 +226,8 @@ public class RouterService extends AbstractService implements IRouterService {
             INodeService nodeService = engine.getNodeService();
             Node identity = nodeService.findIdentity();
             if (identity != null) {
-                NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
+                boolean isClusteringEnabled = parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
+                NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId(), !isClusteringEnabled);
                 if (engine.getParameterService().isRegistrationServer()
                         || (identitySecurity != null && !identitySecurity.isRegistrationEnabled() && identitySecurity
                                 .getRegistrationTime() != null)) {
