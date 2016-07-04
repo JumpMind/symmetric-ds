@@ -697,7 +697,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             for (String channelProcessed : channelsProcessed) {
                 NodeChannel nodeChannel = configurationService.getNodeChannel(channelProcessed,
                         targetNode.getNodeId(), false);
-                if (nodeChannel != null) {
+                if (nodeChannel != null && nodeChannel.getExtractPeriodMillis() > 0) {
                     nodeChannel.setLastExtractTime(now.getTime());                    
                     configurationService.updateLastExtractTime(nodeChannel);
                 }
