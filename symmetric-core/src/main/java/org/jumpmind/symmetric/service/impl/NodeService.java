@@ -69,6 +69,12 @@ public class NodeService extends AbstractService implements INodeService {
 
     private long securityCacheTime;
 
+    private Map<String, List<Node>> sourceNodesCache = new HashMap<String, List<Node>>();
+    
+    private Map<String, List<Node>> targetNodesCache = new HashMap<String, List<Node>>();
+
+    private long nodesCacheTime;
+
     private INodePasswordFilter nodePasswordFilter;
 
     private NodeHost nodeHostForCurrentNode = null;
@@ -339,9 +345,16 @@ public class NodeService extends AbstractService implements INodeService {
 
     public List<Node> findSourceNodesFor(NodeGroupLinkAction eventAction) {
         Node node = findIdentity();
+        long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
         if (node != null) {
-            return sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoTargetMeSql"),
-                    new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
+            List<Node> list = sourceNodesCache.get(eventAction.name());
+            if (list == null || (System.currentTimeMillis() - nodesCacheTime) >= cacheTimeoutInMs) {
+                list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoTargetMeSql"),
+                        new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
+                sourceNodesCache.put(eventAction.name(), list);
+                nodesCacheTime = System.currentTimeMillis();
+            }
+            return list;
         } else {
             return Collections.emptyList();
         }
@@ -349,12 +362,24 @@ public class NodeService extends AbstractService implements INodeService {
 
     public List<Node> findTargetNodesFor(NodeGroupLinkAction eventAction) {
         Node node = findIdentity();
+        long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
         if (node != null) {
-            return sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoITargetSql"),
-                    new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
+            List<Node> list = targetNodesCache.get(eventAction.name());
+            if (list == null || (System.currentTimeMillis() - nodesCacheTime) >= cacheTimeoutInMs) {
+                list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoITargetSql"),
+                        new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
+                targetNodesCache.put(eventAction.name(), list);
+                nodesCacheTime = System.currentTimeMillis();
+            }
+            return list;
         } else {
             return Collections.emptyList();
         }
+    }
+
+    public void flushNodeGroupCache() {
+        sourceNodesCache = new HashMap<String, List<Node>>();
+        targetNodesCache = new HashMap<String, List<Node>>();
     }
 
     public List<String> findAllExternalIds() {

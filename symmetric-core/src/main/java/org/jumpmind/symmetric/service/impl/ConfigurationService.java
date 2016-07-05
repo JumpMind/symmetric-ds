@@ -198,6 +198,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public List<NodeGroupLink> getNodeGroupLinks(boolean refreshCache) {
         if (refreshCache) {
             nodeGroupLinkCacheTime = 0;
+            nodeService.flushNodeGroupCache();
         }
         long cacheTimeoutInMs = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);

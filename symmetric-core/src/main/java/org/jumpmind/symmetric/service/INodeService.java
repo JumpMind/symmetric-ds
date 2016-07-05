@@ -93,6 +93,8 @@ public interface INodeService {
     public boolean isNodeAuthorized(String nodeId, String password);
 
     public void flushNodeAuthorizedCache();
+    
+    public void flushNodeGroupCache();
 
     public boolean isRegistrationEnabled(String nodeId);
 

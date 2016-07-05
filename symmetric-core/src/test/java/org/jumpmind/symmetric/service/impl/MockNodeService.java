@@ -295,6 +295,9 @@ public class MockNodeService implements INodeService {
     public void clearCache() {       
     }
 
+    public void flushNodeGroupCache() {
+    }
+
     /* (non-Javadoc)
      * @see org.jumpmind.symmetric.service.INodeService#getExternalId(java.lang.String)
      */
