@@ -1290,7 +1290,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             request.setCreateTime(row.getDateTime("create_time"));
             request.setLastUpdateTime(row.getDateTime("last_update_time"));
             request.setTriggerRouter(triggerRouterService.findTriggerRouterById(
-                    row.getString("trigger_id"), row.getString("router_id")));
+                    row.getString("trigger_id"), row.getString("router_id"), false));
             request.setQueue(row.getString("queue"));
             return request;
         }
