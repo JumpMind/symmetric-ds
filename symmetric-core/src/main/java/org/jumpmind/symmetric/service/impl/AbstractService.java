@@ -202,7 +202,7 @@ abstract public class AbstractService implements IService {
     }
     
     protected String buildBatchWhere(List<String> nodeIds, List<String> channels,
-            List<?> statuses) {
+            List<?> statuses, List<String> loads) {
         boolean containsErrorStatus = statuses.contains(OutgoingBatch.Status.ER)
                 || statuses.contains(IncomingBatch.Status.ER);
         boolean containsIgnoreStatus = statuses.contains(OutgoingBatch.Status.IG)
@@ -220,6 +220,13 @@ abstract public class AbstractService implements IService {
                 where.append(" and ");
             }
             where.append("channel_id in (:CHANNELS)");
+            needsAnd = true;
+        }
+        if (loads.size() > 0) {
+            if (needsAnd) {
+                where.append(" and ");
+            }
+            where.append("load_id in (:LOADS)");
             needsAnd = true;
         }
         if (statuses.size() > 0) {

@@ -133,30 +133,33 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     } 
 
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, boolean ascending) {
+            List<IncomingBatch.Status> statuses, List<String> loads, boolean ascending) {
 
-        String whereClause = buildBatchWhere(nodeIds, channels, statuses);
+        String whereClause = buildBatchWhere(nodeIds, channels, statuses, loads);
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));
-
+        params.put("LOADS", loads);
+        
         String sql = getSql("selectCreateTimePrefixSql", whereClause,
                 ascending ? " order by create_time" : " order by create_time desc");
         return sqlTemplate.query(sql, new DateMapper(), params);
     }
 
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, Date startAtCreateTime,
+            List<IncomingBatch.Status> statuses, List<String> loads, Date startAtCreateTime,
             final int maxRowsToRetrieve, boolean ascending) {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("NODES", nodeIds);
             params.put("CHANNELS", channels);
             params.put("STATUSES", toStringList(statuses));
             params.put("CREATE_TIME", startAtCreateTime);
+            params.put("CREATE_TIME", startAtCreateTime);
+            params.put("LOADS", loads);
             
-            String where = buildBatchWhere(nodeIds, channels, statuses);
+            String where = buildBatchWhere(nodeIds, channels, statuses, loads);
 
             String createTimeLimiter = "";
             if (startAtCreateTime != null) {
@@ -417,5 +420,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             return batch;
         }
     }
+
 
 }
