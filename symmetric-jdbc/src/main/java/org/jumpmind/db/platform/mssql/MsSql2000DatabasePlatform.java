@@ -96,7 +96,7 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     protected Object parseFloat(String value) {
-        return cleanNumber(value);
+        return cleanNumber(value).replace(',', '.');
     }
 }
 
