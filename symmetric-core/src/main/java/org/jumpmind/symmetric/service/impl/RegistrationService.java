@@ -385,6 +385,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             symmetricDialect.disableSyncTriggers(transaction, nodeId);
             transaction.prepareAndExecute(getSql("registerNodeSecuritySql"), nodeId);
             transaction.commit();
+            nodeService.flushNodeAuthorizedCache();
         } catch (Error ex) {
             if (transaction != null) {
                 transaction.rollback();
@@ -505,6 +506,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             } else {
                 log.info("Registration was reopened for {}", nodeId);
             }
+            nodeService.flushNodeAuthorizedCache();
         } else {
             log.warn("There was no row with a node id of {} to 'reopen' registration for", nodeId);
         }
@@ -552,7 +554,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 password = filterPasswordOnSaveIfNeeded(password);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, masterToMasterOnly ? null : me.getNodeId() });
+                nodeService.flushNodeAuthorizedCache();
                 nodeService.insertNodeGroup(node.getNodeGroupId(), null);
+                nodeService.flushNodeGroupCache();
                 log.info(
                         "Just opened registration for external id of {} and a node group of {} and a node id of {}",
                         new Object[] { node.getExternalId(), node.getNodeGroupId(), nodeId });

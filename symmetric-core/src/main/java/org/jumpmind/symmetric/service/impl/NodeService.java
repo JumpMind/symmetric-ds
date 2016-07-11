@@ -473,15 +473,16 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void insertNodeSecurity(String id) {
-        flushNodeAuthorizedCache();
         String password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(new Node(id, null, null));
         password = filterPasswordOnSaveIfNeeded(password);
         sqlTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, password,
                 null });
+        flushNodeAuthorizedCache();
     }
 
     public void deleteNodeSecurity(String nodeId) {
         sqlTemplate.update(getSql("deleteNodeSecuritySql"), new Object[] { nodeId });
+        flushNodeAuthorizedCache();
     }
 
     public List<NodeSecurity> findNodeSecurityWithLoadEnabled() {
