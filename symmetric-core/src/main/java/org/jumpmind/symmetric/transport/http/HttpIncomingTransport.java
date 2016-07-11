@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -123,6 +125,16 @@ public class HttpIncomingTransport implements IIncomingTransport {
         InputStream stream = openStream();
         reader = TransportUtils.toReader(stream);
         return reader;
+    }
+    
+    @Override
+    public Map<String, String> getHeaders() {
+        Map<String, String> headers = new LinkedHashMap<String, String>();
+        for (String name : connection.getHeaderFields().keySet()) {
+            headers.put(name, connection.getHeaderField(name)); 
+        }
+        
+        return headers;
     }
         
     /**

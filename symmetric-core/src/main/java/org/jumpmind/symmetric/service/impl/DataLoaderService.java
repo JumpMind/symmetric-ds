@@ -113,6 +113,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
+import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.ITransformService;
@@ -156,6 +157,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private IStagingManager stagingManager;
 
     private IExtensionService extensionService;
+    
+    private INodeCommunicationService nodeCommunicationService;
 
     private Map<NodeGroupLink, List<ConflictNodeGroupLink>> conflictSettingsCache = new HashMap<NodeGroupLink, List<ConflictNodeGroupLink>>();
 
@@ -181,6 +184,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         extensionService = engine.getExtensionService();
         extensionService.addExtensionPoint(new DefaultDataLoaderFactory(parameterService));
         extensionService.addExtensionPoint(new ConfigurationChangedDatabaseWriterFilter(engine));
+        this.nodeCommunicationService = engine.getNodeCommunicationService();
         this.engine = engine;
     }
 
@@ -307,6 +311,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 } else {
                     processInfo.setStatus(ProcessInfo.Status.OK);
                 }
+                
+                updateBatchToSendCount(remote, transport);
+                
             } catch (RuntimeException e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
                 throw e;
@@ -334,6 +341,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 log.error("", e);
             }
             throw e;
+        }
+    }
+
+    protected void updateBatchToSendCount(Node remote, IIncomingTransport transport) {
+        Map<String, String> headers = transport.getHeaders();
+        if (headers != null && headers.containsKey(WebConstants.BATCH_TO_SEND_COUNT)) {
+            // TODO save this batch to send to node communication...  Figure out how queues fit in.
+            int batchToSendCount = Integer.parseInt(headers.get(WebConstants.BATCH_TO_SEND_COUNT));  
         }
     }
 

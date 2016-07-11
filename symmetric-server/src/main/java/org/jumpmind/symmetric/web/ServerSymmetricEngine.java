@@ -73,9 +73,11 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
                 .add(new InfoUriHandler(parameterService, nodeService, configurationService));
         this.uriHandlers.add(new BandwidthSamplerUriHandler(parameterService));
         this.uriHandlers.add(new PullUriHandler(parameterService, nodeService,
-                configurationService, dataExtractorService, registrationService, statisticManager,
+                configurationService, dataExtractorService, registrationService, statisticManager, outgoingBatchService,
                 concurrencyInterceptor, authInterceptor));
         this.uriHandlers.add(new PushUriHandler(parameterService, dataLoaderService,
+                statisticManager, nodeService, concurrencyInterceptor, authInterceptor));
+        this.uriHandlers.add(new PushStatusUriHandler(parameterService, dataLoaderService,
                 statisticManager, nodeService, concurrencyInterceptor, authInterceptor));
         this.uriHandlers.add(new RegistrationUriHandler(parameterService, registrationService,
                 concurrencyInterceptor));

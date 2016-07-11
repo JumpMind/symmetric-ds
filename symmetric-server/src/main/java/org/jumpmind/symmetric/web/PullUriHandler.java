@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -40,6 +41,7 @@ import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -60,16 +62,19 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
     
     private IStatisticManager statisticManager;
     
+    private IOutgoingBatchService outgoingBatchService;
+    
     public PullUriHandler(IParameterService parameterService,
             INodeService nodeService,
             IConfigurationService configurationService, IDataExtractorService dataExtractorService,
-            IRegistrationService registrationService, IStatisticManager statisticManager,  IInterceptor... interceptors) {
+            IRegistrationService registrationService, IStatisticManager statisticManager,  IOutgoingBatchService outgoingBatchService, IInterceptor... interceptors) {
         super("/pull/*", parameterService, interceptors);
         this.nodeService = nodeService;
         this.configurationService = configurationService;
         this.dataExtractorService = dataExtractorService;
         this.registrationService = registrationService;
         this.statisticManager = statisticManager;
+        this.outgoingBatchService = outgoingBatchService;
     }
 
     public void handleWithCompression(HttpServletRequest req, HttpServletResponse res) throws IOException,
@@ -90,14 +95,14 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         map.setThreadChannel(req.getHeader(WebConstants.THREAD_CHANNEL));
         
         // pull out headers and pass to pull() method
-        pull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET), map);
+        pull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET), res, map);
 
         log.debug("Done with Pull request from {}", nodeId);
 
     }
         
     public void pull(String nodeId, String remoteHost, String remoteAddress,
-            OutputStream outputStream,  String encoding, ChannelMap map) throws IOException {
+            OutputStream outputStream,  String encoding, HttpServletResponse res, ChannelMap map) throws IOException {
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
         long ts = System.currentTimeMillis();
         try {
@@ -123,7 +128,9 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                         List<OutgoingBatch> batchList = dataExtractorService.extract(processInfo, targetNode,
                         		map.getThreadChannel(), outgoingTransport);
                         logDataReceivedFromPush(targetNode, batchList);
+                        
                         if (processInfo.getStatus() != Status.ERROR) {
+                            addPendingBatchesCount(targetNode.getNodeId(), res);
                             processInfo.setStatus(Status.OK);
                         }
                     } finally {
@@ -142,6 +149,14 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         }
     }
     
+    private void addPendingBatchesCount(String targetNodeId, HttpServletResponse res) {
+        if (this.parameterService.is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED)) {            
+            int pendingBatchCount = 
+                    this.outgoingBatchService.countOutgoingBatchesPending(targetNodeId);
+            res.addHeader(WebConstants.BATCH_TO_SEND_COUNT, String.valueOf(pendingBatchCount));
+        }
+    }
+
     private void logDataReceivedFromPush(Node targetNode, List<OutgoingBatch> batchList) {
         int batchesCount = 0;
         int dataCount = 0;
