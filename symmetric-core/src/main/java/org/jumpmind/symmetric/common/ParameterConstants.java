@@ -347,6 +347,8 @@ final public class ParameterConstants {
     
     public final static String HYBRID_PUSH_PULL_TIMEOUT = "hybrid.push.pull.timeout";
 
+    public final static String DBF_ROUTER_VALIDATE_HEADER = "dbf.router.validate.header";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
