@@ -35,12 +35,14 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.ext.IPurgeListener;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -58,11 +60,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private IStatisticManager statisticManager;
 
+    private IExtensionService extensionService;
+    
     public PurgeService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            IClusterService clusterService, IStatisticManager statisticManager) {
+            IClusterService clusterService, IStatisticManager statisticManager, IExtensionService extensionService) {
         super(parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.statisticManager = statisticManager;
+        this.extensionService = extensionService;
+        
         setSqlMap(new PurgeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -73,6 +79,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
         retentionCutoff.add(Calendar.MINUTE,
                 -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
         rowsPurged += purgeOutgoing(retentionCutoff, force);
+        
+        List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
+        for (IPurgeListener purgeListener : purgeListeners) {
+            rowsPurged += purgeListener.purgeOutgoing(force);
+        }
         return rowsPurged;
     }
 
@@ -82,6 +93,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
         retentionCutoff.add(Calendar.MINUTE,
                 -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
         rowsPurged += purgeIncoming(retentionCutoff, force);
+        
+        List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
+        for (IPurgeListener purgeListener : purgeListeners) {
+            rowsPurged += purgeListener.purgeIncoming(force);
+        }
         return rowsPurged;
     }
 
