@@ -88,7 +88,7 @@ public class OfflinePushService extends AbstractService implements IOfflinePushS
 
     synchronized public RemoteNodeStatuses pushData(boolean force) {
         RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));        
-        Node identity = nodeService.findIdentity(false);
+        Node identity = nodeService.findIdentity();
         if (identity != null && identity.isSyncEnabled()) {
             if (force || !clusterService.isInfiniteLocked(ClusterConstants.OFFLINE_PUSH)) {
                 List<NodeCommunication> nodes = nodeCommunicationService.list(CommunicationType.OFFLN_PUSH);
@@ -127,7 +127,7 @@ public class OfflinePushService extends AbstractService implements IOfflinePushS
     }
 
     private void pushToNode(Node remote, RemoteNodeStatus status) {
-        Node identity = nodeService.findIdentity(false);
+        Node identity = nodeService.findIdentity();
         FileOutgoingTransport transport = null;
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
                 identity.getNodeId(), status.getChannelId(), remote.getNodeId(), ProcessType.OFFLINE_PUSH));

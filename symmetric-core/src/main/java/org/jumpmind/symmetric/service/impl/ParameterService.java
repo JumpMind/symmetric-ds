@@ -52,6 +52,8 @@ public class ParameterService extends AbstractParameterService implements IParam
     private ISqlTemplate sqlTemplate;
 
     private Date lastUpdateTime;
+    
+    private List<DatabaseParameter> offlineParameters;
 
     public ParameterService(IDatabasePlatform platform, ITypedPropertiesFactory factory, String tablePrefix) {
         this.tablePrefix = tablePrefix;
@@ -170,7 +172,14 @@ public class ParameterService extends AbstractParameterService implements IParam
         TypedProperties p = this.factory.reload();
         p.putAll(systemProperties);
         p.putAll(rereadDatabaseParameters(p));
+        rereadOfflineNodeParameters();
         return p;
+    }
+
+    protected synchronized void rereadOfflineNodeParameters() {
+        if (databaseHasBeenInitialized) {
+            offlineParameters = getDatabaseParametersFor(ParameterConstants.NODE_OFFLINE);
+        }
     }
 
     public List<DatabaseParameter> getDatabaseParametersFor(String paramKey) {
@@ -180,6 +189,13 @@ public class ParameterService extends AbstractParameterService implements IParam
 
     public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId) {
         return readParametersFromDatabase("selectParametersSql", externalId, nodeGroupId);
+    }
+
+    public List<DatabaseParameter> getOfflineNodeParameters() {
+        if (offlineParameters == null) {
+            rereadOfflineNodeParameters();
+        }
+        return offlineParameters;
     }
 
     class DatabaseParameterMapper implements ISqlRowMapper<DatabaseParameter> {

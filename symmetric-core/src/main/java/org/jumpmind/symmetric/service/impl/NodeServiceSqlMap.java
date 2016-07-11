@@ -166,10 +166,6 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                 ""
                         + "insert into $(node_security) (node_id, node_password, created_at_node_id) values (?, ?, ?)   ");
 
-        putSql("getDataLoadStatusSql", ""
-                + "select initial_load_enabled, initial_load_time from $(node_security) ns,   "
-                + "  $(node_identity) ni where ns.node_id=ni.node_id                          ");
-
         putSql("insertNodeHostSql",
                 "insert into $(node_host)                                                                                                                                                                                                                                            "
                         + "  (ip_address, os_user, os_name, os_arch, os_version, available_processors, free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, jdbc_version, symmetric_version, timezone_offset, heartbeat_time, last_restart_time, create_time, node_id, host_name)   "

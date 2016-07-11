@@ -73,7 +73,7 @@ public class OfflinePullService extends AbstractService implements IOfflinePullS
 
     synchronized public RemoteNodeStatuses pullData(boolean force) {
         RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
-        Node identity = nodeService.findIdentity(false);
+        Node identity = nodeService.findIdentity();
         if (identity != null && identity.isSyncEnabled()) {
             if (force || !clusterService.isInfiniteLocked(ClusterConstants.OFFLINE_PULL)) {
                 List<NodeCommunication> nodes = nodeCommunicationService.list(CommunicationType.OFFLN_PULL);

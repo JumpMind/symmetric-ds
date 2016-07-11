@@ -90,10 +90,10 @@ public interface IOutgoingBatchService {
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(OutgoingBatch.Status ... statuses);
     
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses);
+            List<OutgoingBatch.Status> statuses, List<String> loads);
     
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses, long startAtBatchId, int rowsExpected, boolean ascending);
+            List<OutgoingBatch.Status> statuses, List<String> loads, long startAtBatchId, int rowsExpected, boolean ascending);
     
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly);
     

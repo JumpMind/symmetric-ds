@@ -36,7 +36,7 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
                 "severity_level, create_time, last_update_by, last_update_time from $(monitor)");
 
         putSql("whereMonitorByNodeSql",
-                "where (node_group_id = ? or node_group_id = 'ALL') and (external_id = ? or external_id = 'ALL' and enabled = 1)");
+                "where (node_group_id = ? or node_group_id = 'ALL') and (external_id = ? or external_id = 'ALL') and enabled = 1");
 
         putSql("insertMonitorSql",
                 "insert into $(monitor) " +

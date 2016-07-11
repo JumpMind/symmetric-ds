@@ -39,6 +39,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
@@ -91,6 +93,7 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
+import org.jumpmind.util.FormatUtils;
 
 /**
  * @see IRouterService
@@ -226,7 +229,8 @@ public class RouterService extends AbstractService implements IRouterService {
             INodeService nodeService = engine.getNodeService();
             Node identity = nodeService.findIdentity();
             if (identity != null) {
-                NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
+                boolean isClusteringEnabled = parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
+                NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId(), !isClusteringEnabled);
                 if (engine.getParameterService().isRegistrationServer()
                         || (identitySecurity != null && !identitySecurity.isRegistrationEnabled() && identitySecurity
                                 .getRegistrationTime() != null)) {
@@ -345,10 +349,13 @@ public class RouterService extends AbstractService implements IRouterService {
                 new ProcessInfoKey(sourceNode.getNodeId(), null, ProcessType.ROUTER_JOB));
         processInfo.setStatus(ProcessInfo.Status.PROCESSING);
         try {
-            final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(
-                    false);
+            final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(false);
+            Set<String> readyChannels = null;
+            if (parameterService.is(ParameterConstants.ROUTING_QUERY_CHANNELS_FIRST)) {
+                readyChannels = getReadyChannels(gapDetector);
+            }
             for (NodeChannel nodeChannel : channels) {
-                if (nodeChannel.isEnabled()) {
+                if (nodeChannel.isEnabled() && (readyChannels == null || readyChannels.contains(nodeChannel.getChannelId()))) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
                     dataCount += routeDataForChannel(processInfo,
                             nodeChannel,
@@ -370,6 +377,64 @@ public class RouterService extends AbstractService implements IRouterService {
             throw ex;
         }
         return dataCount;
+    }
+
+    protected Set<String> getReadyChannels(DataGapDetector gapDetector) {
+        List<DataGap> dataGaps = gapDetector.getDataGaps();
+        int dataIdSqlType = engine.getSymmetricDialect().getSqlTypeForIds();
+        int numberOfGapsToQualify = parameterService.getInt(ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL, 100);
+        int maxGapsBeforeGreaterThanQuery = parameterService.getInt(
+                ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY, 100);
+        String sql;
+        Object[] args;
+        int[] types;
+        if (maxGapsBeforeGreaterThanQuery > 0 && dataGaps.size() > maxGapsBeforeGreaterThanQuery) {
+            sql = getSql("selectChannelsUsingStartDataId");
+            args = new Object[] { dataGaps.get(0).getStartId() };
+            types = new int[] { dataIdSqlType };
+
+        } else {
+            sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify, getSql("selectChannelsUsingGapsSql"));            
+            int numberOfArgs = 2 * (numberOfGapsToQualify < dataGaps.size() ? numberOfGapsToQualify : dataGaps.size());
+            args = new Object[numberOfArgs];
+            types = new int[numberOfArgs];
+
+            for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
+                DataGap gap = dataGaps.get(i);
+                args[i * 2] = gap.getStartId();
+                types[i * 2] = dataIdSqlType;
+                if ((i + 1) == numberOfGapsToQualify && (i + 1) < dataGaps.size()) {
+                    args[i * 2 + 1] = dataGaps.get(dataGaps.size() - 1).getEndId();
+                } else {
+                    args[i * 2 + 1] = gap.getEndId();
+                }
+                types[i * 2 + 1] = dataIdSqlType;
+            }
+
+        }
+        final Set<String> readyChannels = new HashSet<String>();
+        sqlTemplate.query(sql, new ISqlRowMapper<String>() {
+            public String mapRow(Row row) {
+                readyChannels.add(row.getString("channel_id"));
+                return null;
+            }                
+        }, args, types);
+        return readyChannels;
+    }
+
+    protected String qualifyUsingDataGaps(List<DataGap> dataGaps, int numberOfGapsToQualify,
+            String sql) {
+        StringBuilder gapClause = new StringBuilder();
+        for (int i = 0; i < numberOfGapsToQualify && i < dataGaps.size(); i++) {
+            if (i == 0) {
+                gapClause.append("(");
+            } else {
+                gapClause.append(" or ");
+            }
+            gapClause.append("(data_id between ? and ?)");
+        }
+        gapClause.append(")");
+        return FormatUtils.replace("dataRange", gapClause.toString(), sql);
     }
 
     protected boolean producesCommonBatches(Channel channel, String nodeGroupId, List<TriggerRouter> triggerRouters) {

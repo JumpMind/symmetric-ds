@@ -277,6 +277,10 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
+    public NodeSecurity findOrCreateNodeSecurity(String nodeId) {
+        return null;
+    }
+    
     public Node findIdentity(boolean useCache, boolean logSqlError) {
         return null;
     }
@@ -289,6 +293,9 @@ public class MockNodeService implements INodeService {
     }
 
     public void clearCache() {       
+    }
+
+    public void flushNodeGroupCache() {
     }
 
     /* (non-Javadoc)

@@ -103,15 +103,14 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     synchronized public RemoteNodeStatuses pushData(boolean force) {
         RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
         
-        Node identity = nodeService.findIdentity(false);
+        Node identity = nodeService.findIdentity();
         if (identity != null && identity.isSyncEnabled()) {
             long minimumPeriodMs = parameterService.getLong(ParameterConstants.PUSH_MINIMUM_PERIOD_MS, -1);
             if (force || !clusterService.isInfiniteLocked(ClusterConstants.PUSH)) {
                     List<NodeCommunication> nodes = nodeCommunicationService
                             .list(CommunicationType.PUSH);
                     if (nodes.size() > 0) {
-                        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity
-                                .getNodeId());
+                        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId(), true);
                         if (identitySecurity != null) {
                             int availableThreads = nodeCommunicationService
                                     .getAvailableThreads(CommunicationType.PUSH);
@@ -186,8 +185,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     }
 
     private void pushToNode(Node remote, RemoteNodeStatus status) {
-        Node identity = nodeService.findIdentity(false);
-        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId());
+        Node identity = nodeService.findIdentity();
+        NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId(), true);
         IOutgoingWithResponseTransport transport = null;
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
                 .getNodeId(), status.getChannelId(), remote.getNodeId(), ProcessType.PUSH_JOB));

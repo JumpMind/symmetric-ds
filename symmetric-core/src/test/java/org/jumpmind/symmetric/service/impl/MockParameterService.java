@@ -81,6 +81,10 @@ public class MockParameterService extends AbstractParameterService implements IP
         return null;
     }
 
+    public List<DatabaseParameter> getOfflineNodeParameters() {
+        return null;
+    }
+
     public String getTablePrefix() {
         return "sym";
     }

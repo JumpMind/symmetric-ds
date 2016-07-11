@@ -254,8 +254,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             local = new Node(this.parameterService, symmetricDialect);
         }
         try {
-            NodeSecurity localSecurity = nodeService.findNodeSecurity(local.getNodeId());
+            NodeSecurity localSecurity = nodeService.findNodeSecurity(local.getNodeId(), true);
             IIncomingTransport transport = null;
+            boolean isRegisterTransport = false;
             if (remote != null && localSecurity != null) {
                 Map<String, String> requestProperties = new HashMap<String, String>();
                 ChannelMap suspendIgnoreChannels = configurationService
@@ -274,6 +275,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 log.info("Using registration URL of {}", transport.getUrl());
                 remote = new Node();
                 remote.setSyncUrl(parameterService.getRegistrationUrl());
+                isRegisterTransport = true;
             }
 
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
@@ -285,7 +287,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     status.updateIncomingStatus(list);
                     local = nodeService.findIdentity();
                     if (local != null) {
-                        localSecurity = nodeService.findNodeSecurity(local.getNodeId());
+                        localSecurity = nodeService.findNodeSecurity(local.getNodeId(), !isRegisterTransport);
                         if (StringUtils.isNotBlank(transport.getRedirectionUrl())) {
                             /*
                              * We were redirected for the pull, we need to

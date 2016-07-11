@@ -73,8 +73,10 @@ public interface INodeService {
 
     public NodeSecurity findNodeSecurity(String nodeId);
 
-    public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound);
-    
+    public NodeSecurity findNodeSecurity(String nodeId, boolean useCache);
+
+    public NodeSecurity findOrCreateNodeSecurity(String nodeId);
+
     public void deleteNodeHost(String nodeId);
 
     public void deleteNodeSecurity(String nodeId);
@@ -91,6 +93,8 @@ public interface INodeService {
     public boolean isNodeAuthorized(String nodeId, String password);
 
     public void flushNodeAuthorizedCache();
+    
+    public void flushNodeGroupCache();
 
     public boolean isRegistrationEnabled(String nodeId);
 

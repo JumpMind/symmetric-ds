@@ -629,7 +629,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             ProcessInfoKey.ProcessType.FILE_SYNC_PUSH_HANDLER));
             try {
                 List<IncomingBatch> list = processZip(in, nodeId, processInfo);
-                NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
+                NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId(), true);
                 processInfo.setStatus(ProcessInfo.Status.ACKING);
                 engine.getTransportManager().writeAcknowledgement(out, sourceNode, list, local,
                         security != null ? security.getNodePassword() : null);
@@ -652,7 +652,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node identity = engine.getNodeService().findIdentity();
         if (identity != null) {
-            NodeSecurity security = engine.getNodeService().findNodeSecurity(identity.getNodeId());
+            NodeSecurity security = engine.getNodeService().findNodeSecurity(identity.getNodeId(), true);
             if (security != null) {
                 if (nodeCommunication.getCommunicationType() == CommunicationType.FILE_PULL) {
                     pullFilesFromNode(nodeCommunication, status, identity, security);
@@ -919,7 +919,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     protected RemoteNodeStatuses queueJob(boolean force, long minimumPeriodMs, String clusterLock,
             CommunicationType type) {
         final RemoteNodeStatuses statuses = new RemoteNodeStatuses(engine.getConfigurationService().getChannels(false));
-        Node identity = engine.getNodeService().findIdentity(false);
+        Node identity = engine.getNodeService().findIdentity();
         if (identity != null && identity.isSyncEnabled()) {
             if (force || !engine.getClusterService().isInfiniteLocked(clusterLock)) {
 

@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,6 +72,8 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     private boolean initialized = false;
     
     private Map<CommunicationType, Set<String>> currentlyExecuting;
+    
+    private Map<CommunicationType, Map<String, NodeCommunication>> lockCache;
 
     public NodeCommunicationService(IClusterService clusterService, INodeService nodeService, IParameterService parameterService,
             IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {
@@ -86,20 +89,28 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         for (CommunicationType communicationType : types) {
             this.currentlyExecuting.put(communicationType, Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>()));
         }
+        lockCache = new HashMap<CommunicationType, Map<String, NodeCommunication>>();
+        for (CommunicationType type : types) {
+            lockCache.put(type, new HashMap<String, NodeCommunication>());
+        }
     }
 
     private final void initialize() {
         if (!initialized) {
             synchronized (this) {
                 if (!initialized) {
-                    try {
-                        int locksCleared = sqlTemplate.update(getSql("clearLocksOnRestartSql"),
-                                clusterService.getServerId());
-                        if (locksCleared > 0) {
-                            log.info("Cleared {} node communication locks for {}", locksCleared,
+                    if (clusterService.isClusteringEnabled()) {
+                        try {
+                            int locksCleared = sqlTemplate.update(getSql("clearLocksOnRestartSql"),
                                     clusterService.getServerId());
+                            if (locksCleared > 0) {
+                                log.info("Cleared {} node communication locks for {}", locksCleared,
+                                        clusterService.getServerId());
+                            }
+                        } finally {
+                            initialized = true;
                         }
-                    } finally {
+                    } else {
                         initialized = true;
                     }
                 }
@@ -108,9 +119,15 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     }
     
     public NodeCommunication find(String nodeId, String queue, CommunicationType communicationType) {
-        NodeCommunication lock = sqlTemplate.queryForObject(
-                getSql("selectNodeCommunicationByNodeAndChannelSql"), new NodeCommunicationMapper(),
-                nodeId, queue, communicationType.name());
+        NodeCommunication lock = null;
+        if (clusterService.isClusteringEnabled()) {
+            lock = sqlTemplate.queryForObject(
+                    getSql("selectNodeCommunicationByNodeAndChannelSql"), new NodeCommunicationMapper(),
+                    nodeId, queue, communicationType.name());
+        } else {
+            Map<String, NodeCommunication> locks = lockCache.get(communicationType);
+            lock = locks.get(nodeId + "-" + queue);
+        }
         if (lock == null) {
             lock = new NodeCommunication();
             lock.setNodeId(nodeId);
@@ -121,11 +138,30 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         return lock;
     }
 
+    protected List<NodeCommunication> find(CommunicationType communicationType) {
+        if (clusterService.isClusteringEnabled()) {
+            return new ArrayList<NodeCommunication>(sqlTemplate.query(getSql("selectNodeCommunicationSql"),
+                    new NodeCommunicationMapper(), communicationType.name()));
+        } else {
+            Map<String, NodeCommunication> locks = lockCache.get(communicationType);
+            List<NodeCommunication> list = new ArrayList<NodeCommunication>(locks.values());
+            Collections.sort(list, new Comparator<NodeCommunication>() {
+                public int compare(NodeCommunication o1, NodeCommunication o2) {
+                    if (o1.getLastLockTime() == null) {
+                        return -1;
+                    } else if (o2.getLastLockTime() == null) {
+                        return 1;
+                    }
+                    return o1.getLastLockTime().compareTo(o2.getLastLockTime());
+                }
+            });
+            return list;
+        }
+    }
+    
     public List<NodeCommunication> list(CommunicationType communicationType) {
         initialize();
-        List<NodeCommunication> communicationRows = new ArrayList<NodeCommunication>(
-                sqlTemplate.query(getSql("selectNodeCommunicationSql"),
-                        new NodeCommunicationMapper(), communicationType.name()));
+        List<NodeCommunication> communicationRows = find(communicationType);
         List<Node> nodesToCommunicateWith = null;
         switch (communicationType) {
             case PULL:
@@ -192,36 +228,36 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     }
     
     protected List<NodeCommunication> filterForChannelThreading(List<Node> nodesToCommunicateWith) {
-    	List<NodeCommunication> nodeCommunications = new ArrayList<NodeCommunication>();
-    	
-    	for (Node node : nodesToCommunicateWith) {
-    		if (node.isVersionGreaterThanOrEqualTo(3,8,0)) {
-    			Set<String> channelThreads = new HashSet<String>();
-    			for (Channel channel : configurationService.getChannels(false).values()) {
-    				if (!channelThreads.contains(channel.getQueue())) {
-	    				NodeCommunication nodeCommunication = new NodeCommunication();
-	            		nodeCommunication.setNodeId(node.getNodeId());
-	            		nodeCommunication.setQueue(channel.getQueue());
-	            		nodeCommunication.setNode(node);
-	            		nodeCommunications.add(nodeCommunication);
-	            		channelThreads.add(channel.getQueue());
-    				}
-    			}
-    		} else {
-    			NodeCommunication nodeCommunication = new NodeCommunication();
-        		nodeCommunication.setNodeId(node.getNodeId());
-        		nodeCommunication.setNode(node);
-        		nodeCommunications.add(nodeCommunication);
-        	}
-    	}
-    	return nodeCommunications;
+        List<NodeCommunication> nodeCommunications = new ArrayList<NodeCommunication>();
+
+        for (Node node : nodesToCommunicateWith) {
+            if (node.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
+                Set<String> channelThreads = new HashSet<String>();
+                for (Channel channel : configurationService.getChannels(false).values()) {
+                    if (!channelThreads.contains(channel.getQueue())) {
+                        NodeCommunication nodeCommunication = new NodeCommunication();
+                        nodeCommunication.setNodeId(node.getNodeId());
+                        nodeCommunication.setQueue(channel.getQueue());
+                        nodeCommunication.setNode(node);
+                        nodeCommunications.add(nodeCommunication);
+                        channelThreads.add(channel.getQueue());
+                    }
+                }
+            } else {
+                NodeCommunication nodeCommunication = new NodeCommunication();
+                nodeCommunication.setNodeId(node.getNodeId());
+                nodeCommunication.setNode(node);
+                nodeCommunications.add(nodeCommunication);
+            }
+        }
+        return nodeCommunications;
     }
 
     protected List<Node> removeOfflineNodes(List<Node> nodes) {
         if (parameterService.is(ParameterConstants.NODE_OFFLINE)) {
             nodes.clear();
         } else {
-            List<DatabaseParameter> parms = parameterService.getDatabaseParametersFor(ParameterConstants.NODE_OFFLINE);
+            List<DatabaseParameter> parms = parameterService.getOfflineNodeParameters();
             for (DatabaseParameter parm : parms) {
                 Iterator<Node> iter = nodes.iterator();
                 while (iter.hasNext()) {
@@ -248,7 +284,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 nodesToCommunicateWith.addAll(nodeService.findNodesToPull());
             }
         } else {
-            List<DatabaseParameter> parms = parameterService.getDatabaseParametersFor(ParameterConstants.NODE_OFFLINE);
+            List<DatabaseParameter> parms = parameterService.getOfflineNodeParameters();
             nodesToCommunicateWith = new ArrayList<Node>(parms.size());
             if (parms.size() > 0) {
                 List<Node> sourceNodes = null;
@@ -275,28 +311,38 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     }
 
     public boolean delete(NodeCommunication nodeCommunication) {
-        return 1 == sqlTemplate.update(getSql("deleteNodeCommunicationSql"),
-                nodeCommunication.getNodeId(), nodeCommunication.getQueue(), nodeCommunication.getCommunicationType().name());
+        if (clusterService.isClusteringEnabled()) {
+            return 1 == sqlTemplate.update(getSql("deleteNodeCommunicationSql"),
+                    nodeCommunication.getNodeId(), nodeCommunication.getQueue(), nodeCommunication.getCommunicationType().name());
+        } else {
+            Map<String, NodeCommunication> locks = lockCache.get(nodeCommunication.getCommunicationType());
+            return locks.remove(nodeCommunication.getIdentifier()) != null;
+        }
     }
 
     public void save(NodeCommunication nodeCommunication) {
-        if (0 == sqlTemplate.update(getSql("updateNodeCommunicationSql"),
-                nodeCommunication.getLockTime(), nodeCommunication.getLockingServerId(),
-                nodeCommunication.getLastLockMillis(), nodeCommunication.getSuccessCount(),
-                nodeCommunication.getFailCount(), nodeCommunication.getTotalSuccessCount(),
-                nodeCommunication.getTotalFailCount(), nodeCommunication.getTotalSuccessMillis(),
-                nodeCommunication.getTotalFailMillis(), nodeCommunication.getLastLockTime(),
-                nodeCommunication.getNodeId(), nodeCommunication.getQueue(),
-                nodeCommunication.getCommunicationType().name())) {
-            sqlTemplate.update(getSql("insertNodeCommunicationSql"),
+        if (clusterService.isClusteringEnabled()) {
+            if (0 == sqlTemplate.update(getSql("updateNodeCommunicationSql"),
                     nodeCommunication.getLockTime(), nodeCommunication.getLockingServerId(),
                     nodeCommunication.getLastLockMillis(), nodeCommunication.getSuccessCount(),
                     nodeCommunication.getFailCount(), nodeCommunication.getTotalSuccessCount(),
-                    nodeCommunication.getTotalFailCount(),
-                    nodeCommunication.getTotalSuccessMillis(),
+                    nodeCommunication.getTotalFailCount(), nodeCommunication.getTotalSuccessMillis(),
                     nodeCommunication.getTotalFailMillis(), nodeCommunication.getLastLockTime(),
                     nodeCommunication.getNodeId(), nodeCommunication.getQueue(),
-                    nodeCommunication.getCommunicationType().name());
+                    nodeCommunication.getCommunicationType().name())) {
+                sqlTemplate.update(getSql("insertNodeCommunicationSql"),
+                        nodeCommunication.getLockTime(), nodeCommunication.getLockingServerId(),
+                        nodeCommunication.getLastLockMillis(), nodeCommunication.getSuccessCount(),
+                        nodeCommunication.getFailCount(), nodeCommunication.getTotalSuccessCount(),
+                        nodeCommunication.getTotalFailCount(),
+                        nodeCommunication.getTotalSuccessMillis(),
+                        nodeCommunication.getTotalFailMillis(), nodeCommunication.getLastLockTime(),
+                        nodeCommunication.getNodeId(), nodeCommunication.getQueue(),
+                        nodeCommunication.getCommunicationType().name());
+            }
+        } else {
+            Map<String, NodeCommunication> locks = lockCache.get(nodeCommunication.getCommunicationType());
+            locks.put(nodeCommunication.getIdentifier(), nodeCommunication);
         }
     }
     
@@ -401,12 +447,9 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     public boolean execute(final NodeCommunication nodeCommunication, RemoteNodeStatuses statuses,
             final INodeCommunicationExecutor executor) {
         Date now = new Date();
-        Date lockTimeout = getLockTimeoutDate(nodeCommunication.getCommunicationType());
         final Set<String> executing = this.currentlyExecuting.get(nodeCommunication.getCommunicationType());
         try {
-            boolean locked = !executing.contains(nodeCommunication.getIdentifier())
-                    && sqlTemplate.update(getSql("aquireLockSql"), clusterService.getServerId(), now, now, nodeCommunication.getNodeId(), nodeCommunication.getQueue(),
-                            nodeCommunication.getCommunicationType().name(), lockTimeout) == 1;
+            boolean locked = !executing.contains(nodeCommunication.getIdentifier()) && lock(nodeCommunication, now);
             if (locked) {
                 executing.add(nodeCommunication.getIdentifier());
                 nodeCommunication.setLastLockTime(now);
@@ -448,7 +491,24 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             return false;
         }
     }
-    
+
+    protected boolean lock(NodeCommunication nodeCommunication, Date lockTime) {
+        Date lockTimeout = getLockTimeoutDate(nodeCommunication.getCommunicationType());
+        if (clusterService.isClusteringEnabled()) {
+            return sqlTemplate.update(getSql("aquireLockSql"), clusterService.getServerId(), lockTime, lockTime, 
+                    nodeCommunication.getNodeId(), nodeCommunication.getQueue(),
+                            nodeCommunication.getCommunicationType().name(), lockTimeout) == 1;
+        } else {
+            if (nodeCommunication.getLockTime() == null || nodeCommunication.getLockTime().before(lockTimeout)) {
+                nodeCommunication.setLockingServerId(clusterService.getServerId());
+                nodeCommunication.setLockTime(lockTime);
+                nodeCommunication.setLastLockTime(lockTime);
+                return true;
+            }
+            return false;
+        }
+    }
+
     protected void unlock(NodeCommunication nodeCommunication,
             boolean failed, long ts) {
         boolean unlocked = false;
@@ -459,22 +519,18 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 nodeCommunication.setLockTime(null);
                 nodeCommunication.setLastLockMillis(millis);
                 if (failed) {
-                    nodeCommunication.setFailCount(nodeCommunication
-                            .getFailCount() + 1);
-                    nodeCommunication.setTotalFailCount(nodeCommunication
-                            .getTotalFailCount() + 1);
-                    nodeCommunication.setTotalFailMillis(nodeCommunication
-                            .getTotalFailMillis() + millis);
+                    nodeCommunication.setFailCount(nodeCommunication.getFailCount() + 1);
+                    nodeCommunication.setTotalFailCount(nodeCommunication.getTotalFailCount() + 1);
+                    nodeCommunication.setTotalFailMillis(nodeCommunication.getTotalFailMillis() + millis);
                 } else {
-                    nodeCommunication.setSuccessCount(nodeCommunication
-                            .getSuccessCount() + 1);
-                    nodeCommunication.setTotalSuccessCount(nodeCommunication
-                            .getTotalSuccessCount() + 1);
-                    nodeCommunication.setTotalSuccessMillis(nodeCommunication
-                            .getTotalSuccessMillis() + millis);
+                    nodeCommunication.setSuccessCount(nodeCommunication.getSuccessCount() + 1);
+                    nodeCommunication.setTotalSuccessCount(nodeCommunication.getTotalSuccessCount() + 1);
+                    nodeCommunication.setTotalSuccessMillis(nodeCommunication.getTotalSuccessMillis() + millis);
                     nodeCommunication.setFailCount(0);
                 }
-                save(nodeCommunication);
+                if (clusterService.isClusteringEnabled()) {
+                    save(nodeCommunication);
+                }
                 unlocked = true;
                 if (attempts > 1) {
                     log.info(String.format("Successfully unlocked %s node communication record for %s and channel %s after %d attempts", 
@@ -531,38 +587,30 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     }
     
     class ChannelThreadFactory implements ThreadFactory {
-    	
-    	
+
         private final AtomicInteger threadNumber = new AtomicInteger(1);
-        
         private String engineName;
         private String communicationType;
         private String channelThread;
-        
+
         public ChannelThreadFactory(String engineName, String communicationType) {
-			this.engineName = engineName;
-			this.communicationType = communicationType;
-		}
-        
-        
-        String getChannelThread() {
-			return channelThread != null ? this.channelThread : "default";
-		}
-
-
-		void setChannelThread(String channelThread) {
-			this.channelThread = channelThread;
-		}
-
-
-		public String getThreadPrefix() {
-        	return new StringBuffer(engineName.toLowerCase())
-                    .append("-")
-                    .append(communicationType.toLowerCase())
-                    .append("-")
-                    .append(getChannelThread())
-                    .append("-").toString();
+            this.engineName = engineName;
+            this.communicationType = communicationType;
         }
+
+        String getChannelThread() {
+            return channelThread != null ? this.channelThread : "default";
+        }
+
+        void setChannelThread(String channelThread) {
+            this.channelThread = channelThread;
+        }
+
+        public String getThreadPrefix() {
+            return new StringBuffer(engineName.toLowerCase()).append("-").append(communicationType.toLowerCase()).append("-")
+                    .append(getChannelThread()).append("-").toString();
+        }
+
         public Thread newThread(Runnable r) {
             Thread t = new Thread(r);
             t.setName(getThreadPrefix() + threadNumber.getAndIncrement());

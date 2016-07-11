@@ -72,6 +72,8 @@ public interface IParameterService {
     
     public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId);
 
+    public List<DatabaseParameter> getOfflineNodeParameters();
+    
     public TypedProperties getAllParameters();
 
     public boolean isRegistrationServer();

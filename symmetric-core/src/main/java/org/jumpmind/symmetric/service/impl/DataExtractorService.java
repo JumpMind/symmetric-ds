@@ -697,7 +697,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             for (String channelProcessed : channelsProcessed) {
                 NodeChannel nodeChannel = configurationService.getNodeChannel(channelProcessed,
                         targetNode.getNodeId(), false);
-                if (nodeChannel != null) {
+                if (nodeChannel != null && nodeChannel.getExtractPeriodMillis() > 0) {
                     nodeChannel.setLastExtractTime(now.getTime());                    
                     configurationService.updateLastExtractTime(nodeChannel);
                 }
@@ -1290,7 +1290,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             request.setCreateTime(row.getDateTime("create_time"));
             request.setLastUpdateTime(row.getDateTime("last_update_time"));
             request.setTriggerRouter(triggerRouterService.findTriggerRouterById(
-                    row.getString("trigger_id"), row.getString("router_id")));
+                    row.getString("trigger_id"), row.getString("router_id"), false));
             request.setQueue(row.getString("queue"));
             return request;
         }

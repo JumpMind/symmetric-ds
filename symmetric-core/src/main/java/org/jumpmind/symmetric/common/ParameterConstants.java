@@ -158,6 +158,7 @@ final public class ParameterConstants {
     public final static String ROUTING_LOG_STATS_ON_BATCH_ERROR = "routing.log.stats.on.batch.error";
     public final static String ROUTING_COLLECT_STATS_UNROUTED = "routing.collect.stats.unrouted";
     public final static String ROUTING_USE_FAST_GAP_DETECTOR = "routing.use.fast.gap.detector";
+    public final static String ROUTING_QUERY_CHANNELS_FIRST = "routing.query.channels.first";
 
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
     @Deprecated
