@@ -343,6 +343,8 @@ final public class ParameterConstants {
     
     public final static String MONITOR_EVENTS_CAPTURE_ENABLED = "monitor.events.capture.enabled";
 
+    public final static String DBF_ROUTER_VALIDATE_HEADER = "dbf.router.validate.header";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
