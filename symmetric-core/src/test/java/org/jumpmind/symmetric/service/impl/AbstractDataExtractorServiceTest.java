@@ -72,9 +72,9 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         dataExtractorService.extractConfigurationStandalone(TestConstants.TEST_CLIENT_NODE, writer);
         String content = writer.getBuffer().toString();
         assertNumberOfLinesThatStartWith(25, "table,", content, false, true);
-        assertNumberOfLinesThatStartWith(24, "columns,", content);
-        assertNumberOfLinesThatStartWith(24, "keys,", content);
-        assertNumberOfLinesThatStartWith(24, "sql,", content);
+        assertNumberOfLinesThatStartWith(26, "columns,", content);
+        assertNumberOfLinesThatStartWith(26, "keys,", content);
+        assertNumberOfLinesThatStartWith(26, "sql,", content);
         assertNumberOfLinesThatStartWith(0, "update,", content);
         assertNumberOfLinesThatStartWith(65, "insert,", content, false, true);
         assertNumberOfLinesThatStartWith(1, "commit,-9999", content);
@@ -108,7 +108,7 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
 
         // same batch should be extracted
         results = extract();
-        assertNumberOfLinesThatStartWith(1, "batch," + batchId, results.getCsv());
+        assertNumberOfLinesThatStartWith(1, "retry," + batchId, results.getCsv());
         assertNumberOfLinesThatStartWith(1, "commit," + batchId, results.getCsv());
 
     }
@@ -119,6 +119,7 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
         InternalOutgoingTransport transport = new InternalOutgoingTransport(new BufferedWriter(
                 writer));
         List<OutgoingBatch> batches = service.extract(new ProcessInfo(), TestConstants.TEST_CLIENT_NODE, transport);
+        transport.close();
         return new ExtractResults(batches, writer.getBuffer().toString());
     }
 
