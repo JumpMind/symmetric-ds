@@ -48,7 +48,7 @@ public class NodeCommunicationServiceSqlMap extends AbstractSqlMap {
         putSql("updateNodeCommunicationSql",
                 "update $(node_communication) set lock_time=?,locking_server_id=?,last_lock_millis=?,"
                         + "success_count=?,fail_count=?,total_success_count=?,total_fail_count=?,"
-                        + "total_success_millis=?,total_fail_millis=?, last_lock_time=?, batch_to_send_count=?, node_priority "
+                        + "total_success_millis=?,total_fail_millis=?, last_lock_time=?, batch_to_send_count=?, node_priority=? "
                         + "where node_id=? and queue=? and communication_type=?");
 
         putSql("deleteNodeCommunicationSql",
