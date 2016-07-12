@@ -518,6 +518,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return name;
     }
     
+    @Deprecated
     public static Object getResultSetValue(ResultSet rs, int index, boolean readStringsAsBytes) throws SQLException {
         return getResultSetValue(rs, null, index, readStringsAsBytes);
     }
