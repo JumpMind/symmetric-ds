@@ -281,6 +281,7 @@ public class NodeService extends AbstractService implements INodeService {
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
                             Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR });
+            flushNodeGroupCache();
         }
     }
 
@@ -432,7 +433,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public NodeSecurity findNodeSecurity(String nodeId, boolean useCache) {
-        if (useCache) {
+        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && useCache) {
             Map<String, NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
             return nodeSecurities.get(nodeId);
         } else {
