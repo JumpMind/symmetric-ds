@@ -32,14 +32,13 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         
         putSql("selectNodesInErrorSql", "select distinct node_id from $(outgoing_batch) where error_flag=1");
 
-        putSql("initialLoadStatusSql", ""
-                + "select status from $(outgoing_batch) where node_id=? and load_flag=?   ");
+        putSql("initialLoadStatusSql",
+                "select status from $(outgoing_batch) where node_id=? and load_flag=?   ");
 
         putSql("unsentBatchesForNodeIdChannelIdSql",
-                ""
-                        + "select count(*) from $(outgoing_batch) where node_id=? and channel_id=? and status != 'OK'   ");
+                "select count(*) from $(outgoing_batch) where node_id=? and channel_id=? and status != 'OK'   ");
 
-        putSql("selectCountBatchesPrefixSql", "" + "select count(*) from $(outgoing_batch)   ");
+        putSql("selectCountBatchesPrefixSql", "select count(*) from $(outgoing_batch)   ");
 
         putSql("cancelLoadBatchesSql",
                 "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0 where load_id=?");
@@ -48,14 +47,12 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0 where channel_id=? and status != 'OK'");
 
         putSql("insertOutgoingBatchSql",
-                ""
-                        + "insert into $(outgoing_batch)                                                                                                                "
+                        "insert into $(outgoing_batch)                                                                                                                "
                         + "  (batch_id, node_id, channel_id, status, load_id, extract_job_flag, load_flag, common_flag, reload_event_count, other_event_count, last_update_hostname, last_update_time, create_time, create_by)   "
                         + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp, ?)                                                                         ");
 
         putSql("updateOutgoingBatchSql",
-                ""
-                        + "update $(outgoing_batch) set status=?, load_id=?, extract_job_flag=?, load_flag=?, error_flag=?,                                          "
+                        "update $(outgoing_batch) set status=?, load_id=?, extract_job_flag=?, load_flag=?, error_flag=?,                                          "
                         + "  byte_count=?, extract_count=?, sent_count=?, load_count=?, data_event_count=?,                                 "
                         + "  reload_event_count=?, insert_event_count=?, update_event_count=?, delete_event_count=?, other_event_count=?,   "
                         + "  ignore_count=?, router_millis=?, network_millis=?, filter_millis=?,                                                            "
@@ -66,24 +63,23 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("findOutgoingBatchByIdOnlySql", "where batch_id=? ");
 
-        putSql("selectOutgoingBatchSql", ""
-                + "where node_id = ? and status in (?, ?, ?, ?, ?, ?, ?, ?) order by batch_id asc   ");
+        putSql("selectOutgoingBatchSql",
+                "where node_id = ? and status in (?, ?, ?, ?, ?, ?, ?, ?) order by batch_id asc   ");
 
-        putSql("selectOutgoingBatchChannelSql", ""
-                + " join $(channel) c on c.channel_id = b.channel_id where node_id = ? and c.queue = ? and status in (?, ?, ?, ?, ?, ?, ?, ?) order by batch_id asc   ");
+        putSql("selectOutgoingBatchChannelSql", 
+                " join $(channel) c on c.channel_id = b.channel_id where node_id = ? and c.queue = ? and status in (?, ?, ?, ?, ?, ?, ?, ?) order by batch_id asc   ");
 
-        putSql("selectOutgoingBatchRangeSql", ""
-                + "where batch_id between ? and ? order by batch_id   ");
+        putSql("selectOutgoingBatchRangeSql",
+                "where batch_id between ? and ? order by batch_id   ");
 
-        putSql("selectOutgoingBatchLoadSql", ""
-                + "where load_id = ? order by batch_id   ");
+        putSql("selectOutgoingBatchLoadSql",
+                "where load_id = ? order by batch_id   ");
 
-        putSql("selectOutgoingBatchTimeRangeSql", ""
-                + "where node_id=? and channel_id=? and create_time >= ? and create_time <= ? ");
+        putSql("selectOutgoingBatchTimeRangeSql",
+                "where node_id=? and channel_id=? and create_time >= ? and create_time <= ? ");
 
         putSql("selectOutgoingBatchPrefixSql",
-                ""
-                        + "select b.node_id, b.channel_id, b.status,                                                                              "
+                        "select b.node_id, b.channel_id, b.status,                                                                              "
                         + "  b.byte_count, b.extract_count, b.sent_count, b.load_count, b.data_event_count,                                           "
                         + "  b.reload_event_count, b.insert_event_count, b.update_event_count, b.delete_event_count, b.other_event_count,             "
                         + "  b.ignore_count, b.router_millis, b.network_millis, b.filter_millis, b.load_millis, b.extract_millis, b.sql_state, b.sql_code,  "
@@ -93,27 +89,27 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectOutgoingBatchErrorsSql", " where error_flag=1 order by batch_id   ");
 
-        putSql("countOutgoingBatchesErrorsOnChannelSql", ""
-                + "select count(*) from $(outgoing_batch) where error_flag=1 and channel_id=?");
+        putSql("countOutgoingBatchesErrorsOnChannelSql", 
+                "select count(*) from $(outgoing_batch) where error_flag=1 and channel_id=?");
 
-        putSql("countOutgoingBatchesErrorsSql", ""
-                + "select count(*) from $(outgoing_batch) where error_flag=1");
+        putSql("countOutgoingBatchesErrorsSql",
+                "select count(*) from $(outgoing_batch) where error_flag=1");
 
-        putSql("countOutgoingBatchesUnsentSql", ""
-                + "select count(*) from $(outgoing_batch) where status != 'OK'");
+        putSql("countOutgoingBatchesUnsentSql",
+                "select count(*) from $(outgoing_batch) where status != 'OK'");
         
-        putSql("countOutgoingBatchesWithStatusSql", ""
-                + "select count(*) from $(outgoing_batch) where status = ? ");
+        putSql("countOutgoingBatchesWithStatusSql",
+                "select count(*) from $(outgoing_batch) where status = ? ");
 
-        putSql("countOutgoingBatchesUnsentOnChannelSql", ""
-                + "select count(*) from $(outgoing_batch) where status != 'OK' and channel_id=?");
+        putSql("countOutgoingBatchesUnsentOnChannelSql",
+                "select count(*) from $(outgoing_batch) where status != 'OK' and channel_id=?");
 
         putSql("selectOutgoingBatchSummaryByStatusSql",
                 "select count(*) as batches, sum(data_event_count) as data, status, node_id, min(create_time) as oldest_batch_time       "
                         + "  from $(outgoing_batch) where status in (:STATUS_LIST) group by status, node_id order by oldest_batch_time asc   ");
 
-        putSql("updateOutgoingBatchesStatusSql", ""
-                + "update $(outgoing_batch) set status=? where status = ?   ");
+        putSql("updateOutgoingBatchesStatusSql",
+                "update $(outgoing_batch) set status=? where status = ?   ");
 
         putSql("getLoadSummariesSql",
                 "select b.load_id, b.node_id, b.status, b.create_by, max(error_flag) as error_flag, count(*) as cnt, min(b.create_time) as create_time,          "

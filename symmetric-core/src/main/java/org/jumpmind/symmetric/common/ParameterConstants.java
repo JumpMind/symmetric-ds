@@ -342,6 +342,10 @@ final public class ParameterConstants {
     public final static String CHANNEL_THREADING = "channel.threading.enabled";
     
     public final static String MONITOR_EVENTS_CAPTURE_ENABLED = "monitor.events.capture.enabled";
+    
+    public final static String HYBRID_PUSH_PULL_ENABLED = "hybrid.push.pull.enabled";
+    
+    public final static String HYBRID_PUSH_PULL_TIMEOUT = "hybrid.push.pull.timeout";
 
     public final static String DBF_ROUTER_VALIDATE_HEADER = "dbf.router.validate.header";
     

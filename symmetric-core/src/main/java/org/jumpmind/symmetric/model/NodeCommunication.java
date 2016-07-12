@@ -28,7 +28,11 @@ public class NodeCommunication implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum CommunicationType {
-        PULL, PUSH, FILE_PUSH, FILE_PULL, OFFLN_PULL, OFFLN_PUSH, EXTRACT
+        PULL, PUSH, FILE_PUSH, FILE_PULL, OFFLN_PULL, OFFLN_PUSH, EXTRACT;
+        
+        public static boolean isPullType(CommunicationType communicationType) {
+            return communicationType == PULL || communicationType == CommunicationType.FILE_PULL || communicationType == OFFLN_PULL;
+        }
     };
     
     private transient Node node;
@@ -58,6 +62,10 @@ public class NodeCommunication implements Serializable {
     private long totalSuccessMillis;
 
     private long totalFailMillis;
+    
+    private long batchToSendCount;
+    
+    private int nodePriority;
 
     public String getNodeId() {
         return nodeId;
@@ -163,6 +171,22 @@ public class NodeCommunication implements Serializable {
         return lastLockTime;
     }
     
+    public long getBatchToSendCount() {
+        return batchToSendCount;
+    }
+
+    public void setBatchToSendCount(long batchToSendCount) {
+        this.batchToSendCount = batchToSendCount;
+    }
+
+    public int getNodePriority() {
+        return nodePriority;
+    }
+
+    public void setNodePriority(int nodePriority) {
+        this.nodePriority = nodePriority;
+    }    
+    
     public void setNode(Node node) {
         this.node = node;
     }
@@ -193,6 +217,11 @@ public class NodeCommunication implements Serializable {
     
     public String getIdentifier() {
     	return getNodeId() + "-" + getQueue();
+    }
+
+    @Override
+    public String toString() {
+        return "NodeCommunication [nodeId=" + nodeId + ", queue=" + queue + ", communicationType=" + communicationType + "]";
     }
 
 }
