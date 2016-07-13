@@ -517,6 +517,11 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         }
         return name;
     }
+    
+    @Deprecated
+    public static Object getResultSetValue(ResultSet rs, int index, boolean readStringsAsBytes) throws SQLException {
+        return getResultSetValue(rs, null, index, readStringsAsBytes);
+    }
 
     /**
      * Retrieve a JDBC column value from a ResultSet, using the most appropriate
@@ -545,6 +550,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      * @see java.sql.Timestamp
      */
     public static Object getResultSetValue(ResultSet rs, ResultSetMetaData metaData, int index, boolean readStringsAsBytes) throws SQLException {
+        if (metaData == null) {
+            metaData = rs.getMetaData();
+        }
         Object obj = null;
         int jdbcType = metaData.getColumnType(index);
         String jdbcTypeName = metaData.getColumnTypeName(index);
