@@ -239,7 +239,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                 .getRegistrationTime() != null)) {
 
                     List<NodeSecurity> nodeSecurities = findNodesThatAreReadyForInitialLoad();
-                    if (nodeSecurities != null) {
+                    if (nodeSecurities != null && nodeSecurities.size() > 0) {
                         boolean reverseLoadFirst = parameterService
                                 .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
                         boolean isInitialLoadQueued = false;
