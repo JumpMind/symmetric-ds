@@ -308,6 +308,7 @@ public class RouterService extends AbstractService implements IRouterService {
         IConfigurationService configurationService = engine.getConfigurationService();
         String me = nodeService.findIdentityNodeId();
         List<NodeSecurity> toReturn = new ArrayList<NodeSecurity>();
+        Map<String, Node> nodes = nodeService.findAllNodesAsMap();
         List<NodeSecurity> securities = nodeService.findNodeSecurityWithLoadEnabled();
         for (NodeSecurity nodeSecurity : securities) {
             if (((!nodeSecurity.getNodeId().equals(me)
@@ -316,7 +317,11 @@ public class RouterService extends AbstractService implements IRouterService {
                     || (!nodeSecurity.getNodeId().equals(me) && configurationService
                             .isMasterToMaster()) || (nodeSecurity.getNodeId().equals(me) && nodeSecurity
                     .isRevInitialLoadEnabled()))) {
-                toReturn.add(nodeSecurity);
+            	
+            	Node node = nodes.get(nodeSecurity.getNodeId());
+            	if(node != null && node.isSyncEnabled()){
+            		toReturn.add(nodeSecurity);
+            	}
             }
         }
         return toReturn;
