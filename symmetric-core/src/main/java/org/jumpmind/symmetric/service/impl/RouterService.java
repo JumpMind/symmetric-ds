@@ -244,7 +244,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                 .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
                         boolean isInitialLoadQueued = false;
                         for (NodeSecurity security : nodeSecurities) {
-                            if (engine.getTriggerRouterService().getActiveTriggerHistories().size() > 0) {
+                            if (engine.getTriggerRouterService().hasAnyActiveTriggerHistories()) {
                                 boolean thisMySecurityRecord = security.getNodeId().equals(
                                         identity.getNodeId());
                                 boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
