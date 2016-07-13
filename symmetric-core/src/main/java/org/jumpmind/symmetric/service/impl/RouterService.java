@@ -100,10 +100,13 @@ import org.jumpmind.util.FormatUtils;
  */
 public class RouterService extends AbstractService implements IRouterService {
 
-    protected  Map<String, Boolean> commonBatchesLastKnownState = new HashMap<String, Boolean>();
+    protected Map<String, Boolean> commonBatchesLastKnownState = new HashMap<String, Boolean>();
     
+    protected long commonBatchesCacheTime;
+
+    protected Map<String, Boolean> defaultRouterOnlyLastKnownState = new HashMap<String, Boolean>();
     
-    protected  Map<String, Boolean> defaultRouterOnlyLastKnownState = new HashMap<String, Boolean>();
+    protected long defaultRoutersCacheTime;
 
     protected transient ExecutorService readThread = null;
 
@@ -439,103 +442,113 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected boolean producesCommonBatches(Channel channel, String nodeGroupId, List<TriggerRouter> triggerRouters) {
         String channelId = channel.getChannelId();
-        Boolean producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
-                && !channel.isFileSyncFlag()
-                && !channel.isReloadFlag() 
-                && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
-        if (producesCommonBatches && triggerRouters != null) {
-            List<TriggerRouter> testableTriggerRouters = new ArrayList<TriggerRouter>();
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                if (triggerRouter.getTrigger().getChannelId().equals(channel.getChannelId())) {
-                    testableTriggerRouters.add(triggerRouter);
-                } else {
-                    /*
-                     * Add any trigger router that is in another channel, but is
-                     * for a table that is in the current channel
-                     */
-                    String anotherChannelTableName = triggerRouter.getTrigger()
-                            .getFullyQualifiedSourceTableName();
-                    for (TriggerRouter triggerRouter2 : triggerRouters) {
-                        String currentTableName = triggerRouter2
-                                .getTrigger()
+        Boolean producesCommonBatches = commonBatchesLastKnownState.get(channelId);
+        long cacheTime = parameterService.getLong(ParameterConstants.CACHE_CHANNEL_COMMON_BATCHES_IN_MS);
+        if (producesCommonBatches == null || System.currentTimeMillis() - commonBatchesCacheTime > cacheTime) {
+            producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
+                    && !channel.isFileSyncFlag()
+                    && !channel.isReloadFlag() 
+                    && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
+            if (producesCommonBatches && triggerRouters != null) {
+                List<TriggerRouter> testableTriggerRouters = new ArrayList<TriggerRouter>();
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    if (triggerRouter.getTrigger().getChannelId().equals(channel.getChannelId())) {
+                        testableTriggerRouters.add(triggerRouter);
+                    } else {
+                        /*
+                         * Add any trigger router that is in another channel, but is
+                         * for a table that is in the current channel
+                         */
+                        String anotherChannelTableName = triggerRouter.getTrigger()
                                 .getFullyQualifiedSourceTableName();
-                        String currentChannelId = triggerRouter2.getTrigger().getChannelId();
-                        if (anotherChannelTableName
-                                .equals(currentTableName) && currentChannelId.equals(channelId)) {
-                            testableTriggerRouters.add(triggerRouter);
+                        for (TriggerRouter triggerRouter2 : triggerRouters) {
+                            String currentTableName = triggerRouter2
+                                    .getTrigger()
+                                    .getFullyQualifiedSourceTableName();
+                            String currentChannelId = triggerRouter2.getTrigger().getChannelId();
+                            if (anotherChannelTableName
+                                    .equals(currentTableName) && currentChannelId.equals(channelId)) {
+                                testableTriggerRouters.add(triggerRouter);
+                            }
                         }
                     }
-                }
-            }         
-            
-            for (TriggerRouter triggerRouter : testableTriggerRouters) {
-                boolean isDefaultRouter = "default".equals(triggerRouter.getRouter().getRouterType());
-                /*
-                 * If the data router is not a default data router or there will
-                 * be incoming data on the channel where sync_on_incoming_batch
-                 * is on, then we can not do 'optimal' routing. When
-                 * sync_on_incoming_batch is on, then we might not be sending
-                 * data to all nodes in a node_group. We can only do 'optimal'
-                 * routing if data is going to go to all nodes in a group.
-                 */
-                if (triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
-                        .equals(nodeGroupId)) {
-                    if (!isDefaultRouter) {
-                        producesCommonBatches = false;
-                        break;
-                    } else {
-                        if (triggerRouter.getTrigger().isSyncOnIncomingBatch()) {
-                            String outgoingTableName = triggerRouter.getTrigger()
-                                    .getFullyQualifiedSourceTableName();
-                            for (TriggerRouter triggerRouter2 : testableTriggerRouters) {
-                                String incomingTableName = triggerRouter2.getTrigger().getFullyQualifiedSourceTableName();
-                                String targetNodeGroupId = triggerRouter2.getRouter().getNodeGroupLink()
-                                        .getTargetNodeGroupId();
-                                if (incomingTableName
-                                        .equals(outgoingTableName)
-                                        && targetNodeGroupId.equals(nodeGroupId)) {
-                                    producesCommonBatches = false;
-                                    break;
+                }         
+                
+                for (TriggerRouter triggerRouter : testableTriggerRouters) {
+                    boolean isDefaultRouter = "default".equals(triggerRouter.getRouter().getRouterType());
+                    /*
+                     * If the data router is not a default data router or there will
+                     * be incoming data on the channel where sync_on_incoming_batch
+                     * is on, then we can not do 'optimal' routing. When
+                     * sync_on_incoming_batch is on, then we might not be sending
+                     * data to all nodes in a node_group. We can only do 'optimal'
+                     * routing if data is going to go to all nodes in a group.
+                     */
+                    if (triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
+                            .equals(nodeGroupId)) {
+                        if (!isDefaultRouter) {
+                            producesCommonBatches = false;
+                            break;
+                        } else {
+                            if (triggerRouter.getTrigger().isSyncOnIncomingBatch()) {
+                                String outgoingTableName = triggerRouter.getTrigger()
+                                        .getFullyQualifiedSourceTableName();
+                                for (TriggerRouter triggerRouter2 : testableTriggerRouters) {
+                                    String incomingTableName = triggerRouter2.getTrigger().getFullyQualifiedSourceTableName();
+                                    String targetNodeGroupId = triggerRouter2.getRouter().getNodeGroupLink()
+                                            .getTargetNodeGroupId();
+                                    if (incomingTableName
+                                            .equals(outgoingTableName)
+                                            && targetNodeGroupId.equals(nodeGroupId)) {
+                                        producesCommonBatches = false;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
-
-        if (!producesCommonBatches.equals(commonBatchesLastKnownState.get(channelId))) {
-            if (producesCommonBatches) {
-                log.info("The '{}' channel is in common batch mode", channelId);
-            } else {
-                log.info("The '{}' channel is NOT in common batch mode", channelId);
+    
+            if (!producesCommonBatches.equals(commonBatchesLastKnownState.get(channelId))) {
+                if (producesCommonBatches) {
+                    log.info("The '{}' channel is in common batch mode", channelId);
+                } else {
+                    log.info("The '{}' channel is NOT in common batch mode", channelId);
+                }
+                commonBatchesLastKnownState.put(channelId, producesCommonBatches);
             }
-            commonBatchesLastKnownState.put(channelId, producesCommonBatches);
+            commonBatchesCacheTime = System.currentTimeMillis();
         }
         return producesCommonBatches;
     }
     
     protected boolean onlyDefaultRoutersAssigned(Channel channel, String nodeGroupId, List<TriggerRouter> triggerRouters) {
         String channelId = channel.getChannelId();
-        Boolean onlyDefaultRoutersAssigned = !Constants.CHANNEL_CONFIG.equals(channelId)
-                && !channel.isFileSyncFlag()
-                && !channel.isReloadFlag() 
-                && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
-        if (onlyDefaultRoutersAssigned && triggerRouters != null) {           
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                if (triggerRouter.getTrigger().getChannelId().equals(channel.getChannelId()) &&
-                        triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
-                        .equals(nodeGroupId) && !"default".equals(triggerRouter.getRouter().getRouterType())) {
-                    onlyDefaultRoutersAssigned = false;
+        Boolean onlyDefaultRoutersAssigned = defaultRouterOnlyLastKnownState.get(channelId);
+        long cacheTime = parameterService.getLong(ParameterConstants.CACHE_CHANNEL_DEFAULT_ROUTER_IN_MS);
+        if (onlyDefaultRoutersAssigned == null || System.currentTimeMillis() - defaultRoutersCacheTime > cacheTime) {
+            onlyDefaultRoutersAssigned = !Constants.CHANNEL_CONFIG.equals(channelId)
+                    && !channel.isFileSyncFlag()
+                    && !channel.isReloadFlag() 
+                    && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
+            if (onlyDefaultRoutersAssigned && triggerRouters != null) {           
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    if (triggerRouter.getTrigger().getChannelId().equals(channel.getChannelId()) &&
+                            triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
+                            .equals(nodeGroupId) && !"default".equals(triggerRouter.getRouter().getRouterType())) {
+                        onlyDefaultRoutersAssigned = false;
+                    } 
+                }         
+            }
+    
+            if (!onlyDefaultRoutersAssigned.equals(defaultRouterOnlyLastKnownState.get(channelId))) {
+                if (onlyDefaultRoutersAssigned) {
+                    log.info("The '{}' channel for the '{}' node group has only default routers assigned to it.  Change data won't be selected during routing", channelId, nodeGroupId);
                 } 
-            }         
-        }
-
-        if (!onlyDefaultRoutersAssigned.equals(defaultRouterOnlyLastKnownState.get(channelId))) {
-            if (onlyDefaultRoutersAssigned) {
-                log.info("The '{}' channel for the '{}' node group has only default routers assigned to it.  Change data won't be selected during routing", channelId, nodeGroupId);
-            } 
-            defaultRouterOnlyLastKnownState.put(channelId, onlyDefaultRoutersAssigned);
+                defaultRouterOnlyLastKnownState.put(channelId, onlyDefaultRoutersAssigned);
+            }
+            defaultRoutersCacheTime = System.currentTimeMillis();
         }
         return onlyDefaultRoutersAssigned;
     }
