@@ -320,6 +320,8 @@ final public class ParameterConstants {
     
     public final static String LOG_SQL_PARAMETERS_INLINE = "log.sql.parameters.inline";
 
+    public final static String DBF_ROUTER_VALIDATE_HEADER = "dbf.router.validate.header";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.route.parse.DBFReader;
 
 public class DBFRouter extends AbstractFileParsingRouter implements IDataRouter, IBuiltInExtensionPoint {
@@ -27,7 +28,10 @@ public class DBFRouter extends AbstractFileParsingRouter implements IDataRouter,
 		List<String> rows = new ArrayList<String>();
 		
 		try {
-			dbfReader = new DBFReader(new FileInputStream(file));
+			boolean validateHeader = engine.getParameterService()
+					.is(ParameterConstants.DBF_ROUTER_VALIDATE_HEADER, true);
+			
+			dbfReader = new DBFReader(new FileInputStream(file), validateHeader);
 			int currentLine = 1;
 			while (dbfReader.hasNextRecord()) {
 				StringBuffer row = new StringBuffer();
@@ -44,7 +48,7 @@ public class DBFRouter extends AbstractFileParsingRouter implements IDataRouter,
 			}
 		}
 		catch (Exception e) {
-			
+			log.error("Unable to parse DBF file " + file.getName(), e);
 		}
 		return rows;
 	}
@@ -59,7 +63,7 @@ public class DBFRouter extends AbstractFileParsingRouter implements IDataRouter,
 			}
 		}
 		catch (Exception e) {
-			
+			log.error("Unable to read column names for DBF file ", e);
 		}
 		return columns.toString();
 	}

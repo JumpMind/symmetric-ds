@@ -9,12 +9,15 @@ public class DBFReader {
 	private DBFField fields[];
 	private byte nextRecord[];
 	private int nFieldCount;
+	private boolean validate;
 	
-	public DBFReader(String s) throws DBFException {
+	public DBFReader(String s, boolean validate) throws DBFException {
 		stream = null;
 		fields = null;
 		nextRecord = null;
 		nFieldCount = 0;
+		this.validate = validate;
+		
 		try {
 			init(new FileInputStream(s));
 		} catch (FileNotFoundException filenotfoundexception) {
@@ -22,13 +25,15 @@ public class DBFReader {
 		}
 	}
 
-	public DBFReader(InputStream inputstream) throws DBFException {
+	public DBFReader(InputStream inputstream, boolean validate) throws DBFException {
 		stream = null;
 		fields = null;
 		nextRecord = null;
+		this.validate = validate;
 		init(inputstream);
 	}
 
+	@SuppressWarnings("unused")
 	private void init(InputStream inputstream) throws DBFException {
 		try {
 			stream = new DataInputStream(inputstream);
@@ -130,7 +135,7 @@ public class DBFReader {
 			j += 256;
 		if (k < 0)
 			k += 256;
-		return new DBFField(stringbuffer.toString(), c, j, k);
+		return new DBFField(validate, stringbuffer.toString(), c, j, k);
 	}
 
 	public int getFieldCount() {
@@ -199,5 +204,15 @@ public class DBFReader {
 			throw new DBFException(ioexception);
 		}
 	}
+
+	public boolean isValidate() {
+		return validate;
+	}
+
+	public void setValidate(boolean validate) {
+		this.validate = validate;
+	}
+	
+	
 
 }
