@@ -1,7 +1,8 @@
 package org.jumpmind.symmetric.route;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class DBFRouter extends AbstractFileParsingRouter implements IDataRouter,
 			boolean validateHeader = engine.getParameterService()
 					.is(ParameterConstants.DBF_ROUTER_VALIDATE_HEADER, true);
 			
-			dbfReader = new DBFReader(new FileInputStream(file), validateHeader);
+			dbfReader = new DBFReader(Files.newInputStream(file.toPath(), StandardOpenOption.READ), validateHeader);
 			int currentLine = 1;
 			while (dbfReader.hasNextRecord()) {
 				StringBuffer row = new StringBuffer();
