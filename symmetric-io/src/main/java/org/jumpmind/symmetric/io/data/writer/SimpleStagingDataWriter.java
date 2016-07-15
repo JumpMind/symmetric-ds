@@ -183,7 +183,8 @@ public class SimpleStagingDataWriter {
             lineCount++;
             if (System.currentTimeMillis() - ts > 60000) {
                 log.info("Batch '{}', for node '{}', for process 'transfer to stage' has been processing for {} seconds.  The following stats have been gathered: {}",
-                        new Object[] { batch.getBatchId(), batch.getTargetNodeId(), (System.currentTimeMillis() - startTime) / 1000,
+                        new Object[] { (batch != null ? batch.getBatchId() : 0), 
+                        (batch != null ? batch.getTargetNodeId() : ""), (System.currentTimeMillis() - startTime) / 1000,
                         "LINES=" + lineCount + ", BYTES=" + ((resource == null) ? 0 : resource.getSize()) });
                 ts = System.currentTimeMillis();
             }
