@@ -714,8 +714,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             currentBatch.setStatus(status);
         }
         if (mode != ExtractMode.EXTRACT_ONLY) {
-            outgoingBatchService.updateOutgoingBatch(currentBatch);
-            return true;
+            long batchStatusUpdateMillis = parameterService.getLong(ParameterConstants.OUTGOING_BATCH_UPDATE_STATUS_MILLIS);
+            if (currentBatch.getStatus() == Status.RQ || currentBatch.getStatus() == Status.LD ||
+                    currentBatch.getLastUpdatedTime() == null ||
+                    System.currentTimeMillis() - batchStatusUpdateMillis >= currentBatch.getLastUpdatedTime().getTime()) {
+                outgoingBatchService.updateOutgoingBatch(currentBatch);
+                return true;
+            }
+            return false;
         } else {
             return false;
         }

@@ -351,6 +351,8 @@ final public class ParameterConstants {
 
     public final static String DBF_ROUTER_VALIDATE_HEADER = "dbf.router.validate.header";
     
+    public final static String OUTGOING_BATCH_UPDATE_STATUS_MILLIS = "outgoing.batches.update.status.millis";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
