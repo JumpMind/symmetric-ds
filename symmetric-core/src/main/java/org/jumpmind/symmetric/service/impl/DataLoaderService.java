@@ -516,7 +516,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
                         return buildDataWriter(processInfo, sourceNode.getNodeId(),
-                                batch.getChannelId(), batch.getBatchId());
+                                batch.getChannelId(), batch.getBatchId(),
+                                ((ManageIncomingBatchListener) listener).getCurrentBatch().isRetry());
                     }
                 };
                 processor.process(ctx);
@@ -573,7 +574,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     protected IDataWriter buildDataWriter(ProcessInfo processInfo, String sourceNodeId,
-            String channelId, long batchId) {
+            String channelId, long batchId, boolean isRetry) {
         TransformTable[] transforms = null;
         NodeGroupLink link = null;
         List<ResolvedData> resolvedDatas = new ArrayList<ResolvedData>();
@@ -612,15 +613,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             transforms = transformsList != null ? transformsList
                     .toArray(new TransformTable[transformsList.size()]) : null;
 
-            List<IncomingError> incomingErrors = getIncomingErrors(batchId, sourceNodeId);
-            for (IncomingError incomingError : incomingErrors) {
-                if (incomingError.isResolveIgnore()
-                        || StringUtils.isNotBlank(incomingError.getResolveData())) {
-                    resolvedDatas.add(new ResolvedData(incomingError.getFailedRowNumber(),
-                            incomingError.getResolveData(), incomingError.isResolveIgnore()));
+            if (isRetry) {
+                List<IncomingError> incomingErrors = getIncomingErrors(batchId, sourceNodeId);
+                for (IncomingError incomingError : incomingErrors) {
+                    if (incomingError.isResolveIgnore()
+                            || StringUtils.isNotBlank(incomingError.getResolveData())) {
+                        resolvedDatas.add(new ResolvedData(incomingError.getFailedRowNumber(),
+                                incomingError.getResolveData(), incomingError.isResolveIgnore()));
+                    }
                 }
             }
-
         }
 
         TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null,
@@ -922,7 +924,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                     batch.getTargetNodeId(), resource), null, listener, "data load from stage") {
                                 @Override
                                 protected IDataWriter chooseDataWriter(Batch batch) {
-                                    return buildDataWriter(processInfo, sourceNodeId, batch.getChannelId(), batch.getBatchId());
+                                    return buildDataWriter(processInfo, sourceNodeId, batch.getChannelId(), batch.getBatchId(),
+                                            ((ManageIncomingBatchListener) listener).getCurrentBatch().isRetry());
                                 }
                             };
                             processor.process(ctx);
