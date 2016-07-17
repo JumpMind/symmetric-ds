@@ -40,6 +40,8 @@ import org.jumpmind.symmetric.service.ISequenceService;
 public class SequenceService extends AbstractService implements ISequenceService {
 
     private Map<String, Sequence> sequenceDefinitionCache = new HashMap<String, Sequence>();
+    
+    private Map<String, CachedRange> sequenceCache = new HashMap<String, CachedRange>();
 
     public SequenceService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
         super(parameterService, symmetricDialect);
@@ -50,32 +52,32 @@ public class SequenceService extends AbstractService implements ISequenceService
     public void init() {
         Map<String, Sequence> sequences = getAll();
         if (sequences.get(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID) == null) {
-            initSequence(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID, 1);
+            initSequence(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID, 1, 0);
         }
         
         if (sequences.get(Constants.SEQUENCE_OUTGOING_BATCH) == null) {
             long maxBatchId = sqlTemplate.queryForLong(getSql("maxOutgoingBatchSql"));
-            initSequence(Constants.SEQUENCE_OUTGOING_BATCH, maxBatchId);
+            initSequence(Constants.SEQUENCE_OUTGOING_BATCH, maxBatchId, 10);
         }
         
         if (sequences.get(Constants.SEQUENCE_TRIGGER_HIST) == null) {
             long maxTriggerHistId = sqlTemplate.queryForLong(getSql("maxTriggerHistSql"));
-            initSequence(Constants.SEQUENCE_TRIGGER_HIST, maxTriggerHistId);
+            initSequence(Constants.SEQUENCE_TRIGGER_HIST, maxTriggerHistId, 0);
         }
         
         if (sequences.get(Constants.SEQUENCE_EXTRACT_REQ) == null) {
             long maxRequestId = sqlTemplate.queryForLong(getSql("maxExtractRequestSql"));
-            initSequence(Constants.SEQUENCE_EXTRACT_REQ, maxRequestId);
+            initSequence(Constants.SEQUENCE_EXTRACT_REQ, maxRequestId, 0);
         }
     }
     
-    private void initSequence(String name, long initialValue) {
+    private void initSequence(String name, long initialValue, int cacheSize) {
         try {
             if (initialValue < 1) {
                 initialValue = 1;
             }
             create(new Sequence(name, initialValue, 1, 1, 9999999999l,
-                    "system", false));
+                    "system", false, cacheSize));
         } catch (UniqueKeyException ex) {
             log.debug("Failed to create sequence {}.  Must be initialized already.",
                     name);
@@ -83,30 +85,45 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public long nextVal(String name) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            long val = nextVal(transaction, name);
-            transaction.commit();
-            return val;
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
-        } finally {
-            close(transaction);
+        if (getSequenceDefinition(name).getCacheSize() > 0) {
+            return nextValFromCache(null, name);
         }
+        return nextValFromDatabase(name);
     }
 
     public long nextVal(ISqlTransaction transaction, String name) {
+        if (getSequenceDefinition(transaction, name).getCacheSize() > 0) {
+            return nextValFromCache(transaction, name);
+        }
+        return nextValFromDatabase(transaction, name);
+    }
+
+    protected synchronized long nextValFromCache(ISqlTransaction transaction, String name) {
+        CachedRange range = sequenceCache.get(name);
+        if (range != null) {
+            long currentValue = range.getCurrentValue();
+            if (currentValue < range.getEndValue()) {
+                range.setCurrentValue(++currentValue);
+                System.out.println("--- CACHED NEXTVAL " + currentValue);
+                return currentValue;
+            } else {
+                sequenceCache.remove(name);
+            }
+        }
+        return nextValFromDatabase(transaction, name);
+    }
+    
+    protected long nextValFromDatabase(final String name) {
+        return new DoTransaction<Long>() {
+            public Long execute(ISqlTransaction transaction) {
+                return nextValFromDatabase(transaction, name);
+            }            
+        }.execute();
+    }
+
+    protected long nextValFromDatabase(ISqlTransaction transaction, String name) {
         if (transaction == null) {
-            return nextVal(name);
+            return nextValFromDatabase(name);
         } else {
             long sequenceTimeoutInMs = parameterService.getLong(
                     ParameterConstants.SEQUENCE_TIMEOUT_MS, 5000);
@@ -126,18 +143,7 @@ public class SequenceService extends AbstractService implements ISequenceService
 
     protected long tryToGetNextVal(ISqlTransaction transaction, String name) {
         long currVal = currVal(transaction, name);
-        Sequence sequence = sequenceDefinitionCache.get(name);
-        if (sequence == null) {
-            sequence = get(transaction, name);
-            if (sequence != null) {
-                sequenceDefinitionCache.put(name, sequence);
-            } else {
-                throw new IllegalStateException(String.format(
-                        "The sequence named %s is not configured in %s", name,
-                        TableConstants.getTableName(getTablePrefix(), TableConstants.SYM_SEQUENCE)));
-            }
-        }
-
+        Sequence sequence = getSequenceDefinition(transaction, name);
         long nextVal = currVal + sequence.getIncrementBy();
         if (nextVal > sequence.getMaxValue()) {
             if (sequence.isCycle()) {
@@ -157,45 +163,78 @@ public class SequenceService extends AbstractService implements ISequenceService
             }
         }
 
+        CachedRange range = null;
+        if (sequence.getCacheSize() > 0) {
+            long endVal = nextVal + (sequence.getIncrementBy() * (sequence.getCacheSize() - 1));
+            range = new CachedRange(nextVal, endVal);
+            nextVal = endVal;
+        }
+
         int updateCount = transaction.prepareAndExecute(getSql("updateCurrentValueSql"), nextVal,
                 name, currVal);
         if (updateCount != 1) {
             nextVal = -1;
+        } else if (range != null) {
+            sequenceCache.put(name, range);
+            nextVal = range.getCurrentValue();
         }
-
+        System.out.println("--- NEXTVAL " + nextVal);
         return nextVal;
     }
 
+    protected Sequence getSequenceDefinition(final String name) {
+        Sequence sequence = sequenceDefinitionCache.get(name);
+        if (sequence != null) {
+            return sequence;
+        }
+
+        return new DoTransaction<Sequence>() {
+            public Sequence execute(ISqlTransaction transaction) {
+                return getSequenceDefinition(transaction, name);
+            }            
+        }.execute();
+    }
+
+    protected Sequence getSequenceDefinition(ISqlTransaction transaction, String name) {
+        Sequence sequence = sequenceDefinitionCache.get(name);
+        if (sequence == null) {
+            sequence = get(transaction, name);
+            if (sequence != null) {
+                sequenceDefinitionCache.put(name, sequence);
+            } else {
+                throw new IllegalStateException(String.format(
+                        "The sequence named %s is not configured in %s", name,
+                        TableConstants.getTableName(getTablePrefix(), TableConstants.SYM_SEQUENCE)));
+            }
+        }
+        return sequence;
+    }
+
     public long currVal(ISqlTransaction transaction, String name) {
+        CachedRange range = sequenceCache.get(name);
+        if (range != null) {
+            return range.getCurrentValue();
+        }
         return transaction.queryForLong(getSql("getCurrentValueSql"), name);
     }
 
-    public long currVal(String name) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            long val = currVal(transaction, name);
-            transaction.commit();
-            return val;
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;              
-        } finally {
-            close(transaction);
+    public long currVal(final String name) {
+        CachedRange range = sequenceCache.get(name);
+        if (range != null) {
+            return range.getCurrentValue();
         }
+
+        return new DoTransaction<Long>() {
+            public Long execute(ISqlTransaction transaction) {
+                return currVal(transaction, name);    
+            }            
+        }.execute();
     }
 
     public void create(Sequence sequence) {
         sqlTemplate.update(getSql("insertSequenceSql"), sequence.getSequenceName(),
                 sequence.getCurrentValue(), sequence.getIncrementBy(), sequence.getMinValue(),
-                sequence.getMaxValue(), sequence.isCycle() ? 1 : 0, sequence.getLastUpdateBy());
+                sequence.getMaxValue(), sequence.isCycle() ? 1 : 0, sequence.getCacheSize(), sequence.getLastUpdateBy());
     }
 
     protected Sequence get(ISqlTransaction transaction, String name) {
@@ -216,6 +255,54 @@ public class SequenceService extends AbstractService implements ISequenceService
         return map;
     }
 
+    class CachedRange {
+        long currentValue;
+        long endValue;
+        
+        public CachedRange(long currentValue, long endValue) {
+            this.currentValue = currentValue;
+            this.endValue = endValue;
+        }
+
+        public long getCurrentValue() {
+            return currentValue;
+        }
+        
+        public void setCurrentValue(long currentValue) {
+            this.currentValue = currentValue;
+        }
+        
+        public long getEndValue() {
+            return endValue;
+        }        
+    }
+    
+    abstract class DoTransaction<T> {
+        public T execute() {
+            ISqlTransaction transaction = null;
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                T result = execute(transaction);
+                transaction.commit();
+                return result;
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;              
+            } finally {
+                close(transaction);
+            }
+        }
+        
+        abstract public T execute(ISqlTransaction transaction);
+    }
+
     class SequenceRowMapper implements ISqlRowMapper<Sequence> {
         public Sequence mapRow(Row rs) {
             Sequence sequence = new Sequence();
@@ -228,6 +315,7 @@ public class SequenceService extends AbstractService implements ISequenceService
             sequence.setMinValue(rs.getLong("min_value"));
             sequence.setSequenceName(rs.getString("sequence_name"));
             sequence.setCycle(rs.getBoolean("cycle"));
+            sequence.setCacheSize(rs.getInt("cache_size"));
             return sequence;
         }
     }
