@@ -104,7 +104,6 @@ public class SequenceService extends AbstractService implements ISequenceService
             long currentValue = range.getCurrentValue();
             if (currentValue < range.getEndValue()) {
                 range.setCurrentValue(++currentValue);
-                System.out.println("--- CACHED NEXTVAL " + currentValue);
                 return currentValue;
             } else {
                 sequenceCache.remove(name);
@@ -178,7 +177,6 @@ public class SequenceService extends AbstractService implements ISequenceService
             sequenceCache.put(name, range);
             nextVal = range.getCurrentValue();
         }
-        System.out.println("--- NEXTVAL " + nextVal);
         return nextVal;
     }
 
