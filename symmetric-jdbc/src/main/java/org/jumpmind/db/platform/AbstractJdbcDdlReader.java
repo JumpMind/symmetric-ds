@@ -1412,8 +1412,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
     public List<String> getTableNames(final String catalog, final String schema,
             final String[] tableTypes) {
-        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
+    	long startTime = System.nanoTime();
+    	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        List<String> list = sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
                 ArrayList<String> list = new ArrayList<String>();
                 DatabaseMetaData meta = connection.getMetaData();
@@ -1430,6 +1431,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 }
             }
         });
+        System.out.println("Elapsed time (old): "+(System.nanoTime()-startTime));
+        return list;
     }
     
     public List<String> getColumnNames(final String catalog, final String schema, final String tableName) {

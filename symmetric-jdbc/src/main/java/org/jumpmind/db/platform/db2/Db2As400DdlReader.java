@@ -15,9 +15,14 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Trigger;
+import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 
 public class Db2As400DdlReader extends Db2DdlReader {
 
@@ -153,4 +158,39 @@ public class Db2As400DdlReader extends Db2DdlReader {
     	}
     	return found;
     }
+    
+    public List<Trigger> getTriggers(final String catalog, final String schema,
+			final String tableName) throws SqlException {
+		
+		List<Trigger> triggers = new ArrayList<Trigger>();
+
+		log.debug("Reading triggers for: " + tableName);
+		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+				.getSqlTemplate();
+		
+		String sql = "SELECT "
+						+ "TIGGER_NAME, "
+						+ "TRIGGER_SCHEMA, "
+						+ "EVENT_OBJECT_TABLE as TABLE_NAME, "
+						+ "ACTION_TIMING as TRIGGER_TIME, "
+						+ "EVENT_MANIPULATION as TRIGGER_TYPE, "
+						+ "CREATED, "
+						+ "ENABLED "
+					+ "FROM QSYS2.SYSTRIGGERS "
+					+ "WHERE EVENT_OBJECT_TABLE=? and EVENT_OBJECT_SCHEMA=?";
+		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+			public Trigger mapRow(Row row) {
+				Trigger trigger = new Trigger();
+				trigger.setName(row.getString("TRIGGER_NAME"));
+				trigger.setSchemaName(row.getString("TRIGGER_SCHEMA"));
+				trigger.setTableName(row.getString("TABLE_NAME"));
+				trigger.setEnabled(row.getString("ENABLED").equals("Y"));
+				trigger.setTriggerType(TriggerType.valueOf(row.getString("TRIGGER_TYPE")));
+				trigger.setMetaData(row);
+				return trigger;
+			}
+		}, tableName, schema);
+		
+		return triggers;
+	}
 }

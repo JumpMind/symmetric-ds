@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Trigger;
 
 public interface IDdlReader {
 
@@ -41,5 +42,9 @@ public interface IDdlReader {
     public List<String> getTableNames(String catalog, String schema, String[] tableTypes);
     
     public List<String> getColumnNames(String catalog, String schema, String tableName);
+    
+    public List<Trigger> getTriggers(String catalog, String schema, String tableName);
+
+	public Trigger getTriggerFor(Table table, String name);
     
 }

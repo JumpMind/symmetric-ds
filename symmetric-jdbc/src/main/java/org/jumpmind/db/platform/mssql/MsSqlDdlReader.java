@@ -28,6 +28,8 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,11 +38,17 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.DdlException;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 
 /*
  * Reads a database model from a Microsoft Sql Server database.
@@ -246,4 +254,88 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             platformColumn.setDecimalDigits(-1);
         }
     }
+    
+    @Override
+    public List<String> getTableNames(final String catalog, final String schema,
+    		final String[] tableTypes) {
+    	
+    	List<String> tableNames = new ArrayList<String>();
+    	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+    	
+    	String sql = "SELECT sys.tables.name "
+    			+ "FROM sys.tables, sys.schemas "
+    			+ "WHERE sys.schemas.schema_id = sys.tables.schema_id "
+    			+ "AND sys.schemas.name = ? ;";
+    	tableNames = sqlTemplate.query(sql, new ISqlRowMapper<String>() {
+    		public String mapRow(Row row) {
+    			return row.getString("name");
+    		}
+    	}, schema);
+    	
+    	return tableNames;
+    }
+    
+    @Override
+	public List<Trigger> getTriggers(final String catalog, final String schema,
+			final String tableName) throws SqlException {
+		
+		List<Trigger> triggers = new ArrayList<Trigger>();
+
+		log.debug("Reading triggers for: " + tableName);
+		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+				.getSqlTemplate();
+		
+		String sql = "select "
+						+ "TRIG.name, "
+						+ "TAB.name as table_name, "
+						+ "SC.name as table_schema, "
+						+ "TRIG.is_disabled, "
+						+ "TRIG.is_ms_shipped, "
+						+ "TRIG.is_not_for_replication, "
+						+ "TRIG.is_instead_of_trigger, "
+						+ "TRIG.create_date, "
+						+ "TRIG.modify_date, "
+						+ "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsUpdateTrigger') AS isupdate, "
+						+ "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsDeleteTrigger') AS isdelete, "
+						+ "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsInsertTrigger') AS isinsert, "
+						+ "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsAfterTrigger') AS isafter, "
+						+ "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsInsteadOfTrigger') AS isinsteadof, "
+						+ "TRIG.object_id, "
+						+ "TRIG.parent_id, "
+						+ "TAB.schema_id, "
+						+ "OBJECT_DEFINITION(TRIG.OBJECT_ID) as trigger_source "
+					+ "from sys.triggers as TRIG "
+					+ "inner join sys.tables as TAB "
+						+ "on TRIG.parent_id = TAB.object_id "
+					+ "inner join sys.schemas as SC "
+						+ "on TAB.schema_id = SC.schema_id "
+					+ "where TAB.name=? and SC.name=? "
+					+ ";";
+		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+			public Trigger mapRow(Row row) {
+				Trigger trigger = new Trigger();
+				trigger.setName(row.getString("name"));
+				trigger.setSchemaName(row.getString("table_schema"));
+				trigger.setTableName(row.getString("table_name"));
+				trigger.setEnabled(!Boolean.valueOf(row.getString("is_disabled")));
+				trigger.setSource(row.getString("trigger_source"));
+				row.remove("trigger_source");
+				
+				//replace 0 and 1s with true and false
+				for (String s : new String[]{"isupdate", "isdelete", "isinsert", "isafter", "isinsteadof"}) {
+					if (row.getString(s).equals("0")) row.replace(s, false);
+					else row.replace(s, true);
+				}
+				if (row.getBoolean("isupdate")) trigger.setTriggerType(TriggerType.UPDATE);
+				else if (row.getBoolean("isdelete")) trigger.setTriggerType(TriggerType.DELETE);
+				else if (row.getBoolean("isinsert")) trigger.setTriggerType(TriggerType.INSERT);
+				
+				trigger.setMetaData(row);
+				return trigger;
+			}
+		}, tableName, schema);
+
+		return triggers;
+	}
+    
 }

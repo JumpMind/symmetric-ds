@@ -23,9 +23,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
@@ -33,11 +35,16 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.Row;
 
 /*
  * Reads a database model from a MySql database.
@@ -224,5 +231,58 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             }
             return fks.values();
         }
+    }
+    
+    public List<Trigger> getTriggers(final String catalog, final String schema,
+			final String tableName) {
+    	
+    	List<Trigger> triggers = new ArrayList<Trigger>();
+    	
+    	log.debug("Reading triggers for: " + tableName);
+		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+				.getSqlTemplate();
+		
+		String sql = "SELECT "
+						+ "TRIGGER_NAME, "
+						+ "TRIGGER_SCHEMA, "
+						+ "TRIGGER_CATALOG, "
+						+ "EVENT_MANIPULATION AS TRIGGER_TYPE, "
+						+ "EVENT_OBJECT_TABLE AS TABLE_NAME, "
+						+ "EVENT_OBJECT_SCHEMA AS TABLE_SCHEMA, "
+						+ "EVENT_OBJECT_CATALOG AS TABLE_CATALOG, "
+						+ "TRIG.* "
+					+ "FROM INFORMATION_SCHEMA.TRIGGERS AS TRIG "
+					+ "WHERE EVENT_OBJECT_TABLE=? and EVENT_OBJECT_SCHEMA=? ;";
+    	triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+			public Trigger mapRow(Row row) {
+				Trigger trigger = new Trigger();
+				trigger.setName(row.getString("TRIGGER_NAME"));
+				trigger.setCatalogName(row.getString("TRIGGER_CATALOG"));
+				trigger.setSchemaName(row.getString("TRIGGER_SCHEMA"));
+				trigger.setTableName(row.getString("TABLE_NAME"));
+				trigger.setEnabled(true);
+				String triggerType = row.getString("TRIGGER_TYPE");
+				if (triggerType.equals("DELETE")
+						|| triggerType.equals("INSERT")
+						|| triggerType.equals("UPDATE")) {
+					trigger.setTriggerType(TriggerType.valueOf(triggerType));
+				}
+				trigger.setMetaData(row);
+				return trigger;
+			}
+		}, tableName, catalog);
+    	
+    	for (final Trigger trigger : triggers) {
+    		String name = trigger.getName();
+    		String sourceSql = "SHOW CREATE TRIGGER "+name;
+    		sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
+    			public Trigger mapRow(Row row) {
+    				trigger.setSource(row.getString("SQL Original Statement"));
+    				return trigger;
+    			}
+    		});
+    	}
+    	
+    	return triggers;
     }
 }
