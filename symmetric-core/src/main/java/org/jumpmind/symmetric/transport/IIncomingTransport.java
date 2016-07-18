@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.transport;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 public interface IIncomingTransport {
 
@@ -38,4 +39,7 @@ public interface IIncomingTransport {
     public String getRedirectionUrl();
     
     public String getUrl();
+    
+    public Map<String, String> getHeaders();
+    
 }

@@ -356,6 +356,8 @@
         <column name="total_fail_count" type="BIGINT"  default="0" description="The total number of failed communication attempts with the node." />
         <column name="total_success_millis" type="BIGINT"  default="0" description="The total amount of time spent during successful communication attempts with the node." />
         <column name="total_fail_millis" type="BIGINT"  default="0" description="The total amount of time spent during failed communication attempts with the node." />
+        <column name="batch_to_send_count" type="BIGINT"  default="0" description="The number of batches this node has queued for pull." />
+        <column name="node_priority" type="INTEGER"  default="0" description="Used to order nodes when initiating a pull operation. Can be used to move a node to the top of the list to pull from it as quickly as possible." />
     </table>
 
     <table name="node_channel_ctl" description="Used to ignore or suspend a channel. A channel that is ignored will have its data_events batched and they will immediately be marked as 'OK' without sending them. A channel that is suspended is skipped when batching data_events.">
@@ -678,6 +680,7 @@
         <column name="min_value" type="BIGINT" required="true" default="1" description="Specify the minimum value of the sequence."/>
         <column name="max_value" type="BIGINT" required="true" default="9999999999" description="Specify the maximum value the sequence can generate."/>
         <column name="cycle" type="BOOLEANINT" size="1" default="0" description="Indicate whether the sequence should automatically cycle once a boundary is hit." />
+        <column name="cache_size" type="INTEGER" required="true" default="0" description="Specify the number of sequence numbers to acquire and cache when one is requested."/>
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true" description="Timestamp when a user last updated this entry." />

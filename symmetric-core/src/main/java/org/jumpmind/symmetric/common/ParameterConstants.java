@@ -217,6 +217,8 @@ final public class ParameterConstants {
     public final static String CACHE_TIMEOUT_TABLES_IN_MS = "cache.table.time.ms";
     public final static String CACHE_TIMEOUT_MONITOR_IN_MS = "cache.monitor.time.ms";
     public final static String CACHE_TIMEOUT_NOTIFICATION_IN_MS = "cache.notification.time.ms";
+    public final static String CACHE_CHANNEL_COMMON_BATCHES_IN_MS = "cache.channel.common.batches.time.ms";
+    public final static String CACHE_CHANNEL_DEFAULT_ROUTER_IN_MS = "cache.channel.default.router.time.ms";
 
     public final static String TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY = "trigger.update.capture.changed.data.only.enabled";
     public final static String TRIGGER_CREATE_BEFORE_INITIAL_LOAD = "trigger.create.before.initial.load.enabled";
@@ -342,7 +344,15 @@ final public class ParameterConstants {
     public final static String CHANNEL_THREADING = "channel.threading.enabled";
     
     public final static String MONITOR_EVENTS_CAPTURE_ENABLED = "monitor.events.capture.enabled";
+    
+    public final static String HYBRID_PUSH_PULL_ENABLED = "hybrid.push.pull.enabled";
+    
+    public final static String HYBRID_PUSH_PULL_TIMEOUT = "hybrid.push.pull.timeout";
 
+    public final static String DBF_ROUTER_VALIDATE_HEADER = "dbf.router.validate.header";
+    
+    public final static String OUTGOING_BATCH_UPDATE_STATUS_MILLIS = "outgoing.batches.update.status.millis";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

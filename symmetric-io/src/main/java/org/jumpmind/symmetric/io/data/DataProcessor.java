@@ -219,7 +219,7 @@ public class DataProcessor {
             }
             
             if (Thread.currentThread().isInterrupted()) {
-                throw new IoException("This  thread was interrupted");
+                throw new IoException("This thread was interrupted");
             }
         } while (currentData != null);
 

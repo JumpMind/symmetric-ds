@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -146,5 +147,10 @@ public class FileIncomingTransport implements IIncomingTransport {
         public boolean accept(File dir, String name) {
             return name.startsWith(startFilter) && name.endsWith(endFilter);
         }
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+        return null;
     }
 }

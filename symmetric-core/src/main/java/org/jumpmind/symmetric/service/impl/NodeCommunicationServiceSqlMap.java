@@ -33,20 +33,22 @@ public class NodeCommunicationServiceSqlMap extends AbstractSqlMap {
         putSql("clearLocksOnRestartSql", "update $(node_communication) set lock_time=null where locking_server_id=? and lock_time is not null");
 
         putSql("selectNodeCommunicationSql",
-                "select * from $(node_communication) where communication_type=? order by last_lock_time");
+                "select * from $(node_communication) where communication_type=? order by node_priority DESC,last_lock_time");
+        putSql("selectNodeCommunicationPullSql",
+                "select * from $(node_communication) where communication_type=? order by node_priority DESC,batch_to_send_count DESC,last_lock_time");
         
         putSql("selectNodeCommunicationByNodeAndChannelSql",
                 "select * from $(node_communication) where node_id=? and queue=? and communication_type=?");
 
         putSql("insertNodeCommunicationSql", "insert into $(node_communication) ("
                 + "lock_time,locking_server_id,last_lock_millis,success_count,fail_count,"
-                + "total_success_count,total_fail_count,total_success_millis,total_fail_millis,last_lock_time,"
-                + "node_id,queue,communication_type) values(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                + "total_success_count,total_fail_count,total_success_millis,total_fail_millis,last_lock_time,batch_to_send_count,node_priority,"
+                + "node_id,queue,communication_type) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
         putSql("updateNodeCommunicationSql",
                 "update $(node_communication) set lock_time=?,locking_server_id=?,last_lock_millis=?,"
                         + "success_count=?,fail_count=?,total_success_count=?,total_fail_count=?,"
-                        + "total_success_millis=?,total_fail_millis=?, last_lock_time=? "
+                        + "total_success_millis=?,total_fail_millis=?, last_lock_time=?, batch_to_send_count=?, node_priority=? "
                         + "where node_id=? and queue=? and communication_type=?");
 
         putSql("deleteNodeCommunicationSql",

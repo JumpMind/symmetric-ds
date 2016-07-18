@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.transport.internal;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -77,6 +78,11 @@ public class InternalIncomingTransport implements IIncomingTransport {
     
     public String getUrl() {
         return "";
+    }
+    
+    @Override
+    public Map<String, String> getHeaders() {
+        return null;
     }
 
 }

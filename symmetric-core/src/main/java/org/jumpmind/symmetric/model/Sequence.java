@@ -33,12 +33,13 @@ public class Sequence {
     private String lastUpdateBy;
     private Date lastUpdateTime;
     private boolean cycle;
-    
+    private int cacheSize;
+
     public Sequence() {
     }
 
     public Sequence(String sequenceName, long currentValue, int incrementBy, long minValue,
-            long maxValue, String lastUpdateBy, boolean cycle) {
+            long maxValue, String lastUpdateBy, boolean cycle, int cacheSize) {
         this.sequenceName = sequenceName;
         this.currentValue = currentValue;
         this.incrementBy = incrementBy;
@@ -46,6 +47,7 @@ public class Sequence {
         this.maxValue = maxValue;
         this.lastUpdateBy = lastUpdateBy;
         this.cycle = cycle;
+        this.cacheSize = cacheSize;
     }
 
     public String getSequenceName() {
@@ -118,5 +120,13 @@ public class Sequence {
     
     public boolean isCycle() {
         return cycle;
+    }
+    
+    public int getCacheSize() {
+        return cacheSize;
+    }
+
+    public void setCacheSize(int cacheSize) {
+        this.cacheSize = cacheSize;
     }
 }

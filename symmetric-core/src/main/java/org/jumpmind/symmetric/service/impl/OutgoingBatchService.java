@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -294,7 +295,28 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public int countOutgoingBatchesUnsent(String channelId) {
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);
     }
+    
+    public int countOutgoingBatchesPending(String nodeId) {
+        List<String> nodeIds;
+        if (nodeId != null) {
+            nodeIds = Arrays.asList(nodeId);
+        } else {
+            nodeIds = Collections.emptyList();
+        }
+        // Select only PULL channels?
+        
+        List<OutgoingBatch.Status> pendingStatuses = Arrays.asList(OutgoingBatch.Status.ER,
+                OutgoingBatch.Status.RQ,
+                OutgoingBatch.Status.NE,
+                OutgoingBatch.Status.QY,
+                OutgoingBatch.Status.RT);
+        
+        List<String> emptyList = Collections.emptyList();
+        
+        return countOutgoingBatches(nodeIds, emptyList, pendingStatuses, emptyList);
+    }
 
+    @Override
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses, List<String> loads) {
         Map<String, Object> params = new HashMap<String, Object>();

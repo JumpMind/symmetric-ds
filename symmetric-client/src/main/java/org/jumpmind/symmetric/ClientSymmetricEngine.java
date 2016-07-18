@@ -265,7 +265,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected ISymmetricDialect createSymmetricDialect() {
-        return new JdbcSymmetricDialectFactory(parameterService, contextService, platform).create();
+        return new JdbcSymmetricDialectFactory(parameterService, platform).create();
     }
 
     @Override

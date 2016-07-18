@@ -68,7 +68,6 @@ import org.jumpmind.symmetric.db.postgresql.PostgreSqlSymmetricDialect;
 import org.jumpmind.symmetric.db.redshift.RedshiftSymmetricDialect;
 import org.jumpmind.symmetric.db.sqlanywhere.SqlAnywhereSymmetricDialect;
 import org.jumpmind.symmetric.db.sqlite.SqliteJdbcSymmetricDialect;
-import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.db.voltdb.VoltDbSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
@@ -84,11 +83,9 @@ public class JdbcSymmetricDialectFactory {
 
     private IParameterService parameterService;
     
-    private IContextService contextService;
-
     private IDatabasePlatform platform;
 
-    public JdbcSymmetricDialectFactory(IParameterService parameterService, IContextService contextService, IDatabasePlatform platform) {
+    public JdbcSymmetricDialectFactory(IParameterService parameterService, IDatabasePlatform platform) {
         this.parameterService = parameterService;
         this.platform = platform;
     }
@@ -154,7 +151,7 @@ public class JdbcSymmetricDialectFactory {
         } else if (platform instanceof InterbaseDatabasePlatform) {
             dialect = new InterbaseSymmetricDialect(parameterService, platform);
         } else if (platform instanceof SqliteDatabasePlatform) {
-            dialect = new SqliteJdbcSymmetricDialect(parameterService, contextService, platform);
+            dialect = new SqliteJdbcSymmetricDialect(parameterService, platform);
         } else if (platform instanceof VoltDbDatabasePlatform) {
             dialect = new VoltDbSymmetricDialect(parameterService, platform);
         } else {

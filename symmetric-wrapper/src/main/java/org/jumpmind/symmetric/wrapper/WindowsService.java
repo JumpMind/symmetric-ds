@@ -54,11 +54,15 @@ public class WindowsService extends WrapperService {
 
     private final static Logger logger = Logger.getLogger(WindowsService.class.getName());
 
+    protected final String APP_EVENT_LOG = "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application";
+    
     protected ServiceControlHandler serviceControlHandler;
     
     protected SERVICE_STATUS_HANDLE serviceStatusHandle;
 
     protected Winsvc.SERVICE_STATUS serviceStatus;
+    
+    protected HANDLE eventHandle;
 
     @Override
     protected boolean setWorkingDirectory(String dir) {
@@ -365,6 +369,7 @@ public class WindowsService extends WrapperService {
                 break;
             case RUNNING:
                 updateStatus(Winsvc.SERVICE_RUNNING, Winsvc.SERVICE_ACCEPT_STOP);
+                logEvent(WinNT.EVENTLOG_INFORMATION_TYPE, "The " + config.getName() + " service has started.");
                 break;
             case STOP_PENDING:
                 updateStatus(Winsvc.SERVICE_STOP_PENDING, 0);
@@ -384,6 +389,37 @@ public class WindowsService extends WrapperService {
                 throwException("SetServiceStatus");
             }
         }
+    }
+
+    protected void logEvent(int eventType, String message) {
+        HANDLE eventHandle = getEventHandle();
+        if (eventHandle != null) {
+            String[] messageArray = { message };
+            Advapi32.INSTANCE.ReportEvent(eventHandle, eventType, 0, 0, null, 1, 0, messageArray, null);
+        }
+    }
+
+    protected void logEvent(int eventType, String message, Throwable e) {
+        HANDLE eventHandle = getEventHandle();
+        if (eventHandle != null) {
+            StackTraceElement[] elements = e.getStackTrace();
+            String[] messageArray = new String[elements.length + 2];
+            messageArray[0] = message;
+            messageArray[1] = " ";
+            for (int i = 0; i < elements.length; i++) {
+                StackTraceElement element = elements[i];
+                messageArray[i + 2] = element.getClassName() + "." + element.getMethodName() + "(" +  element.getFileName() + ":" + 
+                        element.getLineNumber() + ")";
+            }
+            Advapi32.INSTANCE.ReportEvent(eventHandle, eventType, 0, 0, null, messageArray.length, 0, messageArray, null);
+        }
+    }
+
+    protected HANDLE getEventHandle() {
+        if (eventHandle == null) {
+            eventHandle = Advapi32.INSTANCE.RegisterEventSource(null, config.getName());
+        }
+        return eventHandle;
     }
 
     protected Winsvc.SERVICE_STATUS_PROCESS waitForService(SC_HANDLE manager, SC_HANDLE service) {
@@ -432,21 +468,39 @@ public class WindowsService extends WrapperService {
     class ServiceMain implements SERVICE_MAIN_FUNCTION {
         @Override
         public void serviceMain(int argc, Pointer argv) {
-            logger.log(Level.INFO, "Getting service status");
+            logEvent(WinNT.EVENTLOG_INFORMATION_TYPE, "The " + config.getName() + " service is starting.");
             serviceControlHandler = new ServiceControlHandler();
             serviceStatusHandle = Advapi32Ex.INSTANCE.RegisterServiceCtrlHandlerEx(config.getName(), serviceControlHandler,
                     null);
             if (serviceStatusHandle == null) {
+                logEvent(WinNT.EVENTLOG_ERROR_TYPE, "Failed to register service control handler.");
                 System.exit(Constants.RC_FAIL_REGISTER_SERVICE);
             }
 
             serviceStatus = new Winsvc.SERVICE_STATUS();
             serviceStatus.dwServiceType = WinsvcEx.SERVICE_WIN32_OWN_PROCESS;
-
-            if (!isRunning()) {
-                execJava(false);
-            } else {
+            
+            boolean isRunning = false;
+            try {
+                isRunning = isRunning();
+            } catch (Throwable e) {
+                logEvent(WinNT.EVENTLOG_ERROR_TYPE, "Failed to check run status.", e);
                 updateStatus(Winsvc.SERVICE_STOPPED, 0);
+                System.exit(Constants.RC_FAIL_CHECK_STATUS);
+            }
+
+            if (!isRunning) {
+                try {
+                    execJava(false);
+                } catch (Throwable e) {
+                    logEvent(WinNT.EVENTLOG_ERROR_TYPE, "Failed to execute Java application.", e);
+                    updateStatus(Winsvc.SERVICE_STOPPED, 0);
+                    System.exit(Constants.RC_FAIL_EXECUTION);
+                }
+            } else {
+                logEvent(WinNT.EVENTLOG_ERROR_TYPE, "Exiting because Java application is running from another process.");
+                updateStatus(Winsvc.SERVICE_STOPPED, 0);
+                System.exit(Constants.RC_ALREADY_RUNNING);
             }
         }
     }

@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.android;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -35,7 +34,6 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.sqlite.SqliteSymmetricDialect;
-import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
@@ -82,15 +80,6 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         this.databaseHelper = databaseHelper;
         this.androidContext = androidContext;
         init();
-    }
-
-    protected void init() {
-        super.init();
-        if (symmetricDialect instanceof SqliteSymmetricDialect) {
-            // 
-            SqliteSymmetricDialect sqliteDialect = (SqliteSymmetricDialect)symmetricDialect;
-            sqliteDialect.setContextService(contextService);
-        }
     }
 
     @Override

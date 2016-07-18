@@ -9,50 +9,54 @@ public class DBFField {
 	private char type;
 	private int length;
 	private int decimalCount;
-
-	public DBFField(String s, char c, int i, int j) throws DBFException {
-		if (s.length() > 10) {
-			throw new DBFException("The field name is more than 10 characters long: " + s);
+	private boolean validate;
+	
+	public DBFField(boolean validate, String s, char c, int i, int j) throws DBFException {
+		this.validate = validate;
+		if (this.validate) {
+			if (s.length() > 10) {
+				throw new DBFException("The field name is more than 10 characters long: " + s);
+			}
+			if (c != 'C' && c != 'N' && c != 'L' && c != 'D' && c != 'F') {
+				throw new DBFException("The field type is not a valid. Got: " + c);
+			}
+			if (i < 1) {
+				throw new DBFException("The field length should be a positive integer. Got: " + i);
+			}
+			if (c == 'C' && i >= 255) {
+				throw new DBFException(
+						"The field length should be less than 255 characters for character fields. Got: " + i);
+			}
+			if (c == 'N' && i >= 21) {
+				throw new DBFException("The field length should be less than 21 digits for numeric fields. Got: " + i);
+			}
+			if (c == 'L' && i != 1) {
+				throw new DBFException("The field length should be 1 characater for logical fields. Got: " + i);
+			}
+			if (c == 'D' && i != 8) {
+				throw new DBFException("The field length should be 8 characaters for date fields. Got: " + i);
+			}
+			if (c == 'F' && i >= 21) {
+				throw new DBFException(
+						"The field length should be less than 21 digits for floating point fields. Got: " + i);
+			}
+			if (j < 0) {
+				throw new DBFException("The field decimal count should not be a negative integer. Got: " + j);
+			}
+			if ((c == 'C' || c == 'L' || c == 'D') && j != 0) {
+				throw new DBFException(
+						"The field decimal count should be 0 for character, logical, and date fields. Got: " + j);
+			}
+			if (j > i - 1) {
+				throw new DBFException("The field decimal count should be less than the length - 1. Got: " + j);
+			} 
 		}
-		if (c != 'C' && c != 'N' && c != 'L' && c != 'D' && c != 'F') {
-			throw new DBFException("The field type is not a valid. Got: " + c);
-		}
-		if (i < 1) {
-			throw new DBFException("The field length should be a positive integer. Got: " + i);
-		}
-		if (c == 'C' && i >= 255) {
-			throw new DBFException(
-					"The field length should be less than 255 characters for character fields. Got: " + i);
-		}
-		if (c == 'N' && i >= 21) {
-			throw new DBFException("The field length should be less than 21 digits for numeric fields. Got: " + i);
-		}
-		if (c == 'L' && i != 1) {
-			throw new DBFException("The field length should be 1 characater for logical fields. Got: " + i);
-		}
-		if (c == 'D' && i != 8) {
-			throw new DBFException("The field length should be 8 characaters for date fields. Got: " + i);
-		}
-		if (c == 'F' && i >= 21) {
-			throw new DBFException(
-					"The field length should be less than 21 digits for floating point fields. Got: " + i);
-		}
-		if (j < 0) {
-			throw new DBFException("The field decimal count should not be a negative integer. Got: " + j);
-		}
-		if ((c == 'C' || c == 'L' || c == 'D') && j != 0) {
-			throw new DBFException(
-					"The field decimal count should be 0 for character, logical, and date fields. Got: " + j);
-		}
-		if (j > i - 1) {
-			throw new DBFException("The field decimal count should be less than the length - 1. Got: " + j);
-		} else {
-			name = s;
-			type = c;
-			length = i;
-			decimalCount = j;
-			return;
-		}
+		
+		name = s;
+		type = c;
+		length = i;
+		decimalCount = j;
+		return;
 	}
 
 	public String getName() {
