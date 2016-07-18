@@ -1431,7 +1431,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 }
             }
         });
-        System.out.println("Elapsed time (old): "+(System.nanoTime()-startTime));
+        log.debug("Elapsed time (old): "+(System.nanoTime()-startTime));
         return list;
     }
     
