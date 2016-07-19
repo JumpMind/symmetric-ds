@@ -138,7 +138,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         long gapTimoutInMs = parameterService.getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
         final int dataIdIncrementBy = parameterService.getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
 
-        long databaseTime = symmetricDialect.getDatabaseTime();
+        long currentTime = System.currentTimeMillis();
         ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
 
         boolean supportsTransactionViews = symmetricDialect.supportsTransactionViews();
@@ -149,8 +149,10 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 earliestTransactionTime = date.getTime() - parameterService.getLong(
                         ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS, 60000);
             }
+            currentTime = symmetricDialect.getDatabaseTime();
         }
 
+        Date currentDate = new Date(currentTime);
         if (!isAllDataRead) {
             long lastBusyExpireRunTime = contextService.getLong(ContextConstants.ROUTING_LAST_BUSY_EXPIRE_RUN_TIME);
             long busyExpireMillis = parameterService.getLong(ParameterConstants.ROUTING_STALE_GAP_BUSY_EXPIRE_TIME);
@@ -191,7 +193,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                         if (supportsTransactionViews) {
                             isExpired = createTime != null && (createTime.getTime() < earliestTransactionTime || earliestTransactionTime == 0);
                         } else {
-                            isExpired = createTime != null && databaseTime - createTime.getTime() > gapTimoutInMs;
+                            isExpired = createTime != null && currentTime - createTime.getTime() > gapTimoutInMs;
                         }
 
                         if (isExpired) {
@@ -221,13 +223,13 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                         processInfo.incrementCurrentDataCount();
                         if (lastDataId == -1 && dataGap.getStartId() + dataIdIncrementBy <= dataId) {
                             // there was a new gap at the start
-                            DataGap newGap = new DataGap(dataGap.getStartId(), dataId - 1);
+                            DataGap newGap = new DataGap(dataGap.getStartId(), dataId - 1, currentDate);
                             if (isOkayToAdd(newGap)) {
                                 dataService.insertDataGap(transaction, newGap);
                             }
                         } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId && lastDataId != dataId) {
                             // found a gap somewhere in the existing gap
-                            DataGap newGap = new DataGap(lastDataId + 1, dataId - 1);
+                            DataGap newGap = new DataGap(lastDataId + 1, dataId - 1, currentDate);
                             if (isOkayToAdd(newGap)) {
                                 dataService.insertDataGap(transaction, newGap);
                             }
@@ -237,7 +239,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
 
                     // if we found data in the gap
                     if (lastDataId != -1 && !lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
-                        DataGap newGap = new DataGap(lastDataId + dataIdIncrementBy, dataGap.getEndId());
+                        DataGap newGap = new DataGap(lastDataId + dataIdIncrementBy, dataGap.getEndId(), currentDate);
                         if (isOkayToAdd(newGap)) {
                             dataService.insertDataGap(transaction, newGap);
                         }
@@ -270,7 +272,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             }
 
             if (lastDataId != -1) {
-                DataGap newGap = new DataGap(lastDataId + 1, lastDataId + maxDataToSelect);
+                DataGap newGap = new DataGap(lastDataId + 1, lastDataId + maxDataToSelect, currentDate);
                 if (isOkayToAdd(newGap)) {
                     log.debug("Inserting new last data gap: {}", newGap);
                     dataService.insertDataGap(newGap);

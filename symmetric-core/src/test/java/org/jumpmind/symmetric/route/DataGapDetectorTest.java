@@ -306,6 +306,7 @@ public class DataGapDetectorTest {
         dataGaps.add(new DataGap(5, 6));
         dataGaps.add(new DataGap(7, 50000006));
 
+        when(symmetricDialect.supportsTransactionViews()).thenReturn(true);
         when(symmetricDialect.getDatabaseTime()).thenReturn(System.currentTimeMillis() + 60001L);
         runGapDetector(dataGaps, new ArrayList<Long>(), true);
 
@@ -322,6 +323,7 @@ public class DataGapDetectorTest {
         dataGaps.add(new DataGap(5, 6));
         dataGaps.add(new DataGap(7, 50000006));
         
+        when(symmetricDialect.supportsTransactionViews()).thenReturn(true);
         when(symmetricDialect.getDatabaseTime()).thenReturn(System.currentTimeMillis() + 60001L);
         when(dataService.countDataInRange(4, 7)).thenReturn(1);
         runGapDetector(dataGaps, new ArrayList<Long>(), false);
@@ -340,6 +342,7 @@ public class DataGapDetectorTest {
         dataGaps.add(new DataGap(5, 6));
         dataGaps.add(new DataGap(7, 50000006));
 
+        when(symmetricDialect.supportsTransactionViews()).thenReturn(true);
         when(symmetricDialect.getDatabaseTime()).thenReturn(System.currentTimeMillis() + 60001L);
         when(contextService.getLong(ContextConstants.ROUTING_LAST_BUSY_EXPIRE_RUN_TIME)).thenReturn(System.currentTimeMillis() - 61000);
         runGapDetector(dataGaps, new ArrayList<Long>(), false);

@@ -32,17 +32,20 @@ public class DataGap implements Serializable {
     private long startId;
     private long endId;
     private Date createTime;
+    private Date lastUpdateTime;
 
     public DataGap(long startId, long endId) {
         this.startId = startId;
         this.endId = endId;
         this.createTime = new Date();
+        this.lastUpdateTime = createTime;
     }
     
     public DataGap(long startId, long endId, Date createTime) {
         this.startId = startId;
         this.endId = endId;
         this.createTime = createTime;
+        this.lastUpdateTime = createTime;
     }
 
     @Override
@@ -61,7 +64,15 @@ public class DataGap implements Serializable {
     public Date getCreateTime() {
         return createTime;
     }
-    
+ 
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(Date lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
+    }
+
     public boolean contains(DataGap gap) {
         return startId <= gap.startId && endId >= gap.endId;
     }
