@@ -27,6 +27,8 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,10 +36,16 @@ import java.util.regex.Pattern;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 
 /*
  * Reads a database model from a Sybase database.
@@ -170,4 +178,46 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
             stmt.close();
         }
     }
+    
+    @Override
+	public List<Trigger> getTriggers(final String catalog, final String schema,
+			final String tableName) throws SqlException {
+		
+		List<Trigger> triggers = new ArrayList<Trigger>();
+
+		log.debug("Reading triggers for: " + tableName);
+		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+				.getSqlTemplate();
+		
+		String sql = "SELECT "
+						+ "trigname AS trigger_name, "
+						+ "owner, "
+						+ "tname AS table_name, "
+						+ "event AS trigger_type, "
+						+ "trigtime AS trigger_time, "
+						+ "trigdefn "
+					+ "FROM SYS.SYSTRIGGERS "
+					+ "WHERE tname=? and owner=? ;";
+		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+			public Trigger mapRow(Row row) {
+				Trigger trigger = new Trigger();
+				trigger.setName(row.getString("trigger_name"));
+				trigger.setSchemaName(row.getString("owner"));
+				trigger.setTableName(row.getString("table_name"));
+				trigger.setEnabled(true);
+				trigger.setSource(row.getString("trigdefn"));
+				row.remove("trigdefn");
+				String triggerType = row.getString("trigger_type");
+				if (triggerType.equals("DELETE")
+						|| triggerType.equals("INSERT")
+						|| triggerType.equals("UPDATE")) {
+					trigger.setTriggerType(TriggerType.valueOf(triggerType));
+				}
+				trigger.setMetaData(row);
+				return trigger;
+			}
+		}, tableName, schema);
+
+		return triggers;
+	}
 }
