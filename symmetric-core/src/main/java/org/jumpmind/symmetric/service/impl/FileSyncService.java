@@ -594,6 +594,14 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                             }
                         }
                     }
+                    else if (parameterService.is(ParameterConstants.FILE_SYNC_DELETE_CTL_FILE_AFTER_SYNC, false)) {
+                        File file = fileTrigger.createSourceFile(fileSnapshot);
+                        if (!file.isDirectory()) {
+                            if (fileTrigger.isSyncOnCtlFile()) {
+                                filesToDelete.add(new File(file.getAbsolutePath() + ".ctl"));
+                            }
+                        }
+                    }
                 }
             }
             data = cursor.next();
