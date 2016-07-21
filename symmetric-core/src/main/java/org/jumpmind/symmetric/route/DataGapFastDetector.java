@@ -99,23 +99,25 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     }
 
     public void beforeRouting() {
-        reset();
         ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
                 nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
         processInfo.setStatus(Status.QUERYING);
         maxDataToSelect = parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
-        gaps = dataService.findDataGaps();
-        fixOverlappingGaps(gaps, processInfo);
+        reset();
         
         if (isFullGapAnalysis()) {
             log.info("Full gap analysis is running");
             long ts = System.currentTimeMillis();
+            gaps = dataService.findDataGaps();
+            fixOverlappingGaps(gaps, processInfo);
             queryDataIdMap();
             log.info("Querying data in gaps from database took {} ms", System.currentTimeMillis() - ts);
             afterRouting();
             reset();
-            gaps = dataService.findDataGaps();
             log.info("Full gap analysis is done after {} ms", System.currentTimeMillis() - ts);
+        } else if (gaps == null || parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            gaps = dataService.findDataGaps();
+            fixOverlappingGaps(gaps, processInfo);
         }
         processInfo.setStatus(Status.OK);
     }
@@ -282,7 +284,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     dataService.insertDataGap(newGap);
                 }
             }
-            
+
+            gaps = new ArrayList<DataGap>(gapsAll);
+            Collections.sort(gaps);
             setFullGapAnalysis(false);
             if (!isAllDataRead && expireChecked > 0) {
                 setLastBusyExpireRunTime(System.currentTimeMillis());
