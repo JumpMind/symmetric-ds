@@ -141,15 +141,7 @@ public class RouterService extends AbstractService implements IRouterService {
         extensionService.addExtensionPoint("dbf", new DBFRouter(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens()));
-        
-        if (parameterService.is(ParameterConstants.ROUTING_USE_FAST_GAP_DETECTOR)) {
-            gapDetector = new DataGapFastDetector(engine.getDataService(), parameterService, engine.getContextService(), 
-                    symmetricDialect, this, engine.getStatisticManager(), engine.getNodeService());
-        } else {
-            gapDetector = new DataGapDetector(engine.getDataService(), parameterService, symmetricDialect, 
-                    this, engine.getStatisticManager(), engine.getNodeService());                        
-        }
+                createSqlReplacementTokens()));   
     }
 
     /**
@@ -190,7 +182,16 @@ public class RouterService extends AbstractService implements IRouterService {
                         engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
                         firstTimeCheckForAbandonedBatches = false;
                     }
-                    
+
+                    if (gapDetector == null) {
+                        if (parameterService.is(ParameterConstants.ROUTING_USE_FAST_GAP_DETECTOR)) {
+                            gapDetector = new DataGapFastDetector(engine.getDataService(), parameterService, engine.getContextService(), 
+                                    symmetricDialect, this, engine.getStatisticManager(), engine.getNodeService());
+                        } else {
+                            gapDetector = new DataGapDetector(engine.getDataService(), parameterService, symmetricDialect, 
+                                    this, engine.getStatisticManager(), engine.getNodeService());                        
+                        }
+                    }
                     insertInitialLoadEvents();
                     
                     long ts = System.currentTimeMillis();
