@@ -118,6 +118,11 @@ public class MockTransportManager implements ITransportManager {
 		return outgoingTransport;
 	}
 
+    @Override
+    public int sendStatus(Node local, Node remote, Map<String, String> statuses) throws IOException {
+        return -1;
+    }
+
 
 
 }

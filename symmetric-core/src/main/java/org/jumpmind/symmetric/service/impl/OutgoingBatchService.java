@@ -296,14 +296,15 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);
     }
     
-    public int countOutgoingBatchesPending(String nodeId) {
+    public Map<String, Integer> countOutgoingBatchesPending(String nodeId) {
         List<String> nodeIds;
         if (nodeId != null) {
             nodeIds = Arrays.asList(nodeId);
         } else {
             nodeIds = Collections.emptyList();
         }
-        // Select only PULL channels?
+        // TODO: Select only PULL channels?
+        
         
         List<OutgoingBatch.Status> pendingStatuses = Arrays.asList(OutgoingBatch.Status.ER,
                 OutgoingBatch.Status.RQ,
@@ -311,9 +312,23 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 OutgoingBatch.Status.QY,
                 OutgoingBatch.Status.RT);
         
-        List<String> emptyList = Collections.emptyList();
+        Map<String, Object> params = new HashMap<String, Object>();
+//        params.put("NODES", nodeIds);
+//        params.put("CHANNELS", channels);
+        params.put("STATUSES", toStringList(pendingStatuses));        
         
-        return countOutgoingBatches(nodeIds, emptyList, pendingStatuses, emptyList);
+    //    List<String> emptyList = Collections.emptyList();
+        
+//        return sqlTemplate
+//                .queryForInt(
+//                        getSql("selectCountBatchesPrefixSql",
+//                                buildBatchWhere(nodeIds, channels, statuses, loads)), params);        
+        
+        // TODO: switch to countOutgoingBatchesPendingByChannelSql
+        
+//        return countOutgoingBatches(nodeIds, emptyList, pendingStatuses, emptyList);
+        
+        return null;
     }
 
     @Override

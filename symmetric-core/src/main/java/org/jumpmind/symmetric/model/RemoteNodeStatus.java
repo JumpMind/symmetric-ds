@@ -42,6 +42,7 @@ public class RemoteNodeStatus implements Serializable {
     private long dataProcessed;
     private long batchesProcessed;
     private long reloadBatchesProcessed;
+    private long batchToSendCount;
     private boolean complete = false;
     private Map<String, Channel> channels;
 
@@ -143,6 +144,14 @@ public class RemoteNodeStatus implements Serializable {
     
     public boolean isComplete() {
         return complete;
+    }
+
+    public long getBatchToSendCount() {
+        return batchToSendCount;
+    }
+
+    public void setBatchToSendCount(long batchToSendCount) {
+        this.batchToSendCount = batchToSendCount;
     }
 
 }

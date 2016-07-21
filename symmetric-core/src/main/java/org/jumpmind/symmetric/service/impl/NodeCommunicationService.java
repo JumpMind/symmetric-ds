@@ -477,6 +477,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                         boolean failed = false;
                         try {
                             executor.execute(nodeCommunication, status);
+                            nodeCommunication.setBatchToSendCount(status.getBatchToSendCount());
                             failed = status.failed();
                         } catch (Throwable ex) {
                             failed = true;

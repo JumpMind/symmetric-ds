@@ -312,7 +312,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     processInfo.setStatus(ProcessInfo.Status.OK);
                 }
                 
-                updateBatchToSendCount(remote, transport);
+                updateBatchToSendCount(status, status.getChannelId(), transport);
                 
             } catch (RuntimeException e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
@@ -344,11 +344,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    protected void updateBatchToSendCount(Node remote, IIncomingTransport transport) {
+    protected void updateBatchToSendCount(RemoteNodeStatus status, String queue, IIncomingTransport transport) {
         Map<String, String> headers = transport.getHeaders();
         if (headers != null && headers.containsKey(WebConstants.BATCH_TO_SEND_COUNT)) {
             // TODO save this batch to send to node communication...  Figure out how queues fit in.
-            int batchToSendCount = Integer.parseInt(headers.get(WebConstants.BATCH_TO_SEND_COUNT));  
+            int batchToSendCount = Integer.parseInt(headers.get(WebConstants.BATCH_TO_SEND_COUNT));
+            status.setBatchToSendCount(batchToSendCount);
         }
     }
 

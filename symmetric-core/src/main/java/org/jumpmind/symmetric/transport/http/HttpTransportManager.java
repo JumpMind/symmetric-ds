@@ -68,6 +68,18 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         super(engine.getExtensionService());
         this.engine = engine;
     }
+    
+    public int sendStatus(Node local, Node remote, Map<String, String> statuses) throws IOException {
+        String securityToken = engine.getNodeService().findNodeSecurity(local.getNodeId())
+                .getNodePassword();
+        String url = addSecurityToken(remote.getSyncUrl() + "/pushstatus",
+                "&", local.getNodeId(), securityToken);
+        url = add(url, WebConstants.EXTERNAL_ID, engine.getParameterService().getExternalId(), "&");
+        url = add(url, WebConstants.NODE_GROUP_ID, engine.getParameterService().getNodeGroupId(), "&");
+
+        log.debug("Send Status: " + url);
+        return sendMessage(new URL(url), "");
+    }
 
     public int sendCopyRequest(Node local) throws IOException {
         StringBuilder data = new StringBuilder();

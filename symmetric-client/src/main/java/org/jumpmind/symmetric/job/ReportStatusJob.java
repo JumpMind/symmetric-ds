@@ -32,9 +32,13 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.http.HttpOutgoingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class ReportStatusJob extends AbstractJob {
+    
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected ReportStatusJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
             super("job.report.status", true, engine.getParameterService().is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED),
@@ -43,26 +47,22 @@ public class ReportStatusJob extends AbstractJob {
 
     @Override
     void doJob(boolean force) throws Exception {
-        Node identity = engine.getNodeService().findIdentity();
+        Node local = engine.getNodeService().findIdentity();
+        NetworkedNode remote = engine.getNodeService().getRootNetworkedNode();
+        if (local.getNodeId().equals(remote.getNode().getNodeId())) {
+            log.debug("Node %s will not send status to itself.", local.getNodeId());
+            return;
+        }
+            
+//        int batchesToSend = engine.getOutgoingBatchService().countOutgoingBatchesPending(local.getNodeId());
         
-        int batchesToSend = engine.getOutgoingBatchService().countOutgoingBatchesPending(identity.getNodeId());
+        int batchesToSend=9999; // TODO Testing.
         
         if (batchesToSend > 0) {            
-            NodeSecurity identitySecurity = engine.getNodeService().findNodeSecurity(identity.getNodeId(), true);
-            
-            NetworkedNode remote = engine.getNodeService().getRootNetworkedNode();
-            
             Map<String, String> requestParams = new HashMap<String, String>();
             requestParams.put(WebConstants.BATCH_TO_SEND_COUNT, String.valueOf(batchesToSend));
             
-            IOutgoingWithResponseTransport transport = engine.getTransportManager().getPushTransport(remote.getNode(), 
-                    identity,
-                    identitySecurity.getNodePassword(), requestParams, engine.getParameterService().getRegistrationUrl());
-            
-            if (transport instanceof HttpOutgoingTransport) {
-                HttpOutgoingTransport httpTransport = (HttpOutgoingTransport) transport;
-                httpTransport.openStream().close(); // Effectively just sending over a header.
-            }
+            engine.getTransportManager().sendStatus(local, remote.getNode(), requestParams);
         }
         
         

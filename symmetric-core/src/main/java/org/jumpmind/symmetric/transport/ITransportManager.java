@@ -61,5 +61,7 @@ public interface ITransportManager {
     public String resolveURL(String url, String registrationUrl);
     
     public int sendCopyRequest(Node local) throws IOException;
+    
+    public int sendStatus(Node local, Node remote, Map<String, String> statuses) throws IOException;
 
 }

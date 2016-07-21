@@ -129,24 +129,24 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                     }
                  
                     try {
-                    dataLoaderService.loadDataFromPull(node, status);
-                } catch (ConnectException ex) {
-                    log.warn(
-                            "Failed to connect to the transport: {}",
-                            (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
-                                    .getSyncUrl()));
-                    fireOffline(ex, node, status);
-                } catch (OfflineException ex) {
-                    fireOffline(ex, node, status);
-                } catch (UnknownHostException ex) {
-                    fireOffline(ex, node, status);                
-                } catch (SocketException ex) {
-                    log.warn("{}", ex.getMessage());
-                    fireOffline(ex, node, status);
-                } catch (IOException ex) {
-                    log.error("An IO exception happened while attempting to pull data", ex);
-                    fireOffline(ex, node, status);
-                }
+                        dataLoaderService.loadDataFromPull(node, status);
+                    } catch (ConnectException ex) {
+                        log.warn(
+                                "Failed to connect to the transport: {}",
+                                (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
+                                        .getSyncUrl()));
+                        fireOffline(ex, node, status);
+                    } catch (OfflineException ex) {
+                        fireOffline(ex, node, status);
+                    } catch (UnknownHostException ex) {
+                        fireOffline(ex, node, status);                
+                    } catch (SocketException ex) {
+                        log.warn("{}", ex.getMessage());
+                        fireOffline(ex, node, status);
+                    } catch (IOException ex) {
+                        log.error("An IO exception happened while attempting to pull data", ex);
+                        fireOffline(ex, node, status);
+                    }
                     
                     if (!status.failed() && 
                             (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0)) {

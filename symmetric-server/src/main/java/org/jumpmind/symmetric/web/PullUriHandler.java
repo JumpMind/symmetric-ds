@@ -150,9 +150,11 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
     }
     
     private void addPendingBatchesCount(String targetNodeId, HttpServletResponse res) {
-        if (this.parameterService.is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED)) {            
-            int pendingBatchCount = 
-                    this.outgoingBatchService.countOutgoingBatchesPending(targetNodeId);
+        if (this.parameterService.is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED)) {
+            // TODO
+//            int pendingBatchCount = 
+//                    this.outgoingBatchService.countOutgoingBatchesPending(targetNodeId);
+            int pendingBatchCount = 99999;
             res.addHeader(WebConstants.BATCH_TO_SEND_COUNT, String.valueOf(pendingBatchCount));
         }
     }
