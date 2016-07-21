@@ -323,8 +323,8 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
 				
 				//replace 0 and 1s with true and false
 				for (String s : new String[]{"isupdate", "isdelete", "isinsert", "isafter", "isinsteadof"}) {
-					if (row.getString(s).equals("0")) row.replace(s, false);
-					else row.replace(s, true);
+					if (row.getString(s).equals("0")) row.put(s, false);
+					else row.put(s, true);
 				}
 				if (row.getBoolean("isupdate")) trigger.setTriggerType(TriggerType.UPDATE);
 				else if (row.getBoolean("isdelete")) trigger.setTriggerType(TriggerType.DELETE);
