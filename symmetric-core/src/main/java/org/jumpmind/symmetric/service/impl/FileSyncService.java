@@ -160,7 +160,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
             if (fileTriggerRouter.isEnabled()) {
                 try {
                     FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter), 
-                            processInfo, useCrc);
+                            processInfo, useCrc, engine);
                     DirectorySnapshot dirSnapshot = tracker.trackChanges();
                     saveDirectorySnapshot(fileTriggerRouter, dirSnapshot);
                 } catch (Exception ex) {
@@ -193,7 +193,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                         public DirectorySnapshot getLastDirectorySnapshot(String relativeDir) {
                             return getDirectorySnapshot(fileTriggerRouter, relativeDir);
                         }
-                    });
+                    }, engine);
                     observer.addListener(listener);
                     observer.checkAndNotify();
                 }
@@ -590,7 +590,15 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
                         if (!file.isDirectory()) {
                             filesToDelete.add(file);
                             if (fileTrigger.isSyncOnCtlFile()) {
-                                filesToDelete.add(new File(file.getAbsolutePath() + ".ctl"));
+                            	filesToDelete.add(this.getControleFile(file));
+                            }
+                        }
+                    }
+                    else if (parameterService.is(ParameterConstants.FILE_SYNC_DELETE_CTL_FILE_AFTER_SYNC, false)) {
+                        File file = fileTrigger.createSourceFile(fileSnapshot);
+                        if (!file.isDirectory()) {
+                            if (fileTrigger.isSyncOnCtlFile()) {
+                                filesToDelete.add(this.getControleFile(file));
                             }
                         }
                     }
@@ -963,9 +971,17 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
         return effectiveBaseDir;
     }
 
-    protected class FileTriggerMapper implements ISqlRowMapper<FileTrigger> {
-        public FileTriggerMapper() {
-        }
+    @Override
+    public File getControleFile(File file) {
+	    File ctlFile = new File(file.getAbsolutePath() + FileTrigger.FILE_CTL_EXTENSION);
+		if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_USE_CTL_AS_FILE_EXT, false)) {
+	    		int extPosition = file.getAbsolutePath().lastIndexOf('.');
+	    		ctlFile = new File(file.getAbsolutePath().substring(0,extPosition) + ".ctl");
+	    }
+	    return ctlFile;
+    }
+    
+    class FileTriggerMapper implements ISqlRowMapper<FileTrigger> {
         public FileTrigger mapRow(Row rs) {
             FileTrigger fileTrigger = new FileTrigger();
             fileTrigger.setBaseDir(getEffectiveBaseDir(rs.getString("base_dir")));

@@ -27,7 +27,10 @@ import java.util.Map;
 
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.FileSnapshot;
+import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
@@ -47,6 +50,7 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
     protected ProcessInfo processInfo;
     protected boolean isSyncOnCtlFile;
     protected boolean useCrc;
+    protected ISymmetricEngine engine;
     protected Map<String, DirectorySnapshot> modifiedDirs = new HashMap<String, DirectorySnapshot>();
 
     protected long startTime = System.currentTimeMillis();
@@ -55,7 +59,7 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
     protected long changeCount = 0;    
 
     public FileTriggerFileModifiedListener(FileTriggerRouter fileTriggerRouter, Date fromDate, Date toDate, ProcessInfo processInfo, 
-            boolean useCrc, FileModifiedCallback fileModifiedCallback) {
+            boolean useCrc, FileModifiedCallback fileModifiedCallback, ISymmetricEngine engine) {
         this.fileTriggerRouter = fileTriggerRouter;
         this.snapshot = new DirectorySnapshot(fileTriggerRouter);
         this.fromDate = fromDate;
@@ -64,6 +68,7 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
         this.processInfo = processInfo;
         this.isSyncOnCtlFile = fileTriggerRouter.getFileTrigger().isSyncOnCtlFile();
         this.useCrc = useCrc;
+        this.engine = engine;
         this.processInfo.setStatus(ProcessInfo.Status.PROCESSING);
     }
     
@@ -76,9 +81,10 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
 
     public void onFileCreate(File file) {
         if (isSyncOnCtlFile) {
-            File ctlFile = new File(file.getAbsolutePath() + ".ctl");
+            File ctlFile = engine.getFileSyncService().getControleFile(file);
+            
             if (ctlFile.exists()) {
-                log.debug("Control file detected: {}", file.getAbsolutePath());
+            	log.debug("Control file detected: {}", file.getAbsolutePath());
                 addSnapshot(file, LastEventType.CREATE, false);
             }
         } else {
