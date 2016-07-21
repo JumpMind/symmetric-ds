@@ -76,9 +76,11 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     protected boolean isAllDataRead = true;
     
     protected long maxDataToSelect;
+
+    protected boolean isFullGapAnalysis = true;
     
-    protected boolean isBusyExpire;
-        
+    protected long lastBusyExpireRunTime;
+
     protected Set<DataGap> gapsAll;
     
     protected Set<DataGap> gapsAdded;
@@ -94,31 +96,32 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         this.symmetricDialect = symmetricDialect;
         this.statisticManager = statisticManager;
         this.nodeService = nodeService;
-        reset();
     }
 
     public void beforeRouting() {
+        reset();
         ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
                 nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
         processInfo.setStatus(Status.QUERYING);
         maxDataToSelect = parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         gaps = dataService.findDataGaps();
-        processInfo.setStatus(Status.OK);
         fixOverlappingGaps(gaps, processInfo);
-
-        if (contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)) {
+        
+        if (isFullGapAnalysis()) {
             log.info("Full gap analysis is running");
             long ts = System.currentTimeMillis();
             queryDataIdMap();
             log.info("Querying data in gaps from database took {} ms", System.currentTimeMillis() - ts);
             afterRouting();
-            log.info("Full gap analysis is done after {} ms", System.currentTimeMillis() - ts);
-            gaps = dataService.findDataGaps();
             reset();
+            gaps = dataService.findDataGaps();
+            log.info("Full gap analysis is done after {} ms", System.currentTimeMillis() - ts);
         }
+        processInfo.setStatus(Status.OK);
     }
 
     protected void reset() {
+        isAllDataRead = true;
         dataIds = new ArrayList<Long>();
         gapsAll = new HashSet<DataGap>();
         gapsAdded = new HashSet<DataGap>();
@@ -153,8 +156,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         }
 
         Date currentDate = new Date(currentTime);
+        boolean isBusyExpire = false;
         if (!isAllDataRead) {
-            long lastBusyExpireRunTime = contextService.getLong(ContextConstants.ROUTING_LAST_BUSY_EXPIRE_RUN_TIME);
+            long lastBusyExpireRunTime = getLastBusyExpireRunTime();
             long busyExpireMillis = parameterService.getLong(ParameterConstants.ROUTING_STALE_GAP_BUSY_EXPIRE_TIME);
             isBusyExpire = lastBusyExpireRunTime == 0 || System.currentTimeMillis() - lastBusyExpireRunTime >= busyExpireMillis;
         }
@@ -278,10 +282,10 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     dataService.insertDataGap(newGap);
                 }
             }
-
-            contextService.save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, "false");
+            
+            setFullGapAnalysis(false);
             if (!isAllDataRead && expireChecked > 0) {
-                contextService.save(ContextConstants.ROUTING_LAST_BUSY_EXPIRE_RUN_TIME, String.valueOf(System.currentTimeMillis()));
+                setLastBusyExpireRunTime(System.currentTimeMillis());
             }            
 
             long updateTimeInMs = System.currentTimeMillis() - ts;
@@ -435,4 +439,32 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         this.isAllDataRead &= isAllDataRead;
     }
 
+    public boolean isFullGapAnalysis() {
+        if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            isFullGapAnalysis = contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS);
+        }
+        return isFullGapAnalysis;
+    }
+
+    public void setFullGapAnalysis(boolean isFullGapAnalysis) {
+        if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            contextService.save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, Boolean.toString(isFullGapAnalysis));
+        }
+        this.isFullGapAnalysis = isFullGapAnalysis;
+    }
+
+    protected long getLastBusyExpireRunTime() {
+        if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            lastBusyExpireRunTime = contextService.getLong(ContextConstants.ROUTING_LAST_BUSY_EXPIRE_RUN_TIME);
+        }
+        return lastBusyExpireRunTime;
+    }
+
+    protected void setLastBusyExpireRunTime(long lastBusyExpireRunTime) {
+        if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            contextService.save(ContextConstants.ROUTING_LAST_BUSY_EXPIRE_RUN_TIME, String.valueOf(lastBusyExpireRunTime));
+        }
+        this.lastBusyExpireRunTime = lastBusyExpireRunTime;
+    }
+    
 }

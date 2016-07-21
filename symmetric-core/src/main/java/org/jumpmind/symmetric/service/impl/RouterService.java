@@ -44,7 +44,6 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
@@ -114,6 +113,8 @@ public class RouterService extends AbstractService implements IRouterService {
     
     protected IExtensionService extensionService;
     
+    protected DataGapDetector gapDetector;
+
     protected boolean syncTriggersBeforeInitialLoadAttempted = false;
     
     protected boolean firstTimeCheckForAbandonedBatches = true;
@@ -141,6 +142,14 @@ public class RouterService extends AbstractService implements IRouterService {
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
+        
+        if (parameterService.is(ParameterConstants.ROUTING_USE_FAST_GAP_DETECTOR)) {
+            gapDetector = new DataGapFastDetector(engine.getDataService(), parameterService, engine.getContextService(), 
+                    symmetricDialect, this, engine.getStatisticManager(), engine.getNodeService());
+        } else {
+            gapDetector = new DataGapDetector(engine.getDataService(), parameterService, symmetricDialect, 
+                    this, engine.getStatisticManager(), engine.getNodeService());                        
+        }
     }
 
     /**
@@ -185,18 +194,8 @@ public class RouterService extends AbstractService implements IRouterService {
                     insertInitialLoadEvents();
                     
                     long ts = System.currentTimeMillis();
-                    DataGapDetector gapDetector = null;
-                    if (parameterService.is(ParameterConstants.ROUTING_USE_FAST_GAP_DETECTOR)) {
-                        gapDetector = new DataGapFastDetector(
-                                engine.getDataService(), parameterService, engine.getContextService(), symmetricDialect, 
-                                this, engine.getStatisticManager(), engine.getNodeService());
-                    } else {
-                        gapDetector = new DataGapDetector(
-                                engine.getDataService(), parameterService, symmetricDialect, 
-                                this, engine.getStatisticManager(), engine.getNodeService());                        
-                    }
                     gapDetector.beforeRouting();
-                    dataCount = routeDataForEachChannel(gapDetector);
+                    dataCount = routeDataForEachChannel();
                     ts = System.currentTimeMillis() - ts;
                     if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
                         log.info("Routed {} data events in {} ms", dataCount, ts);
@@ -289,7 +288,7 @@ public class RouterService extends AbstractService implements IRouterService {
                             }
                         }
                         if (isInitialLoadQueued) {
-                            engine.getContextService().save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, "true");
+                            gapDetector.setFullGapAnalysis(true);
                         }
                     }
                 }
@@ -345,7 +344,7 @@ public class RouterService extends AbstractService implements IRouterService {
      * thread pool here and waiting for all channels to be processed. The other
      * reason is to reduce the number of connections we are required to have.
      */
-    protected int routeDataForEachChannel(DataGapDetector gapDetector) {
+    protected int routeDataForEachChannel() {
         int dataCount = 0;
         Node sourceNode = engine.getNodeService().findIdentity();
         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
@@ -355,15 +354,12 @@ public class RouterService extends AbstractService implements IRouterService {
             final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(false);
             Set<String> readyChannels = null;
             if (parameterService.is(ParameterConstants.ROUTING_QUERY_CHANNELS_FIRST)) {
-                readyChannels = getReadyChannels(gapDetector);
+                readyChannels = getReadyChannels();
             }
             for (NodeChannel nodeChannel : channels) {
                 if (nodeChannel.isEnabled() && (readyChannels == null || readyChannels.contains(nodeChannel.getChannelId()))) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
-                    dataCount += routeDataForChannel(processInfo,
-                            nodeChannel,
-                            sourceNode
-                            , gapDetector);
+                    dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode);
                 } else {
                     gapDetector.setIsAllDataRead(false);
                     if (log.isDebugEnabled()) {
@@ -382,7 +378,7 @@ public class RouterService extends AbstractService implements IRouterService {
         return dataCount;
     }
 
-    protected Set<String> getReadyChannels(DataGapDetector gapDetector) {
+    protected Set<String> getReadyChannels() {
         List<DataGap> dataGaps = gapDetector.getDataGaps();
         int dataIdSqlType = engine.getSymmetricDialect().getSqlTypeForIds();
         int numberOfGapsToQualify = parameterService.getInt(ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL, 100);
@@ -553,8 +549,7 @@ public class RouterService extends AbstractService implements IRouterService {
         return onlyDefaultRoutersAssigned;
     }
 
-    protected int routeDataForChannel(ProcessInfo processInfo, final NodeChannel nodeChannel, final Node sourceNode,
-            DataGapDetector gapDetector) {
+    protected int routeDataForChannel(ProcessInfo processInfo, final NodeChannel nodeChannel, final Node sourceNode) {
         ChannelRouterContext context = null;
         long ts = System.currentTimeMillis();
         int dataCount = -1;
@@ -651,9 +646,7 @@ public class RouterService extends AbstractService implements IRouterService {
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
                 .values());
 
-        if (!engine.getContextService().is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)) {
-            engine.getContextService().save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, "true");
-        }
+        gapDetector.setFullGapAnalysis(true);
         context.commit();
 
         if (engine.getParameterService().is(ParameterConstants.ROUTING_LOG_STATS_ON_BATCH_ERROR)) {

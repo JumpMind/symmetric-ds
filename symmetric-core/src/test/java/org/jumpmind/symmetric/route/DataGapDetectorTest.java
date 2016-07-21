@@ -67,6 +67,7 @@ public class DataGapDetectorTest {
     IRouterService routerService;
     IStatisticManager statisticManager;
     INodeService nodeService;
+    DataGapFastDetector detector;
 
     @Before
     public void setUp() throws Exception {
@@ -108,6 +109,8 @@ public class DataGapDetectorTest {
         
         nodeService = mock(NodeService.class);
         when(nodeService.findIdentity()).thenReturn(new Node(NODE_ID, NODE_GROUP_ID));
+        detector = newGapDetector();
+        detector.setFullGapAnalysis(false);
     }
 
     protected DataGapFastDetector newGapDetector() {
@@ -116,7 +119,7 @@ public class DataGapDetectorTest {
 
     protected void runGapDetector(List<DataGap> dataGaps, List<Long> dataIds, boolean isAllDataRead) {
         when(dataService.findDataGaps()).thenReturn(dataGaps);
-        DataGapFastDetector detector = newGapDetector();
+        
         detector.beforeRouting();
         detector.addDataIds(dataIds);
         detector.setIsAllDataRead(isAllDataRead);
@@ -131,7 +134,6 @@ public class DataGapDetectorTest {
             }
         });
 
-        DataGapFastDetector detector = newGapDetector();
         detector.beforeRouting();
         detector.addDataIds(dataIds);
         detector.setIsAllDataRead(isAllDataRead);
@@ -158,6 +160,7 @@ public class DataGapDetectorTest {
 
     @Test
     public void testNewGapFull() throws Exception {
+        detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
 
         List<Long> dataIds = new ArrayList<Long>();
@@ -203,6 +206,7 @@ public class DataGapDetectorTest {
 
     @Test
     public void testTwoNewGapsFull() throws Exception {
+        detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
 
         List<Long> dataIds = new ArrayList<Long>();
@@ -257,7 +261,8 @@ public class DataGapDetectorTest {
     }
 
     @Test
-    public void testGapInGapFull() throws Exception {        
+    public void testGapInGapFull() throws Exception {
+        detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
 
         @SuppressWarnings("unchecked")
@@ -408,6 +413,7 @@ public class DataGapDetectorTest {
 
     @Test
     public void testGapsBeforeAndAfterFull() throws Exception {
+        detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
         List<Long> dataIds = new ArrayList<Long>();
         dataIds.add(843L);
@@ -505,6 +511,7 @@ public class DataGapDetectorTest {
 
     @Test
     public void testGapsOverlapThenDataFull() throws Exception {
+        detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
         List<Long> dataIds = new ArrayList<Long>();
         dataIds.add(30953883L);
