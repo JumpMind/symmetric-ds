@@ -148,11 +148,11 @@ public class DerbyDdlReader extends AbstractJdbcDdlReader {
 				trigger.setSchemaName(row.getString("SCHEMA_NAME"));
 				trigger.setTableName(row.getString("TABLE_NAME"));
 				if (row.getString("STATE").equals("E")) {
-					row.replace("STATE", "ENABLED");
+					row.put("STATE", "ENABLED");
 					trigger.setEnabled(true);
 				}
 				else if (row.getString("STATE").equals("D")) {
-					row.replace("STATE", "DISABLED");
+					row.put("STATE", "DISABLED");
 					trigger.setEnabled(false);
 				}
 				String event = row.getString("TRIGGER_TYPE");
@@ -161,12 +161,12 @@ public class DerbyDdlReader extends AbstractJdbcDdlReader {
 				case ('D'): event = "DELETE"; break;
 				case ('U'): event = "UPDATE";
 				}
-				row.replace("TRIGGER_TYPE", event);
+				row.put("TRIGGER_TYPE", event);
 				trigger.setTriggerType(TriggerType.valueOf(event));
 				if (row.getString("TRIGGER_TIME").equals("A"))
-					row.replace("TRIGGER_TIME", "AFTER");
+					row.put("TRIGGER_TIME", "AFTER");
 				else if (row.getString("TRIGGER_TIME").equals("B"))
-					row.replace("TRIGGER_TIME", "BEFORE");
+					row.put("TRIGGER_TIME", "BEFORE");
 				trigger.setMetaData(row);
 				trigger.setSource(row.getString("source"));
 				row.remove("source");

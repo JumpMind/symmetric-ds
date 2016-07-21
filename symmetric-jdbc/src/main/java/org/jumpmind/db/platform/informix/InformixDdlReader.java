@@ -161,7 +161,7 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
 					case('D'): trigEvent = "DELETE";
 				}
 				trigger.setTriggerType(TriggerType.valueOf(trigEvent));
-				row.replace("trigger_type", trigEvent);
+				row.put("trigger_type", trigEvent);
 				trigger.setMetaData(row);
 				return trigger;
 			}

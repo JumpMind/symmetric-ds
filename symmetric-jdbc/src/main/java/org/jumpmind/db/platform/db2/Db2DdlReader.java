@@ -282,16 +282,16 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
 					case('D'): trigEvent = "DELETE";
 				}
 				trigger.setTriggerType(TriggerType.valueOf(trigEvent));
-				row.replace("TRIGGER_TYPE", trigEvent);
+				row.put("TRIGGER_TYPE", trigEvent);
 				switch(row.getString("TRIGGER_TIME").charAt(0)) {
-					case ('A'): row.replace("TRIGGER_TIME", "AFTER"); break;
-					case ('B'): row.replace("TRIGGER_TIME", "BEFORE"); break;
-					case ('I'): row.replace("TRIGGER_TIME", "INSTEAD OF");
+					case ('A'): row.put("TRIGGER_TIME", "AFTER"); break;
+					case ('B'): row.put("TRIGGER_TIME", "BEFORE"); break;
+					case ('I'): row.put("TRIGGER_TIME", "INSTEAD OF");
 				}
 				if (row.getString("GRANULARITY").equals("S"))
-					row.replace("GRANULARITY", "ONCE PER STATEMENT");
+					row.put("GRANULARITY", "ONCE PER STATEMENT");
 				else if (row.getString("GRANULARITY").equals("R"))
-					row.replace("GRANULARITY", "ONCE PER ROW");
+					row.put("GRANULARITY", "ONCE PER ROW");
 				trigger.setMetaData(row);
 				return trigger;
 			}

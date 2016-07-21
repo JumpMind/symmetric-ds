@@ -154,15 +154,15 @@ public class Db2zOsDdlReader extends Db2DdlReader {
 				trigger.setSource(row.getString("TEXT"));
 				row.remove("TEXT");
 				switch(row.getString("TRIGEVENT").charAt(0)) {
-					case('I'): row.replace("TRIGEVENT", "INSERT"); break;
-					case('U'): row.replace("TRIGEVENT", "UPDATE"); break;
-					case('D'): row.replace("TRIGEVENT", "DELETE");
+					case('I'): row.put("TRIGEVENT", "INSERT"); break;
+					case('U'): row.put("TRIGEVENT", "UPDATE"); break;
+					case('D'): row.put("TRIGEVENT", "DELETE");
 				}
 				trigger.setTriggerType(TriggerType.valueOf(row.getString("TRIGEVENT")));				
 				switch(row.getString("TRIGTIME").charAt(0)) {
-					case ('A'): row.replace("TRIGTIME", "AFTER"); break;
-					case ('B'): row.replace("TRIGTIME", "BEFORE"); break;
-					case ('I'): row.replace("TRIGTIME", "INSTEAD OF");
+					case ('A'): row.put("TRIGTIME", "AFTER"); break;
+					case ('B'): row.put("TRIGTIME", "BEFORE"); break;
+					case ('I'): row.put("TRIGTIME", "INSTEAD OF");
 				}
 				trigger.setMetaData(row);
 				return trigger;
