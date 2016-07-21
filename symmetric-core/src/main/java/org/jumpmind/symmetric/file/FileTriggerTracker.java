@@ -26,6 +26,8 @@ import java.io.IOException;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
@@ -43,17 +45,20 @@ public class FileTriggerTracker {
     private DirectorySnapshot changesSinceLastSnapshot;
     private SnapshotUpdater currentListener;
     private ProcessInfo processInfo;
+    private ISymmetricEngine engine;
     protected boolean useCrc;
 
     long startTime = System.currentTimeMillis();
     long ts = startTime;
-
+    
+    
     public FileTriggerTracker(FileTriggerRouter fileTriggerRouter, DirectorySnapshot lastSnapshot, ProcessInfo processInfo,
-            boolean useCrc) {
+            boolean useCrc, ISymmetricEngine engine) {
         this.fileTriggerRouter = fileTriggerRouter;
         this.processInfo = processInfo;
         this.useCrc = useCrc;
-
+        this.engine = engine;
+        
         changesSinceLastSnapshot = new DirectorySnapshot(fileTriggerRouter);
         fileObserver = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(), fileTriggerRouter.getFileTrigger()
                 .createIOFileFilter());
@@ -131,7 +136,8 @@ public class FileTriggerTracker {
 
         public void onCtlFile(File file) {
             if (snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnCtlFile()) {
-                File ctlFile = new File(file.getAbsolutePath() + ".ctl");
+            	File ctlFile = engine.getFileSyncService().getControleFile(file);
+            	
                 if (ctlFile.exists()) {
                     log.debug("Control file detected: {}", file.getAbsolutePath());
                     addSnapshot(file, LastEventType.CREATE);
