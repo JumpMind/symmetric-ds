@@ -262,6 +262,7 @@ public class ConfigurationChangedDataRouterTest {
         when(configService.isMasterToMaster()).thenReturn(false);
         ISymmetricEngine engine = mock(ISymmetricEngine.class);
         when(engine.getConfigurationService()).thenReturn(configService);
+        when(engine.getTablePrefix()).thenReturn("sym");
         
         ConfigurationChangedDataRouter router = new ConfigurationChangedDataRouter(engine) {
             @Override
