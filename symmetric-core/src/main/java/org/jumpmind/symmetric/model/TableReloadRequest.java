@@ -22,16 +22,21 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Date;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
+
 public class TableReloadRequest {
 
     protected String targetNodeId;
     protected String sourceNodeId;
     protected String triggerId;
     protected String routerId;
+    protected boolean createTable;
+    protected boolean deleteFirst;
     protected String reloadSelect;
     protected String reloadDeleteStmt;
     protected boolean reloadEnabled = true;
     protected Date reloadTime;
+    protected String channelId;
     protected Date createTime = new Date();
     protected Date lastUpdateTime = new Date();
     protected String lastUpdateBy;
@@ -134,4 +139,35 @@ public class TableReloadRequest {
         this.lastUpdateBy = lastUpdateBy;
     }
 
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
+    }
+    
+    public boolean isCreateTable() {
+        return createTable;
+    }
+
+    public void setCreateTable(boolean createTable) {
+        this.createTable = createTable;
+    }
+
+    public boolean isDeleteFirst() {
+        return deleteFirst;
+    }
+
+    public void setDeleteFirst(boolean deleteFirst) {
+        this.deleteFirst = deleteFirst;
+    }
+
+    public boolean isFullLoadRequest() {
+        return ParameterConstants.ALL.equals(getTriggerId()) && ParameterConstants.ALL.equals(getRouterId());
+    }
+
+    public String getIdentifier() {
+        return getTriggerId() + getRouterId();
+    }
 }

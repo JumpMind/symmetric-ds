@@ -542,8 +542,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 engine.getLoadFilterService().clearCache();
             }
 
-            insertReloadEvents(routingContext);
-
             if (routingContext.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
                 IJobManager jobManager = engine.getJobManager();
                 if (jobManager != null) {
@@ -569,25 +567,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             }
         }
     }
-
-    protected void insertReloadEvents(SimpleRouterContext routingContext) {
-        @SuppressWarnings("unchecked")
-        List<TableReloadRequestKey> reloadRequestKeys = (List<TableReloadRequestKey>) routingContext
-                .get(CTX_KEY_TABLE_RELOAD_NEEDED);
-        if (reloadRequestKeys != null) {
-            for (TableReloadRequestKey reloadRequestKey : reloadRequestKeys) {
-                TableReloadRequest request = engine.getDataService().getTableReloadRequest(
-                        reloadRequestKey);
-                if (engine.getDataService().insertReloadEvent(request,
-                        reloadRequestKey.getReceivedFromNodeId() != null)) {
-                    log.info(
-                            "Inserted table reload request from config data router for node {} and trigger {}",
-                            reloadRequestKey.getTargetNodeId(), reloadRequestKey.getTriggerId());
-                }
-            }
-        }
-    }
-
+    
     private String tableName(String tableName) {
         return TableConstants.getTableName(engine != null ? engine.getTablePrefix() : "sym",
                 tableName);

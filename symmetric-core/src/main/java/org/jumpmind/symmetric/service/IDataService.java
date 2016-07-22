@@ -47,6 +47,8 @@ public interface IDataService {
     
     public TableReloadRequest getTableReloadRequest(TableReloadRequestKey key);
     
+    public List<TableReloadRequest> getTableReloadRequestToProcess(final String sourceNodeId);
+        
     public String reloadNode(String nodeId, boolean reverseLoad, String createBy);
     
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName);
@@ -67,6 +69,8 @@ public interface IDataService {
 
     public void insertReloadEvents(Node targetNode, boolean reverse);
 
+    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests);
+    
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     
     public long insertReloadEvent(ISqlTransaction transaction, Node targetNode,
