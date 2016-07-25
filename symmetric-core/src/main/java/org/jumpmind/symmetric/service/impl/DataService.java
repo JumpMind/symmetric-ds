@@ -107,7 +107,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient) {
         boolean successful = false;
-        if (request != null && request.isReloadEnabled()) {
+        if (request != null) {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
             INodeService nodeService = engine.getNodeService();
             Node targetNode = nodeService.findNode(request.getTargetNodeId());
@@ -132,7 +132,7 @@ public class DataService extends AbstractService implements IDataService {
                                 if (parameterService
                                         .is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
                                     String overrideDeleteStatement = StringUtils.isNotBlank(request
-                                            .getReloadDeleteStmt()) ? request.getReloadDeleteStmt()
+                                            .getBeforeCustomSql()) ? request.getBeforeCustomSql()
                                             : null;
                                     insertPurgeEvent(transaction, targetNode, triggerRouter,
                                             triggerHistory, false, overrideDeleteStatement, -1,
@@ -220,8 +220,7 @@ public class DataService extends AbstractService implements IDataService {
         request.setLastUpdateTime(time);
         if (0 == sqlTemplate.update(
                 getSql("updateTableReloadRequest"),
-                new Object[] { request.getReloadSelect(), request.getReloadDeleteStmt(),
-                        request.isReloadEnabled() ? 1 : 0, request.getReloadTime(),
+                new Object[] { request.getReloadSelect(), request.getBeforeCustomSql(),
                         request.getCreateTime(), request.getLastUpdateBy(),
                         request.getLastUpdateTime(), request.getSourceNodeId(),
                         request.getTargetNodeId(), request.getTriggerId(), request.getRouterId() },
@@ -231,8 +230,7 @@ public class DataService extends AbstractService implements IDataService {
             request.setCreateTime(time);
             sqlTemplate.update(
                     getSql("insertTableReloadRequest"),
-                    new Object[] { request.getReloadSelect(), request.getReloadDeleteStmt(),
-                            request.isReloadEnabled() ? 1 : 0, request.getReloadTime(),
+                    new Object[] { request.getReloadSelect(), request.getBeforeCustomSql(),
                             request.getCreateTime(), request.getLastUpdateBy(),
                             request.getLastUpdateTime(), request.getSourceNodeId(),
                             request.getTargetNodeId(), request.getTriggerId(),
@@ -249,9 +247,8 @@ public class DataService extends AbstractService implements IDataService {
                     public TableReloadRequest mapRow(Row rs) {
                         TableReloadRequest request = new TableReloadRequest(key);
                         request.setReloadSelect(rs.getString("reload_select"));
-                        request.setReloadEnabled(rs.getBoolean("reload_enabled"));
                         request.setReloadTime(rs.getDateTime("reload_time"));
-                        request.setReloadDeleteStmt(rs.getString("reload_delete_stmt"));
+                        request.setBeforeCustomSql(rs.getString("before_custom_sql"));
                         request.setCreateTime(rs.getDateTime("create_time"));
                         request.setLastUpdateBy(rs.getString("last_update_by"));
                         request.setLastUpdateTime(rs.getDateTime("last_update_time"));
@@ -271,9 +268,8 @@ public class DataService extends AbstractService implements IDataService {
                         request.setCreateTable(rs.getBoolean("create_table"));
                         request.setDeleteFirst(rs.getBoolean("delete_first"));
                         request.setReloadSelect(rs.getString("reload_select"));
-                        request.setReloadEnabled(rs.getBoolean("reload_enabled"));
                         request.setReloadTime(rs.getDateTime("reload_time"));
-                        request.setReloadDeleteStmt(rs.getString("reload_delete_stmt"));
+                        request.setBeforeCustomSql(rs.getString("before_custom_sql"));
                         request.setChannelId(rs.getString("channel_id"));
                         request.setTriggerId(rs.getString("trigger_id"));
                         request.setRouterId(rs.getString("router_id"));
@@ -682,7 +678,7 @@ public class DataService extends AbstractService implements IDataService {
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
                                     targetNode)) {
                         insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory,
-                                true, currentRequest.getReloadDeleteStmt(), loadId, createBy);
+                                true, currentRequest.getBeforeCustomSql(), loadId, createBy);
                         if (!transactional) {
                             transaction.commit();
                         }

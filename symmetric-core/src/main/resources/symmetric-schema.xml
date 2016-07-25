@@ -694,8 +694,7 @@
         <column name="create_table" type="BOOLEANINT" size="1" required="true" default="0"  description="Flag that indicates that a table create script will be sent as part of the reload" />
         <column name="delete_first" type="BOOLEANINT" size="1" required="true" default="0"  description="Flag that indicates that the table will be deleted before loading." />
         <column name="reload_select" type="LONGVARCHAR"  description="Overrides the initial load select." />
-        <column name="reload_delete_stmt" type="LONGVARCHAR"  description="Overrides the initial load delete statement." />
-        <column name="reload_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates that a reload should be queued up." />
+        <column name="before_custom_sql" type="LONGVARCHAR"  description="SQL Statement to run prior to loading the table" />
         <column name="reload_time" type="TIMESTAMP" required="false"  description="The timestamp when the reload was started for this node." />
         <column name="load_id" type="BIGINT" description="An id that ties multiple batches together to identify them as being part of a load." />
         <column name="processed" type="BOOLEANINT" size="1" required="true" default="0"  description="Flag that indicates that this load was processed into batches." />

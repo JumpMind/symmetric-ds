@@ -33,8 +33,7 @@ public class TableReloadRequest {
     protected boolean createTable;
     protected boolean deleteFirst;
     protected String reloadSelect;
-    protected String reloadDeleteStmt;
-    protected boolean reloadEnabled = true;
+    protected String beforeCustomSql;
     protected Date reloadTime;
     protected String channelId;
     protected Date createTime = new Date();
@@ -91,20 +90,12 @@ public class TableReloadRequest {
         this.reloadSelect = reloadSelect;
     }
 
-    public String getReloadDeleteStmt() {
-        return reloadDeleteStmt;
+    public String getBeforeCustomSql() {
+        return beforeCustomSql;
     }
 
-    public void setReloadDeleteStmt(String reloadDeleteStmt) {
-        this.reloadDeleteStmt = reloadDeleteStmt;
-    }
-
-    public boolean isReloadEnabled() {
-        return reloadEnabled;
-    }
-
-    public void setReloadEnabled(boolean reloadEnabled) {
-        this.reloadEnabled = reloadEnabled;
+    public void setBeforeCustomSql(String beforeCustomSql) {
+        this.beforeCustomSql = beforeCustomSql;
     }
 
     public Date getReloadTime() {
