@@ -52,6 +52,7 @@ import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
 import org.jumpmind.db.sql.IConnectionCallback;
@@ -129,6 +130,12 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         _columnsForPK = initColumnsForPK();
         _columnsForFK = initColumnsForFK();
         _columnsForIndex = initColumnsForIndex();
+    }
+    
+    @Override
+    public List<Trigger> getTriggers(String catalog, String schema,
+    		String tableName) {
+    	return Collections.emptyList();
     }
 
     /*
@@ -1405,8 +1412,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
     public List<String> getTableNames(final String catalog, final String schema,
             final String[] tableTypes) {
-        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-        return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
+    	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        List<String> list = sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
                 ArrayList<String> list = new ArrayList<String>();
                 DatabaseMetaData meta = connection.getMetaData();
@@ -1423,6 +1430,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 }
             }
         });
+        return list;
     }
     
     public List<String> getColumnNames(final String catalog, final String schema, final String tableName) {
@@ -1444,6 +1452,22 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 }
             }
         });
+    }
+    
+    public List<String> getListOfTriggers() {
+    	return new ArrayList<String>();
+    }
+    
+    public Trigger getTriggerFor(Table table, String triggerName) {
+    	Trigger trigger = null;
+    	List<Trigger> triggers = getTriggers(table.getCatalog(), table.getSchema(), table.getName());
+    	for (Trigger t : triggers) {
+    		if (t.getName().equals(triggerName)) {
+    			trigger = t;
+    			break;
+    		}
+    	}
+    	return trigger;
     }
 
 }

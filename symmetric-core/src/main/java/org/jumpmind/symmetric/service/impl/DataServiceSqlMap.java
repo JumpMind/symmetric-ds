@@ -105,11 +105,11 @@ public class DataServiceSqlMap extends AbstractSqlMap {
 
         putSql("insertDataGapSql",
                 ""
-                        + "insert into $(data_gap) (status, last_update_hostname, start_id, end_id, last_update_time, create_time) values(?, ?, ?, ?, current_timestamp, current_timestamp)   ");
+                        + "insert into $(data_gap) (status, last_update_hostname, start_id, end_id, last_update_time, create_time) values(?, ?, ?, ?, ?, ?)   ");
 
         putSql("updateDataGapSql",
                 ""
-                        + "update $(data_gap) set status=?, last_update_hostname=?, last_update_time=current_timestamp where start_id=? and end_id=?   ");
+                        + "update $(data_gap) set status=?, last_update_hostname=?, last_update_time=? where start_id=? and end_id=?   ");
         
         putSql("deleteDataGapSql",
                         "delete from $(data_gap) where start_id=? and end_id=?   ");

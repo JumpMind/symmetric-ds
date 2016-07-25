@@ -18,5 +18,6 @@
         <property name="typeName" value="mongodb" />
     </bean>
 
-
+    <bean id="databaseUpgradeListener" class="org.jumpmind.symmetric.db.DatabaseUpgradeListener" />
+    
 </beans>

@@ -24,13 +24,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Trigger;
+import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 
 public class Db2zOsDdlReader extends Db2DdlReader {
 
@@ -126,5 +133,43 @@ public class Db2zOsDdlReader extends Db2DdlReader {
         log.debug("done reading additional column data");
     }
     
+    public List<Trigger> getTriggers(final String catalog, final String schema,
+			final String tableName) throws SqlException {
+		
+		List<Trigger> triggers = new ArrayList<Trigger>();
+
+		log.debug("Reading triggers for: " + tableName);
+		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+				.getSqlTemplate();
+		
+		String sql = "SELECT * FROM SYSCAT.TRIGGERS "
+				+ "WHERE TABNAME=? and TABSCHEMA=?";
+		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+			public Trigger mapRow(Row row) {
+				Trigger trigger = new Trigger();
+				trigger.setName(row.getString("TRIGNAME"));
+				trigger.setSchemaName(row.getString("TRIGSCHEMA"));
+				trigger.setTableName(row.getString("TABNAME"));
+				trigger.setEnabled(true);
+				trigger.setSource(row.getString("TEXT"));
+				row.remove("TEXT");
+				switch(row.getString("TRIGEVENT").charAt(0)) {
+					case('I'): row.put("TRIGEVENT", "INSERT"); break;
+					case('U'): row.put("TRIGEVENT", "UPDATE"); break;
+					case('D'): row.put("TRIGEVENT", "DELETE");
+				}
+				trigger.setTriggerType(TriggerType.valueOf(row.getString("TRIGEVENT")));				
+				switch(row.getString("TRIGTIME").charAt(0)) {
+					case ('A'): row.put("TRIGTIME", "AFTER"); break;
+					case ('B'): row.put("TRIGTIME", "BEFORE"); break;
+					case ('I'): row.put("TRIGTIME", "INSTEAD OF");
+				}
+				trigger.setMetaData(row);
+				return trigger;
+			}
+		}, tableName, schema);
+		
+		return triggers;
+	}
 
 }

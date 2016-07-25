@@ -1,7 +1,6 @@
 package org.jumpmind.symmetric.service.impl;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -22,13 +21,9 @@ import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.util.AppUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.AdditionalMatchers;
 import org.mockito.Matchers;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 public class DataServiceTest {
 
@@ -58,34 +53,6 @@ public class DataServiceTest {
         when(engine.getSymmetricDialect()).thenReturn(symmetricDialect);
 
         dataService = new DataService(engine, extensionService);
-    }
-
-    @Test
-    public void testFindDataGaps() throws Exception {
-        final List<DataGap> gaps1 = new ArrayList<DataGap>();
-        
-        final List<DataGap> gaps2 = new ArrayList<DataGap>();
-        gaps2.add(new DataGap(0, 50000000));
-        
-        when(sqlTemplate.queryForLong(Matchers.anyString())).thenReturn(0L);
-        @SuppressWarnings("unchecked")
-        ISqlRowMapper<DataGap> anyMapper = (ISqlRowMapper<DataGap>) Matchers.anyObject();
-        
-        when(sqlTemplate.query(Matchers.anyString(), anyMapper, Matchers.anyVararg())).thenAnswer(new Answer<List<DataGap>>() {
-            int i;
-            public List<DataGap> answer(InvocationOnMock invocation) {
-                return i++ == 0 ? gaps1 : gaps2;
-            }
-        });
-        dataService.findDataGaps();
-
-        verify(sqlTransaction).prepareAndExecute(Matchers.anyString(),
-                AdditionalMatchers.aryEq(new Object[] { DataGap.Status.GP.name(), AppUtils.getHostName(), 0L, 50000000L }),
-                AdditionalMatchers.aryEq(new int[] { 12, 12, 2, 2 }));
-
-        verify(sqlTransaction).commit();
-        verify(sqlTransaction).close();
-        verifyNoMoreInteractions(sqlTransaction);
     }
     
     @Test

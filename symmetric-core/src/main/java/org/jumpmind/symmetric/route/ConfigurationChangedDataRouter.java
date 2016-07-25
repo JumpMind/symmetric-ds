@@ -240,12 +240,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
             }
         } else {
+            IConfigurationService configurationService = engine.getConfigurationService();
             List<NodeGroupLink> nodeGroupLinks = getNodeGroupLinksFromContext(routingContext);
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                 if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo.getDeploymentType())
                         && !nodeThatMayBeRoutedTo.requires13Compatiblity()
                         && isLinked(nodeIdForRecordBeingRouted, nodeThatMayBeRoutedTo, rootNetworkedNode, me, nodeGroupLinks)
-                        && !isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode, me)
+                        && (!isSameNumberOfLinksAwayFromRoot(nodeThatMayBeRoutedTo, rootNetworkedNode, me) 
+                                || configurationService.isMasterToMaster())
                         || (nodeThatMayBeRoutedTo.getNodeId().equals(me.getNodeId()) && initialLoad)) {
                     nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
                 }

@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.service;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
@@ -75,5 +76,7 @@ public interface IFileSyncService {
     public void acknowledgeFiles(OutgoingBatch outgoingBatch);
     
     public boolean refreshFromDatabase();
+    
+    public File getControleFile(File file);
 
 }

@@ -73,6 +73,8 @@ public class FileTrigger implements Serializable {
     
     private Date lastUpdateTime;
 
+    public static final String FILE_CTL_EXTENSION = ".ctl";
+    
     public FileTrigger() {
     }
 

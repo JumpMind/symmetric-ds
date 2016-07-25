@@ -23,14 +23,22 @@ package org.jumpmind.db.platform.redshift;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.Row;
 
 public class RedshiftDdlReader extends AbstractJdbcDdlReader {
 
@@ -151,6 +159,59 @@ public class RedshiftDdlReader extends AbstractJdbcDdlReader {
             }
         }
         return defaultValue;
+    }
+    
+    @Override
+    protected boolean isInternalPrimaryKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
+        return table.doesIndexContainOnlyPrimaryKeyColumns(index);
+    }
+    
+    public List<Trigger> getTriggers(final String catalog, final String schema,
+			final String tableName) {
+    	
+    	List<Trigger> triggers = new ArrayList<Trigger>();
+    	
+    	log.debug("Reading triggers for: " + tableName);
+		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+				.getSqlTemplate();
+		
+		String sql = "SELECT "
+						+ "trigger_name, "
+						+ "trigger_schema, "
+						+ "trigger_catalog, "
+						+ "event_manipulation AS trigger_type, "
+						+ "event_object_table AS table_name,"
+						+ "trig.*, "
+						+ "pgproc.prosrc "
+					+ "FROM INFORMATION_SCHEMA.TRIGGERS AS trig "
+					+ "INNER JOIN pg_catalog.pg_trigger AS pgtrig "
+						+ "ON pgtrig.tgname=trig.trigger_name "
+					+ "INNER JOIN pg_catalog.pg_proc AS pgproc "
+						+ "ON pgproc.oid=pgtrig.tgfoid "
+					+ "WHERE event_object_table=? AND event_object_schema=?;";
+    	triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+			public Trigger mapRow(Row row) {
+				Trigger trigger = new Trigger();
+				trigger.setName(row.getString("trigger_name"));
+				trigger.setCatalogName(row.getString("trigger_catalog"));
+				trigger.setSchemaName(row.getString("trigger_schema"));
+				trigger.setTableName(row.getString("table_name"));
+				trigger.setEnabled(true);
+				trigger.setSource(row.getString("prosrc"));
+				row.remove("prosrc");
+				String triggerType = row.getString("trigger_type");
+				if (triggerType.equals("DELETE")
+						|| triggerType.equals("INSERT")
+						|| triggerType.equals("UPDATE")) {
+					trigger.setTriggerType(TriggerType.valueOf(triggerType));
+				}
+				trigger.setMetaData(row);
+				return trigger;
+			}
+		}, tableName, schema);
+    	
+    	return triggers;
     }
 
 }

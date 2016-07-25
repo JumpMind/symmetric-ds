@@ -660,11 +660,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public boolean isClob(int type) {
-        return type == Types.CLOB || type == Types.LONGVARCHAR || type == ColumnTypes.LONGNVARCHAR;
+        return type == Types.CLOB || type == Types.NCLOB || type == Types.LONGVARCHAR || type == ColumnTypes.LONGNVARCHAR;
     }
 
     public boolean isBlob(int type) {
-        return type == Types.BLOB || type == Types.LONGVARBINARY || type == -10;
+        return type == Types.BLOB || type == Types.BINARY || type == Types.VARBINARY || type == Types.LONGVARBINARY || type == -10;
     }
 
     public List<Column> getLobColumns(Table table) {

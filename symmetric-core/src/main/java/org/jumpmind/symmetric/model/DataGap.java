@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
-public class DataGap implements Serializable {
+public class DataGap implements Serializable, Comparable<DataGap> {
     
     private static final long serialVersionUID = 1L;
 
@@ -32,17 +32,20 @@ public class DataGap implements Serializable {
     private long startId;
     private long endId;
     private Date createTime;
+    private Date lastUpdateTime;
 
     public DataGap(long startId, long endId) {
         this.startId = startId;
         this.endId = endId;
         this.createTime = new Date();
+        this.lastUpdateTime = createTime;
     }
     
     public DataGap(long startId, long endId, Date createTime) {
         this.startId = startId;
         this.endId = endId;
         this.createTime = createTime;
+        this.lastUpdateTime = createTime;
     }
 
     @Override
@@ -61,7 +64,15 @@ public class DataGap implements Serializable {
     public Date getCreateTime() {
         return createTime;
     }
-    
+ 
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(Date lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
+    }
+
     public boolean contains(DataGap gap) {
         return startId <= gap.startId && endId >= gap.endId;
     }
@@ -98,6 +109,16 @@ public class DataGap implements Serializable {
         if (startId != other.startId)
             return false;
         return true;
+    }
+
+    @Override
+    public int compareTo(DataGap gap) {
+        if (startId < gap.getStartId() || (startId == gap.getStartId() && endId < gap.getEndId())) {
+            return -1;
+        } else if (startId > gap.getStartId() || (startId == gap.getStartId() && endId > gap.getEndId())) {
+            return 1;
+        }
+        return 0;
     }
     
 }

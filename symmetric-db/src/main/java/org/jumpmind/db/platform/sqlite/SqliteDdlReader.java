@@ -21,6 +21,7 @@
 package org.jumpmind.db.platform.sqlite;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +36,16 @@ import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
+import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
+import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlConstants;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.mapper.RowMapper;
 
 public class SqliteDdlReader implements IDdlReader {
@@ -233,7 +238,45 @@ public class SqliteDdlReader implements IDdlReader {
             return column;
         }
     }
-    
-    
 
+    public Trigger getTriggerFor(Table table, String triggerName) {
+    	Trigger trigger = null;
+    	List<Trigger> triggers = getTriggers(table.getCatalog(), table.getSchema(), table.getName());
+    	for (Trigger t : triggers) {
+    		if (t.getName().equals(triggerName)) {
+    			trigger = t;
+    			break;
+    		}
+    	}
+    	return trigger;
+    }
+    
+	public List<Trigger> getTriggers(final String catalog, final String schema,
+			final String tableName) throws SqlException {
+		
+		List<Trigger> triggers = new ArrayList<Trigger>();
+		
+		String sql = "SELECT "
+						+ "name AS trigger_name, "
+						+ "tbl_name AS table_name, "
+						+ "rootpage, "
+						+ "sql, "
+						+ "type AS object_type "
+					+ "FROM sqlite_master "
+					+ "WHERE table_name=? AND object_type='trigger';";
+		triggers = platform.getSqlTemplate().query(sql, new ISqlRowMapper<Trigger>() {
+			public Trigger mapRow(Row row) {
+				Trigger trigger = new Trigger();
+				trigger.setName(row.getString("trigger_name"));
+				trigger.setTableName(row.getString("table_name"));
+				trigger.setEnabled(true);
+				trigger.setSource(row.getString("sql"));
+				row.remove("sql");
+				trigger.setMetaData(row);
+				return trigger;
+			}
+		}, tableName.toLowerCase());
+
+		return triggers;
+	}
 }

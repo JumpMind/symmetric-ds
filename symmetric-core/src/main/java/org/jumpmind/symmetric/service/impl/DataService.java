@@ -1576,15 +1576,16 @@ public class DataService extends AbstractService implements IDataService {
     public void insertDataGap(ISqlTransaction transaction, DataGap gap) {
         log.debug("Inserting data gap: {}", gap);
         transaction.prepareAndExecute(getSql("insertDataGapSql"),
-                new Object[] { DataGap.Status.GP.name(), AppUtils.getHostName(), gap.getStartId(), gap.getEndId() }, new int[] {
-                        Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC });
+                new Object[] { DataGap.Status.GP.name(), AppUtils.getHostName(), gap.getStartId(), gap.getEndId(),
+                    gap.getLastUpdateTime(), gap.getCreateTime() }, new int[] {
+                        Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP });
     }
 
     public void updateDataGap(DataGap gap, DataGap.Status status) {
         sqlTemplate.update(
                 getSql("updateDataGapSql"),
-                new Object[] { status.name(), AppUtils.getHostName(), gap.getStartId(),
-                        gap.getEndId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
+                new Object[] { status.name(), AppUtils.getHostName(), gap.getLastUpdateTime(), gap.getStartId(),
+                        gap.getEndId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
                         symmetricDialect.getSqlTypeForIds(), symmetricDialect.getSqlTypeForIds() });
     }
 
