@@ -312,6 +312,7 @@ public class RouterService extends AbstractService implements IRouterService {
         List<TableReloadRequest> loadsToProcess = engine.getDataService().getTableReloadRequestToProcess(source.getNodeId());
         if (loadsToProcess.size() > 0) {
             log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
+            gapDetector.setFullGapAnalysis(true);
             
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
             for (TableReloadRequest load : loadsToProcess) {
