@@ -1603,14 +1603,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             
                             this.targetTable = lookupAndOrderColumnsAccordingToTriggerHistory(
                                     routerId, triggerHistory, true, true);
+                            Table copyTargetTable = this.targetTable.copy();
                             
                             Database db = new Database();
                             db.setName("dataextractor");                            
-                            db.setCatalog(targetTable.getCatalog());
-                            db.setSchema(targetTable.getSchema());
-                            db.addTable(targetTable);
+                            db.setCatalog(copyTargetTable.getCatalog());
+                            db.setSchema(copyTargetTable.getSchema());
+                            db.addTable(copyTargetTable);
                             if (excludeDefaults) {
-                                Column[] columns = targetTable.getColumns();
+                                Column[] columns = copyTargetTable.getColumns();
                                 for (Column column : columns) {
                                     column.setDefaultValue(null);
                                     Map<String, PlatformColumn> platformColumns = column.getPlatformColumns();
@@ -1623,7 +1624,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 }
                             }
                             if (excludeForeignKeys) {
-                                targetTable.removeAllForeignKeys();
+                            	copyTargetTable.removeAllForeignKeys();
+                            }
+                            
+                            if (parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_PK_IF_SOURCE_WITHOUT_PK, false)
+                            	&& sourceTable.getPrimaryKeyColumnCount() == 0
+                            	&& copyTargetTable.getPrimaryKeyColumnCount() > 0) {
+                            	
+                            		for (Column column : copyTargetTable.getColumns()) {
+                            			column.setPrimaryKey(false);
+                            		}
+                            	
                             }
                             data.setRowData(CsvUtils.escapeCsvData(DatabaseXmlUtil.toXml(db)));
                         }
