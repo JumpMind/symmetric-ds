@@ -595,9 +595,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                             status.shouldExtractSkip = true;
                                         }
                                     } catch (Exception e) {
-                                        status.shouldExtractSkip = true;
+                                        status.shouldExtractSkip = outgoingBatch.isExtractSkipped = true;
                                         throw e;
                                     }
+                                } else {
+                                    outgoingBatch.isExtractSkipped = true;
                                 }
                                 return outgoingBatch;
                             }
@@ -615,7 +617,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             FutureOutgoingBatch extractBatch = future.get(keepAliveMillis, TimeUnit.MILLISECONDS); 
                             currentBatch = extractBatch.getOutgoingBatch();
 
-                            if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT) {
+                            if (!extractBatch.isExtractSkipped && (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT)) {
                                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
                                 currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch, extractBatch.isRetry(), 
                                         dataWriter, writer, mode);
@@ -1935,6 +1937,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     class FutureOutgoingBatch {
         OutgoingBatch outgoingBatch;
         boolean isRetry;
+        boolean isExtractSkipped;
         
         public FutureOutgoingBatch(OutgoingBatch outgoingBatch, boolean isRetry) {
             this.outgoingBatch = outgoingBatch;
