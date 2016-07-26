@@ -229,7 +229,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     @Override
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory, List<TransformTableNodeGroupLink> transforms) {
-        String sql = null;        	    	
+        return createPurgeSqlFor(node, triggerRouter, triggerHistory, transforms, null);
+    }
+    
+    @Override
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory, 
+            List<TransformTableNodeGroupLink> transforms, String deleteSql) {
+        String sql = null;                  
         if (StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt())) {
             List<String> tableNames = new ArrayList<String>();
             if (transforms != null) {
@@ -243,12 +249,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             StringBuilder statements = new StringBuilder(128);
             
             for (String tableName : tableNames) {
-                String deleteSql = null;
-                if (tableName.startsWith(parameterService.getTablePrefix())) {
-                    deleteSql = "delete from %s";
-                } else {
-                    deleteSql = parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL);
-                } 
+                if (deleteSql == null) {
+                    if (tableName.startsWith(parameterService.getTablePrefix())) {
+                        deleteSql = "delete from %s";
+                    } else {
+                        deleteSql = parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL);
+                    } 
+                }
                 statements.append(String.format(deleteSql, tableName)).append(";");
             }
             

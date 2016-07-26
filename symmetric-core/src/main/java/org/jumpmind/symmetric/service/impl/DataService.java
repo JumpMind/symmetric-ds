@@ -107,7 +107,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient) {
         boolean successful = false;
-        if (request != null && request.isReloadEnabled()) {
+        if (request != null) {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
             INodeService nodeService = engine.getNodeService();
             Node targetNode = nodeService.findNode(request.getTargetNodeId());
@@ -132,7 +132,7 @@ public class DataService extends AbstractService implements IDataService {
                                 if (parameterService
                                         .is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
                                     String overrideDeleteStatement = StringUtils.isNotBlank(request
-                                            .getReloadDeleteStmt()) ? request.getReloadDeleteStmt()
+                                            .getBeforeCustomSql()) ? request.getBeforeCustomSql()
                                             : null;
                                     insertPurgeEvent(transaction, targetNode, triggerRouter,
                                             triggerHistory, false, overrideDeleteStatement, -1,
@@ -220,8 +220,7 @@ public class DataService extends AbstractService implements IDataService {
         request.setLastUpdateTime(time);
         if (0 == sqlTemplate.update(
                 getSql("updateTableReloadRequest"),
-                new Object[] { request.getReloadSelect(), request.getReloadDeleteStmt(),
-                        request.isReloadEnabled() ? 1 : 0, request.getReloadTime(),
+                new Object[] { request.getReloadSelect(), request.getBeforeCustomSql(),
                         request.getCreateTime(), request.getLastUpdateBy(),
                         request.getLastUpdateTime(), request.getSourceNodeId(),
                         request.getTargetNodeId(), request.getTriggerId(), request.getRouterId() },
@@ -231,8 +230,7 @@ public class DataService extends AbstractService implements IDataService {
             request.setCreateTime(time);
             sqlTemplate.update(
                     getSql("insertTableReloadRequest"),
-                    new Object[] { request.getReloadSelect(), request.getReloadDeleteStmt(),
-                            request.isReloadEnabled() ? 1 : 0, request.getReloadTime(),
+                    new Object[] { request.getReloadSelect(), request.getBeforeCustomSql(),
                             request.getCreateTime(), request.getLastUpdateBy(),
                             request.getLastUpdateTime(), request.getSourceNodeId(),
                             request.getTargetNodeId(), request.getTriggerId(),
@@ -249,9 +247,8 @@ public class DataService extends AbstractService implements IDataService {
                     public TableReloadRequest mapRow(Row rs) {
                         TableReloadRequest request = new TableReloadRequest(key);
                         request.setReloadSelect(rs.getString("reload_select"));
-                        request.setReloadEnabled(rs.getBoolean("reload_enabled"));
                         request.setReloadTime(rs.getDateTime("reload_time"));
-                        request.setReloadDeleteStmt(rs.getString("reload_delete_stmt"));
+                        request.setBeforeCustomSql(rs.getString("before_custom_sql"));
                         request.setCreateTime(rs.getDateTime("create_time"));
                         request.setLastUpdateBy(rs.getString("last_update_by"));
                         request.setLastUpdateTime(rs.getDateTime("last_update_time"));
@@ -259,6 +256,29 @@ public class DataService extends AbstractService implements IDataService {
                     }
                 }, key.getSourceNodeId(), key.getTargetNodeId(), key.getTriggerId(),
                 key.getRouterId());
+    }
+    
+    public List<TableReloadRequest> getTableReloadRequestToProcess(final String sourceNodeId) {
+        return sqlTemplate.query(getSql("selectTableReloadRequestToProcess"),
+                new ISqlRowMapper<TableReloadRequest>() {
+                    public TableReloadRequest mapRow(Row rs) {
+                        TableReloadRequest request = new TableReloadRequest();
+                        request.setSourceNodeId(sourceNodeId);
+                        request.setTargetNodeId(rs.getString("target_node_id"));
+                        request.setCreateTable(rs.getBoolean("create_table"));
+                        request.setDeleteFirst(rs.getBoolean("delete_first"));
+                        request.setReloadSelect(rs.getString("reload_select"));
+                        request.setReloadTime(rs.getDateTime("reload_time"));
+                        request.setBeforeCustomSql(rs.getString("before_custom_sql"));
+                        request.setChannelId(rs.getString("channel_id"));
+                        request.setTriggerId(rs.getString("trigger_id"));
+                        request.setRouterId(rs.getString("router_id"));
+                        request.setCreateTime(rs.getDateTime("create_time"));
+                        request.setLastUpdateBy(rs.getString("last_update_by"));
+                        request.setLastUpdateTime(rs.getDateTime("last_update_time"));
+                        return request;
+                    }
+                }, sourceNodeId);
     }
 
     /**
@@ -323,27 +343,36 @@ public class DataService extends AbstractService implements IDataService {
         }
         return channelId;
     }
-
+    
     public void insertReloadEvents(Node targetNode, boolean reverse) {
+        insertReloadEvents(targetNode, reverse, null);
+    }
+    
+    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests) {
 
         if (engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS)) {
             try {
                 synchronized (engine.getTriggerRouterService()) {
                     engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS);
 
+                    boolean isFullLoad = reloadRequests == null 
+                            || (reloadRequests.size() == 1 && reloadRequests.get(0).isFullLoadRequest());
+                    
                     if (!reverse) {
-                        log.info("Queueing up an initial load to " + targetNode.getNodeId());
+                        log.info("Queueing up " + (isFullLoad ? "an initial" : "a" + " load to ") + targetNode.getNodeId());
                     } else {
-                        log.info("Queueing up a reverse initial load to " + targetNode.getNodeId());
+                        log.info("Queueing up a reverse " + (isFullLoad ? "initial" : "") + " load to " + targetNode.getNodeId());
                     }
                     
                     /*
                      * Outgoing data events are pointless because we are
                      * reloading all data
                      */
-                    engine.getOutgoingBatchService().markAllAsSentForNode(targetNode.getNodeId(),
-                            false);
-
+                    if (isFullLoad) {
+                        engine.getOutgoingBatchService().markAllAsSentForNode(targetNode.getNodeId(),
+                                false);
+                    }
+                    
                     INodeService nodeService = engine.getNodeService();
                     ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
 
@@ -367,53 +396,65 @@ public class DataService extends AbstractService implements IDataService {
                         String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy()
                                 : nodeSecurity.getInitialLoadCreateBy();
 
-                        List<TriggerHistory> triggerHistories = triggerRouterService
-                                .getActiveTriggerHistories();
+                        List<TriggerHistory> triggerHistories = new ArrayList<TriggerHistory>();
 
+                        if (isFullLoad) {
+                            triggerHistories = triggerRouterService.getActiveTriggerHistories();
+                        }
+                        else {
+                            for (TableReloadRequest reloadRequest : reloadRequests) {
+                                triggerHistories.addAll(engine.getTriggerRouterService()
+                                        .getActiveTriggerHistories(new Trigger(reloadRequest.getTriggerId(), null)));
+                            }
+                        }
                         Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
                                 .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
                                         targetNode.getNodeGroupId(), triggerHistories);
 
-                        callReloadListeners(true, targetNode, transactional, transaction, loadId);
+                        if (isFullLoad) {
+                            callReloadListeners(true, targetNode, transactional, transaction, loadId);
 
-                        insertCreateSchemaScriptPriorToReload(targetNode, nodeIdRecord, loadId,
+                            insertCreateSchemaScriptPriorToReload(targetNode, nodeIdRecord, loadId,
                                 createBy, transactional, transaction);
 
-                        insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,
+                            insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,
                                 transactional, transaction, reverse);
-
+                        }
+                        
                         insertCreateBatchesForReload(targetNode, loadId, createBy,
                                 triggerHistories, triggerRoutersByHistoryId, transactional,
-                                transaction);
+                                transaction, convertReloadListToMap(reloadRequests));
 
                         insertDeleteBatchesForReload(targetNode, loadId, createBy,
                                 triggerHistories, triggerRoutersByHistoryId, transactional,
-                                transaction);
+                                transaction, convertReloadListToMap(reloadRequests));
 
                         insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
-                                triggerRoutersByHistoryId, transactional, transaction);
-
-                        String afterSql = parameterService
-                                .getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_AFTER_SQL
-                                        : ParameterConstants.INITIAL_LOAD_AFTER_SQL);
-                        if (isNotBlank(afterSql)) {
-                            insertSqlEvent(transaction, targetNode, afterSql, true, loadId,
-                                    createBy);
+                                triggerRoutersByHistoryId, transactional, transaction, reloadRequests);
+                        
+                        if (isFullLoad) {
+                            String afterSql = parameterService
+                                    .getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_AFTER_SQL
+                                            : ParameterConstants.INITIAL_LOAD_AFTER_SQL);
+                            if (isNotBlank(afterSql)) {
+                                insertSqlEvent(transaction, targetNode, afterSql, true, loadId,
+                                        createBy);
+                            }
                         }
-
                         insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
                                 transaction);
 
-                        callReloadListeners(false, targetNode, transactional, transaction, loadId);
-
-                        if (!reverse) {
-                            nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false,
+                        if (isFullLoad) {
+                            callReloadListeners(false, targetNode, transactional, transaction, loadId);
+                            if (!reverse) {
+                                nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false,
                                     false, loadId, createBy);
-                        } else {
-                            nodeService.setReverseInitialLoadEnabled(transaction, nodeIdRecord,
-                                    false, false, loadId, createBy);
+                            } else {
+                                nodeService.setReverseInitialLoadEnabled(transaction, nodeIdRecord,
+                                        false, false, loadId, createBy);
+                            }
                         }
-
+                                                
                         if (!Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
                             insertNodeSecurityUpdate(transaction, nodeIdRecord,
                                     targetNode.getNodeId(), true, loadId, createBy);
@@ -421,6 +462,12 @@ public class DataService extends AbstractService implements IDataService {
 
                         engine.getStatisticManager().incrementNodesLoaded(1);
 
+                        if (reloadRequests != null && reloadRequests.size() > 0) {
+                            log.info("About to mark table reload request for load id " + loadId + " to processed.");
+                            transaction.prepareAndExecute(getSql("updateProcessedTableReloadRequest"), loadId, new Date());
+                            log.info("Table reload request for load id " + loadId + " marked processed.");
+                        }
+                        
                         transaction.commit();
                     } catch (Error ex) {
                         if (transaction != null) {
@@ -454,6 +501,17 @@ public class DataService extends AbstractService implements IDataService {
 
     }
 
+    protected Map<String, TableReloadRequest> convertReloadListToMap(List<TableReloadRequest> reloadRequests) {
+        if (reloadRequests == null) {
+            return null;
+        }
+        Map<String, TableReloadRequest> reloadMap = new HashMap<String, TableReloadRequest>();
+        for (TableReloadRequest item : reloadRequests) {
+            reloadMap.put(item.getIdentifier(), item);
+        }
+        return reloadMap;
+    }
+    
     private void callReloadListeners(boolean before, Node targetNode, boolean transactional,
             ISqlTransaction transaction, long loadId) {
         for (IReloadListener listener : extensionService.getExtensionPointList(IReloadListener.class)) {
@@ -548,13 +606,23 @@ public class DataService extends AbstractService implements IDataService {
     private void insertCreateBatchesForReload(Node targetNode, long loadId, String createBy,
             List<TriggerHistory> triggerHistories,
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
-            ISqlTransaction transaction) {
-        if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
+            ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests) {
+        
+        if (reloadRequests != null && reloadRequests.size() > 0) {
             for (TriggerHistory triggerHistory : triggerHistories) {
                 List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                         .getTriggerHistoryId());
+                
+                TableReloadRequest currentRequest = reloadRequests.get(ParameterConstants.ALL + ParameterConstants.ALL);
+                boolean fullLoad = currentRequest == null ? false : true;
+                
                 for (TriggerRouter triggerRouter : triggerRouters) {
-                    if (triggerRouter.getInitialLoadOrder() >= 0
+                    if (!fullLoad) {
+                        currentRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
+                    }
+                    
+                    //Check the create flag on the specific table reload request
+                    if (currentRequest != null && currentRequest.isCreateTable()
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
                                     targetNode)) {
                         insertCreateEvent(transaction, targetNode, triggerHistory, triggerRouter.getRouter().getRouterId(), true,
@@ -566,31 +634,79 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
         }
+        else {
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
+                for (TriggerHistory triggerHistory : triggerHistories) {
+                    List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
+                            .getTriggerHistoryId());
+                    for (TriggerRouter triggerRouter : triggerRouters) {
+                        if (triggerRouter.getInitialLoadOrder() >= 0
+                                && engine.getGroupletService().isTargetEnabled(triggerRouter,
+                                        targetNode)) {
+                            insertCreateEvent(transaction, targetNode, triggerHistory, triggerRouter.getRouter().getRouterId(), true,
+                                    loadId, createBy);
+                            if (!transactional) {
+                                transaction.commit();
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void insertDeleteBatchesForReload(Node targetNode, long loadId, String createBy,
             List<TriggerHistory> triggerHistories,
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
-            ISqlTransaction transaction) {
-        if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
-            for (ListIterator<TriggerHistory> triggerHistoryIterator = triggerHistories
-                    .listIterator(triggerHistories.size()); triggerHistoryIterator.hasPrevious();) {
-                TriggerHistory triggerHistory = triggerHistoryIterator.previous();
+            ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests) {
+        
+        if (reloadRequests != null && reloadRequests.size() > 0) {
+            for (TriggerHistory triggerHistory : triggerHistories) {
                 List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                         .getTriggerHistoryId());
-                for (ListIterator<TriggerRouter> iterator = triggerRouters
-                        .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
-                    TriggerRouter triggerRouter = iterator.previous();
-                    if (triggerRouter.getInitialLoadOrder() >= 0
+                
+                TableReloadRequest currentRequest = reloadRequests.get(ParameterConstants.ALL + ParameterConstants.ALL);
+                boolean fullLoad = currentRequest == null ? false : true;
+                
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    if (!fullLoad) {
+                        currentRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
+                    }
+                    
+                    //Check the delete flag on the specific table reload request
+                    if (currentRequest != null && currentRequest.isDeleteFirst()
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
-                                    targetNode)
-                            && (!StringUtils.isBlank(parameterService
-                                    .getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL)) || !StringUtils
-                                    .isEmpty(triggerRouter.getInitialLoadDeleteStmt()))) {
+                                    targetNode)) {
                         insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory,
-                                true, null, loadId, createBy);
+                                true, currentRequest.getBeforeCustomSql(), loadId, createBy);
                         if (!transactional) {
                             transaction.commit();
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
+                for (ListIterator<TriggerHistory> triggerHistoryIterator = triggerHistories
+                        .listIterator(triggerHistories.size()); triggerHistoryIterator.hasPrevious();) {
+                    TriggerHistory triggerHistory = triggerHistoryIterator.previous();
+                    List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
+                            .getTriggerHistoryId());
+                    for (ListIterator<TriggerRouter> iterator = triggerRouters
+                            .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
+                        TriggerRouter triggerRouter = iterator.previous();
+                        if (triggerRouter.getInitialLoadOrder() >= 0
+                                && engine.getGroupletService().isTargetEnabled(triggerRouter,
+                                        targetNode)
+                                && (!StringUtils.isBlank(parameterService
+                                        .getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL)) || !StringUtils
+                                        .isEmpty(triggerRouter.getInitialLoadDeleteStmt()))) {
+                            insertPurgeEvent(transaction, targetNode, triggerRouter, triggerHistory,
+                                    true, null, loadId, createBy);
+                            if (!transactional) {
+                                transaction.commit();
+                            }
                         }
                     }
                 }
@@ -601,7 +717,7 @@ public class DataService extends AbstractService implements IDataService {
     private void insertLoadBatchesForReload(Node targetNode, long loadId, String createBy,
             List<TriggerHistory> triggerHistories,
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
-            ISqlTransaction transaction) {
+            ISqlTransaction transaction, List<TableReloadRequest> reloadRequests) {
         Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
         DatabaseInfo dbInfo = platform.getDatabaseInfo();
         String quote = dbInfo.getDelimiterToken();

@@ -25,6 +25,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,6 +62,7 @@ import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.Router;
+import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -152,8 +154,8 @@ public class RouterService extends AbstractService implements IRouterService {
         IDataRouter router = getDataRouter(dataMetaData.getRouter());
         Set<Node> oneNodeSet = new HashSet<Node>(1);
         oneNodeSet.add(node);
-        Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, oneNodeSet,
-                initialLoad, initialLoadSelectUsed, triggerRouter);
+        Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, oneNodeSet, initialLoad,
+                initialLoadSelectUsed, triggerRouter);
         return nodeIds != null && nodeIds.contains(node.getNodeId());
     }
 
@@ -183,6 +185,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         firstTimeCheckForAbandonedBatches = false;
                     }
 
+
                     if (gapDetector == null) {
                         if (parameterService.is(ParameterConstants.ROUTING_USE_FAST_GAP_DETECTOR)) {
                             gapDetector = new DataGapFastDetector(engine.getDataService(), parameterService, engine.getContextService(), 
@@ -193,7 +196,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     }
                     insertInitialLoadEvents();
-                    
+
                     long ts = System.currentTimeMillis();
                     gapDetector.beforeRouting();
                     dataCount = routeDataForEachChannel();
@@ -292,6 +295,8 @@ public class RouterService extends AbstractService implements IRouterService {
                             gapDetector.setFullGapAnalysis(true);
                         }
                     }
+                    
+                    processTableRequestLoads(identity);
                 }
             }
 
@@ -302,7 +307,64 @@ public class RouterService extends AbstractService implements IRouterService {
         }
 
     }
-    
+
+    public void processTableRequestLoads(Node source) {
+        List<TableReloadRequest> loadsToProcess = engine.getDataService().getTableReloadRequestToProcess(source.getNodeId());
+        if (loadsToProcess.size() > 0) {
+            log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
+            gapDetector.setFullGapAnalysis(true);
+            
+            Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
+            for (TableReloadRequest load : loadsToProcess) {
+                if (load.isFullLoadRequest() && isValidLoadTarget(load.getTargetNodeId())) {
+                   List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
+                   fullLoad.add(load);
+               
+                   engine.getDataService().insertReloadEvents(
+                           engine.getNodeService().findNode(load.getTargetNodeId()),
+                           false, fullLoad);
+               }
+               else {
+                   NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
+                   boolean registered = targetNodeSecurity.getRegistrationTime() != null;
+                   if (registered) {  
+                       // Make loads unique to the target and create time
+                       String key = load.getTargetNodeId() + "::" + load.getCreateTime().toString();
+                       if (!requestsSplitByLoad.containsKey(key)) {
+                           requestsSplitByLoad.put(key, new ArrayList<TableReloadRequest>());
+                       }
+                       requestsSplitByLoad.get(key).add(load);
+                   }
+               }
+            }
+            
+            for (Map.Entry<String, List<TableReloadRequest>> entry : requestsSplitByLoad.entrySet()) {
+                engine.getDataService().insertReloadEvents(
+                        engine.getNodeService().findNode(entry.getKey().split("::")[0]),
+                        false, entry.getValue());
+            }
+            
+            
+        }
+    }
+    public boolean isValidLoadTarget(String targetNodeId) {
+        boolean result = false;
+        NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(targetNodeId);
+
+        boolean reverseLoadFirst = parameterService.is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
+        boolean registered = targetNodeSecurity.getRegistrationTime() != null;
+        boolean reverseLoadQueued = targetNodeSecurity.isRevInitialLoadEnabled();
+
+        if (registered && (!reverseLoadFirst || !reverseLoadQueued)) {
+            result = true;
+        } else {
+            log.info("Unable to process load for target node id " + targetNodeId + " [registered: " + registered
+                    + ", reverse load first: " + reverseLoadFirst + ", reverse load queued: " + reverseLoadQueued
+                    + "]");
+        }
+        return result;
+    }
+
     public List<NodeSecurity> findNodesThatAreReadyForInitialLoad() {
         INodeService nodeService = engine.getNodeService();
         IConfigurationService configurationService = engine.getConfigurationService();

@@ -437,7 +437,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         long executeTimeInMs = System.currentTimeMillis() - ts;
         if (executeTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-            log.info("Selecting {} outgoing batch rows for node {} took {} ms", list.size(), nodeId, executeTimeInMs);
+            log.info("Selecting {} outgoing batch rows for node {} on queue '{}' took {} ms", list.size(), nodeId, channelThread, executeTimeInMs);
         }
 
         return batches;
