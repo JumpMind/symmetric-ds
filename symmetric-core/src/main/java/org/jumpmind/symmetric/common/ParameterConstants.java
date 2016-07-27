@@ -133,7 +133,8 @@ final public class ParameterConstants {
     
     public final static String CREATE_TABLE_WITHOUT_DEFAULTS = "create.table.without.defaults";
     public final static String CREATE_TABLE_WITHOUT_FOREIGN_KEYS = "create.table.without.foreign.keys";
-
+    public final static String CREATE_TABLE_WITHOUT_PK_IF_SOURCE_WITHOUT_PK = "create.table.without.pk.if.source.without.pk";
+    
     public final static String STREAM_TO_FILE_ENABLED = "stream.to.file.enabled";
     public final static String STREAM_TO_FILE_THRESHOLD = "stream.to.file.threshold.bytes";
     public final static String STREAM_TO_FILE_TIME_TO_LIVE_MS = "stream.to.file.ttl.ms";
@@ -208,6 +209,7 @@ final public class ParameterConstants {
 
     public final static String CACHE_TIMEOUT_GROUPLETS_IN_MS = "cache.grouplets.time.ms";
     public final static String CACHE_TIMEOUT_NODE_SECURITY_IN_MS = "cache.node.security.time.ms";
+    public final static String CACHE_TIMEOUT_NODE_IN_MS = "cache.node.time.ms";
     public final static String CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS = "cache.trigger.router.time.ms";
     public final static String CACHE_TIMEOUT_CHANNEL_IN_MS = "cache.channel.time.ms";
     public final static String CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS = "cache.node.group.link.time.ms";

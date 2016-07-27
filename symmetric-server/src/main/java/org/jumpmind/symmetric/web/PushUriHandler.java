@@ -79,7 +79,7 @@ public class PushUriHandler extends AbstractUriHandler {
     protected void push(String sourceNodeId, String channelId, InputStream inputStream, OutputStream outputStream) throws IOException {
         long ts = System.currentTimeMillis();
         try {
-            Node sourceNode = nodeService.findNode(sourceNodeId);
+            Node sourceNode = nodeService.findNode(sourceNodeId, true);
             dataLoaderService.loadDataFromPush(sourceNode, channelId, inputStream, outputStream);
         } finally {
             statisticManager.incrementNodesPushed(1);

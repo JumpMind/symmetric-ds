@@ -39,8 +39,8 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.Trigger.TriggerType;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.DdlException;
@@ -49,6 +49,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.mapper.StringMapper;
 
 /*
  * Reads a database model from a Microsoft Sql Server database.
@@ -258,29 +259,22 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     @Override
     public List<String> getTableNames(final String catalog, final String schema,
     		final String[] tableTypes) {
-    	
-    	List<String> tableNames = new ArrayList<String>();
-    	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-    	
-    	String sql = "SELECT sys.tables.name "
-    			+ "FROM sys.tables, sys.schemas "
-    			+ "WHERE sys.schemas.schema_id = sys.tables.schema_id "
-    			+ "AND sys.schemas.name = ? ;";
-    	tableNames = sqlTemplate.query(sql, new ISqlRowMapper<String>() {
-    		public String mapRow(Row row) {
-    			return row.getString("name");
-    		}
-    	}, schema);
-    	
-    	return tableNames;
+        StringBuilder sql = new StringBuilder("select table_name from information_schema.tables where table_type='BASE TABLE'");
+        List<Object> args = new ArrayList<Object>(2);
+        if (isNotBlank(catalog)) {
+            sql.append(" and table_catalog=?");
+            args.add(catalog);
+        }
+        if (isNotBlank(schema)) {
+            sql.append(" and table_schema=?");
+            args.add(schema);
+        }
+    	return platform.getSqlTemplate().query(sql.toString(), new StringMapper(), args.toArray(new Object[args.size()]));
     }
     
     @Override
 	public List<Trigger> getTriggers(final String catalog, final String schema,
 			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
-
 		log.debug("Reading triggers for: " + tableName);
 		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
 				.getSqlTemplate();
@@ -309,9 +303,8 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
 						+ "on TRIG.parent_id = TAB.object_id "
 					+ "inner join sys.schemas as SC "
 						+ "on TAB.schema_id = SC.schema_id "
-					+ "where TAB.name=? and SC.name=? "
-					+ ";";
-		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+					+ "where TAB.name=? and SC.name=? ";
+		return sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
 			public Trigger mapRow(Row row) {
 				Trigger trigger = new Trigger();
 				trigger.setName(row.getString("name"));
@@ -334,8 +327,6 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
 				return trigger;
 			}
 		}, tableName, schema);
-
-		return triggers;
 	}
     
 }

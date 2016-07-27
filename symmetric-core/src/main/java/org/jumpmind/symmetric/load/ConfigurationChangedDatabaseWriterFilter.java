@@ -81,6 +81,9 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     final String CTX_KEY_FLUSH_NODE_SECURITY_NEEDED = "FlushNodeSecurity."
             + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
 
+    final String CTX_KEY_FLUSH_NODE_NEEDED = "FlushNode."
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
+
     final String CTX_KEY_RESTART_JOBMANAGER_NEEDED = "RestartJobManager."
             + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
     
@@ -122,6 +125,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         recordJobManagerRestartNeeded(context, table, data);
         recordConflictFlushNeeded(context, table);
         recordNodeSecurityFlushNeeded(context, table);
+        recordNodeFlushNeeded(context, table);
     }
     
     private void recordGroupletFlushNeeded(DataContext context, Table table) {
@@ -199,6 +203,12 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     private void recordNodeSecurityFlushNeeded(DataContext context, Table table) {
         if (matchesTable(table, TableConstants.SYM_NODE_SECURITY)) {
             context.put(CTX_KEY_FLUSH_NODE_SECURITY_NEEDED, true);
+        }
+    }
+
+    private void recordNodeFlushNeeded(DataContext context, Table table) {
+        if (matchesTable(table, TableConstants.SYM_NODE)) {
+            context.put(CTX_KEY_FLUSH_NODE_NEEDED, true);
         }
     }
 
@@ -347,6 +357,12 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             log.info("About to refresh the cache of node security because new configuration came through the data loader");
             nodeService.flushNodeAuthorizedCache();
             context.remove(CTX_KEY_FLUSH_NODE_SECURITY_NEEDED);
+        }
+
+        if (context.get(CTX_KEY_FLUSH_NODE_NEEDED) != null) {
+            log.info("About to refresh the cache of nodes because new configuration came through the data loader");
+            nodeService.flushNodeCache();
+            context.remove(CTX_KEY_FLUSH_NODE_NEEDED);
         }
 
         if (context.get(CTX_KEY_RESYNC_TABLE_NEEDED) != null

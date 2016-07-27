@@ -306,4 +306,13 @@ public class MockNodeService implements INodeService {
         return nodeId;
     }
 
+    @Override
+    public void flushNodeCache() {
+    }
+
+    @Override
+    public Node findNode(String id, boolean useCache) {
+        return null;
+    }
+
 }
