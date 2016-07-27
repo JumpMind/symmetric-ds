@@ -265,7 +265,7 @@ public class TransformTable implements Cloneable {
                 action = TargetDmlAction.valueOf((String) result);
             }
             catch (Exception e) {
-                log.error(e.getMessage(), e);
+                throw new RuntimeException(e);
             }
         }
         return action;
