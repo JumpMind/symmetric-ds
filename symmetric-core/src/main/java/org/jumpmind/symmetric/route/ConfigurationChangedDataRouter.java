@@ -42,7 +42,6 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -79,6 +78,12 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_FLUSH_NOTIFICATIONS_NEEDED = "FlushNotifcations."
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+
+    final String CTX_KEY_FLUSH_NODES_NEEDED = "FlushNodes."
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+
+    final String CTX_KEY_FLUSH_NODE_SECURITYS_NEEDED = "FlushNodeSecuritys."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_RESTART_JOBMANAGER_NEEDED = "RestartJobManager."
@@ -122,6 +127,13 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)
                     || tableMatches(dataMetaData, TableConstants.SYM_NODE_HOST)
                     || tableMatches(dataMetaData, TableConstants.SYM_MONITOR_EVENT)) {
+                
+                if (tableMatches(dataMetaData, TableConstants.SYM_NODE)) {
+                    routingContext.put(CTX_KEY_FLUSH_NODES_NEEDED, Boolean.TRUE);
+                } else if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
+                    routingContext.put(CTX_KEY_FLUSH_NODE_SECURITYS_NEEDED, Boolean.TRUE);
+                }
+
                 /*
                  * If this is sym_node or sym_node_security determine which
                  * nodes it goes to.
@@ -567,6 +579,18 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 log.info("About to refresh the cache of notifications because new configuration came through the data router");
                 engine.getMonitorService().flushNotificationCache();
             }
+            
+            if (routingContext.get(CTX_KEY_FLUSH_NODES_NEEDED) != null) {
+                log.info("About to refresh the cache of nodes because new configuration came through the data router");
+                engine.getNodeService().flushNodeCache();
+                engine.getNodeService().flushNodeGroupCache();
+            }
+
+            if (routingContext.get(CTX_KEY_FLUSH_NODE_SECURITYS_NEEDED) != null) {
+                log.info("About to refresh the cache of node security because new configuration came through the data router");
+                engine.getNodeService().flushNodeAuthorizedCache();
+            }
+
         }
     }
     

@@ -85,7 +85,7 @@ public class AuthenticationInterceptor implements IInterceptor {
 
     protected AuthenticationStatus getAuthenticationStatus(String nodeId, String securityToken) {
         AuthenticationStatus retVal = AuthenticationStatus.ACCEPTED;
-        Node node = nodeService.findNode(nodeId);
+        Node node = nodeService.findNode(nodeId, true);
         if (node == null) {
             retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
         } else if (!syncEnabled(node)) {

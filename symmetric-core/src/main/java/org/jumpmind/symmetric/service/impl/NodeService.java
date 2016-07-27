@@ -69,11 +69,15 @@ public class NodeService extends AbstractService implements INodeService {
 
     private long securityCacheTime;
 
+    private Map<String, Node> nodeCache = new HashMap<String, Node>();
+    
+    private long nodeCacheTime;
+    
     private Map<String, List<Node>> sourceNodesCache = new HashMap<String, List<Node>>();
     
     private Map<String, List<Node>> targetNodesCache = new HashMap<String, List<Node>>();
 
-    private long nodesCacheTime;
+    private long nodeLinkCacheTime;
 
     private INodePasswordFilter nodePasswordFilter;
 
@@ -144,6 +148,23 @@ public class NodeService extends AbstractService implements INodeService {
     public Node findNode(String id) {
         return findAllNodesAsMap().get(id);
     } 
+
+    public Node findNode(String id, boolean useCache) {
+        if (useCache) {
+            long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_IN_MS);
+            if ((System.currentTimeMillis() - nodeCacheTime) >= cacheTimeoutInMs) {
+                nodeCache = findAllNodesAsMap();
+                nodeCacheTime = System.currentTimeMillis();
+            }
+            return nodeCache.get(id);
+        } else {
+            return findAllNodesAsMap().get(id);
+        }
+    }
+
+    public void flushNodeCache() {
+        nodeCacheTime = 0;
+    }
 
     public Node findNodeByExternalId(String nodeGroupId, String externalId) {
         List<Node> list = sqlTemplate.query(
@@ -349,11 +370,11 @@ public class NodeService extends AbstractService implements INodeService {
         long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
         if (node != null) {
             List<Node> list = sourceNodesCache.get(eventAction.name());
-            if (list == null || (System.currentTimeMillis() - nodesCacheTime) >= cacheTimeoutInMs) {
+            if (list == null || (System.currentTimeMillis() - nodeLinkCacheTime) >= cacheTimeoutInMs) {
                 list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoTargetMeSql"),
                         new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
                 sourceNodesCache.put(eventAction.name(), list);
-                nodesCacheTime = System.currentTimeMillis();
+                nodeLinkCacheTime = System.currentTimeMillis();
             }
             return list;
         } else {
@@ -366,11 +387,11 @@ public class NodeService extends AbstractService implements INodeService {
         long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
         if (node != null) {
             List<Node> list = targetNodesCache.get(eventAction.name());
-            if (list == null || (System.currentTimeMillis() - nodesCacheTime) >= cacheTimeoutInMs) {
+            if (list == null || (System.currentTimeMillis() - nodeLinkCacheTime) >= cacheTimeoutInMs) {
                 list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoITargetSql"),
                         new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
                 targetNodesCache.put(eventAction.name(), list);
-                nodesCacheTime = System.currentTimeMillis();
+                nodeLinkCacheTime = System.currentTimeMillis();
             }
             return list;
         } else {

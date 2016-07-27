@@ -630,7 +630,7 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
     public void loadFilesFromPush(String nodeId, InputStream in, OutputStream out) {
         INodeService nodeService = engine.getNodeService();
         Node local = nodeService.findIdentity();
-        Node sourceNode = nodeService.findNode(nodeId);
+        Node sourceNode = nodeService.findNode(nodeId, true);
         if (local != null && sourceNode != null) {
             ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                     new ProcessInfoKey(nodeId, local.getNodeId(),

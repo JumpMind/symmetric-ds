@@ -586,7 +586,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         List<IDatabaseWriterErrorHandler> dynamicErrorHandlers = errorHandlers;
 
         if (sourceNodeId != null) {
-            Node sourceNode = nodeService.findNode(sourceNodeId);
+            Node sourceNode = nodeService.findNode(sourceNodeId, true);
             if (sourceNode != null) {
                 link = new NodeGroupLink(sourceNode.getNodeGroupId(),
                         parameterService.getNodeGroupId());

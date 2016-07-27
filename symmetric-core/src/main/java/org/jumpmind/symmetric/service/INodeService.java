@@ -44,6 +44,8 @@ public interface INodeService {
 
     public Node findNode(String nodeId);
     
+    public Node findNode(String id, boolean useCache);
+    
     public String getExternalId(String nodeId);
 
     public List<NodeHost> findNodeHosts(String nodeId);
@@ -91,6 +93,8 @@ public interface INodeService {
             String nodeGroupId, String externalId);
 
     public boolean isNodeAuthorized(String nodeId, String password);
+
+    public void flushNodeCache();
 
     public void flushNodeAuthorizedCache();
     
