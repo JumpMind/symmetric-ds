@@ -26,10 +26,9 @@ import java.util.Set;
 import org.jdom.Element;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
-import org.jumpmind.symmetric.model.DataMetaData;
-import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.*;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 
@@ -60,23 +59,27 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
-        if (tableNamesToPublishAsGroup == null
-                || tableNamesToPublishAsGroup.contains(dataMetaData.getData().getTableName())) {
+        Data data = dataMetaData.getData();
+
+        if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(data.getTableName())) {
+            String[] rowData = data.getParsedData(CsvData.ROW_DATA);
+
+            if (data.getDataEventType() == DataEventType.DELETE) {
+                rowData = data.getParsedData(CsvData.OLD_DATA);
+            }
+            TriggerHistory triggerHistory = dataMetaData.getTriggerHistory();
             Element xml = getXmlFromCache(context, engine.getSymmetricDialect().getBinaryEncoding(),
-                    dataMetaData.getTriggerHistory()
-                    .getParsedColumnNames(), dataMetaData.getData().toParsedRowData(), dataMetaData
-                    .getTriggerHistory().getParsedPkColumnNames(), dataMetaData.getData()
-                    .toParsedPkData());
+                    triggerHistory.getParsedColumnNames(), rowData, triggerHistory.getParsedPkColumnNames(),
+                    data.toParsedPkData());
+
             if (xml != null) {
-                toXmlElement(dataMetaData.getData().getDataEventType(), xml, dataMetaData
-                        .getTriggerHistory().getSourceCatalogName(), dataMetaData
-                        .getTriggerHistory().getSourceSchemaName(), dataMetaData.getData()
-                        .getTableName(), dataMetaData.getTriggerHistory().getParsedColumnNames(),
-                        dataMetaData.getData().toParsedRowData(), dataMetaData.getTriggerHistory()
-                                .getParsedPkColumnNames(), dataMetaData.getData().toParsedPkData());
+                toXmlElement(data.getDataEventType(), xml, triggerHistory.getSourceCatalogName(),
+                        triggerHistory.getSourceSchemaName(), data.getTableName(),
+                        triggerHistory.getParsedColumnNames(), rowData,
+                        triggerHistory.getParsedPkColumnNames(), data.toParsedPkData());
             }
         } else if (log.isDebugEnabled()) {
-            log.debug("'{}' not in list to publish", dataMetaData.getData().getTableName());
+            log.debug("'{}' not in list to publish", data.getTableName());
         }
         return Collections.emptySet();
     }
