@@ -50,6 +50,10 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         } else {
             isUpgradeTo38 = false;
         }
+        if (isUpgradeTo38) {
+            engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE +
+                    " set update_action = 'UPD_ROW' where update_action is null");
+        }
         return sb.toString();
     }
 
