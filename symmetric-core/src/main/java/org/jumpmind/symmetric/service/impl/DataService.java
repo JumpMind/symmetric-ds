@@ -214,31 +214,27 @@ public class DataService extends AbstractService implements IDataService {
                         request.getTriggerId(), request.getRouterId() }, new int[] { Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
     }
-
-    public void saveTableReloadRequest(TableReloadRequest request) {
+    
+    public void insertTableReloadRequest(TableReloadRequest request) {
         Date time = new Date();
         request.setLastUpdateTime(time);
-        if (0 == sqlTemplate.update(
-                getSql("updateTableReloadRequest"),
+        if (request.getCreateTime() == null) {
+            request.setCreateTime(time);
+        }
+        sqlTemplate.update(
+                getSql("insertTableReloadRequest"),
                 new Object[] { request.getReloadSelect(), request.getBeforeCustomSql(),
                         request.getCreateTime(), request.getLastUpdateBy(),
                         request.getLastUpdateTime(), request.getSourceNodeId(),
-                        request.getTargetNodeId(), request.getTriggerId(), request.getRouterId() },
-                new int[] { Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.TIMESTAMP,
-                        Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
-            request.setCreateTime(time);
-            sqlTemplate.update(
-                    getSql("insertTableReloadRequest"),
-                    new Object[] { request.getReloadSelect(), request.getBeforeCustomSql(),
-                            request.getCreateTime(), request.getLastUpdateBy(),
-                            request.getLastUpdateTime(), request.getSourceNodeId(),
-                            request.getTargetNodeId(), request.getTriggerId(),
-                            request.getRouterId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
-                            Types.SMALLINT, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR,
-                            Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR });
-        }
+                        request.getTargetNodeId(), request.getTriggerId(),
+                        request.getRouterId(), request.isCreateTable(), 
+                        request.isDeleteFirst() }, new int[] { 
+                        Types.VARCHAR, Types.VARCHAR,
+                        Types.TIMESTAMP, Types.VARCHAR, 
+                        Types.TIMESTAMP, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, 
+                        Types.VARCHAR, Types.BOOLEAN, 
+                        Types.BOOLEAN });
     }
 
     public TableReloadRequest getTableReloadRequest(final TableReloadRequestKey key) {
@@ -463,9 +459,12 @@ public class DataService extends AbstractService implements IDataService {
                         engine.getStatisticManager().incrementNodesLoaded(1);
 
                         if (reloadRequests != null && reloadRequests.size() > 0) {
-                            log.info("About to mark table reload request for load id " + loadId + " to processed.");
-                            transaction.prepareAndExecute(getSql("updateProcessedTableReloadRequest"), loadId, new Date());
-                            log.info("Table reload request for load id " + loadId + " marked processed.");
+                            for (TableReloadRequest request : reloadRequests) {
+                                transaction.prepareAndExecute(getSql("updateProcessedTableReloadRequest"), loadId, new Date(),
+                                        request.getTargetNodeId(), request.getSourceNodeId(), request.getTriggerId(), 
+                                        request.getRouterId(), request.getCreateTime());
+                            }
+                            log.info("Table reload request for load id " + loadId + " have been processed.");
                         }
                         
                         transaction.commit();
@@ -1783,5 +1782,4 @@ public class DataService extends AbstractService implements IDataService {
             return data;
         }
     }
-
 }
