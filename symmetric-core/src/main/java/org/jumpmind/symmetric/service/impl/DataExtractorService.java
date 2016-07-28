@@ -517,7 +517,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected List<OutgoingBatch> extract(final ProcessInfo processInfo, final Node targetNode,
-            final List<OutgoingBatch> activeBatches, final IDataWriter dataWriter, BufferedWriter writer, final ExtractMode mode) {
+            final List<OutgoingBatch> activeBatches, final IDataWriter dataWriter, final BufferedWriter writer, final ExtractMode mode) {
         if (activeBatches.size() > 0) {
             final List<OutgoingBatch> processedBatches = new ArrayList<OutgoingBatch>(activeBatches.size());
             Set<String> channelsProcessed = new HashSet<String>();
@@ -542,45 +542,36 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     processInfo.setCurrentLoadId(currentBatch.getLoadId());
 
                     currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
+                    processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
+                    final OutgoingBatch extractBatch = currentBatch;
 
-                    if (currentBatch.isExtractJobFlag() && currentBatch.getStatus() != Status.IG) {
-                        if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
-                            if (currentBatch.getStatus() != Status.RQ && currentBatch.getStatus() != Status.IG
-                                    && !isPreviouslyExtracted(currentBatch)) {
-                                /*
-                                 * the batch must have been purged. it needs to
-                                 * be re-extracted
-                                 */
-                                log.info(
-                                        "Batch {} is marked as ready but it has been deleted.  Rescheduling it for extraction",
-                                        currentBatch.getNodeBatchId());
-                                if (changeBatchStatus(Status.RQ, currentBatch, mode)) {
-                                    resetExtractRequest(currentBatch);
-                                }
-                                break;
-                            } else if (currentBatch.getStatus() == Status.RQ) {
-                                log.info(
-                                        "Batch {} is not ready for delivery.  It is currently scheduled for extraction",
-                                        currentBatch.getNodeBatchId());
-                                break;
-                            }
-                        } else {
-                            currentBatch.setStatus(Status.NE);
-                            currentBatch.setExtractJobFlag(false);
-                        }
-                        
-                        processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
-                        currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch, false,
-                                dataWriter, writer, mode);
-                        processedBatches.add(currentBatch);
-                        
-                    } else {
-                        processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
-                        final OutgoingBatch extractBatch = currentBatch;
-                        Callable<FutureOutgoingBatch> callable = new Callable<FutureOutgoingBatch>() {
-                            public FutureOutgoingBatch call() throws Exception {
-                                FutureOutgoingBatch outgoingBatch = new FutureOutgoingBatch(extractBatch, false);
-                                if (!status.shouldExtractSkip) {
+                    Callable<FutureOutgoingBatch> callable = new Callable<FutureOutgoingBatch>() {
+                        public FutureOutgoingBatch call() throws Exception {
+                            FutureOutgoingBatch outgoingBatch = new FutureOutgoingBatch(extractBatch, false);
+                            if (!status.shouldExtractSkip) {
+                                if (extractBatch.isExtractJobFlag() && extractBatch.getStatus() != Status.IG) {
+                                    if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
+                                        if (extractBatch.getStatus() != Status.RQ && extractBatch.getStatus() != Status.IG
+                                                && !isPreviouslyExtracted(extractBatch)) {
+                                            /*
+                                             * the batch must have been purged. it needs to be re-extracted
+                                             */
+                                            log.info("Batch {} is marked as ready but it has been deleted.  Rescheduling it for extraction",
+                                                    extractBatch.getNodeBatchId());
+                                            if (changeBatchStatus(Status.RQ, extractBatch, mode)) {
+                                                resetExtractRequest(extractBatch);
+                                            }
+                                            status.shouldExtractSkip = outgoingBatch.isExtractSkipped = true;
+                                        } else if (extractBatch.getStatus() == Status.RQ) {
+                                            log.info("Batch {} is not ready for delivery.  It is currently scheduled for extraction",
+                                                    extractBatch.getNodeBatchId());
+                                            status.shouldExtractSkip = outgoingBatch.isExtractSkipped = true;
+                                        }
+                                    } else {
+                                        extractBatch.setStatus(Status.NE);
+                                        extractBatch.setExtractJobFlag(false);
+                                    }
+                                } else {
                                     try {
                                         boolean isRetry = isRetry(extractBatch, targetNode);
                                         outgoingBatch = new FutureOutgoingBatch(extractOutgoingBatch(processInfo, targetNode, 
@@ -598,14 +589,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         status.shouldExtractSkip = outgoingBatch.isExtractSkipped = true;
                                         throw e;
                                     }
-                                } else {
-                                    outgoingBatch.isExtractSkipped = true;
                                 }
-                                return outgoingBatch;
+                            } else {
+                                outgoingBatch.isExtractSkipped = true;
                             }
-                        };
-                        futures.add(executor.submit(callable));
+                            return outgoingBatch;
+                        }
+                    };
+                    
+                    if (status.shouldExtractSkip) {
+                        break;
                     }
+                    futures.add(executor.submit(callable));
                 }
 
                 Iterator<OutgoingBatch> activeBatchIter = activeBatches.iterator();                
