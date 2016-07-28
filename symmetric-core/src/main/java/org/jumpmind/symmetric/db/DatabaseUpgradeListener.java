@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db;
 import java.io.IOException;
 
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -51,8 +52,11 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             isUpgradeTo38 = false;
         }
         if (isUpgradeTo38) {
-            engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE +
-                    " set update_action = 'UPD_ROW' where update_action is null");
+            Table transformTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE);
+            if (transformTable != null && transformTable.findColumn("update_action") != null) {
+                engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE +
+                        " set update_action = 'UPD_ROW' where update_action is null");
+            }
         }
         return sb.toString();
     }
