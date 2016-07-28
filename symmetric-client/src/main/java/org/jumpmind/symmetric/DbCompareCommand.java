@@ -92,6 +92,9 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_OUTPUT_SQL)) {
             dbCompare.setSqlDiffFileName(line.getOptionValue(OPTION_OUTPUT_SQL));
         }
+        if (line.hasOption(OPTION_USE_SYM_CONFIG)) {
+            dbCompare.setUseSymmetricConfig(Boolean.valueOf(line.getOptionValue(OPTION_USE_SYM_CONFIG)));
+        }
         if (line.hasOption(OPTION_EXCLUDE)) {
             dbCompare.setExcludedTableNames(Arrays.asList(line.getOptionValue(OPTION_EXCLUDE).split(",")));
         }
