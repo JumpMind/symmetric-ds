@@ -170,6 +170,8 @@ public class DbCompareDiffWriter {
     protected FileOutputStream initStreamIfNeeded(FileOutputStream diffStream, String fileName) {
         if (diffStream != null) {
             return diffStream;
+        } else if (fileName == null) {
+            return null;
         } else {
             log.info("Writing diffs to {}", fileName);
             try {                
