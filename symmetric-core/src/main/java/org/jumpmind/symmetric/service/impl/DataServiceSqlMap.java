@@ -31,7 +31,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectTableReloadRequest", "select reload_select, before_custom_sql, reload_time, create_time, last_update_by, last_update_time from $(table_reload_request) where source_node_id=? and target_node_id=? and trigger_id=? and router_id=?");
         
-        putSql("insertTableReloadRequest", "insert into $(table_reload_request) (reload_select, before_custom_sql, reload_time, create_time, last_update_by, last_update_time, source_node_id, target_node_id, trigger_id, router_id) values (?,?,?,?,?,?,?,?,?,?,?)");
+        putSql("insertTableReloadRequest", "insert into $(table_reload_request) (reload_select, before_custom_sql, create_time, last_update_by, last_update_time, source_node_id, target_node_id, trigger_id, router_id, create_table, delete_first) values (?,?,?,?,?,?,?,?,?,?,?)");
 
         putSql("updateTableReloadRequest", "update $(table_reload_request) set reload_select=?, before_custom_sql=?, reload_time=?, create_time=?, last_update_by=?, last_update_time=? where source_node_id=? and target_node_id=? and trigger_id=? and router_id=?");
         
@@ -44,8 +44,8 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " where source_node_id=? and processed = 0 "
                 + " order by create_time, target_node_id");
         
-        putSql("updateProcessedTableReloadRequest", "update $(table_reload_request) set load_id = ?, last_update_time = ?, processed = 1");
-        
+        putSql("updateProcessedTableReloadRequest", "update $(table_reload_request) set load_id = ?, last_update_time = ?, processed = 1 where target_node_id = ? and source_node_id = ? and trigger_id = ? and router_id = ? and create_time = ?");
+
         // Note that the order by data_id is done appended in code
         putSql("selectEventDataToExtractSql",
                 ""
