@@ -153,6 +153,7 @@ SymBatch * SymExtractDataReader_nextBatch(SymExtractDataReader *this) {
 
 SymTable * SymExtractDataReader_nextTable(SymExtractDataReader *this) {
     if (this->targetTable == NULL && (this->nextData || this->dataIter->hasNext(this->dataIter))) {
+        this->lastTriggerHistory = NULL;
         SymExtractDataReader_nextData(this);
     }
     SymTable *table = this->targetTable;
