@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -48,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
@@ -61,6 +63,7 @@ import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
@@ -922,7 +925,29 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             IStagedResource extractedBatch = getStagedResource(currentBatch);
             if (extractedBatch != null) {
-                if (mode == ExtractMode.FOR_SYM_CLIENT && writer != null) {
+                if (mode == ExtractMode.FOR_SYM_CLIENT && writer != null) {                   
+                    if (!isRetry && parameterService.is(ParameterConstants.OUTGOING_BATCH_COPY_TO_INCOMING_STAGING)) {
+                        ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
+                        if (targetEngine != null) {
+                            try {
+                                long memoryThresholdInBytes = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+                                Node sourceNode = nodeService.findIdentity();
+                                IStagedResource targetResource = targetEngine.getStagingManager().create(memoryThresholdInBytes, 
+                                        Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
+                                        currentBatch.getBatchId());
+                                BufferedReader sourceReader = extractedBatch.getReader();
+                                BufferedWriter targetWriter = targetResource.getWriter();
+                                IOUtils.copy(sourceReader, targetWriter);
+                                extractedBatch.close();
+                                targetResource.close();
+                                targetResource.setState(State.READY);
+                                isRetry = true;
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+                    
                     Channel channel = configurationService.getChannel(currentBatch.getChannelId());
                     DataContext ctx = new DataContext();
                     SimpleStagingDataReader dataReader = new SimpleStagingDataReader(BatchType.EXTRACT, currentBatch.getBatchId(), 
