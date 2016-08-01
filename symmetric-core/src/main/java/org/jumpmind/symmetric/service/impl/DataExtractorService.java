@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -139,6 +138,7 @@ import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGr
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.Statistics;
 
 /**
@@ -930,16 +930,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
                         if (targetEngine != null) {
                             try {
-                                long memoryThresholdInBytes = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+                                long memoryThresholdInBytes = extractedBatch.isFileResource() ? 0 :
+                                    targetEngine.getParameterService().getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
                                 Node sourceNode = nodeService.findIdentity();
                                 IStagedResource targetResource = targetEngine.getStagingManager().create(memoryThresholdInBytes, 
                                         Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
                                         currentBatch.getBatchId());
-                                BufferedReader sourceReader = extractedBatch.getReader();
-                                BufferedWriter targetWriter = targetResource.getWriter();
-                                IOUtils.copy(sourceReader, targetWriter);
-                                extractedBatch.close();
-                                targetResource.close();
+                                if (extractedBatch.isFileResource()) {
+                                    SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
+                                } else {
+                                    IOUtils.copy(extractedBatch.getReader(), targetResource.getWriter());
+                                    extractedBatch.close();
+                                    targetResource.close();
+                                }
                                 targetResource.setState(State.READY);
                                 isRetry = true;
                             } catch (Exception e) {
