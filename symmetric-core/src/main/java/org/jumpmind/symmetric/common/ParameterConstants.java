@@ -145,6 +145,7 @@ final public class ParameterConstants {
     public final static String CONCURRENT_RESERVATION_TIMEOUT = "http.concurrent.reservation.timeout.ms";
 
     public final static String OUTGOING_BATCH_PEEK_AHEAD_BATCH_COMMIT_SIZE = "outgoing.batches.peek.ahead.batch.commit.size";
+    public final static String OUTGOING_BATCH_COPY_TO_INCOMING_STAGING = "outgoing.batches.copy.to.incoming.staging";
     public final static String ROUTING_FLUSH_JDBC_BATCH_SIZE = "routing.flush.jdbc.batch.size";
     public final static String ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS = "routing.wait.for.data.timeout.seconds";
     public final static String ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL = "routing.max.gaps.to.qualify.in.sql";
@@ -159,6 +160,7 @@ final public class ParameterConstants {
     public final static String ROUTING_LOG_STATS_ON_BATCH_ERROR = "routing.log.stats.on.batch.error";
     public final static String ROUTING_COLLECT_STATS_UNROUTED = "routing.collect.stats.unrouted";
     public final static String ROUTING_USE_FAST_GAP_DETECTOR = "routing.use.fast.gap.detector";
+    public final static String ROUTING_DETECT_INVALID_GAPS = "routing.detect.invalid.gaps";
     public final static String ROUTING_QUERY_CHANNELS_FIRST = "routing.query.channels.first";
 
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";

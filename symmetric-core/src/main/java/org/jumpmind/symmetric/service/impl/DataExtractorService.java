@@ -48,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
@@ -61,6 +62,7 @@ import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
@@ -136,6 +138,7 @@ import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGr
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.Statistics;
 
 /**
@@ -922,7 +925,32 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             IStagedResource extractedBatch = getStagedResource(currentBatch);
             if (extractedBatch != null) {
-                if (mode == ExtractMode.FOR_SYM_CLIENT && writer != null) {
+                if (mode == ExtractMode.FOR_SYM_CLIENT && writer != null) {                   
+                    if (!isRetry && parameterService.is(ParameterConstants.OUTGOING_BATCH_COPY_TO_INCOMING_STAGING)) {
+                        ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
+                        if (targetEngine != null) {
+                            try {
+                                long memoryThresholdInBytes = extractedBatch.isFileResource() ? 0 :
+                                    targetEngine.getParameterService().getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+                                Node sourceNode = nodeService.findIdentity();
+                                IStagedResource targetResource = targetEngine.getStagingManager().create(memoryThresholdInBytes, 
+                                        Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
+                                        currentBatch.getBatchId());
+                                if (extractedBatch.isFileResource()) {
+                                    SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
+                                } else {
+                                    IOUtils.copy(extractedBatch.getReader(), targetResource.getWriter());
+                                    extractedBatch.close();
+                                    targetResource.close();
+                                }
+                                targetResource.setState(State.READY);
+                                isRetry = true;
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+                    
                     Channel channel = configurationService.getChannel(currentBatch.getChannelId());
                     DataContext ctx = new DataContext();
                     SimpleStagingDataReader dataReader = new SimpleStagingDataReader(BatchType.EXTRACT, currentBatch.getBatchId(), 

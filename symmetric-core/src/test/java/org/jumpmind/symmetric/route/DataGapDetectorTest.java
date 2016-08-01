@@ -90,6 +90,7 @@ public class DataGapDetectorTest {
         when(parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE)).thenReturn(50000000L);
         when(parameterService.getLong(ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS)).thenReturn(60000L);
         when(parameterService.getLong(ParameterConstants.ROUTING_STALE_GAP_BUSY_EXPIRE_TIME)).thenReturn(60000L);
+        when(parameterService.is(ParameterConstants.ROUTING_DETECT_INVALID_GAPS)).thenReturn(true);
 
         IExtensionService extensionService = mock(ExtensionService.class);
         ISymmetricEngine engine = mock(AbstractSymmetricEngine.class);
