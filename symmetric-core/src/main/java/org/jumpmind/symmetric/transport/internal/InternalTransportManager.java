@@ -183,6 +183,11 @@ public class InternalTransportManager extends AbstractTransportManager implement
     public int sendCopyRequest(Node local) throws IOException {
         return -1;
     }
+    
+    @Override
+    public int sendStatusRequest(Node local, Map<String, String> statuses) throws IOException {
+        return -1;
+    }
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,
             String securityToken, String registrationUrl) throws IOException {

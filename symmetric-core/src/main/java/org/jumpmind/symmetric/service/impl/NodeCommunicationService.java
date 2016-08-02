@@ -676,5 +676,75 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         });
 
     }
+    
+    @Override
+    public void updateBatchToSendCounts(String nodeId, Map<String, Integer> batchesCountToQueues) {
+        List<NodeCommunication> nodeCommunications = this.find(CommunicationType.PULL);
+        List<NodeCommunication> updatedNodeCommunications = new ArrayList<NodeCommunication>();
+
+        for (String queue : batchesCountToQueues.keySet()) {
+            NodeCommunication match = null; 
+            for (int i = 0; i < nodeCommunications.size(); i++) {
+                NodeCommunication nodeCommunication = nodeCommunications.get(i);
+                if (nodeCommunication.getNodeId().equals(nodeId)
+                        && nodeCommunication.getQueue().equals(queue)) {
+                    match = nodeCommunication;
+                    break;
+                }       
+            }
+            
+            if (match == null) {
+                NodeCommunication newNodeCommunication = new NodeCommunication();
+                newNodeCommunication.setCommunicationType(CommunicationType.PULL);
+                newNodeCommunication.setNodeId(nodeId);
+                newNodeCommunication.setQueue(queue);
+                newNodeCommunication.setBatchToSendCount(batchesCountToQueues.get(queue));
+                updatedNodeCommunications.add(newNodeCommunication);
+            } else {
+                match.setBatchToSendCount(batchesCountToQueues.get(queue));
+                updatedNodeCommunications.add(match);
+            }
+        }
+        
+        for (NodeCommunication nodeCommunication : updatedNodeCommunications) {
+            save(nodeCommunication);
+        }
+    }
+    
+    @Override
+    public Map<String, Integer> parseQueueToBatchCounts(String channelToBatchCountsString) {
+        Map<String, Integer> channelsToBatchCount = new HashMap<String, Integer>();
+        
+        // åchannelName:4,anotherChannelName:6
+        String[] channelToBatchCounts = channelToBatchCountsString.split(",");
+        for (String channelToBatchCount : channelToBatchCounts) {
+            // anotherQueueName:6
+            String[] queueToBatchCountSplit = channelToBatchCount.split(":");
+            String queueName = queueToBatchCountSplit[0];
+            int batchCount = Integer.parseInt(queueToBatchCountSplit[1].trim());
+            channelsToBatchCount.put(queueName, batchCount);
+        }
+        
+        // Convert channels to queues
+        Map<String, Channel> channels = configurationService.getChannels(false);
+        Map<String, Integer> queuesToBatchCount = new HashMap<String, Integer>();
+        
+        for (String channelId : channelsToBatchCount.keySet()) {
+            Channel channel = channels.get(channelId);
+            if (channel == null) {
+                log.warn("Unknown channel: '" + channelId + "'");
+                continue;
+            }
+            
+            String queue = channel.getQueue();
+            if (!queuesToBatchCount.containsKey(queue)) {
+                queuesToBatchCount.put(queue, channelsToBatchCount.get(channelId));
+            } else {
+                queuesToBatchCount.put(queue, queuesToBatchCount.get(queue) + channelsToBatchCount.get(channelId));
+            }
+        }
+        
+        return queuesToBatchCount;
+    }
 
 }

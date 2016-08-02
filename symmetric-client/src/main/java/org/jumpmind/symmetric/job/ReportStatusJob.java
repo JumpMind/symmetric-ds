@@ -27,10 +27,8 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
-import org.jumpmind.symmetric.transport.http.HttpOutgoingTransport;
+import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -43,29 +41,25 @@ public class ReportStatusJob extends AbstractJob {
 
     @Override
     void doJob(boolean force) throws Exception {
+
+        NetworkedNode remote = engine.getNodeService().getRootNetworkedNode();
+        
         Node identity = engine.getNodeService().findIdentity();
         
-        int batchesToSend = engine.getOutgoingBatchService().countOutgoingBatchesPending(identity.getNodeId());
-        
-        if (batchesToSend > 0) {            
-            NodeSecurity identitySecurity = engine.getNodeService().findNodeSecurity(identity.getNodeId(), true);
-            
-            NetworkedNode remote = engine.getNodeService().getRootNetworkedNode();
-            
-            Map<String, String> requestParams = new HashMap<String, String>();
-            requestParams.put(WebConstants.BATCH_TO_SEND_COUNT, String.valueOf(batchesToSend));
-            
-            IOutgoingWithResponseTransport transport = engine.getTransportManager().getPushTransport(remote.getNode(), 
-                    identity,
-                    identitySecurity.getNodePassword(), requestParams, engine.getParameterService().getRegistrationUrl());
-            
-            if (transport instanceof HttpOutgoingTransport) {
-                HttpOutgoingTransport httpTransport = (HttpOutgoingTransport) transport;
-                httpTransport.openStream().close(); // Effectively just sending over a header.
-            }
+        if (remote.getNode().getNodeId().equals(identity.getNodeId())) {
+            log.debug("Skipping report status job because this node is the root node.");
         }
         
+        Map<String, Integer> batchesToSendByChannel = engine.getOutgoingBatchService().
+                countOutgoingBatchesPendingByChannel(remote.getNode().getNodeId());
         
+        if (!batchesToSendByChannel.isEmpty()) {            
+            Map<String, String> requestParams = new HashMap<String, String>();
+            
+            requestParams.put(WebConstants.BATCH_TO_SEND_COUNT, TransportUtils.toCSV(batchesToSendByChannel));
+            
+            engine.getTransportManager().sendStatusRequest(identity, requestParams);
+        }
     }
     
     @Override
