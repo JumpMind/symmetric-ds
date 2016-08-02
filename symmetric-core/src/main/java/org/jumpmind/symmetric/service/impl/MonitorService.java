@@ -236,12 +236,12 @@ public class MonitorService extends AbstractService implements IMonitorService {
     @Override
     public void saveMonitor(Monitor monitor) {
         int count = sqlTemplate.update(getSql("updateMonitorSql"), monitor.getExternalId(), monitor.getNodeGroupId(),
-                monitor.getType(), monitor.getExpression(), monitor.isEnabled(), monitor.getThreshold(), monitor.getRunPeriod(), 
+                monitor.getType(), monitor.getExpression(), monitor.isEnabled() ? 1 : 0, monitor.getThreshold(), monitor.getRunPeriod(), 
                 monitor.getRunCount(), monitor.getSeverityLevel(), monitor.getLastUpdateBy(), 
                 monitor.getLastUpdateTime(), monitor.getMonitorId());
         if (count == 0) {
             sqlTemplate.update(getSql("insertMonitorSql"), monitor.getMonitorId(), monitor.getExternalId(), 
-                    monitor.getNodeGroupId(), monitor.getType(), monitor.getExpression(), monitor.isEnabled(), monitor.getThreshold(), 
+                    monitor.getNodeGroupId(), monitor.getType(), monitor.getExpression(), monitor.isEnabled() ? 1 : 0, monitor.getThreshold(), 
                     monitor.getRunPeriod(), monitor.getRunCount(), monitor.getSeverityLevel(), 
                     monitor.getCreateTime(), monitor.getLastUpdateBy(), monitor.getLastUpdateTime());
         }
@@ -267,7 +267,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public void saveMonitorEvent(MonitorEvent event) {
         sqlTemplate.update(getSql("insertMonitorEventSql"), event.getMonitorId(), event.getNodeId(),
                 event.getEventTime(), event.getHostName(), event.getType(), event.getValue(), event.getThreshold(), 
-                event.getSeverityLevel(), event.isNotified());
+                event.getSeverityLevel(), event.isNotified() ? 1 : 0);
     }
 
     @Override
@@ -304,13 +304,13 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public void saveNotification(Notification notification) {
         int count = sqlTemplate.update(getSql("updateNotificationSql"), 
                 notification.getNodeGroupId(), notification.getExternalId(), 
-                notification.getSeverityLevel(), notification.getType(), notification.getExpression(), notification.isEnabled(), 
+                notification.getSeverityLevel(), notification.getType(), notification.getExpression(), notification.isEnabled() ? 1 : 0, 
                 notification.getCreateTime(), notification.getLastUpdateBy(), 
                 notification.getLastUpdateTime(), notification.getNotificationId());
         if (count == 0) {
             sqlTemplate.update(getSql("insertNotificationSql"), notification.getNotificationId(),
                     notification.getNodeGroupId(), notification.getExternalId(), 
-                    notification.getSeverityLevel(), notification.getType(), notification.getExpression(), notification.isEnabled(), 
+                    notification.getSeverityLevel(), notification.getType(), notification.getExpression(), notification.isEnabled() ? 1 : 0, 
                     notification.getCreateTime(), notification.getLastUpdateBy(), 
                     notification.getLastUpdateTime());
         }
