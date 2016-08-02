@@ -555,6 +555,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, masterToMasterOnly ? null : me.getNodeId() });
                 nodeService.flushNodeAuthorizedCache();
+                nodeService.flushNodeCache();
                 nodeService.insertNodeGroup(node.getNodeGroupId(), null);
                 nodeService.flushNodeGroupCache();
                 log.info(
