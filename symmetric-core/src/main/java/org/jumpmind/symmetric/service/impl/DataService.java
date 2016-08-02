@@ -776,8 +776,11 @@ public class DataService extends AbstractService implements IDataService {
                 if (triggerRouter.getInitialLoadOrder() >= 0
                         && engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)) {
                     
-                    TableReloadRequest reloadRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
-                    String selectSql = reloadRequest != null ? reloadRequest.getReloadSelect() : null;
+                    String selectSql = null;
+                    if (reloadRequests != null) {
+                        TableReloadRequest reloadRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
+                        selectSql = reloadRequest != null ? reloadRequest.getReloadSelect() : null;
+                    }
                     if (StringUtils.isBlank(selectSql)) {
                         selectSql = StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) 
                                     ? Constants.ALWAYS_TRUE_CONDITION
