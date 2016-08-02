@@ -156,7 +156,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(4, 50000004));
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(4, 99));        
-        verify(dataService).insertDataGap(new DataGap(101, 50000100));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(101, 50000100));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -182,7 +182,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(4, 50000004));
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(4, 99));
-        verify(dataService).insertDataGap(new DataGap(101, 50000100));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(101, 50000100));
         verifyNoMoreInteractions(dataService);
     }
     
@@ -202,7 +202,7 @@ public class DataGapDetectorTest {
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(4, 50000004));
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(4, 4));
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(6, 7));
-        verify(dataService).insertDataGap(new DataGap(9, 50000008));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(9, 50000008));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -230,7 +230,7 @@ public class DataGapDetectorTest {
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(4, 50000004));
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(4, 4));
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(6, 7));
-        verify(dataService).insertDataGap(new DataGap(9, 50000008));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(9, 50000008));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -258,7 +258,7 @@ public class DataGapDetectorTest {
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(19, 20));        
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(21, 50000020));
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(21, 22));
-        verify(dataService).insertDataGap(new DataGap(24, 50000023));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(24, 50000023));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -302,7 +302,7 @@ public class DataGapDetectorTest {
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(19, 20));        
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(21, 50000020));
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(21, 22));
-        verify(dataService).insertDataGap(new DataGap(24, 50000023));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(24, 50000023));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -441,9 +441,9 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(841, 50000840));
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(841, 842));
-        verify(dataService).insertDataGap(new DataGap(845, 50000844));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(845, 50000844));
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(845, 50000844));
-        verify(dataService).insertDataGap(new DataGap(846, 50000845));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(846, 50000845));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -507,7 +507,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953884, 80953883));
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953883, 80953883));
-        verify(dataService).insertDataGap(new DataGap(30953884, 80953883));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(30953884, 80953883));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -538,7 +538,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953884, 80953883));
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953883, 80953883));
-        verify(dataService).insertDataGap(new DataGap(30953884, 80953883));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(30953884, 80953883));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -561,7 +561,7 @@ public class DataGapDetectorTest {
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953885, 30953885));
         
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(30953883, 80953883));
-        verify(dataService).insertDataGap(new DataGap(30953884, 80953883));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(30953884, 80953883));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -580,7 +580,7 @@ public class DataGapDetectorTest {
         verify(dataService).findDataGaps();
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(31832440, 81832439));
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(31832439, 81832439));
-        verify(dataService).insertDataGap(new DataGap(31832440, 81832439));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(31832440, 81832439));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -600,7 +600,7 @@ public class DataGapDetectorTest {
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(31837983, 81837982));
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(31837983, 81837983));
         verify(dataService).insertDataGap(sqlTransaction, new DataGap(31837984, 31837988));
-        verify(dataService).insertDataGap(new DataGap(31837990, 81837989));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(31837990, 81837989));
         verifyNoMoreInteractions(dataService);
     }
 
@@ -724,7 +724,7 @@ public class DataGapDetectorTest {
             if (lastDataId >= dataGap.getStartId() && lastDataId < dataGap.getEndId()) {
                 if (index == lastIndex) {
                     isLastGapInserted = true;
-                    verify(dataService).insertDataGap(new DataGap(lastDataId + 1, lastDataId + 50000000));                        
+                    verify(dataService).insertDataGap(sqlTransaction, new DataGap(lastDataId + 1, lastDataId + 50000000));                        
                 } else {
                     verify(dataService).insertDataGap(sqlTransaction, new DataGap(lastDataId + 1, dataGap.getEndId()));
                 }
@@ -735,7 +735,7 @@ public class DataGapDetectorTest {
         if (!isLastGapInserted && isLastGapModified) {
             DataGap lastGap = dataGaps.get(lastIndex);
             if (lastGap.getEndId() - lastGap.getStartId() < 50000000 - 1) {
-                verify(dataService).insertDataGap(new DataGap(lastGap.getEndId() + 1, lastGap.getEndId() + 50000000));                        
+                verify(dataService).insertDataGap(sqlTransaction, new DataGap(lastGap.getEndId() + 1, lastGap.getEndId() + 50000000));                        
             }
         }
 

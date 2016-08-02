@@ -194,107 +194,114 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 dataIdCount += ids.size();
                 rangeChecked += dataGap.getEndId() - dataGap.getStartId();
                 
-                ISqlTransaction transaction = null;
-                try {
-                    transaction = sqlTemplate.startSqlTransaction();
+                // if we found data in the gap
+                if (ids.size() > 0) {
+                    gapsDeleted.add(dataGap);
+                    gapsAll.remove(dataGap);
 
-                    // if we found data in the gap
-                    if (ids.size() > 0) {
-                        dataService.deleteDataGap(transaction, dataGap);
-                        gapsDeleted.add(dataGap);
-                        gapsAll.remove(dataGap);
+                // if we did not find data in the gap and it was not the last gap
+                } else if (!lastGap && (isAllDataRead || isBusyExpire)) {
+                    Date createTime = dataGap.getCreateTime();
+                    boolean isExpired = false;
+                    if (supportsTransactionViews) {
+                        isExpired = createTime != null && (createTime.getTime() < earliestTransactionTime || earliestTransactionTime == 0);
+                    } else {
+                        isExpired = createTime != null && currentTime - createTime.getTime() > gapTimoutInMs;
+                    }
 
-                    // if we did not find data in the gap and it was not the last gap
-                    } else if (!lastGap && (isAllDataRead || isBusyExpire)) {
-                        Date createTime = dataGap.getCreateTime();
-                        boolean isExpired = false;
-                        if (supportsTransactionViews) {
-                            isExpired = createTime != null && (createTime.getTime() < earliestTransactionTime || earliestTransactionTime == 0);
-                        } else {
-                            isExpired = createTime != null && currentTime - createTime.getTime() > gapTimoutInMs;
+                    if (isExpired) {
+                        boolean isGapEmpty = false;
+                        if (!isAllDataRead) {
+                            isGapEmpty = dataService.countDataInRange(dataGap.getStartId() - 1, dataGap.getEndId() + 1) == 0;
+                            expireChecked++;
                         }
-
-                        if (isExpired) {
-                            boolean isGapEmpty = false;
-                            if (!isAllDataRead) {
-                                isGapEmpty = dataService.countDataInRange(dataGap.getStartId() - 1, dataGap.getEndId() + 1) == 0;
-                                expireChecked++;
-                            }
-                            if (isAllDataRead || isGapEmpty) {
-                                if (log.isDebugEnabled()) {
-                                    if (dataGap.getStartId() == dataGap.getEndId()) {
-                                        log.debug("Found a gap in data_id at {}.  Skipping it because " +
-                                                (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), dataGap.getStartId());
-                                    } else {
-                                        log.debug("Found a gap in data_id from {} to {}.  Skipping it because " +
-                                                (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), 
-                                                dataGap.getStartId(), dataGap.getEndId());
-                                    }
+                        if (isAllDataRead || isGapEmpty) {
+                            if (log.isDebugEnabled()) {
+                                if (dataGap.getStartId() == dataGap.getEndId()) {
+                                    log.debug("Found a gap in data_id at {}.  Skipping it because " +
+                                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), dataGap.getStartId());
+                                } else {
+                                    log.debug("Found a gap in data_id from {} to {}.  Skipping it because " +
+                                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), 
+                                            dataGap.getStartId(), dataGap.getEndId());
                                 }
-                                dataService.deleteDataGap(transaction, dataGap);
-                                gapsDeleted.add(dataGap);
-                                gapsAll.remove(dataGap);
                             }
+                            gapsDeleted.add(dataGap);
+                            gapsAll.remove(dataGap);
                         }
                     }
+                }
 
-                    for (Number number : ids) {
-                        long dataId = number.longValue();
-                        processInfo.incrementCurrentDataCount();
-                        if (lastDataId == -1 && dataGap.getStartId() + dataIdIncrementBy <= dataId) {
-                            // there was a new gap at the start
-                            DataGap newGap = new DataGap(dataGap.getStartId(), dataId - 1, currentDate);
-                            if (isOkayToAdd(newGap)) {
-                                dataService.insertDataGap(transaction, newGap);
-                            }
-                        } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId && lastDataId != dataId) {
-                            // found a gap somewhere in the existing gap
-                            DataGap newGap = new DataGap(lastDataId + 1, dataId - 1, currentDate);
-                            if (isOkayToAdd(newGap)) {
-                                dataService.insertDataGap(transaction, newGap);
-                            }
-                        }
-                        lastDataId = dataId;
+                for (Number number : ids) {
+                    long dataId = number.longValue();
+                    processInfo.incrementCurrentDataCount();
+                    if (lastDataId == -1 && dataGap.getStartId() + dataIdIncrementBy <= dataId) {
+                        // there was a new gap at the start
+                        addDataGap(new DataGap(dataGap.getStartId(), dataId - 1, currentDate));
+                    } else if (lastDataId != -1 && lastDataId + dataIdIncrementBy != dataId && lastDataId != dataId) {
+                        // found a gap somewhere in the existing gap
+                        addDataGap(new DataGap(lastDataId + 1, dataId - 1, currentDate));
                     }
+                    lastDataId = dataId;
+                }
 
-                    // if we found data in the gap
-                    if (lastDataId != -1 && !lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
-                        DataGap newGap = new DataGap(lastDataId + dataIdIncrementBy, dataGap.getEndId(), currentDate);
-                        if (isOkayToAdd(newGap)) {
-                            dataService.insertDataGap(transaction, newGap);
-                        }
-                    }
-                    
-                    if (System.currentTimeMillis() - printStats > 30000) {
-                        log.info("The data gap detection process has been running for {}ms, detected {} rows over a gap range of {}, "
-                            + "inserted {} new gaps, deleted {} gaps, and checked data in {} gaps", new Object[] { System.currentTimeMillis() - ts,
-                            dataIdCount, rangeChecked, gapsAdded.size(), gapsDeleted.size(), expireChecked });
-                        printStats = System.currentTimeMillis();
-                    }
-
-                    transaction.commit();                    
-                } catch (Error ex) {
-                    if (transaction != null) {
-                        transaction.rollback();
-                    }
-                    throw ex;
-                } catch (RuntimeException ex) {
-                    if (transaction != null) {
-                        transaction.rollback();
-                    }
-                    throw ex;
-                } finally {
-                    if (transaction != null) {
-                        transaction.close();
-                    }
+                // if we found data in the gap
+                if (lastDataId != -1 && !lastGap && lastDataId + dataIdIncrementBy <= dataGap.getEndId()) {
+                    addDataGap(new DataGap(lastDataId + dataIdIncrementBy, dataGap.getEndId(), currentDate));
+                }
+                
+                if (System.currentTimeMillis() - printStats > 30000) {
+                    log.info("The data gap detection has been running for {}ms, detected {} rows over a gap range of {}, "
+                        + "found {} new gaps, found old {} gaps, and checked data in {} gaps", new Object[] { System.currentTimeMillis() - ts,
+                        dataIdCount, rangeChecked, gapsAdded.size(), gapsDeleted.size(), expireChecked });
+                    printStats = System.currentTimeMillis();
                 }
             }
 
             if (lastDataId != -1) {
                 DataGap newGap = new DataGap(lastDataId + 1, lastDataId + maxDataToSelect, currentDate);
-                if (isOkayToAdd(newGap)) {
+                if (addDataGap(newGap)) {
                     log.debug("Inserting new last data gap: {}", newGap);
-                    dataService.insertDataGap(newGap);
+                }
+            }
+
+            ISqlTransaction transaction = null;
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                int counter = 0;
+                for (DataGap dataGap : gapsDeleted) {
+                    dataService.deleteDataGap(transaction, dataGap);
+                    counter++;
+                    if (System.currentTimeMillis() - printStats > 30000) {
+                        log.info("The data gap detection has been running for {}ms, deleted {} of {} old gaps", new Object[] {
+                                System.currentTimeMillis() - ts, counter, gapsDeleted.size() });
+                        printStats = System.currentTimeMillis();
+                    }
+                }
+                counter = 0;
+                for (DataGap dataGap : gapsAdded) {
+                    dataService.insertDataGap(transaction, dataGap);
+                    counter++;
+                    if (System.currentTimeMillis() - printStats > 30000) {
+                        log.info("The data gap detection has been running for {}ms, inserted {} of {} new gaps", new Object[] {
+                                System.currentTimeMillis() - ts, counter, gapsDeleted.size() });
+                        printStats = System.currentTimeMillis();
+                    }
+                }
+                transaction.commit();
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
                 }
             }
 
@@ -316,7 +323,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         }
     }
 
-    protected boolean isOkayToAdd(DataGap dataGap) {
+    protected boolean addDataGap(DataGap dataGap) {
         boolean isOkay = true;
         if (detectInvalidGaps) {
             if (gapsAll.contains(dataGap)) {
