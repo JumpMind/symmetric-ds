@@ -879,7 +879,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             return Timestamp.valueOf(value);
         } catch (IllegalArgumentException ex) {
             try {
-                return FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS);
+                return new Timestamp(FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS).getTime());
             } catch (Exception e) {
                 int split = value.lastIndexOf(" ");
                 String datetime = value.substring(0, split).trim();
@@ -888,9 +888,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 try {
                     return Timestamp.valueOf(datetime); // Try it again without the timezone component.
                 } catch (IllegalArgumentException ex2) {
-                    return FormatUtils.parseDate(datetime,
+                    return new Timestamp(FormatUtils.parseDate(datetime,
                             FormatUtils.TIMESTAMP_PATTERNS,
-                            getTimeZone(timezone));
+                            getTimeZone(timezone)).getTime());
                 }
             }
         }                
