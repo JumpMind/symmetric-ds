@@ -20,12 +20,14 @@
  */
 package org.jumpmind.symmetric.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.symmetric.model.NodeCommunication;
-import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
+import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 
 public interface INodeCommunicationService {
 
@@ -44,4 +46,8 @@ public interface INodeCommunicationService {
     public interface INodeCommunicationExecutor {
         public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status);
     }
+    
+    public void updateBatchToSendCounts(String nodeId, Map<String, Integer> batchesCountToQueues);
+    
+    public Map<String, Integer> parseQueueToBatchCounts(String channelToBatchCountsString);
 }

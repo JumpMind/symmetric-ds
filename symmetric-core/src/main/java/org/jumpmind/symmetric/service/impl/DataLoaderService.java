@@ -347,8 +347,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     protected void updateBatchToSendCount(Node remote, IIncomingTransport transport) {
         Map<String, String> headers = transport.getHeaders();
         if (headers != null && headers.containsKey(WebConstants.BATCH_TO_SEND_COUNT)) {
-            // TODO save this batch to send to node communication...  Figure out how queues fit in.
-            int batchToSendCount = Integer.parseInt(headers.get(WebConstants.BATCH_TO_SEND_COUNT));  
+            Map<String, Integer> queuesToBatchCounts = 
+                    nodeCommunicationService.parseQueueToBatchCounts(headers.get(WebConstants.BATCH_TO_SEND_COUNT));
+            nodeCommunicationService.updateBatchToSendCounts(remote.getNodeId(), queuesToBatchCounts);
         }
     }
 

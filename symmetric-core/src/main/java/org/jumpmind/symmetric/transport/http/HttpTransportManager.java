@@ -88,6 +88,23 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         log.info("Contact server to do node copy using a url of: " + url);
         return sendMessage(new URL(url), data.toString());
     }
+    
+    @Override
+    public int sendStatusRequest(Node local, Map<String, String> statuses) throws IOException {
+        String securityToken = engine.getNodeService().findNodeSecurity(local.getNodeId())
+                .getNodePassword();
+        String url = addSecurityToken(engine.getParameterService().getRegistrationUrl() + "/pushstatus/",
+                "&", local.getNodeId(), securityToken);
+        url = add(url, WebConstants.EXTERNAL_ID, engine.getParameterService().getExternalId(), "&");
+        url = add(url, WebConstants.NODE_GROUP_ID, engine.getParameterService().getNodeGroupId(), "&");
+        
+        for (String key : statuses.keySet()) {
+            url = add(url, key, statuses.get(key), "&");
+        }
+        
+        log.info("Sending status with URL: " + url);
+        return sendMessage(new URL(url), "");        
+    }
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,
             String securityToken, String registrationUrl) throws IOException {

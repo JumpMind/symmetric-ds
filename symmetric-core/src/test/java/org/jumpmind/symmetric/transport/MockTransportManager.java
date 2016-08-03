@@ -69,6 +69,11 @@ public class MockTransportManager implements ITransportManager {
     public int sendCopyRequest(Node local) throws IOException {
         return -1;
     }
+    
+    @Override
+    public int sendStatusRequest(Node local, Map<String, String> statuses) throws IOException {
+        return -1;
+    }
 
     public void writeAcknowledgement(OutputStream out, Node remote,
             List<IncomingBatch> list, Node local, String securityToken)

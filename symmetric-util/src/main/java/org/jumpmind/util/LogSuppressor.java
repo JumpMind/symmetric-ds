@@ -31,9 +31,9 @@ import org.slf4j.Logger;
 public class LogSuppressor {
 
     private int reportMessageXTimes;
-    
+
     protected final Logger log;
-    
+
     private Map<String, Integer> logCounts = Collections.synchronizedMap(new LinkedHashMap<String, Integer>() {
         private static final long serialVersionUID = 1L;
 
@@ -42,16 +42,16 @@ public class LogSuppressor {
             return (this.size() > 2048);
         }
     });
-    
+
     public LogSuppressor(Logger log) {
         this(log, 10);
     }
-    
+
     public LogSuppressor(Logger log, int reportMessageXTimes) {
         this.log = log;
         this.reportMessageXTimes = reportMessageXTimes;
     }
-    
+
     protected void log(int initialLevel, String key, String message, Throwable ex) {
         if (!logCounts.containsKey(key)) {   
             if (initialLevel == Level.ERROR_INT) {
@@ -60,6 +60,12 @@ public class LogSuppressor {
                 } else {
                     log.error(message);
                 }
+            } else if (initialLevel == Level.WARN_INT) {
+                if (ex != null) {                    
+                    log.warn(message, ex);    
+                } else {
+                    log.warn(message);
+                }
             } else {
                 if (ex != null) {                    
                     log.info(message, ex);    
@@ -67,20 +73,24 @@ public class LogSuppressor {
                     log.info(message);
                 }   
             }
-            
+
             logCounts.put(key, Integer.valueOf(1));
         } else {
             String exceptionText = ex != null ? " "+ex.getMessage() : "";
-            
+
             Integer count = logCounts.get(key);
             String messagePreviouslyReported = message + " (Previously reported " + count + " time(s), will report " + reportMessageXTimes + ")"; 
             if (count < reportMessageXTimes) {
                 if (initialLevel == Level.ERROR_INT) {                    
                     log.error(messagePreviouslyReported + exceptionText);                        
+                } else if (initialLevel == Level.WARN_INT) {                    
+                    log.warn(messagePreviouslyReported + exceptionText);                        
+                } else if (initialLevel == Level.DEBUG_INT) {                    
+                    log.debug(messagePreviouslyReported + exceptionText);                        
                 } else {
                     log.info(messagePreviouslyReported + exceptionText);
                 }
-                
+
             } else {
                 log.debug(messagePreviouslyReported + exceptionText);                                        
             }
@@ -92,7 +102,11 @@ public class LogSuppressor {
     public void logError(String key, String message, Throwable ex) {
         log(Level.ERROR_INT, key, message, ex);
     }
-    
+
+    public void logWarn(String key, String message, Throwable ex) {
+        log(Level.WARN_INT, key, message, ex);
+    }
+
     public void logInfo(String key, String message, Throwable ex) {
         log(Level.INFO_INT, key, message, ex);
     }

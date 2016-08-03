@@ -131,7 +131,9 @@ public class HttpIncomingTransport implements IIncomingTransport {
     public Map<String, String> getHeaders() {
         Map<String, String> headers = new LinkedHashMap<String, String>();
         for (String name : connection.getHeaderFields().keySet()) {
-            headers.put(name, connection.getHeaderField(name)); 
+            if (name != null) {
+                headers.put(name, connection.getHeaderField(name));                 
+            }
         }
         
         return headers;
