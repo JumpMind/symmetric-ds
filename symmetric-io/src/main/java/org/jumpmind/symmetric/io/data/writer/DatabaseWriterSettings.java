@@ -212,7 +212,7 @@ public class DatabaseWriterSettings {
 
     public Conflict pickConflict(Table table, Batch batch) {
         Conflict settings = null;
-        String fullyQualifiedName = table.getFullyQualifiedTableName().toLowerCase();
+        String fullyQualifiedName = table.getFullyQualifiedTableNameLowerCase();
         if (conflictSettingsByTable != null) {
             Conflict found = conflictSettingsByTable.get(fullyQualifiedName);
 

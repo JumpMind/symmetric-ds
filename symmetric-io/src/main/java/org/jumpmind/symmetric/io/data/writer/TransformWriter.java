@@ -99,7 +99,7 @@ public class TransformWriter extends NestedDataWriter {
 
     @Override
     public boolean start(Table table) {
-        activeTransforms = transformsBySourceTable.get(table.getFullyQualifiedTableName().toLowerCase());
+        activeTransforms = transformsBySourceTable.get(table.getFullyQualifiedTableNameLowerCase());
         if (activeTransforms != null && activeTransforms.size() > 0) {
             this.sourceTable = table;
             return true;

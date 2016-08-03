@@ -76,6 +76,10 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     private ArrayList<IIndex> indices = new ArrayList<IIndex>();
 
     private String primaryKeyConstraintName;
+    
+    private String fullyQualifiedTableName;
+    
+    private String fullyQualifiedTableNameLowerCase;
 
     public Table() {
     }
@@ -141,6 +145,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public void setCatalog(String catalog) {
         this.oldCatalog = this.catalog != null ? this.catalog : catalog;
         this.catalog = catalog;
+        this.fullyQualifiedTableName = this.fullyQualifiedTableNameLowerCase = null;
     }
 
     /**
@@ -161,6 +166,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public void setSchema(String schema) {
         this.oldSchema = this.schema != null ? this.schema : schema;
         this.schema = schema;
+        this.fullyQualifiedTableName = this.fullyQualifiedTableNameLowerCase = null;
     }
 
     /**
@@ -199,6 +205,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
      */
     public void setName(String name) {
         this.name = name;
+        this.fullyQualifiedTableName = this.fullyQualifiedTableNameLowerCase = null;
     }
 
     /**
@@ -967,7 +974,17 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     public String getFullyQualifiedTableName() {
-        return getFullyQualifiedTableName(catalog, schema, name, null, ".", ".");
+        if (fullyQualifiedTableName == null) {
+            fullyQualifiedTableName = getFullyQualifiedTableName(catalog, schema, name, null, ".", ".");
+        }
+        return fullyQualifiedTableName;
+    }
+
+    public String getFullyQualifiedTableNameLowerCase() {
+        if (fullyQualifiedTableNameLowerCase == null) {
+            fullyQualifiedTableNameLowerCase = getFullyQualifiedTableName().toLowerCase();
+        }
+        return fullyQualifiedTableNameLowerCase;
     }
 
     public static String getFullyQualifiedTableName(String catalogName, String schemaName,
@@ -996,23 +1013,24 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         if (quoteString == null) {
             quoteString = "";
         }
-        return getFullyQualifiedTablePrefix(catalogName, schemaName, quoteString, catalogSeparator, schemaSeparator) + quoteString
-                + tableName + quoteString;
+        StringBuilder sb = new StringBuilder(getFullyQualifiedTablePrefix(catalogName, schemaName, quoteString, catalogSeparator, schemaSeparator));
+        sb.append(quoteString).append(tableName).append(quoteString);
+        return sb.toString();
     }
 
     public static String getFullyQualifiedTablePrefix(String catalogName, String schemaName,
             String quoteString, String catalogSeparator, String schemaSeparator) {
+        StringBuilder sb = new StringBuilder();
         if (quoteString == null) {
             quoteString = "";
         }
-        String fullyQualified = "";
-        if (!StringUtils.isBlank(schemaName)) {
-            fullyQualified = quoteString + schemaName + quoteString + schemaSeparator + fullyQualified;
-        }
         if (!StringUtils.isBlank(catalogName)) {
-            fullyQualified = quoteString + catalogName + quoteString + catalogSeparator + fullyQualified;
+            sb.append(quoteString).append(catalogName).append(quoteString).append(catalogSeparator);
         }
-        return fullyQualified;
+        if (!StringUtils.isBlank(schemaName)) {
+            sb.append(quoteString).append(schemaName).append(quoteString).append(schemaSeparator);
+        }
+        return sb.toString();
     }
 
     public String getQualifiedTablePrefix(String quoteString, String catalogSeparator, String schemaSeparator) {
