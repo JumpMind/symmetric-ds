@@ -186,6 +186,11 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             gapsAll.addAll(gaps);
             Map<DataGap, List<Long>> dataIdMap = getDataIdMap();
 
+            if (System.currentTimeMillis() - ts > 30000) {
+                log.info("It took {}ms to map {} data IDs into {} gaps", new Object[] { System.currentTimeMillis() - ts,
+                        dataIds.size(), gaps.size() });
+            }
+
             for (final DataGap dataGap : gaps) {
                 final boolean lastGap = dataGap.equals(gaps.get(gaps.size() - 1));
                 lastDataId = -1;

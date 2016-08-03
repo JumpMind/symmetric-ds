@@ -23,12 +23,13 @@ package org.jumpmind.symmetric.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.model.OutgoingLoadSummary;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
+import org.jumpmind.symmetric.model.OutgoingLoadSummary;
 
 /**
  * This service provides an API to access to the outgoing batch table. 
@@ -86,8 +87,8 @@ public interface IOutgoingBatchService {
     public int countOutgoingBatchesInError(String channelId);
     
     public int countOutgoingBatchesUnsent(String channelId);
-    
-    public int countOutgoingBatchesPending(String nodeId);
+        
+    public Map<String, Integer> countOutgoingBatchesPendingByChannel(String nodeId);
     
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(OutgoingBatch.Status ... statuses);
     

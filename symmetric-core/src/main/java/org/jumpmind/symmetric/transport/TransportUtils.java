@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Map;
 
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.IoConstants;
@@ -47,6 +48,19 @@ public class TransportUtils {
         } catch (IOException ex) {
             throw new IoException(ex);
         }
-
+    }
+    
+    public static String toCSV(Map<?, ?> map) {
+        if (map == null || map.isEmpty()) {
+            return "";
+        }
+        StringBuilder buff = new StringBuilder();
+        
+        for (Object key : map.keySet()) {
+            buff.append(key).append(":").append(map.get(key)).append(",");
+        }
+        buff.setLength(buff.length()-1);
+        
+        return buff.toString();
     }
 }

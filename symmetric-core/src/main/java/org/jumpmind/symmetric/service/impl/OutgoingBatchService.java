@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -30,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
@@ -293,27 +293,27 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public int countOutgoingBatchesUnsent(String channelId) {
-        return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);
+        return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentByChannelSql"), channelId);
     }
     
-    public int countOutgoingBatchesPending(String nodeId) {
-        List<String> nodeIds;
-        if (nodeId != null) {
-            nodeIds = Arrays.asList(nodeId);
-        } else {
-            nodeIds = Collections.emptyList();
+    @Override
+    public Map<String, Integer> countOutgoingBatchesPendingByChannel(String nodeId) {                
+        List<Row> rows = sqlTemplate.query(getSql("countOutgoingBatchesByChannelSql"), new Object[]{nodeId});
+        Map<String, Integer> results = new HashMap<String, Integer>();
+        if (rows != null && ! rows.isEmpty()) {            
+            for (Row row : rows) {
+                results.put(row.getString("channel_id"), row.getInt("batch_count"));
+            }
         }
-        // Select only PULL channels?
         
-        List<OutgoingBatch.Status> pendingStatuses = Arrays.asList(OutgoingBatch.Status.ER,
-                OutgoingBatch.Status.RQ,
-                OutgoingBatch.Status.NE,
-                OutgoingBatch.Status.QY,
-                OutgoingBatch.Status.RT);
+        Set<String> channelIds = configurationService.getChannels(false).keySet();
+        for (String channelId : channelIds) {
+            if (!results.containsKey(channelId)) {
+                results.put(channelId, 0);
+            }
+        }
         
-        List<String> emptyList = Collections.emptyList();
-        
-        return countOutgoingBatches(nodeIds, emptyList, pendingStatuses, emptyList);
+        return results;
     }
 
     @Override

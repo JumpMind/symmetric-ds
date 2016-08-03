@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.web;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +47,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
+import org.jumpmind.symmetric.transport.TransportUtils;
 
 /**
  * Handles data pulls from other nodes.
@@ -130,7 +132,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                         logDataReceivedFromPush(targetNode, batchList);
                         
                         if (processInfo.getStatus() != Status.ERROR) {
-                            addPendingBatchesCount(targetNode.getNodeId(), res);
+                            addPendingBatchCounts(targetNode.getNodeId(), res);
                             processInfo.setStatus(Status.OK);
                         }
                     } finally {
@@ -149,11 +151,13 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         }
     }
     
-    private void addPendingBatchesCount(String targetNodeId, HttpServletResponse res) {
-        if (this.parameterService.is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED)) {            
-            int pendingBatchCount = 
-                    this.outgoingBatchService.countOutgoingBatchesPending(targetNodeId);
-            res.addHeader(WebConstants.BATCH_TO_SEND_COUNT, String.valueOf(pendingBatchCount));
+    private void addPendingBatchCounts(String targetNodeId, HttpServletResponse res) {
+        if (this.parameterService.is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED))   {            
+            Map<String, Integer> batchesToSendByChannel = 
+                    this.outgoingBatchService.countOutgoingBatchesPendingByChannel(targetNodeId);
+            if (batchesToSendByChannel != null && !batchesToSendByChannel.isEmpty()) {                
+                res.addHeader(WebConstants.BATCH_TO_SEND_COUNT, TransportUtils.toCSV(batchesToSendByChannel));
+            }
         }
     }
 
