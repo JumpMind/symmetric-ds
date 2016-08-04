@@ -147,6 +147,8 @@ public interface IDataService {
 
     public void deleteDataGap(ISqlTransaction transaction, DataGap gap);
     
+    public void deleteAllDataGaps(ISqlTransaction transaction);
+    
     public void deleteDataGap(DataGap gap);
     
     public void deleteCapturedConfigChannelData();

@@ -89,6 +89,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     protected Set<DataGap> gapsDeleted;
     
     protected boolean detectInvalidGaps;
+    
+    protected boolean useInMemoryGaps;
 
     public DataGapFastDetector(IDataService dataService, IParameterService parameterService, IContextService contextService,
             ISymmetricDialect symmetricDialect, IRouterService routerService, IStatisticManager statisticManager, INodeService nodeService) {
@@ -156,8 +158,6 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         final int dataIdIncrementBy = parameterService.getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
 
         long currentTime = System.currentTimeMillis();
-        ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
-
         boolean supportsTransactionViews = symmetricDialect.supportsTransactionViews();
         long earliestTransactionTime = 0;
         if (supportsTransactionViews) {
@@ -269,49 +269,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     log.debug("Inserting new last data gap: {}", newGap);
                 }
             }
+            
+            printStats = saveDataGaps(ts, printStats);
 
-            ISqlTransaction transaction = null;
-            try {
-                transaction = sqlTemplate.startSqlTransaction();
-                int counter = 0;
-                for (DataGap dataGap : gapsDeleted) {
-                    dataService.deleteDataGap(transaction, dataGap);
-                    counter++;
-                    if (System.currentTimeMillis() - printStats > 30000) {
-                        log.info("The data gap detection has been running for {}ms, deleted {} of {} old gaps", new Object[] {
-                                System.currentTimeMillis() - ts, counter, gapsDeleted.size() });
-                        printStats = System.currentTimeMillis();
-                    }
-                }
-                counter = 0;
-                for (DataGap dataGap : gapsAdded) {
-                    dataService.insertDataGap(transaction, dataGap);
-                    counter++;
-                    if (System.currentTimeMillis() - printStats > 30000) {
-                        log.info("The data gap detection has been running for {}ms, inserted {} of {} new gaps", new Object[] {
-                                System.currentTimeMillis() - ts, counter, gapsDeleted.size() });
-                        printStats = System.currentTimeMillis();
-                    }
-                }
-                transaction.commit();
-            } catch (Error ex) {
-                if (transaction != null) {
-                    transaction.rollback();
-                }
-                throw ex;
-            } catch (RuntimeException ex) {
-                if (transaction != null) {
-                    transaction.rollback();
-                }
-                throw ex;
-            } finally {
-                if (transaction != null) {
-                    transaction.close();
-                }
-            }
-
-            gaps = new ArrayList<DataGap>(gapsAll);
-            Collections.sort(gaps);
             setFullGapAnalysis(false);
             if (!isAllDataRead && expireChecked > 0) {
                 setLastBusyExpireRunTime(System.currentTimeMillis());
@@ -353,6 +313,84 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             log.info("Deleted Data Gaps: " + gapsDeleted.toString());            
         }
         return isOkay;
+    }
+
+    protected long saveDataGaps(long ts, long printStats) {
+        ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
+        int totalGapChanges = gapsDeleted.size() + gapsAdded.size();
+        if (totalGapChanges > 0) {
+            ISqlTransaction transaction = null;
+            gaps = new ArrayList<DataGap>(gapsAll);
+            Collections.sort(gaps);
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                int maxGapChanges = parameterService.getInt(ParameterConstants.ROUTING_MAX_GAP_CHANGES);
+                if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && (totalGapChanges > maxGapChanges || useInMemoryGaps)) {
+                    dataService.deleteAllDataGaps(transaction);
+                    if (useInMemoryGaps && totalGapChanges <= maxGapChanges) {
+                        log.info("There are {} data gap changes, which is within the max of {}, so switching to database", 
+                                totalGapChanges, maxGapChanges);
+                        useInMemoryGaps = false;
+                        printStats = insertDataGaps(transaction, ts, printStats);
+                    } else {
+                        if (!useInMemoryGaps) {
+                            log.info("There are {} data gap changes, which exceeds the max of {}, so switching to in-memory", 
+                                    totalGapChanges, maxGapChanges);
+                            useInMemoryGaps = true;
+                        }   
+                        DataGap newGap = new DataGap(gaps.get(0).getStartId(), gaps.get(gaps.size() - 1).getEndId());
+                        dataService.insertDataGap(transaction, newGap);
+                    }
+                } else {
+                    printStats = deleteDataGaps(transaction, ts, printStats);
+                    printStats = insertDataGaps(transaction, ts, printStats);
+                }
+                transaction.commit();
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
+                }
+            }
+        }
+        return printStats;
+    }
+
+    protected long deleteDataGaps(ISqlTransaction transaction, long ts, long printStats) {
+        int counter = 0;
+        for (DataGap dataGap : gapsDeleted) {
+            dataService.deleteDataGap(transaction, dataGap);
+            counter++;
+            if (System.currentTimeMillis() - printStats > 30000) {
+                log.info("The data gap detection has been running for {}ms, deleted {} of {} old gaps", new Object[] {
+                        System.currentTimeMillis() - ts, counter, gapsDeleted.size() });
+                printStats = System.currentTimeMillis();
+            }
+        }
+        return printStats;
+    }
+
+    protected long insertDataGaps(ISqlTransaction transaction, long ts, long printStats) {
+        int counter = 0;
+        for (DataGap dataGap : gapsAdded) {
+            dataService.insertDataGap(transaction, dataGap);
+            counter++;
+            if (System.currentTimeMillis() - printStats > 30000) {
+                log.info("The data gap detection has been running for {}ms, inserted {} of {} new gaps", new Object[] {
+                        System.currentTimeMillis() - ts, counter, gapsDeleted.size() });
+                printStats = System.currentTimeMillis();
+            }
+        }
+        return printStats;
     }
 
     protected void queryDataIdMap() {

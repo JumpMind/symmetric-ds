@@ -1678,6 +1678,10 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    public void deleteAllDataGaps(ISqlTransaction transaction) {
+        transaction.prepareAndExecute(getSql("deleteAllDataGapsSql"));
+    }
+
     public Date findCreateTimeOfEvent(long dataId) {
         return sqlTemplate.queryForObject(getSql("findDataEventCreateTimeSql"), Date.class, dataId);
     }
