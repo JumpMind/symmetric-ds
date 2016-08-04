@@ -725,10 +725,5 @@ public class Column implements Cloneable, Serializable {
     public boolean isEnum() {
         return enumValues != null && enumValues.length > 0;
     }
-    
-    public boolean isLob() {
-    	return mappedTypeCode == Types.BLOB || mappedTypeCode == Types.CLOB ||
-    			mappedTypeCode == Types.NCLOB;
-    }
 
 }
