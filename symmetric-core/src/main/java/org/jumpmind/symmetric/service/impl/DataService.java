@@ -429,6 +429,10 @@ public class DataService extends AbstractService implements IDataService {
                                 triggerHistories, triggerRoutersByHistoryId, transactional,
                                 transaction, mapReloadRequests);
 
+                        insertSQLBatchesForReload(targetNode, loadId, createBy,
+                                triggerHistories, triggerRoutersByHistoryId, transactional,
+                                transaction, mapReloadRequests);
+
                         insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
                                 triggerRoutersByHistoryId, transactional, transaction, mapReloadRequests);
                         
@@ -625,8 +629,10 @@ public class DataService extends AbstractService implements IDataService {
                         }
                     }
                 }
-                log.info("Before sending load {} to target node {} the before sql [{}] was sent for {} tables", new Object[] {
-                        loadId, targetNode, beforeSql, beforeSqlSent });
+                if (beforeSqlSent > 0) {
+                    log.info("Before sending load {} to target node {} the before sql [{}] was sent for {} tables", new Object[] {
+                            loadId, targetNode, beforeSql, beforeSqlSent });
+                }
                 
             } else {
                 String beforeSql = parameterService.getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_BEFORE_SQL
@@ -673,8 +679,10 @@ public class DataService extends AbstractService implements IDataService {
                     }
                 }
             }
-            log.info("Before sending load {} to target node {} create table events were sent for {} tables", new Object[] {
-                    loadId, targetNode, createEventsSent });
+            if (createEventsSent > 0) {
+                log.info("Before sending load {} to target node {} create table events were sent for {} tables", new Object[] {
+                        loadId, targetNode, createEventsSent });
+            }
         }
         else {
             if (parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
@@ -729,8 +737,10 @@ public class DataService extends AbstractService implements IDataService {
                     }
                 }
             }
-            log.info("Before sending load {} to target node {} delete data events were sent for {} tables", new Object[] {
-                    loadId, targetNode, deleteEventsSent });
+            if (deleteEventsSent > 0) {
+                log.info("Before sending load {} to target node {} delete data events were sent for {} tables", new Object[] {
+                        loadId, targetNode, deleteEventsSent });
+            }
         }
         else {
             if (parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD)) {
@@ -760,6 +770,52 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    private void insertSQLBatchesForReload(Node targetNode, long loadId, String createBy,
+            List<TriggerHistory> triggerHistories,
+            Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
+            ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests) {
+        
+        if (reloadRequests != null && reloadRequests.size() > 0) {
+            int sqlEventsSent = 0;
+            for (TriggerHistory triggerHistory : triggerHistories) {
+                List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
+                        .getTriggerHistoryId());
+                
+                TableReloadRequest currentRequest = reloadRequests.get(ParameterConstants.ALL + ParameterConstants.ALL);
+                boolean fullLoad = currentRequest == null ? false : true;
+                
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    if (!fullLoad) {
+                        currentRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
+                    }
+                    
+                    //Check the before custom sql is present on the specific table reload request
+                    if (currentRequest != null 
+                            && currentRequest.getBeforeCustomSql() != null 
+                            && currentRequest.getBeforeCustomSql().length() > 0
+                            && engine.getGroupletService().isTargetEnabled(triggerRouter,
+                                    targetNode)) {
+                        
+                        String tableName = triggerRouter.qualifiedTargetTableName(triggerHistory);
+                        String formattedBeforeSql = String.format(currentRequest.getBeforeCustomSql(), tableName) + ";";
+                        
+                        insertSqlEvent(transaction, triggerHistory, triggerRouter.getTrigger().getChannelId(),
+                                targetNode, formattedBeforeSql,
+                                true, loadId, createBy);
+                        sqlEventsSent++;
+                        if (!transactional) {
+                            transaction.commit();
+                        }
+                    }
+                }
+            }
+            if (sqlEventsSent > 0) {
+                log.info("Before sending load {} to target node {} SQL data events were sent for {} tables", new Object[] {
+                        loadId, targetNode, sqlEventsSent });
+            }
+        }
+    }
+    
     private void insertLoadBatchesForReload(Node targetNode, long loadId, String createBy,
             List<TriggerHistory> triggerHistories,
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
