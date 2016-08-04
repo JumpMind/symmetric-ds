@@ -125,6 +125,22 @@ void SymStringUtilsTest_test_substring() {
     CU_ASSERT(strcmp(SymStringUtils_substring("Testing", 0, 8), "Testing") == 0);
 }
 
+void SymStringUtilsTest_test_replace() {
+    CU_ASSERT(strcmp(SymStringUtils_replaceWithLength("", strlen(""), "H", "Tr"), "") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_replaceWithLength("Hello", strlen("Hello"), "H", "Tr"), "Trello") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_replaceWithLength("\\\"Hi\\\"", strlen("\\\"Hi\\\""), "\\\"", "\"\""),
+            "\"\"Hi\"\"") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_replaceWithLength(",", strlen(","), ",", "||"), "||") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_replaceWithLength(" spaces ", strlen(" spaces "), " ", "|longer|"), "|longer|spaces|longer|") == 0);
+
+    CU_ASSERT(strcmp(SymStringUtils_replace("", "H", "Tr"), "") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_replace("Hello", "H", "Tr"), "Trello") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_replace("\\\"Hi\\\"", "\\\"", "\"\""), "\"\"Hi\"\"") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_replace(",", ",", "||"), "||") == 0);
+    CU_ASSERT(strcmp(SymStringUtils_replace(" spaces ", " ", "|longer|"), "|longer|spaces|longer|") == 0);
+
+}
+
 void SymStringUtilsTest_test_startsWith() {
     CU_ASSERT(SymStringUtils_startsWith("Testing","Tes") == 1);
     CU_ASSERT(SymStringUtils_startsWith("Testing","Ttt") == 0);
@@ -160,6 +176,8 @@ int SymStringUtilsTest_CUnit() {
             CU_add_test(suite, "SymStringUtilsTest_testRTrim", SymStringUtilsTest_testRTrim) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_test_startsWith", SymStringUtilsTest_test_startsWith) == NULL ||
             CU_add_test(suite, "SymStringUtilsTest_test_endsWith", SymStringUtilsTest_test_endsWith) == NULL ||
+            CU_add_test(suite, "SymStringUtilsTest_test_replace", SymStringUtilsTest_test_replace) == NULL ||
+
             1==0) {
         return CUE_NOTEST;
     }

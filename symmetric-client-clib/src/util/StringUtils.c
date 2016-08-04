@@ -42,7 +42,7 @@ char *SymStringUtils_trim(char *str)
     }
 
     int newLength = length - leadingWhitespaces - trailingWhitespaces;
-    char *newString = malloc(newLength+1);
+    char *newString = malloc((newLength+1)*sizeof(char));
 
     int i;
     for (i = leadingWhitespaces; i < length-trailingWhitespaces; i++) {
@@ -57,22 +57,22 @@ char *SymStringUtils_trim(char *str)
 char *SymStringUtils_ltrim(char *str) {
     int length = strlen(str);
 
-     int leadingWhitespaces = 0;
-     while (isspace(str[leadingWhitespaces]) && leadingWhitespaces < length) {
-         leadingWhitespaces++;
-     }
+    int leadingWhitespaces = 0;
+    while (isspace(str[leadingWhitespaces]) && leadingWhitespaces < length) {
+        leadingWhitespaces++;
+    }
 
-     int newLength = length - leadingWhitespaces;
-     char *newString = malloc(newLength+1);
+    int newLength = length - leadingWhitespaces;
+    char *newString = malloc((newLength+1)*sizeof(char));
 
-     int i;
-     for (i = leadingWhitespaces; i < length; i++) {
-         newString[i-leadingWhitespaces] = str[i];
-     }
+    int i;
+    for (i = leadingWhitespaces; i < length; i++) {
+        newString[i-leadingWhitespaces] = str[i];
+    }
 
-     newString[i] = '\0';
+    newString[newLength] = '\0';
 
-     return newString;
+    return newString;
 }
 
 char *SymStringUtils_rtrim(char *str) {
@@ -86,7 +86,7 @@ char *SymStringUtils_rtrim(char *str) {
     trailingWhitespaces = ((length-1)-trailingWhitespaces);
 
     int newLength = length - trailingWhitespaces;
-    char *newString = malloc(newLength+1);
+    char *newString = malloc((newLength+1)*sizeof(char));
 
     int i;
     for (i = 0; i < length-trailingWhitespaces; i++) {
@@ -101,7 +101,7 @@ char *SymStringUtils_rtrim(char *str) {
 
 char *SymStringUtils_toUpperCase(char *str) {
     int length = strlen(str);
-    char *newString = malloc(length+1);
+    char *newString = malloc((length+1)*sizeof(char));
 
     int i;
     for (i = 0; i < length; i++) {
@@ -115,7 +115,7 @@ char *SymStringUtils_toUpperCase(char *str) {
 
 char *SymStringUtils_toLowerCase(char *str) {
     int length = strlen(str);
-    char *newString = malloc(length+1);
+    char *newString = malloc((length+1)*sizeof(char));
 
     int i;
     for (i = 0; i < length; i++) {
@@ -171,6 +171,38 @@ char * SymStringUtils_substring(char *str, int startIndex, int endIndex) {
     return value;
 }
 
+char * SymStringUtils_replaceWithLength(char *str, size_t length, char *searchFor, char* replaceWith) {
+    int searchLength = strlen(searchFor);
+    int replaceLength = strlen(replaceWith);
+    int replaceCount = 0;
+    char *index = strstr(str, searchFor);
+
+    while (index) {
+        replaceCount++;
+        index += searchLength;
+        index = strstr(index, searchFor);
+    }
+
+    char *newString = malloc(sizeof(char) * (length+(replaceCount*(replaceLength-searchLength))));
+    char *newStringFinal = newString; // remember original pointer.
+
+    int i;
+    for (i = 0; i < replaceCount; ++i) {
+        index = strstr(str, searchFor);
+        int leadingChars = index - str;
+        newString = strncpy(newString, str, leadingChars) + leadingChars;
+        newString = strcpy(newString, replaceWith) + replaceLength;
+        str += leadingChars + searchLength; // move the pointer to the end of this replacement.
+    }
+    strcpy(newString, str); // get remaining chars at the end.
+
+    return newStringFinal;
+}
+
+char * SymStringUtils_replace(char *str, char *searchFor, char* replaceWith) {
+    return SymStringUtils_replaceWithLength(str, strlen(str), searchFor, replaceWith);
+}
+
 unsigned short SymStringUtils_equals(char *str1, char *str2) {
     if (str1 == NULL && str2 == NULL) {
         return 1;
@@ -223,5 +255,7 @@ unsigned short SymStringUtils_endsWith(char *str, char *suffix) {
 
     return 0;
 }
+
+
 
 

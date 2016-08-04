@@ -37,6 +37,8 @@ char* SymStringUtils_format(char *format, ...);
 unsigned short SymStringUtils_equals(char *str1, char *str2);
 unsigned short SymStringUtils_equalsIgnoreCase(char *str1, char *str2);
 char * SymStringUtils_substring(char *str, int startIndex, int endIndex);
+char * SymStringUtils_replace(char *str, char *searchFor, char* replaceWith);
+char * SymStringUtils_replaceWithLength(char *str, size_t length, char *searchFor, char* replaceWith);
 void SymStringUtils_replaceChar(char *str, char oldChar, char newChar);
 unsigned short SymStringUtils_startsWith(char *str, char *suffix);
 unsigned short SymStringUtils_endsWith(char *str, char *suffix);

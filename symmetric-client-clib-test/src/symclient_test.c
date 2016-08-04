@@ -30,9 +30,9 @@ int main() {
             //SymMapTest_CUnit() != CUE_SUCCESS ||
             //SymListTest_CUnit() != CUE_SUCCESS ||
             //SymStringBuilderTest_CUnit() != CUE_SUCCESS ||
-            SymStringArrayTest_CUnit() != CUE_SUCCESS ||
+            //SymStringArrayTest_CUnit() != CUE_SUCCESS ||
             //SymPropertiesTest_CUnit() != CUE_SUCCESS ||
-            //SymStringUtilsTest_CUnit() != CUE_SUCCESS ||
+               SymStringUtilsTest_CUnit() != CUE_SUCCESS ||
             //SymHexTest_CUnit() != CUE_SUCCESS ||
             //SymBase64Test_CUnit() != CUE_SUCCESS ||
             1==0) {

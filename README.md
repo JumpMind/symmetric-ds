@@ -1,9 +1,15 @@
+<a href="https://sourceforge.net/projects/symmetricds/files/latest/download" rel="nofollow"><img alt="Download SymmetricDS" src="https://img.shields.io/sourceforge/dt/symmetricds.svg"></a>
+
 # SymmetricDS
 SymmetricDS is a database and file synchronization solution that is platform-independent, web-enabled, and database agnostic.  SymmetricDS was built to make data replication across two to tens of thousands of databases and file systems fast, easy and resilient.  We specialize in near real time, bi-directional data replication across large node networks over the WAN or LAN.
 
 SymmetricDS is sponsored by http://www.jumpmind.com.  JumpMind also provides support and a professional version that features a web-based user interface that simplifies configuration and management.
 
-Open source downloads are available at https://sourceforge.net/projects/symmetricds/files/?source=navbar. Documentation is available at http://www.symmetricds.org/docs/overview.
+Open source downloads here:
+
+<a href="https://sourceforge.net/projects/symmetricds/files/latest/download" rel="nofollow"><img alt="Download SymmetricDS" src="https://a.fsdn.com/con/app/sf-download-button"></a>
+
+Documentation is available at http://www.symmetricds.org/docs/overview.
 
 Professional downloads are available at http://www.jumpmind.com/products/symmetricds/download.  Documentation is available at http://www.jumpmind.com/products/symmetricds/documentation.
 
