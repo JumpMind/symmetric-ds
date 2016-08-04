@@ -256,6 +256,7 @@
         <column name="last_update_hostname" type="VARCHAR" size="255"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
+        <column name="summary" type="VARCHAR" size="255" description="A high level summary of what is included in a batch, often a list of table names." />
         <index name="idx_ib_time_status">
             <index-column name="create_time" />
             <index-column name="status" />
@@ -600,6 +601,7 @@
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <column name="create_by" type="VARCHAR" size="255" description="The user that created the batch.  A null value means that the system created the batch." />
+        <column name="summary" type="VARCHAR" size="255" description="A high level summary of what is included in a batch, often a list of table names." />
         <index name="idx_ob_node_status">
             <index-column name="node_id" />
             <index-column name="status" />
