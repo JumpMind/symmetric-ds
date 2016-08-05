@@ -262,7 +262,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         StringBuilder sql = new StringBuilder("select \"TABLE_NAME\" from \"INFORMATION_SCHEMA\".\"TABLES\" where \"TABLE_TYPE\"='BASE TABLE'");
         List<Object> args = new ArrayList<Object>(2);
         if (isNotBlank(catalog)) {
-            sql.append(" and \"TBALE_CATALOG\"=?");
+            sql.append(" and \"TABLE_CATALOG\"=?");
             args.add(catalog);
         }
         if (isNotBlank(schema)) {
