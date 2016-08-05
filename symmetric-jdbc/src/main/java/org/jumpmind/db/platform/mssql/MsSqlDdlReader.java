@@ -259,14 +259,14 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     @Override
     public List<String> getTableNames(final String catalog, final String schema,
     		final String[] tableTypes) {
-        StringBuilder sql = new StringBuilder("select table_name from information_schema.tables where table_type='BASE TABLE'");
+        StringBuilder sql = new StringBuilder("select \"TABLE_NAME\" from \"INFORMATION_SCHEMA\".\"TABLES\" where \"TABLE_TYPE\"='BASE TABLE'");
         List<Object> args = new ArrayList<Object>(2);
         if (isNotBlank(catalog)) {
-            sql.append(" and table_catalog=?");
+            sql.append(" and \"TBALE_CATALOG\"=?");
             args.add(catalog);
         }
         if (isNotBlank(schema)) {
-            sql.append(" and table_schema=?");
+            sql.append(" and \"TABLE_SCHEMA\"=?");
             args.add(schema);
         }
     	return platform.getSqlTemplate().query(sql.toString(), new StringMapper(), args.toArray(new Object[args.size()]));
