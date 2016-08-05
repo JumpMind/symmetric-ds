@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.monitor;
 
 import java.util.List;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -31,7 +32,7 @@ import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
-public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAware {
+public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
 
     protected IOutgoingBatchService outgoingBatchService;
     

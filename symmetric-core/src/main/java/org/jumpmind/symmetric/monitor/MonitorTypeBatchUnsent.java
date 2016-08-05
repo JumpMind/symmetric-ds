@@ -20,12 +20,13 @@
  */
 package org.jumpmind.symmetric.monitor;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
-public class MonitorTypeBatchUnsent implements IMonitorType, ISymmetricEngineAware {
+public class MonitorTypeBatchUnsent implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
 
     protected IOutgoingBatchService outgoingBatchService;
 

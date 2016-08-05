@@ -22,11 +22,12 @@ package org.jumpmind.symmetric.monitor;
 
 import java.io.File;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Monitor;
 
-public class MonitorTypeDisk implements IMonitorType, ISymmetricEngineAware {
+public class MonitorTypeDisk implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
    
     protected File tempDirectory;
 

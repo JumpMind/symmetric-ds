@@ -27,11 +27,12 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Method;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MonitorTypeMemory extends AbstractMonitorType {
+public class MonitorTypeMemory extends AbstractMonitorType implements IBuiltInExtensionPoint {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 

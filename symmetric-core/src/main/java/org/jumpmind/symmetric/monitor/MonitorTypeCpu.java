@@ -27,9 +27,10 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Method;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Monitor;
 
-public class MonitorTypeCpu extends AbstractMonitorType {
+public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExtensionPoint {
 
     protected OperatingSystemMXBean osBean;
 

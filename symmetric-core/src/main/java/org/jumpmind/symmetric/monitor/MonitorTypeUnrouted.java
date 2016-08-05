@@ -20,12 +20,13 @@
  */
 package org.jumpmind.symmetric.monitor;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.service.IRouterService;
 
-public class MonitorTypeUnrouted implements IMonitorType, ISymmetricEngineAware {
+public class MonitorTypeUnrouted implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
 
     protected IRouterService routerService;
 

@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.notification;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Monitor;
@@ -32,7 +33,7 @@ import org.jumpmind.symmetric.model.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NotificationTypeLog implements INotificationType, ISymmetricEngineAware {
+public class NotificationTypeLog implements INotificationType, ISymmetricEngineAware, IBuiltInExtensionPoint {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     
