@@ -390,7 +390,7 @@ task zip(type: Zip) {
     dependsOn relocate
     baseName 'symmetric-native'
     classifier target_platform
-    from ('build')
+    from ('build/bin')
     include '**/**'
     destinationDir file('zip')
 }
