@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.service.impl.ParameterService;
 import org.jumpmind.symmetric.service.impl.RouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -334,6 +335,7 @@ public class DataGapDetectorTest {
         when(symmetricDialect.supportsTransactionViews()).thenReturn(true);
         when(symmetricDialect.getDatabaseTime()).thenReturn(System.currentTimeMillis() + 60001L);
         when(dataService.countDataInRange(4, 7)).thenReturn(1);
+        detector.setLastBusyExpireRunTime(System.currentTimeMillis() - 61000);
         runGapDetector(dataGaps, new ArrayList<Long>(), false);
 
         verify(dataService).findDataGaps();
@@ -352,10 +354,51 @@ public class DataGapDetectorTest {
 
         when(symmetricDialect.supportsTransactionViews()).thenReturn(true);
         when(symmetricDialect.getDatabaseTime()).thenReturn(System.currentTimeMillis() + 60001L);
-        when(contextService.getLong(ContextConstants.ROUTING_LAST_BUSY_EXPIRE_RUN_TIME)).thenReturn(System.currentTimeMillis() - 61000);
+        
+        when(parameterService.getLong(ParameterConstants.ROUTING_STALE_GAP_BUSY_EXPIRE_TIME)).thenReturn(61000L);
+        detector.setLastBusyExpireRunTime(System.currentTimeMillis() - 61000);
         runGapDetector(dataGaps, new ArrayList<Long>(), false);
 
         verify(dataService).findDataGaps();
+        verify(dataService).countDataInRange(2, 4);
+        verify(dataService).countDataInRange(4, 7);
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(3, 3));
+        verify(dataService).deleteDataGap(sqlTransaction, new DataGap(5, 6));
+        verifyNoMoreInteractions(dataService);
+    }
+
+    @Test
+    public void testGapBusyExpireRunMultiple() throws Exception {
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+
+        when(symmetricDialect.supportsTransactionViews()).thenReturn(true);
+        when(symmetricDialect.getDatabaseTime()).thenReturn(System.currentTimeMillis() + 60001L);        
+        when(parameterService.getLong(ParameterConstants.ROUTING_STALE_GAP_BUSY_EXPIRE_TIME)).thenReturn(61000L);
+
+        runGapDetector(dataGaps, new ArrayList<Long>(), false);
+        Assert.assertTrue(detector.getLastBusyExpireRunTime() != 0);
+        verify(dataService).findDataGaps();
+        verifyNoMoreInteractions(dataService);
+
+        runGapDetector(dataGaps, new ArrayList<Long>(), false);
+        Assert.assertTrue(detector.getLastBusyExpireRunTime() != 0);
+        verifyNoMoreInteractions(dataService);
+
+        runGapDetector(dataGaps, new ArrayList<Long>(), true);
+        Assert.assertTrue(detector.getLastBusyExpireRunTime() == 0);
+        verifyNoMoreInteractions(dataService);
+
+        dataGaps.add(new DataGap(3, 3));
+        dataGaps.add(new DataGap(5, 6));
+        dataGaps.add(new DataGap(7, 50000006));
+
+        runGapDetector(dataGaps, new ArrayList<Long>(), false);
+        Assert.assertTrue(detector.getLastBusyExpireRunTime() != 0);
+        verifyNoMoreInteractions(dataService);
+
+        detector.setLastBusyExpireRunTime(System.currentTimeMillis() - 61000);
+        runGapDetector(dataGaps, new ArrayList<Long>(), false);
+
         verify(dataService).countDataInRange(2, 4);
         verify(dataService).countDataInRange(4, 7);
         verify(dataService).deleteDataGap(sqlTransaction, new DataGap(3, 3));
@@ -405,6 +448,7 @@ public class DataGapDetectorTest {
         when(symmetricDialect.supportsTransactionViews()).thenReturn(true);
         when(symmetricDialect.getEarliestTransactionStartTime()).thenReturn(new Date(System.currentTimeMillis() + 60001L));
         when(dataService.countDataInRange(4, 7)).thenReturn(1);
+        detector.setLastBusyExpireRunTime(System.currentTimeMillis() - 61000);
         runGapDetector(dataGaps, new ArrayList<Long>(), false);
 
         verify(dataService).findDataGaps();

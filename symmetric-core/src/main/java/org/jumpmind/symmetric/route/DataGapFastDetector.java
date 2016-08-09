@@ -171,10 +171,16 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
 
         Date currentDate = new Date(currentTime);
         boolean isBusyExpire = false;
+        long lastBusyExpireRunTime = getLastBusyExpireRunTime();
         if (!isAllDataRead) {
-            long lastBusyExpireRunTime = getLastBusyExpireRunTime();
-            long busyExpireMillis = parameterService.getLong(ParameterConstants.ROUTING_STALE_GAP_BUSY_EXPIRE_TIME);
-            isBusyExpire = lastBusyExpireRunTime == 0 || System.currentTimeMillis() - lastBusyExpireRunTime >= busyExpireMillis;
+            if (lastBusyExpireRunTime == 0) {
+                setLastBusyExpireRunTime(System.currentTimeMillis());
+            } else {
+                long busyExpireMillis = parameterService.getLong(ParameterConstants.ROUTING_STALE_GAP_BUSY_EXPIRE_TIME);
+                isBusyExpire = System.currentTimeMillis() - lastBusyExpireRunTime >= busyExpireMillis;
+            }
+        } else if (lastBusyExpireRunTime != 0) {
+            setLastBusyExpireRunTime(0);
         }
 
         try {
@@ -271,11 +277,11 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             }
             
             printStats = saveDataGaps(ts, printStats);
-
+            
             setFullGapAnalysis(false);
-            if (!isAllDataRead && expireChecked > 0) {
+            if (isBusyExpire) {
                 setLastBusyExpireRunTime(System.currentTimeMillis());
-            }            
+            }
 
             long updateTimeInMs = System.currentTimeMillis() - ts;
             if (updateTimeInMs > 10000) {
