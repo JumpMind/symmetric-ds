@@ -225,6 +225,8 @@ project(':symmetric-server') {
         provided "org.eclipse.jetty:jetty-servlets:$jettyVersion"
         provided "org.eclipse.jetty:jetty-webapp:$jettyVersion"
         provided "org.eclipse.jetty:jetty-jmx:$jettyVersion"
+        provided "javax.websocket:javax.websocket-api:1.0"
+        provided "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"        
         provided "mx4j:mx4j-tools:3.0.1"
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
