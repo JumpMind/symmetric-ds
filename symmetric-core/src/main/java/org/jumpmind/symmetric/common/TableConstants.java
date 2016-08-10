@@ -72,6 +72,7 @@ public class TableConstants {
     public static final String SYM_FILE_SNAPSHOT = "file_snapshot";
     public static final String SYM_FILE_INCOMING = "file_incoming";
     public static final String SYM_CONSOLE_USER = "console_user";
+    public static final String SYM_CONSOLE_EVENT = "console_event";
     public static final String SYM_EXTENSION = "extension";
     public static final String SYM_MONITOR = "monitor";
     public static final String SYM_MONITOR_EVENT = "monitor_event";
@@ -181,6 +182,8 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER_ROUTER));
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_INCOMING));
+        tables.add(getTableName(tablePrefix, SYM_CONSOLE_USER));
+        tables.add(getTableName(tablePrefix, SYM_CONSOLE_EVENT));
         tables.add(getTableName(tablePrefix, SYM_EXTENSION));
         tables.add(getTableName(tablePrefix, SYM_MONITOR));
         tables.add(getTableName(tablePrefix, SYM_MONITOR_EVENT));

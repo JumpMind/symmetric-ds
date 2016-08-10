@@ -112,6 +112,32 @@ public class DbCompare {
 
         return report;
     }
+    
+    public List<TableReport> compareForList() {
+    	dbValueComparator.setNumericScale(numericScale);
+    	List<TableReport> list = new ArrayList<TableReport>();
+    	long start = System.currentTimeMillis();
+        List<DbCompareTables> tablesToCompare = getTablesToCompare();
+    	
+        for (DbCompareTables tables : tablesToCompare) {
+            try {
+                TableReport tableReport = compareTables(tables);
+                list.add(tableReport);
+                long elapsed = System.currentTimeMillis() - start;
+                log.info("Completed table {}.  Elapsed time: {}", tableReport, 
+                        DurationFormatUtils.formatDurationWords((elapsed), true, true));
+            } catch (Exception e) {
+                log.error("Exception while comparing " + tables.getSourceTable() + 
+                        " to " + tables.getTargetTable(), e);
+            }
+        }
+        
+        long totalTime = System.currentTimeMillis() - start;
+        log.info("dbcompare complete.  Total Time: {}", 
+                DurationFormatUtils.formatDurationWords((totalTime), true, true));
+
+    	return list;
+    }
 
     protected TableReport compareTables(DbCompareTables tables) {
         String sourceSelect = getSourceComparisonSQL(tables, sourceEngine.getDatabasePlatform());
