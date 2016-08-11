@@ -11,6 +11,9 @@ Open source downloads here:
 
 Documentation is available at http://www.symmetricds.org/docs/overview.
 
+Ask your questions here: https://sourceforge.net/p/symmetricds/discussion
+Enter your issues here: http://www.symmetricds.org/issues
+
 Professional downloads are available at http://www.jumpmind.com/products/symmetricds/download.  Documentation is available at http://www.jumpmind.com/products/symmetricds/documentation.
 
 We also have developed a native SymmetricDS client.  Check out the code in the [symmetric-client-clib](symmetric-client-clib) and [symmetric-client-native](symmetric-client-native).
