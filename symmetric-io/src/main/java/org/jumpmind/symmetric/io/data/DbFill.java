@@ -826,7 +826,7 @@ public class DbFill {
     }
 
     private BigDecimal randomBigDecimal(int size, int digits) {
-        if (size == 0 && digits == 0) {
+        if (size <= 0 && (digits <= 0)) {
             // set the values to something reasonable
             size = 10;
             digits = 6;
