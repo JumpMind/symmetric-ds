@@ -171,6 +171,9 @@ public class DbCompareDiffWriter {
         if (diffStream != null) {
             return diffStream;
         } else {
+            if (fileName == null) {
+                return null;
+            }
             log.info("Writing diffs to {}", fileName);
             try {                
                 return new FileOutputStream(fileName);

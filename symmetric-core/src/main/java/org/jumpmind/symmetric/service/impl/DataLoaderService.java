@@ -37,10 +37,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -123,7 +121,6 @@ import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
-import org.jumpmind.util.LogSuppressor;
 
 /**
  * Responsible for writing batch data to the database
@@ -158,8 +155,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private Date lastUpdateTime;
     
-    private final LogSuppressor logSuppressor = new LogSuppressor(log);
-
     public DataLoaderService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.incomingBatchService = engine.getIncomingBatchService();
@@ -307,7 +302,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (RegistrationRequiredException e) {
             if (StringUtils.isBlank(remote.getSyncUrl())
                     || remote.getSyncUrl().equals(parameterService.getRegistrationUrl())) {
-                log.warn("Node information missing on the server.  Attempting to re-register");
+                log.warn("Node information missing on the server.  Attempting to re-register remote.getSyncUrl()={}", remote.getSyncUrl());
                 loadDataFromPull(null, status);
                 nodeService.findIdentity(false);
             } else {
@@ -317,8 +312,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         } catch (MalformedURLException e) {
             if (remote != null) {
-                log.error("Could not connect to the {} node's transport because of a bad URL: {}",
-                        remote.getNodeId(), remote.getSyncUrl());
+                log.error("Could not connect to the {} node's transport because of a bad URL: '{}' {}",
+                        remote.getNodeId(), remote.getSyncUrl(), e);
             } else {
                 log.error("", e);
             }
@@ -975,11 +970,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
                 if (ex instanceof IOException || ex instanceof TransportException
                         || ex instanceof IoException) {
-                    log.warn("Failed to load batch {} because: {}",
-                            this.currentBatch.getNodeBatchId(), ex.getMessage());
+                    log.warn("Failed to load batch " + this.currentBatch.getNodeBatchId(), ex);
                     this.currentBatch.setSqlMessage(ex.getMessage());
                 } else {
-                    logBatchInError(ex);
+                    log.error(String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
                     
                     SQLException se = unwrapSqlException(ex);
                     if (ex instanceof ConflictException) {
@@ -1068,11 +1062,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
                                 .getBatch().getNodeBatchId(), e);
             }
-        }
-
-        protected void logBatchInError(Throwable ex) {
-            final String ERROR_KEY = this.currentBatch.getNodeBatchId() + ex.getMessage();
-            logSuppressor.logError(ERROR_KEY, String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
         }
 
         public List<IncomingBatch> getBatchesProcessed() {

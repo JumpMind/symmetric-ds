@@ -79,13 +79,13 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected int[] primaryKeyViolationCodes;
 
     protected String[] primaryKeyViolationSqlStates;
-    
+
     protected String[] primaryKeyViolationMessageParts;
 
     protected int[] foreignKeyViolationCodes;
 
     protected String[] foreignKeyViolationSqlStates;
-    
+
     protected String[] foreignKeyViolationMessageParts;
 
     protected int isolationLevel;
@@ -134,7 +134,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         ISqlReadCursor<T> cursor = new JdbcSqlReadCursor<T>(this, mapper, sql, args, types);
         long endTime = System.currentTimeMillis();
         logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
-        
+
         return cursor;
     }
 
@@ -157,12 +157,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     ps = con.prepareStatement(expandedSql);
                     ps.setQueryTimeout(settings.getQueryTimeout());
                     setValues(ps, expandArgs(sql, args));
-                    
+
                     long startTime = System.currentTimeMillis();
                     rs = ps.executeQuery();
                     long endTime = System.currentTimeMillis();
                     logSqlBuilder.logSql(log, expandedSql, args, null, (endTime-startTime));
-                    
+
                     if (rs.next()) {
                         result = getObjectFromResultSet(rs, clazz);
                     }
@@ -184,7 +184,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     public byte[] queryForBlob(final String sql, final int jdbcTypeCode, final String jdbcTypeName,
             final Object... args) {
-        
+
         return execute(new IConnectionCallback<byte[]>() {
             public byte[] execute(Connection con) throws SQLException {
                 if (lobHandler.needsAutoCommitFalseForBlob(jdbcTypeCode, jdbcTypeName)) {
@@ -218,7 +218,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             }
         });
     }
-    
+
     @Deprecated
     public String queryForClob(final String sql, final Object... args) {
         return queryForClob(sql, -1, null, args);
@@ -234,12 +234,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     ps = con.prepareStatement(sql);
                     ps.setQueryTimeout(settings.getQueryTimeout());
                     setValues(ps, args);
-                    
+
                     long startTime = System.currentTimeMillis();
                     rs = ps.executeQuery();
                     long endTime = System.currentTimeMillis();
                     logSqlBuilder.logSql(log, sql, args, null, (endTime-startTime));
-                    
+
                     if (rs.next()) {
                         result = lobHandler.getClobAsString(rs, 1, jdbcTypeCode, jdbcTypeName);
                     }
@@ -266,12 +266,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     if (args != null && args.length > 0) {
                         setValues(ps, args);
                     }
-                    
+
                     long startTime = System.currentTimeMillis();
                     rs = ps.executeQuery();
                     long endTime = System.currentTimeMillis();
                     logSqlBuilder.logSql(log, sql, args, null, (endTime-startTime));
-                    
+
                     if (rs.next()) {
                         ResultSetMetaData meta = rs.getMetaData();
                         int colCount = meta.getColumnCount();
@@ -340,12 +340,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     try {
                         stmt = con.createStatement();
                         stmt.setQueryTimeout(settings.getQueryTimeout());
-                        
+
                         long startTime = System.currentTimeMillis();
                         stmt.execute(sql);
                         long endTime = System.currentTimeMillis();
                         logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
-                        
+
                         return stmt.getUpdateCount();
                     } catch (SQLException e) {
                         throw logSqlBuilder.logSqlAfterException(log, sql, args, e);
@@ -368,7 +368,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         ps.execute();
                         long endTime = System.currentTimeMillis();
                         logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
-                        
+
                         return ps.getUpdateCount();
                     } catch (SQLException e) {
                         throw logSqlBuilder.logSqlAfterException(log, sql, args, e);
@@ -410,7 +410,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                                 boolean hasResults = stmt.execute(statement);
                                 long endTime = System.currentTimeMillis();
                                 logSqlBuilder.logSql(log, statement, null, null, (endTime-startTime));
-                                
+
                                 int updateCount = stmt.getUpdateCount();
                                 totalUpdateCount += updateCount;
                                 int rowsRetrieved = 0;
@@ -879,18 +879,18 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         }
                     }
                 }
-                
+
                 if (primaryKeyViolationMessageParts != null) {
-                	String sqlMessage = sqlEx.getMessage();
-                	if (sqlMessage != null) {
-                		sqlMessage = sqlMessage.toLowerCase();
-                		for (String primaryKeyViolationMessagePart : primaryKeyViolationMessageParts) {
-                			if (primaryKeyViolationMessagePart != null && sqlMessage.contains(primaryKeyViolationMessagePart.toLowerCase())) {
-                				primaryKeyViolation = true;
-                				break;
-                			}
-                		}
-                	}
+                    String sqlMessage = sqlEx.getMessage();
+                    if (sqlMessage != null) {
+                        sqlMessage = sqlMessage.toLowerCase();
+                        for (String primaryKeyViolationMessagePart : primaryKeyViolationMessageParts) {
+                            if (primaryKeyViolationMessagePart != null && sqlMessage.contains(primaryKeyViolationMessagePart.toLowerCase())) {
+                                primaryKeyViolation = true;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -925,18 +925,18 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         }
                     }
                 }
-                
+
                 if (foreignKeyViolationMessageParts != null) {
-                	String sqlMessage = sqlEx.getMessage();
-                	if (sqlMessage != null) {
-                		sqlMessage = sqlMessage.toLowerCase();
-                		for (String foreignKeyViolationMessagePart : foreignKeyViolationMessageParts) {
-                			if (foreignKeyViolationMessagePart != null && sqlMessage.contains(foreignKeyViolationMessagePart.toLowerCase())) {
-                				foreignKeyViolation = true;
-                				break;
-                			}
-                		}
-                	}
+                    String sqlMessage = sqlEx.getMessage();
+                    if (sqlMessage != null) {
+                        sqlMessage = sqlMessage.toLowerCase();
+                        for (String foreignKeyViolationMessagePart : foreignKeyViolationMessageParts) {
+                            if (foreignKeyViolationMessagePart != null && sqlMessage.contains(foreignKeyViolationMessagePart.toLowerCase())) {
+                                foreignKeyViolation = true;
+                                break;
+                            }
+                        }
+                    }
                 }                
             }
         }
@@ -984,22 +984,27 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         for (int i = 1; i <= args.length; i++) {
             Object arg = args[i - 1];
             int argType = argTypes != null && argTypes.length >= i ? argTypes[i - 1] : SqlTypeValue.TYPE_UNKNOWN;
-            if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
-                lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
-            } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
-                lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes());
-            } else if (argType == Types.CLOB && lobHandler != null) {
-                lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
-            } else if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null) {
-                setDecimalValue(ps, i, arg, argType);
-            } else if (argType == Types.TINYINT) {
-                setTinyIntValue(ps, i, arg, argType);                
-            } else {
-                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
+            try {            
+                if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
+                    lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
+                } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
+                    lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes());
+                } else if (argType == Types.CLOB && lobHandler != null) {
+                    lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
+                } else if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null) {
+                    setDecimalValue(ps, i, arg, argType);
+                } else if (argType == Types.TINYINT) {
+                    setTinyIntValue(ps, i, arg, argType);                
+                } else {
+                    StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
+                }
+            } catch (SQLException ex) {
+                log.warn("Parameter arg '{}' type: {} caused exception: {}", arg, argType, ex.getMessage());
+                throw ex;
             }
         }
     }    
-    
+
     protected void setTinyIntValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
         StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
     }
@@ -1023,7 +1028,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
                 Object arg = args[i];
-                doSetValue(ps, i + 1, arg);
+                try {
+                    doSetValue(ps, i + 1, arg);
+                } catch (SQLException ex) {
+                    log.warn("Parameter arg '{}' caused exception: {}", arg, ex.getMessage());
+                    throw ex;
+                }
             }
         }
     }
