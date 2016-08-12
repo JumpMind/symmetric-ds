@@ -54,7 +54,6 @@ import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectExpressionKey;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.FormatUtils;
-import org.jumpmind.util.LogSuppressor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,8 +70,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected DmlStatement currentDmlStatement;
     
     protected Object[] currentDmlValues;
-    
-    protected static LogSuppressor logSuppressor = new LogSuppressor(log, 1);
 
     public DefaultDatabaseWriter(IDatabasePlatform platform) {
         this(platform, null, null);
@@ -665,10 +662,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         }
 
         data.writeCsvDataDetails(failureMessage);
-
-        String msg = failureMessage.toString();
-        logSuppressor.logInfo(msg, msg, null);
-
+        
+        log.info(failureMessage.toString(), e);
     }
     
     @Override
