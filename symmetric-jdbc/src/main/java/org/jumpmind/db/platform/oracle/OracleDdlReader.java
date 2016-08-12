@@ -400,7 +400,6 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
          * DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
          */
        return String.format("%s", tableName).replaceAll("\\_", "/_");
-       //return tableName;
     }
     
     public List<String> getTableNames(final String catalog, final String schema,
@@ -410,14 +409,17 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     	
     	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
     	
-    	String sql = "select TABLE_NAME "
-    			+ "from all_tables "
-    			+ "where OWNER = ? ";
-    	tableNames = sqlTemplate.query(sql, new ISqlRowMapper<String>() {
+    	StringBuilder sql = new StringBuilder("select TABLE_NAME from ALL_TABLES");
+    	Object[] params = null;
+    	if (isNotBlank(schema)) {
+    	    sql.append(" where OWNER=?");
+    	    params = new Object[] { schema };
+    	}
+    	tableNames = sqlTemplate.query(sql.toString(), new ISqlRowMapper<String>() {
     		public String mapRow(Row row) {
     			return row.getString("TABLE_NAME");
     		}
-    	}, schema);
+    	}, params);
     	
     	return tableNames;
     }
@@ -431,7 +433,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
 		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
 				.getSqlTemplate();
 		
-		String sql = "SELECT * FROM all_triggers "
+		String sql = "SELECT * FROM ALL_TRIGGERS "
 				+ "WHERE TABLE_NAME=? and OWNER=?";
 		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
 			public Trigger mapRow(Row row) {

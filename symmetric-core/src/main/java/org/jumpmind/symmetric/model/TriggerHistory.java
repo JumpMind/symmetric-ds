@@ -22,9 +22,7 @@ package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.SymmetricException;
