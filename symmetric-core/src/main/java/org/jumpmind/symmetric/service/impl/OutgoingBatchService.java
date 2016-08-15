@@ -288,10 +288,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesErrorsOnChannelSql"), channelId);
     }
 
+    @Override
     public int countOutgoingBatchesUnsent() {
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentSql"));
     }
 
+    @Override
     public int countOutgoingBatchesUnsent(String channelId) {
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);
     }
@@ -308,7 +310,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         
         Set<String> channelIds = configurationService.getChannels(false).keySet();
         for (String channelId : channelIds) {
-            if (!results.containsKey(channelId)) {
+            if (!results.containsKey(channelId) && !Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
                 results.put(channelId, 0);
             }
         }
