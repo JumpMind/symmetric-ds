@@ -127,7 +127,9 @@ public class NodeService extends AbstractService implements INodeService {
      * with it.
      */
     public Node findNode(String id) {
-        return findAllNodesAsMap().get(id);
+        List<Node> list = sqlTemplate.query(
+                getSql("selectNodePrefixSql", "findNodeSql"), new NodeRowMapper(), id);
+        return (Node) getFirstEntry(list);
     }
     
     public String getExternalId(String nodeId) {
