@@ -203,7 +203,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
     protected void ignore(AbstractDatabaseWriter writer, Conflict conflict) {
         if (conflict.isResolveRowOnly()) {
             writer.getStatistics().get(writer.getBatch())
-                    .increment(DataWriterStatisticConstants.IGNORECOUNT);
+                    .increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
         } else {
             throw new IgnoreBatchException();
         }

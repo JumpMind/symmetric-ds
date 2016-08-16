@@ -74,6 +74,8 @@ public class IncomingBatch implements Serializable {
     
     private long ignoreCount;
 
+    private long ignoreRowCount;
+    
     private long missingDeleteCount;
 
     private long skipCount;
@@ -122,6 +124,7 @@ public class IncomingBatch implements Serializable {
             missingDeleteCount = writerStatistics
                     .get(DataWriterStatisticConstants.MISSINGDELETECOUNT);
             ignoreCount = writerStatistics.get(DataWriterStatisticConstants.IGNORECOUNT);
+            ignoreRowCount = writerStatistics.get(DataWriterStatisticConstants.IGNOREROWCOUNT);
             lastUpdatedTime = new Date();
             if (!isSuccess) {
                 failedRowNumber = statementCount;
@@ -358,7 +361,19 @@ public class IncomingBatch implements Serializable {
         return ignoreCount;
     }
 
-    public String getStagedLocation() {
+    public long getIgnoreRowCount() {
+		return ignoreRowCount;
+	}
+
+    public void incrementIgnoreRowCount() {
+        this.ignoreRowCount++;
+    }
+    
+	public void setIgnoreRowCount(long ignoreRowCount) {
+		this.ignoreRowCount = ignoreRowCount;
+	}
+
+	public String getStagedLocation() {
         return Batch.getStagedLocation(false, nodeId);
     }
 
