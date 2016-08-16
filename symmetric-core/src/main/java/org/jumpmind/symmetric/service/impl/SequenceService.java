@@ -84,21 +84,21 @@ public class SequenceService extends AbstractService implements ISequenceService
         }
     }
 
-    public long nextVal(String name) {
+    public synchronized long nextVal(String name) {
         if (getSequenceDefinition(name).getCacheSize() > 0) {
             return nextValFromCache(null, name);
         }
         return nextValFromDatabase(name);
     }
 
-    public long nextVal(ISqlTransaction transaction, String name) {
+    public synchronized long nextVal(ISqlTransaction transaction, String name) {
         if (getSequenceDefinition(transaction, name).getCacheSize() > 0) {
             return nextValFromCache(transaction, name);
         }
         return nextValFromDatabase(transaction, name);
     }
 
-    protected synchronized long nextValFromCache(ISqlTransaction transaction, String name) {
+    protected long nextValFromCache(ISqlTransaction transaction, String name) {
         CachedRange range = sequenceCache.get(name);
         if (range != null) {
             long currentValue = range.getCurrentValue();
@@ -208,7 +208,7 @@ public class SequenceService extends AbstractService implements ISequenceService
         return sequence;
     }
 
-    public long currVal(ISqlTransaction transaction, String name) {
+    public synchronized long currVal(ISqlTransaction transaction, String name) {
         CachedRange range = sequenceCache.get(name);
         if (range != null) {
             return range.getCurrentValue();
@@ -216,7 +216,7 @@ public class SequenceService extends AbstractService implements ISequenceService
         return transaction.queryForLong(getSql("getCurrentValueSql"), name);
     }
 
-    public long currVal(final String name) {
+    public synchronized long currVal(final String name) {
         CachedRange range = sequenceCache.get(name);
         if (range != null) {
             return range.getCurrentValue();

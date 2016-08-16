@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -29,34 +28,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.FileUploadException;
-import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
-import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
-import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.util.LogSuppressor;
 import org.springframework.util.StringUtils;
 
 public class PushStatusUriHandler extends AbstractUriHandler {
 
-    private IDataLoaderService dataLoaderService;
-
-    private IStatisticManager statisticManager;
-
-    private INodeService nodeService;
-    
     private INodeCommunicationService nodeCommunicationService;
     
-    private LogSuppressor logSupressor = new LogSuppressor(log);
-
-    public PushStatusUriHandler(IParameterService parameterService, IDataLoaderService dataLoaderService,
-            IStatisticManager statisticManager, INodeService nodeService, INodeCommunicationService nodeCommunicationService,
-            IInterceptor... interceptors) {
+    public PushStatusUriHandler(IParameterService parameterService, 
+            INodeCommunicationService nodeCommunicationService, IInterceptor... interceptors) {
         super("/pushstatus/*", parameterService, interceptors);
-        this.dataLoaderService = dataLoaderService;
-        this.statisticManager = statisticManager;
-        this.nodeService = nodeService;
         this.nodeCommunicationService = nodeCommunicationService;
     }
 
@@ -66,19 +48,21 @@ public class PushStatusUriHandler extends AbstractUriHandler {
 
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
         String batchToSendCountParam = ServletUtils.getParameter(req, WebConstants.BATCH_TO_SEND_COUNT);
+        
+        log.debug("Push stats for nodeId: {} batchToSendCountParam: '{}'", nodeId, batchToSendCountParam);
+        
         // queueName:4,anotherQueueName:6
         if (!StringUtils.isEmpty(batchToSendCountParam)) {
             try {   
                 Map<String, Integer> queuesToBatchCounts = 
                         nodeCommunicationService.parseQueueToBatchCounts(batchToSendCountParam);
+                log.debug("Push stats for nodeId: {} queuesToBatchCounts: '{}'", nodeId, queuesToBatchCounts);
                 nodeCommunicationService.updateBatchToSendCounts(nodeId, queuesToBatchCounts);
-                System.out.println("Batch counts pushed: " + queuesToBatchCounts);
             } catch (Exception ex) {
                 String msg = "Failed to parse batchToSendCountParam [" + batchToSendCountParam + "] " + req;
-                logSupressor.logWarn(msg+ex.toString(), msg, ex);
+                log.warn(msg, ex);
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Couldn't parse batch_to_send_count.");
             }
         }
-        log.debug("Push stats requested for {}", nodeId);
     }
 }

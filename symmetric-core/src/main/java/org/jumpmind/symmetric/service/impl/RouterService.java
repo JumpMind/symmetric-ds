@@ -1012,6 +1012,8 @@ public class RouterService extends AbstractService implements IRouterService {
 
                 batch.incrementEventCount(dataMetaData.getData().getDataEventType());
                 batch.incrementDataEventCount();
+                batch.incrementTableCount(dataMetaData.getTable().getName());
+                
                 if (!context.isProduceCommonBatches()
                         || (context.isProduceCommonBatches() && !dataEventAdded)) {
                     Router router = dataMetaData.getRouter();

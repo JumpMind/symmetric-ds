@@ -25,7 +25,7 @@
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
-    <appender name="ROLLING" class="org.apache.log4j.RollingFileAppender">
+    <appender name="ROLLING" class="org.jumpmind.util.SymRollingFileAppender">
         <param name="File" value="${log4j.sym.home}/logs/symmetric.log" />
         <param name="MaxFileSize" value="10MB" />
         <param name="MaxBackupIndex" value="3" />

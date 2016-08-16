@@ -356,7 +356,9 @@ final public class ParameterConstants {
     
     public final static String HYBRID_PUSH_PULL_ENABLED = "hybrid.push.pull.enabled";
     
-    public final static String HYBRID_PUSH_PULL_TIMEOUT = "hybrid.push.pull.timeout";
+    public final static String HYBRID_PUSH_PULL_TIMEOUT = "hybrid.push.pull.timeout.ms";
+    
+    public final static String HYBRID_PUSH_PULL_BUFFER_STATUS_UPDATES = "hybrid.push.pull.buffer.status.updates";
 
     public final static String DBF_ROUTER_VALIDATE_HEADER = "dbf.router.validate.header";
     
