@@ -82,6 +82,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         super(parameterService, dialect);
         setSqlMap(new ClusterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
+        initCache();
     }
 
     public void init() {
@@ -102,7 +103,6 @@ public class ClusterService extends AbstractService implements IClusterService {
                 }
             }
         }
-        initCache();
     }
 
     protected void initLockTable(final String action) {

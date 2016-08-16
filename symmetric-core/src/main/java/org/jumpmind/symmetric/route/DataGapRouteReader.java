@@ -412,7 +412,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         if (context.getMaxPeekAheadQueueSize() < size) {
             context.setMaxPeekAheadQueueSize(size);
         }
-        return moreData;
+        return moreData && reading;
     }
 
     protected void copyToQueue(Data data) {
