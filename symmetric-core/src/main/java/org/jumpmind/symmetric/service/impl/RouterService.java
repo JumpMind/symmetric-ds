@@ -255,13 +255,13 @@ public class RouterService extends AbstractService implements IRouterService {
                                 boolean registered = security.getRegistrationTime() != null;
                                 if (thisMySecurityRecord && reverseLoadQueued
                                         && (reverseLoadFirst || !initialLoadQueued)) {
-                                    sendReverseInitialLoad();
+                                    sendReverseInitialLoad(processInfo);
                                 } else if (!thisMySecurityRecord && registered && initialLoadQueued
                                         &&  (!reverseLoadFirst || !reverseLoadQueued)) {
                                     long ts = System.currentTimeMillis();
                                     engine.getDataService().insertReloadEvents(
                                             engine.getNodeService().findNode(security.getNodeId()),
-                                            false);
+                                            false, processInfo);
                                     isInitialLoadQueued = true;
                                     ts = System.currentTimeMillis() - ts;
                                     if (ts > Constants.LONG_OPERATION_THRESHOLD) {
@@ -296,7 +296,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     }
                     
-                    processTableRequestLoads(identity);
+                    processTableRequestLoads(identity, processInfo);
                 }
             }
 
@@ -308,7 +308,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
-    public void processTableRequestLoads(Node source) {
+    public void processTableRequestLoads(Node source, ProcessInfo processInfo) {
         List<TableReloadRequest> loadsToProcess = engine.getDataService().getTableReloadRequestToProcess(source.getNodeId());
         if (loadsToProcess.size() > 0) {
             log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
@@ -322,7 +322,7 @@ public class RouterService extends AbstractService implements IRouterService {
                
                    engine.getDataService().insertReloadEvents(
                            engine.getNodeService().findNode(load.getTargetNodeId()),
-                           false, fullLoad);
+                           false, fullLoad, processInfo);
                }
                else {
                    NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
@@ -341,7 +341,7 @@ public class RouterService extends AbstractService implements IRouterService {
             for (Map.Entry<String, List<TableReloadRequest>> entry : requestsSplitByLoad.entrySet()) {
                 engine.getDataService().insertReloadEvents(
                         engine.getNodeService().findNode(entry.getKey().split("::")[0]),
-                        false, entry.getValue());
+                        false, entry.getValue(), processInfo);
             }
             
             
@@ -384,14 +384,14 @@ public class RouterService extends AbstractService implements IRouterService {
         return toReturn;
     }
 
-    protected void sendReverseInitialLoad() {
+    protected void sendReverseInitialLoad(ProcessInfo processInfo) {
         INodeService nodeService = engine.getNodeService();
         boolean queuedLoad = false;
         List<Node> nodes = new ArrayList<Node>();
         nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
         nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
         for (Node node : nodes) {
-            engine.getDataService().insertReloadEvents(node, true);
+            engine.getDataService().insertReloadEvents(node, true, processInfo);
             queuedLoad = true;
         }
 

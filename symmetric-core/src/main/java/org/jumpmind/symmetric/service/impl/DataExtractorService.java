@@ -536,14 +536,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 executor = Executors.newFixedThreadPool(1, new DataExtractorThreadFactory());
                 List<Future<FutureOutgoingBatch>> futures = new ArrayList<Future<FutureOutgoingBatch>>();
 
+                processInfo.setBatchCount(activeBatches.size());
                 for (int i = 0; i < activeBatches.size(); i++) {
                     currentBatch = activeBatches.get(i);
                     
-                    channelsProcessed.add(currentBatch.getChannelId());
-                    processInfo.setDataCount(currentBatch.getDataEventCount());
-                    processInfo.setCurrentBatchId(currentBatch.getBatchId());
                     processInfo.setCurrentLoadId(currentBatch.getLoadId());
-
+                    
+                    channelsProcessed.add(currentBatch.getChannelId());
+                    
                     currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
                     processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
                     final OutgoingBatch extractBatch = currentBatch;
@@ -617,13 +617,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                             if (!extractBatch.isExtractSkipped && (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT)) {
                                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+                                processInfo.setCurrentLoadId(currentBatch.getLoadId());
                                 currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch, extractBatch.isRetry(), 
                                         dataWriter, writer, mode);
                             }
 
                             processedBatches.add(currentBatch);
                             isSent = true;
-
+                            
                             if (currentBatch.getStatus() != Status.OK) {
                                 currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
                                 changeBatchStatus(Status.LD, currentBatch, mode);
@@ -884,7 +885,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
 
         }
-
+        processInfo.incrementCurrentBatchCount();
         return currentBatch;
     }
 
@@ -1208,8 +1209,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     request.getStartBatchId(), request.getEndBatchId()).getBatches();
 
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
-                    .getNodeId(), nodeCommunication.getNodeId(),
+                    .getNodeId(), nodeCommunication.getQueue(), nodeCommunication.getNodeId(),
                     ProcessInfoKey.ProcessType.INITIAL_LOAD_EXTRACT_JOB));
+            processInfo.setBatchCount(batches.size());
             try {
                 boolean areBatchesOk = true;
 
@@ -1231,9 +1233,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                      * "Trick" the extractor to extract one reload batch, but we
                      * will split it across the N batches when writing it
                      */
+                    processInfo.setCurrentLoadId(batches.get(0).getLoadId());
                     extractOutgoingBatch(processInfo, targetNode,
                             new MultiBatchStagingWriter(identity.getNodeId(), stagingManager,
-                                    batches, channel.getMaxBatchSize()), batches.get(0), false,
+                                    batches, channel.getMaxBatchSize(), processInfo), batches.get(0), false,
                             false, ExtractMode.FOR_SYM_CLIENT);
 
                 } else {
@@ -1350,14 +1353,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         Batch batch;
 
         boolean inError = false;
-
+        
+        ProcessInfo processInfo;
+        
         public MultiBatchStagingWriter(String sourceNodeId, IStagingManager stagingManager,
-                List<OutgoingBatch> batches, long maxBatchSize) {
+                List<OutgoingBatch> batches, long maxBatchSize, ProcessInfo processInfo) {
             this.sourceNodeId = sourceNodeId;
             this.maxBatchSize = maxBatchSize;
             this.stagingManager = stagingManager;
             this.batches = new ArrayList<OutgoingBatch>(batches);
             this.finishedBatches = new ArrayList<OutgoingBatch>(batches.size());
+            this.processInfo = processInfo;
         }
 
         public void open(DataContext context) {
@@ -1383,11 +1389,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         public void start(Batch batch) {
             this.batch = batch;
+            if (batch != null) {
+                processInfo.setCurrentBatchId(batch.getBatchId());
+                processInfo.setCurrentChannelId(batch.getChannelId());
+                processInfo.incrementBatchCount();
+                processInfo.setCurrentDataCount(0);
+            }
             this.currentDataWriter.start(batch);
         }
 
         public boolean start(Table table) {
             this.table = table;
+            if (table != null) {
+                processInfo.setCurrentTableName(table.getFullyQualifiedTableName());
+            }
             this.currentDataWriter.start(table);
             return true;
         }
@@ -1483,6 +1498,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     sourceNodeId, outgoingBatch.getNodeId(), false);
             this.currentDataWriter.open(context);
             this.currentDataWriter.start(batch);
+            processInfo.incrementBatchCount();
+            
             this.currentDataWriter.start(table);
         }
 

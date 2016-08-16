@@ -74,6 +74,8 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     private long currentBatchId;
 
+    private long currentBatchCount;
+    
     private String currentChannelId;
 
     private boolean threadPerChannel;
@@ -156,8 +158,20 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     public void incrementBatchCount() {
         this.batchCount++;
     }
+    
+    public void incrementCurrentBatchCount() {
+        this.currentBatchCount++;
+    }
+    
+    public long getCurrentBatchCount() {
+		return currentBatchCount;
+	}
 
-    public long getCurrentBatchId() {
+	public void setCurrentBatchCount(long currentBatchCount) {
+		this.currentBatchCount = currentBatchCount;
+	}
+
+	public long getCurrentBatchId() {
         return currentBatchId;
     }
 
