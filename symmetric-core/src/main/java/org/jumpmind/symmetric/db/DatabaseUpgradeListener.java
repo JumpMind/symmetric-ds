@@ -67,6 +67,8 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         if (isUpgradeTo38) {
             engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_SEQUENCE +
                     " set cache_size = 10 where sequence_name = ?", Constants.SEQUENCE_OUTGOING_BATCH);
+            engine.getSqlTemplate().update("update  " + tablePrefix + "_" + TableConstants.SYM_CHANNEL +
+            		" set max_batch_size = 10000 where reload_flag = 1 and max_batch_size = 10000");
         }
         return sb.toString();
     }
