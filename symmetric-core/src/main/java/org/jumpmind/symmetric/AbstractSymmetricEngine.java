@@ -50,6 +50,7 @@ import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.db.ISoftwareUpgradeListener;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.DefaultOfflineClientListener;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
@@ -412,6 +413,23 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (!setup) {
             setupDatabase(false);
             parameterService.setDatabaseHasBeenInitialized(true);
+            
+            String databaseVersion = this.getNodeService().findIdentity() != null ? 
+            		this.getNodeService().findIdentity().getSymmetricVersion() : null;
+    		String softwareVersion = Version.version();
+    		
+    		log.info("SymmetricDS database version : " + databaseVersion);
+    		log.info("SymmetricDS software version : " + softwareVersion);
+    		
+    		if (databaseVersion != null && !softwareVersion.equals(databaseVersion)) {
+    			log.info("SymmetricDS database version does not match the current software version, running software upgrade listeners.");
+	            List<ISoftwareUpgradeListener> softwareUpgradeListeners = 
+	            		extensionService.getExtensionPointList(ISoftwareUpgradeListener.class);
+	            for (ISoftwareUpgradeListener listener : softwareUpgradeListeners) {
+	            	listener.upgrade(databaseVersion, softwareVersion);
+	            }
+    		}
+            
             setup = true;
         }
     }

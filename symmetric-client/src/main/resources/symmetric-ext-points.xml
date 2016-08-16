@@ -20,4 +20,6 @@
 
     <bean id="databaseUpgradeListener" class="org.jumpmind.symmetric.db.DatabaseUpgradeListener" />
     
+    <bean id="softwareUpgradeListener" class="org.jumpmind.symmetric.db.SoftwareUpgradeListener" />
+    
 </beans>
