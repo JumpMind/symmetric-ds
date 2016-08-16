@@ -102,7 +102,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
             url = add(url, key, statuses.get(key), "&");
         }
         
-        log.info("Sending status with URL: " + url);
+        log.debug("Sending status with URL: " + url);
         return sendMessage(new URL(url), "");        
     }
 

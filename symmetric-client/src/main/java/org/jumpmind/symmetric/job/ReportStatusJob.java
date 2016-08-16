@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.job;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +34,9 @@ import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class ReportStatusJob extends AbstractJob {
+    
+    private static Map<String, Integer> lastBatchCountPerChannel = 
+            Collections.synchronizedMap(new HashMap<String, Integer>());
 
     protected ReportStatusJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
             super("job.report.status", true, engine.getParameterService().is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED),
@@ -47,21 +51,61 @@ public class ReportStatusJob extends AbstractJob {
         Node identity = engine.getNodeService().findIdentity();
         
         if (remote.getNode().getNodeId().equals(identity.getNodeId())) {
-            log.debug("Skipping report status job because this node is the root node.");
+            log.debug("Skipping report status job because this node is the root node. identity={}, remote={}", identity, remote);
+            return;
         }
         
-        Map<String, Integer> batchesToSendByChannel = engine.getOutgoingBatchService().
+        Map<String, Integer> batchCountPerChannel = engine.getOutgoingBatchService().
                 countOutgoingBatchesPendingByChannel(remote.getNode().getNodeId());
         
-        if (!batchesToSendByChannel.isEmpty()) {            
+        log.debug("identity={} batchCountPerChannel='{}', lastBatchCountPerChannel='{}'", 
+                identity, batchCountPerChannel, lastBatchCountPerChannel);
+        
+        if (force || shouldSendStatus(batchCountPerChannel)) {            
             Map<String, String> requestParams = new HashMap<String, String>();
             
-            requestParams.put(WebConstants.BATCH_TO_SEND_COUNT, TransportUtils.toCSV(batchesToSendByChannel));
+            requestParams.put(WebConstants.BATCH_TO_SEND_COUNT, TransportUtils.toCSV(batchCountPerChannel));
             
             engine.getTransportManager().sendStatusRequest(identity, requestParams);
+            
+            updateLastSentStatus(batchCountPerChannel);
         }
     }
     
+
+    protected boolean shouldSendStatus(Map<String, Integer> batchCountPerChannel) {
+        if (batchCountPerChannel == null || batchCountPerChannel.isEmpty()) {
+            return false;
+        }
+        
+        if (lastBatchCountPerChannel.equals(batchCountPerChannel)) {
+            return false;
+        }
+        
+        if (engine.getParameterService().is(ParameterConstants.HYBRID_PUSH_PULL_BUFFER_STATUS_UPDATES)) {
+            for (String channelId : batchCountPerChannel.keySet()) {
+                Integer lastCount = lastBatchCountPerChannel.get(channelId);
+                if (lastCount == null) {
+                    lastCount = Integer.valueOf(0);
+                }
+                Integer currentCount = batchCountPerChannel.get(channelId);
+                
+                if (lastCount.equals(Integer.valueOf(0)) && !lastCount.equals(currentCount)) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        return true;
+    }
+    
+    protected void updateLastSentStatus(Map<String, Integer> batchesToSendByChannel) {
+        lastBatchCountPerChannel.clear();
+        lastBatchCountPerChannel.putAll(batchesToSendByChannel);
+    }
+
     @Override
     public String getClusterLockName() {
         return ClusterConstants.REPORT_STATUS;

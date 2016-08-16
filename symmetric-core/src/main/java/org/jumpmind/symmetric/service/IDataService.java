@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -67,9 +68,9 @@ public interface IDataService {
      */
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
 
-    public void insertReloadEvents(Node targetNode, boolean reverse);
+    public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo);
 
-    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests);
+    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo);
     
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     

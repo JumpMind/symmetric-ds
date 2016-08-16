@@ -24,8 +24,10 @@ package org.jumpmind.symmetric.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.model.LoadSummary;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
@@ -99,6 +101,12 @@ public interface IOutgoingBatchService {
             List<OutgoingBatch.Status> statuses, List<String> loads, long startAtBatchId, int rowsExpected, boolean ascending);
     
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly);
+
+    public Set<Long> getActiveLoads(String sourceNodeId);
+    
+    public LoadSummary getLoadSummary(long loadId);
+    
+    public Map<String, Map<String, Integer>> getLoadStatusSummarySql(long loadId);
     
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId);
 

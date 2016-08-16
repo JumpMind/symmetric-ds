@@ -66,6 +66,7 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
@@ -340,11 +341,11 @@ public class DataService extends AbstractService implements IDataService {
         return channelId;
     }
     
-    public void insertReloadEvents(Node targetNode, boolean reverse) {
-        insertReloadEvents(targetNode, reverse, null);
+    public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo) {
+        insertReloadEvents(targetNode, reverse, null, processInfo);
     }
     
-    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests) {
+    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo) {
 
         if (engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS)) {
             try {
@@ -389,6 +390,8 @@ public class DataService extends AbstractService implements IDataService {
 
                         long loadId = engine.getSequenceService().nextVal(transaction,
                                 Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                        processInfo.setCurrentLoadId(loadId);
+                        
                         String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy()
                                 : nodeSecurity.getInitialLoadCreateBy();
 
@@ -434,7 +437,7 @@ public class DataService extends AbstractService implements IDataService {
                                 transaction, mapReloadRequests);
 
                         insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
-                                triggerRoutersByHistoryId, transactional, transaction, mapReloadRequests);
+                                triggerRoutersByHistoryId, transactional, transaction, mapReloadRequests, processInfo);
                         
                         if (isFullLoad) {
                             String afterSql = parameterService
@@ -819,15 +822,19 @@ public class DataService extends AbstractService implements IDataService {
     private void insertLoadBatchesForReload(Node targetNode, long loadId, String createBy,
             List<TriggerHistory> triggerHistories,
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
-            ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests) {
+            ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests, ProcessInfo processInfo) {
         Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
         DatabaseInfo dbInfo = platform.getDatabaseInfo();
         String quote = dbInfo.getDelimiterToken();
         String catalogSeparator = dbInfo.getCatalogSeparator();
         String schemaSeparator = dbInfo.getSchemaSeparator();
+        
+        processInfo.setBatchCount(triggerHistories.size());
+        
         for (TriggerHistory triggerHistory : triggerHistories) {
             List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                     .getTriggerHistoryId());
+            
             for (TriggerRouter triggerRouter : triggerRouters) {
                 if (triggerRouter.getInitialLoadOrder() >= 0
                         && engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)) {
@@ -854,6 +861,7 @@ public class DataService extends AbstractService implements IDataService {
                                 triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
                                 triggerHistory.getSourceTableName(), false);  
                         
+                        processInfo.setCurrentTableName(table.getName());
                         
                         String sql = String.format("select count(*) from %s where %s", table
                                 .getQualifiedTableName(quote, catalogSeparator, schemaSeparator), selectSql);
@@ -877,6 +885,10 @@ public class DataService extends AbstractService implements IDataService {
                             numberOfBatches = 1;
                         }
                         
+                        processInfo.setCurrentTableName(table.getFullyQualifiedTableName());
+                        processInfo.setBatchCount(numberOfBatches);
+                        processInfo.setDataCount(rowCount);
+                        
                         long startBatchId = -1;
                         long endBatchId = -1;
                         for (int i = 0; i < numberOfBatches; i++) {
@@ -885,9 +897,10 @@ public class DataService extends AbstractService implements IDataService {
                                     triggerHistory, selectSql, true, loadId, createBy, Status.RQ);
                             if (startBatchId == -1) {
                                 startBatchId = endBatchId;
+                                processInfo.setCurrentBatchId(startBatchId);
                             }
-
                         }
+                        
                         engine.getDataExtractorService().requestExtractRequest(transaction,
                                 targetNode.getNodeId(), channel.getQueue(), triggerRouter, startBatchId, endBatchId);
                     } else {
@@ -899,6 +912,8 @@ public class DataService extends AbstractService implements IDataService {
                         transaction.commit();
                     }
                 }
+                 processInfo.incrementCurrentBatchCount();
+                
             }
         }
     }

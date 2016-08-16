@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IOutgoingBatchFilter;
 import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.LoadSummary;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -209,14 +211,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getSqlState(), outgoingBatch.getSqlCode(),
                         FormatUtils.abbreviateForLogging(outgoingBatch.getSqlMessage()),
                         outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
-                        outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId(),
-                        outgoingBatch.getNodeId() }, new int[] { Types.CHAR, Types.BIGINT,
+                        outgoingBatch.getLastUpdatedTime(), outgoingBatch.getSummary(), 
+                        outgoingBatch.getBatchId(), outgoingBatch.getNodeId() }, new int[] { Types.CHAR, Types.BIGINT,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.NUMERIC,
-                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, symmetricDialect.getSqlTypeForIds(),
-                        Types.VARCHAR });
+                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, 
+                        symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
@@ -252,7 +254,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1: 0, outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch
                         .isCommonFlag() ? 1 : 0, outgoingBatch.getReloadEventCount(), outgoingBatch
                         .getOtherEventCount(), outgoingBatch.getLastUpdatedHostName(),
-                outgoingBatch.getCreateBy());
+                outgoingBatch.getCreateBy(), outgoingBatch.getSummary());
         outgoingBatch.setBatchId(batchId);
     }
 
@@ -288,10 +290,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesErrorsOnChannelSql"), channelId);
     }
 
+    @Override
     public int countOutgoingBatchesUnsent() {
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentSql"));
     }
 
+    @Override
     public int countOutgoingBatchesUnsent(String channelId) {
         return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);
     }
@@ -308,7 +312,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         
         Set<String> channelIds = configurationService.getChannels(false).keySet();
         for (String channelId : channelIds) {
-            if (!results.containsKey(channelId)) {
+            if (!results.containsKey(channelId) && !Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
                 results.put(channelId, 0);
             }
         }
@@ -586,6 +590,84 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplate.query(sql, new OutgoingBatchSummaryMapper(), args);
     }
 
+    public Set<Long> getActiveLoads(String sourceNodeId) {
+        Set<Long> loads = new HashSet<Long>();
+        
+        List<Long> inProcess = sqlTemplate.query(getSql("getActiveLoadsSql"), new ISqlRowMapper<Long>() {
+            @Override
+            public Long mapRow(Row rs) {
+                return rs.getLong("load_id");
+            }
+        }, sourceNodeId);
+        List<Long> requests = sqlTemplate.query(getSql("getUnprocessedReloadRequestsSql"), new ISqlRowMapper<Long>() {
+            @Override
+            public Long mapRow(Row rs) {
+                return rs.getLong("load_id");
+            }
+        }, sourceNodeId);
+        
+        loads.addAll(inProcess);
+        loads.addAll(requests);
+        return loads;
+    }
+    
+    public LoadSummary getLoadSummary(long loadId) {
+        return sqlTemplate.queryForObject(getSql("getLoadSummarySql"),  
+                new ISqlRowMapper<LoadSummary>() {
+            
+            public LoadSummary mapRow(Row rs) {
+                LoadSummary summary = new LoadSummary();
+                summary.setLoadId(rs.getLong("load_id"));
+                summary.setNodeId(rs.getString("target_node_id"));
+                summary.setCreateBy(rs.getString("last_update_by"));
+                summary.setTableCount(rs.getInt("table_count"));
+                String triggerId = rs.getString("trigger_id");
+                if (triggerId != null && triggerId.equals(ParameterConstants.ALL)) {
+                    summary.setFullLoad(true);
+                } else {
+                    summary.setFullLoad(false);
+                }
+                summary.setCreateFirst(rs.getBoolean("create_table"));
+                summary.setDeleteFirst(rs.getBoolean("delete_first"));
+                summary.setRequestProcessed(rs.getBoolean("processed"));
+                summary.setConditional(rs.getBoolean("reload_select"));
+                summary.setCustomSql(rs.getBoolean("before_custom_sql"));
+                return summary;
+            }           
+        }, loadId);
+    }
+
+    public Map<String, Map<String, Integer>> getLoadStatusSummarySql(long loadId) {
+        LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper();
+        
+        List<Object> obj = sqlTemplate.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
+        return mapper.getResults();
+    }
+    
+    private class LoadStatusByQueueMapper implements ISqlRowMapper {
+        Map<String, Map<String, Integer>> results = new HashMap<String, Map<String, Integer>>();
+        
+        @Override
+        public Object mapRow(Row rs) {
+            String queue = rs.getString("queue");
+            Integer count = rs.getInt("count");
+            String status = rs.getString("status");
+            
+            if (results.get(queue) == null) {
+                results.put(queue,  new HashMap<String, Integer>());
+            }
+            
+            results.get(queue).put(status, count);
+           
+            return null;
+        }
+        
+        public Map<String, Map<String, Integer>> getResults() {
+            return results;
+        }
+    }
+    
+    
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly) {
         final Map<String, OutgoingLoadSummary> loadSummaries = new TreeMap<String, OutgoingLoadSummary>();
         sqlTemplate.query(getSql("getLoadSummariesSql"), new ISqlRowMapper<OutgoingLoadSummary>() {
@@ -648,7 +730,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         return loads;
     }
-
+    
     class OutgoingBatchSummaryMapper implements ISqlRowMapper<OutgoingBatchSummary> {
         public OutgoingBatchSummary mapRow(Row rs) {
             OutgoingBatchSummary summary = new OutgoingBatchSummary();
@@ -716,6 +798,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     batch.setExtractJobFlag(rs.getBoolean("extract_job_flag"));
                     batch.setLoadId(rs.getLong("load_id"));
                     batch.setCreateBy(rs.getString("create_by"));
+                    batch.setSummary(rs.getString("summary"));
                 }
                 return batch;
             } else {
