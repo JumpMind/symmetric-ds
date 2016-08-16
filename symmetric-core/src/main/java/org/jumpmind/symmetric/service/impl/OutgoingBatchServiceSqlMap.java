@@ -48,8 +48,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("insertOutgoingBatchSql",
                         "insert into $(outgoing_batch)                                                                                                                "
-                        + "  (batch_id, node_id, channel_id, status, load_id, extract_job_flag, load_flag, common_flag, reload_event_count, other_event_count, last_update_hostname, last_update_time, create_time, create_by)   "
-                        + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp, ?)                                                                         ");
+                        + "  (batch_id, node_id, channel_id, status, load_id, extract_job_flag, load_flag, common_flag, reload_event_count, other_event_count, last_update_hostname, last_update_time, create_time, create_by, summary)   "
+                        + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp, ?, ?)                                                                         ");
 
         putSql("updateOutgoingBatchSql",
                         "update $(outgoing_batch) set status=?, load_id=?, extract_job_flag=?, load_flag=?, error_flag=?,                                          "
@@ -57,7 +57,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  reload_event_count=?, insert_event_count=?, update_event_count=?, delete_event_count=?, other_event_count=?,   "
                         + "  ignore_count=?, router_millis=?, network_millis=?, filter_millis=?,                                                            "
                         + "  load_millis=?, extract_millis=?, sql_state=?, sql_code=?, sql_message=?,                                       "
-                        + "  failed_data_id=?, last_update_hostname=?, last_update_time=? where batch_id=? and node_id=?                    ");
+                        + "  failed_data_id=?, last_update_hostname=?, last_update_time=?, summary=? where batch_id=? and node_id=?                    ");
 
         putSql("findOutgoingBatchSql", "where batch_id=? and node_id=?  ");
 
@@ -84,7 +84,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  b.reload_event_count, b.insert_event_count, b.update_event_count, b.delete_event_count, b.other_event_count,             "
                         + "  b.ignore_count, b.router_millis, b.network_millis, b.filter_millis, b.load_millis, b.extract_millis, b.sql_state, b.sql_code,  "
                         + "  b.sql_message,   "
-                        + "  b.failed_data_id, b.last_update_hostname, b.last_update_time, b.create_time, b.batch_id, b.extract_job_flag, b.load_flag, b.error_flag, b.common_flag, b.load_id, b.create_by from      "
+                        + "  b.failed_data_id, b.last_update_hostname, b.last_update_time, b.create_time, b.batch_id, b.extract_job_flag, b.load_flag, b.error_flag, b.common_flag, b.load_id, b.create_by, b.summary from      "
                         + "  $(outgoing_batch) b                                                                                       ");
 
         putSql("selectOutgoingBatchErrorsSql", " where error_flag=1 order by batch_id   ");

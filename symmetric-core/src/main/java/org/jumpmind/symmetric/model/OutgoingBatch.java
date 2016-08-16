@@ -22,7 +22,11 @@ package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
@@ -126,6 +130,10 @@ public class OutgoingBatch implements Serializable {
     private long oldExtractMillis = 0;
     private long oldLoadMillis = 0;
     private long oldNetworkMillis = 0;
+    
+    private String summary;
+    
+    private transient Map<String, Integer> tableCounts = new LinkedHashMap<String, Integer>();
 
     public OutgoingBatch() {
     }
@@ -494,5 +502,45 @@ public class OutgoingBatch implements Serializable {
     
     public boolean isExtractJobFlag() {
         return extractJobFlag;
+    }
+
+    public String getSummary() {
+        if ((summary == null || summary.length() == 0) && tableCounts != null) {
+            summary = buildBatchSummary();
+        }
+        return summary;
+    }
+    
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+    
+    protected String buildBatchSummary() {
+        final int SIZE = 254;
+        StringBuilder buff = new StringBuilder(SIZE);
+        
+        for (Entry<String, Integer> tableCount : tableCounts.entrySet()) {
+            buff.append(tableCount.getKey()).append(", ");
+        }
+        
+        if (buff.length() > 2) {            
+            buff.setLength(buff.length()-2);
+        }
+        
+        return StringUtils.abbreviate(buff.toString(), SIZE);        
+    }
+    
+    public void incrementTableCount(String tableName) {
+        
+        tableName = tableName.toLowerCase();
+        
+        Integer count;
+        if (tableCounts.containsKey(tableName)) {
+            count = tableCounts.get(tableName);
+        } else {
+            count = Integer.valueOf(0);
+        }
+        tableCounts.put(tableName, ++count);
+        summary = null;
     }
 }

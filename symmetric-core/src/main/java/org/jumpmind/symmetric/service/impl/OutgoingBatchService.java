@@ -209,14 +209,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getSqlState(), outgoingBatch.getSqlCode(),
                         FormatUtils.abbreviateForLogging(outgoingBatch.getSqlMessage()),
                         outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
-                        outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId(),
-                        outgoingBatch.getNodeId() }, new int[] { Types.CHAR, Types.BIGINT,
+                        outgoingBatch.getLastUpdatedTime(), outgoingBatch.getSummary(), 
+                        outgoingBatch.getBatchId(), outgoingBatch.getNodeId() }, new int[] { Types.CHAR, Types.BIGINT,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.NUMERIC,
-                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, symmetricDialect.getSqlTypeForIds(),
-                        Types.VARCHAR });
+                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, 
+                        symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
@@ -252,7 +252,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1: 0, outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch
                         .isCommonFlag() ? 1 : 0, outgoingBatch.getReloadEventCount(), outgoingBatch
                         .getOtherEventCount(), outgoingBatch.getLastUpdatedHostName(),
-                outgoingBatch.getCreateBy());
+                outgoingBatch.getCreateBy(), outgoingBatch.getSummary());
         outgoingBatch.setBatchId(batchId);
     }
 
@@ -718,6 +718,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     batch.setExtractJobFlag(rs.getBoolean("extract_job_flag"));
                     batch.setLoadId(rs.getLong("load_id"));
                     batch.setCreateBy(rs.getString("create_by"));
+                    batch.setSummary(rs.getString("summary"));
                 }
                 return batch;
             } else {
