@@ -132,7 +132,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + "from $(table_reload_request) r "
                 + "join $(outgoing_batch) ob on ob.load_id = r.load_id " 
                 + "where ob.status != 'OK' and ob.status != 'IG' and r.source_node_id = ? "
-                + "group by r.load_id;");
+                + "group by r.load_id");
         
         putSql("getUnprocessedReloadRequestsSql", 
                 "select r.load_id "
