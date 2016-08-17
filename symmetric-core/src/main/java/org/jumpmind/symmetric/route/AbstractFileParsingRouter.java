@@ -25,6 +25,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 
 public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
@@ -35,7 +36,6 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 	public abstract ISymmetricEngine getEngine();
 	
 	public final static String TRIGGER_ID_FILE_PARSER = "SYM_VIRTUAL_FILE_PARSE_TRIGGER";
-	public final static String STAGING_DIR = "parsers/fileParseRouter.txt";
 	
 	public final static String EXTERNAL_DATA_ROUTER_KEY="R";
 	public final static String EXTERNAL_DATA_TRIGGER_KEY="T";
@@ -73,15 +73,11 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 			String baseDir = getEngine().getFileSyncService().getFileTrigger(triggerId).getBaseDir();
 			File file = createSourceFile(baseDir, relativeDir, fileName);
 			
-			IStagedResource resource = getEngine().getStagingManager().find(STAGING_DIR);
-			if (resource == null || !resource.exists()) {
-				resource = getEngine().getStagingManager().create(0, STAGING_DIR);
-			}
+			IContextService contextService = getEngine().getContextService();
 			
-			Map<String, Integer> bookmarkMap = readStagingFile(resource);
 			String filePath = relativeDir + "/" + fileName;
 			
-			Integer lineNumber = bookmarkMap.get(filePath) == null ? 0 : bookmarkMap.get(filePath);
+			Integer lineNumber = contextService.getString(filePath) == null ? 0 : new Integer(contextService.getString(filePath));
 			
 			List<String> dataRows = parse(file, lineNumber);
 			String columnNames = getColumnNames();
@@ -113,17 +109,8 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 				lineNumber++;
 			}
 			if (!dataRows.isEmpty()) {
-				bookmarkMap.put(filePath, lineNumber);
-				
 				try {
-					resource.delete();
-					resource = getEngine().getStagingManager().create(0, STAGING_DIR);
-					for (Map.Entry<String, Integer> entry : bookmarkMap.entrySet()) {
-						resource.getWriter().write("\n" + entry.getKey() + "=" + entry.getValue());
-					}
-					resource.getWriter().close();
-					resource.setState(State.DONE);
-					
+					contextService.save(filePath, lineNumber.toString());
 					deleteFileIfNecessary(dataMetaData);
 				}
 				catch (Exception e) {
