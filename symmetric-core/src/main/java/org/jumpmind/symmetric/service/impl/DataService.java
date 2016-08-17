@@ -228,14 +228,8 @@ public class DataService extends AbstractService implements IDataService {
                         request.getCreateTime(), request.getLastUpdateBy(),
                         request.getLastUpdateTime(), request.getSourceNodeId(),
                         request.getTargetNodeId(), request.getTriggerId(),
-                        request.getRouterId(), request.isCreateTable(), 
-                        request.isDeleteFirst() }, new int[] { 
-                        Types.VARCHAR, Types.VARCHAR,
-                        Types.TIMESTAMP, Types.VARCHAR, 
-                        Types.TIMESTAMP, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, 
-                        Types.VARCHAR, Types.BOOLEAN, 
-                        Types.BOOLEAN });
+                        request.getRouterId(), request.isCreateTable() ? 1 : 0, 
+                        request.isDeleteFirst() ? 1 : 0 });
     }
 
     public TableReloadRequest getTableReloadRequest(final TableReloadRequestKey key) {
