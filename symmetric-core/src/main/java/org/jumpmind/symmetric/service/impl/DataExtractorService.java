@@ -622,7 +622,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         dataWriter, writer, mode);
                             }
 
-                            processedBatches.add(currentBatch);
+                            if (!extractBatch.isExtractSkipped) {
+                                processedBatches.add(currentBatch);
+                            }
                             isSent = true;
                             
                             if (currentBatch.getStatus() != Status.OK) {
