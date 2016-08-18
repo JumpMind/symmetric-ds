@@ -326,7 +326,9 @@ public class RouterService extends AbstractService implements IRouterService {
                }
                else {
                    NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
-                   boolean registered = targetNodeSecurity.getRegistrationTime() != null;
+                   
+                   boolean registered = targetNodeSecurity.getRegistrationTime() != null 
+                   		|| targetNodeSecurity.getNodeId().equals(targetNodeSecurity.getCreatedAtNodeId());
                    if (registered) {  
                        // Make loads unique to the target and create time
                        String key = load.getTargetNodeId() + "::" + load.getCreateTime().toString();
