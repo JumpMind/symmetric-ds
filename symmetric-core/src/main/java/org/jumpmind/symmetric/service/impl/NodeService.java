@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -127,7 +126,9 @@ public class NodeService extends AbstractService implements INodeService {
      * with it.
      */
     public Node findNode(String id) {
-        return findAllNodesAsMap().get(id);
+        List<Node> list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodeSql"),
+        new NodeRowMapper(), id);
+        return (Node) getFirstEntry(list);
     }
     
     public String getExternalId(String nodeId) {
