@@ -541,6 +541,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     currentBatch = activeBatches.get(i);
                     
                     processInfo.setCurrentLoadId(currentBatch.getLoadId());
+                    processInfo.setDataCount(currentBatch.getDataEventCount());
+                    processInfo.setCurrentBatchId(currentBatch.getBatchId());
                     
                     channelsProcessed.add(currentBatch.getChannelId());
                     
@@ -622,7 +624,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         dataWriter, writer, mode);
                             }
 
-                            processedBatches.add(currentBatch);
+                            if (!extractBatch.isExtractSkipped) {
+                                processedBatches.add(currentBatch);
+                            }
                             isSent = true;
                             
                             if (currentBatch.getStatus() != Status.OK) {
