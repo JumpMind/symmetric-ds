@@ -362,8 +362,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 }
             } catch (Exception ex) {
                 log.error(
-                        "Could not get a connection to the database: {}.  Waiting for 10 seconds before trying to connect to the database again.",
-                        ex.getMessage());
+                        "Could not get a connection to the database: " + ex.getMessage() + 
+                        ".  Waiting for 10 seconds before trying to connect to the database again.", ex);
                 AppUtils.sleep(10000);
             } finally {
                 JdbcSqlTemplate.close(c);
