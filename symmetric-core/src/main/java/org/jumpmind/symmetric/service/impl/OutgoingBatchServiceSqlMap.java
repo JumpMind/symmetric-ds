@@ -135,9 +135,10 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + "group by r.load_id");
         
         putSql("getUnprocessedReloadRequestsSql", 
-                "select r.load_id "
+                "select r.source_node_id, r.target_node_id "
               + "from $(table_reload_request) r "
-              + "where processed = 0 and source_node_id = ? ");
+              + "where processed = 0 and source_node_id = ? "
+        	  + "group by r.source_node_id, r.target_node_id");
       
         putSql("getLoadSummarySql",
                 "select " 
@@ -150,7 +151,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + "    group by load_id, target_node_id ");
              
         putSql("getLoadStatusSummarySql", 
-                "select count(ob.batch_id) as count, ob.status, c.queue "
+                "select count(ob.batch_id) as count, ob.status, c.queue, max(ob.last_update_time) as last_update_time, "
+                + " min(ob.create_time) as create_time, sum(ob.data_event_count) as data_events, sum(ob.byte_count) as byte_count"
                 + "   from $(outgoing_batch) ob "
                 + "   join $(channel) c on c.channel_id = ob.channel_id "
                 + "   where ob.load_id = ? "

@@ -599,16 +599,18 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 return rs.getLong("load_id");
             }
         }, sourceNodeId);
-        List<Long> requests = sqlTemplate.query(getSql("getUnprocessedReloadRequestsSql"), new ISqlRowMapper<Long>() {
+        loads.addAll(inProcess);
+        
+        return loads;
+    }
+    
+    public List<String> getQueuedLoads(String sourceNodeId) {
+    	return sqlTemplate.query(getSql("getUnprocessedReloadRequestsSql"), new ISqlRowMapper<String>() {
             @Override
-            public Long mapRow(Row rs) {
-                return rs.getLong("load_id");
+            public String mapRow(Row rs) {
+                return rs.getString("source_node_id") + " to " + rs.getString("target_node_id");
             }
         }, sourceNodeId);
-        
-        loads.addAll(inProcess);
-        loads.addAll(requests);
-        return loads;
     }
     
     public LoadSummary getLoadSummary(long loadId) {
@@ -637,7 +639,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }, loadId);
     }
 
-    public Map<String, Map<String, Integer>> getLoadStatusSummarySql(long loadId) {
+    public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummarySql(long loadId) {
         LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper();
         
         List<Object> obj = sqlTemplate.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
@@ -645,28 +647,83 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
     
     private class LoadStatusByQueueMapper implements ISqlRowMapper {
-        Map<String, Map<String, Integer>> results = new HashMap<String, Map<String, Integer>>();
+        Map<String, Map<String, LoadStatusSummary>> results = new HashMap<String, Map<String, LoadStatusSummary>>();
         
         @Override
         public Object mapRow(Row rs) {
             String queue = rs.getString("queue");
-            Integer count = rs.getInt("count");
             String status = rs.getString("status");
             
-            if (results.get(queue) == null) {
-                results.put(queue,  new HashMap<String, Integer>());
+            Map<String, LoadStatusSummary> statusMap = results.get(queue);
+            if (statusMap == null) {
+            	statusMap = new HashMap<String, LoadStatusSummary>();
             }
             
-            results.get(queue).put(status, count);
-           
+            LoadStatusSummary statusSummary = new LoadStatusSummary();
+        	statusSummary.setCreateTime(rs.getDateTime("create_time"));
+        	statusSummary.setLastUpdateTime(rs.getDateTime("last_update_time"));
+        	statusSummary.setByteCount(rs.getLong("byte_count"));
+        	statusSummary.setDataEventCount(rs.getLong("data_events"));
+        	statusSummary.setCount(rs.getInt("count"));
+            
+        	statusMap.put(status, statusSummary);
+            results.put(queue, statusMap);
+            
             return null;
         }
         
-        public Map<String, Map<String, Integer>> getResults() {
+        public Map<String, Map<String, LoadStatusSummary>> getResults() {
             return results;
         }
     }
     
+    public class LoadStatusSummary {
+    	private Date createTime;
+    	private Date lastUpdateTime;
+    	private long dataEventCount;
+    	private long byteCount;
+    	private String status;
+    	private int count;
+    	
+    	public String getStatus() {
+			return status;
+		}
+		public void setStatus(String status) {
+			this.status = status;
+		}
+		public int getCount() {
+			return count;
+		}
+		public void setCount(int count) {
+			this.count = count;
+		}
+		public Date getCreateTime() {
+			return createTime;
+		}
+		public void setCreateTime(Date createTime) {
+			this.createTime = createTime;
+		}
+		public Date getLastUpdateTime() {
+			return lastUpdateTime;
+		}
+		public void setLastUpdateTime(Date lastUpdateTime) {
+			this.lastUpdateTime = lastUpdateTime;
+		}
+		public long getDataEventCount() {
+			return dataEventCount;
+		}
+		public void setDataEventCount(long dataEventCount) {
+			this.dataEventCount = dataEventCount;
+		}
+		public long getByteCount() {
+			return byteCount;
+		}
+		public void setByteCount(long byteCount) {
+			this.byteCount = byteCount;
+		}
+    	
+    	
+    }
     
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly) {
         final Map<String, OutgoingLoadSummary> loadSummaries = new TreeMap<String, OutgoingLoadSummary>();

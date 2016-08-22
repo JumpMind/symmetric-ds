@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.OutgoingLoadSummary;
+import org.jumpmind.symmetric.service.impl.OutgoingBatchService.LoadStatusSummary;
 
 /**
  * This service provides an API to access to the outgoing batch table. 
@@ -104,9 +105,11 @@ public interface IOutgoingBatchService {
 
     public Set<Long> getActiveLoads(String sourceNodeId);
     
+    public List<String> getQueuedLoads(String sourceNodeId);
+    
     public LoadSummary getLoadSummary(long loadId);
     
-    public Map<String, Map<String, Integer>> getLoadStatusSummarySql(long loadId);
+    public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummarySql(long loadId);
     
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId);
 
