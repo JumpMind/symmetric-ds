@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -634,6 +636,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 changeBatchStatus(Status.LD, currentBatch, mode);
                             }
                         } catch (ExecutionException e) {
+                            if (isNotBlank(e.getMessage()) && e.getMessage().contains("string truncation")) {
+                                throw new RuntimeException("There is a good chance that the truncation error you are receiving is because contains_big_lobs on the '"
+                                        + currentBatch.getChannelId() + "' channel needs to be turned on.",
+                                        e.getCause() != null ? e.getCause() : e);
+                            }
                             throw new RuntimeException(e.getCause() != null ? e.getCause() : e);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
