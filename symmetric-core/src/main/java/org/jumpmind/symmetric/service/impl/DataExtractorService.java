@@ -779,6 +779,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long byteCount = 0l;
             long transformTimeInMs = 0l;
 
+            if (currentBatch.getStatus() == Status.NE) {
+                IStagedResource resource = getStagedResource(currentBatch);
+                if (resource != null) {
+                    resource.delete();
+                }
+            }
+
             if (currentBatch.getStatus() == Status.IG) {
                 Batch batch = new Batch(BatchType.EXTRACT, currentBatch.getBatchId(),
                         currentBatch.getChannelId(), symmetricDialect.getBinaryEncoding(),
