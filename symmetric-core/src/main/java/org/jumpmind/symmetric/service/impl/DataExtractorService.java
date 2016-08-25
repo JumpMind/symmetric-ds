@@ -1517,7 +1517,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     class ColumnsAccordingToTriggerHistory {
-        Map<Integer, Table> cache;
+        Map<Integer, Table> cache = new HashMap<Integer, Table>();
 
         public Table lookup(String routerId, TriggerHistory triggerHistory, boolean setTargetTableName, boolean useDatabaseDefinition) {            
             final int prime = 31;
