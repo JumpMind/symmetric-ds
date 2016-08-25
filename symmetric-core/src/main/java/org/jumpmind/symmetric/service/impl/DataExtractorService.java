@@ -1770,7 +1770,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         public SelectFromTableSource(OutgoingBatch outgoingBatch, Batch batch,
                 SelectFromTableEvent event) {
             this.outgoingBatch = outgoingBatch;
-            this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory();
             List<SelectFromTableEvent> initialLoadEvents = new ArrayList<DataExtractorService.SelectFromTableEvent>(
                     1);
             initialLoadEvents.add(event);
@@ -1790,6 +1789,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 throw new SymmetricException("Could not find a node represented by %s",
                         this.batch.getTargetNodeId());
             }
+            this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory();
         }
 
         public Table getSourceTable() {
