@@ -99,9 +99,15 @@ public class TransformWriter extends NestedDataWriter {
 
     @Override
     public boolean start(Table table) {
-        activeTransforms = transformsBySourceTable.get(table.getFullyQualifiedTableNameLowerCase());
-        if (activeTransforms != null && activeTransforms.size() > 0) {
+        List<TransformTable> activeTransformsTemp = transformsBySourceTable.get(table.getFullyQualifiedTableNameLowerCase());
+        if (activeTransformsTemp != null && activeTransformsTemp.size() > 0) { 
             this.sourceTable = table;
+            activeTransforms = new ArrayList<TransformTable>(activeTransformsTemp.size());
+            for (TransformTable transformation : activeTransformsTemp) {
+                activeTransforms.add(transformation.enhanceWithImpliedColumns(
+                        this.sourceTable.getPrimaryKeyColumnNames(),
+                        this.sourceTable.getColumnNames()));
+            }
             return true;
         } else {
             this.sourceTable = null;
@@ -161,9 +167,6 @@ public class TransformWriter extends NestedDataWriter {
             }
 
             for (TransformTable transformation : transformTables) {
-                transformation = transformation.enhanceWithImpliedColumns(
-                        this.sourceTable.getPrimaryKeyColumnNames(),
-                        this.sourceTable.getColumnNames());
                 if (eventType == DataEventType.INSERT && transformation.isUpdateFirst()) {
                     eventType = DataEventType.UPDATE;
                 }
