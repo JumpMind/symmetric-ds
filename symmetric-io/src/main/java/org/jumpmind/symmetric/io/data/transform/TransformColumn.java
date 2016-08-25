@@ -66,6 +66,8 @@ public class TransformColumn implements Comparable<TransformColumn> {
     protected Date lastUpdateTime;
     protected String lastUpdateBy;
 
+    protected String sourceColumnNameLowerCase;
+    protected String targetColumnNameLowerCase;
 
     public TransformColumn(String transformId) {
         this.transformId = transformId;
@@ -75,8 +77,8 @@ public class TransformColumn implements Comparable<TransformColumn> {
     }
 
     public TransformColumn(String sourceColumnName, String targetColumnName, boolean pk) {
-        this.sourceColumnName = sourceColumnName;
-        this.targetColumnName = targetColumnName;
+        setSourceColumnName(sourceColumnName);
+        setTargetColumnName(targetColumnName);
         this.pk = pk;
     }
 
@@ -91,16 +93,26 @@ public class TransformColumn implements Comparable<TransformColumn> {
         return sourceColumnName;
     }
 
+    public String getSourceColumnNameLowerCase() {
+        return sourceColumnNameLowerCase;
+    }
+
     public void setSourceColumnName(String sourceColumnName) {
         this.sourceColumnName = sourceColumnName;
+        this.sourceColumnNameLowerCase = sourceColumnName == null ? null : sourceColumnName.toLowerCase();
     }
 
     public String getTargetColumnName() {
         return targetColumnName;
     }
 
+    public String getTargetColumnNameLowerCase() {
+        return targetColumnNameLowerCase;
+    }
+
     public void setTargetColumnName(String targetColumnName) {
         this.targetColumnName = targetColumnName;
+        this.targetColumnNameLowerCase = targetColumnName == null ? null : targetColumnName.toLowerCase();
     }
 
     public boolean isPk() {
