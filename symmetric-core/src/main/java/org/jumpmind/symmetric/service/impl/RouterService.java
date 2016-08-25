@@ -951,14 +951,11 @@ public class RouterService extends AbstractService implements IRouterService {
 
         } else {
             log.warn(
-                    "Could not find trigger routers for trigger history id of {}.  There is a good chance that data was captured and the trigger router link was removed before the data could be routed",
-                    data.getTriggerHistory().getTriggerHistoryId());
-            log.info(
-                    "Data with the id of {} will be assigned to an unrouted batch",
-                    data.getDataId());
+                    "Could not find trigger routers for trigger history id of {}.  "
+                    + "Data with the id of {} and channel id {} will be assigned to an unrouted batch. There is a good chance that data was captured and the trigger router link was removed before the data could be routed",
+                    data.getTriggerHistory().getTriggerHistoryId(), data.getDataId(), data.getChannelId());
             numberOfDataEventsInserted += insertDataEvents(processInfo, context, new DataMetaData(data, table,
                     null, context.getChannel()), new HashSet<String>(0));
-
         }
 
         context.incrementStat(numberOfDataEventsInserted,
