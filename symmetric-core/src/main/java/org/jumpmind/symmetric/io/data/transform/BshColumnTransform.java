@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 import bsh.Interpreter;
 import bsh.TargetError;
 
-public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class BshColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -79,7 +79,7 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
         return true;
     }
 
-    public String transform(IDatabasePlatform platform,
+    public NewAndOldValue transform(IDatabasePlatform platform,
             DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
@@ -143,10 +143,13 @@ public class BshColumnTransform implements ISingleValueColumnTransform, IBuiltIn
                 interpreter.unset(columnName);
             }
             
-            if (result != null) {
-                return result.toString();
+            if (result == null) {
+            	return null;
+            }
+            else if (result instanceof String) {
+            	return new NewAndOldValue((String) result, null);
             } else {
-                return null;
+                return (NewAndOldValue) result;
             }
         } catch (TargetError evalEx) {
             Throwable ex = evalEx.getTarget();
