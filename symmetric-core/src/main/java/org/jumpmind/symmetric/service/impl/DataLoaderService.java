@@ -949,7 +949,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 IncomingBatch incomingBatch = new IncomingBatch(batch);
                 listener.getBatchesProcessed().add(incomingBatch);
                 if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
-                    log.warn("Unable to retry batch {} because it's not in staging.  Setting status to resend.", batch.getNodeBatchId());
+                    log.info("Unable to retry batch {} because it's not in staging.  Setting status to resend.", batch.getNodeBatchId());
                     incomingBatch.setStatus(Status.RS);
                     incomingBatchService.updateIncomingBatch(incomingBatch);
                 }
