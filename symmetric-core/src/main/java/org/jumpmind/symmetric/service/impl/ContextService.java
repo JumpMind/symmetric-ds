@@ -75,6 +75,10 @@ public class ContextService extends AbstractService implements IContextService {
     public int delete(ISqlTransaction transaction, String name) {
         return transaction.prepareAndExecute(getSql("deleteSql"), name);
     }
+    
+    public int delete(String name) {
+        return sqlTemplate.update(getSql("deleteSql"), name);
+    }
 
     public void save(String name, String value) {
         int count = sqlTemplate.update(getSql("updateSql"), value, name);
