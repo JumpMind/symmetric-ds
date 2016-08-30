@@ -2,6 +2,7 @@ package org.jumpmind.db.platform.db2;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
@@ -20,11 +21,19 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
         return new Db2As400DdlBuilder();
     }
 
-    public String getDefaultCatalog() {
-        return "";
+    public String getDefaultSchema() {
+        if (StringUtils.isBlank(defaultSchema)) {
+            try {
+                defaultSchema = (String) getSqlTemplate().queryForObject("select CURRENT SCHEMA from sysibm.sysdummy1", String.class);
+            } catch (Exception e) {
+                try {
+                    defaultSchema = (String) getSqlTemplate().queryForObject("select CURRENT SCHEMA from QSYS2.QSQPTABL", String.class);
+                } catch(Exception ex) {
+                    defaultSchema = "";
+                }
+            }
+        }
+        return defaultSchema;
     }
 
-    public String getDefaultSchema() {
-        return "";
-    }
 }

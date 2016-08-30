@@ -27,6 +27,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
@@ -159,9 +160,10 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     @Override
     public String massageDataExtractionSql(String sql, Channel channel) {
         if (channel != null && !channel.isContainsBigLob()) {
-            sql = StringUtils.replace(sql, "d.row_data", "cast(d.row_data as varchar(10000))");
-            sql = StringUtils.replace(sql, "d.old_data", "cast(d.old_data as varchar(10000))");
-            sql = StringUtils.replace(sql, "d.pk_data", "cast(d.pk_data as varchar(500))");
+            String[] sizes = parameterService.getString(ParameterConstants.FIREBIRD_EXTRACT_VARCHAR_ROW_OLD_PK_DATA, "20000,20000,1000").split(",");
+            sql = StringUtils.replace(sql, "d.row_data", "cast(d.row_data as varchar(" + sizes[0] + "))");
+            sql = StringUtils.replace(sql, "d.old_data", "cast(d.old_data as varchar(" + sizes[1] + "))");
+            sql = StringUtils.replace(sql, "d.pk_data", "cast(d.pk_data as varchar(" + sizes[2] + "))");
         }
         return sql;
     }
