@@ -631,6 +631,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             }
 
                             processedBatches.add(currentBatch);
+                            isProcessed = true;
 
                             if (currentBatch.getStatus() != Status.OK) {
                                 currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
