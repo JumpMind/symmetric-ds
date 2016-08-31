@@ -634,6 +634,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if (currentBatch.getStatus() != Status.OK) {
                                 currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
                                 changeBatchStatus(Status.LD, currentBatch, mode);
+                                processInfo.setStatus(ProcessInfo.Status.LOADING);
+                                processInfo.setCurrentTableName(currentBatch.getSummary());
                             }
                         } catch (ExecutionException e) {
                             if (isNotBlank(e.getMessage()) && e.getMessage().contains("string truncation")) {

@@ -604,41 +604,36 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return loads;
     }
     
-    public List<String> getQueuedLoads(String sourceNodeId) {
-    	return sqlTemplate.query(getSql("getUnprocessedReloadRequestsSql"), new ISqlRowMapper<String>() {
-            @Override
-            public String mapRow(Row rs) {
-                return rs.getString("source_node_id") + " to " + rs.getString("target_node_id");
-            }
-        }, sourceNodeId);
+    public List<LoadSummary> getQueuedLoads(String sourceNodeId) {
+    	return sqlTemplate.query(getSql("getLoadSummaryUnprocessedSql"), new LoadSummaryMapper(), sourceNodeId);
     }
     
     public LoadSummary getLoadSummary(long loadId) {
-        return sqlTemplate.queryForObject(getSql("getLoadSummarySql"),  
-                new ISqlRowMapper<LoadSummary>() {
-            
-            public LoadSummary mapRow(Row rs) {
-                LoadSummary summary = new LoadSummary();
-                summary.setLoadId(rs.getLong("load_id"));
-                summary.setNodeId(rs.getString("target_node_id"));
-                summary.setCreateBy(rs.getString("last_update_by"));
-                summary.setTableCount(rs.getInt("table_count"));
-                String triggerId = rs.getString("trigger_id");
-                if (triggerId != null && triggerId.equals(ParameterConstants.ALL)) {
-                    summary.setFullLoad(true);
-                } else {
-                    summary.setFullLoad(false);
-                }
-                summary.setCreateFirst(rs.getBoolean("create_table"));
-                summary.setDeleteFirst(rs.getBoolean("delete_first"));
-                summary.setRequestProcessed(rs.getBoolean("processed"));
-                summary.setConditional(rs.getBoolean("reload_select"));
-                summary.setCustomSql(rs.getBoolean("before_custom_sql"));
-                return summary;
-            }           
-        }, loadId);
+        return sqlTemplate.queryForObject(getSql("getLoadSummarySql"), new LoadSummaryMapper(), loadId);
     }
 
+    private class LoadSummaryMapper implements ISqlRowMapper {
+    	public LoadSummary mapRow(Row rs) {
+            LoadSummary summary = new LoadSummary();
+            summary.setLoadId(rs.getLong("load_id"));
+            summary.setNodeId(rs.getString("target_node_id"));
+            summary.setCreateBy(rs.getString("last_update_by"));
+            summary.setTableCount(rs.getInt("table_count"));
+            String triggerId = rs.getString("trigger_id");
+            if (triggerId != null && triggerId.equals(ParameterConstants.ALL)) {
+                summary.setFullLoad(true);
+            } else {
+                summary.setFullLoad(false);
+            }
+            summary.setCreateFirst(rs.getBoolean("create_table"));
+            summary.setDeleteFirst(rs.getBoolean("delete_first"));
+            summary.setRequestProcessed(rs.getBoolean("processed"));
+            summary.setConditional(rs.getBoolean("reload_select"));
+            summary.setCustomSql(rs.getBoolean("before_custom_sql"));
+            return summary;
+        }           
+    }
+    
     public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummarySql(long loadId) {
         LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper();
         
@@ -665,6 +660,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         	statusSummary.setByteCount(rs.getLong("byte_count"));
         	statusSummary.setDataEventCount(rs.getLong("data_events"));
         	statusSummary.setCount(rs.getInt("count"));
+            statusSummary.setTotalExtractTime(rs.getLong("total_extract_time"));
+            statusSummary.setTotalTransferTime(rs.getLong("total_transfer_time"));
             
         	statusMap.put(status, statusSummary);
             results.put(queue, statusMap);
@@ -684,6 +681,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     	private long byteCount;
     	private String status;
     	private int count;
+    	private long totalExtractTime;
+    	private long totalTransferTime;
     	
     	public String getStatus() {
 			return status;
@@ -720,6 +719,18 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 		}
 		public void setByteCount(long byteCount) {
 			this.byteCount = byteCount;
+		}
+		public long getTotalExtractTime() {
+			return totalExtractTime;
+		}
+		public void setTotalExtractTime(long totalExtractTime) {
+			this.totalExtractTime = totalExtractTime;
+		}
+		public long getTotalTransferTime() {
+			return totalTransferTime;
+		}
+		public void setTotalTransferTime(long totalTransferTime) {
+			this.totalTransferTime = totalTransferTime;
 		}
     	
     	

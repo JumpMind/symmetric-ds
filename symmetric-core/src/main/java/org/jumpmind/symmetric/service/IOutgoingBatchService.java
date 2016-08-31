@@ -105,7 +105,7 @@ public interface IOutgoingBatchService {
 
     public Set<Long> getActiveLoads(String sourceNodeId);
     
-    public List<String> getQueuedLoads(String sourceNodeId);
+    public List<LoadSummary> getQueuedLoads(String sourceNodeId);
     
     public LoadSummary getLoadSummary(long loadId);
     

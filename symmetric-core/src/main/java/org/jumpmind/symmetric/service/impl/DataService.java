@@ -400,7 +400,6 @@ public class DataService extends AbstractService implements IDataService {
                                         .getActiveTriggerHistories(new Trigger(reloadRequest.getTriggerId(), null)));
                             }
                         }
-                        processInfo.setDataCount(triggerHistories.size());
                         
                         Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
                                 .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
@@ -415,11 +414,19 @@ public class DataService extends AbstractService implements IDataService {
                         Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests);
                         
                         String symNodeSecurityReloadChannel = null;
+                        int totalTableCount = 0;
                         try {
-                        	symNodeSecurityReloadChannel = triggerRoutersByHistoryId.get(triggerHistories.get(0)
-                        			.getTriggerHistoryId()).get(0).getTrigger().getReloadChannelId();
+                        	for (List<TriggerRouter> triggerRouterList : triggerRoutersByHistoryId.values()) {
+                        		if (triggerRouterList.size() > 0) {
+                        			TriggerRouter tr = triggerRouterList.get(0);
+                        			symNodeSecurityReloadChannel = tr.getTrigger().getReloadChannelId();
+                        		}
+                        		totalTableCount += triggerRouterList.size();
+                        	}
                         }
                         catch (Exception e) { }
+                        
+                        processInfo.setDataCount(totalTableCount);
                         
                         if (isFullLoad || (reloadRequests != null && reloadRequests.size() > 0)) {
                             insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,
@@ -839,11 +846,15 @@ public class DataService extends AbstractService implements IDataService {
             List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                     .getTriggerHistoryId());
             
-            processInfo.incrementCurrentDataCount();
-            
             for (TriggerRouter triggerRouter : triggerRouters) {
                 if (triggerRouter.getInitialLoadOrder() >= 0
                         && engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)) {
+                    
+                	try {
+                		Thread.sleep(10000l);
+                	}
+                	catch (Exception e) {}
+                	processInfo.incrementCurrentDataCount();
                     
                     String selectSql = null;
                     if (reloadRequests != null) {

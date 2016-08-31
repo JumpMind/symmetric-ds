@@ -134,11 +134,15 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + "where ob.status != 'OK' and ob.status != 'IG' and r.source_node_id = ? "
                 + "group by r.load_id");
         
-        putSql("getUnprocessedReloadRequestsSql", 
-                "select r.source_node_id, r.target_node_id "
-              + "from $(table_reload_request) r "
-              + "where processed = 0 and source_node_id = ? "
-        	  + "group by r.source_node_id, r.target_node_id");
+        putSql("getLoadSummaryUnprocessedSql", 
+                "select r.source_node_id, r.target_node_id, "
+	    		+ "   load_id, count(TRIGGER_ID) as table_count, max(TRIGGER_ID) as trigger_id, "
+	            + "   max(create_table) as create_table, max(delete_first) as delete_first, max(processed) as processed, " 
+	            + "   max(reload_select) as reload_select, max(before_custom_sql) as before_custom_sql, " 
+	            + "   max(last_update_by) as last_update_by, min(last_update_time) as last_update_time "
+	            + "from $(table_reload_request) r "
+	            + "where processed = 0 and source_node_id = ? "
+	        	+ "group by r.source_node_id, r.target_node_id");
       
         putSql("getLoadSummarySql",
                 "select " 
@@ -152,7 +156,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
              
         putSql("getLoadStatusSummarySql", 
                 "select count(ob.batch_id) as count, ob.status, c.queue, max(ob.last_update_time) as last_update_time, "
-                + " min(ob.create_time) as create_time, sum(ob.data_event_count) as data_events, sum(ob.byte_count) as byte_count"
+                + " min(ob.create_time) as create_time, sum(ob.data_event_count) as data_events, sum(ob.byte_count) as byte_count, "
+                + " sum(ob.extract_millis) as total_extract_time, sum(ob.network_millis) as total_transfer_time "
                 + "   from $(outgoing_batch) ob "
                 + "   join $(channel) c on c.channel_id = ob.channel_id "
                 + "   where ob.load_id = ? "
