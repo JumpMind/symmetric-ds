@@ -503,3 +503,21 @@ endif::pro[]
 would convert a row with columns named "user1" and "user2" containing values "red" and "blue" into two rows with columns 
 "fieldid" and "color" containing a row of "1" and "red" and a row of "2" and "blue".
 ====
+
+
+
+===== isEmpty Transform
+
+This transformation checks to see if a string is null or zero length. If it is empty the replacement 
+value will be used.  If no value is provided null will be used as a default replacement for empty values.
+
+===== isBlank Transform
+
+This transformation checks to see if a string is null or zero length after trimming white spaces. If it is blank the replacement 
+value will be used.  If no value is provided null will be used as a default replacement for blank values.
+
+===== Null Value Transform
+
+This transformation checks to see if the source value is null and if so replaces it with the provided value.
+
+
