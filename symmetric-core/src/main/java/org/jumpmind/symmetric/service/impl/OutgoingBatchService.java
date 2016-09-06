@@ -608,11 +608,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     	return sqlTemplate.query(getSql("getLoadSummaryUnprocessedSql"), new LoadSummaryMapper(), sourceNodeId);
     }
     
-    public LoadSummary getLoadSummary(long loadId) {
+	public LoadSummary getLoadSummary(long loadId) {
         return sqlTemplate.queryForObject(getSql("getLoadSummarySql"), new LoadSummaryMapper(), loadId);
     }
 
-    private class LoadSummaryMapper implements ISqlRowMapper {
+    private class LoadSummaryMapper implements ISqlRowMapper<LoadSummary> {
     	public LoadSummary mapRow(Row rs) {
             LoadSummary summary = new LoadSummary();
             summary.setLoadId(rs.getLong("load_id"));
