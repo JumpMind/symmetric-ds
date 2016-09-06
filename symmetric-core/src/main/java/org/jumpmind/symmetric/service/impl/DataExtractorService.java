@@ -1179,7 +1179,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected void resetExtractRequest(OutgoingBatch batch) {
         sqlTemplate.update(getSql("resetExtractRequestStatus"), ExtractStatus.NE.name(),
-                batch.getBatchId(), batch.getBatchId(), batch.getNodeId(), batch.getChannelId());
+                batch.getBatchId(), batch.getBatchId(), batch.getNodeId());
     }
 
     public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String queue,
