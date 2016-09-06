@@ -24,11 +24,13 @@ import java.io.IOException;
 
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +58,26 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             if (transformTable != null && transformTable.findColumn("update_action") != null) {
                 engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE +
                         " set update_action = 'UPD_ROW' where update_action is null");
+            }
+        }
+        
+        if (engine.getDatabasePlatform() instanceof FirebirdDatabasePlatform) {
+            String contextTableName = tablePrefix + "_" + TableConstants.SYM_CONTEXT;
+            Table contextTable = currentModel.findTable(contextTableName);
+            if (contextTable != null && contextTable.findColumn("value") != null) {
+                TriggerHistory hist = engine.getTriggerRouterService().findTriggerHistory(null, null, contextTableName);
+                if (hist != null) {
+                    engine.getTriggerRouterService().dropTriggers(hist);
+                }
+            }
+
+            String monitorEventTableName = tablePrefix + "_" + TableConstants.SYM_MONITOR_EVENT;
+            Table monitorEventTable = currentModel.findTable(monitorEventTableName);
+            if (monitorEventTable != null && monitorEventTable.findColumn("value") != null) {
+                TriggerHistory hist = engine.getTriggerRouterService().findTriggerHistory(null, null, monitorEventTableName);
+                if (hist != null) {
+                    engine.getTriggerRouterService().dropTriggers(hist);
+                }
             }
         }
         return sb.toString();

@@ -54,18 +54,17 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
         // Monitor Events
         
         putSql("selectMonitorEventSql",
-                "select monitor_id, node_id, event_time, type, value, threshold, severity_level, host_name, is_notified " +
+                "select monitor_id, node_id, event_time, type, event_value, threshold, severity_level, host_name, is_notified " +
                 "from $(monitor_event) ");
 
-        putSql("whereMonitorEventFilteredSql",
-                "where (type = ? or ? is null) and severity_level >= ? and (node_id = ? or ? is null) order by event_time desc");
+        putSql("whereMonitorEventFilteredSql", "where severity_level >= ?");
 
         putSql("whereMonitorEventForNotificationBySeveritySql",
                 "where is_notified = 0 and severity_level >= ?");
 
         putSql("insertMonitorEventSql",
                 "insert into $(monitor_event) " +
-                "(monitor_id, node_id, event_time, host_name, type, value, threshold, severity_level, is_notified) " + 
+                "(monitor_id, node_id, event_time, host_name, type, event_value, threshold, severity_level, is_notified) " + 
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         putSql("updateMonitorEventNotifiedSql",

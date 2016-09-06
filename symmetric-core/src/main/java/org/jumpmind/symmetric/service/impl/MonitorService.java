@@ -254,8 +254,19 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     @Override
     public List<MonitorEvent> getMonitorEventsFiltered(int limit, String type, int severityLevel, String nodeId) {
-        return sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventFilteredSql"), limit,
-                new MonitorEventRowMapper(), type, type, severityLevel, nodeId, nodeId);
+        String sql = getSql("selectMonitorEventSql", "whereMonitorEventFilteredSql");
+        ArrayList<Object> args = new ArrayList<Object>();
+        args.add(severityLevel);
+        if (type != null) {
+            sql += " and type = ?";
+            args.add(type);
+        }
+        if (nodeId != null) {
+            sql += " and node_id = ?";
+            args.add(nodeId);
+        }
+        sql += " order by event_time desc";
+        return sqlTemplate.query(sql, limit, new MonitorEventRowMapper(), args.toArray());
     }    
 
     protected List<MonitorEvent> getMonitorEventsForNotification(int severityLevel) {
@@ -360,7 +371,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
             m.setHostName(row.getString("host_name"));
             m.setType(row.getString("type"));
             m.setThreshold(row.getLong("threshold"));
-            m.setValue(row.getLong("value"));
+            m.setValue(row.getLong("event_value"));
             m.setSeverityLevel(row.getInt("severity_level"));
             m.setNotified(row.getBoolean("is_notified"));
             return m;

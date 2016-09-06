@@ -545,7 +545,7 @@
         <column name="host_name" type="VARCHAR" size="60" description="Host name of the node that created the event." />
         <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type that detected the value recorded." />
         <column name="threshold" type="BIGINT" required="true" default="0" description="Minimum value for the monitor to cause an event." />
-        <column name="value" type="BIGINT" required="true" default="0" description="Actual value detected by the monitor." />
+        <column name="event_value" type="BIGINT" required="true" default="0" description="Actual value detected by the monitor." />
         <column name="severity_level" type="INTEGER" required="true" default="0" description="Severity level configured for the monitor." />
         <column name="is_notified" type="BOOLEANINT" required="true" default="0" description="Whether a notification was run." />
     </table>
