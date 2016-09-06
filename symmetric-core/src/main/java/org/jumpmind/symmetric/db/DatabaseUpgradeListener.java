@@ -24,7 +24,7 @@ import java.io.IOException;
 
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -61,7 +61,8 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             }
         }
         
-        if (engine.getDatabasePlatform() instanceof FirebirdDatabasePlatform) {
+        if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.FIREBIRD) ||
+                engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.FIREBIRD_DIALECT1)) {
             String contextTableName = tablePrefix + "_" + TableConstants.SYM_CONTEXT;
             Table contextTable = currentModel.findTable(contextTableName);
             if (contextTable != null && contextTable.findColumn("value") != null) {
