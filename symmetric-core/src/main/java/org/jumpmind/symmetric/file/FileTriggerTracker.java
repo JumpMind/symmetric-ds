@@ -139,7 +139,7 @@ public class FileTriggerTracker {
             	File ctlFile = engine.getFileSyncService().getControleFile(file);
             	
                 if (ctlFile.exists()) {
-                    log.debug("Control file detected: {}", file.getAbsolutePath());
+                    log.debug("Control file detected: {}", ctlFile.getAbsolutePath());
                     addSnapshot(file, LastEventType.CREATE);
                 }
             }

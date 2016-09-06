@@ -613,24 +613,26 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 Iterator<OutgoingBatch> activeBatchIter = activeBatches.iterator();                
                 for (Future<FutureOutgoingBatch> future : futures) {
                     currentBatch = activeBatchIter.next();
-                    boolean isSent = false;
-                    while (!isSent) {
+                    boolean isProcessed = false;
+                    while (!isProcessed) {
                         try {
                             FutureOutgoingBatch extractBatch = future.get(keepAliveMillis, TimeUnit.MILLISECONDS); 
                             currentBatch = extractBatch.getOutgoingBatch();
 
-                            if (!extractBatch.isExtractSkipped && (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT)) {
+                            if (extractBatch.isExtractSkipped) {
+                                break;
+                            }
+
+                            if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT) {
                                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
                                 processInfo.setCurrentLoadId(currentBatch.getLoadId());
                                 currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch, extractBatch.isRetry(), 
                                         dataWriter, writer, mode);
                             }
 
-                            if (!extractBatch.isExtractSkipped) {
-                                processedBatches.add(currentBatch);
-                            }
-                            isSent = true;
-                            
+                            processedBatches.add(currentBatch);
+                            isProcessed = true;
+
                             if (currentBatch.getStatus() != Status.OK) {
                                 currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
                                 changeBatchStatus(Status.LD, currentBatch, mode);

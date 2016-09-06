@@ -170,6 +170,16 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     }
                 }
 
+            } else if (tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_EVENT)
+            		|| tableMatches(dataMetaData, TableConstants.SYM_MONITOR)
+            	    || tableMatches(dataMetaData, TableConstants.SYM_MONITOR_EVENT) 
+            	    || tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)) {
+            	String sourceNodeId = columnValues.get("SOURCE_NODE_ID");
+                for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
+            		if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3,8,0)) {
+            			nodeIds.add(sourceNodeId);
+            		}
+            	}
             } else {
                 IConfigurationService configurationService = engine.getConfigurationService();
                 for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
