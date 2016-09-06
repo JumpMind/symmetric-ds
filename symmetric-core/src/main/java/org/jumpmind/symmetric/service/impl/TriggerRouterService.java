@@ -133,7 +133,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
      * Cache the history for performance. History never changes and does not
      * grow big so this should be OK.
      */
-    private HashMap<Integer, TriggerHistory> historyMap = new HashMap<Integer, TriggerHistory>();
+    private Map<Integer, TriggerHistory> historyMap = Collections.synchronizedMap(new HashMap<Integer, TriggerHistory>());
 
     public TriggerRouterService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -376,9 +376,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public TriggerHistory getTriggerHistory(int histId) {
         TriggerHistory history = historyMap.get(histId);
         if (history == null && histId >= 0) {
-            history = (TriggerHistory) sqlTemplate.queryForObject(getSql("triggerHistSql"),
+            history = sqlTemplate.queryForObject(getSql("triggerHistSql"),
                     new TriggerHistoryMapper(), histId);
-            historyMap.put(histId, history);
+            if (history != null) {                
+                historyMap.put(histId, history);
+            }
         }
         return history;
     }
