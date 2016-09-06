@@ -25,7 +25,6 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -712,7 +711,6 @@ public class RouterService extends AbstractService implements IRouterService {
                 .values());
 
         gapDetector.setFullGapAnalysis(true);
-        context.commit();
 
         if (engine.getParameterService().is(ParameterConstants.ROUTING_LOG_STATS_ON_BATCH_ERROR)) {
             engine.getStatisticManager().addRouterStats(context.getStartDataId(), context.getEndDataId(), 
@@ -730,9 +728,11 @@ public class RouterService extends AbstractService implements IRouterService {
             } else {
                 batch.setStatus(Status.NE);
             }
-            engine.getOutgoingBatchService().updateOutgoingBatch(batch);
+            engine.getOutgoingBatchService().updateOutgoingBatch(context.getSqlTransaction(), batch);
             context.getBatchesByNodes().remove(batch.getNodeId());
         }
+        
+        context.commit();
 
         for (IDataRouter dataRouter : usedRouters) {
             dataRouter.contextCommitted(context);
