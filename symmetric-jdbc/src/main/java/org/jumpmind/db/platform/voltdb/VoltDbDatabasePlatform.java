@@ -77,7 +77,6 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         if (objectValue instanceof byte[]
                 && (column.getJdbcTypeCode() == Types.VARBINARY
                     || column.getJdbcTypeCode() == Types.CLOB)) {
-            String rawString = new String((byte[])objectValue);
             objectValue = new String(Hex.encode((byte[])objectValue));
         }
         return objectValue;
@@ -93,6 +92,7 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return defaultCatalog;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getDataSource() {
         return (T) dataSource;
