@@ -757,9 +757,9 @@
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an insert trigger." />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an delete trigger." />
         <column name="sync_on_incoming_batch" type="BOOLEANINT" size="1" required="true" default="0"  description="Whether or not an incoming batch that loads data into this table should cause the triggers to capture data_events. Be careful turning this on, because an update loop is possible." />
-        <column name="name_for_update_trigger" type="VARCHAR" size="255"  description="Override the default generated name for the update trigger." />
-        <column name="name_for_insert_trigger" type="VARCHAR" size="255"  description="Override the default generated name for the insert trigger." />
-        <column name="name_for_delete_trigger" type="VARCHAR" size="255"  description="Override the default generated name for the delete trigger." />
+        <column name="name_for_update_trigger" type="VARCHAR" size="128"  description="Override the default generated name for the update trigger." />
+        <column name="name_for_insert_trigger" type="VARCHAR" size="128"  description="Override the default generated name for the insert trigger." />
+        <column name="name_for_delete_trigger" type="VARCHAR" size="128"  description="Override the default generated name for the delete trigger." />
         <column name="sync_on_update_condition" type="LONGVARCHAR"  description="Specify a condition for the update trigger firing using an expression specific to the database." />
         <column name="sync_on_insert_condition" type="LONGVARCHAR"  description="Specify a condition for the insert trigger firing using an expression specific to the database." />
         <column name="sync_on_delete_condition" type="LONGVARCHAR"  description="Specify a condition for the delete trigger firing using an expression specific to the database." />
