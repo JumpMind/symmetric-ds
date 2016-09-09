@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
+import java.sql.Types;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -71,6 +72,13 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.FIREBIRD_DIALECT1)) {
             checkForDroppedColumns(currentModel, desiredModel);
         }
+        
+        if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
+            String triggerTableName = tablePrefix + "_" + TableConstants.SYM_TRIGGER;
+            convertToMaxVarchar(desiredModel, triggerTableName, "custom_before_insert_text");
+            convertToMaxVarchar(desiredModel, triggerTableName, "custom_before_update_text");
+            convertToMaxVarchar(desiredModel, triggerTableName, "custom_before_delete_text");
+        }
         return sb.toString();
     }
 
@@ -108,6 +116,19 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             if (hist != null) {
                 log.info("Dropping triggers on " + tableName + " because " + columnName + " needs dropped");
                 engine.getTriggerRouterService().dropTriggers(hist);
+            }
+        }
+    }
+
+    protected void convertToMaxVarchar(Database model, String tableName, String columnName) {
+        Table triggerTable = model.findTable(tableName);
+        if (triggerTable != null) {
+            Column column = triggerTable.findColumn(columnName);
+            if (column != null) {
+                column.setJdbcTypeCode(Types.VARCHAR);
+                column.setMappedType("VARCHAR");
+                column.setMappedTypeCode(Types.VARCHAR);
+                column.setSize("255");
             }
         }
     }
