@@ -203,6 +203,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public void extractConfigurationStandalone(Node node, OutputStream out) {
         this.extractConfigurationStandalone(node, TransportUtils.toWriter(out));
     }
+    
+    protected boolean filter(boolean pre38, boolean pre37, String tableName) {
+        tableName = tableName.toLowerCase();
+        boolean include = true;
+        if (pre37 && tableName.contains(TableConstants.SYM_EXTENSION)) {
+            include = false;
+        }
+        if (pre38 && (tableName.contains(TableConstants.SYM_MONITOR) || 
+                tableName.contains(TableConstants.SYM_NOTIFICATION))) {
+            include = false;
+        }
+        return include;
+    }
 
     /**
      * Extract the SymmetricDS configuration for the passed in {@link Node}.
@@ -230,14 +243,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     triggerRouters.size() * 2);
 
             boolean pre37 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.7.0");
+            boolean pre38 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.8.0");
 
             for (int i = triggerRouters.size() - 1; i >= 0; i--) {
                 TriggerRouter triggerRouter = triggerRouters.get(i);
                 String channelId = triggerRouter.getTrigger().getChannelId();
                 if (Constants.CHANNEL_CONFIG.equals(channelId)
                         || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
-                    if (!(pre37 && triggerRouter.getTrigger().getSourceTableName().toLowerCase()
-                            .contains("extension"))) {
+                    if (filter(pre37, pre38, triggerRouter.getTrigger().getSourceTableName())) {
 
                         TriggerHistory triggerHistory = triggerRouterService
                                 .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
