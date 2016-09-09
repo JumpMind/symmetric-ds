@@ -78,6 +78,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             convertToMaxVarchar(desiredModel, triggerTableName, "custom_before_insert_text");
             convertToMaxVarchar(desiredModel, triggerTableName, "custom_before_update_text");
             convertToMaxVarchar(desiredModel, triggerTableName, "custom_before_delete_text");
+            convertToMaxVarchar(desiredModel, triggerTableName, "included_column_names");
         }
         return sb.toString();
     }
