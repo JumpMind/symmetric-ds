@@ -39,6 +39,8 @@ public interface IGroupletService {
     
     public void deleteGrouplet(Grouplet grouplet);
     
+    public void deleteAllGrouplets();
+    
     public boolean isSourceEnabled(TriggerRouter triggerRouter);
     
     public Set<Node> getTargetEnabled(TriggerRouter triggerRouter, Set<Node> targetNodes);

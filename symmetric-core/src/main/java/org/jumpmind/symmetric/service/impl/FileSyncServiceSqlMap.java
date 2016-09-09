@@ -138,6 +138,8 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         putSql("deleteFileTriggerRouterSql", ""
                 + "delete from $(file_trigger_router) where trigger_id=? and router_id=? ");
 
+        putSql("deleteAllFileTriggerRoutersSql", "delete from $(file_trigger_router)");
+
         putSql("deleteFileTriggerSql", "" + "delete from $(file_trigger) where trigger_id=?   ");
     }
 

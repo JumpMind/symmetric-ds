@@ -50,6 +50,8 @@ public class DataLoaderServiceSqlMap extends AbstractSqlMap {
         
         putSql("deleteConflictSettingsSql", "delete from $(conflict) where conflict_id=?");
         
+        putSql("deleteAllConflictSettingsSql", "delete from $(conflict)");
+        
         putSql("selectConflictSettingsSql",
                 "select " +
                 "source_node_group_id, target_node_group_id,                                              " +

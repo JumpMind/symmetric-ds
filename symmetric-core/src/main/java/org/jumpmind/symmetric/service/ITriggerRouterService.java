@@ -102,6 +102,8 @@ public interface ITriggerRouterService {
     
     public void deleteRouter(Router router);
     
+    public void deleteAllRouters();
+    
     public void saveRouter(Router router);
     
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
@@ -164,6 +166,8 @@ public interface ITriggerRouterService {
     public void deleteTriggerRouter(TriggerRouter triggerRouter);
     
     public void deleteTriggerRouter(String triggerId, String routerId);
+    
+    public void deleteAllTriggerRouters();
     
     public void saveTriggerRouter(TriggerRouter triggerRouter, boolean updateTriggerRouterTableOnly);
     

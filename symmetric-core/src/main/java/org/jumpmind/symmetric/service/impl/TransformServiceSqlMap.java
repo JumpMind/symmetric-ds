@@ -129,6 +129,8 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "delete from $(transform_table) where   " + 
 "  transform_id=?                             " );
 
+        putSql("deleteAllTransformTablesSql", "delete from $(transform_table)");
+
         putSql("deleteTransformColumnsSql" ,"" + 
 "delete from $(transform_column) where   " + 
 "  transform_id=?                              " );

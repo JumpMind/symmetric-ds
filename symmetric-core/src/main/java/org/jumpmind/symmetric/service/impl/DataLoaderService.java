@@ -338,6 +338,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 log.error("", e);
             }
             throw e;
+        } catch (ServiceUnavailableException e) {
+            if (remote.getNodeId() == null) {
+                log.info("Service is unavailable for registration with remote node.  It may be starting up.");               
+            } else {
+                log.info("Service is unavailable for remote node " + remote.getNodeGroupId() + "-" + remote.getNodeId() + 
+                        ".  It may be starting up.");
+            }
         }
     }
 
@@ -705,6 +712,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void delete(ConflictNodeGroupLink settings) {
         sqlTemplate.update(getSql("deleteConflictSettingsSql"), settings.getConflictId());
+    }
+
+    public void deleteAllConflicts() {
+        sqlTemplate.update(getSql("deleteAllConflictSettingsSql"));
     }
 
     public void save(ConflictNodeGroupLink setting) {
