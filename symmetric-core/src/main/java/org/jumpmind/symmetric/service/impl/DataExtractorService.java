@@ -1248,6 +1248,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 for (OutgoingBatch outgoingBatch : batches) {
                     if (outgoingBatch.getStatus() != Status.OK) {
                         areBatchesOk = false;
+                        break;
                     }
                 }
 
@@ -1286,6 +1287,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 for (OutgoingBatch outgoingBatch : checkBatches) {
                     if (outgoingBatch.getStatus() != Status.OK) {
                         areBatchesOk = false;
+                        break;
                     }
                 }
 
