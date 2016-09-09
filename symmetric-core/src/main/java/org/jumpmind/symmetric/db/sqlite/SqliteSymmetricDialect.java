@@ -89,7 +89,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     public String getSyncTriggersExpression() {
         if (isBlank(sqliteFunctionToOverride)) {
             String contextTableName = parameterService.getTablePrefix() + "_" + TableConstants.SYM_CONTEXT;
-            return "(not exists (select value from " + contextTableName + " where name = '" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "'))";
+            return "(not exists (select context_value from " + contextTableName + " where name = '" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "'))";
         } else {
             return "(" + sqliteFunctionToOverride + "() not like 'DISABLED%')";
         }

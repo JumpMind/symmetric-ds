@@ -391,6 +391,10 @@ public class TransformService extends AbstractService implements ITransformServi
         }
     }
 
+    public void deleteAllTransformTables() {
+        sqlTemplate.update(getSql("deleteAllTransformTablesSql"));
+    }
+    
     protected void saveTransformColumn(ISqlTransaction transaction, TransformColumn transformColumn) {
         transformColumn.setLastUpdateTime(new Date());
         if (transaction.prepareAndExecute(getSql("updateTransformColumnSql"),

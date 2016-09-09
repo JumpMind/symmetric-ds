@@ -770,7 +770,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected OutgoingBatch extractOutgoingBatch(ProcessInfo processInfo, Node targetNode,
             IDataWriter dataWriter, OutgoingBatch currentBatch, boolean useStagingDataWriter, 
             boolean updateBatchStatistics, ExtractMode mode) {
-        if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode) {
+        if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode || ExtractMode.FOR_SYM_CLIENT == mode) {
             
             Node sourceNode = nodeService.findIdentity();
 
@@ -1451,9 +1451,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         public void checkSend() {
-        	if (parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)) {
-        		this.outgoingBatch.setStatus(Status.NE);
-            	ISqlTransaction transaction = null;
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)
+                    && this.outgoingBatch.getStatus() != Status.OK) {
+                this.outgoingBatch.setStatus(Status.NE);
+                ISqlTransaction transaction = null;
                 try {
                     transaction = sqlTemplate.startSqlTransaction();
                     outgoingBatchService.updateOutgoingBatch(transaction, this.outgoingBatch);
@@ -1469,7 +1470,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                     throw ex;
                 } finally {
-                	if (transaction != null) {
+                    if (transaction != null) {
                         transaction.close();
                     }
                 }

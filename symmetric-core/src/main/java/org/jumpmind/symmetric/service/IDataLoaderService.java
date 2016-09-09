@@ -61,6 +61,8 @@ public interface IDataLoaderService {
     
     public void delete(ConflictNodeGroupLink settings);
     
+    public void deleteAllConflicts();
+    
     public void save(ConflictNodeGroupLink settings);
     
     public void clearCache();

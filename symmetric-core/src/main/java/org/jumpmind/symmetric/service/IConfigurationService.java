@@ -48,6 +48,8 @@ public interface IConfigurationService {
     
     public void deleteNodeGroupLink(NodeGroupLink link);
     
+    public void deleteAllNodeGroupLinks();
+    
     public List<NodeGroupLink> getNodeGroupLinks(boolean refreshCache);
 
     public List<NodeGroupLink> getNodeGroupLinksFor(String sourceGroupId, boolean refreshCache);

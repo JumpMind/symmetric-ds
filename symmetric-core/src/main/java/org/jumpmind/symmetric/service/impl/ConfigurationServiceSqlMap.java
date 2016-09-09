@@ -113,6 +113,8 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
         putSql("deleteNodeGroupLinkSql",
            "delete from $(node_group_link) where source_node_group_id=? and target_node_group_id=?   ");
 
+        putSql("deleteAllNodeGroupLinksSql", "delete from $(node_group_link)");
+
         putSql("deleteNodeGroupSql", "delete from $(node_group) where node_group_id=?   ");
 
         putSql("deleteChannelSql", "delete from $(channel) where channel_id=?   ");
