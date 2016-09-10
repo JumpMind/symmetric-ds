@@ -77,7 +77,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             Table triggerTable = desiredModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRIGGER);
             if (triggerTable != null) {
                 for (Column column : triggerTable.getColumns()) {
-                    if (column.getMappedType().equals("LVARCHAR")) {
+                    if (column.getMappedTypeCode() == Types.LONGVARCHAR) {
                         column.setJdbcTypeCode(Types.VARCHAR);
                         column.setMappedType("VARCHAR");
                         column.setMappedTypeCode(Types.VARCHAR);
