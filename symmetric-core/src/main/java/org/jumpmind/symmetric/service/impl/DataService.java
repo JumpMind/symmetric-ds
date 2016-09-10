@@ -1346,11 +1346,6 @@ public class DataService extends AbstractService implements IDataService {
             return String.format("Could not enable initial load for %s", nodeId);
         }
     }
-
-    private void insertNodeSecurityUpdate(ISqlTransaction transaction, String nodeIdRecord,
-            String targetNodeId, boolean isLoad, long loadId, String createBy) {
-        insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNodeId, isLoad, loadId, createBy, null);
-    }
     
     private void insertNodeSecurityUpdate(ISqlTransaction transaction, String nodeIdRecord,
             String targetNodeId, boolean isLoad, long loadId, String createBy, String channelId) {
