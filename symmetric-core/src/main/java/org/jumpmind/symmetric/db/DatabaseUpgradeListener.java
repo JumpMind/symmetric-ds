@@ -74,11 +74,17 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
         
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
-            String triggerTableName = tablePrefix + "_" + TableConstants.SYM_TRIGGER;
-            convertToMaxVarchar(desiredModel, triggerTableName, "custom_before_insert_text");
-            convertToMaxVarchar(desiredModel, triggerTableName, "custom_before_update_text");
-            convertToMaxVarchar(desiredModel, triggerTableName, "custom_before_delete_text");
-            convertToMaxVarchar(desiredModel, triggerTableName, "included_column_names");
+            Table triggerTable = desiredModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRIGGER);
+            if (triggerTable != null) {
+                for (Column column : triggerTable.getColumns()) {
+                    if (column.getMappedType().equals("LVARCHAR")) {
+                        column.setJdbcTypeCode(Types.VARCHAR);
+                        column.setMappedType("VARCHAR");
+                        column.setMappedTypeCode(Types.VARCHAR);
+                        column.setSize("255");
+                    }
+                }
+            }
         }
         return sb.toString();
     }
@@ -117,19 +123,6 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             if (hist != null) {
                 log.info("Dropping triggers on " + tableName + " because " + columnName + " needs dropped");
                 engine.getTriggerRouterService().dropTriggers(hist);
-            }
-        }
-    }
-
-    protected void convertToMaxVarchar(Database model, String tableName, String columnName) {
-        Table triggerTable = model.findTable(tableName);
-        if (triggerTable != null) {
-            Column column = triggerTable.findColumn(columnName);
-            if (column != null) {
-                column.setJdbcTypeCode(Types.VARCHAR);
-                column.setMappedType("VARCHAR");
-                column.setMappedTypeCode(Types.VARCHAR);
-                column.setSize("255");
             }
         }
     }
