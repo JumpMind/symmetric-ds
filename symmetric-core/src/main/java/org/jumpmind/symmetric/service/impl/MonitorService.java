@@ -111,14 +111,13 @@ public class MonitorService extends AbstractService implements IMonitorService {
         for (Monitor monitor : activeMonitors) {
             IMonitorType monitorType = monitorTypes.get(monitor.getType());
             if (monitorType != null) {
-                long lastCheckTime = 0;
                 if (!monitorType.requiresClusterLock()) {
                     Long lastCheckTimeLong = checkTimesByType.get(monitor.getMonitorId());
-                    lastCheckTime = lastCheckTimeLong != null ? lastCheckTimeLong : 0;
-                }
-                if (lastCheckTime == 0 || (System.currentTimeMillis() - lastCheckTime) / 1000 >= monitor.getRunPeriod()) {
-                    checkTimesByType.put(monitor.getMonitorId(), System.currentTimeMillis());
-                    updateMonitor(monitor, monitorType, identity);
+                    long lastCheckTime = lastCheckTimeLong != null ? lastCheckTimeLong : 0;
+                    if (lastCheckTime == 0 || (System.currentTimeMillis() - lastCheckTime) / 1000 >= monitor.getRunPeriod()) {
+                        checkTimesByType.put(monitor.getMonitorId(), System.currentTimeMillis());
+                        updateMonitor(monitor, monitorType, identity);
+                    }
                 }
             } else {
                 log.warn("Could not find monitor of type '" + monitor.getType() + "'");
@@ -133,7 +132,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 for (Monitor monitor : activeMonitors) {
                     IMonitorType monitorType = monitorTypes.get(monitor.getType());
                     if (monitorType != null && monitorType.requiresClusterLock() && 
-                            (System.currentTimeMillis() - clusterLastCheckTime) / 60000 > monitor.getRunPeriod()) {
+                            (System.currentTimeMillis() - clusterLastCheckTime) / 1000 >= monitor.getRunPeriod()) {
                         updateMonitor(monitor, monitorType, identity);
                     }
                 }
@@ -203,7 +202,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
             MonitorEvent event = new MonitorEvent();
             event.setMonitorId(monitor.getMonitorId());
             event.setNodeId(identity.getNodeId());
-            event.setEventTime(new Date());
+            event.setEventTime(new Date((System.currentTimeMillis() / 1000) * 1000));
             event.setHostName(hostName);
             event.setType(monitor.getType());
             event.setValue(value);

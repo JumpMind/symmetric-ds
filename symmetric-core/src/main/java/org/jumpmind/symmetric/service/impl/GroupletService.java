@@ -281,7 +281,9 @@ public class GroupletService extends AbstractService implements IGroupletService
 
     }
     
-    public void deleteAllGrouplets() {
+    public void deleteAllGrouplets() {        
+        sqlTemplate.update(getSql("deleteAllGroupletLinksSql"));
+        sqlTemplate.update(getSql("deleteAllTriggerRouterGroupletsSql"));
         sqlTemplate.update(getSql("deleteAllGroupletsSql"));
     }
 
