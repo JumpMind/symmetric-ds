@@ -50,6 +50,8 @@ public interface IFileSyncService {
     public void deleteFileTriggerRouter(String triggerId, String routerId);
 
     public void deleteFileTriggerRouter(FileTriggerRouter fileTriggerRouter);
+    
+    public void deleteAllFileTriggerRouters();
 
     public void deleteFileTrigger(FileTrigger fileTrigger);
 

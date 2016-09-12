@@ -350,7 +350,7 @@ public class DataService extends AbstractService implements IDataService {
                             || (reloadRequests.size() == 1 && reloadRequests.get(0).isFullLoadRequest());
                     
                     if (!reverse) {
-                        log.info("Queueing up " + (isFullLoad ? "an initial" : "a" + " load to node ") + targetNode.getNodeId());
+                        log.info("Queueing up " + (isFullLoad ? "an initial" : "a") + " load to node " + targetNode.getNodeId());
                     } else {
                         log.info("Queueing up a reverse " + (isFullLoad ? "initial" : "") + " load to node " + targetNode.getNodeId());
                     }
@@ -1345,11 +1345,6 @@ public class DataService extends AbstractService implements IDataService {
         } else {
             return String.format("Could not enable initial load for %s", nodeId);
         }
-    }
-
-    private void insertNodeSecurityUpdate(ISqlTransaction transaction, String nodeIdRecord,
-            String targetNodeId, boolean isLoad, long loadId, String createBy) {
-        insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNodeId, isLoad, loadId, createBy, null);
     }
     
     private void insertNodeSecurityUpdate(ISqlTransaction transaction, String nodeIdRecord,

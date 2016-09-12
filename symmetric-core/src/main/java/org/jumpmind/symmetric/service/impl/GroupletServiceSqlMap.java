@@ -35,6 +35,7 @@ public class GroupletServiceSqlMap extends AbstractSqlMap {
         putSql("updateGroupletSql", "update $(grouplet) set grouplet_link_policy=?, description=?, create_time=?, last_update_by=?, last_update_time=? where grouplet_id=?");
         putSql("insertGroupletSql", "insert into $(grouplet) (grouplet_link_policy, description, create_time, last_update_by, last_update_time, grouplet_id) values(?,?,?,?,?,?)");
         putSql("deleteGroupletSql", "delete from $(grouplet) where grouplet_id=?");
+        putSql("deleteAllGroupletsSql", "delete from $(grouplet)");
         
         putSql("updateGroupletLinkSql", "update $(grouplet_link) set create_time=?, last_update_by=?, last_update_time=? where grouplet_id=? and external_id=?");
         putSql("insertGroupletLinkSql", "insert into $(grouplet_link) (create_time, last_update_by, last_update_time, grouplet_id, external_id) values(?,?,?,?,?)");

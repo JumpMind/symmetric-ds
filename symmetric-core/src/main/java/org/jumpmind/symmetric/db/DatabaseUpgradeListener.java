@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
+import java.sql.Types;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -60,11 +61,30 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE +
                         " set update_action = 'UPD_ROW' where update_action is null");
             }
+
+            String dataGapTableName = tablePrefix + "_" + TableConstants.SYM_DATA_GAP;
+            if (currentModel.findTable(dataGapTableName) != null) { 
+                engine.getSqlTemplate().update("delete from " + dataGapTableName);
+            }
         }
         
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.FIREBIRD) ||
                 engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.FIREBIRD_DIALECT1)) {
             checkForDroppedColumns(currentModel, desiredModel);
+        }
+        
+        if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
+            Table triggerTable = desiredModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRIGGER);
+            if (triggerTable != null) {
+                for (Column column : triggerTable.getColumns()) {
+                    if (column.getMappedTypeCode() == Types.LONGVARCHAR) {
+                        column.setJdbcTypeCode(Types.VARCHAR);
+                        column.setMappedType("VARCHAR");
+                        column.setMappedTypeCode(Types.VARCHAR);
+                        column.setSize("255");
+                    }
+                }
+            }
         }
         return sb.toString();
     }

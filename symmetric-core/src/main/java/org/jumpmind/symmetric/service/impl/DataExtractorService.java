@@ -203,6 +203,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public void extractConfigurationStandalone(Node node, OutputStream out) {
         this.extractConfigurationStandalone(node, TransportUtils.toWriter(out));
     }
+    
+    protected boolean filter(boolean pre38, boolean pre37, String tableName) {
+        tableName = tableName.toLowerCase();
+        boolean include = true;
+        if (pre37 && tableName.contains(TableConstants.SYM_EXTENSION)) {
+            include = false;
+        }
+        if (pre38 && (tableName.contains(TableConstants.SYM_MONITOR) || 
+                tableName.contains(TableConstants.SYM_NOTIFICATION))) {
+            include = false;
+        }
+        return include;
+    }
 
     /**
      * Extract the SymmetricDS configuration for the passed in {@link Node}.
@@ -230,14 +243,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     triggerRouters.size() * 2);
 
             boolean pre37 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.7.0");
+            boolean pre38 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.8.0");
 
             for (int i = triggerRouters.size() - 1; i >= 0; i--) {
                 TriggerRouter triggerRouter = triggerRouters.get(i);
                 String channelId = triggerRouter.getTrigger().getChannelId();
                 if (Constants.CHANNEL_CONFIG.equals(channelId)
                         || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
-                    if (!(pre37 && triggerRouter.getTrigger().getSourceTableName().toLowerCase()
-                            .contains("extension"))) {
+                    if (filter(pre37, pre38, triggerRouter.getTrigger().getSourceTableName())) {
 
                         TriggerHistory triggerHistory = triggerRouterService
                                 .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
@@ -757,7 +770,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected OutgoingBatch extractOutgoingBatch(ProcessInfo processInfo, Node targetNode,
             IDataWriter dataWriter, OutgoingBatch currentBatch, boolean useStagingDataWriter, 
             boolean updateBatchStatistics, ExtractMode mode) {
-        if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode) {
+        if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode || ExtractMode.FOR_SYM_CLIENT == mode) {
             
             Node sourceNode = nodeService.findIdentity();
 
@@ -1235,6 +1248,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 for (OutgoingBatch outgoingBatch : batches) {
                     if (outgoingBatch.getStatus() != Status.OK) {
                         areBatchesOk = false;
+                        break;
                     }
                 }
 
@@ -1273,6 +1287,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 for (OutgoingBatch outgoingBatch : checkBatches) {
                     if (outgoingBatch.getStatus() != Status.OK) {
                         areBatchesOk = false;
+                        break;
                     }
                 }
 
@@ -1438,9 +1453,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         public void checkSend() {
-        	if (parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)) {
-        		this.outgoingBatch.setStatus(Status.NE);
-            	ISqlTransaction transaction = null;
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)
+                    && this.outgoingBatch.getStatus() != Status.OK) {
+                this.outgoingBatch.setStatus(Status.NE);
+                ISqlTransaction transaction = null;
                 try {
                     transaction = sqlTemplate.startSqlTransaction();
                     outgoingBatchService.updateOutgoingBatch(transaction, this.outgoingBatch);
@@ -1456,7 +1472,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                     throw ex;
                 } finally {
-                	if (transaction != null) {
+                    if (transaction != null) {
                         transaction.close();
                     }
                 }

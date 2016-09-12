@@ -987,6 +987,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         clearCache();
     }
 
+    public void deleteAllTriggerRouters() {
+        sqlTemplate.update(getSql("deleteAllTriggerRoutersSql"));
+        clearCache();
+    }
+
     public void saveTriggerRouter(TriggerRouter triggerRouter) {
         saveTriggerRouter(triggerRouter, false);
     }
@@ -1082,6 +1087,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (router != null) {
             sqlTemplate.update(getSql("deleteRouterSql"), (Object) router.getRouterId());
         }
+    }
+
+    public void deleteAllRouters() {
+        sqlTemplate.update(getSql("deleteAllRoutersSql"));
     }
 
     public void saveTrigger(Trigger trigger) {

@@ -57,17 +57,12 @@ import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.DefaultOfflineServerListener;
 import org.jumpmind.symmetric.job.IJobManager;
-import org.jumpmind.symmetric.model.FileTriggerRouter;
-import org.jumpmind.symmetric.model.Grouplet;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
-import org.jumpmind.symmetric.model.Router;
-import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -104,7 +99,6 @@ import org.jumpmind.symmetric.service.impl.ConfigurationService;
 import org.jumpmind.symmetric.service.impl.ContextService;
 import org.jumpmind.symmetric.service.impl.DataExtractorService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
-import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.DataService;
 import org.jumpmind.symmetric.service.impl.FileSyncService;
 import org.jumpmind.symmetric.service.impl.GroupletService;
@@ -125,7 +119,6 @@ import org.jumpmind.symmetric.service.impl.RouterService;
 import org.jumpmind.symmetric.service.impl.SequenceService;
 import org.jumpmind.symmetric.service.impl.StatisticService;
 import org.jumpmind.symmetric.service.impl.TransformService;
-import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.service.impl.TriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
@@ -655,83 +648,41 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         log.info("Just cleaned {} files in the staging area during the uninstall.", getStagingManager().clean(0));
         
         try {
-            
-            Table table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_TRIGGER_ROUTER));            
+            String prefix = parameterService.getTablePrefix();
+            Table table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_TRIGGER_ROUTER));            
             if (table != null) {
-                
-                List<Grouplet> grouplets = groupletService.getGrouplets(true);
-                for (Grouplet grouplet : grouplets) {
-                    groupletService.deleteGrouplet(grouplet);
-                }
-                
-                List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters(true);
-                for (TriggerRouter triggerRouter : triggerRouters) {
-                    triggerRouterService.deleteTriggerRouter(triggerRouter);
-                }
-
-                List<FileTriggerRouter> fileTriggerRouters = fileSyncService.getFileTriggerRouters();
-                for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
-                    fileSyncService.deleteFileTriggerRouter(fileTriggerRouter);
-                }
-                
-                List<Router> routers = triggerRouterService.getRouters();
-                for (Router router : routers) {
-                    triggerRouterService.deleteRouter(router);    
-                }
-
+                groupletService.deleteAllGrouplets();                
+                triggerRouterService.deleteAllTriggerRouters();
+                fileSyncService.deleteAllFileTriggerRouters();                
+                triggerRouterService.deleteAllRouters();
             }
             
-            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
-                    parameterService.getTablePrefix(), TableConstants.SYM_CONFLICT));
+            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_CONFLICT));
             if (table != null) {
-                // need to remove all conflicts before we can remove the node
-                // group links
-                List<ConflictNodeGroupLink> conflicts = dataLoaderService
-                        .getConflictSettingsNodeGroupLinks();
-                for (ConflictNodeGroupLink conflict : conflicts) {
-                    dataLoaderService.delete(conflict);
-                }
+                // need to remove all conflicts before we can remove the node group links
+                dataLoaderService.deleteAllConflicts();
             }
 
-            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
-                    parameterService.getTablePrefix(), TableConstants.SYM_TRANSFORM_TABLE));
+            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_TRANSFORM_TABLE));
             if (table != null) {
-                // need to remove all transforms before we can remove the node
-                // group links
-                List<TransformTableNodeGroupLink> transforms = transformService
-                        .getTransformTables(false);
-                for (TransformTableNodeGroupLink transformTable : transforms) {
-                    transformService.deleteTransformTable(transformTable.getTransformId());
-                }
+                // need to remove all transforms before we can remove the node group links
+                transformService.deleteAllTransformTables();
             }
             
-            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
-                    parameterService.getTablePrefix(), TableConstants.SYM_ROUTER));
+            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_ROUTER));
             if (table != null) {
-                List<Router> objects = triggerRouterService.getRouters();
-                for (Router router : objects) {
-                    triggerRouterService.deleteRouter(router);
-                }
+                triggerRouterService.deleteAllRouters();
             }
             
-            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
-                    parameterService.getTablePrefix(), TableConstants.SYM_CONFLICT));
+            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_CONFLICT));
             if (table != null) {
-                List<ConflictNodeGroupLink> objects = dataLoaderService.getConflictSettingsNodeGroupLinks();
-                for (ConflictNodeGroupLink obj : objects) {
-                    dataLoaderService.delete(obj);
-                }
+                dataLoaderService.deleteAllConflicts();
             }
             
-            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(
-                    parameterService.getTablePrefix(), TableConstants.SYM_NODE_GROUP_LINK));
+            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_NODE_GROUP_LINK));
             if (table != null) {
-                // remove the links so the symmetric table trigger will be
-                // removed
-                List<NodeGroupLink> links = configurationService.getNodeGroupLinks(false);
-                for (NodeGroupLink nodeGroupLink : links) {
-                    configurationService.deleteNodeGroupLink(nodeGroupLink);
-                }
+                // remove the links so the triggers on the sym tables will be removed
+                configurationService.deleteAllNodeGroupLinks();
             }
 
             if (table != null) {
@@ -747,6 +698,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         // remove any additional triggers that may remain because they were not in trigger history
         symmetricDialect.cleanupTriggers();                
         
+        log.info("Removing SymmetricDS database objects");
         symmetricDialect.dropTablesAndDatabaseObjects();
         
         // force cache to be cleared

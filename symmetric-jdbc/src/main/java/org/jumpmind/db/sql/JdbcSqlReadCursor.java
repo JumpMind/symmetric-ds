@@ -76,7 +76,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                 if (values != null) {
                     PreparedStatement pstmt = c.prepareStatement(sql,
                             sqlTemplate.getSettings().getResultSetType(),
-                            java.sql.ResultSet.CONCUR_READ_ONLY);
+                            ResultSet.CONCUR_READ_ONLY);
                     sqlTemplate.setValues(pstmt, values, types, sqlTemplate.getLobHandler()
                             .getDefaultHandler());
                     st = pstmt;                    
@@ -85,8 +85,8 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                     rs = pstmt.executeQuery();
 
                 } else {
-                    st = c.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
-                            java.sql.ResultSet.CONCUR_READ_ONLY);
+                    st = c.createStatement(sqlTemplate.getSettings().getResultSetType(),
+                            ResultSet.CONCUR_READ_ONLY);
                     st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
                     st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
                     rs = st.executeQuery(sql);

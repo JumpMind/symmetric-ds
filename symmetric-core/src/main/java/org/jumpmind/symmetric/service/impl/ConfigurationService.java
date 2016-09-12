@@ -191,6 +191,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 link.getTargetNodeGroupId());
     }
 
+    public void deleteAllNodeGroupLinks() {
+        sqlTemplate.update(getSql("deleteAllNodeGroupLinksSql"));
+    }
+
     public List<NodeGroup> getNodeGroups() {
         return sqlTemplate.query(getSql("selectNodeGroupsSql"), new NodeGroupMapper());
     }
