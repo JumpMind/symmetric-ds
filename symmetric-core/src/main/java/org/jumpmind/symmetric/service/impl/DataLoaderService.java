@@ -138,6 +138,8 @@ import org.jumpmind.symmetric.web.WebConstants;
  * @see IDataLoaderService
  */
 public class DataLoaderService extends AbstractService implements IDataLoaderService {
+    
+    private static final int MAX_NETWORK_ERROR_FOR_LOGGING = 5;
 
     private IIncomingBatchService incomingBatchService;
 
@@ -166,6 +168,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private ISymmetricEngine engine = null;
 
     private Date lastUpdateTime;
+    
+    private Map<String, Integer> errorCountByNode = new HashMap<String, Integer>();
     
     public DataLoaderService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -400,9 +404,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 } else {
                     processInfo.setStatus(ProcessInfo.Status.OK);
                 }
-            } catch (RuntimeException e) {
+            } catch (Exception e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
-                throw e;
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                }
+                throw new RuntimeException(e);
             }
         } else {
             throw new SymmetricException("Could not load data because the node is not registered");
@@ -527,7 +534,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 };
                 processor.process(ctx);
             }
-
+            errorCountByNode.remove(sourceNode.getNodeId());
         } catch (Throwable ex) {
             error = ex;
             logAndRethrow(sourceNode, ex);
@@ -565,11 +572,24 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             log.warn("Synchronization is disabled on the server node");
             throw (SyncDisabledException) ex;
         } else if (ex instanceof IOException) {
-            if (ex.getMessage() != null && !ex.getMessage().startsWith("http")) {
-                log.error("Failed while reading batch because: {}", ex.getMessage());
-            } else {
-                log.error("Failed while reading batch because: {}", ex.getMessage(), ex);
+            Integer errorCount = errorCountByNode.get(remoteNode.getNodeId());
+            if (errorCount == null) {
+                errorCount = 1;
             }
+            if (errorCount >= MAX_NETWORK_ERROR_FOR_LOGGING) {
+                if (ex.getMessage() != null && !ex.getMessage().startsWith("http")) {
+                    log.error("Failed while reading batch because: {}", ex.getMessage());
+                } else {
+                    log.error("Failed while reading batch because: {}", ex.getMessage(), ex);
+                }                
+            } else {
+                if (ex.getMessage() != null && !ex.getMessage().startsWith("http")) {
+                    log.info("Failed while reading batch because: {}", ex.getMessage());
+                } else {
+                    log.info("Failed while reading batch because: {}", ex.getMessage(), ex);
+                }
+            }
+            errorCountByNode.put(remoteNode.getNodeId(), errorCount + 1);
             throw (IOException) ex;
         } else {
             if (!(ex instanceof ConflictException || ex instanceof SqlException)) {
