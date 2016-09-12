@@ -40,10 +40,12 @@ public class GroupletServiceSqlMap extends AbstractSqlMap {
         putSql("updateGroupletLinkSql", "update $(grouplet_link) set create_time=?, last_update_by=?, last_update_time=? where grouplet_id=? and external_id=?");
         putSql("insertGroupletLinkSql", "insert into $(grouplet_link) (create_time, last_update_by, last_update_time, grouplet_id, external_id) values(?,?,?,?,?)");
         putSql("deleteGroupletLinkSql", "delete from $(grouplet_link) where grouplet_id=? and external_id=?");
+        putSql("deleteAllGroupletLinksSql", "delete from $(grouplet_link)");
 
         putSql("updateTriggerRouterGroupletSql", "update $(trigger_router_grouplet) set create_time=?, last_update_by=?, last_update_time=? where grouplet_id=? and applies_when=? and trigger_id=? and router_id=?");
         putSql("insertTriggerRouterGroupletSql", "insert into $(trigger_router_grouplet) (create_time, last_update_by, last_update_time, grouplet_id, applies_when, trigger_id, router_id) values(?,?,?,?,?,?,?)");
         putSql("deleteTriggerRouterGroupletSql", "delete from $(trigger_router_grouplet) where grouplet_id=? and applies_when=? and trigger_id=? and router_id=?");
+        putSql("deleteAllTriggerRouterGroupletsSql", "delete from $(trigger_router_grouplet)");
         putSql("deleteTriggerRouterGroupletForSql", "delete from $(trigger_router_grouplet) where trigger_id=? and router_id=?");
 
         putSql("selectMaxGroupletLastUpdateTime" ,"select max(last_update_time) from $(grouplet) where last_update_time is not null" );       
