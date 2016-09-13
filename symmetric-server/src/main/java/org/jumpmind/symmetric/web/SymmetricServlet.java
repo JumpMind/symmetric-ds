@@ -63,9 +63,13 @@ public class SymmetricServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    private static final int MAX_NETWORK_ERROR_FOR_LOGGING = 5;
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected Map<String, Integer> rejectionStatusByEngine = new HashMap<String, Integer>();
+    
+    private Map<String, Integer> errorCountByNode = new HashMap<String, Integer>();
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse res)
@@ -108,6 +112,7 @@ public class SymmetricServlet extends HttpServlet {
                         }
                     }
                     handler.handle(req, res);
+                    errorCountByNode.remove(req.getParameter(WebConstants.NODE_ID));
                 } catch (Exception e) {
                     logException(req, e,
                             !(e instanceof IOException && StringUtils.isNotBlank(e.getMessage())));
@@ -246,17 +251,30 @@ public class SymmetricServlet extends HttpServlet {
         String hostName = req.getRemoteHost();
         String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod()
                 : "";
-        if (isError) {
-            log.error(
-                    "Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
-                    new Object[] { method, externalId, nodeId, address, hostName,
-                            ServletUtils.normalizeRequestUri(req) });
-            log.error("", ex);
-        } else {
-            log.warn(
-                    "Error while processing {} request for externalId: {}, node: {} at {} ({}).  The message is: {}",
-                    new Object[] { method, externalId, nodeId, address, hostName, ex.getMessage() });
+        
+        Integer errorCount = errorCountByNode.get(nodeId);
+        if (errorCount == null) {
+            errorCount = 1;
         }
+        if (errorCount >= MAX_NETWORK_ERROR_FOR_LOGGING) {
+            if (isError) {
+                log.error("Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
+                        new Object[] { method, externalId, nodeId, address, hostName, ServletUtils.normalizeRequestUri(req) });
+                log.error("", ex);
+            } else {
+                log.warn("Error while processing {} request for externalId: {}, node: {} at {} ({}).  The message is: {}",
+                        new Object[] { method, externalId, nodeId, address, hostName, ex.getMessage() });
+            }
+        } else {
+            if (isError) {
+                log.info("Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
+                        new Object[] { method, externalId, nodeId, address, hostName, ServletUtils.normalizeRequestUri(req) });
+            } else {
+                log.info("Error while processing {} request for externalId: {}, node: {} at {} ({}).  The message is: {}",
+                        new Object[] { method, externalId, nodeId, address, hostName, ex.getMessage() });
+            }            
+        }
+        errorCountByNode.put(nodeId, errorCount + 1);
     }
 
     protected boolean shouldLog(String engineName, int status) {
