@@ -40,7 +40,7 @@ public interface IMonitorService {
     
     public List<MonitorEvent> getMonitorEvents();
     
-    public List<MonitorEvent> getMonitorEventsFiltered(int limit, String type, int severityLevel, String nodeId);
+    public List<MonitorEvent> getMonitorEventsFiltered(int limit, String type, int severityLevel, String nodeId, boolean isResolved);
 
     public void saveMonitorEvent(MonitorEvent notificationEvent);
 

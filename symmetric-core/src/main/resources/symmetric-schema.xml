@@ -546,8 +546,11 @@
         <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type that detected the value recorded." />
         <column name="threshold" type="BIGINT" required="true" default="0" description="Minimum value for the monitor to cause an event." />
         <column name="event_value" type="BIGINT" required="true" default="0" description="Actual value detected by the monitor." />
+        <column name="event_count" type="INTEGER" required="true" default="0" description="Number of times this event has occurred and been updated." />
         <column name="severity_level" type="INTEGER" required="true" default="0" description="Severity level configured for the monitor." />
+        <column name="is_resolved" type="BOOLEANINT" required="true" default="0" description="Whether an event is resolved because its value dropped below the threshold." />
         <column name="is_notified" type="BOOLEANINT" required="true" default="0" description="Whether a notification was run." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when the event was last updated." />
     </table>
 
     <table name="notification" description="Defines what notification to send when a monitor detects a problem in the system.">

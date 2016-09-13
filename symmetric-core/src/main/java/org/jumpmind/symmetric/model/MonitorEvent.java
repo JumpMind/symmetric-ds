@@ -37,10 +37,53 @@ public class MonitorEvent {
     protected long threshold;
 
     protected long value;
+    
+    protected int count;
 
     protected int severityLevel;
     
+    protected boolean isResolved;
+
     protected boolean isNotified;
+    
+    protected Date lastUpdateTime;
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((eventTime == null) ? 0 : eventTime.hashCode());
+        result = prime * result + ((monitorId == null) ? 0 : monitorId.hashCode());
+        result = prime * result + ((nodeId == null) ? 0 : nodeId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MonitorEvent other = (MonitorEvent) obj;
+        if (eventTime == null) {
+            if (other.eventTime != null)
+                return false;
+        } else if (!eventTime.equals(other.eventTime))
+            return false;
+        if (monitorId == null) {
+            if (other.monitorId != null)
+                return false;
+        } else if (!monitorId.equals(other.monitorId))
+            return false;
+        if (nodeId == null) {
+            if (other.nodeId != null)
+                return false;
+        } else if (!nodeId.equals(other.nodeId))
+            return false;
+        return true;
+    }
 
     public String getMonitorId() {
         return monitorId;
@@ -112,6 +155,30 @@ public class MonitorEvent {
 
     public void setNotified(boolean isNotified) {
         this.isNotified = isNotified;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public boolean isResolved() {
+        return isResolved;
+    }
+
+    public void setResolved(boolean isResolved) {
+        this.isResolved = isResolved;
+    }
+
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(Date lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
     }
 
 }
