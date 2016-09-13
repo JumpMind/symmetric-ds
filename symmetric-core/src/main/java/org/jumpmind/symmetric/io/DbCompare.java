@@ -20,11 +20,13 @@
  */
 package org.jumpmind.symmetric.io;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.jumpmind.db.model.Column;
@@ -155,9 +157,6 @@ public class DbCompare {
         Row sourceRow = sourceCursor.next();
         Row targetRow = targetCursor.next();
         
-
-        
-        
         int counter = 0;
         long startTime = System.currentTimeMillis();
         DbCompareDiffWriter diffWriter = new DbCompareDiffWriter(targetEngine, tables, sqlDiffFileName);
@@ -208,6 +207,8 @@ public class DbCompare {
             }
         } finally {
             diffWriter.close();
+            IOUtils.closeQuietly(sourceCursor);
+            IOUtils.closeQuietly(targetCursor);
         }
 
         return tableReport;
@@ -509,7 +510,7 @@ public class DbCompare {
         this.useSymmetricConfig = useSymmetricConfig;
     }
 
-    class CountingSqlReadCursor implements ISqlReadCursor<Row> {
+    class CountingSqlReadCursor implements ISqlReadCursor<Row>, Closeable {
 
         ISqlReadCursor<Row> wrapped;
         int count = 0;
