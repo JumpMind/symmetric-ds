@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -54,6 +55,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
+import org.apache.log4j.Layout;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.exception.IoException;
@@ -112,9 +114,9 @@ public class SnapshotUtil {
             logDir = new File("logs");
 
             if (!logDir.exists()) {
-                File file = findSymmetricLogFile();
-                if (file != null) {
-                    logDir = file.getParentFile();
+                Map<File, Layout> matches = findSymmetricLogFile();
+                if (matches != null && matches.size() == 1) {
+                    logDir = matches.keySet().iterator().next().getParentFile();
                 }
             }
 
@@ -579,7 +581,7 @@ public class SnapshotUtil {
     }
     
     @SuppressWarnings("unchecked")
-    public static File findSymmetricLogFile() {
+    public static Map<File, Layout> findSymmetricLogFile() {
         Enumeration<Appender> appenders = org.apache.log4j.Logger.getRootLogger().getAllAppenders();
         while (appenders.hasMoreElements()) {
             Appender appender = appenders.nextElement();
@@ -588,7 +590,9 @@ public class SnapshotUtil {
                 if (fileAppender != null) {
                     File file = new File(fileAppender.getFile());
                     if (file != null && file.exists()) {
-                        return file;
+                        Map<File, Layout> matches = new HashMap<File, Layout>();
+                        matches.put(file, fileAppender.getLayout());
+                        return matches;
                     }
                 }
             }
