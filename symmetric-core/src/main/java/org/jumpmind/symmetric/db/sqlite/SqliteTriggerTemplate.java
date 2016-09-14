@@ -37,7 +37,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
 
         String sourceNodeExpression;
         if(isBlank(sqliteFunctionToOverride)){
-        	sourceNodeExpression = "(select value from $(prefixName)_context where name = 'sync_node_disabled')";
+        	sourceNodeExpression = "(select context_value from $(prefixName)_context where name = 'sync_node_disabled')";
         }else{
         	sourceNodeExpression = "(select substr(" + sqliteFunctionToOverride + "(), 10) from sqlite_master where " + sqliteFunctionToOverride + "() like 'DISABLED:%')";
         }
