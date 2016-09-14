@@ -203,6 +203,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
             MonitorEvent event = unresolved.get(monitor.getMonitorId());
             Date now = new Date((System.currentTimeMillis() / 1000) * 1000);
             if (event != null && value < monitor.getThreshold()) {
+                event.setLastUpdateTime(now);
                 updateMonitorEventAsResolved(event);
             } else if (value >= monitor.getThreshold()) {
                 if (event == null) {
@@ -340,7 +341,8 @@ public class MonitorService extends AbstractService implements IMonitorService {
     }
 
     protected void updateMonitorEventAsResolved(MonitorEvent event) {
-        sqlTemplate.update(getSql("updateMonitorEventResolvedSql"), event.getMonitorId(), event.getNodeId(), event.getEventTime());
+        sqlTemplate.update(getSql("updateMonitorEventResolvedSql"), event.getLastUpdateTime(), event.getMonitorId(), 
+                event.getNodeId(), event.getEventTime());
     }
 
     @Override
