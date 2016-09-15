@@ -82,7 +82,9 @@ final public class ParameterConstants {
     public final static String FILE_PUSH_LOCK_TIMEOUT_MS = "file.push.lock.timeout.ms";
 
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
-
+    public final static String JOB_PULL_PERIOD_TIME_MS = "job.pull.period.time.ms";
+    public final static String JOB_PUSH_PERIOD_TIME_MS = "job.push.period.time.ms";
+    
     public final static String REGISTRATION_NUMBER_OF_ATTEMPTS = "registration.number.of.attempts";
     public final static String REGISTRATION_REOPEN_USE_SAME_PASSWORD = "registration.reopen.use.same.password";
     public final static String REGISTRATION_REQUIRE_NODE_GROUP_LINK = "registration.require.node.group.link";
