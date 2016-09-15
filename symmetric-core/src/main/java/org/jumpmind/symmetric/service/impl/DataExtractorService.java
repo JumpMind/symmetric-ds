@@ -693,18 +693,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                     outgoingBatchService.updateOutgoingBatch(currentBatch);
 
-                    if (isStreamClosedByClient(e)) {
-                        log.warn(
-                                "Failed to transport batch {}.  The stream was closed by the client.  There is a good chance that a previously sent batch errored out and the stream was closed or there was a network error.  The error was: {}",
-                                currentBatch, getRootMessage(e));
-                    } else {
+                    if (!isStreamClosedByClient(e)) {
                         if (e instanceof ProtocolException) {
                             IStagedResource resource = getStagedResource(currentBatch);
                             if (resource != null) {
                                 resource.delete();
                             }
                         }
-                        log.error("Failed to extract batch {}", currentBatch, e);
+                        if (e.getCause() instanceof InterruptedException) {
+                            log.info("Extract of batch {} was interrupted", currentBatch);
+                        } else {
+                            log.error("Failed to extract batch {}", currentBatch, e);
+                        }
                     }
                     processInfo.setStatus(ProcessInfo.Status.ERROR);
                 } else {

@@ -44,20 +44,15 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
     }
 
     public void busy(Node remoteNode) {
-        log.info("Node '{}' was too busy to accept the connection", remoteNode.getNodeId());
     }
 
     public void notAuthenticated(Node remoteNode) {
-        log.warn("Could not authenticate with node '{}'", remoteNode.getNodeId());
     }
     
     public void unknownError(Node remoteNode, Exception ex) {
     }
 
     public void offline(Node remoteNode) {
-        log.warn("Failed to connect to the transport: {}",
-                (remoteNode.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remoteNode
-                        .getSyncUrl()));
     }
 
     public void syncDisabled(Node remoteNode) {
@@ -70,7 +65,6 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
     }
     
     public void registrationRequired(Node remoteNode) {
-        log.warn("Registration is required before this operation can complete");
     }
     
 }

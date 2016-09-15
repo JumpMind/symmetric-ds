@@ -139,8 +139,6 @@ import org.jumpmind.symmetric.web.WebConstants;
  */
 public class DataLoaderService extends AbstractService implements IDataLoaderService {
     
-    private static final int MAX_NETWORK_ERROR_FOR_LOGGING = 5;
-
     private IIncomingBatchService incomingBatchService;
 
     private IConfigurationService configurationService;
@@ -168,8 +166,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private ISymmetricEngine engine = null;
 
     private Date lastUpdateTime;
-    
-    private Map<String, Integer> errorCountByNode = new HashMap<String, Integer>();
     
     public DataLoaderService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -342,13 +338,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 log.error("", e);
             }
             throw e;
-        } catch (ServiceUnavailableException e) {
-            if (remote.getNodeId() == null) {
-                log.info("Service is unavailable for registration with remote node.  It may be starting up.");               
-            } else {
-                log.info("Service is unavailable for remote node " + remote.getNodeGroupId() + "-" + remote.getNodeId() + 
-                        ".  It may be starting up.");
-            }
         }
     }
 
@@ -408,6 +397,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
                 if (e instanceof RuntimeException) {
                     throw (RuntimeException) e;
+                } else if (e instanceof IOException) {
+                    throw (IOException) e;
                 }
                 throw new RuntimeException(e);
             }
@@ -534,10 +525,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 };
                 processor.process(ctx);
             }
-            errorCountByNode.remove(sourceNode.getNodeId());
         } catch (Throwable ex) {
             error = ex;
-            logAndRethrow(sourceNode, ex);
+            logAndRethrow(ex);
         } finally {
             transport.close();
 
@@ -549,52 +539,27 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return listener.getBatchesProcessed();
     }
 
-    protected void logAndRethrow(Node remoteNode, Throwable ex) throws IOException {
+    protected void logAndRethrow(Throwable ex) throws IOException {
         if (ex instanceof RegistrationRequiredException) {
             throw (RegistrationRequiredException) ex;
         } else if (ex instanceof ConnectException) {
             throw (ConnectException) ex;
         } else if (ex instanceof UnknownHostException) {
-            log.warn("Could not connect to the transport because the host was unknown: '{}'",
-                    ex.getMessage());
             throw (UnknownHostException) ex;
         } else if (ex instanceof RegistrationNotOpenException) {
-            log.warn("Registration attempt failed.  Registration was not open");
+            throw (RegistrationNotOpenException) ex;
         } else if (ex instanceof ConnectionRejectedException) {
             throw (ConnectionRejectedException) ex;
         } else if (ex instanceof ServiceUnavailableException) {
             throw (ServiceUnavailableException) ex;            
         } else if (ex instanceof AuthenticationException) {
-            log.warn("Could not authenticate with node '{}'",
-                    remoteNode != null ? remoteNode.getNodeId() : "?");
             throw (AuthenticationException) ex;
         } else if (ex instanceof SyncDisabledException) {
-            log.warn("Synchronization is disabled on the server node");
             throw (SyncDisabledException) ex;
         } else if (ex instanceof IOException) {
-            Integer errorCount = errorCountByNode.get(remoteNode.getNodeId());
-            if (errorCount == null) {
-                errorCount = 1;
-            }
-            if (errorCount >= MAX_NETWORK_ERROR_FOR_LOGGING) {
-                if (ex.getMessage() != null && !ex.getMessage().startsWith("http")) {
-                    log.error("Failed while reading batch because: {}", ex.getMessage());
-                } else {
-                    log.error("Failed while reading batch because: {}", ex.getMessage(), ex);
-                }                
-            } else {
-                if (ex.getMessage() != null && !ex.getMessage().startsWith("http")) {
-                    log.info("Failed while reading batch because: {}", ex.getMessage());
-                } else {
-                    log.info("Failed while reading batch because: {}", ex.getMessage(), ex);
-                }
-            }
-            errorCountByNode.put(remoteNode.getNodeId(), errorCount + 1);
             throw (IOException) ex;
-        } else {
-            if (!(ex instanceof ConflictException || ex instanceof SqlException)) {
-                log.error("Failed while parsing batch", ex);
-            }
+        } else if (!(ex instanceof ConflictException) && !(ex instanceof SqlException)) {
+            log.error("Failed while parsing batch", ex);
         }
     }
 

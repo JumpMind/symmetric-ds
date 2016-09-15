@@ -102,7 +102,7 @@ public class AppUtils {
                 }
 
             } catch (Exception ex) {
-                log.warn("", ex);
+                log.info("Unable to lookup hostname: " + ex.getMessage());
             }
         }
         return hostName;

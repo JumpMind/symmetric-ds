@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.exception.HttpException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
@@ -290,7 +291,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         } else if (WebConstants.REGISTRATION_REQUIRED == code) {
             throw new RegistrationRequiredException();
         } else if (200 != code) {
-            throw new IoException("Received an unexpected response code of " + code + " from the server");
+            throw new HttpException(code, "Received an unexpected response code of " + code + " from the server");
         }
     }
 

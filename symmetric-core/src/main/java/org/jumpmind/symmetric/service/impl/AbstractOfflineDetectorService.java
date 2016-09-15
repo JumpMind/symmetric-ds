@@ -24,9 +24,13 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.jumpmind.exception.HttpException;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.model.Node;
@@ -45,8 +49,10 @@ import org.jumpmind.symmetric.transport.SyncDisabledException;
  * Abstract service that provides help methods for detecting offline status.
  */
 public abstract class AbstractOfflineDetectorService extends AbstractService implements IOfflineDetectorService {
-    
+
     protected IExtensionService extensionService;
+
+    private Map<String, Long> transportErrorTimeByNode = new HashMap<String, Long>();
 
     public AbstractOfflineDetectorService(IParameterService parameterService,
             ISymmetricDialect symmetricDialect, IExtensionService extensionService) {
@@ -54,6 +60,10 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         this.extensionService = extensionService;
     }
 
+    protected void fireOnline(Node remoteNode, RemoteNodeStatus status) {
+        transportErrorTimeByNode.remove(remoteNode.getNodeId());
+    }
+    
     protected void fireOffline(Exception error, Node remoteNode, RemoteNodeStatus status) {
         String syncUrl = remoteNode.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remoteNode
                         .getSyncUrl();
@@ -62,23 +72,46 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             cause = error;
         }
         if (isOffline(error)) {
-            log.warn("Could not communicate with {} at {} because: {}", new Object[] {remoteNode, syncUrl, cause.getMessage()});
+            String reason = cause.getMessage();
+            if (reason == null) {
+                reason = cause.getClass().getName();
+            }
+            if (shouldLogTransportError(remoteNode.getNodeId())) {
+                log.warn("Could not communicate with {} at {} because: {}", new Object[] {remoteNode, syncUrl, reason});
+            } else {
+                log.info("Could not communicate with {} at {} because: {}", new Object[] {remoteNode, syncUrl, reason});
+            }
             status.setStatus(Status.OFFLINE);
         } else if (isServiceUnavailable(error)) {
-            log.info("{} at {} was unavailable", new Object[] {remoteNode, syncUrl});            
+            if (shouldLogTransportError(remoteNode.getNodeId())) {
+                log.warn("{} at {} was unavailable.", new Object[] {remoteNode, syncUrl});
+            } else {
+                log.info("{} at {} was unavailable.  It may be starting up.", new Object[] {remoteNode, syncUrl});
+            }
             status.setStatus(Status.OFFLINE);            
         } else if (isBusy(error)) {
-            log.info("{} at {} was busy", new Object[] {remoteNode, syncUrl});            
+            if (shouldLogTransportError(remoteNode.getNodeId())) {
+                log.warn("{} at {} was busy", new Object[] {remoteNode, syncUrl});
+            } else {
+                log.info("{} at {} was busy", new Object[] {remoteNode, syncUrl});
+            }
             status.setStatus(Status.BUSY);
         } else if (isNotAuthenticated(error)) {
-            log.info("{} at {} was not authorized", new Object[] {remoteNode, syncUrl});
+            log.warn("{} at {} was not authorized", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.NOT_AUTHORIZED);
         } else if (isSyncDisabled(error)) {
-            log.info("Sync was not enabled for {} at {}", new Object[] {remoteNode, syncUrl});
+            log.warn("Sync was not enabled for {} at {}", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.SYNC_DISABLED);
         } else if (isRegistrationRequired(error)) {
-            log.info("Registration was not open at {}", new Object[] {remoteNode, syncUrl});
+            log.warn("Registration was not open at {}", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.REGISTRATION_REQUIRED);
+        } else if (getHttpException(error) != null) {
+            HttpException http = getHttpException(error);
+            if (shouldLogTransportError(remoteNode.getNodeId())) {
+                log.warn("Could not communicate with node '{}' at {} because it returned HTTP code {}", remoteNode, syncUrl, http.getCode());
+            } else {
+                log.info("Could not communicate with node '{}' at {} because it returned HTTP code {}", remoteNode, syncUrl, http.getCode());
+            }
         } else {
             log.warn(String.format("Could not communicate with node '%s' at %s because of unexpected error", remoteNode, syncUrl), error);
             status.setStatus(Status.UNKNOWN_ERROR);
@@ -102,6 +135,16 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
                 }
             }
         }
+    }
+
+    protected boolean shouldLogTransportError(String nodeId) {
+        long maxErrorMillis = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_ERROR_MILLIS, 300000);
+        Long errorTime = transportErrorTimeByNode.get(nodeId);
+        if (errorTime == null) {
+            errorTime = System.currentTimeMillis();
+            transportErrorTimeByNode.put(nodeId, errorTime);
+        }
+        return System.currentTimeMillis() - errorTime >= maxErrorMillis;
     }
 
     /**
@@ -179,4 +222,18 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         }
         return registrationRequired;
     }
+    
+    protected HttpException getHttpException(Exception ex) {
+        HttpException exception = null;
+        if (ex != null) {
+            Throwable cause = ExceptionUtils.getRootCause(ex);
+            if (cause instanceof HttpException) {
+                exception = (HttpException) cause; 
+            } else if (ex instanceof HttpException) {
+                exception = (HttpException) ex;
+            }
+        }
+        return exception;
+    }
+
 }

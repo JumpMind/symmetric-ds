@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io.data.writer;
 
 import java.io.StringReader;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -640,7 +641,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     protected void logFailureDetails(Throwable e, CsvData data, boolean logLastDmlDetails) {
         StringBuilder failureMessage = new StringBuilder();
-        failureMessage.append("Failed to process a ");
+        failureMessage.append("Failed to process ");
         failureMessage.append(data.getDataEventType().toString().toLowerCase());
         failureMessage.append(" event in batch ");
         failureMessage.append(batch.getBatchId());
@@ -658,6 +659,13 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             failureMessage.append("\n");
             failureMessage.append("Failed sql parameters types: ");
             failureMessage.append(Arrays.toString(this.currentDmlStatement.getTypes()));
+            failureMessage.append("\n");
+        }
+        
+        if (logLastDmlDetails && e instanceof SqlException && e.getCause() instanceof SQLException) {
+            SQLException se = (SQLException) e.getCause();
+            failureMessage.append("Failed sql state and code: ").append(se.getSQLState());
+            failureMessage.append(" (").append(se.getErrorCode()).append(")");
             failureMessage.append("\n");
         }
 

@@ -110,9 +110,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 }
 
                 if (status == Status.ER) {
-                    log.error(
-                            "The outgoing batch {} failed: {}",
-                            outgoingBatch.getNodeBatchId(), batch.getSqlMessage() != null ? ". " + batch.getSqlMessage() : "");
+                    log.error("The outgoing batch {} failed: {}{}", outgoingBatch.getNodeBatchId(),
+                            (batch.getSqlCode() != 0 ? "[" + batch.getSqlState() + "," + batch.getSqlCode() + "] " : ""), batch.getSqlMessage());
                     RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
                     if (routerStats != null) {
                         log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());

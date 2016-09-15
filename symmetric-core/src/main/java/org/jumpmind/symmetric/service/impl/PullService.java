@@ -20,10 +20,6 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -45,7 +41,6 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.transport.OfflineException;
 
 /**
  * @see IPullService
@@ -116,63 +111,43 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node node = nodeCommunication.getNode();
-        if (StringUtils.isNotBlank(node.getSyncUrl()) || 
-                !parameterService.isRegistrationServer()) {
-                int pullCount = 0;
-                long batchesProcessedCount = 0;
-                do {
-                    batchesProcessedCount = status.getBatchesProcessed();
-                    pullCount++;
-                    log.debug("Pull requested for {}", node.toString());
-                    if (pullCount > 1) {
-                        log.info("Immediate pull requested while in reload mode");
-                    }
-                 
-                    try {
+        if (StringUtils.isNotBlank(node.getSyncUrl()) || !parameterService.isRegistrationServer()) {
+            int pullCount = 0;
+            long batchesProcessedCount = 0;
+            do {
+                batchesProcessedCount = status.getBatchesProcessed();
+                pullCount++;
+                log.debug("Pull requested for {}", node.toString());
+                if (pullCount > 1) {
+                    log.info("Immediate pull requested while in reload mode");
+                }
+
+                try {
                     dataLoaderService.loadDataFromPull(node, status);
-                } catch (ConnectException ex) {
-                    log.warn(
-                            "Failed to connect to the transport: {}",
-                            (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
-                                    .getSyncUrl()));
-                    fireOffline(ex, node, status);
-                } catch (OfflineException ex) {
-                    fireOffline(ex, node, status);
-                } catch (UnknownHostException ex) {
-                    fireOffline(ex, node, status);                
-                } catch (SocketException ex) {
-                    log.warn("{}", ex.getMessage());
-                    fireOffline(ex, node, status);
-                } catch (IOException ex) {
-                    log.error("An IO exception happened while attempting to pull data", ex);
+                    fireOnline(node, status);
+                } catch (Exception ex) {
                     fireOffline(ex, node, status);
                 }
-                    
-                    if (!status.failed() && 
-                            (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0)) {
-                        log.info(
-                                "Pull data received from {} {}.  {} rows and {} batches were processed",
-                                new Object[] { node.toString(), 
-                                		"on channel thread " + nodeCommunication.getQueue(), 
-                                		status.getDataProcessed(),
-                                        status.getBatchesProcessed() });
 
-                    } else if (status.failed()) {
-                        log.info(
-                                "There was a failure while pulling data from {} {}.  {} rows and {} batches were processed",
-                                new Object[] { node.toString(), 
-                                		"on channel thread " + nodeCommunication.getQueue(),
-                                		status.getDataProcessed(),
-                                        status.getBatchesProcessed() });
-                    }
-                    /*
-                     * Re-pull immediately if we are in the middle of an initial
-                     * load so that the initial load completes as quickly as
-                     * possible.
-                     */
-                } while (nodeService.isDataLoadStarted() && !status.failed()
-                        && status.getBatchesProcessed() > batchesProcessedCount);
-           
+                if (!status.failed() && (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0)) {
+                    log.info(
+                            "Pull data received from {} {}.  {} rows and {} batches were processed",
+                            new Object[] { node.toString(), "on channel thread " + nodeCommunication.getQueue(),
+                                    status.getDataProcessed(), status.getBatchesProcessed() });
+
+                } else if (status.failed()) {
+                    log.debug(
+                            "There was a failure while pulling data from {} {}.  {} rows and {} batches were processed",
+                            new Object[] { node.toString(), "on channel thread " + nodeCommunication.getQueue(),
+                                    status.getDataProcessed(), status.getBatchesProcessed() });
+                }
+                /*
+                 * Re-pull immediately if we are in the middle of an initial
+                 * load so that the initial load completes as quickly as
+                 * possible.
+                 */
+            } while (nodeService.isDataLoadStarted() && !status.failed()
+                    && status.getBatchesProcessed() > batchesProcessedCount);           
         } else {
             log.warn("Cannot pull node '{}' in the group '{}'.  The sync url is blank",
                     node.getNodeId(), node.getNodeGroupId());
