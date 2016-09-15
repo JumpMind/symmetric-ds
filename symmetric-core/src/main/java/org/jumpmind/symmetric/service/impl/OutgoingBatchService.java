@@ -628,8 +628,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             summary.setCreateFirst(rs.getBoolean("create_table"));
             summary.setDeleteFirst(rs.getBoolean("delete_first"));
             summary.setRequestProcessed(rs.getBoolean("processed"));
-            summary.setConditional(rs.getBoolean("reload_select"));
-            summary.setCustomSql(rs.getBoolean("before_custom_sql"));
+            //summary.setConditional(rs.getBoolean("reload_select"));
+            //summary.setCustomSql(rs.getBoolean("before_custom_sql"));
             return summary;
         }           
     }

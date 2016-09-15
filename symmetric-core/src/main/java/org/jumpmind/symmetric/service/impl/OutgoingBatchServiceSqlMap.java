@@ -148,7 +148,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 "select " 
                 + "   target_node_id, load_id, count(TRIGGER_ID) as table_count, max(TRIGGER_ID) as trigger_id, "
                 + "   max(create_table) as create_table, max(delete_first) as delete_first, max(processed) as processed, " 
-                + "   max(reload_select) as reload_select, max(before_custom_sql) as before_custom_sql, " 
+                //+ "   max(reload_select) as reload_select, max(before_custom_sql) as before_custom_sql, " 
                 + "   max(last_update_by) as last_update_by, min(last_update_time) as last_update_time "
                 + "from $(table_reload_request) "
                 + "    where load_id = ? "
