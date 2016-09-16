@@ -1115,12 +1115,18 @@ public class DataService extends AbstractService implements IDataService {
 
         Trigger trigger = engine.getTriggerRouterService().getTriggerById(
                 triggerHistory.getTriggerId(), false);
-        String reloadChannelId = getReloadChannelIdForTrigger(trigger, engine
-                .getConfigurationService().getChannels(false));
+
+        String triggerChannelId = trigger != null 
+        		? trigger.getChannelId() 
+        		: Constants.CHANNEL_CONFIG;
+        		
+        if(isLoad){
+        	triggerChannelId = getReloadChannelIdForTrigger(trigger, engine
+                    .getConfigurationService().getChannels(false));
+        }
 
         Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.CREATE,
-                null, null, triggerHistory, isLoad ? reloadChannelId
-                        : Constants.CHANNEL_CONFIG, null, null);
+                null, null, triggerHistory, triggerChannelId, null, null);
         try {
             if (isLoad) {
                 insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
