@@ -28,12 +28,16 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class FileSyncPushJob extends AbstractJob {
 
     protected FileSyncPushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.file.sync.push", true, engine.getParameterService().is(
-                ParameterConstants.FILE_SYNC_ENABLE)
-                && engine.getParameterService().is("start.file.sync.push.job", true), engine,
-                taskScheduler);
+        super("job.file.sync.push", engine, taskScheduler);
     }
+    
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE)
+                && engine.getParameterService().is(ParameterConstants.START_FILE_SYNC_PUSH_JOB, true);
+    }    
 
+    @Override
     public String getClusterLockName() {
         return ClusterConstants.FILE_SYNC_PUSH;
     }
@@ -42,5 +46,5 @@ public class FileSyncPushJob extends AbstractJob {
     void doJob(boolean force) throws Exception {
         engine.getFileSyncService().pushFilesToNodes(force);
     }
-
+    
 }

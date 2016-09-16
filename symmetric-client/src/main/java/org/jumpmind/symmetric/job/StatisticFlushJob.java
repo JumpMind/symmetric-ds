@@ -35,8 +35,17 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class StatisticFlushJob extends AbstractJob {
 
     public StatisticFlushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.stat.flush", true, engine.getParameterService().is("start.stat.flush.job"),
-                engine, taskScheduler);
+        super("job.stat.flush", engine, taskScheduler);
+    }
+
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.START_STATISTIC_FLUSH_JOB);
+    }
+    
+    @Override
+    public String getClusterLockName() {
+        return ClusterConstants.STATISTICS;
     }
 
     @Override
@@ -53,10 +62,6 @@ public class StatisticFlushJob extends AbstractJob {
                     - engine.getParameterService().getLong(ParameterConstants.PURGE_LOG_SUMMARY_MINUTES, 60)
                     * 60000);
         }        
-    }
-    
-    public String getClusterLockName() {
-        return ClusterConstants.STATISTICS;
     }
     
 }

@@ -33,14 +33,27 @@ import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+/*
+ * Related to hybrid-pull, this job is responsible for sending a light-weight HTTP message 
+ * to nodes that pull from this node, indicating how many batches are available to pull.
+ */
 public class ReportStatusJob extends AbstractJob {
     
     private static Map<String, Integer> lastBatchCountPerChannel = 
             Collections.synchronizedMap(new HashMap<String, Integer>());
 
     protected ReportStatusJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-            super("job.report.status", true, engine.getParameterService().is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED),
-                engine, taskScheduler);
+            super("job.report.status", engine, taskScheduler);
+    }    
+    
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED);
+    }
+    
+    @Override
+    public String getClusterLockName() {
+        return ClusterConstants.REPORT_STATUS;
     }
 
     @Override
@@ -104,11 +117,6 @@ public class ReportStatusJob extends AbstractJob {
     protected void updateLastSentStatus(Map<String, Integer> batchesToSendByChannel) {
         lastBatchCountPerChannel.clear();
         lastBatchCountPerChannel.putAll(batchesToSendByChannel);
-    }
-
-    @Override
-    public String getClusterLockName() {
-        return ClusterConstants.REPORT_STATUS;
     }
 
 }

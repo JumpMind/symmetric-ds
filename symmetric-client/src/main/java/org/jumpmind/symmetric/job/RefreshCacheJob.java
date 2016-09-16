@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -30,8 +31,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class RefreshCacheJob extends AbstractJob {
 
     public RefreshCacheJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.refresh.cache", false, engine.getParameterService().is("start.refresh.cache.job"),
-                engine, taskScheduler);
+        super("job.refresh.cache", engine, taskScheduler);
+    }    
+    
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.START_REFRESH_CACHE_JOB);
+    }
+    
+    @Override
+    public boolean isRequiresRegistration() {
+        return false;
+    }
+    
+    @Override
+    public String getClusterLockName() {
+        return ClusterConstants.REFRESH_CACHE;
     }
     
     @Override
@@ -44,10 +59,6 @@ public class RefreshCacheJob extends AbstractJob {
         engine.getDataLoaderService().refreshFromDatabase();
         engine.getLoadFilterService().refreshFromDatabase();
         engine.getFileSyncService().refreshFromDatabase();
-    }
-    
-    public String getClusterLockName() {
-        return ClusterConstants.REFRESH_CACHE;
     }
 
 }

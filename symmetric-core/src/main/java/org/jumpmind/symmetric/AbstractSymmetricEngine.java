@@ -886,6 +886,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         getParameterService().rereadParameters();
         getTransformService().clearCache();
         getDataLoaderService().clearCache();
+        getConfigurationService().initDefaultChannels();
         getConfigurationService().clearCache();
         getNodeService().flushNodeAuthorizedCache();
     }

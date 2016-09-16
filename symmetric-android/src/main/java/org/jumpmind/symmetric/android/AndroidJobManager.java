@@ -191,7 +191,7 @@ public class AndroidJobManager implements IJobManager {
                     }
                     
                     if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
-                            && parameterService.is("start.file.sync.tracker.job")
+                            && parameterService.is(ParameterConstants.START_FILE_SYNC_TRACKER_JOB)
                             && parameterService.getLong("job.file.sync.tracker.period.time.ms", 5000) < (System
                                     .currentTimeMillis() - lastFileSyncTrackerTime)) {
                         try {
@@ -205,7 +205,7 @@ public class AndroidJobManager implements IJobManager {
                     }
                     
                     if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
-                            && parameterService.is("start.file.sync.pull.job")
+                            && parameterService.is(ParameterConstants.START_FILE_SYNC_PULL_JOB)
                             && parameterService.getLong("job.file.sync.pull.period.time.ms", 60000) < (System
                             .currentTimeMillis() - lastFileSyncPullTime)) {
                         try {
@@ -219,7 +219,7 @@ public class AndroidJobManager implements IJobManager {
                     }
                     
                     if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
-                            && parameterService.is("start.file.sync.push.job")
+                            && parameterService.is(ParameterConstants.START_FILE_SYNC_PUSH_JOB)
                             && parameterService.getLong("job.file.sync.push.period.time.ms", 60000) < (System
                             .currentTimeMillis() - lastFileSyncPushTime)) {
                         try {
