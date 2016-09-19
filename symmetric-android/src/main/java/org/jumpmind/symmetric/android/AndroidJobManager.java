@@ -336,4 +336,9 @@ public class AndroidJobManager implements IJobManager {
         }
     }
 
+    @Override
+    public void startJobsAfterConfigChange() {
+        // No action on Android.
+    }
+
 }

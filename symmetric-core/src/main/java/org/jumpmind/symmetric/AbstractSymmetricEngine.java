@@ -889,6 +889,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         getConfigurationService().initDefaultChannels();
         getConfigurationService().clearCache();
         getNodeService().flushNodeAuthorizedCache();
+        getJobManager().startJobsAfterConfigChange();
     }
 
     public void reOpenRegistration(String nodeId) {

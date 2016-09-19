@@ -68,6 +68,7 @@ public class JobManager implements IJobManager {
         this.jobs.add(new ReportStatusJob(engine, taskScheduler));
     }
 
+    @Override
     public IJob getJob(String name) {
         for (IJob job : jobs) {
             if (job.getName().equals(name)) {
@@ -81,6 +82,7 @@ public class JobManager implements IJobManager {
      * Start the jobs if they are configured to be started in
      * symmetric.properties
      */
+    @Override
     public synchronized void startJobs() {
         for (IJob job : jobs) {
             if (job.isAutoStartConfigured()) {
@@ -90,7 +92,17 @@ public class JobManager implements IJobManager {
             }
         }
     }
+    
+    @Override
+    public synchronized void startJobsAfterConfigChange() {
+        for (IJob job : jobs) {
+            if (job.isAutoStartConfigured() && !job.isStarted()) {
+                job.start();
+            }
+        }        
+    }
 
+    @Override
     public synchronized void stopJobs() {
         for (IJob job : jobs) {
             job.stop();
@@ -98,13 +110,15 @@ public class JobManager implements IJobManager {
         Thread.interrupted();
     }
     
-    public synchronized void destroy () {
+    @Override
+    public synchronized void destroy() {
         stopJobs();
         if (taskScheduler != null) {
             taskScheduler.shutdown();
         }
     }
 
+    @Override
     public List<IJob> getJobs() {
         return jobs;
     }
