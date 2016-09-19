@@ -319,10 +319,6 @@ public class DbCompare {
                 log.warn("No source table found for table name {}", tableName);
                 continue;
             }
-            if (sourceTable.getPrimaryKeyColumnCount() == 0) {
-                log.warn("Source table {} doesn't have any primary key columns and will not be considered in the comparison.", sourceTable);
-                continue;                
-            }
 
             DbCompareTables tables = new DbCompareTables(sourceTable, null);
 
@@ -333,6 +329,11 @@ public class DbCompare {
             } 
   
             tables.applyColumnMappings();
+
+            if (tables.getSourceTable().getPrimaryKeyColumnCount() == 0) {
+                log.warn("Source table {} doesn't have any primary key columns and will not be considered in the comparison.", sourceTable);
+                continue;                
+            }
             
             boolean success = mapPrimaryKey(tables);
             if (success) {
