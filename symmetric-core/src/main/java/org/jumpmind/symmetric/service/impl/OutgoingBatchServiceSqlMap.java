@@ -153,7 +153,13 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + "from $(table_reload_request) "
                 + "    where load_id = ? "
                 + "    group by load_id, target_node_id ");
-             
+        
+        putSql("getLoadOverviewSql",
+                "select status, count(batch_id) as count "
+                + " from sym_outgoing_batch "
+                + " where load_id = ?"
+                + " group by status");
+        
         putSql("getLoadStatusSummarySql", 
                 "select count(ob.batch_id) as count, ob.status, c.queue, max(ob.last_update_time) as last_update_time, "
                 + " min(ob.create_time) as create_time, sum(ob.data_event_count) as data_events, sum(ob.byte_count) as byte_count, "

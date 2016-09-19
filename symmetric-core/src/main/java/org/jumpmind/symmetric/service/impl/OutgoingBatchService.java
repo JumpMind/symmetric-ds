@@ -736,6 +736,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     	
     }
     
+    public Map<String, Integer> getLoadOverview(long loadId) {
+        return sqlTemplate.queryForMap(getSql("getLoadOverviewSql"), "status", "count", loadId);
+    }
+    
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly) {
         final Map<String, OutgoingLoadSummary> loadSummaries = new TreeMap<String, OutgoingLoadSummary>();
         sqlTemplate.query(getSql("getLoadSummariesSql"), new ISqlRowMapper<OutgoingLoadSummary>() {

@@ -109,6 +109,8 @@ public interface IOutgoingBatchService {
     
     public LoadSummary getLoadSummary(long loadId);
     
+    public Map<String, Integer> getLoadOverview(long loadId);
+    
     public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummarySql(long loadId);
     
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId);
