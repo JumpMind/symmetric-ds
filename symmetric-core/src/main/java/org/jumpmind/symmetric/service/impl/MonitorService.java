@@ -283,11 +283,14 @@ public class MonitorService extends AbstractService implements IMonitorService {
     }
 
     @Override
-    public List<MonitorEvent> getMonitorEventsFiltered(int limit, String type, int severityLevel, String nodeId, boolean isResolved) {
+    public List<MonitorEvent> getMonitorEventsFiltered(int limit, String type, int severityLevel, String nodeId, Boolean isResolved) {
         String sql = getSql("selectMonitorEventSql", "whereMonitorEventFilteredSql");
         ArrayList<Object> args = new ArrayList<Object>();
         args.add(severityLevel);
-        args.add(isResolved ? 1 : 0);
+        if (isResolved != null) {
+            sql += " and is_resolved = ?";
+            args.add(isResolved ? 1 : 0);
+        }
         if (type != null) {
             sql += " and type = ?";
             args.add(type);
