@@ -694,8 +694,20 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         SqlScriptReader scriptReader = new SqlScriptReader(new StringReader(script));
         try {
             String sql = scriptReader.readSqlStatement();
+            
             while (sql != null) {
-                sqlStatements.add(sql);
+            	if (StringUtils.startsWithIgnoreCase(sql,"delimiter")) {
+            		if (log.isDebugEnabled()) {
+            			log.debug("Found delimiter line: "+sql);
+            		}
+            		String delimiter = StringUtils.trimToNull(sql.substring("delimiter".length()));
+            		if (delimiter!=null) {
+            			scriptReader.setDelimiter(delimiter);
+            		}
+            	} else {
+                    sqlStatements.add(sql);
+            	}
+            	
                 sql = scriptReader.readSqlStatement();
             }
             return sqlStatements;
