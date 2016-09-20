@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -30,17 +31,27 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class OfflinePullJob extends AbstractJob {
 
     public OfflinePullJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.offline.pull", false, engine.getParameterService().is("start.offline.pull.job"),
-                engine, taskScheduler);
+        super("job.offline.pull", engine, taskScheduler);
     }
+    
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.START_OFFLINE_PULL_JOB);
+    }
+    
+    @Override
+    public boolean isRequiresRegistration() {
+        return false;
+    } 
+    
+    @Override
+    public String getClusterLockName() {
+        return ClusterConstants.OFFLINE_PULL;
+    }    
     
     @Override
     public void doJob(boolean force) throws Exception {
         engine.getOfflinePullService().pullData(force);
     }
-    
-    public String getClusterLockName() {
-        return ClusterConstants.OFFLINE_PULL;
-    }    
 
 }

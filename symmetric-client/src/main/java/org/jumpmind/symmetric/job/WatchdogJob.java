@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -31,8 +32,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class WatchdogJob extends AbstractJob {
     
     public WatchdogJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.watchdog", false, engine.getParameterService().is("start.watchdog.job"),
-                engine, taskScheduler);
+        super("job.watchdog", engine, taskScheduler);
+    }
+
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.START_WATCHDOG_JOB);
+    }
+    
+    @Override
+    public boolean isRequiresRegistration() {
+        return false;
+    }
+    
+    @Override
+    public String getClusterLockName() {
+        return ClusterConstants.WATCHDOG;
     }
 
     @Override
@@ -46,10 +61,6 @@ public class WatchdogJob extends AbstractJob {
                 }
             }
         }
-    }
-
-    public String getClusterLockName() {
-        return ClusterConstants.WATCHDOG;
     }
 
 }

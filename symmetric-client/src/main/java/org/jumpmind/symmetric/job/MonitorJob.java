@@ -21,13 +21,24 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class MonitorJob extends AbstractJob {
 
     public MonitorJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.monitor", true, engine.getParameterService().is("start.monitor.job"), engine, taskScheduler);
+        super("job.monitor", engine, taskScheduler);
+    }
+    
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.START_MONITOR_JOB);
+    }
+    
+    @Override
+    public String getClusterLockName() {
+        return ClusterConstants.MONITOR;
     }
 
     @Override
@@ -35,10 +46,6 @@ public class MonitorJob extends AbstractJob {
         if (engine != null) {
             engine.getMonitorService().update();
         }
-    }
-
-    public String getClusterLockName() {
-        return ClusterConstants.MONITOR;
     }
 
 }

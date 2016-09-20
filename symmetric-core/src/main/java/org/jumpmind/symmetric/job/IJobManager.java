@@ -34,6 +34,8 @@ public interface IJobManager {
     
     public void stopJobs();
     
+    public void startJobsAfterConfigChange();
+    
     public void destroy();
     
     public List<IJob> getJobs();

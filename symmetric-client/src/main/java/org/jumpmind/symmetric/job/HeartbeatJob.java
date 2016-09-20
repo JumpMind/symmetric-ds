@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -30,10 +31,24 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class HeartbeatJob extends AbstractJob {
 
     public HeartbeatJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.heartbeat", false, engine.getParameterService().is("start.heartbeat.job"),
-                engine, taskScheduler);
-    }
+        super("job.heartbeat", engine, taskScheduler);
+     }
 
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.START_HEARTBEAT_JOB);
+    }
+    
+    @Override
+    public boolean isRequiresRegistration() {
+        return false;
+    } 
+
+    @Override
+    public String getClusterLockName() {
+        return ClusterConstants.HEARTBEAT;
+    }
+    
     @Override
     public void doJob(boolean force) throws Exception {
         if (engine.getClusterService().lock(getClusterLockName())) {
@@ -44,9 +59,5 @@ public class HeartbeatJob extends AbstractJob {
             }
         }
     }
-
-    public String getClusterLockName() {
-        return ClusterConstants.HEARTBEAT;
-    }
-
+    
 }
