@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Date;
 import java.util.Properties;
 
@@ -70,6 +72,13 @@ public class MailService extends AbstractService implements IMailService {
     protected String sendEmail(String subject, String text, String recipients, Properties prop, 
             String transportType, boolean useAuth, String user, String password) {
         Session session = Session.getInstance(prop);
+        ByteArrayOutputStream ba = null;
+        if (log.isDebugEnabled()) {
+            session.setDebug(true);
+            ba = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(ba);
+            session.setDebugOut(ps);
+        }
         Transport transport;
         try {
             transport = session.getTransport(transportType);
@@ -109,6 +118,9 @@ public class MailService extends AbstractService implements IMailService {
                 transport.close();
             } catch (MessagingException e) {
             }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug(ba.toString());
         }
         return null;
     }
