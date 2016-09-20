@@ -350,6 +350,7 @@ final public class ParameterConstants {
     public static final String SMTP_PASSWORD = "smtp.password";
     public static final String SMTP_USE_STARTTLS = "smtp.starttls";    
     public static final String SMTP_USE_AUTH = "smtp.auth";
+    public static final String SMTP_ALLOW_UNTRUSTED_CERT = "smtp.allow.untrusted.cert";
 
     public final static String CHANNEL_THREADING = "channel.threading.enabled";
     
