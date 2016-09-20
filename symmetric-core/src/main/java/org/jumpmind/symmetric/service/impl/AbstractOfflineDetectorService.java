@@ -62,6 +62,12 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
 
     protected void fireOnline(Node remoteNode, RemoteNodeStatus status) {
         transportErrorTimeByNode.remove(remoteNode.getNodeId());
+        List<IOfflineClientListener> offlineListeners = extensionService.getExtensionPointList(IOfflineClientListener.class);
+        if (offlineListeners != null) {
+            for (IOfflineClientListener listener : offlineListeners) {
+                listener.online(remoteNode);
+            }
+        }
     }
     
     protected void fireOffline(Exception error, Node remoteNode, RemoteNodeStatus status) {

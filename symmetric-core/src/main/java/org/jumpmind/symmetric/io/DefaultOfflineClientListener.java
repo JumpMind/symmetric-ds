@@ -66,5 +66,8 @@ public class DefaultOfflineClientListener implements IOfflineClientListener, IBu
     
     public void registrationRequired(Node remoteNode) {
     }
-    
+
+    public void online(Node remoteNode) {
+    }
+
 }
