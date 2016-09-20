@@ -60,7 +60,7 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
 
         putSql("whereMonitorEventNotResolvedSql", "where node_id = ? and is_resolved = 0");
 
-        putSql("whereMonitorEventFilteredSql", "where severity_level >= ? and is_resolved = ?");
+        putSql("whereMonitorEventFilteredSql", "where severity_level >= ?");
 
         putSql("whereMonitorEventForNotificationBySeveritySql",
                 "where is_notified = 0 and severity_level >= ?");

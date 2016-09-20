@@ -78,12 +78,13 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
             text.append(nodeString).append("] [");
             text.append(event.getHostName()).append("] ");
             text.append("Monitor event for ").append(event.getType());
-            text.append(" exceeded ").append(event.getValue()).append("\n");
+            text.append(" reached threshold of ").append(event.getThreshold());
+            text.append(" with a value of ").append(event.getValue()).append("\n");
         }
         
         String recipients = notification.getExpression();
         if (recipients != null) {
-            log.debug("Sending email with subject '" + subject + "' to " + recipients);            
+            log.info("Sending email with subject '" + subject + "' to " + recipients);            
             engine.getMailService().sendEmail(subject, text.toString(), recipients);
         } else {
             log.warn("Notification " + notification.getNotificationId() + " has no email recipients configured.");

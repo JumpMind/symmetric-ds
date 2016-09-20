@@ -152,7 +152,8 @@ public class SnapshotUtil {
             engine.getDataExtractorService().extractConfigurationStandalone(engine.getNodeService().findIdentity(),
                     fwriter, TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY,
                     TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST,
-                    TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_USER);
+                    TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_USER,
+                    TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
         } catch (Exception e) {
             log.warn("Failed to export symmetric configuration", e);
         } finally {
@@ -246,6 +247,9 @@ public class SnapshotUtil {
 
         extract(export, new File(tmpDir, "sym_console_event.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_CONSOLE_EVENT));        
+
+        extract(export, new File(tmpDir, "sym_monitor_event.csv"), 
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT));        
 
         if (engine.getSymmetricDialect() instanceof FirebirdSymmetricDialect) {
             final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements",
