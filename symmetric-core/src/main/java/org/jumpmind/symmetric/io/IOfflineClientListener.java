@@ -59,4 +59,9 @@ public interface IOfflineClientListener extends IExtensionPoint {
     
     public void unknownError(Node remoteNode, Exception ex);
 
+    /**
+     * Called when the remote node is reachable.
+     */
+    public void online(Node remoteNode);
+
 }
