@@ -45,8 +45,8 @@ public class NotificationTypeLog implements INotificationType, ISymmetricEngineA
         for (MonitorEvent monitorEvent : monitorEvents) {
             Node node = nodes.get(monitorEvent.getNodeId());
             String nodeString = node != null ? node.toString() : monitorEvent.getNodeId();
-            String message = "Monitor " + monitorEvent.getType() + " on " + nodeString + " recorded "
-                    + monitorEvent.getValue();
+            String message = "Monitor " + monitorEvent.getType() + " on " + nodeString + " reached threshold of "
+                    + monitorEvent.getThreshold() + " with a value of "+ monitorEvent.getValue();
             if (monitorEvent.getSeverityLevel() >= Monitor.SEVERE) {
                 log.error(message);
             } else if (monitorEvent.getSeverityLevel() >= Monitor.WARNING) {
