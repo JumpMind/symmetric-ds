@@ -632,6 +632,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             FutureOutgoingBatch extractBatch = future.get(keepAliveMillis, TimeUnit.MILLISECONDS); 
                             currentBatch = extractBatch.getOutgoingBatch();
 
+                            
                             if (extractBatch.isExtractSkipped) {
                                 break;
                             }
@@ -639,10 +640,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT) {
                                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
                                 processInfo.setCurrentLoadId(currentBatch.getLoadId());
-                                currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch, extractBatch.isRetry(), 
+                                boolean isRetry = extractBatch.isRetry() && extractBatch.getOutgoingBatch().getStatus() != OutgoingBatch.Status.IG;
+                                
+                                currentBatch = sendOutgoingBatch(processInfo, targetNode, currentBatch, isRetry, 
                                         dataWriter, writer, mode);
                             }
-
+                            
                             processedBatches.add(currentBatch);
                             isProcessed = true;
 

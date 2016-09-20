@@ -47,8 +47,6 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     private String jobName;
 
-    private boolean requiresRegistration = true;
-
     private boolean paused = false;
 
     private Date lastFinishTime;
@@ -71,24 +69,21 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     private RandomTimeSlot randomTimeSlot;
 
-    private boolean autoStartConfigured;
-
     protected ISymmetricEngine engine;
-
-    protected AbstractJob(String jobName, boolean requiresRegistration, boolean autoStartRequired,
-            ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+    
+    protected AbstractJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         this.engine = engine;
         this.taskScheduler = taskScheduler;
         this.jobName = jobName;
-        this.requiresRegistration = requiresRegistration;
-        this.autoStartConfigured = autoStartRequired;
         IParameterService parameterService = engine.getParameterService();
         this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(),
-                parameterService.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));
+                parameterService.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));        
     }
 
-    public boolean isAutoStartConfigured() {
-        return autoStartConfigured;
+    @Deprecated
+    protected AbstractJob(String jobName, boolean requiresRegistration, boolean autoStartRequired,
+            ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        this(jobName, engine, taskScheduler);
     }
 
     public void start() {
@@ -145,7 +140,7 @@ abstract public class AbstractJob implements Runnable, IJob {
         return jobName;
     }
 
-    @ManagedOperation(description = "Run this job is it isn't already running")
+    @ManagedOperation(description = "Run this job if it isn't already running")
     public boolean invoke() {
         return invoke(true);
     }
@@ -167,8 +162,8 @@ abstract public class AbstractJob implements Runnable, IJob {
                                     ran = true;
                                     long startTime = System.currentTimeMillis();
                                     try {
-                                        if (!requiresRegistration
-                                                || (requiresRegistration && engine
+                                        if (!isRequiresRegistration()
+                                                || (isRequiresRegistration() && engine
                                                         .getRegistrationService()
                                                         .isRegisteredWithServer())) {
                                             hasNotRegisteredMessageBeenLogged = false;
@@ -293,5 +288,8 @@ abstract public class AbstractJob implements Runnable, IJob {
     public long getTimeBetweenRunsInMs() {
         return engine.getParameterService().getInt(jobName + ".period.time.ms", -1);
     }
-
+    
+    public boolean isRequiresRegistration() {
+        return true;
+    }
 }

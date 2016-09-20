@@ -32,11 +32,16 @@ public class StageManagementJob extends AbstractJob {
 
     public StageManagementJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler,
             IStagingManager stagingManager) {
-        super("job.stage.management", true, engine.getParameterService().is(
-                "start.stage.management.job"), engine, taskScheduler);
+        super("job.stage.management", engine, taskScheduler);
         this.stagingManager = stagingManager;
     }
+    
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.START_STAGE_MGMT_JOB);
+    }
 
+    @Override
     public String getClusterLockName() {
         return ClusterConstants.STAGE_MANAGEMENT;
     }

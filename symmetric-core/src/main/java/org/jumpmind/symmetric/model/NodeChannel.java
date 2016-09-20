@@ -247,5 +247,10 @@ public class NodeChannel implements Serializable {
     public void setMaxKBytesPerSecond(BigDecimal maxKBytesPerSecond) {
         this.channel.setMaxKBytesPerSecond(maxKBytesPerSecond);
     }
+    
+    @Override
+    public String toString() {
+        return "Channel: '" + getChannelId() + "' Node: '" + getNodeId() + "' " +  super.toString();
+    }
 
 }
