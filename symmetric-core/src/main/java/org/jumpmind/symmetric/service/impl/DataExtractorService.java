@@ -201,7 +201,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * @see DataExtractorService#extractConfigurationStandalone(Node, Writer)
      */
     public void extractConfigurationStandalone(Node node, OutputStream out) {
-        this.extractConfigurationStandalone(node, TransportUtils.toWriter(out));
+        this.extractConfigurationStandalone(node, TransportUtils.toWriter(out),
+                TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
     }
     
     protected boolean filter(boolean pre38, boolean pre37, String tableName) {
