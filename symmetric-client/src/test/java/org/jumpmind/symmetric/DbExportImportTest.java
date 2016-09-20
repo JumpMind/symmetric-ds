@@ -151,11 +151,13 @@ public class DbExportImportTest extends AbstractServiceTest {
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
             return;
         }
-        final int EXPECTED_VARCHAR_MAX = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 265 : 50;
-        final String EXPECTED_STRING = "varchar(" + Integer.MAX_VALUE + ")";
-        Assert.assertEquals("Expected " + EXPECTED_VARCHAR_MAX + " " + EXPECTED_STRING
-                + " in the following output: " + output, EXPECTED_VARCHAR_MAX,
-                StringUtils.countMatches(output, EXPECTED_STRING));
+        
+        final int EXPECTED_VARCHAR_MAX_COUNT = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 293 : 50;
+        final String EXPECTED_VARCHAR_MAX_STRING = "varchar(" + Integer.MAX_VALUE + ")";
+        final int actualVarcharMaxCount = StringUtils.countMatches(output, EXPECTED_VARCHAR_MAX_STRING);
+        String msg = String.format("Expected %s, but got %s in the following output %s", 
+                EXPECTED_VARCHAR_MAX_COUNT, actualVarcharMaxCount, output);
+        Assert.assertEquals(msg, EXPECTED_VARCHAR_MAX_COUNT, actualVarcharMaxCount);
     }
 
     @Test
