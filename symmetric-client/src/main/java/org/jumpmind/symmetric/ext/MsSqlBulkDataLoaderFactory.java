@@ -26,7 +26,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcUtils;
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.MsSqlBulkDatabaseWriter;
@@ -46,11 +45,9 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory {
     private NativeJdbcExtractor jdbcExtractor;
     private IStagingManager stagingManager;
     private IParameterService parameterService;
-    private ISymmetricEngine engine;
-    
+
     public MsSqlBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
-        this.engine = engine;
         this.stagingManager = engine.getStagingManager();
         this.parameterService = engine.getParameterService();
     }
@@ -59,27 +56,26 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory {
         return "mssql_bulk";
     }
 
-	public IDataWriter getDataWriter(String sourceNodeId,
-			ISymmetricDialect symmetricDialect,
-			TransformWriter transformWriter,
-			List<IDatabaseWriterFilter> filters,
-			List<IDatabaseWriterErrorHandler> errorHandlers,
-			List<? extends Conflict> conflictSettings,
-			List<ResolvedData> resolvedData) {
-        int maxRowsBeforeFlush = parameterService.getInt("mssql.bulk.load.max.rows.before.flush",
-                100000);
+    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
+            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
+            List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
+
+        int maxRowsBeforeFlush = parameterService.getInt("mssql.bulk.load.max.rows.before.flush", 100000);
         boolean fireTriggers = parameterService.is("mssql.bulk.load.fire.triggers", false);
         String uncPath = parameterService.getString("mssql.bulk.load.unc.path");
-        String rowTerminator = StringEscapeUtils.unescapeJava(parameterService.getString("mssql.bulk.load.row.terminator", "\\r\\n"));
-        String fieldTerminator = StringEscapeUtils.unescapeJava(parameterService.getString("mssql.bulk.load.field.terminator", "||"));
-		return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(),
-				stagingManager, jdbcExtractor, maxRowsBeforeFlush, fireTriggers, uncPath, fieldTerminator, rowTerminator);
-	}
+        String rowTerminator = StringEscapeUtils.unescapeJava(parameterService.getString("mssql.bulk.load.row.terminator",
+                "\\r\\n"));
+        String fieldTerminator = StringEscapeUtils.unescapeJava(parameterService.getString("mssql.bulk.load.field.terminator",
+                "||"));
+
+        return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(), stagingManager, jdbcExtractor, maxRowsBeforeFlush,
+                fireTriggers, uncPath, fieldTerminator, rowTerminator);
+    }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return (DatabaseNamesConstants.MSSQL2000.equals(platform.getName())
-                || DatabaseNamesConstants.MSSQL2005.equals(platform.getName())
-                || DatabaseNamesConstants.MSSQL2008.equals(platform.getName()));
+                || DatabaseNamesConstants.MSSQL2005.equals(platform.getName()) || DatabaseNamesConstants.MSSQL2008
+                    .equals(platform.getName()));
     }
 
 }

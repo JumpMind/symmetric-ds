@@ -39,8 +39,7 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
-public class FtpDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware,
-        IBuiltInExtensionPoint, BeanNameAware {
+public class FtpDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware, IBuiltInExtensionPoint, BeanNameAware {
     
     protected ISymmetricEngine engine;
 
@@ -63,7 +62,7 @@ public class FtpDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngin
     protected String beanName;
 
     public void setBeanName(String name) {
-this.beanName = name;       
+        this.beanName = name;       
     }
     
     public void setSymmetricEngine(ISymmetricEngine engine) {
@@ -93,7 +92,6 @@ this.beanName = name;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

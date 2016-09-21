@@ -18,83 +18,67 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 
-public class BulkDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware,
-	IBuiltInExtensionPoint {
+public class BulkDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngineAware, IBuiltInExtensionPoint {
 
-	ISymmetricEngine engine;
-	Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
+    ISymmetricEngine engine;
+    Map<String, IDataLoaderFactory> dataLoaderFactories = new HashMap<String, IDataLoaderFactory>();
 
-	@Override
-	public String getTypeName() {
-		return "bulk";
-	}
+    @Override
+    public String getTypeName() {
+        return "bulk";
+    }
 
-	@Override
-	public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-			TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
-			List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
-			List<ResolvedData> resolvedData) {
-	    
-       for (IDataLoaderFactory factory : engine.getExtensionService().getExtensionPointList(
-                IDataLoaderFactory.class)) {
+    @Override
+    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
+            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
+            List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
+
+        for (IDataLoaderFactory factory : engine.getExtensionService().getExtensionPointList(IDataLoaderFactory.class)) {
             dataLoaderFactories.put(factory.getTypeName(), factory);
         }
-	       
-		if (DatabaseNamesConstants.MYSQL.equals(engine.getDatabasePlatform().getName())) {
-			return new MySqlBulkDataLoaderFactory(engine)
-			        .getDataWriter(sourceNodeId, symmetricDialect, transformWriter, filters, errorHandlers, 
-			                conflictSettings, resolvedData);
-		}
-		else if (DatabaseNamesConstants.MSSQL2000.equals(engine.getDatabasePlatform().getName())
-	            || DatabaseNamesConstants.MSSQL2005.equals(engine.getDatabasePlatform().getName())
-	            || DatabaseNamesConstants.MSSQL2008.equals(engine.getDatabasePlatform().getName())) {
-			return new MsSqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, 
-					transformWriter, filters, errorHandlers, conflictSettings, resolvedData);
-		}
-		else if (DatabaseNamesConstants.ORACLE.equals(engine.getDatabasePlatform().getName())) {
-			return new OracleBulkDataLoaderFactory(engine)
-			        .getDataWriter(sourceNodeId, symmetricDialect, transformWriter, filters, errorHandlers, 
-			                conflictSettings, resolvedData);
-		}
-		else if (DatabaseNamesConstants.POSTGRESQL.equals(engine.getDatabasePlatform().getName())
-				|| DatabaseNamesConstants.GREENPLUM.equals(engine.getDatabasePlatform().getName())) {
-			return new PostgresBulkDataLoaderFactory(engine)
-			        .getDataWriter(sourceNodeId, symmetricDialect, transformWriter, filters, errorHandlers, 
-			                conflictSettings, resolvedData);
-		}
-		else if (DatabaseNamesConstants.REDSHIFT.equals(engine.getDatabasePlatform().getName())) {
-			return new RedshiftBulkDataLoaderFactory(engine)
-			        .getDataWriter(sourceNodeId, symmetricDialect, transformWriter, filters, errorHandlers, 
-			                conflictSettings, resolvedData);
-		}
-		else {
-			return dataLoaderFactories.get(new DefaultDataLoaderFactory().getTypeName())
-			        .getDataWriter(sourceNodeId, symmetricDialect, 
-			                transformWriter, filters, errorHandlers, conflictSettings, resolvedData);
-		}
-	}
 
-	@Override
-	public boolean isPlatformSupported(IDatabasePlatform platform) {
-		if (DatabaseNamesConstants.MYSQL.equals(platform.getName())
-			|| DatabaseNamesConstants.MSSQL2000.equals(platform.getName())
-            || DatabaseNamesConstants.MSSQL2005.equals(platform.getName())
-            || DatabaseNamesConstants.MSSQL2008.equals(platform.getName())
-            || DatabaseNamesConstants.ORACLE.equals(platform.getName())
-            || DatabaseNamesConstants.POSTGRESQL.equals(platform.getName())  
-    		|| DatabaseNamesConstants.GREENPLUM.equals(platform.getName())
-    		|| DatabaseNamesConstants.REDSHIFT.equals(platform.getName())) {
-			return true;
-		}
-		return false;
-	}
+        if (DatabaseNamesConstants.MYSQL.equals(engine.getDatabasePlatform().getName())) {
+            return new MySqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
+                    filters, errorHandlers, conflictSettings, resolvedData);
+        } else if (DatabaseNamesConstants.MSSQL2000.equals(engine.getDatabasePlatform().getName())
+                || DatabaseNamesConstants.MSSQL2005.equals(engine.getDatabasePlatform().getName())
+                || DatabaseNamesConstants.MSSQL2008.equals(engine.getDatabasePlatform().getName())) {
+            return new MsSqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
+                    filters, errorHandlers, conflictSettings, resolvedData);
+        } else if (DatabaseNamesConstants.ORACLE.equals(engine.getDatabasePlatform().getName())) {
+            return new OracleBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
+                    filters, errorHandlers, conflictSettings, resolvedData);
+        } else if (DatabaseNamesConstants.POSTGRESQL.equals(engine.getDatabasePlatform().getName())
+                || DatabaseNamesConstants.GREENPLUM.equals(engine.getDatabasePlatform().getName())) {
+            return new PostgresBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
+                    filters, errorHandlers, conflictSettings, resolvedData);
+        } else if (DatabaseNamesConstants.REDSHIFT.equals(engine.getDatabasePlatform().getName())) {
+            return new RedshiftBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
+                    filters, errorHandlers, conflictSettings, resolvedData);
+        } else {
+            return dataLoaderFactories.get(new DefaultDataLoaderFactory().getTypeName()).getDataWriter(sourceNodeId,
+                    symmetricDialect, transformWriter, filters, errorHandlers, conflictSettings, resolvedData);
+        }
+    }
+
+    @Override
+    public boolean isPlatformSupported(IDatabasePlatform platform) {
+        if (DatabaseNamesConstants.MYSQL.equals(platform.getName())
+                || DatabaseNamesConstants.MSSQL2000.equals(platform.getName())
+                || DatabaseNamesConstants.MSSQL2005.equals(platform.getName())
+                || DatabaseNamesConstants.MSSQL2008.equals(platform.getName())
+                || DatabaseNamesConstants.ORACLE.equals(platform.getName())
+                || DatabaseNamesConstants.POSTGRESQL.equals(platform.getName())
+                || DatabaseNamesConstants.GREENPLUM.equals(platform.getName())
+                || DatabaseNamesConstants.REDSHIFT.equals(platform.getName())) {
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
     }
 
-
-    
-	
 }

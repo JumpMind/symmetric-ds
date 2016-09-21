@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.IDataWriter;
@@ -44,10 +43,12 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
     
-    private ISymmetricEngine engine;
+    private IParameterService parameterService;
+    private IStagingManager stagingManager;
 
     public RedshiftBulkDataLoaderFactory(ISymmetricEngine engine) {
-        this.engine = engine;
+        this.parameterService = engine.getParameterService();
+        this.stagingManager = engine.getStagingManager();
     }
 
     public String getTypeName() {
@@ -58,14 +59,13 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory {
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
-        IParameterService param = engine.getParameterService();
-        int maxRowsBeforeFlush = param.getInt("redshift.bulk.load.max.rows.before.flush", 100000);
-        long maxBytesBeforeFlush = param.getLong("redshift.bulk.load.max.bytes.before.flush", 1000000000);
-        String bucket = param.getString("redshift.bulk.load.s3.bucket");
-        String accessKey = param.getString("redshift.bulk.load.s3.access.key");
-        String secretKey = param.getString("redshift.bulk.load.s3.secret.key");
-        String appendToCopyCommand = param.getString("redshift.append.to.copy.command");
-        String s3Endpoint = param.getString("redshift.bulk.load.s3.endpoint");
+        int maxRowsBeforeFlush = parameterService.getInt("redshift.bulk.load.max.rows.before.flush", 100000);
+        long maxBytesBeforeFlush = parameterService.getLong("redshift.bulk.load.max.bytes.before.flush", 1000000000);
+        String bucket = parameterService.getString("redshift.bulk.load.s3.bucket");
+        String accessKey = parameterService.getString("redshift.bulk.load.s3.access.key");
+        String secretKey = parameterService.getString("redshift.bulk.load.s3.secret.key");
+        String appendToCopyCommand = parameterService.getString("redshift.append.to.copy.command");
+        String s3Endpoint = parameterService.getString("redshift.bulk.load.s3.endpoint");
 
         try {
             Class<?> dbWriterClass = Class.forName("org.jumpmind.symmetric.io.RedshiftBulkDatabaseWriter");
@@ -74,7 +74,7 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory {
                     List.class, Integer.TYPE, Long.TYPE, String.class,
                     String.class, String.class, String.class, String.class });
             return (IDataWriter) dbWriterConstructor.newInstance(
-                    symmetricDialect.getPlatform(), engine.getStagingManager(), filters, errorHandlers,
+                    symmetricDialect.getPlatform(), stagingManager, filters, errorHandlers,
                     maxRowsBeforeFlush, maxBytesBeforeFlush, bucket, accessKey, secretKey, appendToCopyCommand, s3Endpoint);
 
         } catch (Exception e) {
@@ -85,10 +85,6 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    public void setSymmetricEngine(ISymmetricEngine engine) {
-        this.engine = engine;
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

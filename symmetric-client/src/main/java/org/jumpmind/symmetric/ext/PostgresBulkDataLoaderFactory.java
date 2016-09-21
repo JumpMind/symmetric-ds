@@ -25,10 +25,8 @@ import java.util.List;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcUtils;
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.io.PostgresBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
@@ -37,19 +35,17 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class PostgresBulkDataLoaderFactory implements IDataLoaderFactory {
 
-    private int maxRowsBeforeFlush;
     private NativeJdbcExtractor jdbcExtractor;
-    private ISymmetricEngine engine;
+    private IParameterService parameterService;
     
     public PostgresBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
-        this.engine = engine;
-        this.maxRowsBeforeFlush = engine.getParameterService().getInt(
-                "postgres.bulk.load.max.rows.before.flush", 10000);
+        this.parameterService = engine.getParameterService();
     }
 
     public String getTypeName() {
@@ -60,12 +56,11 @@ public class PostgresBulkDataLoaderFactory implements IDataLoaderFactory {
             TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
+
+        int maxRowsBeforeFlush = parameterService.getInt("postgres.bulk.load.max.rows.before.flush", 10000);
+        
         return new PostgresBulkDatabaseWriter(symmetricDialect.getPlatform(), jdbcExtractor,
                 maxRowsBeforeFlush);
-    }
-
-    public void setSymmetricEngine(ISymmetricEngine engine) {
-        
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
