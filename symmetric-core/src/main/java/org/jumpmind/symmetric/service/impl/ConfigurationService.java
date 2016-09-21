@@ -469,7 +469,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     String nodeGroupId = parameterService.getNodeGroupId();
                     Set<String> channelIds = getChannels(false).keySet();
                     for (String id : channelIds) {
-                        channelWindowsByChannel.put(channelId, sqlTemplate.query(getSql("selectNodeGroupChannelWindowSql"),
+                        channelWindowsByChannel.put(id, sqlTemplate.query(getSql("selectNodeGroupChannelWindowSql"),
                                 new NodeGroupChannelWindowMapper(), nodeGroupId, id));
                     }
 
