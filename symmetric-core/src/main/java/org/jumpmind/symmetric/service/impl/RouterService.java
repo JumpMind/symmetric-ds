@@ -710,7 +710,7 @@ public class RouterService extends AbstractService implements IRouterService {
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
                 .values());
 
-        gapDetector.setFullGapAnalysis(true);
+        gapDetector.setFullGapAnalysis(context.getSqlTransaction(), true);
 
         if (engine.getParameterService().is(ParameterConstants.ROUTING_LOG_STATS_ON_BATCH_ERROR)) {
             engine.getStatisticManager().addRouterStats(context.getStartDataId(), context.getEndDataId(), 
