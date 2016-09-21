@@ -83,7 +83,7 @@ Tables Contain Big Lobs:: Indicates whether the channel contains big lobs. Some 
 ifndef::pro[]
 [source,sql]
 ----
-insert into SYM_CHANNEL (channel_id, rocessing_order, max_batch_size, max_batch_to_send,
+insert into SYM_CHANNEL (channel_id, processing_order, max_batch_size, max_batch_to_send,
 	 extract_period_millis, batch_algorithm, enabled, description) 
      values ('item', 10, 1000, 10, 0, 'default', 1, 'Item and pricing data'); 
         
