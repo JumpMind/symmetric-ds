@@ -624,6 +624,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     futures.add(executor.submit(callable));
                 }
 
+                if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
+                    executor.shutdown();
+                    boolean isProcessed = false;
+                    while (!isProcessed) {
+                        try {
+                            isProcessed = executor.awaitTermination(keepAliveMillis, TimeUnit.MILLISECONDS);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                        if (!isProcessed) {
+                            writeKeepAliveAck(writer, sourceNode, streamToFileEnabled);
+                        }
+                    }
+                }
+
                 Iterator<OutgoingBatch> activeBatchIter = activeBatches.iterator();                
                 for (Future<FutureOutgoingBatch> future : futures) {
                     currentBatch = activeBatchIter.next();
@@ -632,7 +647,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         try {
                             FutureOutgoingBatch extractBatch = future.get(keepAliveMillis, TimeUnit.MILLISECONDS); 
                             currentBatch = extractBatch.getOutgoingBatch();
-
                             
                             if (extractBatch.isExtractSkipped) {
                                 break;
@@ -664,17 +678,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         } catch (TimeoutException e) {
-                            try {
-                                if (writer != null && streamToFileEnabled) {
-                                    writer.write(CsvConstants.NODEID + "," + sourceNode.getNodeId());
-                                    writer.newLine();
-                                    writer.flush();
-                                }
-                            } catch (IOException ex) {
-                            }
+                            writeKeepAliveAck(writer, sourceNode, streamToFileEnabled);
                         }
                     }
-                }                
+                }
             } catch (RuntimeException e) {
                 SQLException se = unwrapSqlException(e);
                 if (currentBatch != null) {
@@ -738,6 +745,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } else {
             return Collections.emptyList();
         }
+    }
+
+    protected void writeKeepAliveAck(BufferedWriter writer, Node sourceNode, boolean streamToFileEnabled) {
+        try {
+            if (writer != null && streamToFileEnabled) {
+                writer.write(CsvConstants.NODEID + "," + sourceNode.getNodeId());
+                writer.newLine();
+                writer.flush();
+            }
+        } catch (IOException ex) {
+        }                                
     }
 
     final protected boolean changeBatchStatus(Status status, OutgoingBatch currentBatch, ExtractMode mode) {
