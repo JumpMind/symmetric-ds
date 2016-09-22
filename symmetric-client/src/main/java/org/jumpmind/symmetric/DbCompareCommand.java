@@ -21,23 +21,15 @@
 package org.jumpmind.symmetric;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.Arrays;
-import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.model.Table;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.DbCompare;
 import org.jumpmind.symmetric.io.DbCompareReport;
-import org.jumpmind.symmetric.io.DbCompareReport.TableReport;
-import org.jumpmind.symmetric.io.data.DbFill;
-import org.jumpmind.symmetric.service.IParameterService;
 
 public class DbCompareCommand extends AbstractCommandLauncher {
     
@@ -148,7 +140,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         addOption(options, "s", OPTION_SOURCE, true);
         addOption(options, "t", OPTION_TARGET, true);
         addOption(options, null, OPTION_EXCLUDE, true);
-        addOption(options, null, OPTION_USE_SYM_CONFIG, false);
+        addOption(options, null, OPTION_USE_SYM_CONFIG, true);
         addOption(options, null, OPTION_OUTPUT_SQL, true);
         addOption(options, null, OPTION_NUMERIC_SCALE, true);
     }

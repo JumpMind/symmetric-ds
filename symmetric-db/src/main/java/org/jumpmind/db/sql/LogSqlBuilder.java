@@ -47,6 +47,10 @@ public class LogSqlBuilder {
     protected boolean logSqlParametersInline = true;    
     
     public void logSql(Logger loggerArg, String sql, Object[] args, int[] types, long executionTime) {
+        logSql(loggerArg, null, sql, args, types, executionTime);
+    }
+    
+    public void logSql(Logger loggerArg, String message, String sql, Object[] args, int[] types, long executionTime) {
         boolean longRunning = executionTime >= logSlowSqlThresholdMillis;
         if (loggerArg.isDebugEnabled() || longRunning) {
             StringBuilder logEntry = new StringBuilder();
@@ -55,6 +59,10 @@ public class LogSqlBuilder {
             } 
             logEntry.append("(" + executionTime + "ms.) ");
             
+            if (message != null) {
+                logEntry.append(message).append(" ");
+            }
+             
             if (logSqlParametersInline) {
                 logEntry.append(buildDynamicSqlForLog(sql, args, types));
             } else {
