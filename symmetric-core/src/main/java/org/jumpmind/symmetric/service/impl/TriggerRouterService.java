@@ -551,7 +551,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public String buildSymmetricTableRouterId(String triggerId, String sourceNodeGroupId, String targetNodeGroupId) {
-        return replaceCharsToShortenName(String.format("%s_%s_2_%s", triggerId, sourceNodeGroupId, targetNodeGroupId));
+        return StringUtils.left(replaceCharsToShortenName(String.format("%s_%s_2_%s", triggerId, sourceNodeGroupId, targetNodeGroupId)), 50);
     }
 
     protected TriggerRouter buildTriggerRoutersForSymmetricTables(String version, Trigger trigger,
