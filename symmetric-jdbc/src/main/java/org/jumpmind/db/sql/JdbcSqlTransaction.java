@@ -416,13 +416,10 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                         "Cannot prepare a new batch before the last batch has been flushed.");
             }
             JdbcSqlTemplate.close(pstmt);
-            if (log.isDebugEnabled()) {
-                log.debug("Preparing: {}", sql);
-            }
             pstmt = connection.prepareStatement(sql);
             psql = sql;
         } catch (SQLException ex) {
-            throw jdbcSqlTemplate.translate(ex);
+            throw jdbcSqlTemplate.translate(new SqlException("Exception while preparing sql [" + sql + "]", ex));
         }
     }
 
