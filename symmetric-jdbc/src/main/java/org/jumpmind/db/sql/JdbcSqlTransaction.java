@@ -429,10 +429,6 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     public int addRow(Object marker, Object[] args, int[] argTypes) {
         int rowsUpdated = 0;
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("Adding {} {}", ArrayUtils.toString(args), inBatchMode ? " in batch mode"
-                        : "");
-            }
             if (args != null) {
                 jdbcSqlTemplate.setValues(pstmt, args, argTypes, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
             }
@@ -441,12 +437,19 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     marker = new Integer(markers.size() + 1);
                 }
                 markers.add(marker);
+                long start = System.currentTimeMillis();
                 pstmt.addBatch();
+                long end = System.currentTimeMillis();
+                logSqlBuilder.logSql(log, "addBatch()", psql, args, argTypes, (end-start));
+                
                 if (markers.size() >= jdbcSqlTemplate.getSettings().getBatchSize()) {
                     rowsUpdated = flush();
                 }
             } else {
+                long start = System.currentTimeMillis();
                 pstmt.execute();
+                long end = System.currentTimeMillis();
+                logSqlBuilder.logSql(log, psql, args, argTypes, (end-start));
                 rowsUpdated = pstmt.getUpdateCount();
             }
         } catch (SQLException ex) {
