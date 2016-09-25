@@ -78,6 +78,15 @@ public class AbstractDatabasePlatformTest {
         assertEquals(3, testDatabasePlatform.parseQualifiedTableName("\"CATALOG\".\"SCHEMA\".\"TABLE\"").size());
     }
     
+    @Test
+    public void testisSuccessfulUpdateCount() {
+    	
+    	assertFalse(testDatabasePlatform.isSuccessfulUpdateCount(-1));
+    	assertFalse(testDatabasePlatform.isSuccessfulUpdateCount(0));
+        assertTrue(testDatabasePlatform.isSuccessfulUpdateCount(1));
+        
+    }
+    
     private AbstractDatabasePlatform testDatabasePlatform = new AbstractDatabasePlatform() {
         @Override
         public String getName() {

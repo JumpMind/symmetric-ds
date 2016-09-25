@@ -169,9 +169,9 @@ public class SequenceService extends AbstractService implements ISequenceService
             nextVal = endVal;
         }
 
-        int updateCount = transaction.prepareAndExecute(getSql("updateCurrentValueSql"), nextVal,
+        int updateCount = transaction.prepareAndExecute(this.platform.scrubSql(getSql("updateCurrentValueSql")), nextVal,
                 name, currVal);
-        if (updateCount != 1) {
+        if (!this.platform.isSuccessfulUpdateCount(updateCount)) {
             nextVal = -1;
         } else if (range != null) {
             sequenceCache.put(name, range);
@@ -230,7 +230,7 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public void create(Sequence sequence) {
-        sqlTemplate.update(getSql("insertSequenceSql"), sequence.getSequenceName(),
+        sqlTemplate.update(this.platform.scrubSql(getSql("insertSequenceSql")), sequence.getSequenceName(),
                 sequence.getCurrentValue(), sequence.getIncrementBy(), sequence.getMinValue(),
                 sequence.getMaxValue(), sequence.isCycle() ? 1 : 0, sequence.getCacheSize(), sequence.getLastUpdateBy());
     }

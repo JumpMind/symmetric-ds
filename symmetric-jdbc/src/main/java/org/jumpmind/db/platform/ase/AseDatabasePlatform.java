@@ -94,4 +94,10 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public Map<String, String> getSqlScriptReplacementTokens() {
         return sqlScriptReplacementTokens;
     }
+
+    @Override
+    public boolean isSuccessfulUpdateCount(int count) {
+        return (count >= 0) ? true : false;
+    }
 }
+

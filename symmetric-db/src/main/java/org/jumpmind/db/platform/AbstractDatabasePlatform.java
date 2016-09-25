@@ -902,6 +902,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return tz;
     }
     
+    public boolean isSuccessfulUpdateCount(int count) {
+        return (count > 0) ? true : false;
+    }
+    
     @Override
     public void makePlatformSpecific(Database database) {
         Table[] tables = database.getTables();
