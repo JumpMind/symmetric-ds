@@ -49,7 +49,9 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             Database desiredModel) throws IOException {
         StringBuilder sb = new StringBuilder();
         String monitorTableName = tablePrefix + "_" + TableConstants.SYM_MONITOR;
-        if (currentModel.findTable(monitorTableName) == null && desiredModel.findTable(monitorTableName) != null) {
+        String nodeTableName = tablePrefix + "_" + TableConstants.SYM_NODE;
+        if (currentModel.findTable(nodeTableName) != null && 
+                currentModel.findTable(monitorTableName) == null && desiredModel.findTable(monitorTableName) != null) {
             log.info("Detected upgrade to version 3.8");
             isUpgradeTo38 = true;
         } else {
