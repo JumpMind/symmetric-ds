@@ -649,50 +649,47 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         try {
             String prefix = parameterService.getTablePrefix();
-            Table table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_TRIGGER_ROUTER));            
-            if (table != null) {
+            
+            if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_GROUPLET)) != null) {
                 groupletService.deleteAllGrouplets();                
+            }
+
+            if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_TRIGGER_ROUTER)) != null) {
                 triggerRouterService.deleteAllTriggerRouters();
+            }
+
+            if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_FILE_TRIGGER_ROUTER)) != null) {
                 fileSyncService.deleteAllFileTriggerRouters();                
+            }
+
+            if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_ROUTER)) != null) {
                 triggerRouterService.deleteAllRouters();
             }
-            
-            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_CONFLICT));
-            if (table != null) {
-                // need to remove all conflicts before we can remove the node group links
+
+            if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_CONFLICT)) != null) {
                 dataLoaderService.deleteAllConflicts();
             }
 
-            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_TRANSFORM_TABLE));
-            if (table != null) {
-                // need to remove all transforms before we can remove the node group links
+            if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_TRANSFORM_TABLE)) != null) {
                 transformService.deleteAllTransformTables();
             }
             
-            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_ROUTER));
-            if (table != null) {
+            if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_ROUTER)) != null) {
                 triggerRouterService.deleteAllRouters();
             }
             
-            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_CONFLICT));
-            if (table != null) {
+            if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_CONFLICT)) != null) {
                 dataLoaderService.deleteAllConflicts();
             }
             
-            table = platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_NODE_GROUP_LINK));
-            if (table != null) {
-                // remove the links so the triggers on the sym tables will be removed
+            if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_NODE_GROUP_LINK)) != null) {
                 configurationService.deleteAllNodeGroupLinks();
             }
 
-            if (table != null) {
-                // this should remove all triggers because we have removed all the
-                // trigger configuration
-                triggerRouterService.syncTriggers();
-            }
-            
+            // this should remove all triggers because we have removed all the trigger configuration
+            triggerRouterService.syncTriggers();            
         } catch (SqlException ex) {
-            log.warn("Error while trying remove triggers on tables", ex);
+            log.warn("Error while trying to remove triggers on tables", ex);
         }
         
         // remove any additional triggers that may remain because they were not in trigger history
