@@ -1334,6 +1334,7 @@ public class DataService extends AbstractService implements IDataService {
         outgoingBatch.setCreateBy(createBy);
         outgoingBatch.setLoadFlag(isLoad);
         outgoingBatch.incrementEventCount(eventType);
+        outgoingBatch.incrementDataEventCount();
         outgoingBatch.incrementTableCount(tableName);
         if (status == Status.RQ) {
             outgoingBatch.setExtractJobFlag(true);

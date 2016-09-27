@@ -124,6 +124,12 @@ public class OutgoingBatch implements Serializable {
     
     private String createBy;
     
+    private Date extractStartTime;
+    
+    private Date transferStartTime;
+    
+    private Date loadStartTime;
+    
     private long oldDataEventCount = 0;
     private long oldByteCount = 0;
     private long oldFilterMillis = 0;
@@ -502,6 +508,31 @@ public class OutgoingBatch implements Serializable {
     
     public boolean isExtractJobFlag() {
         return extractJobFlag;
+    }
+
+    
+    public Date getExtractStartTime() {
+        return extractStartTime;
+    }
+
+    public void setExtractStartTime(Date extractStartTime) {
+        this.extractStartTime = extractStartTime;
+    }
+
+    public Date getTransferStartTime() {
+        return transferStartTime;
+    }
+
+    public void setTransferStartTime(Date transferStartTime) {
+        this.transferStartTime = transferStartTime;
+    }
+
+    public Date getLoadStartTime() {
+        return loadStartTime;
+    }
+
+    public void setLoadStartTime(Date loadStartTime) {
+        this.loadStartTime = loadStartTime;
     }
 
     public String getSummary() {

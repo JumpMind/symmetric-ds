@@ -823,6 +823,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     synchronized (lock) {
                         if (!isPreviouslyExtracted(currentBatch)) {
                             currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
+                            if (currentBatch.getExtractStartTime() == null) {
+                                currentBatch.setExtractStartTime(new Date());
+                            }
                             if (updateBatchStatistics) {
                                 changeBatchStatus(Status.QY, currentBatch, mode);
                             }
@@ -933,6 +936,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             currentBatch.setSentCount(currentBatch.getSentCount() + 1);
             if (currentBatch.getStatus() != Status.RS) {
                 changeBatchStatus(Status.SE, currentBatch, mode);
+                currentBatch.setTransferStartTime(new Date());
             }
 
             long ts = System.currentTimeMillis();
@@ -1407,6 +1411,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 processInfo.setCurrentChannelId(batch.getChannelId());
                 processInfo.incrementBatchCount();
                 processInfo.setCurrentDataCount(0);
+                batch.setStartTime(new Date());
             }
             this.currentDataWriter.start(batch);
         }
@@ -1473,6 +1478,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         public void end(Batch batch, boolean inError) {
+            checkSend();
             this.inError = inError;
             if (this.currentDataWriter != null) {
                 this.currentDataWriter.end(this.batch, inError);
@@ -1484,6 +1490,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 this.finishedBatches.add(outgoingBatch);
             }
             this.outgoingBatch = this.batches.remove(0);
+            this.outgoingBatch.setExtractStartTime(new Date());
             this.outgoingBatch.setDataEventCount(0);
             this.outgoingBatch.setInsertEventCount(0);
             

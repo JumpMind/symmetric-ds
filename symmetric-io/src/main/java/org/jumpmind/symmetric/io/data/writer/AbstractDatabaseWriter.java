@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.writer;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -101,6 +102,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
     public void start(Batch batch) {
         this.batch = batch;
         this.statistics.put(batch, new Statistics());
+        this.statistics.get(batch).set(DataWriterStatisticConstants.STARTTIME, new Date().getTime());
     }
 
     public boolean start(Table table) {

@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.db.sql.mapper.NumberMapper;
@@ -96,6 +97,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
                 outgoingBatch.setFilterMillis(batch.getFilterMillis());
                 outgoingBatch.setLoadMillis(batch.getDatabaseMillis());
+                outgoingBatch.setLoadStartTime(new Date(batch.getStartTime()));
                 outgoingBatch.setSqlCode(batch.getSqlCode());
                 outgoingBatch.setSqlState(batch.getSqlState());
                 outgoingBatch.setSqlMessage(batch.getSqlMessage());

@@ -48,6 +48,8 @@ public class BatchAck  implements Serializable {
 
     private long databaseMillis;
 
+    private long startTime;
+    
     private long byteCount;
 
     private String sqlState;
@@ -172,5 +174,15 @@ public class BatchAck  implements Serializable {
     public boolean isIgnored() {
         return ignored;
     }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+    
+    
 
 }

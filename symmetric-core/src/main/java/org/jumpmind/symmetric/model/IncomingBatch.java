@@ -84,6 +84,8 @@ public class IncomingBatch implements Serializable {
     
     private long failedLineNumber;    
 
+    private long startTime;
+    
     private String sqlState;
 
     private int sqlCode;
@@ -125,6 +127,7 @@ public class IncomingBatch implements Serializable {
                     .get(DataWriterStatisticConstants.MISSINGDELETECOUNT);
             ignoreCount = writerStatistics.get(DataWriterStatisticConstants.IGNORECOUNT);
             ignoreRowCount = writerStatistics.get(DataWriterStatisticConstants.IGNOREROWCOUNT);
+            startTime = writerStatistics.get(DataWriterStatisticConstants.STARTTIME);
             lastUpdatedTime = new Date();
             if (!isSuccess) {
                 failedRowNumber = statementCount;
@@ -273,6 +276,14 @@ public class IncomingBatch implements Serializable {
 
     public void setFailedRowNumber(long failedRowNumber) {
         this.failedRowNumber = failedRowNumber;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
 
     public String getSqlState() {

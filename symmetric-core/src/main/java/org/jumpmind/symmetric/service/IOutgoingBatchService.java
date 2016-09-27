@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -111,7 +112,9 @@ public interface IOutgoingBatchService {
     
     public Map<String, Integer> getLoadOverview(long loadId);
     
-    public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummarySql(long loadId);
+    public Collection<LoadSummary> getLoadHistory(String sourceNodeId, final String symTablePrefix, int rowsReturned);
+    
+    public Map<Integer, Map<String, Map<String, LoadStatusSummary>>> getLoadStatusSummaries();
     
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId);
 

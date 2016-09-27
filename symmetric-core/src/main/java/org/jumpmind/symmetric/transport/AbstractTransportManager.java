@@ -100,6 +100,8 @@ abstract public class AbstractTransportManager {
                 append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
                 append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId,
                         batch.getDatabaseMillis());
+                append(builder, WebConstants.ACK_START_TIME + batchId,
+                        batch.getStartTime());
                 append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
 
                 if (batch.getIgnoreCount() > 0) {
@@ -178,7 +180,7 @@ abstract public class AbstractTransportManager {
         String status = getParam(parameters, WebConstants.ACK_BATCH_NAME + batchId, "").trim();
         batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK));
         batchInfo.setResend(status.equalsIgnoreCase(WebConstants.ACK_BATCH_RESEND));
-
+        batchInfo.setStartTime(getParamAsNum(parameters, WebConstants.ACK_START_TIME + batchId));
         if (!batchInfo.isOk()) {
             batchInfo.setErrorLine(NumberUtils.toLong(status));
             batchInfo.setSqlState(getParam(parameters, WebConstants.ACK_SQL_STATE + batchId));

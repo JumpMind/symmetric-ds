@@ -30,6 +30,7 @@ public class LoadSummary  implements Serializable {
     private long dataCount;
     private String processStatus;
     private String processName;
+    private int targetNodeCount;
     
     public boolean isActive() {
         return pendingBatchCount > 0;
@@ -221,6 +222,14 @@ public class LoadSummary  implements Serializable {
 
     public void setProcessName(String processName) {
         this.processName = processName;
+    }
+
+    public int getTargetNodeCount() {
+        return targetNodeCount;
+    }
+
+    public void setTargetNodeCount(int targetNodeCount) {
+        this.targetNodeCount = targetNodeCount;
     }
     
     
