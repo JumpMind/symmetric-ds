@@ -56,6 +56,7 @@ import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
 import org.jumpmind.db.sql.IConnectionCallback;
+import org.jumpmind.db.sql.IConnectionHandler;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlException;
 import org.slf4j.Logger;
@@ -1383,6 +1384,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
                 ArrayList<String> schemas = new ArrayList<String>();
+                if (getConnectionHandler() != null) {
+                    getConnectionHandler().before(connection);
+                }
                 DatabaseMetaData meta = connection.getMetaData();
                 ResultSet rs = null;
                 try {
@@ -1404,12 +1408,19 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     }
                     return schemas;
                 } finally {
+                    if (getConnectionHandler() != null) {
+                        getConnectionHandler().after(connection);
+                    }
                     close(rs);
                 }
             }
         });
     }
 
+    protected IConnectionHandler getConnectionHandler() {
+        return null;
+    }
+    
     public List<String> getTableNames(final String catalog, final String schema,
             final String[] tableTypes) {
     	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();

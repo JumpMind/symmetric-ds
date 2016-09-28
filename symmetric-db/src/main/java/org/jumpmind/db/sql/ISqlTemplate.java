@@ -64,6 +64,9 @@ public interface ISqlTemplate {
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
             Object[] params, int[] types);
 
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
+            IConnectionHandler connectionHandler, Object[] params, int[] types);
+    
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper);
 
     public List<Row> query(String sql);
@@ -75,6 +78,8 @@ public interface ISqlTemplate {
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Map<String,?> namedParams);
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... params);
+
+    public <T> List<T> queryWithHandler(String sql, ISqlRowMapper<T> mapper, IConnectionHandler conHandler, Object... params);
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] params, int[] types);
     

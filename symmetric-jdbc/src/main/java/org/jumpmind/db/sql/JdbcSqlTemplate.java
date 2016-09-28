@@ -44,6 +44,7 @@ import java.sql.Types;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -130,8 +131,14 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, Object[] args,
             int[] types) {
+        return queryForCursor(sql, mapper, null, args, types);
+    }
+    
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
+            IConnectionHandler connectionHandler, Object[] args,
+            int[] types) {
         long startTime = System.currentTimeMillis();
-        ISqlReadCursor<T> cursor = new JdbcSqlReadCursor<T>(this, mapper, sql, args, types);
+        ISqlReadCursor<T> cursor = new JdbcSqlReadCursor<T>(this, mapper, sql, args, types, connectionHandler);
         long endTime = System.currentTimeMillis();
         logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
 
@@ -1063,4 +1070,5 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         StatementCreatorUtils.setParameterValue(ps, parameterPosition, SqlTypeValue.TYPE_UNKNOWN, argValue);
     }
 
+    
 }

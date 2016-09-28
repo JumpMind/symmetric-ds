@@ -110,12 +110,23 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         return this.queryForCursor(sql, mapper, null, null);
     }
 
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
+        IConnectionHandler connectionHandler, Object[] args,
+        int[] types) {
+        return queryForCursor(sql, mapper, args, types);
+    }
+    
     public List<Row> query(String sql) {
         return query(sql, (Object[])null, (int[]) null);
     }
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object... args) {
         return query(sql, mapper, args, null);
+    }
+    
+    @Override
+    public <T> List<T> queryWithHandler(String sql, ISqlRowMapper<T> mapper, IConnectionHandler conHandler, Object... params) {
+        return query(sql, mapper, conHandler, params, null);
     }
     
     public Row queryForRow(String sql, Object... args) {
@@ -176,10 +187,19 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Object[] args, int[] types) {
         return query(sql, -1, mapper, args, types);
     }
+    
+    public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, IConnectionHandler handler, Object[] args, int[] types) {
+        return query(sql, -1, mapper, handler, args, types);
+    }
 
     public <T> List<T> query(String sql, int maxNumberOfRowsToFetch, ISqlRowMapper<T> mapper,
             Object[] args, int[] types) {
-        ISqlReadCursor<T> cursor = queryForCursor(sql, mapper, args, types);
+        IConnectionHandler handler = null;
+        return query(sql, maxNumberOfRowsToFetch, mapper, handler, args, types);
+    }
+    public <T> List<T> query(String sql, int maxNumberOfRowsToFetch, ISqlRowMapper<T> mapper,
+            IConnectionHandler handler, Object[] args, int[] types) {
+        ISqlReadCursor<T> cursor = queryForCursor(sql, mapper, handler, args, types);
         try {
             T next = null;
             List<T> list = new ArrayList<T>();
