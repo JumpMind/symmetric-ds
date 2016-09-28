@@ -40,8 +40,8 @@ import org.slf4j.LoggerFactory;
 
 public class SimpleStagingDataWriter {
 
-    final static int MAX_WRITE_LENGTH = 32768;
-    
+    protected final static int MAX_WRITE_LENGTH = 32768;
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected BufferedReader reader;
@@ -77,7 +77,7 @@ public class SimpleStagingDataWriter {
         String line = null;
         long startTime = System.currentTimeMillis(), ts = startTime, lineCount = 0;
 
-        while ((line = reader.readLine()) != null) {
+        while ((line = readLine()) != null) {
             if (line.startsWith(CsvConstants.CATALOG)) {
                 catalogLine = line;
                 writeLine(line);
@@ -175,7 +175,6 @@ public class SimpleStagingDataWriter {
                         int end = i + MAX_WRITE_LENGTH;
                         writer.append(line, i, end < size ? end : size);
                     }
-                    writer.newLine();
                 } else {
                     writeLine(line);
                 }
@@ -217,8 +216,23 @@ public class SimpleStagingDataWriter {
                 log.debug("Writing staging data: {}", line);
             }
             writer.write(line);
-            writer.newLine();
         }
+    }
+
+    protected String readLine() throws IOException {
+        StringBuilder sb = new StringBuilder();
+        int ch;
+        while ((ch = reader.read()) != -1) {
+            sb.append((char) ch);
+            if (ch == '\n') {
+                break;
+            }
+        }
+        String str = sb.toString();
+        if (str.length() == 0) {
+            return null;
+        }
+        return str;
     }
 
     class TableLine {
