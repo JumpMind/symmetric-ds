@@ -98,7 +98,7 @@ public class StagingManager implements IStagingManager {
                     if ((resource.getState() == State.DONE ||
                             (resource.getState() == State.READY && resource.getPath().contains("/common/")) ||
                             (resource.getState() == State.READY && ttlInMs == 0)) 
-                            && (resourceIsOld || !resource.exists())) {
+                            && resourceIsOld) {
                         if (!resource.isInUse()) {
                             boolean file = resource.isFileResource();
                             long size = resource.getSize();
