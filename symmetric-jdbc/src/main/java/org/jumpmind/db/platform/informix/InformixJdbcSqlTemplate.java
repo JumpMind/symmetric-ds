@@ -40,7 +40,8 @@ public class InformixJdbcSqlTemplate extends JdbcSqlTemplate {
     @Override
     public boolean isUniqueKeyViolation(Throwable ex) {
         SQLException sqlEx = findSQLException(ex);
-        return (sqlEx != null && sqlEx.getMessage() != null && sqlEx.getMessage().contains("duplicate value"));
+        return sqlEx != null && sqlEx.getMessage() != null && (sqlEx.getMessage().contains("duplicate value") ||
+                sqlEx.getErrorCode() == -268);
     }    
 
     @Override

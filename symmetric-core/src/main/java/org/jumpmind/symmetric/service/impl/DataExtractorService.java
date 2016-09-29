@@ -1282,10 +1282,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                      * "Trick" the extractor to extract one reload batch, but we
                      * will split it across the N batches when writing it
                      */
-                    processInfo.setCurrentLoadId(batches.get(0).getLoadId());
+                    OutgoingBatch firstBatch = batches.get(0);
+                    processInfo.setCurrentLoadId(firstBatch.getLoadId());
+                    IStagedResource resource = getStagedResource(firstBatch);
+                    if (resource != null && resource.exists() && resource.getState() != State.CREATE) {
+                        resource.delete();
+                    }
                     extractOutgoingBatch(processInfo, targetNode,
                             new MultiBatchStagingWriter(identity.getNodeId(), stagingManager,
-                                    batches, channel.getMaxBatchSize(), processInfo), batches.get(0), false,
+                                    batches, channel.getMaxBatchSize(), processInfo), firstBatch, false,
                             false, ExtractMode.FOR_SYM_CLIENT);
 
                 } else {
