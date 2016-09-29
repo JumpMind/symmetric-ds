@@ -230,16 +230,16 @@ public class SnapshotUtil {
         extract(export, new File(tmpDir, "sym_node_communication.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION));        
         
-        extract(export, 5000, "order by create_time desc", new File(tmpDir, "sym_outgoing_batch.csv"), 
+        extract(export, 10000, "order by create_time desc", new File(tmpDir, "sym_outgoing_batch.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));        
 
-        extract(export, 5000, "where status != 'OK' order by create_time", new File(tmpDir, "sym_outgoing_batch_not_ok.csv"), 
+        extract(export, 10000, "where status != 'OK' order by create_time", new File(tmpDir, "sym_outgoing_batch_not_ok.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));        
 
-        extract(export, 5000, "order by create_time desc", new File(tmpDir, "sym_incoming_batch.csv"), 
+        extract(export, 10000, "order by create_time desc", new File(tmpDir, "sym_incoming_batch.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));          
 
-        extract(export, 5000, "where status != 'OK' order by create_time", new File(tmpDir, "sym_incoming_batch_not_ok.csv"), 
+        extract(export, 10000, "where status != 'OK' order by create_time", new File(tmpDir, "sym_incoming_batch_not_ok.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));          
 
         extract(export, 5000, "order by start_id, end_id desc", new File(tmpDir, "sym_data_gap.csv"), 
