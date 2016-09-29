@@ -751,6 +751,10 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         int identityIndex = sqlType.indexOf("identity");
         if (identityIndex > 0) {
             sqlType.replace(identityIndex, sqlType.length(), "");
+            int parensIndex = sqlType.indexOf("()");
+            if (parensIndex > 0) {
+                sqlType.replace(parensIndex, sqlType.length(), "");
+            }
         }
         if (sqlType.indexOf("datetimeoffset") >= 0) {
             sqlType.setLength(0);
