@@ -228,8 +228,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                                 lookupColumns.add(versionColumn);
                             } else {
                                 log.error(
-                                        "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
-                                        conflict.getDetectExpression());
+                                        "Could not find the timestamp/version column with the name {} on table {}.  Defaulting to using primary keys for the lookup.",
+                                        conflict.getDetectExpression(), targetTable.getName());
                             }
                             Column[] pks = targetTable.getPrimaryKeyColumns();
                             for (Column column : pks) {
@@ -376,8 +376,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                                     lookupColumns.add(versionColumn);
                                 } else {
                                     log.error(
-                                            "Could not find the timestamp/version column with the name {}.  Defaulting to using primary keys for the lookup.",
-                                            conflict.getDetectExpression());
+                                            "Could not find the timestamp/version column with the name {} on table {}.  Defaulting to using primary keys for the lookup.",
+                                            conflict.getDetectExpression(), targetTable.getName());
                                 }
                                 pks = targetTable.getPrimaryKeyColumns();
                                 for (Column column : pks) {
