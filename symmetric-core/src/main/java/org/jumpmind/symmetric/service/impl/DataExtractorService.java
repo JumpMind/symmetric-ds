@@ -579,7 +579,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                              */
                                             log.info("Batch {} is marked as ready but it has been deleted.  Rescheduling it for extraction",
                                                     extractBatch.getNodeBatchId());
-                                            if (changeBatchStatus(Status.RQ, extractBatch, mode)) {
+                                            if (mode != ExtractMode.EXTRACT_ONLY) {
                                                 resetExtractRequest(extractBatch);
                                             }
                                             status.shouldExtractSkip = outgoingBatch.isExtractSkipped = true;
@@ -1213,8 +1213,28 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected void resetExtractRequest(OutgoingBatch batch) {
-        sqlTemplate.update(getSql("resetExtractRequestStatus"), ExtractStatus.NE.name(),
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            batch.setStatus(Status.RQ);
+            outgoingBatchService.updateOutgoingBatch(transaction, batch);
+
+            transaction.prepareAndExecute(getSql("resetExtractRequestStatus"), ExtractStatus.NE.name(),
                 batch.getBatchId(), batch.getBatchId(), batch.getNodeId());
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
     }
 
     public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String queue,
@@ -1282,10 +1302,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                      * "Trick" the extractor to extract one reload batch, but we
                      * will split it across the N batches when writing it
                      */
-                    processInfo.setCurrentLoadId(batches.get(0).getLoadId());
+                    OutgoingBatch firstBatch = batches.get(0);
+                    processInfo.setCurrentLoadId(firstBatch.getLoadId());
+                    IStagedResource resource = getStagedResource(firstBatch);
+                    if (resource != null && resource.exists() && resource.getState() != State.CREATE) {
+                        resource.delete();
+                    }
                     extractOutgoingBatch(processInfo, targetNode,
-                            new MultiBatchStagingWriter(identity.getNodeId(), stagingManager,
-                                    batches, channel.getMaxBatchSize(), processInfo), batches.get(0), false,
+                            new MultiBatchStagingWriter(request, identity.getNodeId(), stagingManager,
+                                    batches, channel.getMaxBatchSize(), processInfo), firstBatch, false,
                             false, ExtractMode.FOR_SYM_CLIENT);
 
                 } else {
@@ -1336,7 +1361,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 request.getEndBatchId() });
                     }
                     transaction.commit();
-
+                    log.info("Done extracting {} batches for request {}", (request.getEndBatchId() - request.getStartBatchId()) + 1, request.getRequestId());
                 } catch (Error ex) {
                     if (transaction != null) {
                         transaction.rollback();
@@ -1382,6 +1407,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public class MultiBatchStagingWriter implements IDataWriter {
 
+        ExtractRequest request;
+        
         long maxBatchSize;
 
         StagingDataWriter currentDataWriter;
@@ -1405,15 +1432,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         boolean inError = false;
         
         ProcessInfo processInfo;
+
+        long startTime, ts, rowCount, byteCount;
         
-        public MultiBatchStagingWriter(String sourceNodeId, IStagingManager stagingManager,
+        public MultiBatchStagingWriter(ExtractRequest request, String sourceNodeId, IStagingManager stagingManager,
                 List<OutgoingBatch> batches, long maxBatchSize, ProcessInfo processInfo) {
+            this.request = request;
             this.sourceNodeId = sourceNodeId;
             this.maxBatchSize = maxBatchSize;
             this.stagingManager = stagingManager;
             this.batches = new ArrayList<OutgoingBatch>(batches);
             this.finishedBatches = new ArrayList<OutgoingBatch>(batches.size());
             this.processInfo = processInfo;
+            this.startTime = this.ts = System.currentTimeMillis();
         }
 
         public void open(DataContext context) {
@@ -1428,9 +1459,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         public void close() {
-           if (this.currentDataWriter != null) {
-               this.currentDataWriter.close();
-           }
+            while (batches.size() > 0) {
+                startNewBatch();
+                end(this.table);
+                end(this.batch, false);
+            }
+            if (this.currentDataWriter != null) {
+                this.currentDataWriter.close();
+            }
         }
 
         public Map<Batch, Statistics> getStatistics() {
@@ -1471,7 +1507,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 checkSend();
                 startNewBatch();
             }
-
+            if (System.currentTimeMillis() - ts > 60000) {
+                log.info("Request {} has been processing for {} seconds.  BATCHES={}, ROWS={}, BYTES={}, RANGE={}-{}, CURRENT={}",
+                        request.getRequestId(), (System.currentTimeMillis() - startTime) / 1000, finishedBatches.size(), rowCount, byteCount, 
+                        request.getStartBatchId(), request.getEndBatchId(), batch.getBatchId());
+                ts = System.currentTimeMillis();
+            }
         }
 
         public void checkSend() {
@@ -1520,10 +1561,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         protected void nextBatch() {
             if (this.outgoingBatch != null) {
                 this.finishedBatches.add(outgoingBatch);
+                rowCount += this.outgoingBatch.getDataEventCount();
+                byteCount += this.outgoingBatch.getByteCount();
             }
             this.outgoingBatch = this.batches.remove(0);
             this.outgoingBatch.setDataEventCount(0);
             this.outgoingBatch.setInsertEventCount(0);
+            if (this.finishedBatches.size() > 0) {
+                this.outgoingBatch.setExtractCount(this.outgoingBatch.getExtractCount() + 1);
+            }
             
             /*
              * Update the last update time so the batch 
