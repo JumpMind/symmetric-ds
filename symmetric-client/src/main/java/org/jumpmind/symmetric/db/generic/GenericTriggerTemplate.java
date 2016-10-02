@@ -18,30 +18,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.db.voltdb;
+package org.jumpmind.symmetric.db.generic;
 
 import java.util.HashMap;
 
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
-public class VoltDbTriggerTemplate extends AbstractTriggerTemplate {
+public class GenericTriggerTemplate extends AbstractTriggerTemplate {
     
-    public VoltDbTriggerTemplate(ISymmetricDialect symmetricDialect) {
+    public GenericTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
-        emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')|| '\"' end " ;
-        numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"'||cast($(tableAlias).\"$(columnName)\" as varchar(50))||'\"' end " ;
-        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"'|| cast($(tableAlias).\"$(columnName)\" as varchar) || '\"' end " ;
-        clobColumnTemplate = stringColumnTemplate;
-        blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"'||replace(replace(sym_BASE64_ENCODE($(tableAlias).\"$(columnName)\"),'\\','\\\\'),'\"','\\\"')||'\"' end " ;
-        booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" then '\"1\"' else '\"0\"' end " ;
-        triggerConcatCharacter = "||" ;
-        newTriggerValue = "" ;
-        oldTriggerValue = "" ;
-
+        
         sqlTemplates = new HashMap<String,String>();
-
         sqlTemplates.put("insertTriggerTemplate" , "");
         sqlTemplates.put("updateTriggerTemplate" , "");
         sqlTemplates.put("deleteTriggerTemplate" , "");

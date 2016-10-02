@@ -53,6 +53,7 @@ import org.jumpmind.symmetric.db.derby.DerbySymmetricDialect;
 import org.jumpmind.symmetric.db.firebird.Firebird20SymmetricDialect;
 import org.jumpmind.symmetric.db.firebird.Firebird21SymmetricDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdSymmetricDialect;
+import org.jumpmind.symmetric.db.generic.GenericSymmetricDialect;
 import org.jumpmind.symmetric.db.h2.H2SymmetricDialect;
 import org.jumpmind.symmetric.db.hsqldb.HsqlDbSymmetricDialect;
 import org.jumpmind.symmetric.db.hsqldb2.HsqlDb2SymmetricDialect;
@@ -155,7 +156,7 @@ public class JdbcSymmetricDialectFactory {
         } else if (platform instanceof VoltDbDatabasePlatform) {
             dialect = new VoltDbSymmetricDialect(parameterService, platform);
         } else {
-            throw new DbNotSupportedException();
+            dialect = new GenericSymmetricDialect(parameterService, platform);
         }
         return dialect;
     }

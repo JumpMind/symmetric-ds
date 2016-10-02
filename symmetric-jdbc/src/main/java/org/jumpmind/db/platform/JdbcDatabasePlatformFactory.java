@@ -39,6 +39,7 @@ import org.jumpmind.db.platform.db2.Db2zOsDatabasePlatform;
 import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDialect1DatabasePlatform;
+import org.jumpmind.db.platform.generic.GenericJdbcDatabasePlatform;
 import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
 import org.jumpmind.db.platform.h2.H2DatabasePlatform;
 import org.jumpmind.db.platform.hsqldb.HsqlDbDatabasePlatform;
@@ -168,7 +169,7 @@ public class JdbcDatabasePlatformFactory {
 
 
     protected static synchronized Class<? extends IDatabasePlatform> findPlatformClass(
-            String[] nameVersion) throws DdlException {
+            String[] nameVersion) {
         Class<? extends IDatabasePlatform> platformClass = platforms.get(String.format("%s%s",
                 nameVersion[0], nameVersion[1]).toLowerCase());
 
@@ -181,11 +182,10 @@ public class JdbcDatabasePlatformFactory {
         }
 
         if (platformClass == null) {
-            throw new DdlException("Could not find platform for database " + nameVersion[0]);
-        } else {
-            return platformClass;
-        }
-
+            platformClass = GenericJdbcDatabasePlatform.class;
+        } 
+        
+        return platformClass;
     }
 
     protected static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource)

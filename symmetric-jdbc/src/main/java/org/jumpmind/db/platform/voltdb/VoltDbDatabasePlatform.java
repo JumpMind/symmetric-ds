@@ -115,7 +115,6 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override   
     protected VoltDbJdbcSqlTemplate createSqlTemplate() {
-        // TODO
         return new VoltDbJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), getDatabaseInfo());
     }    
 
