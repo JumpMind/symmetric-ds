@@ -620,7 +620,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private class LoadSummaryMapper implements ISqlRowMapper<LoadSummary> {
     	public LoadSummary mapRow(Row rs) {
             LoadSummary summary = new LoadSummary();
-            summary.setLoadId(rs.getLong("load_id"));
+            //summary.setLoadId(rs.getLong("load_id"));
             summary.setNodeId(rs.getString("target_node_id"));
             summary.setCreateBy(rs.getString("last_update_by"));
             summary.setTableCount(rs.getInt("table_count"));

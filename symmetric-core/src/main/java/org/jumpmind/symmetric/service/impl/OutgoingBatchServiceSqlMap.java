@@ -139,7 +139,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         
         putSql("getLoadSummaryUnprocessedSql", 
                 "select r.source_node_id, r.target_node_id, "
-	    		+ "   load_id, count(TRIGGER_ID) as table_count, max(TRIGGER_ID) as trigger_id, "
+	    		+ "   count(TRIGGER_ID) as table_count, max(TRIGGER_ID) as trigger_id, "
 	            + "   max(create_table) as create_table, max(delete_first) as delete_first, max(processed) as processed, " 
 	            + "   max(reload_select) as reload_select, max(before_custom_sql) as before_custom_sql, " 
 	            + "   max(last_update_by) as last_update_by, min(last_update_time) as last_update_time "
@@ -191,7 +191,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + " join $(channel) c on c.channel_id = ob.channel_id  "
                 + " where ob.load_id > 0  "
                 + " group by ob.load_id, c.queue, ob.status"
-                + " order by ob.create_time asc");
+                + " order by ob.load_id asc");
         
         putSql("getNextOutgoingBatchForEachNodeSql",
                 "select min(b.batch_id) as batch_id, b.node_id, b.status, b.channel_id        "
