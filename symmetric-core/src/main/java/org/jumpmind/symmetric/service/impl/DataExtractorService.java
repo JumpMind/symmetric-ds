@@ -959,7 +959,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected boolean isRetry(OutgoingBatch currentBatch, Node remoteNode) {
         IStagedResource previouslyExtracted = getStagedResource(currentBatch);
         return previouslyExtracted != null && previouslyExtracted.exists() && previouslyExtracted.getState() != State.CREATE
-                && currentBatch.getStatus() != OutgoingBatch.Status.RS && remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0);
+                && currentBatch.getStatus() != OutgoingBatch.Status.RS && currentBatch.getSentCount() > 0 && remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0);
     }
 
     protected OutgoingBatch sendOutgoingBatch(ProcessInfo processInfo, Node targetNode,
