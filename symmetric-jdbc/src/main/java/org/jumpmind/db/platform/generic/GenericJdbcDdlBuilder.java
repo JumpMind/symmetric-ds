@@ -35,7 +35,6 @@ public class GenericJdbcDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setHasNullDefault(Types.TIME, true);
 
         DataSource ds = platform.getDataSource();
-        ResultSet rs = null;
         Connection c = null;
         try {
             c = ds.getConnection();
@@ -47,18 +46,15 @@ public class GenericJdbcDdlBuilder extends AbstractDdlBuilder {
                 databaseInfo.setDelimitedIdentifiersSupported(false);
             }
             
-            rs = meta.getTypeInfo();
-            if (!setNativeMapping(Types.LONGVARCHAR, rs, Types.LONGVARCHAR)) {
-                if (!setNativeMapping(Types.LONGVARCHAR, rs, Types.CLOB)) {
-                    setNativeMapping(Types.LONGVARCHAR, rs, Types.VARCHAR);
+            if (!setNativeMapping(Types.LONGVARCHAR, meta, Types.LONGVARCHAR)) {
+                if (!setNativeMapping(Types.LONGVARCHAR, meta, Types.CLOB)) {
+                    setNativeMapping(Types.LONGVARCHAR, meta, Types.VARCHAR);
                 }
             }
-            rs.close();
             
         } catch (SQLException ex) {
             throw new SqlException(ex);
         } finally {
-            JdbcSqlTemplate.close(rs);
             JdbcSqlTemplate.close(c);
         }
     }
@@ -70,18 +66,22 @@ public class GenericJdbcDdlBuilder extends AbstractDdlBuilder {
          */        
     }
     
-    protected boolean setNativeMapping(int targetJdbcType, ResultSet rs, int acceptableType) throws SQLException {        
-        rs.beforeFirst();
-        while (rs.next()) {
-            String name = rs.getString("TYPE_NAME");
-            int type = rs.getInt("DATA_TYPE");
-            if (type == acceptableType) {
-                databaseInfo.addNativeTypeMapping(targetJdbcType, name, acceptableType);
-                return true;
+    protected boolean setNativeMapping(int targetJdbcType, DatabaseMetaData meta, int acceptableType) throws SQLException {
+        ResultSet rs = null;
+        try {
+            rs = meta.getTypeInfo();
+            while (rs.next()) {
+                String name = rs.getString("TYPE_NAME");
+                int type = rs.getInt("DATA_TYPE");
+                if (type == acceptableType) {
+                    databaseInfo.addNativeTypeMapping(targetJdbcType, name, acceptableType);
+                    return true;
+                }
             }
+        } finally {
+            JdbcSqlTemplate.close(rs);
         }
         return false;
-        
     }
     
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
