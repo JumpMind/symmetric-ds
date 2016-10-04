@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -1624,25 +1625,50 @@ public class DataService extends AbstractService implements IDataService {
                 String rowData = null;
                 String pkData = null;
                 if (whereClause != null) {
-                    rowData = (String) transaction.queryForObject(symmetricDialect
-                            .createCsvDataSql(trigger, triggerHistory, engine
-                                    .getConfigurationService().getChannel(trigger.getChannelId()),
-                                    whereClause), String.class);
-                    if (rowData != null) {
-                        rowData = rowData.trim();
-                    }
-                    pkData = (String) transaction.queryForObject(symmetricDialect
-                            .createCsvPrimaryKeySql(trigger, triggerHistory, engine
-                                    .getConfigurationService().getChannel(trigger.getChannelId()),
-                                    whereClause), String.class);
-                    if (pkData != null) {
-                        pkData = pkData.trim();
-                    }
+                    rowData = getCsvDataFor(transaction, trigger, triggerHistory, whereClause, false);
+                    pkData = getCsvDataFor(transaction, trigger, triggerHistory, whereClause, true);                    
                 }
                 data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData,
                         pkData, triggerHistory, trigger.getChannelId(), null, null);
             }
         }
+        return data;
+    }
+    
+    protected String getCsvDataFor(ISqlTransaction transaction, Trigger trigger, TriggerHistory triggerHistory, String whereClause, boolean pkOnly) {
+        String data = null;
+        String sql = null;
+        try {
+            if (pkOnly) {
+                sql = symmetricDialect.createCsvPrimaryKeySql(trigger, triggerHistory,
+                        engine.getConfigurationService().getChannel(trigger.getChannelId()), whereClause);
+            } else {
+                sql = symmetricDialect.createCsvDataSql(trigger, triggerHistory,
+                        engine.getConfigurationService().getChannel(trigger.getChannelId()), whereClause);
+            }
+        } catch (NotImplementedException e) {
+        }
+        
+        if (isNotBlank(sql)) {
+            data = transaction.queryForObject(sql, String.class);
+        } else {
+            DatabaseInfo databaseInfo = platform.getDatabaseInfo();
+            String quote = databaseInfo.getDelimiterToken() == null || !parameterService.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE)
+                    ? "" : databaseInfo.getDelimiterToken();
+            sql = "select " + triggerHistory.getColumnNames() + " from "
+                    + Table.getFullyQualifiedTableName(triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
+                            triggerHistory.getSourceTableName(), quote, databaseInfo.getCatalogSeparator(),
+                            databaseInfo.getSchemaSeparator()) + " t where " + whereClause;
+            Row row = transaction.queryForRow(sql);
+            if (row != null) {
+                data = row.csvValue();
+            }
+        }
+        
+        if (data != null) {
+            data = data.trim();
+        }
+
         return data;
     }
 

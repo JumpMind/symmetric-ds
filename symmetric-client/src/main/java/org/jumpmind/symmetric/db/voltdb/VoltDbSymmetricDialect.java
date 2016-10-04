@@ -24,9 +24,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
-import org.jumpmind.symmetric.db.postgresql.GreenplumTriggerTemplate;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class VoltDbSymmetricDialect extends AbstractSymmetricDialect {

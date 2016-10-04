@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,6 +166,16 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             }
         }
         return rowsUpdated;
+    }
+    
+    @Override
+    public Row queryForRow(String sql, Object... args) {
+        List<Row> rows = query(sql, new RowMapper(), args, null);
+        if (rows.size() > 0) {
+            return rows.get(0);
+        } else {
+            return null;
+        }
     }
 
     public int queryForInt(String sql, Object... args) {
