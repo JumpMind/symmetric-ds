@@ -68,6 +68,11 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             if (currentModel.findTable(dataGapTableName) != null) { 
                 engine.getSqlTemplate().update("delete from " + dataGapTableName);
             }
+            
+            String nodeCommunicationTable = tablePrefix + "_" + TableConstants.SYM_NODE_COMMUNICATION;
+            if (currentModel.findTable(nodeCommunicationTable) != null) {
+                engine.getSqlTemplate().update("delete from " + tablePrefix + "_" + TableConstants.SYM_NODE_COMMUNICATION);
+            }
         }
         
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.FIREBIRD) ||
