@@ -328,7 +328,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));
 
-        return sqlTemplate
+        return sqlTemplateDirty
                 .queryForInt(
                         getSql("selectCountBatchesPrefixSql",
                                 buildBatchWhere(nodeIds, channels, statuses, loads)), params);
@@ -355,7 +355,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         String sql = getSql("selectOutgoingBatchPrefixSql", where, startAtBatchIdSql,
                 ascending ? " order by batch_id asc" : " order by batch_id desc");
-        return sqlTemplate.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true),
+        return sqlTemplateDirty.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true),
                 params);
 
     }
@@ -587,7 +587,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         String sql = getSql("selectOutgoingBatchSummaryByStatusSql").replace(":STATUS_LIST",
                 inList.substring(0, inList.length() - 1));
 
-        return sqlTemplate.query(sql, new OutgoingBatchSummaryMapper(), args);
+        return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(), args);
     }
 
     public Set<Long> getActiveLoads(String sourceNodeId) {
@@ -727,7 +727,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly) {
         final Map<String, OutgoingLoadSummary> loadSummaries = new TreeMap<String, OutgoingLoadSummary>();
-        sqlTemplate.query(getSql("getLoadSummariesSql"), new ISqlRowMapper<OutgoingLoadSummary>() {
+        sqlTemplateDirty.query(getSql("getLoadSummariesSql"), new ISqlRowMapper<OutgoingLoadSummary>() {
             public OutgoingLoadSummary mapRow(Row rs) {
                 long loadId = rs.getLong("load_id");
                 String nodeId = rs.getString("node_id");

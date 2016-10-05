@@ -64,6 +64,8 @@ abstract public class AbstractService implements IService {
     protected ISymmetricDialect symmetricDialect;
 
     protected ISqlTemplate sqlTemplate;
+    
+    protected ISqlTemplate sqlTemplateDirty;
 
     protected IDatabasePlatform platform;
 
@@ -79,6 +81,7 @@ abstract public class AbstractService implements IService {
         this.tablePrefix = parameterService.getTablePrefix();
         this.platform = symmetricDialect.getPlatform();
         this.sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
+        this.sqlTemplateDirty = symmetricDialect.getPlatform().getSqlTemplateDirty();
     }
     
     protected Date maxDate(Date... dates) {

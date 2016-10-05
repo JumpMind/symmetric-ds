@@ -1860,13 +1860,13 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public List<Number> listDataIds(long batchId, String nodeId) {
-        return sqlTemplate.query(getSql("selectEventDataIdsSql", " order by d.data_id asc"),
+        return sqlTemplateDirty.query(getSql("selectEventDataIdsSql", " order by d.data_id asc"),
                 new NumberMapper(), batchId, nodeId);
     }
 
     public List<Data> listData(long batchId, String nodeId, long startDataId, String channelId,
             final int maxRowsToRetrieve) {
-        return sqlTemplate.query(getDataSelectSql(batchId, startDataId, channelId),
+        return sqlTemplateDirty.query(getDataSelectSql(batchId, startDataId, channelId),
                 maxRowsToRetrieve, this.dataMapper, new Object[] {batchId, nodeId, startDataId}, 
                 new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR, symmetricDialect.getSqlTypeForIds()});
     }
@@ -1902,7 +1902,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public long findMaxDataId() {
-        return sqlTemplate.queryForLong(getSql("selectMaxDataIdSql"));
+        return sqlTemplateDirty.queryForLong(getSql("selectMaxDataIdSql"));
     }
     
     

@@ -103,7 +103,12 @@ public class AbstractDatabasePlatformTest {
         public ISqlTemplate getSqlTemplate() {
             return null;
         }
-        
+
+        @Override
+        public ISqlTemplate getSqlTemplateDirty() {
+            return null;
+        }
+
         @Override
         public IDdlBuilder getDdlBuilder() {
             return new H2DdlBuilder();

@@ -173,7 +173,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             String sql = getSql("selectIncomingBatchPrefixSql", where, createTimeLimiter,
                     ascending ? " order by create_time" : " order by create_time desc");
 
-            return sqlTemplate.query(sql, maxRowsToRetrieve, new IncomingBatchMapper(), params);
+            return sqlTemplateDirty.query(sql, maxRowsToRetrieve, new IncomingBatchMapper(), params);
 
     }
 

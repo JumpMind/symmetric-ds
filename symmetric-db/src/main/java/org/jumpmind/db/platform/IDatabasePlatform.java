@@ -67,6 +67,8 @@ public interface IDatabasePlatform {
 
     public ISqlTemplate getSqlTemplate();
 
+    public ISqlTemplate getSqlTemplateDirty();
+
     /**
      * The amount of time table metadata will be cached when using {@link IDatabasePlatform#getT
      * @param clearCacheModelTimeoutInMs

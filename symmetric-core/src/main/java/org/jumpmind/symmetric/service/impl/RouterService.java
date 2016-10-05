@@ -1083,7 +1083,7 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     public long getUnroutedDataCount() {
-        long maxDataIdAlreadyRouted = sqlTemplate
+        long maxDataIdAlreadyRouted = sqlTemplateDirty
                 .queryForLong(getSql("selectLastDataIdRoutedUsingDataGapSql"));
         long leftToRoute = engine.getDataService().findMaxDataId() - maxDataIdAlreadyRouted;
         
