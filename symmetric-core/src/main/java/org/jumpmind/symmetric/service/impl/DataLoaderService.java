@@ -914,12 +914,23 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     if (!isError) {
                         try {
                             processInfo.setStatus(ProcessInfo.Status.LOADING);
-                            DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
-                                    batch.getTargetNodeId(), resource), null, listener, "data load from stage") {
+                            
+                            ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, batch.getTargetNodeId(), resource) {
+                                @Override
+                                public Table nextTable() {
+                                    Table table = super.nextTable();
+                                    if (table != null && listener.currentBatch != null) {
+                                        listener.currentBatch.incrementTableCount(table.getNameLowerCase());
+                                    }
+                                    return table;
+                                }                                
+                            };
+                            
+                            DataProcessor processor = new DataProcessor(reader, null, listener, "data load from stage") {
                                 @Override
                                 protected IDataWriter chooseDataWriter(Batch batch) {
-                                    return buildDataWriter(processInfo, sourceNodeId, batch.getChannelId(), batch.getBatchId(),
-                                            ((ManageIncomingBatchListener) listener).getCurrentBatch().isRetry());
+                                    boolean isRetry = ((ManageIncomingBatchListener) listener).getCurrentBatch().isRetry();
+                                    return buildDataWriter(processInfo, sourceNodeId, batch.getChannelId(), batch.getBatchId(), isRetry);
                                 }
                             };
                             processor.process(ctx);

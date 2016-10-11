@@ -36,7 +36,7 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("selectIncomingBatchPrefixSql" ,"" + 
 "select batch_id, node_id, channel_id, status, network_millis, filter_millis, database_millis, failed_row_number, failed_line_number, byte_count,           " + 
 "  statement_count, fallback_insert_count, fallback_update_count, ignore_count, ignore_row_count, missing_delete_count, skip_count, sql_state, sql_code, sql_message,   " + 
-"  last_update_hostname, last_update_time, create_time, error_flag from $(incoming_batch)                                         " );
+"  last_update_hostname, last_update_time, create_time, error_flag, summary from $(incoming_batch)                                         " );
 
         putSql("selectCreateTimePrefixSql" ,"" + 
 "select create_time from $(incoming_batch)   " );
@@ -61,13 +61,13 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("insertIncomingBatchSql" ,"" + 
 "insert into $(incoming_batch) (batch_id, node_id, channel_id, status, network_millis, filter_millis, database_millis, failed_row_number, failed_line_number, byte_count,   " + 
 "  statement_count, fallback_insert_count, fallback_update_count, ignore_count, ignore_row_count, missing_delete_count, skip_count, sql_state, sql_code, sql_message,                         " + 
-"  last_update_hostname, last_update_time, create_time)                                                                                                       " + 
-"  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)                                                                        " );
+"  last_update_hostname, last_update_time, summary, create_time)                                                                                                       " + 
+"  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)                                                                        " );
 
         putSql("updateIncomingBatchSql" ,"" + 
 "update $(incoming_batch) set status = ?, error_flag=?, network_millis = ?, filter_millis = ?, database_millis = ?, failed_row_number = ?, failed_line_number = ?, byte_count = ?,         " + 
 "  statement_count = ?, fallback_insert_count = ?, fallback_update_count = ?, ignore_count = ?, ignore_row_count = ?, missing_delete_count = ?, skip_count = ?,  sql_state = ?, sql_code = ?, sql_message = ?,   " + 
-"  last_update_hostname = ?, last_update_time = ? where batch_id = ? and node_id = ?                                                                                     " );
+"  last_update_hostname = ?, last_update_time = ?, summary = ? where batch_id = ? and node_id = ?                                                                                     " );
 
         putSql("deleteIncomingBatchSql" ,"" + 
 "delete from $(incoming_batch) where batch_id = ? and node_id = ?                                                                                     " );
