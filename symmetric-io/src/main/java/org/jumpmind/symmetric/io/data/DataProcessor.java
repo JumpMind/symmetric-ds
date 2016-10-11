@@ -206,7 +206,7 @@ public class DataProcessor {
                 }
             }
             
-            if (System.currentTimeMillis() - ts > 60000) {
+            if (System.currentTimeMillis() - ts > 60000 && context.getWriter() != null) {
                 Statistics stats = context.getWriter().getStatistics().get(batch);
                 if (stats != null) {
                     log.info(
