@@ -176,6 +176,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         IIncomingBatchService clientIncomingBatchService = getClient().getIncomingBatchService();
 
+        // Running a query with dirty reads to make sure platform allows it
+        getServer().getDataService().findMaxDataId();        
+        
         assertEquals("The initial load errored out." + printRootAndClientDatabases(), 0,
                 clientIncomingBatchService.countIncomingBatchesInError());
         assertEquals(
@@ -200,7 +203,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 THIS_IS_A_TEST);
         
     }
-    
+
     @Test(timeout = 120000)
     public void test04LobSyncUsingStreaming() throws Exception {
         String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";

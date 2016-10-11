@@ -413,7 +413,8 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     
     @Override
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
-        return "@OldDataRow is null or @DataRow != @OldDataRow";
+    	/* gets filled/replaced by trigger template as it will compare by each column */
+        return "$(anyNonBlobColumnChanged)";
     }
 
 }
