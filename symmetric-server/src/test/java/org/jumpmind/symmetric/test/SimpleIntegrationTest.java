@@ -176,8 +176,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         IIncomingBatchService clientIncomingBatchService = getClient().getIncomingBatchService();
 
-        long maxDataId = getServer().getDataService().findMaxDataId();        
-        assertEquals(31, maxDataId);
+        // Running a query with dirty reads to make sure platform allows it
+        getServer().getDataService().findMaxDataId();        
         
         assertEquals("The initial load errored out." + printRootAndClientDatabases(), 0,
                 clientIncomingBatchService.countIncomingBatchesInError());
