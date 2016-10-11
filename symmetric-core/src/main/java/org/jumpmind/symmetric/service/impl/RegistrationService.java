@@ -61,6 +61,7 @@ import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.RandomTimeSlot;
 
@@ -405,8 +406,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private void sleepBeforeRegistrationRetry() {
         long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
                 * randomTimeSlot.getRandomValueSeededByExternalId();
-        log.info("Could not register.  Sleeping before attempting again.", sleepTimeInMs);
-        log.info("Sleeping for {}ms", sleepTimeInMs);
+        log.info("Could not register.  Sleeping for {}ms before attempting again.", sleepTimeInMs);
         AppUtils.sleep(sleepTimeInMs);
     }
 
@@ -429,11 +429,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
             } catch (ConnectException e) {
                 log.warn("The request to register failed because the client failed to connect to the server.  The connection error message was: {}", e.getMessage());
             } catch (UnknownHostException e) {
-                log.warn("The request to register failed because the host was unknown.  The unknow host exception was {}", e.getMessage());
+                log.warn("The request to register failed because the host was unknown.  The unknown host exception was {}", e.getMessage());
             } catch (ConnectionRejectedException ex) {
                 log.warn("The request to register was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
+            } catch (RegistrationNotOpenException e) {
+                log.warn("Unable to register with server because registration is not open.");
+            } catch (ServiceUnavailableException e) {
+                log.warn("Unable to register with server because the service is not available.  It may be starting up.");
             } catch (Exception e) {
-                log.error("", e);
+                log.error("Unexpected error during registration: " + (StringUtils.isNotBlank(e.getMessage()) ? e.getMessage() : e.getClass().getName()), e);
             }
 
             maxNumberOfAttempts--;
