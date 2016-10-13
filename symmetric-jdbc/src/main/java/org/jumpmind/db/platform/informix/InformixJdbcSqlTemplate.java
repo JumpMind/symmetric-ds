@@ -35,7 +35,7 @@ public class InformixJdbcSqlTemplate extends JdbcSqlTemplate {
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);        
         primaryKeyViolationCodes = new int[] {-268};
-        foreignKeyViolationCodes = new int[] {-111};
+        foreignKeyViolationCodes = new int[] {-691};
     }
 
     @Override
