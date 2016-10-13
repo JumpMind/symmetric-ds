@@ -103,7 +103,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setSqlMessage(batch.getSqlMessage());
 
                 if (!batch.isOk() && batch.getErrorLine() != 0) {
-                    List<Number> ids = sqlTemplate.query(getSql("selectDataIdSql"),
+                    List<Number> ids = sqlTemplateDirty.query(getSql("selectDataIdSql"),
                             new NumberMapper(), outgoingBatch.getBatchId());
                     if (ids.size() >= batch.getErrorLine()) {
                         outgoingBatch.setFailedDataId(ids.get((int) batch.getErrorLine() - 1)
