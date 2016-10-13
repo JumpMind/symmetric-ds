@@ -69,7 +69,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectData",
             "select data_id, table_name, event_type, row_data, pk_data, old_data, " +
-            "create_time, trigger_hist_id, channel_id, transaction_id, source_node_id, external_data, node_list, null as router_id " +
+            "create_time, trigger_hist_id, channel_id, transaction_id, source_node_id, external_data, node_list, '' as router_id " +
             "from $(data) where data_id = ?");
 
         putSql("selectMaxDataEventDataIdSql", ""
