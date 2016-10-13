@@ -1534,6 +1534,10 @@ public class DataService extends AbstractService implements IDataService {
             DmlStatement st = platform.createDmlStatement(DmlType.WHERE, foreignTable, null);
             Column[] foreignColumns = foreignColumnList.toArray(new Column[foreignColumnList.size()]);
             String sql = st.buildDynamicSql(symmetricDialect.getBinaryEncoding(), foreignRow, false, true, foreignColumns).substring(6);
+            String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
+            if (delimiter != null && delimiter.length() > 0) {
+                sql = sql.substring(0, sql.length() - delimiter.length());
+            }
 
             String catalog = foreignTable.getCatalog();
             String schema = foreignTable.getSchema();
