@@ -36,8 +36,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -1311,11 +1316,6 @@ public class DataService extends AbstractService implements IDataService {
     	return insertDataAndDataEventAndOutgoingBatch(transaction, data, nodeId, routerId, isLoad, loadId, createBy, status, null);
     }
 
-    /**
-     * @param status
-     *            TODO
-     * @return The inserted batch id
-     */
     protected long insertDataEventAndOutgoingBatch(ISqlTransaction transaction, long dataId,
             String channelId, String nodeId, DataEventType eventType, String routerId,
             boolean isLoad, long loadId, String createBy, Status status, String tableName) {
@@ -1513,6 +1513,39 @@ public class DataService extends AbstractService implements IDataService {
                     + sourceNode.getNodeGroupId();
         }
 
+    }
+
+    public void sendMissingForeignKeyRows(String nodeId, long dataId) {
+        Data data = findData(dataId);
+        Table table = platform.getTableFromCache(data.getTableName(), false);
+        Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+
+        for (ForeignKey fk : table.getForeignKeys()) {
+            Table foreignTable = platform.getTableFromCache(fk.getForeignTableName(), false);
+            ArrayList<Column> foreignColumnList = new ArrayList<Column>();
+            Row foreignRow = new Row(3);
+
+            for (Reference ref : fk.getReferences()) {
+                String foreignColumnName = ref.getForeignColumnName();
+                foreignColumnList.add(foreignTable.findColumn(foreignColumnName));
+                foreignRow.put(foreignColumnName, dataMap.get(ref.getLocalColumnName()));
+            }
+
+            DmlStatement st = platform.createDmlStatement(DmlType.WHERE, foreignTable, null);
+            Column[] foreignColumns = foreignColumnList.toArray(new Column[foreignColumnList.size()]);
+            String sql = st.buildDynamicSql(symmetricDialect.getBinaryEncoding(), foreignRow, false, true, foreignColumns).substring(6);
+
+            String catalog = foreignTable.getCatalog();
+            String schema = foreignTable.getSchema();
+            if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
+                catalog = null;
+            }
+            if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
+                schema = null;
+            }
+
+            reloadTable(nodeId, catalog, schema, foreignTable.getName(), sql);    
+        }
     }
 
     /**
@@ -1873,6 +1906,10 @@ public class DataService extends AbstractService implements IDataService {
                 new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR, symmetricDialect.getSqlTypeForIds()});
     }
 
+    public Data findData(long dataId) {
+        return sqlTemplateDirty.queryForObject(getSql("selectData"), dataMapper, dataId);       
+    }
+    
     public Data mapData(Row row) {
         return dataMapper.mapRow(row);
     }

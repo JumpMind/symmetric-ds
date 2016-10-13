@@ -67,6 +67,11 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                         + "  $(data_event) e on d.data_id = e.data_id inner join $(outgoing_batch) o on o.batch_id=e.batch_id   "
                         + "  where o.batch_id = ? and o.node_id = ?                                                                                           ");
 
+        putSql("selectData",
+            "select data_id, table_name, event_type, row_data, pk_data, old_data, " +
+            "create_time, trigger_hist_id, channel_id, transaction_id, source_node_id, external_data, node_list, null as router_id " +
+            "from $(data) where data_id = ?");
+
         putSql("selectMaxDataEventDataIdSql", ""
                 + "select max(data_id) from $(data_event)   ");
 

@@ -26,6 +26,8 @@ import java.util.List;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ErrorConstants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -115,6 +117,10 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
                     if (routerStats != null) {
                         log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
+                    }
+                    if (outgoingBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE
+                            && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION)) {
+                        engine.getDataService().sendMissingForeignKeyRows(outgoingBatch.getNodeId(), outgoingBatch.getFailedDataId());
                     }
                 } else if (status == Status.RS) {
                     log.info("The outgoing batch {} received resend request", outgoingBatch.getNodeBatchId());
