@@ -120,7 +120,10 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     }
                     if (outgoingBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE
                             && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION)) {
-                        engine.getDataService().sendMissingForeignKeyRows(outgoingBatch.getNodeId(), outgoingBatch.getFailedDataId());
+                        Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
+                        if (channel != null && !channel.isReloadFlag()) {
+                            engine.getDataService().reloadMissingForeignKeyRows(outgoingBatch.getNodeId(), outgoingBatch.getFailedDataId());
+                        }
                     }
                 } else if (status == Status.RS) {
                     log.info("The outgoing batch {} received resend request", outgoingBatch.getNodeBatchId());
