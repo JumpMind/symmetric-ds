@@ -1915,14 +1915,14 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public ISqlReadCursor<Data> selectDataFor(Batch batch) {
-        return sqlTemplate.queryForCursor(
+        return sqlTemplateDirty.queryForCursor(
                 getDataSelectSql(batch.getBatchId(), -1l, batch.getChannelId()), dataMapper,
                 new Object[] { batch.getBatchId(), batch.getTargetNodeId() },
                 new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String channelId) {
-        return sqlTemplate.queryForCursor(getDataSelectByBatchSql(batchId, -1l, channelId),
+        return sqlTemplateDirty.queryForCursor(getDataSelectByBatchSql(batchId, -1l, channelId),
                 dataMapper, new Object[] { batchId }, new int[] { symmetricDialect.getSqlTypeForIds() });
     }
 
