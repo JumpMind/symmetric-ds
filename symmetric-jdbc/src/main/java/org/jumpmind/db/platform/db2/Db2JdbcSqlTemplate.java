@@ -32,7 +32,8 @@ public class Db2JdbcSqlTemplate extends JdbcSqlTemplate {
     public Db2JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        primaryKeyViolationCodes = new int[] {-803};        
+        primaryKeyViolationCodes = new int[] {-803};
+        foreignKeyViolationCodes = new int[] {-530};
     }
     
 

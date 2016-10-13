@@ -38,6 +38,7 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
         primaryKeyViolationMessageParts = new String[] {"duplicate key value violates", "duplicar valor da chave viola a restrição de unicidade"};
         
         foreignKeyViolationMessageParts = new String[] {"violates foreign key constraint"};
+        foreignKeyViolationSqlStates = new String[] { "23503" };
     }
 
     @Override
