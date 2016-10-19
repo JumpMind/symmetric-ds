@@ -189,7 +189,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + " sum(load_millis + transform_load_millis + filter_millis) as full_load_millis "
                 + " from $(outgoing_batch) ob  "
                 + " join $(channel) c on c.channel_id = ob.channel_id  "
-                + " where ob.load_id > 0  "
+                + " where ob.load_id = ? "
                 + " group by ob.load_id, c.queue, ob.status"
                 + " order by ob.load_id asc");
         

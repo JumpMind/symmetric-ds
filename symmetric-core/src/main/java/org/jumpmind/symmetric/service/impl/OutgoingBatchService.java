@@ -639,14 +639,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }           
     }
     
-    public Map<Integer, Map<String, Map<String, LoadStatusSummary>>> getLoadStatusSummaries() {
+    public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummaries(int loadId) {
         LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper(this.symmetricDialect.getTablePrefix());
-        List<Object> obj = sqlTemplate.query(getSql("getLoadStatusSummarySql"), mapper);
+        List<Object> obj = sqlTemplate.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
         return mapper.getResults();
     }
     
     private class LoadStatusByQueueMapper implements ISqlRowMapper {
-        Map<Integer, Map<String, Map<String, LoadStatusSummary>>> results = new TreeMap<Integer, Map<String, Map<String, LoadStatusSummary>>>(Collections.reverseOrder());
+        Map<String, Map<String, LoadStatusSummary>> results = new TreeMap<String, Map<String, LoadStatusSummary>>(Collections.reverseOrder());
         String tablePrefix;
         
         public LoadStatusByQueueMapper(String tablePrefix) {
@@ -658,11 +658,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             String status = rs.getString("status");
             Integer loadId = rs.getInt("load_id");
             
-            Map<String, Map<String, LoadStatusSummary>> queueMap = results.get(loadId);
-            if (queueMap == null) {
-                queueMap = new HashMap<String, Map<String, LoadStatusSummary>>();
-            }
-            Map<String, LoadStatusSummary> statusMap = queueMap.get(queue);
+            Map<String, LoadStatusSummary> statusMap = results.get(queue);
             if (statusMap == null) {
             	statusMap = new HashMap<String, LoadStatusSummary>();
             }
@@ -697,13 +693,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             
             statusMap.put(status, statusSummary);
             
-            queueMap.put(queue,  statusMap);
-            results.put(loadId, queueMap);
+            results.put(queue,  statusMap);
             
             return null;
         }
         
-        public Map<Integer, Map<String, Map<String, LoadStatusSummary>>> getResults() {
+        public Map<String, Map<String, LoadStatusSummary>> getResults() {
             return results;
         }
     }

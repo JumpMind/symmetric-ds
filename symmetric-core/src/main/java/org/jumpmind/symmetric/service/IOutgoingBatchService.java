@@ -114,7 +114,7 @@ public interface IOutgoingBatchService {
     
     public Collection<LoadSummary> getLoadHistory(String sourceNodeId, final String symTablePrefix, int rowsReturned);
     
-    public Map<Integer, Map<String, Map<String, LoadStatusSummary>>> getLoadStatusSummaries();
+    public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummaries(int loadId);
     
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId);
 
