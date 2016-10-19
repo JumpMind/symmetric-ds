@@ -92,6 +92,10 @@
         <priority value="ERROR" />
     </category>
     
+    <category name="com.vaadin.event.ConnectorActionManager">
+        <priority value="ERROR" />
+    </category>    
+    
     <root>
         <priority value="WARN" />
         <appender-ref ref="CONSOLE" />
