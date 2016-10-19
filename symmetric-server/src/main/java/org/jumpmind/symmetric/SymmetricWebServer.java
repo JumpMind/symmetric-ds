@@ -335,6 +335,18 @@ public class SymmetricWebServer {
         return engine;
     }
 
+    public ISymmetricEngine getEngine(String name) {
+        ISymmetricEngine engine = null;
+        ServletContext servletContext = getServletContext();
+        if (servletContext != null) {
+            SymmetricEngineHolder engineHolder = ServletUtils.getSymmetricEngineHolder(servletContext);
+            if (engineHolder != null) {
+                return engineHolder.getEngines().get(name);
+            }
+        }
+        return engine;
+    }
+
     public void waitForEnginesToComeOnline(long maxWaitTimeInMs) throws InterruptedException {
         long startTime = System.currentTimeMillis();
         ServletContext servletContext = getServletContext();
