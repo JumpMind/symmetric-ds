@@ -25,8 +25,10 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.sql.DataTruncation;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -1520,25 +1522,20 @@ public class DataService extends AbstractService implements IDataService {
         Table table = platform.getTableFromCache(data.getTableName(), false);
         Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
 
-        for (ForeignKey fk : table.getForeignKeys()) {
-            Table foreignTable = platform.getTableFromCache(fk.getForeignTableName(), false);
-            ArrayList<Column> foreignColumnList = new ArrayList<Column>();
-            Row foreignRow = new Row(3);
-
-            for (Reference ref : fk.getReferences()) {
-                String foreignColumnName = ref.getForeignColumnName();
-                foreignColumnList.add(foreignTable.findColumn(foreignColumnName));
-                foreignRow.put(foreignColumnName, dataMap.get(ref.getLocalColumnName()));
-            }
-
-            DmlStatement st = platform.createDmlStatement(DmlType.WHERE, foreignTable, null);
-            Column[] foreignColumns = foreignColumnList.toArray(new Column[foreignColumnList.size()]);
-            String sql = st.buildDynamicSql(symmetricDialect.getBinaryEncoding(), foreignRow, false, true, foreignColumns).substring(6);
-            String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
-            if (delimiter != null && delimiter.length() > 0) {
-                sql = sql.substring(0, sql.length() - delimiter.length());
-            }
-
+        List<TableRow> tableRows = new ArrayList<TableRow>();
+        Row row = new Row(dataMap.size());
+        row.putAll(dataMap);
+        tableRows.add(new TableRow(table, row, null));
+        List<TableRow> foreignTableRows;
+        try {
+            foreignTableRows = getForeignTableRows(tableRows, new HashSet<TableRow>());
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+        
+        Collections.reverse(foreignTableRows);
+        for (TableRow foreignTableRow : foreignTableRows) {
+            Table foreignTable = foreignTableRow.getTable();
             String catalog = foreignTable.getCatalog();
             String schema = foreignTable.getSchema();
             if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
@@ -1548,8 +1545,55 @@ public class DataService extends AbstractService implements IDataService {
                 schema = null;
             }
 
-            reloadTable(nodeId, catalog, schema, foreignTable.getName(), sql);    
+            reloadTable(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql());
+        }        
+    }
+
+    protected List<TableRow> getForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited) throws CloneNotSupportedException {
+        List<TableRow> fkDepList = new ArrayList<TableRow>();
+        for (TableRow tableRow : tableRows) {
+            if (visited.add(tableRow)) {
+                for (ForeignKey fk : tableRow.getTable().getForeignKeys()) {
+                    Table table = platform.getTableFromCache(fk.getForeignTableName(), false);
+                    if (table != null) {
+                        Table foreignTable = (Table) table.clone();
+                        for (Column column : foreignTable.getColumns()) {
+                            column.setPrimaryKey(false);
+                        }
+                        Row whereRow = new Row(fk.getReferenceCount());
+                        for (Reference ref : fk.getReferences()) {
+                            Column foreignColumn = foreignTable.findColumn(ref.getForeignColumnName());
+                            Object value = tableRow.getRow().get(ref.getLocalColumnName());
+                            whereRow.put(foreignColumn.getName(), value);
+                            foreignColumn.setPrimaryKey(true);
+                        }
+                        
+                        DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable, null);
+                        String whereSql = whereSt.buildDynamicSql(symmetricDialect.getBinaryEncoding(), whereRow, false, true, 
+                                foreignTable.getPrimaryKeyColumns()).substring(6);
+                        String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
+                        if (delimiter != null && delimiter.length() > 0) {
+                            whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
+                        }
+                        
+                        Row foreignRow = new Row(foreignTable.getColumnCount());
+                        if (foreignTable.getForeignKeyCount() > 0) {
+                            DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
+                            Map<String, Object> values = sqlTemplate.queryForMap(selectSt.getSql(), 
+                                    whereRow.toArray(foreignTable.getPrimaryKeyColumnNames()));
+                            foreignRow.putAll(values);
+                        }
+    
+                        TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql);
+                        fkDepList.add(foreignTableRow);
+                    }
+                }
+            }
         }
+        if (fkDepList.size() > 0) {
+            fkDepList.addAll(getForeignTableRows(fkDepList, visited));
+        }
+        return fkDepList;
     }
 
     /**
@@ -1954,6 +1998,48 @@ public class DataService extends AbstractService implements IDataService {
         int count = sqlTemplate.update(getSql("deleteCapturedConfigChannelDataSql"));
         if (count > 0) {
             log.info("Deleted {} data rows that were on the config channel", count);
+        }
+    }
+
+    class TableRow {
+        Table table;
+        Row row;
+        String whereSql;
+        
+        public TableRow(Table table, Row row, String whereSql) {
+            this.table = table;
+            this.row = row;
+            this.whereSql = whereSql;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((table == null) ? 0 : table.hashCode());
+            result = prime * result + ((whereSql == null) ? 0 : whereSql.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof TableRow) {
+                TableRow tr = (TableRow) o;
+                return tr.table.equals(table) && tr.whereSql.equals(whereSql);
+            }
+            return false;
+        }
+                
+        public Table getTable() {
+            return table;
+        }
+        
+        public Row getRow() {
+            return row;
+        }
+        
+        public String getWhereSql() {
+            return whereSql;
         }
     }
 

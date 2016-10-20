@@ -102,12 +102,16 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setSqlState(batch.getSqlState());
                 outgoingBatch.setSqlMessage(batch.getSqlMessage());
 
+                boolean isNewError = false;
                 if (!batch.isOk() && batch.getErrorLine() != 0) {
                     List<Number> ids = sqlTemplateDirty.query(getSql("selectDataIdSql"),
                             new NumberMapper(), outgoingBatch.getBatchId());
                     if (ids.size() >= batch.getErrorLine()) {
-                        outgoingBatch.setFailedDataId(ids.get((int) batch.getErrorLine() - 1)
-                                .longValue());
+                        long failedDataId = ids.get((int) batch.getErrorLine() - 1).longValue();
+                        if (outgoingBatch.getFailedDataId() == 0 || outgoingBatch.getFailedDataId() != failedDataId) {
+                            isNewError = true;
+                        }
+                        outgoingBatch.setFailedDataId(failedDataId);
                     }
                 }
 
@@ -118,7 +122,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     if (routerStats != null) {
                         log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
                     }
-                    if (outgoingBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE
+                    if (isNewError && outgoingBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE
                             && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION)) {
                         Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
                         if (channel != null && !channel.isReloadFlag()) {
