@@ -88,7 +88,7 @@ public class SymmetricServlet extends HttpServlet {
                         new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                                 req.getRemoteAddr(), req.getQueryString() });
             } else {
-                log.error(
+                log.warn(
                         "The client node request is being rejected because the server node does not exist.  Please check that the engine.name exists in the url.  It should be of the pattern http://host:port/sync/{engine.name}/{action}.  If it does not, then check the sync.url of this node or the registration.url of the client making the request.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
                         new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                                 req.getRemoteAddr(), req.getQueryString() });
@@ -127,7 +127,7 @@ public class SymmetricServlet extends HttpServlet {
                     }
                 }
             } else {
-                log.error(
+                log.warn(
                         "The request path of the url is not supported.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
                         new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                                 req.getRemoteAddr(), req.getQueryString() });
