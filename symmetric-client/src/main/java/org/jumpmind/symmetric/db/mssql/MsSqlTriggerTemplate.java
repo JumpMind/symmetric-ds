@@ -212,21 +212,21 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
     	StringBuilder builder = new StringBuilder();
     	
     	for(Column column : table.getColumns()){
-    		boolean isLob = isNotComparable(column);
+            if (isNotComparable(column)) {
+                continue;
+            }
+            if (builder.length() > 0) {
+                builder.append(" or ");
+            }
 
-    		if(isLob || column.isPrimaryKey()){
-    			continue;
-    		}
-    		if(builder.length() > 0){
-    			builder.append(" or ");
-    		}
-    	
-    		builder.append(String.format("((%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NOT NULL AND %1$s.\"%2$s\"<>%3$s.\"%2$s\") or (%1$s.\"%2$s\" IS NULL AND %3$s.\"%2$s\" IS NOT NULL) or (%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NULL))", 
-    				table1Name, column.getName(), table2Name));
-    		
+            builder.append(String.format("((%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NOT NULL AND %1$s.\"%2$s\"<>%3$s.\"%2$s\") or "
+                            + "(%1$s.\"%2$s\" IS NULL AND %3$s.\"%2$s\" IS NOT NULL) or "
+                            + "(%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NULL))", table1Name, column.getName(), table2Name));
     	}
-    	
-    	return "(" + builder.toString() + ")";
+    	if (builder.length() == 0) {
+    	    builder.append("1=1");
+    	}
+    	return builder.toString();
     }
     
     private String buildNonLobColumnsString(Table table){
