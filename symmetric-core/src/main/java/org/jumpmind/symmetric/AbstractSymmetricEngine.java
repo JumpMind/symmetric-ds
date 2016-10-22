@@ -100,6 +100,7 @@ import org.jumpmind.symmetric.service.impl.ContextService;
 import org.jumpmind.symmetric.service.impl.DataExtractorService;
 import org.jumpmind.symmetric.service.impl.DataLoaderService;
 import org.jumpmind.symmetric.service.impl.DataService;
+import org.jumpmind.symmetric.service.impl.FileSyncExtractorService;
 import org.jumpmind.symmetric.service.impl.FileSyncService;
 import org.jumpmind.symmetric.service.impl.GroupletService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
@@ -190,6 +191,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IRouterService routerService;
 
     protected IDataExtractorService dataExtractorService;
+    
+    protected IDataExtractorService fileSyncExtractorService;
 
     protected IRegistrationService registrationService;
 
@@ -348,6 +351,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 nodeService, dataLoaderService, clusterService, nodeCommunicationService, 
                 configurationService, extensionService, offlineTransportManager);
         this.fileSyncService = buildFileSyncService();
+        this.fileSyncExtractorService = new FileSyncExtractorService(this);
         this.mailService = new MailService(parameterService, symmetricDialect);
         this.contextService = new ContextService(parameterService, symmetricDialect);
         
@@ -960,6 +964,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public IDataExtractorService getDataExtractorService() {
         return this.dataExtractorService;
+    }
+    
+    public IDataExtractorService getFileSyncExtractorService() {
+        return this.fileSyncExtractorService;
     }
 
     public IDataLoaderService getDataLoaderService() {

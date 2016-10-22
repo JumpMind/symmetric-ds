@@ -43,6 +43,7 @@ public class InitialLoadExtractorJob extends AbstractJob {
 
     @Override
     void doJob(boolean force) throws Exception {
+        engine.getFileSyncExtractorService().queueWork(force);
         engine.getDataExtractorService().queueWork(force);
     }
 

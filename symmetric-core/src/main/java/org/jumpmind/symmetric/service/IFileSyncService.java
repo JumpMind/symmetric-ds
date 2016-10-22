@@ -80,5 +80,7 @@ public interface IFileSyncService {
     public boolean refreshFromDatabase();
     
     public File getControleFile(File file);
+    
+    public Object[] getStagingPathComponents(OutgoingBatch fileSyncBatch);
 
 }

@@ -25,6 +25,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.sql.DataTruncation;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -462,7 +463,7 @@ public class DataService extends AbstractService implements IDataService {
                             }
                         }
                         insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
-                                transaction);
+                                transaction, processInfo);
 
                         if (isFullLoad) {
                             callReloadListeners(false, targetNode, transactional, transaction, loadId);
@@ -837,11 +838,6 @@ public class DataService extends AbstractService implements IDataService {
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
             ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests, ProcessInfo processInfo) {
         Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
-        DatabaseInfo dbInfo = platform.getDatabaseInfo();
-        String quote = dbInfo.getDelimiterToken();
-        String catalogSeparator = dbInfo.getCatalogSeparator();
-        String schemaSeparator = dbInfo.getSchemaSeparator();
-        
         
         for (TriggerHistory triggerHistory : triggerHistories) {
             List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
@@ -868,8 +864,6 @@ public class DataService extends AbstractService implements IDataService {
                         Trigger trigger = triggerRouter.getTrigger();
                         String reloadChannel = getReloadChannelIdForTrigger(trigger, channels);
                         Channel channel = channels.get(reloadChannel);
-                        // calculate the number of batches needed for table.
-                        int numberOfBatches = triggerRouter.getInitialLoadBatchCount();
                                                    
                         Table table = platform.getTableFromCache(
                                 triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
@@ -877,28 +871,9 @@ public class DataService extends AbstractService implements IDataService {
                         
                         processInfo.setCurrentTableName(table.getName());
                         
-                        String sql = String.format("select count(*) from %s where %s", table
-                                .getQualifiedTableName(quote, catalogSeparator, schemaSeparator), selectSql);
-                        sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
-                        sql = FormatUtils
-                                .replace("externalId", targetNode.getExternalId(), sql);
-                        sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
-                        int rowCount = sqlTemplate.queryForInt(sql);
-                        int transformMultiplier = 0;
-                        for (TransformService.TransformTableNodeGroupLink transform : engine.getTransformService().getTransformTables(false)) {
-                        	if (triggerRouter.getRouter().getNodeGroupLink().equals(transform.getNodeGroupLink()) && 
-                        			transform.getSourceTableName().equals(table.getName())) {
-                        		transformMultiplier++;
-                        	}
-                        }
-                        if (transformMultiplier == 0) { transformMultiplier = 1; }
-                        
-                        if (rowCount > 0) {
-                            numberOfBatches = (rowCount * transformMultiplier / channel.getMaxBatchSize()) + 1;
-                        } else {
-                            numberOfBatches = 1;
-                        }
-                        
+                        int numberOfBatches = getNumberOfReloadBatches(table, triggerRouter, 
+                                channel, targetNode, selectSql);                        
+
                         long startBatchId = -1;
                         long endBatchId = -1;
                         for (int i = 0; i < numberOfBatches; i++) {
@@ -925,9 +900,51 @@ public class DataService extends AbstractService implements IDataService {
             }
         }
     }
+    
+    protected int getNumberOfReloadBatches(Table table, TriggerRouter triggerRouter, Channel channel, Node targetNode, String selectSql) {
+        int rowCount = getDataCountForReload(table, targetNode, selectSql);        
+        int transformMultiplier = getTransformMultiplier(table, triggerRouter);
+        
+        // calculate the number of batches needed for table.
+        int numberOfBatches = 1;        
+        
+        if (rowCount > 0) {
+            numberOfBatches = (rowCount * transformMultiplier / channel.getMaxBatchSize()) + 1;
+        }
+        
+        return numberOfBatches;
+    }
+
+    protected int getDataCountForReload(Table table, Node targetNode, String selectSql) {
+        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        String quote = dbInfo.getDelimiterToken();
+        String catalogSeparator = dbInfo.getCatalogSeparator();
+        String schemaSeparator = dbInfo.getSchemaSeparator();
+                                          
+        String sql = String.format("select count(*) from %s where %s", table
+                .getQualifiedTableName(quote, catalogSeparator, schemaSeparator), selectSql);
+        sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
+        sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
+        sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
+        
+        int rowCount = sqlTemplate.queryForInt(sql);
+        return rowCount;
+    }
+
+    protected int getTransformMultiplier(Table table, TriggerRouter triggerRouter) {
+        int transformMultiplier = 0;
+        for (TransformService.TransformTableNodeGroupLink transform : engine.getTransformService().getTransformTables(false)) {
+            if (triggerRouter.getRouter().getNodeGroupLink().equals(transform.getNodeGroupLink()) && 
+                    transform.getSourceTableName().equals(table.getName())) {
+                transformMultiplier++;
+            }
+        }
+        transformMultiplier = Math.max(1, transformMultiplier);
+        return transformMultiplier;
+    }    
 
     private void insertFileSyncBatchForReload(Node targetNode, long loadId, String createBy,
-            boolean transactional, ISqlTransaction transaction) {
+            boolean transactional, ISqlTransaction transaction, ProcessInfo processInfo) {
         if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
                 && !Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
@@ -942,16 +959,26 @@ public class DataService extends AbstractService implements IDataService {
                 TriggerRouter fileSyncSnapshotTriggerRouter = triggerRouterService
                         .getTriggerRouterForCurrentNode(fileSyncSnapshotHistory.getTriggerId(),
                                 routerid, true);
-
-                List<Channel> channels = engine.getConfigurationService().getFileSyncChannels();
-                for (Channel channel : channels) {
-                    if (channel.isReloadFlag()) {
-                        insertReloadEvent(transaction, targetNode, fileSyncSnapshotTriggerRouter,
-                                fileSyncSnapshotHistory,
-                                "reload_channel_id='" + channel.getChannelId() + "'", true, loadId,
-                                createBy, Status.NE, channel.getChannelId());
-                        if (!transactional) {
-                            transaction.commit();
+                
+                List<TriggerHistory> triggerHistories = Arrays.asList(fileSyncSnapshotHistory);
+                List<TriggerRouter> triggerRouters = Arrays.asList(fileSyncSnapshotTriggerRouter);
+                Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>();
+                triggerRoutersByHistoryId.put(fileSyncSnapshotHistory.getTriggerHistoryId(), triggerRouters);
+                
+                if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {            
+                    insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories, 
+                            triggerRoutersByHistoryId, transactional, transaction, null, processInfo);
+                } else {                    
+                    List<Channel> channels = engine.getConfigurationService().getFileSyncChannels();
+                    for (Channel channel : channels) {
+                        if (channel.isReloadFlag()) {
+                            insertReloadEvent(transaction, targetNode, fileSyncSnapshotTriggerRouter,
+                                    fileSyncSnapshotHistory,
+                                    "reload_channel_id='" + channel.getChannelId() + "'", true, loadId,
+                                    createBy, Status.NE, channel.getChannelId());
+                            if (!transactional) {
+                                transaction.commit();
+                            }
                         }
                     }
                 }

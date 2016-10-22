@@ -156,7 +156,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             params.put("CHANNELS", channels);
             params.put("STATUSES", toStringList(statuses));
             params.put("CREATE_TIME", startAtCreateTime);
-            params.put("CREATE_TIME", startAtCreateTime);
             params.put("LOADS", loads);
             
             String where = buildBatchWhere(nodeIds, channels, statuses, loads);

@@ -81,7 +81,9 @@ public class FileSyncZipDataWriter implements IDataWriter {
         this.context = context;
     }
 
+    @Override
     public void close() {
+        // no-op as this is called at batch boundaries, but this writer can handle multiple batches.
     }
 
     public Map<Batch, Statistics> getStatistics() {
