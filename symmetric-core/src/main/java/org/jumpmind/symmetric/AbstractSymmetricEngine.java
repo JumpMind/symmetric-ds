@@ -280,8 +280,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         TypedProperties properties = this.propertiesFactory.reload();
         
-        MDC.put("engineName", properties.get(ParameterConstants.ENGINE_NAME));
-        
+        String engineName = properties.get(ParameterConstants.ENGINE_NAME);
+        if (!StringUtils.contains(engineName, '`') && !StringUtils.contains(engineName, '(')) {
+        	MDC.put("engineName", engineName);
+        }
         this.platform = createDatabasePlatform(properties);
 
         this.parameterService = new ParameterService(platform, propertiesFactory,
@@ -293,7 +295,17 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             this.parameterService.setDatabaseHasBeenInitialized(true);
             this.parameterService.rereadParameters();
         }
-         
+        
+        // So that the key properties are initialized in a predictable order
+
+        parameterService.getNodeGroupId();
+        parameterService.getExternalId();
+        parameterService.getEngineName();
+        parameterService.getSyncUrl();
+        parameterService.getRegistrationUrl();
+        
+        MDC.put("engineName", parameterService.getEngineName());
+        
         this.platform.setMetadataIgnoreCase(this.parameterService
                 .is(ParameterConstants.DB_METADATA_IGNORE_CASE));
         this.platform.setClearCacheModelTimeoutInMs(parameterService
@@ -403,7 +415,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public String getEngineName() {
-        return parameterService.getString(ParameterConstants.ENGINE_NAME);
+    	return parameterService.getEngineName();
     }
 
     public void setup() {
@@ -969,7 +981,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public IDataExtractorService getFileSyncExtractorService() {
         return this.fileSyncExtractorService;
     }
-
+   
     public IDataLoaderService getDataLoaderService() {
         return this.dataLoaderService;
     }
