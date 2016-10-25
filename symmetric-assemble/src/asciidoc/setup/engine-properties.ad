@@ -18,7 +18,13 @@ If the properties are changed in
 they will take effect across all engines deployed to the server. 
 
 NOTE: You can use the variable `$(hostName)` to represent the host name of the machine when defining these properties
-(for example, external.id=`$(hostName)`).
+(for example, external.id=`$(hostName)`).  You can also access external id, engine name, node group id, sync URL, and registration URL in this manner.  
+(for example, engine.name=$(nodeGroupId)-$(externalId)).
+
+NOTE:  You can also use BSH script for the external id, engine name, node group id, sync URL, and registration URL.  Use back ticks to indicate the
+BSH expression, and note that only one BSH expression is supporter for a given property line.  The script can be prefixed or suffixed with fixed text.
+For example, if you wish to based the external id off of just a part of the hostname (e.g., substring of hostname):
+external.id=store-`import org.apache.commons.lang.StringUtils; return StringUtils.substring(hostName,2,4);`
 		
 		
 engine.name:: 
