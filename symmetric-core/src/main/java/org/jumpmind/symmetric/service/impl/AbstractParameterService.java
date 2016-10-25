@@ -37,6 +37,9 @@ import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bsh.EvalError;
+import bsh.Interpreter;
+
 abstract public class AbstractParameterService {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -52,6 +55,16 @@ abstract public class AbstractParameterService {
     protected Properties systemProperties;
 
     protected boolean databaseHasBeenInitialized = false;
+
+    protected String externalId=null;
+    
+    protected String engineName=null;
+
+    protected String nodeGroupId=null;
+
+    protected String syncUrl=null;
+
+    protected String registrationUrl=null;
 
     public AbstractParameterService() {
         this.systemProperties = (Properties) System.getProperties().clone();
@@ -177,37 +190,85 @@ abstract public class AbstractParameterService {
         return new Date(lastTimeParameterWereCached);
     }
 
+   
     public String getExternalId() {
-        return substituteVariables(ParameterConstants.EXTERNAL_ID);
+    	if (externalId==null) {
+    		String value = getString(ParameterConstants.EXTERNAL_ID);
+    		value = substituteScripts(value);
+    		externalId = substituteVariablesFromValue(value);
+    		if (log.isDebugEnabled()) {
+        		log.debug("External Id eval results in: {}",externalId);
+        	}
+    	}
+        return externalId;
     }
 
     public String getSyncUrl() {
-        return substituteVariables(ParameterConstants.SYNC_URL);
+    	if (syncUrl==null) {
+    		String value = getString(ParameterConstants.SYNC_URL);
+    		value = substituteScripts(value);
+    		value = substituteVariablesFromValue(value);
+    		if (value != null) {
+    			value = value.trim();
+            }
+    		syncUrl = value;
+    		if (log.isDebugEnabled()) {
+        		log.debug("Sync URL eval results in: {}",syncUrl);
+        	}
+    	}
+        return syncUrl;
     }
 
     public String getNodeGroupId() {
-        return getString(ParameterConstants.NODE_GROUP_ID);
+    	if (nodeGroupId==null) {
+    		String value = getString(ParameterConstants.NODE_GROUP_ID);
+    		value = substituteScripts(value);
+    		nodeGroupId = substituteVariablesFromValue(value);
+    		if (log.isDebugEnabled()) {
+        		log.debug("Node Group Id eval results in: {}",nodeGroupId);
+        	}
+    	}
+        return nodeGroupId;
     }
 
     public String getRegistrationUrl() {
-        String url = substituteVariables(ParameterConstants.REGISTRATION_URL);
-        if (url != null) {
-            url = url.trim();
+    	if (registrationUrl==null) {
+    		String value = getString(ParameterConstants.REGISTRATION_URL);
+    		value = substituteScripts(value);
+    		value = substituteVariablesFromValue(value);
+    		if (value != null) {
+    			value = value.trim();
+            }
+    		registrationUrl=value;
+    		if (log.isDebugEnabled()) {
+        		log.debug("Registration URL eval results in: {}",registrationUrl);
+        	}
+    	}
+        return registrationUrl;
+    }
+
+    public String getEngineName() {
+    	if (engineName==null) {
+    		String value = getString(ParameterConstants.ENGINE_NAME,"SymmetricDS");
+    		value = substituteScripts(value);
+    		engineName = substituteVariablesFromValue(value);
+        	if (log.isDebugEnabled()) {
+        		log.debug("Engine Name eval results in: {}",engineName);
+        	}
         }
-        return url;
+        return engineName;
     }
 
     public Map<String, String> getReplacementValues() {
         Map<String, String> replacementValues = new HashMap<String, String>(2);
-        replacementValues.put("externalId", getExternalId());
         replacementValues.put("nodeGroupId", getNodeGroupId());
+        replacementValues.put("externalId", getExternalId());
+        replacementValues.put("engineName", getEngineName());
+        replacementValues.put("syncUrl", getSyncUrl());
+        replacementValues.put("registrationUrl", getRegistrationUrl());
         return replacementValues;
     }
-
-    public String getEngineName() {
-        return getString(ParameterConstants.ENGINE_NAME, "SymmetricDS");
-    }
-
+    
     public void setDatabaseHasBeenInitialized(boolean databaseHasBeenInitialized) {
         if (this.databaseHasBeenInitialized != databaseHasBeenInitialized) {
             this.databaseHasBeenInitialized = databaseHasBeenInitialized;
@@ -232,9 +293,8 @@ abstract public class AbstractParameterService {
             return new TypedProperties();
         }
     }
-
-    protected String substituteVariables(String paramKey) {
-        String value = getString(paramKey);
+    	
+    protected String substituteVariablesFromValue(String value) {
         if (!StringUtils.isBlank(value)) {
             if (value.contains("hostName")) {
                 value = FormatUtils.replace("hostName", AppUtils.getHostName(), value);
@@ -248,12 +308,72 @@ abstract public class AbstractParameterService {
             if (value.contains("engineName")) {
                 value = FormatUtils.replace("engineName", getEngineName(), value);
             }
+            if (value.contains("nodeGroupId")) {
+                value = FormatUtils.replace("nodeGroupId", getNodeGroupId(), value);
+            }
+            if (value.contains("externalId")) {
+                value = FormatUtils.replace("externalId", getExternalId(), value);
+            }
+            if (value.contains("syncUrl")) {
+                value = FormatUtils.replace("syncUrl", getSyncUrl(), value);
+            }
+            if (value.contains("registrationUrl")) {
+                value = FormatUtils.replace("registrationUrl", getRegistrationUrl(), value);
+            }
         }
         return value;
     }
 
     public void setExtensionService(IExtensionService extensionService) {
         this.extensionService = extensionService;
+    }
+
+    
+    protected  String substituteScripts(String value) {
+    	if (log.isDebugEnabled()) {
+			log.debug("substituteScripts starting value is: {}",value);
+		}
+		int startTick = StringUtils.indexOf(value, '`');
+		if (startTick!=-1) {
+    		int endTick = StringUtils.lastIndexOf(value, '`');
+    		if (endTick!=-1 && startTick!=endTick) {
+    			// there's a bean shell script present in this case
+    			String script = StringUtils.substring(value, startTick+1,endTick);
+    			if (log.isDebugEnabled()) {
+        			log.debug("Script found.  Script is is: {}",script);
+        		}
+    			
+                Interpreter interpreter = new Interpreter();
+                try {
+					interpreter.set("hostName",  AppUtils.getHostName());
+	                interpreter.set("log", log);
+	                interpreter.set("nodeGroupId", nodeGroupId);
+	                interpreter.set("syncUrl", syncUrl);
+	                interpreter.set("registrationUrl", registrationUrl);
+	                interpreter.set("externalId", externalId);
+	                interpreter.set("engineName", engineName);
+	                
+	                Object scriptResult = interpreter.eval(script);
+	          
+	                if (scriptResult==null) {
+	                	scriptResult ="";
+	                }
+	                
+	                if (log.isDebugEnabled()) {
+	    	    		log.debug("Script output is: {}",scriptResult);
+	    	    	}
+	               	value = StringUtils.substring(value, 0,startTick) + scriptResult.toString() +
+	        					StringUtils.substring(value, endTick+1);
+				} catch (EvalError e) {
+					throw new RuntimeException(e.getMessage(),e);
+				}
+        		
+    			if (log.isDebugEnabled()) {
+        			log.debug("substituteScripts return value is {}",value);
+        		}
+       		}
+		}
+		return value;
     }
 
 }

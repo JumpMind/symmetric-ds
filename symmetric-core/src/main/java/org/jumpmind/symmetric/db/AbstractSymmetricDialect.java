@@ -659,7 +659,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String getEngineName() {
-        return parameterService.getString(ParameterConstants.ENGINE_NAME);
+        return parameterService.getEngineName();
     }
 
     public boolean supportsOpenCursorsAcrossCommit() {
