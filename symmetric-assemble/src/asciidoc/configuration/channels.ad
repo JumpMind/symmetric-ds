@@ -21,7 +21,7 @@ ifdef::pro[]
 endif::pro[]
 
 Channel ID:: Identifier used through the system to identify a given channel.
-[[processing-order]]Processing Order:: Numeric value to determine the order in which a channel will be processed.
+[[processing-order]]Processing Order:: Numeric value to determine the order in which a channel will be processed.  Channels will be processed in ascending order.
 [[batch-algorithm]]Batch Algorithm:: Batching is the grouping of data, by channel, to be transferred and committed at the client together.
 .Channel Batching Algorithms
 |===
