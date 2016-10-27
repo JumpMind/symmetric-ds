@@ -69,7 +69,7 @@ for the table name.
 
 [source,sql]
 ----
-insert into SYM_TABLE_RELOAD_REQUEST (target_node_id, source_node_id, trigger_id, router_id, create_time, reload_select, last_update_time) 
+insert into SYM_TABLE_RELOAD_REQUEST (target_node_id, source_node_id, trigger_id, router_id, create_time, before_custom_sql, last_update_time) 
      values ('store-001', 'corp-000', 'ALL', 'ALL', current_timestamp, 'truncate table %s', current_timestamp); 
 
 ----
