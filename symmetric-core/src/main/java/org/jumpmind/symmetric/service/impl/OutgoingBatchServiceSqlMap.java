@@ -114,6 +114,10 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 "select count(*) as batches, sum(data_event_count) as data, status, node_id, min(create_time) as oldest_batch_time       "
                         + "  from $(outgoing_batch) where status in (:STATUS_LIST) group by status, node_id order by oldest_batch_time asc   ");
 
+        putSql("selectOutgoingBatchSummaryByStatusAndChannelSql",
+                "select count(*) as batches, sum(data_event_count) as data, status, node_id, min(create_time) as oldest_batch_time, channel_id      "
+                        + "  from $(outgoing_batch) where status in (:STATUS_LIST) group by status, node_id, channel_id order by oldest_batch_time asc   ");
+
         putSql("updateOutgoingBatchesStatusSql",
                 "update $(outgoing_batch) set status=? where status = ?   ");
 

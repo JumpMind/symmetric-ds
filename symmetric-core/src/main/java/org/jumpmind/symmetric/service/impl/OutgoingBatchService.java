@@ -594,6 +594,20 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         return sqlTemplate.query(sql, new OutgoingBatchSummaryMapper(), args);
     }
+    
+    public List<OutgoingBatchSummary> findOutgoingBatchSummaryByChannel(Status... statuses) {
+        Object[] args = new Object[statuses.length];
+        StringBuilder inList = new StringBuilder();
+        for (int i = 0; i < statuses.length; i++) {
+            args[i] = statuses[i].name();
+            inList.append("?,");
+        }
+
+        String sql = getSql("selectOutgoingBatchSummaryByStatusAndChannelSql").replace(":STATUS_LIST",
+                inList.substring(0, inList.length() - 1));
+
+        return sqlTemplate.query(sql, new OutgoingBatchSummaryChannelMapper(), args);
+    }
 
     public Set<Long> getActiveLoads(String sourceNodeId) {
         Set<Long> loads = new HashSet<Long>();
@@ -924,6 +938,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             summary.setStatus(Status.valueOf(rs.getString("status")));
             summary.setNodeId(rs.getString("node_id"));
             summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
+            return summary;
+        }
+    }
+    
+    class OutgoingBatchSummaryChannelMapper extends OutgoingBatchSummaryMapper implements ISqlRowMapper<OutgoingBatchSummary> {
+        public OutgoingBatchSummary mapRow(Row rs) {
+            OutgoingBatchSummary summary = super.mapRow(rs);
+            summary.setChannel(rs.getString("channel_id"));
             return summary;
         }
     }

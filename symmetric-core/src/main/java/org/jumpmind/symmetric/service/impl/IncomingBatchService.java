@@ -39,10 +39,14 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.model.IncomingBatchSummary;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.impl.OutgoingBatchService.OutgoingBatchSummaryChannelMapper;
+import org.jumpmind.symmetric.service.impl.OutgoingBatchService.OutgoingBatchSummaryMapper;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -363,7 +367,34 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 IncomingBatch.Status.OK.name());
         return ids;
     }
+    
+    public List<IncomingBatchSummary> findIncomingBatchSummaryByChannel(Status... statuses) {
+        Object[] args = new Object[statuses.length];
+        StringBuilder inList = new StringBuilder();
+        for (int i = 0; i < statuses.length; i++) {
+            args[i] = statuses[i].name();
+            inList.append("?,");
+        }
 
+        String sql = getSql("selectIncomingBatchSummaryByStatusAndChannelSql").replace(":STATUS_LIST",
+                inList.substring(0, inList.length() - 1));
+
+        return sqlTemplate.query(sql, new IncomingBatchSummaryMapper(), args);
+    }
+
+    class IncomingBatchSummaryMapper implements ISqlRowMapper<IncomingBatchSummary> {
+        public IncomingBatchSummary mapRow(Row rs) {
+            IncomingBatchSummary summary = new IncomingBatchSummary();
+            summary.setBatchCount(rs.getInt("batches"));
+            summary.setStatus(Status.valueOf(rs.getString("status")));
+            summary.setNodeId(rs.getString("node_id"));
+            summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
+            summary.setChannel(rs.getString("channel_id"));
+            summary.setDataCount(rs.getInt("data"));
+            return summary;
+        }
+    }
+    
     class BatchIdMapper implements ISqlRowMapper<BatchId> {
         Map<String, BatchId> ids;
 
