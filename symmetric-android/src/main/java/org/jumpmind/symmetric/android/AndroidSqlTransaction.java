@@ -28,7 +28,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.db.sql.RowMapper;
+import org.jumpmind.db.sql.mapper.RowMapper;
 
 import android.database.sqlite.SQLiteDatabase;
 

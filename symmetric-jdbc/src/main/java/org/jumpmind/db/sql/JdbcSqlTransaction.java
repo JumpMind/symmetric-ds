@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.mapper.RowMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
