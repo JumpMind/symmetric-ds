@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io;
 
 import java.io.Closeable;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -88,13 +89,15 @@ public class DbCompare {
     public DbCompareReport compare() {
         dbValueComparator.setNumericScale(numericScale);
 
+        OutputStream sqlDiffOutput = getSqlDiffOutputStream();
+        
         DbCompareReport report = new DbCompareReport();
         long start = System.currentTimeMillis();
         List<DbCompareTables> tablesToCompare = getTablesToCompare();
         report.printReportHeader(System.out);
         for (DbCompareTables tables : tablesToCompare) {
             try {
-                TableReport tableReport = compareTables(tables);
+                TableReport tableReport = compareTables(tables, sqlDiffOutput);
                 report.addTableReport(tableReport);
                 long elapsed = System.currentTimeMillis() - start;
                 log.info("Completed table {}.  Elapsed time: {}", tableReport, 
@@ -115,33 +118,36 @@ public class DbCompare {
         return report;
     }
 
-    public List<TableReport> compareForList() {
-        dbValueComparator.setNumericScale(numericScale);
-        List<TableReport> list = new ArrayList<TableReport>();
-        long start = System.currentTimeMillis();
-        List<DbCompareTables> tablesToCompare = getTablesToCompare();
-
-        for (DbCompareTables tables : tablesToCompare) {
-            try {
-                TableReport tableReport = compareTables(tables);
-                list.add(tableReport);
-                long elapsed = System.currentTimeMillis() - start;
-                log.info("Completed table {}.  Elapsed time: {}", tableReport, 
-                        DurationFormatUtils.formatDurationWords((elapsed), true, true));
+    protected OutputStream getSqlDiffOutputStream() {
+        if (!StringUtils.isEmpty(sqlDiffFileName) && !sqlDiffFileName.contains("%t")) {
+            try {                
+                return new FirstUseFileOutputStream(sqlDiffFileName);
             } catch (Exception e) {
-                log.error("Exception while comparing " + tables.getSourceTable() + 
-                        " to " + tables.getTargetTable(), e);
-            }
+                throw new RuntimeException("Failed to open stream to file '" + sqlDiffFileName + "'", e);
+            }            
+        } else {
+            return null;
         }
-
-        long totalTime = System.currentTimeMillis() - start;
-        log.info("dbcompare complete.  Total Time: {}", 
-                DurationFormatUtils.formatDurationWords((totalTime), true, true));
-
-        return list;
     }
+    
+    protected OutputStream getSqlDiffOutputStream(DbCompareTables tables) {
+        if (!StringUtils.isEmpty(sqlDiffFileName)) {
+            // allow file per table.
+            String fileNameFormatted = sqlDiffFileName.replace("%t", "%s");
+            fileNameFormatted = String.format(fileNameFormatted, tables.getSourceTable().getName());   
+            fileNameFormatted = fileNameFormatted.replaceAll("\"", "").replaceAll("\\]", "").replaceAll("\\[", "");
+            try {                
+                return new FirstUseFileOutputStream(fileNameFormatted);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to open stream to file '" + fileNameFormatted + "'", e);
+            }       
+        } else {
+            return null;
+        }
+    }
+    
 
-    protected TableReport compareTables(DbCompareTables tables) {
+    protected TableReport compareTables(DbCompareTables tables, OutputStream sqlDiffOutput) {
         String sourceSelect = getSourceComparisonSQL(tables, sourceEngine.getDatabasePlatform());
         String targetSelect = getTargetComparisonSQL(tables, targetEngine.getDatabasePlatform());
 
@@ -159,7 +165,17 @@ public class DbCompare {
 
         int counter = 0;
         long startTime = System.currentTimeMillis();
-        DbCompareDiffWriter diffWriter = new DbCompareDiffWriter(targetEngine, tables, sqlDiffFileName);
+        
+        boolean localStreamCreated = false;
+        
+        DbCompareDiffWriter diffWriter = null;
+        OutputStream stream = null;
+        if (sqlDiffOutput != null) {
+            diffWriter = new DbCompareDiffWriter(targetEngine, tables, sqlDiffOutput);
+        } else {
+            stream = getSqlDiffOutputStream(tables);
+            diffWriter = new DbCompareDiffWriter(targetEngine, tables, stream);
+        }
 
         try {        
             while (true) {  
@@ -178,35 +194,37 @@ public class DbCompare {
 
                 DbCompareRow sourceCompareRow = sourceRow != null ? 
                         new DbCompareRow(sourceEngine, dbValueComparator, tables.getSourceTable(), sourceRow) : null;
-                DbCompareRow targetCompareRow = targetRow != null ? 
-                        new DbCompareRow(targetEngine, dbValueComparator,  tables.getTargetTable(), targetRow) : null;
+                        DbCompareRow targetCompareRow = targetRow != null ? 
+                                new DbCompareRow(targetEngine, dbValueComparator,  tables.getTargetTable(), targetRow) : null;
 
-                int comparePk = comparePk(tables, sourceCompareRow, targetCompareRow);
-                if (comparePk == 0) {
-                    Map<Column, String> deltas = sourceCompareRow.compareTo(tables, targetCompareRow);
-                    if (deltas.isEmpty()) {
-                        tableReport.countMatchedRow();                    
-                    } else {
-                        diffWriter.writeUpdate(targetCompareRow, deltas);
-                        tableReport.countDifferentRow();
-                    }
-    
-                    sourceRow = sourceCursor.next();
-                    targetRow = targetCursor.next();
-                } else if (comparePk < 0) {
-                    diffWriter.writeInsert(sourceCompareRow);
-                    tableReport.countMissingRow();
-                    sourceRow = sourceCursor.next();
-                } else {
-                    diffWriter.writeDelete(targetCompareRow);
-                    tableReport.countExtraRow();
-                    targetRow = targetCursor.next();
-                }
-                tableReport.setSourceRows(sourceCursor.count);
-                tableReport.setTargetRows(targetCursor.count);
+                                int comparePk = comparePk(tables, sourceCompareRow, targetCompareRow);
+                                if (comparePk == 0) {
+                                    Map<Column, String> deltas = sourceCompareRow.compareTo(tables, targetCompareRow);
+                                    if (deltas.isEmpty()) {
+                                        tableReport.countMatchedRow();                    
+                                    } else {
+                                        diffWriter.writeUpdate(targetCompareRow, deltas);
+                                        tableReport.countDifferentRow();
+                                    }
+
+                                    sourceRow = sourceCursor.next();
+                                    targetRow = targetCursor.next();
+                                } else if (comparePk < 0) {
+                                    diffWriter.writeInsert(sourceCompareRow);
+                                    tableReport.countMissingRow();
+                                    sourceRow = sourceCursor.next();
+                                } else {
+                                    diffWriter.writeDelete(targetCompareRow);
+                                    tableReport.countExtraRow();
+                                    targetRow = targetCursor.next();
+                                }
+                                tableReport.setSourceRows(sourceCursor.count);
+                                tableReport.setTargetRows(targetCursor.count);
             }
         } finally {
-            diffWriter.close();
+            if (stream != null) {                
+                IOUtils.closeQuietly(stream);
+            }
             IOUtils.closeQuietly(sourceCursor);
             IOUtils.closeQuietly(targetCursor);
         }
