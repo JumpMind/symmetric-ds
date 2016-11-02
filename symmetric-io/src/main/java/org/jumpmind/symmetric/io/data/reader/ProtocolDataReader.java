@@ -172,8 +172,8 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     int columnCount = context.getLastParsedTable().getColumnCount();
                     if (tokens.length <= columnCount) {
                         String msg = String.format("Invalid state while parsing csv data.  "
-                                + "The number of columns (%d) reported for table '%s' don't match up with the token data: %s",
-                                columnCount, context.getLastParsedTable().getFullyQualifiedTableName(), ArrayUtils.toString(tokens));
+                                + "The number of columns (%d) reported for table '%s' doesn't match up with the token count (%d) data: %s",
+                                columnCount, context.getLastParsedTable().getFullyQualifiedTableName(), tokens.length, ArrayUtils.toString(tokens));
                         throw new IllegalStateException(msg);
                     }
                     data.putParsedData(CsvData.ROW_DATA,

@@ -906,7 +906,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
                         if (nodeIds.size() == 0) {
                             log.info(
-                                    "None of the target nodes specified in the data.node_list field ({}) were qualified nodes.  {} will not be routed using the {} router",
+                                    "None of the target nodes specified in the data.node_list field ({}) were qualified nodes. Data id {} will not be routed using the {} router",
                                     new Object[] {targetNodeIds, data.getDataId(), triggerRouter.getRouter().getRouterId() });
                         }
                     } else {
@@ -953,7 +953,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     "Could not find trigger routers for trigger history id of {} (table {}).  "
                     + "Data with the id of {} and channel id {} will be assigned to an unrouted batch. "
                     + "There is a good chance that data was captured and the trigger router link was removed before the data could be routed, or "
-                    + " that there is an orphaned symmetric trigger on the table.",
+                    + "that there is an orphaned symmetric trigger on the table.",
                     data.getTriggerHistory().getTriggerHistoryId(), data.getTableName(), data.getDataId(), data.getChannelId());
             numberOfDataEventsInserted += insertDataEvents(processInfo, context, new DataMetaData(data, table,
                     null, context.getChannel()), new HashSet<String>(0));
