@@ -39,14 +39,11 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.model.IncomingBatchSummary;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.impl.OutgoingBatchService.OutgoingBatchSummaryChannelMapper;
-import org.jumpmind.symmetric.service.impl.OutgoingBatchService.OutgoingBatchSummaryMapper;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -381,6 +378,14 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
         return sqlTemplate.query(sql, new IncomingBatchSummaryMapper(), args);
     }
+    
+    @Override
+    public Map<String, Date> findLastUpdatedByChannel() {
+        Map<String, Date> captureMap = new HashMap<String, Date>();
+        LastCaptureByChannelMapper mapper = new LastCaptureByChannelMapper(captureMap);
+        List<String> temp = sqlTemplate.query(getSql("lastUpdateByChannelSql"), mapper);
+        return mapper.getCaptureMap();
+    }
 
     class IncomingBatchSummaryMapper implements ISqlRowMapper<IncomingBatchSummary> {
         public IncomingBatchSummary mapRow(Row rs) {
@@ -411,6 +416,24 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         }
     }
 
+    class LastCaptureByChannelMapper implements ISqlRowMapper<String> {
+        private Map<String, Date> captureMap;
+        
+        public LastCaptureByChannelMapper(Map<String, Date> map) {
+            captureMap = map;
+        }
+        
+        public Map<String, Date> getCaptureMap() {
+            return captureMap;
+        }
+        
+        @Override
+        public String mapRow(Row row) {
+            captureMap.put(row.getString("CHANNEL_ID"), row.getDateTime("LAST_UPDATE_TIME"));
+            return null;
+        }
+    }
+    
     class IncomingBatchMapper implements ISqlRowMapper<IncomingBatch> {
         
         IncomingBatch batchToRefresh = null;

@@ -80,6 +80,8 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
                 "select count(*) as batches, status, sum(statement_count) as data, node_id, min(create_time) as oldest_batch_time, channel_id      "
                         + "  from $(incoming_batch) where status in (:STATUS_LIST) group by status, node_id, channel_id order by oldest_batch_time asc   ");
 
+        putSql("lastUpdateByChannelSql", "select max(last_update_time) as last_update_time, channel_id from $(incoming_batch) group by channel_id");
+        
     }
 
 }

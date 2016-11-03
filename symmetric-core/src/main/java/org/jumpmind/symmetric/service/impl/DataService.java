@@ -1905,6 +1905,14 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    @Override
+    public Map<String, Date> getLastDataCaptureByChannel() {
+        Map<String, Date> captureMap = new HashMap<String, Date>();
+        LastCaptureByChannelMapper mapper = new LastCaptureByChannelMapper(captureMap);
+        List<String> temp = sqlTemplate.query(getSql("findLastCaptureTimeByChannelSql"), mapper);
+        return mapper.getCaptureMap();
+    }
+    
     public class DataMapper implements ISqlRowMapper<Data> {
         public Data mapRow(Row row) {
             Data data = new Data();
@@ -1942,6 +1950,24 @@ public class DataService extends AbstractService implements IDataService {
             }
             data.setTriggerHistory(triggerHistory);
             return data;
+        }
+    }
+    
+    public class LastCaptureByChannelMapper implements ISqlRowMapper<String> {
+        private Map<String, Date> captureMap;
+        
+        public LastCaptureByChannelMapper(Map<String, Date> map) {
+            captureMap = map;
+        }
+        
+        public Map<String, Date> getCaptureMap() {
+            return captureMap;
+        }
+        
+        @Override
+        public String mapRow(Row row) {
+            captureMap.put(row.getString("CHANNEL_ID"), row.getDateTime("CREATE_TIME"));
+            return null;
         }
     }
 }
