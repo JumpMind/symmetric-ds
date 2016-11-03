@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io.stage;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class StagingManager implements IStagingManager {
 
@@ -145,6 +147,76 @@ public class StagingManager implements IStagingManager {
         }
     }
 
+    @Override
+    public long cleanExcessBatches(List<Long> currentBatchesList, String type) {
+        log.info("Cleaning staging area for inactive batches");
+        
+        Set<Long> currentBatches = new HashSet(currentBatchesList);
+        Set<String> keys = new HashSet<String>(resourceList.keySet());
+        String common = "common";
+        
+        long purgedFileCount = 0;
+        long purgedFileSize = 0;
+        long purgedMemCount = 0;
+        long purgedMemSize = 0;
+        
+        for (String key : keys) {
+            IStagedResource resource = resourceList.get(key);
+            if (resource.getPath().contains(type) || resource.getPath().contains(common)) {
+                String fileName = key.substring(key.lastIndexOf("/") + 1);
+                
+                try {
+                    Long currentFileBatchId = new Long(fileName);
+                    if(!currentBatches.contains(currentFileBatchId)) {
+                        if (!resource.isInUse()) {
+                            long size = resource.getSize();
+                            if (resource.delete()) {
+                                boolean file = resource.isFileResource();
+                                if (file) {
+                                    purgedFileCount++;
+                                    purgedFileSize += size;
+                                } else {
+                                    purgedMemCount++;
+                                    purgedMemSize += size;
+                                }
+                                resourceList.remove(key);
+                            } else {
+                                log.warn("Failed to delete the '{}' staging resource",
+                                        resource.getPath());
+                            }
+                        } else {
+                            log.info(
+                                    "The '{}' staging resource qualified for being cleaned, but was in use.  It will not be cleaned right now",
+                                    resource.getPath());
+                        }
+                    }
+                }
+                catch (Exception e) {
+                    log.warn("Failed to delete the '{}' staging resource due to unexpected error.", e);
+                }
+            }
+        }
+        if (purgedFileCount > 0) {
+            if (purgedFileSize < 1000) {
+                log.debug("Purged {} staged files, freeing {} bytes of disk space",
+                        purgedFileCount, (int) (purgedFileSize));
+            } else {
+                log.debug("Purged {} staged files, freeing {} kbytes of disk space",
+                        purgedFileCount, (int) (purgedFileSize / 1000));
+            }
+        }
+        if (purgedMemCount > 0) {
+            if (purgedMemSize < 1000) {
+                log.debug("Purged {} staged memory buffers, freeing {} bytes of memory",
+                        purgedMemCount, (int) (purgedMemSize));
+            } else {
+                log.debug("Purged {} staged memory buffers, freeing {} kbytes of memory",
+                        purgedMemCount, (int) (purgedMemSize / 1000));
+            }
+        }
+        return purgedFileCount + purgedMemCount;
+    }
+    
     /**
      * Create a handle that can be written to
      */
