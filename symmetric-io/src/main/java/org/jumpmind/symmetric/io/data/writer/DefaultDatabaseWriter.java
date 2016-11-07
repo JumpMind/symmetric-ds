@@ -174,6 +174,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         this.currentDmlStatement.getLookupKeyData(getLookupDataMap(data, conflict)));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
+                statistics.get(batch).increment(String.format("%s %s", targetTable.getName(), DataWriterStatisticConstants.INSERTCOUNT), count);
                 if (count > 0) {
                         return LoadStatus.SUCCESS;
                 } else {
@@ -194,7 +195,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     throw ex;
                 }
             }
-        } catch (SqlException ex) {
+        } catch (RuntimeException ex) {
             logFailureDetails(ex, data, true);
             throw ex;
         } finally {
@@ -294,13 +295,14 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data, conflict) : lookupDataMap;
                 long count = execute(data, this.currentDmlStatement.getLookupKeyData(lookupDataMap));
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
+                statistics.get(batch).increment(String.format("%s %s", targetTable.getName(), DataWriterStatisticConstants.DELETECOUNT), count);
                 if (count > 0) {
                         return LoadStatus.SUCCESS;
                 } else {
                     context.put(CUR_DATA,null); // since a delete conflicted, there's no row to delete, so no cur data.
                     return LoadStatus.CONFLICT;
                 }
-            } catch (SqlException ex) {
+            } catch (RuntimeException ex) {
                 if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
                         && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
                     context.put(CUR_DATA,null); // since a delete conflicted, there's no row to delete, so no cur data.
@@ -457,6 +459,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     long count = execute(data, values);
                     statistics.get(batch)
                             .increment(DataWriterStatisticConstants.UPDATECOUNT, count);
+                    statistics.get(batch).increment(String.format("%s %s", targetTable.getName(), DataWriterStatisticConstants.UPDATECOUNT), count);
                     if (count > 0) {
                         return LoadStatus.SUCCESS;
                     } else {
@@ -480,7 +483,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 // There was no change to apply
                 return LoadStatus.SUCCESS;
             }
-        } catch (SqlException ex) {
+        } catch (RuntimeException ex) {
             logFailureDetails(ex, data, true);
             throw ex;
         } finally {
