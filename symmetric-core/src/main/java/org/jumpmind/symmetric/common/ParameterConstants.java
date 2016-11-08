@@ -360,8 +360,6 @@ final public class ParameterConstants {
     public static final String SMTP_USE_AUTH = "smtp.auth";
     public static final String SMTP_ALLOW_UNTRUSTED_CERT = "smtp.allow.untrusted.cert";
 
-    public final static String CHANNEL_THREADING = "channel.threading.enabled";
-    
     public final static String MONITOR_EVENTS_CAPTURE_ENABLED = "monitor.events.capture.enabled";
     
     public final static String HYBRID_PUSH_PULL_ENABLED = "hybrid.push.pull.enabled";
