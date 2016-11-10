@@ -224,11 +224,16 @@ public class SnapshotUtil {
         extract(export, new File(tmpDir, "sym_trigger_hist.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST));
         
+        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+              engine.getNodeCommunicationService().persistToTableForSnapshot();
+              engine.getClusterService().persistToTableForSnapshot();
+        }
+            
         extract(export, new File(tmpDir, "sym_lock.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_LOCK));
-        
+                   
         extract(export, new File(tmpDir, "sym_node_communication.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION));        
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION));
         
         extract(export, 10000, "order by create_time desc", new File(tmpDir, "sym_outgoing_batch.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));        

@@ -28,6 +28,8 @@ public class ClusterServiceSqlMap extends AbstractSqlMap {
 
     public ClusterServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
+        
+        putSql("deleteSql", "delete from $(lock)");
 
         putSql("acquireClusterLockSql",
             "update $(lock) set locking_server_id=?, lock_time=? " +
@@ -72,6 +74,9 @@ public class ClusterServiceSqlMap extends AbstractSqlMap {
             "where locking_server_id=?");
 
         putSql("insertLockSql", "insert into $(lock) (lock_action, lock_type) values(?,?)");
+        
+        putSql("insertCompleteLockSql", 
+                "insert into $(lock) (lock_action, lock_type, locking_server_id, lock_time, shared_count, shared_enable, last_lock_time, last_locking_server_id) values(?,?,?,?,?,?,?,?)");
 
         putSql("findLocksSql",
             "select lock_action, lock_type, locking_server_id, lock_time, shared_count, shared_enable, " +

@@ -117,6 +117,18 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             }
         }
     }
+    
+    @Override
+    public synchronized void persistToTableForSnapshot() {
+        sqlTemplate.update(getSql("deleteSql"));
+        Collection<Map<String, NodeCommunication>> values = lockCache.values();
+        for (Map<String, NodeCommunication> map : values) {
+            Collection<NodeCommunication> nodeCommies = map.values();
+            for (NodeCommunication nodeCommunication : nodeCommies) {
+                save(nodeCommunication, true);
+            }
+        }
+    }
 
     public NodeCommunication find(String nodeId, String queue, CommunicationType communicationType) {
         NodeCommunication lock = null;
@@ -133,7 +145,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             lock.setNodeId(nodeId);
             lock.setCommunicationType(communicationType);
             lock.setQueue(queue);
-            save(lock);
+            save(lock, false);
         }
         return lock;
     }
@@ -192,7 +204,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 comm.setNodeId(nodeToCommunicateWith.getNodeId());
                 comm.setQueue(nodeToCommunicateWith.getQueue());
                 comm.setCommunicationType(communicationType);
-                save(comm);
+                save(comm, false);
                 communicationRows.add(comm);
             }
 
@@ -317,8 +329,8 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         }
     }
 
-    public void save(NodeCommunication nodeCommunication) {
-        if (clusterService.isClusteringEnabled()) {
+    protected void save(NodeCommunication nodeCommunication, boolean force) {
+        if (clusterService.isClusteringEnabled() || force) {
             if (0 == sqlTemplate.update(getSql("updateNodeCommunicationSql"),
                     nodeCommunication.getLockTime(), nodeCommunication.getLockingServerId(),
                     nodeCommunication.getLastLockMillis(), nodeCommunication.getSuccessCount(),
@@ -547,7 +559,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                     nodeCommunication.setFailCount(0);
                 }
                 if (clusterService.isClusteringEnabled()) {
-                    save(nodeCommunication);
+                    save(nodeCommunication, false);
                 }
                 unlocked = true;
                 if (attempts > 1) {
@@ -709,7 +721,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         }
         
         for (NodeCommunication nodeCommunication : updatedNodeCommunications) {
-            save(nodeCommunication);
+            save(nodeCommunication, false);
         }
     }
     

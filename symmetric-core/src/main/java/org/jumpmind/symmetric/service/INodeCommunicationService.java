@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,8 +32,6 @@ public interface INodeCommunicationService {
 
     public List<NodeCommunication> list(CommunicationType communicationType);
 
-    public void save(NodeCommunication nodeCommunication);
-    
     public NodeCommunication find(String nodeId, String channelId, CommunicationType communicationType);
 
     public boolean execute(NodeCommunication nodeCommunication, RemoteNodeStatuses statuses, INodeCommunicationExecutor executor);
@@ -43,11 +40,14 @@ public interface INodeCommunicationService {
 
     public void stop();
 
+    public void updateBatchToSendCounts(String nodeId, Map<String, Integer> batchesCountToQueues);
+    
+    public Map<String, Integer> parseQueueToBatchCounts(String channelToBatchCountsString);
+    
+    public void persistToTableForSnapshot();
+
     public interface INodeCommunicationExecutor {
         public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status);
     }
     
-    public void updateBatchToSendCounts(String nodeId, Map<String, Integer> batchesCountToQueues);
-    
-    public Map<String, Integer> parseQueueToBatchCounts(String channelToBatchCountsString);
 }

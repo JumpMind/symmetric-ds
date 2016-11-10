@@ -56,5 +56,7 @@ public interface IClusterService {
     public void clearInfiniteLock(String action);
     
     public boolean isInfiniteLocked(String action);
+    
+    public void persistToTableForSnapshot();
 
 }
