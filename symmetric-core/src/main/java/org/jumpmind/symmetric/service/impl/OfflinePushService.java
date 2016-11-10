@@ -20,9 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchAck;
@@ -50,7 +48,6 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
-import org.jumpmind.symmetric.web.WebConstants;
 
 public class OfflinePushService extends AbstractService implements IOfflinePushService, INodeCommunicationExecutor {
 

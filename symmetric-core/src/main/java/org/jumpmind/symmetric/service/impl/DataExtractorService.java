@@ -89,7 +89,6 @@ import org.jumpmind.symmetric.io.data.reader.SimpleStagingDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
-import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter;
 import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
 import org.jumpmind.symmetric.io.data.writer.StructureDataWriter;

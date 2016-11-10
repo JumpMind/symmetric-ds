@@ -38,7 +38,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IPurgeListener;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
-import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch;

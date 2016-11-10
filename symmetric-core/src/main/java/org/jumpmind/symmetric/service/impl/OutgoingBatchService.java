@@ -640,13 +640,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummarySql(long loadId) {
-        LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper();
-        
-        List<Object> obj = sqlTemplateDirty.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
+        LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper();        
+        sqlTemplateDirty.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
         return mapper.getResults();
     }
     
-    private class LoadStatusByQueueMapper implements ISqlRowMapper {
+    private class LoadStatusByQueueMapper implements ISqlRowMapper<Object> {
         Map<String, Map<String, LoadStatusSummary>> results = new HashMap<String, Map<String, LoadStatusSummary>>();
         
         @Override
