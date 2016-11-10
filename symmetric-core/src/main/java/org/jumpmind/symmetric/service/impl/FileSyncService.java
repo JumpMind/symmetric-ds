@@ -613,8 +613,17 @@ INodeCommunicationExecutor {
         if (previouslyStagedResource == null 
                 && channel.isReloadFlag() 
                 && parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
-            // if this is a reload that isn't extracted yet, we need to defer to the exact job.
-            log.info("Batch needs to be extracted by the extact job {}", currentBatch.getNodeBatchId());
+            
+            if (currentBatch.getStatus() == OutgoingBatch.Status.RQ) {                
+                // if this is a reload that isn't extracted yet, we need to defer to the extract job.
+                log.info("Batch needs to be extracted by the extact job {}", currentBatch.getNodeBatchId());
+            } else {
+                // it's possible there was an error and staging was cleared, so we need to re-request extraction here.
+                log.info("Batch has status of '{}' but is not extracted. Requesting re-extract for batch: {}", 
+                        currentBatch.getStatus(), currentBatch.getNodeBatchId());
+                engine.getDataExtractorService().resetExtractRequest(currentBatch);
+            }
+            
             return true;
         } else {            
             return false;
