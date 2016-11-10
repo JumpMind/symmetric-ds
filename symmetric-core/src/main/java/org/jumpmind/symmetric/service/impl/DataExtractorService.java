@@ -1235,7 +1235,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 , ExtractRequest.ExtractStatus.NE.name());
     }
 
-    protected void resetExtractRequest(OutgoingBatch batch) {
+    @Override
+    public void resetExtractRequest(OutgoingBatch batch) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
