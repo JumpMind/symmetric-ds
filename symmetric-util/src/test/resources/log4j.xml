@@ -94,7 +94,11 @@
     
     <category name="com.vaadin.event.ConnectorActionManager">
         <priority value="ERROR" />
-    </category>    
+    </category>
+    
+    <category name="org.atmosphere.container">
+        <priority value="FATAL" />
+    </category>        
     
     <root>
         <priority value="WARN" />
