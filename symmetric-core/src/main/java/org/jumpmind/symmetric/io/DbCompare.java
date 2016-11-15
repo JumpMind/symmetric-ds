@@ -64,30 +64,18 @@ public class DbCompare {
 
     private ISymmetricEngine sourceEngine;
     private ISymmetricEngine targetEngine;
-
-    private String sqlDiffFileName;
-    private List<String> includedTableNames;
-    private List<String> excludedTableNames;
-    private boolean useSymmetricConfig = true;
+    private DbCompareConfig config;
     private DbValueComparator dbValueComparator;
-    private int numericScale = 3;
 
-    public int getNumericScale() {
-        return numericScale;
-    }
-
-    public void setNumericScale(int numericScale) {
-        this.numericScale = numericScale;
-    }
-
-    public DbCompare(ISymmetricEngine sourceEngine, ISymmetricEngine targetEngine) {
+    public DbCompare(ISymmetricEngine sourceEngine, ISymmetricEngine targetEngine, DbCompareConfig config) {
+        this.config = config;
         this.sourceEngine = sourceEngine;
         this.targetEngine = targetEngine;
         dbValueComparator = new DbValueComparator(sourceEngine, targetEngine);
     }
 
     public DbCompareReport compare() {
-        dbValueComparator.setNumericScale(numericScale);
+        dbValueComparator.setNumericScale(config.getNumericScale());
 
         OutputStream sqlDiffOutput = getSqlDiffOutputStream();
         
@@ -119,6 +107,7 @@ public class DbCompare {
     }
 
     protected OutputStream getSqlDiffOutputStream() {
+        String sqlDiffFileName = config.getSqlDiffFileName();
         if (!StringUtils.isEmpty(sqlDiffFileName) && !sqlDiffFileName.contains("%t")) {
             try {                
                 return new FirstUseFileOutputStream(sqlDiffFileName);
@@ -131,6 +120,7 @@ public class DbCompare {
     }
     
     protected OutputStream getSqlDiffOutputStream(DbCompareTables tables) {
+        String sqlDiffFileName = config.getSqlDiffFileName();
         if (!StringUtils.isEmpty(sqlDiffFileName)) {
             // allow file per table.
             String fileNameFormatted = sqlDiffFileName.replace("%t", "%s");
@@ -165,8 +155,6 @@ public class DbCompare {
 
         int counter = 0;
         long startTime = System.currentTimeMillis();
-        
-        boolean localStreamCreated = false;
         
         DbCompareDiffWriter diffWriter = null;
         OutputStream stream = null;
@@ -244,8 +232,9 @@ public class DbCompare {
     }
 
     protected String getSourceComparisonSQL(DbCompareTables tables, IDatabasePlatform platform) {
+        String whereClause = config.getSourceWhereClause(tables.getSourceTable().getName());
         return getComparisonSQL(tables.getSourceTable(),
-                tables.getSourceTable().getPrimaryKeyColumns(), platform);
+                tables.getSourceTable().getPrimaryKeyColumns(), platform, whereClause);
     }
 
     protected String getTargetComparisonSQL(DbCompareTables tables, IDatabasePlatform platform) {
@@ -259,18 +248,19 @@ public class DbCompare {
                 mappedPkColumns.add(targetColumn);
             }
         }
-
-        return getComparisonSQL(tables.getTargetTable(), tables.getTargetTable().getPrimaryKeyColumns(), platform);
+        
+        String whereClause = config.getTargetWhereClause(tables.getTargetTable().getName());
+        return getComparisonSQL(tables.getTargetTable(), tables.getTargetTable().getPrimaryKeyColumns(), platform, whereClause);
     }
 
-    protected String getComparisonSQL(Table table, Column[] sortByColumns, IDatabasePlatform platform) {
+    protected String getComparisonSQL(Table table, Column[] sortByColumns, IDatabasePlatform platform, String whereClause) {
         DmlStatement statement = platform.createDmlStatement(DmlType.SELECT,
                 table.getCatalog(), table.getSchema(), table.getName(),
                 null, table.getColumns(),
                 null, null);
 
         StringBuilder sql = new StringBuilder(statement.getSql());
-        sql.append("1=1 ");
+        sql.append(whereClause).append(" ");
 
         sql.append(buildOrderBy(table, sortByColumns, platform));
         log.info("Comparison SQL: {}", sql);
@@ -292,7 +282,7 @@ public class DbCompare {
 
     protected List<DbCompareTables> getTablesToCompare() {
         List<DbCompareTables> tablesToCompare;
-        if (useSymmetricConfig) {
+        if (config.isUseSymmetricConfig()) {
             tablesToCompare = loadTablesFromConfig();
         } else {
             tablesToCompare = loadTablesFromArguments();
@@ -403,7 +393,7 @@ public class DbCompare {
 
     protected Table loadTargetTable(DbCompareTables tables) {
         Table targetTable = null;
-        if (useSymmetricConfig) {
+        if (config.isUseSymmetricConfig()) {
             TransformTableNodeGroupLink transform = getTransformFor(tables.getSourceTable());
             if (transform != null) {
                 targetTable =  loadTargetTableUsingTransform(transform);
@@ -451,19 +441,19 @@ public class DbCompare {
     }
 
     protected List<DbCompareTables> loadTablesFromArguments() {
-        if (CollectionUtils.isEmpty(includedTableNames)) {
+        if (CollectionUtils.isEmpty(config.getIncludedTableNames())) {
             throw new RuntimeException("includedTableNames not provided,  includedTableNames must be provided "
                     + "when not comparing using SymmetricDS config.");
         }
 
-        return loadTables(includedTableNames);
+        return loadTables(config.getIncludedTableNames());
     }
 
     protected List<String> filterTables(List<String> tables) {        
         List<String> filteredTables = new ArrayList<String>(tables.size());
 
-        if (!CollectionUtils.isEmpty(includedTableNames)) {
-            for (String includedTableName : includedTableNames) {                
+        if (!CollectionUtils.isEmpty(config.getIncludedTableNames())) {
+            for (String includedTableName : config.getIncludedTableNames()) {                
                 for (String tableName : tables) {
                     if (compareTableNames(tableName, includedTableName)) {
                         filteredTables.add(tableName);
@@ -474,10 +464,10 @@ public class DbCompare {
             filteredTables.addAll(tables);
         }
 
-        if (!CollectionUtils.isEmpty(excludedTableNames)) {
+        if (!CollectionUtils.isEmpty(config.getExcludedTableNames())) {
             List<String> excludedTables = new ArrayList<String>(filteredTables);
 
-            for (String excludedTableName : excludedTableNames) {            
+            for (String excludedTableName : config.getExcludedTableNames()) {            
                 for (String tableName : filteredTables) {
                     if (compareTableNames(tableName, excludedTableName)) {
                         excludedTables.remove(tableName);
@@ -505,30 +495,6 @@ public class DbCompare {
         }                
     }
 
-    public List<String> getIncludedTableNames() {
-        return includedTableNames;
-    }
-
-    public void setIncludedTableNames(List<String> includedTableNames) {
-        this.includedTableNames = includedTableNames;
-    }
-
-    public List<String> getExcludedTableNames() {
-        return excludedTableNames;
-    }
-
-    public void setExcludedTableNames(List<String> excludedTableNames) {
-        this.excludedTableNames = excludedTableNames;
-    }
-
-    public boolean isUseSymmetricConfig() {
-        return useSymmetricConfig;
-    }
-
-    public void setUseSymmetricConfig(boolean useSymmetricConfig) {
-        this.useSymmetricConfig = useSymmetricConfig;
-    }
-
     class CountingSqlReadCursor implements ISqlReadCursor<Row>, Closeable {
 
         ISqlReadCursor<Row> wrapped;
@@ -553,11 +519,7 @@ public class DbCompare {
         }
     }
 
-    public String getSqlDiffFileName() {
-        return sqlDiffFileName;
-    }
-
-    public void setSqlDiffFileName(String sqlDiffFileName) {
-        this.sqlDiffFileName = sqlDiffFileName;
+    public DbCompareConfig getConfig() {
+        return config;
     }
 }
