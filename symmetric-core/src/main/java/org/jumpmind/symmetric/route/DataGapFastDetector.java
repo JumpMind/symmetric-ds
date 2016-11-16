@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DataGapFastDetector extends DataGapDetector implements ISqlRowMapper<Long> {
 
-    private static final Logger log = LoggerFactory.getLogger(DataGapDetector.class);
+    private static final Logger log = LoggerFactory.getLogger(DataGapFastDetector.class);
 
     protected IDataService dataService;
 
@@ -530,11 +530,16 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     }
 
     public void setFullGapAnalysis(boolean isFullGapAnalysis) {
-        if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
-            contextService.save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, Boolean.toString(isFullGapAnalysis));
-        }
-        this.isFullGapAnalysis = isFullGapAnalysis;
+        setFullGapAnalysis(null, isFullGapAnalysis);
     }
+    
+    @Override
+    public void setFullGapAnalysis(ISqlTransaction sqlTransaction, boolean isFullGapAnalysis) {
+        if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            contextService.save(sqlTransaction,  ContextConstants.ROUTING_FULL_GAP_ANALYSIS, Boolean.toString(isFullGapAnalysis));
+        }
+        this.isFullGapAnalysis = isFullGapAnalysis;        
+    }    
 
     protected long getLastBusyExpireRunTime() {
         if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {

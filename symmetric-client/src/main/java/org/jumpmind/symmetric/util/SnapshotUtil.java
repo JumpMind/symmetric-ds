@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -54,6 +55,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
+import org.apache.log4j.Layout;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.exception.IoException;
@@ -112,9 +114,9 @@ public class SnapshotUtil {
             logDir = new File("logs");
 
             if (!logDir.exists()) {
-                File file = findSymmetricLogFile();
-                if (file != null) {
-                    logDir = file.getParentFile();
+                Map<File, Layout> matches = findSymmetricLogFile();
+                if (matches != null && matches.size() == 1) {
+                    logDir = matches.keySet().iterator().next().getParentFile();
                 }
             }
 
@@ -150,7 +152,8 @@ public class SnapshotUtil {
             engine.getDataExtractorService().extractConfigurationStandalone(engine.getNodeService().findIdentity(),
                     fwriter, TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY,
                     TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST,
-                    TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_USER);
+                    TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_USER,
+                    TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
         } catch (Exception e) {
             log.warn("Failed to export symmetric configuration", e);
         } finally {
@@ -221,23 +224,46 @@ public class SnapshotUtil {
         extract(export, new File(tmpDir, "sym_trigger_hist.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST));
         
+        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+              engine.getNodeCommunicationService().persistToTableForSnapshot();
+              engine.getClusterService().persistToTableForSnapshot();
+        }
+            
         extract(export, new File(tmpDir, "sym_lock.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_LOCK));
-        
+                   
         extract(export, new File(tmpDir, "sym_node_communication.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION));        
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION));
         
-        extract(export, 5000, "order by create_time desc", new File(tmpDir, "sym_outgoing_batch.csv"), 
+        extract(export, 10000, "order by create_time desc", new File(tmpDir, "sym_outgoing_batch.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));        
-        
-        extract(export, 5000, "order by create_time desc", new File(tmpDir, "sym_incoming_batch.csv"), 
+
+        extract(export, 10000, "where status != 'OK' order by create_time", new File(tmpDir, "sym_outgoing_batch_not_ok.csv"), 
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));        
+
+        extract(export, 10000, "order by create_time desc", new File(tmpDir, "sym_incoming_batch.csv"), 
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));          
+
+        extract(export, 10000, "where status != 'OK' order by create_time", new File(tmpDir, "sym_incoming_batch_not_ok.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));          
 
         extract(export, 5000, "order by start_id, end_id desc", new File(tmpDir, "sym_data_gap.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_DATA_GAP));
 
+        extract(export, new File(tmpDir, "sym_table_reload_request.csv"), 
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_REQUEST));        
+
         extract(export, 5000, "order by relative_dir, file_name", new File(tmpDir, "sym_file_snapshot.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));        
+
+        extract(export, new File(tmpDir, "sym_console_event.csv"), 
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_CONSOLE_EVENT));        
+
+        extract(export, new File(tmpDir, "sym_monitor_event.csv"), 
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT));        
+
+        extract(export, new File(tmpDir, "sym_extract_request.csv"), 
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_EXTRACT_REQUEST));        
 
         if (engine.getSymmetricDialect() instanceof FirebirdSymmetricDialect) {
             final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements",
@@ -573,7 +599,7 @@ public class SnapshotUtil {
     }
     
     @SuppressWarnings("unchecked")
-    public static File findSymmetricLogFile() {
+    public static Map<File, Layout> findSymmetricLogFile() {
         Enumeration<Appender> appenders = org.apache.log4j.Logger.getRootLogger().getAllAppenders();
         while (appenders.hasMoreElements()) {
             Appender appender = appenders.nextElement();
@@ -582,7 +608,9 @@ public class SnapshotUtil {
                 if (fileAppender != null) {
                     File file = new File(fileAppender.getFile());
                     if (file != null && file.exists()) {
-                        return file;
+                        Map<File, Layout> matches = new HashMap<File, Layout>();
+                        matches.put(file, fileAppender.getLayout());
+                        return matches;
                     }
                 }
             }

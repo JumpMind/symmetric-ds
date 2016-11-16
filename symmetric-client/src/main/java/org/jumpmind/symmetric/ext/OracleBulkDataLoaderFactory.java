@@ -25,7 +25,6 @@ import java.util.List;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcUtils;
-import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.OracleBulkDatabaseWriter;
@@ -57,8 +56,7 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
             TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        int maxRowsBeforeFlush = engine.getParameterService().getInt(
-                "oracle.bulk.load.max.rows.before.flush", 1000);
+        int maxRowsBeforeFlush = parameterService.getInt("oracle.bulk.load.max.rows.before.flush", 1000);
         return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), engine.getTablePrefix(),
                 jdbcExtractor, maxRowsBeforeFlush, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
     }

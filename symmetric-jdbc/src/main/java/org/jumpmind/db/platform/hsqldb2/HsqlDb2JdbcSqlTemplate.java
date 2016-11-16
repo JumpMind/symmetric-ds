@@ -33,6 +33,7 @@ public class HsqlDb2JdbcSqlTemplate extends JdbcSqlTemplate {
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);        
         primaryKeyViolationSqlStates = new String[] {"23505"};
+        foreignKeyViolationCodes = new int[] { 23506 };
     }
     
     @Override

@@ -107,18 +107,18 @@ public class MonitorService extends AbstractService implements IMonitorService {
         Map<String, IMonitorType> monitorTypes = extensionService.getExtensionPointMap(IMonitorType.class);
         Node identity = nodeService.findIdentity();
         List<Monitor> activeMonitors = getActiveMonitorsForNode(identity.getNodeGroupId(), identity.getExternalId());
+        Map<String, MonitorEvent> unresolved = getMonitorEventsNotResolvedForNode(identity.getNodeId());
 
         for (Monitor monitor : activeMonitors) {
             IMonitorType monitorType = monitorTypes.get(monitor.getType());
             if (monitorType != null) {
-                long lastCheckTime = 0;
                 if (!monitorType.requiresClusterLock()) {
                     Long lastCheckTimeLong = checkTimesByType.get(monitor.getMonitorId());
-                    lastCheckTime = lastCheckTimeLong != null ? lastCheckTimeLong : 0;
-                }
-                if (lastCheckTime == 0 || (System.currentTimeMillis() - lastCheckTime) / 1000 >= monitor.getRunPeriod()) {
-                    checkTimesByType.put(monitor.getMonitorId(), System.currentTimeMillis());
-                    updateMonitor(monitor, monitorType, identity);
+                    long lastCheckTime = lastCheckTimeLong != null ? lastCheckTimeLong : 0;
+                    if (lastCheckTime == 0 || (System.currentTimeMillis() - lastCheckTime) / 1000 >= monitor.getRunPeriod()) {
+                        checkTimesByType.put(monitor.getMonitorId(), System.currentTimeMillis());
+                        updateMonitor(monitor, monitorType, identity, unresolved);
+                    }
                 }
             } else {
                 log.warn("Could not find monitor of type '" + monitor.getType() + "'");
@@ -133,8 +133,8 @@ public class MonitorService extends AbstractService implements IMonitorService {
                 for (Monitor monitor : activeMonitors) {
                     IMonitorType monitorType = monitorTypes.get(monitor.getType());
                     if (monitorType != null && monitorType.requiresClusterLock() && 
-                            (System.currentTimeMillis() - clusterLastCheckTime) / 60000 > monitor.getRunPeriod()) {
-                        updateMonitor(monitor, monitorType, identity);
+                            (System.currentTimeMillis() - clusterLastCheckTime) / 1000 >= monitor.getRunPeriod()) {
+                        updateMonitor(monitor, monitorType, identity, unresolved);
                     }
                 }
                 
@@ -173,7 +173,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
         }
     }
 
-    protected void updateMonitor(Monitor monitor, IMonitorType monitorType, Node identity) {
+    protected void updateMonitor(Monitor monitor, IMonitorType monitorType, Node identity, Map<String, MonitorEvent> unresolved) {
         long value = monitorType.check(monitor);
         boolean readyToCompare = true;
         
@@ -199,17 +199,37 @@ public class MonitorService extends AbstractService implements IMonitorService {
             }
         }
 
-        if (readyToCompare && value >= monitor.getThreshold()) {
-            MonitorEvent event = new MonitorEvent();
-            event.setMonitorId(monitor.getMonitorId());
-            event.setNodeId(identity.getNodeId());
-            event.setEventTime(new Date());
-            event.setHostName(hostName);
-            event.setType(monitor.getType());
-            event.setValue(value);
-            event.setThreshold(monitor.getThreshold());
-            event.setSeverityLevel(monitor.getSeverityLevel());
-            saveMonitorEvent(event);
+        if (readyToCompare) {
+            MonitorEvent event = unresolved.get(monitor.getMonitorId());
+            Date now = new Date((System.currentTimeMillis() / 1000) * 1000);
+            if (event != null && value < monitor.getThreshold()) {
+                event.setLastUpdateTime(now);
+                updateMonitorEventAsResolved(event);
+            } else if (value >= monitor.getThreshold()) {
+                if (event == null) {
+                    event = new MonitorEvent();
+                    event.setMonitorId(monitor.getMonitorId());
+                    event.setNodeId(identity.getNodeId());
+                    event.setEventTime(now);
+                    event.setHostName(hostName);
+                    event.setType(monitor.getType());
+                    event.setValue(value);
+                    event.setCount(1);
+                    event.setThreshold(monitor.getThreshold());
+                    event.setSeverityLevel(monitor.getSeverityLevel());
+                    event.setLastUpdateTime(now);
+                    insertMonitorEvent(event);
+                } else {
+                    event.setHostName(hostName);
+                    event.setType(monitor.getType());
+                    event.setValue(value);
+                    event.setCount(event.getCount() + 1);
+                    event.setThreshold(monitor.getThreshold());
+                    event.setSeverityLevel(monitor.getSeverityLevel());
+                    event.setLastUpdateTime(now);
+                    saveMonitorEvent(event);
+                }
+            }
         }
     }
 
@@ -252,10 +272,35 @@ public class MonitorService extends AbstractService implements IMonitorService {
         return sqlTemplate.query(getSql("selectMonitorEventSql"), new MonitorEventRowMapper());
     }
 
+    protected Map<String, MonitorEvent> getMonitorEventsNotResolvedForNode(String nodeId) {
+        List<MonitorEvent> list = sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventNotResolvedSql"), 
+                new MonitorEventRowMapper(), nodeId);
+        Map<String, MonitorEvent> map = new HashMap<String, MonitorEvent>();
+        for (MonitorEvent monitorEvent : list) {
+            map.put(monitorEvent.getMonitorId(), monitorEvent);
+        }
+        return map;
+    }
+
     @Override
-    public List<MonitorEvent> getMonitorEventsFiltered(int limit, String type, int severityLevel, String nodeId) {
-        return sqlTemplate.query(getSql("selectMonitorEventSql", "whereMonitorEventFilteredSql"), limit,
-                new MonitorEventRowMapper(), type, type, severityLevel, nodeId, nodeId);
+    public List<MonitorEvent> getMonitorEventsFiltered(int limit, String type, int severityLevel, String nodeId, Boolean isResolved) {
+        String sql = getSql("selectMonitorEventSql", "whereMonitorEventFilteredSql");
+        ArrayList<Object> args = new ArrayList<Object>();
+        args.add(severityLevel);
+        if (isResolved != null) {
+            sql += " and is_resolved = ?";
+            args.add(isResolved ? 1 : 0);
+        }
+        if (type != null) {
+            sql += " and type = ?";
+            args.add(type);
+        }
+        if (nodeId != null) {
+            sql += " and node_id = ?";
+            args.add(nodeId);
+        }
+        sql += " order by event_time desc";
+        return sqlTemplate.query(sql, limit, new MonitorEventRowMapper(), args.toArray());
     }    
 
     protected List<MonitorEvent> getMonitorEventsForNotification(int severityLevel) {
@@ -265,9 +310,22 @@ public class MonitorService extends AbstractService implements IMonitorService {
     
     @Override
     public void saveMonitorEvent(MonitorEvent event) {
+        if (!updateMonitorEvent(event)) {
+            insertMonitorEvent(event);
+        }
+    }
+
+    protected void insertMonitorEvent(MonitorEvent event) {
         sqlTemplate.update(getSql("insertMonitorEventSql"), event.getMonitorId(), event.getNodeId(),
-                event.getEventTime(), event.getHostName(), event.getType(), event.getValue(), event.getThreshold(), 
-                event.getSeverityLevel(), event.isNotified() ? 1 : 0);
+                event.getEventTime(), event.getHostName(), event.getType(), event.getValue(), event.getCount(), event.getThreshold(), 
+                event.getSeverityLevel(), event.isResolved() ? 1 : 0, event.isNotified() ? 1 : 0, event.getLastUpdateTime());
+    }
+
+    protected boolean updateMonitorEvent(MonitorEvent event) {
+        int count = sqlTemplate.update(getSql("updateMonitorEventSql"), event.getHostName(), event.getType(), event.getValue(), 
+                event.getCount(), event.getThreshold(), event.getSeverityLevel(), event.getLastUpdateTime(),
+                event.getMonitorId(), event.getNodeId(), event.getEventTime());
+        return count != 0;
     }
 
     @Override
@@ -283,6 +341,11 @@ public class MonitorService extends AbstractService implements IMonitorService {
 
     protected void updateMonitorEventAsNotified(MonitorEvent event) {
         sqlTemplate.update(getSql("updateMonitorEventNotifiedSql"), event.getMonitorId(), event.getNodeId(), event.getEventTime());
+    }
+
+    protected void updateMonitorEventAsResolved(MonitorEvent event) {
+        sqlTemplate.update(getSql("updateMonitorEventResolvedSql"), event.getLastUpdateTime(), event.getMonitorId(), 
+                event.getNodeId(), event.getEventTime());
     }
 
     @Override
@@ -360,9 +423,12 @@ public class MonitorService extends AbstractService implements IMonitorService {
             m.setHostName(row.getString("host_name"));
             m.setType(row.getString("type"));
             m.setThreshold(row.getLong("threshold"));
-            m.setValue(row.getLong("value"));
+            m.setValue(row.getLong("event_value"));
+            m.setCount(row.getInt("event_count"));
             m.setSeverityLevel(row.getInt("severity_level"));
+            m.setResolved(row.getBoolean("is_resolved"));
             m.setNotified(row.getBoolean("is_notified"));
+            m.setLastUpdateTime(row.getDateTime("last_update_time"));
             return m;
         }
     }

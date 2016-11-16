@@ -16,6 +16,10 @@ endif::pro[]
 
 include::manage/node-add.ad[]
 
+==== Load Data
+
+include::manage/node-load.ad[]
+
 ==== Control
 
 include::manage/node-control.ad[]

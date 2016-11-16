@@ -21,7 +21,7 @@ ifdef::pro[]
 endif::pro[]
 
 Channel ID:: Identifier used through the system to identify a given channel.
-[[processing-order]]Processing Order:: Numeric value to determine the order in which a channel will be processed.
+[[processing-order]]Processing Order:: Numeric value to determine the order in which a channel will be processed.  Channels will be processed in ascending order.
 [[batch-algorithm]]Batch Algorithm:: Batching is the grouping of data, by channel, to be transferred and committed at the client together.
 .Channel Batching Algorithms
 |===
@@ -83,7 +83,7 @@ Tables Contain Big Lobs:: Indicates whether the channel contains big lobs. Some 
 ifndef::pro[]
 [source,sql]
 ----
-insert into SYM_CHANNEL (channel_id, rocessing_order, max_batch_size, max_batch_to_send,
+insert into SYM_CHANNEL (channel_id, processing_order, max_batch_size, max_batch_to_send,
 	 extract_period_millis, batch_algorithm, enabled, description) 
      values ('item', 10, 1000, 10, 0, 'default', 1, 'Item and pricing data'); 
         

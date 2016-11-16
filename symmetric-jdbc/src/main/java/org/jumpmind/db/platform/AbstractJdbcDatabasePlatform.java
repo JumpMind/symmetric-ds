@@ -20,6 +20,7 @@
  */
 package org.jumpmind.db.platform;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
@@ -34,6 +35,8 @@ abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatf
     protected DataSource dataSource;
 
     protected ISqlTemplate sqlTemplate;
+    
+    protected ISqlTemplate sqlTemplateDirty;
 
     protected SqlTemplateSettings settings;
 
@@ -42,6 +45,7 @@ abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatf
         this.settings = settings;
         this.ddlBuilder = createDdlBuilder();
         this.sqlTemplate = createSqlTemplate();
+        this.sqlTemplateDirty = createSqlTemplateDirty();
         this.ddlReader = createDdlReader();
     }
 
@@ -53,9 +57,20 @@ abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatf
         return new JdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo()); 
     }
 
+    protected ISqlTemplate createSqlTemplateDirty() {
+        JdbcSqlTemplate sqlTemplateDirty = new JdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
+        sqlTemplateDirty.setIsolationLevel(Connection.TRANSACTION_READ_UNCOMMITTED);
+        return sqlTemplateDirty;
+    }
+
     @Override
     public ISqlTemplate getSqlTemplate() {
         return sqlTemplate;
+    }
+
+    @Override
+    public ISqlTemplate getSqlTemplateDirty() {
+        return sqlTemplateDirty;
     }
 
     @SuppressWarnings("unchecked")

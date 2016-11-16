@@ -266,7 +266,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public OutgoingBatch findOutgoingBatch(long batchId, String nodeId) {
         List<OutgoingBatch> list = null;
         if (StringUtils.isNotBlank(nodeId)) {
-            list = (List<OutgoingBatch>) sqlTemplate.query(
+            list = (List<OutgoingBatch>) sqlTemplateDirty.query(
                     getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchSql"),
                     new OutgoingBatchMapper(true), new Object[] { batchId, nodeId },
                     new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
@@ -275,7 +275,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
              * Pushing to an older version of symmetric might result in a batch
              * without the node id
              */
-            list = (List<OutgoingBatch>) sqlTemplate.query(
+            list = (List<OutgoingBatch>) sqlTemplateDirty.query(
                     getSql("selectOutgoingBatchPrefixSql", "findOutgoingBatchByIdOnlySql"),
                     new OutgoingBatchMapper(true), new Object[] { batchId },
                     new int[] { symmetricDialect.getSqlTypeForIds() });
@@ -288,26 +288,26 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public int countOutgoingBatchesInError() {
-        return sqlTemplate.queryForInt(getSql("countOutgoingBatchesErrorsSql"));
+        return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesErrorsSql"));
     }
 
     public int countOutgoingBatchesInError(String channelId) {
-        return sqlTemplate.queryForInt(getSql("countOutgoingBatchesErrorsOnChannelSql"), channelId);
+        return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesErrorsOnChannelSql"), channelId);
     }
 
     @Override
     public int countOutgoingBatchesUnsent() {
-        return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentSql"));
+        return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesUnsentSql"));
     }
 
     @Override
     public int countOutgoingBatchesUnsent(String channelId) {
-        return sqlTemplate.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);
+        return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);
     }
     
     @Override
     public Map<String, Integer> countOutgoingBatchesPendingByChannel(String nodeId) {                
-        List<Row> rows = sqlTemplate.query(getSql("countOutgoingBatchesByChannelSql"), new Object[]{nodeId});
+        List<Row> rows = sqlTemplateDirty.query(getSql("countOutgoingBatchesByChannelSql"), new Object[]{nodeId});
         Map<String, Integer> results = new HashMap<String, Integer>();
         if (rows != null && ! rows.isEmpty()) {            
             for (Row row : rows) {
@@ -333,7 +333,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));
 
-        return sqlTemplate
+        return sqlTemplateDirty
                 .queryForInt(
                         getSql("selectCountBatchesPrefixSql",
                                 buildBatchWhere(nodeIds, channels, statuses, loads)), params);
@@ -360,7 +360,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         String sql = getSql("selectOutgoingBatchPrefixSql", where, startAtBatchIdSql,
                 ascending ? " order by batch_id asc" : " order by batch_id desc");
-        return sqlTemplate.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true),
+        return sqlTemplateDirty.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true),
                 params);
 
     }
@@ -528,7 +528,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     
     public OutgoingBatches getOutgoingBatchErrors(int maxRows) {
         OutgoingBatches batches = new OutgoingBatches();
-        batches.setBatches(sqlTemplate.query(
+        batches.setBatches(sqlTemplateDirty.query(
                 getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchErrorsSql"), maxRows,
                 new OutgoingBatchMapper(true), null, null));
         return batches;
@@ -592,7 +592,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         String sql = getSql("selectOutgoingBatchSummaryByStatusSql").replace(":STATUS_LIST",
                 inList.substring(0, inList.length() - 1));
 
-        return sqlTemplate.query(sql, new OutgoingBatchSummaryMapper(), args);
+        return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(), args);
     }
     
     public List<OutgoingBatchSummary> findOutgoingBatchSummaryByChannel(Status... statuses) {
@@ -606,13 +606,13 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         String sql = getSql("selectOutgoingBatchSummaryByStatusAndChannelSql").replace(":STATUS_LIST",
                 inList.substring(0, inList.length() - 1));
 
-        return sqlTemplate.query(sql, new OutgoingBatchSummaryChannelMapper(), args);
+        return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryChannelMapper(), args);
     }
 
     public Set<Long> getActiveLoads(String sourceNodeId) {
         Set<Long> loads = new HashSet<Long>();
         
-        List<Long> inProcess = sqlTemplate.query(getSql("getActiveLoadsSql"), new ISqlRowMapper<Long>() {
+        List<Long> inProcess = sqlTemplateDirty.query(getSql("getActiveLoadsSql"), new ISqlRowMapper<Long>() {
             @Override
             public Long mapRow(Row rs) {
                 return rs.getLong("load_id");
@@ -624,11 +624,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
     
     public List<LoadSummary> getQueuedLoads(String sourceNodeId) {
-    	return sqlTemplate.query(getSql("getLoadSummaryUnprocessedSql"), new LoadSummaryMapper(), sourceNodeId);
+    	return sqlTemplateDirty.query(getSql("getLoadSummaryUnprocessedSql"), new LoadSummaryMapper(), sourceNodeId);
     }
     
 	public LoadSummary getLoadSummary(long loadId) {
-        return sqlTemplate.queryForObject(getSql("getLoadSummarySql"), new LoadSummaryMapper(), loadId);
+        return sqlTemplateDirty.queryForObject(getSql("getLoadSummarySql"), new LoadSummaryMapper(), loadId);
     }
 
     private class LoadSummaryMapper implements ISqlRowMapper<LoadSummary> {
@@ -655,7 +655,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     
     public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummaries(int loadId) {
         LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper(this.symmetricDialect.getTablePrefix());
-        List<Object> obj = sqlTemplate.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
+        List<Object> obj = sqlTemplateDirty.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
         return mapper.getResults();
     }
     
@@ -815,7 +815,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
     
     public Map<String, Integer> getLoadOverview(long loadId) {
-        return sqlTemplate.queryForMap(getSql("getLoadOverviewSql"), "status", "count", loadId);
+        return sqlTemplateDirty.queryForMap(getSql("getLoadOverviewSql"), "status", "count", loadId);
     }
     
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly) {
@@ -884,7 +884,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public Collection<LoadSummary> getLoadHistory(String sourceNodeId, final String symTablePrefix, final int rowsReturned) {
         final Map<Date, LoadSummary> loads = new TreeMap<Date, LoadSummary>(Collections.reverseOrder());
         
-        sqlTemplate.query(getSql("getLoadHistorySql"), new ISqlRowMapper<LoadSummary>() {
+        sqlTemplateDirty.query(getSql("getLoadHistorySql"), new ISqlRowMapper<LoadSummary>() {
             
             @Override
             public LoadSummary mapRow(Row rs) {

@@ -138,7 +138,7 @@ import org.jumpmind.symmetric.web.WebConstants;
  * @see IDataLoaderService
  */
 public class DataLoaderService extends AbstractService implements IDataLoaderService {
-
+    
     private IIncomingBatchService incomingBatchService;
 
     private IConfigurationService configurationService;
@@ -393,9 +393,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 } else {
                     processInfo.setStatus(ProcessInfo.Status.OK);
                 }
-            } catch (RuntimeException e) {
+            } catch (Exception e) {
                 processInfo.setStatus(ProcessInfo.Status.ERROR);
-                throw e;
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                } else if (e instanceof IOException) {
+                    throw (IOException) e;
+                }
+                throw new RuntimeException(e);
             }
         } else {
             throw new SymmetricException("Could not load data because the node is not registered");
@@ -520,10 +525,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 };
                 processor.process(ctx);
             }
-
         } catch (Throwable ex) {
             error = ex;
-            logAndRethrow(sourceNode, ex);
+            logAndRethrow(ex);
         } finally {
             transport.close();
 
@@ -535,39 +539,27 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return listener.getBatchesProcessed();
     }
 
-    protected void logAndRethrow(Node remoteNode, Throwable ex) throws IOException {
+    protected void logAndRethrow(Throwable ex) throws IOException {
         if (ex instanceof RegistrationRequiredException) {
             throw (RegistrationRequiredException) ex;
         } else if (ex instanceof ConnectException) {
             throw (ConnectException) ex;
         } else if (ex instanceof UnknownHostException) {
-            log.warn("Could not connect to the transport because the host was unknown: '{}'",
-                    ex.getMessage());
             throw (UnknownHostException) ex;
         } else if (ex instanceof RegistrationNotOpenException) {
-            log.warn("Registration attempt failed.  Registration was not open");
+            throw (RegistrationNotOpenException) ex;
         } else if (ex instanceof ConnectionRejectedException) {
             throw (ConnectionRejectedException) ex;
         } else if (ex instanceof ServiceUnavailableException) {
             throw (ServiceUnavailableException) ex;            
         } else if (ex instanceof AuthenticationException) {
-            log.warn("Could not authenticate with node '{}'",
-                    remoteNode != null ? remoteNode.getNodeId() : "?");
             throw (AuthenticationException) ex;
         } else if (ex instanceof SyncDisabledException) {
-            log.warn("Synchronization is disabled on the server node");
             throw (SyncDisabledException) ex;
         } else if (ex instanceof IOException) {
-            if (ex.getMessage() != null && !ex.getMessage().startsWith("http")) {
-                log.error("Failed while reading batch because: {}", ex.getMessage());
-            } else {
-                log.error("Failed while reading batch because: {}", ex.getMessage(), ex);
-            }
             throw (IOException) ex;
-        } else {
-            if (!(ex instanceof ConflictException || ex instanceof SqlException)) {
-                log.error("Failed while parsing batch", ex);
-            }
+        } else if (!(ex instanceof ConflictException) && !(ex instanceof SqlException)) {
+            log.error("Failed while parsing batch", ex);
         }
     }
 
@@ -705,6 +697,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void delete(ConflictNodeGroupLink settings) {
         sqlTemplate.update(getSql("deleteConflictSettingsSql"), settings.getConflictId());
+    }
+
+    public void deleteAllConflicts() {
+        sqlTemplate.update(getSql("deleteAllConflictSettingsSql"));
     }
 
     public void save(ConflictNodeGroupLink setting) {
@@ -918,12 +914,23 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     if (!isError) {
                         try {
                             processInfo.setStatus(ProcessInfo.Status.LOADING);
-                            DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
-                                    batch.getTargetNodeId(), resource), null, listener, "data load from stage") {
+                            
+                            ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, batch.getTargetNodeId(), resource) {
+                                @Override
+                                public Table nextTable() {
+                                    Table table = super.nextTable();
+                                    if (table != null && listener.currentBatch != null) {
+                                        listener.currentBatch.incrementTableCount(table.getNameLowerCase());
+                                    }
+                                    return table;
+                                }                                
+                            };
+                            
+                            DataProcessor processor = new DataProcessor(reader, null, listener, "data load from stage") {
                                 @Override
                                 protected IDataWriter chooseDataWriter(Batch batch) {
-                                    return buildDataWriter(processInfo, sourceNodeId, batch.getChannelId(), batch.getBatchId(),
-                                            ((ManageIncomingBatchListener) listener).getCurrentBatch().isRetry());
+                                    boolean isRetry = ((ManageIncomingBatchListener) listener).getCurrentBatch().isRetry();
+                                    return buildDataWriter(processInfo, sourceNodeId, batch.getChannelId(), batch.getBatchId(), isRetry);
                                 }
                             };
                             processor.process(ctx);
@@ -1103,6 +1110,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         this.currentBatch.setSqlState(se.getSQLState());
                         this.currentBatch.setSqlCode(se.getErrorCode());
                         this.currentBatch.setSqlMessage(se.getMessage());
+                        if (sqlTemplate.isForeignKeyViolation(se)) {
+                            this.currentBatch.setSqlState(ErrorConstants.FK_VIOLATION_STATE);
+                            this.currentBatch.setSqlCode(ErrorConstants.FK_VIOLATION_CODE);
+                        }
                     } else {
                         this.currentBatch.setSqlMessage(ex.getMessage());
                     }

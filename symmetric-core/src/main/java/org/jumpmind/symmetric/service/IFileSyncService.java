@@ -50,6 +50,8 @@ public interface IFileSyncService {
     public void deleteFileTriggerRouter(String triggerId, String routerId);
 
     public void deleteFileTriggerRouter(FileTriggerRouter fileTriggerRouter);
+    
+    public void deleteAllFileTriggerRouters();
 
     public void deleteFileTrigger(FileTrigger fileTrigger);
 
@@ -78,5 +80,7 @@ public interface IFileSyncService {
     public boolean refreshFromDatabase();
     
     public File getControleFile(File file);
+    
+    public Object[] getStagingPathComponents(OutgoingBatch fileSyncBatch);
 
 }

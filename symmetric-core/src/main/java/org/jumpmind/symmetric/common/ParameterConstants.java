@@ -58,6 +58,13 @@ final public class ParameterConstants {
     public final static String START_STAGE_MGMT_JOB = "start.stage.management.job";
     public final static String START_WATCHDOG_JOB = "start.watchdog.job";
     public final static String START_NOTIFICATION_JOB = "start.notification.job";
+    public final static String START_MONITOR_JOB = "start.monitor.job";
+    public final static String START_OFFLINE_PULL_JOB = "start.offline.pull.job";
+    public final static String START_OFFLINE_PUSH_JOB = "start.offline.push.job";
+    public final static String START_REFRESH_CACHE_JOB = "start.refresh.cache.job";
+    public final static String START_FILE_SYNC_TRACKER_JOB = "start.file.sync.tracker.job";
+    public final static String START_FILE_SYNC_PUSH_JOB = "start.file.sync.push.job";
+    public final static String START_FILE_SYNC_PULL_JOB = "start.file.sync.pull.job";    
 
     public final static String PULL_THREAD_COUNT_PER_SERVER = "pull.thread.per.server.count";
     public final static String PULL_MINIMUM_PERIOD_MS = "pull.period.minimum.ms";
@@ -100,6 +107,7 @@ final public class ParameterConstants {
     public final static String AUTO_REGISTER_ENABLED = "auto.registration";
     public final static String AUTO_RELOAD_ENABLED = "auto.reload";
     public final static String AUTO_RELOAD_REVERSE_ENABLED = "auto.reload.reverse";
+    public final static String AUTO_RESOLVE_FOREIGN_KEY_VIOLATION = "auto.resolve.foreign.key.violation";
     public final static String AUTO_INSERT_REG_SVR_IF_NOT_FOUND = "auto.insert.registration.svr.if.not.found";
     public final static String AUTO_SYNC_CONFIGURATION = "auto.sync.configuration";
     public final static String AUTO_SYNC_CONFIGURATION_ON_INCOMING = "auto.sync.configuration.on.incoming";
@@ -211,6 +219,7 @@ final public class ParameterConstants {
     public final static String TRANSPORT_HTTP_BASIC_AUTH_PASSWORD = "http.basic.auth.password";
     public final static String TRANSPORT_TYPE = "transport.type";
     public final static String TRANSPORT_MAX_BYTES_TO_SYNC = "transport.max.bytes.to.sync";
+    public final static String TRANSPORT_MAX_ERROR_MILLIS = "transport.max.error.millis";
 
     public final static String CACHE_TIMEOUT_GROUPLETS_IN_MS = "cache.grouplets.time.ms";
     public final static String CACHE_TIMEOUT_NODE_SECURITY_IN_MS = "cache.node.security.time.ms";
@@ -351,9 +360,8 @@ final public class ParameterConstants {
     public static final String SMTP_PASSWORD = "smtp.password";
     public static final String SMTP_USE_STARTTLS = "smtp.starttls";    
     public static final String SMTP_USE_AUTH = "smtp.auth";
+    public static final String SMTP_ALLOW_UNTRUSTED_CERT = "smtp.allow.untrusted.cert";
 
-    public final static String CHANNEL_THREADING = "channel.threading.enabled";
-    
     public final static String MONITOR_EVENTS_CAPTURE_ENABLED = "monitor.events.capture.enabled";
     
     public final static String HYBRID_PUSH_PULL_ENABLED = "hybrid.push.pull.enabled";

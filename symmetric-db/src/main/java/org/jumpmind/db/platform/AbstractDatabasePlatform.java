@@ -112,6 +112,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     abstract public ISqlTemplate getSqlTemplate();
+    
+    abstract public ISqlTemplate getSqlTemplateDirty();
 
     public DmlStatement createDmlStatement(DmlType dmlType, Table table, String textColumnExpression) {
         

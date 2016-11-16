@@ -45,5 +45,7 @@ public interface IContextService {
     public int delete(String name);
     
     public void save(String name, String value);
+    
+    public void save(ISqlTransaction transaction, String name, String value);
 
 }

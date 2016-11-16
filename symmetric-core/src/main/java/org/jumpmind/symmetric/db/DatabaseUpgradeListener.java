@@ -21,14 +21,18 @@
 package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
+import java.sql.Types;
 
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +49,9 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             Database desiredModel) throws IOException {
         StringBuilder sb = new StringBuilder();
         String monitorTableName = tablePrefix + "_" + TableConstants.SYM_MONITOR;
-        if (currentModel.findTable(monitorTableName) == null && desiredModel.findTable(monitorTableName) != null) {
+        String nodeTableName = tablePrefix + "_" + TableConstants.SYM_NODE;
+        if (currentModel.findTable(nodeTableName) != null && 
+                currentModel.findTable(monitorTableName) == null && desiredModel.findTable(monitorTableName) != null) {
             log.info("Detected upgrade to version 3.8");
             isUpgradeTo38 = true;
         } else {
@@ -56,6 +62,35 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             if (transformTable != null && transformTable.findColumn("update_action") != null) {
                 engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE +
                         " set update_action = 'UPD_ROW' where update_action is null");
+            }
+
+            String dataGapTableName = tablePrefix + "_" + TableConstants.SYM_DATA_GAP;
+            if (currentModel.findTable(dataGapTableName) != null) { 
+                engine.getSqlTemplate().update("delete from " + dataGapTableName);
+            }
+            
+            String nodeCommunicationTable = tablePrefix + "_" + TableConstants.SYM_NODE_COMMUNICATION;
+            if (currentModel.findTable(nodeCommunicationTable) != null) {
+                engine.getSqlTemplate().update("delete from " + tablePrefix + "_" + TableConstants.SYM_NODE_COMMUNICATION);
+            }
+        }
+        
+        if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.FIREBIRD) ||
+                engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.FIREBIRD_DIALECT1)) {
+            checkForDroppedColumns(currentModel, desiredModel);
+        }
+        
+        if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
+            Table triggerTable = desiredModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRIGGER);
+            if (triggerTable != null) {
+                for (Column column : triggerTable.getColumns()) {
+                    if (column.getMappedTypeCode() == Types.LONGVARCHAR) {
+                        column.setJdbcTypeCode(Types.VARCHAR);
+                        column.setMappedType("VARCHAR");
+                        column.setMappedTypeCode(Types.VARCHAR);
+                        column.setSize("255");
+                    }
+                }
             }
         }
         return sb.toString();
@@ -73,6 +108,32 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         return sb.toString();
     }
 
+    protected void checkForDroppedColumns(Database currentModel, Database desiredModel) {
+        for (Table currentTable : currentModel.getTables()) {
+            Table desiredTable = desiredModel.findTable(currentTable.getName());
+            if (desiredTable != null) {
+                for (Column currentColumn : currentTable.getColumns()) {
+                    Column desiredColumn = desiredTable.findColumn(currentColumn.getName());
+                    if (desiredColumn == null) {
+                        dropTriggers(currentModel, currentTable.getName(), currentColumn.getName());
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    protected void dropTriggers(Database currentModel, String tableName, String columnName) {
+        Table table = currentModel.findTable(tableName);
+        if (table != null && table.findColumn(columnName) != null) {
+            TriggerHistory hist = engine.getTriggerRouterService().findTriggerHistory(null, null, tableName);
+            if (hist != null) {
+                log.info("Dropping triggers on " + tableName + " because " + columnName + " needs dropped");
+                engine.getTriggerRouterService().dropTriggers(hist);
+            }
+        }
+    }
+    
     @Override
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;

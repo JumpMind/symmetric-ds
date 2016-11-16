@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -31,17 +32,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class RouterJob extends AbstractJob {
     
     public RouterJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.routing", true, engine.getParameterService().is("start.route.job"),
-                engine, taskScheduler);
+        super("job.routing", engine, taskScheduler);
+    }
+
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.START_ROUTE_JOB);
+    }
+    
+    @Override
+    public String getClusterLockName() {
+        return ClusterConstants.ROUTE;
     }
     
     @Override
     void doJob(boolean force) throws Exception {
         engine.getRouterService().routeData(force);
-    }
-
-    public String getClusterLockName() {
-        return ClusterConstants.ROUTE;
     }
     
 }

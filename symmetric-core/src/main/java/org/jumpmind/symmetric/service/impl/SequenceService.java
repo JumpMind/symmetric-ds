@@ -85,14 +85,14 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public synchronized long nextVal(String name) {
-        if (getSequenceDefinition(name).getCacheSize() > 0) {
+        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && getSequenceDefinition(name).getCacheSize() > 0) {
             return nextValFromCache(null, name);
         }
         return nextValFromDatabase(name);
     }
 
     public synchronized long nextVal(ISqlTransaction transaction, String name) {
-        if (getSequenceDefinition(transaction, name).getCacheSize() > 0) {
+        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && getSequenceDefinition(transaction, name).getCacheSize() > 0) {
             return nextValFromCache(transaction, name);
         }
         return nextValFromDatabase(transaction, name);
@@ -163,7 +163,7 @@ public class SequenceService extends AbstractService implements ISequenceService
         }
 
         CachedRange range = null;
-        if (sequence.getCacheSize() > 0) {
+        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && sequence.getCacheSize() > 0) {
             long endVal = nextVal + (sequence.getIncrementBy() * (sequence.getCacheSize() - 1));
             range = new CachedRange(nextVal, endVal);
             nextVal = endVal;
@@ -209,17 +209,21 @@ public class SequenceService extends AbstractService implements ISequenceService
     }
 
     public synchronized long currVal(ISqlTransaction transaction, String name) {
-        CachedRange range = sequenceCache.get(name);
-        if (range != null) {
-            return range.getCurrentValue();
+        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            CachedRange range = sequenceCache.get(name);
+            if (range != null) {
+                return range.getCurrentValue();
+            }
         }
         return transaction.queryForLong(getSql("getCurrentValueSql"), name);
     }
 
     public synchronized long currVal(final String name) {
-        CachedRange range = sequenceCache.get(name);
-        if (range != null) {
-            return range.getCurrentValue();
+        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            CachedRange range = sequenceCache.get(name);
+            if (range != null) {
+                return range.getCurrentValue();
+            }
         }
 
         return new DoTransaction<Long>() {

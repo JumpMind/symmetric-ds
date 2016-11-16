@@ -23,7 +23,9 @@ package org.jumpmind.symmetric.web;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -61,7 +63,13 @@ public class SymmetricServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    private static final int MAX_NETWORK_ERROR_FOR_LOGGING = 5;
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
+
+    protected Map<String, Integer> rejectionStatusByEngine = new HashMap<String, Integer>();
+    
+    private Map<String, Integer> errorCountByNode = new HashMap<String, Integer>();
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse res)
@@ -72,12 +80,15 @@ public class SymmetricServlet extends HttpServlet {
             boolean nodesBeingCreated = ServletUtils.getSymmetricEngineHolder(getServletContext())
                     .areEnginesStarting();
             if (nodesBeingCreated) {
-                log.info(
+                if (shouldLog(getEngineNameFromUrl(req), 1)) {
+                    log.info("Requests for engine " + getEngineNameFromUrl(req) + " are being rejected because nodes are still initializing");
+                }
+                log.debug(
                         "The client node request is being rejected because the server node does not exist yet.  There are nodes being initialized.  It might be that the node is not ready or that the database is unavailable.  Please be patient.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
                         new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                                 req.getRemoteAddr(), req.getQueryString() });
             } else {
-                log.error(
+                log.warn(
                         "The client node request is being rejected because the server node does not exist.  Please check that the engine.name exists in the url.  It should be of the pattern http://host:port/sync/{engine.name}/{action}.  If it does not, then check the sync.url of this node or the registration.url of the client making the request.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
                         new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                                 req.getRemoteAddr(), req.getQueryString() });
@@ -101,6 +112,7 @@ public class SymmetricServlet extends HttpServlet {
                         }
                     }
                     handler.handle(req, res);
+                    errorCountByNode.remove(req.getParameter(WebConstants.NODE_ID));
                 } catch (Exception e) {
                     logException(req, e,
                             !(e instanceof IOException && StringUtils.isNotBlank(e.getMessage())));
@@ -115,29 +127,38 @@ public class SymmetricServlet extends HttpServlet {
                     }
                 }
             } else {
-                log.error(
+                log.warn(
                         "The request path of the url is not supported.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
                         new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                                 req.getRemoteAddr(), req.getQueryString() });
                 ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST);
             }
         } else if (engine.isStarting()) {
-            log.info(
+            if (shouldLog(engine.getEngineName(), 2)) {
+                log.info("Requests for engine " + engine.getEngineName() + " are being rejected while it is starting");
+            }
+            log.debug(
                     "The client node request is being rejected because the server node is currently starting.  Please be patient.  The request was {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
                     new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                             req.getRemoteAddr(), req.getQueryString() });
             ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);
         } else if (!engine.isStarted() && !engine.isConfigured()) {
-            log.info(
+            if (shouldLog(engine.getEngineName(), 3)) {
+                log.info("Requests for engine " + engine.getEngineName() + " are being rejected because it is not configured properly");
+            }
+            log.debug(
                     "The client node request is being rejected because the server node was not started because it is not configured properly. The request {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
                     new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                             req.getRemoteAddr(), req.getQueryString() });
             ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);
         } else {
+            if (shouldLog(engine.getEngineName(), 4)) {
+                log.info("Requests for engine " + engine.getEngineName() + " are being rejected because it is not started");
+            }
             log.debug(
                     "The client node request is being rejected because the server node is not started. The request {} from the host {} with an ip address of {} will not be processed.  The query string was: {}",
                     new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
-                            req.getRemoteAddr(), req.getQueryString() });            
+                            req.getRemoteAddr(), req.getQueryString() });
             ServletUtils.sendError(res, WebConstants.SC_SERVICE_UNAVAILABLE);            
         }
 
@@ -230,17 +251,39 @@ public class SymmetricServlet extends HttpServlet {
         String hostName = req.getRemoteHost();
         String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod()
                 : "";
-        if (isError) {
-            log.error(
-                    "Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
-                    new Object[] { method, externalId, nodeId, address, hostName,
-                            ServletUtils.normalizeRequestUri(req) });
-            log.error("", ex);
-        } else {
-            log.warn(
-                    "Error while processing {} request for externalId: {}, node: {} at {} ({}).  The message is: {}",
-                    new Object[] { method, externalId, nodeId, address, hostName, ex.getMessage() });
+        
+        Integer errorCount = errorCountByNode.get(nodeId);
+        if (errorCount == null) {
+            errorCount = 1;
         }
+        if (errorCount >= MAX_NETWORK_ERROR_FOR_LOGGING) {
+            if (isError) {
+                log.error("Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
+                        new Object[] { method, externalId, nodeId, address, hostName, ServletUtils.normalizeRequestUri(req) });
+                log.error("", ex);
+            } else {
+                log.warn("Error while processing {} request for externalId: {}, node: {} at {} ({}).  The message is: {}",
+                        new Object[] { method, externalId, nodeId, address, hostName, ex.getMessage() });
+            }
+        } else {
+            if (isError) {
+                log.info("Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
+                        new Object[] { method, externalId, nodeId, address, hostName, ServletUtils.normalizeRequestUri(req) });
+            } else {
+                log.info("Error while processing {} request for externalId: {}, node: {} at {} ({}).  The message is: {}",
+                        new Object[] { method, externalId, nodeId, address, hostName, ex.getMessage() });
+            }            
+        }
+        errorCountByNode.put(nodeId, errorCount + 1);
     }
 
+    protected boolean shouldLog(String engineName, int status) {
+        Integer lastStatus = rejectionStatusByEngine.get(engineName);
+        if (lastStatus == null || lastStatus.intValue() < status) {
+            rejectionStatusByEngine.put(engineName, status);
+            return true;
+        }
+        return false;
+    }
+    
 }

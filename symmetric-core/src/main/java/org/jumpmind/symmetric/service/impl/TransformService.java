@@ -46,6 +46,9 @@ import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.IsBlankTransform;
+import org.jumpmind.symmetric.io.data.transform.IsEmptyTransform;
+import org.jumpmind.symmetric.io.data.transform.IsNullTransform;
 import org.jumpmind.symmetric.io.data.transform.JavaColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.LeftColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.LookupColumnTransform;
@@ -111,6 +114,9 @@ public class TransformService extends AbstractService implements ITransformServi
         addColumnTransform(ColumnsToRowsKeyColumnTransform.NAME, new ColumnsToRowsKeyColumnTransform());
         addColumnTransform(ColumnsToRowsValueColumnTransform.NAME, new ColumnsToRowsValueColumnTransform());
         addColumnTransform(ClarionDateTimeColumnTransform.NAME, new ClarionDateTimeColumnTransform());
+        addColumnTransform(IsEmptyTransform.NAME, new IsEmptyTransform());
+        addColumnTransform(IsNullTransform.NAME, new IsNullTransform());
+        addColumnTransform(IsBlankTransform.NAME, new IsBlankTransform());
         
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -385,6 +391,10 @@ public class TransformService extends AbstractService implements ITransformServi
         }
     }
 
+    public void deleteAllTransformTables() {
+        sqlTemplate.update(getSql("deleteAllTransformTablesSql"));
+    }
+    
     protected void saveTransformColumn(ISqlTransaction transaction, TransformColumn transformColumn) {
         transformColumn.setLastUpdateTime(new Date());
         if (transaction.prepareAndExecute(getSql("updateTransformColumnSql"),

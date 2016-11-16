@@ -33,6 +33,7 @@ public class DerbyJdbcSqlTemplate extends JdbcSqlTemplate {
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
         primaryKeyViolationSqlStates = new String[] {"23505"};        
+        foreignKeyViolationSqlStates = new String[] {"23503"};
     }
     
     @Override

@@ -73,7 +73,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private long maxPeekAheadQueueSize;
     private List<DataGap> dataGaps = new ArrayList<DataGap>();
     private Set<String> transactions = new HashSet<String>();
-    private long lastDataId;
+    private long lastDataId = -1;
     private List<Long> dataIds = new ArrayList<Long>();
 
     public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction)

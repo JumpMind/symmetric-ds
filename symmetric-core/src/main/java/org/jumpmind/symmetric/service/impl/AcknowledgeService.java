@@ -27,6 +27,8 @@ import java.util.List;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ErrorConstants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -102,22 +104,32 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setSqlState(batch.getSqlState());
                 outgoingBatch.setSqlMessage(batch.getSqlMessage());
 
+                boolean isNewError = false;
                 if (!batch.isOk() && batch.getErrorLine() != 0) {
-                    List<Number> ids = sqlTemplate.query(getSql("selectDataIdSql"),
+                    List<Number> ids = sqlTemplateDirty.query(getSql("selectDataIdSql"),
                             new NumberMapper(), outgoingBatch.getBatchId());
                     if (ids.size() >= batch.getErrorLine()) {
-                        outgoingBatch.setFailedDataId(ids.get((int) batch.getErrorLine() - 1)
-                                .longValue());
+                        long failedDataId = ids.get((int) batch.getErrorLine() - 1).longValue();
+                        if (outgoingBatch.getFailedDataId() == 0 || outgoingBatch.getFailedDataId() != failedDataId) {
+                            isNewError = true;
+                        }
+                        outgoingBatch.setFailedDataId(failedDataId);
                     }
                 }
 
                 if (status == Status.ER) {
-                    log.error(
-                            "The outgoing batch {} failed: {}",
-                            outgoingBatch.getNodeBatchId(), batch.getSqlMessage() != null ? ". " + batch.getSqlMessage() : "");
+                    log.error("The outgoing batch {} failed: {}{}", outgoingBatch.getNodeBatchId(),
+                            (batch.getSqlCode() != 0 ? "[" + batch.getSqlState() + "," + batch.getSqlCode() + "] " : ""), batch.getSqlMessage());
                     RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
                     if (routerStats != null) {
                         log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
+                    }
+                    if (isNewError && outgoingBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE
+                            && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION)) {
+                        Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
+                        if (channel != null && !channel.isReloadFlag()) {
+                            engine.getDataService().reloadMissingForeignKeyRows(outgoingBatch.getNodeId(), outgoingBatch.getFailedDataId());
+                        }
                     }
                 } else if (status == Status.RS) {
                     log.info("The outgoing batch {} received resend request", outgoingBatch.getNodeBatchId());

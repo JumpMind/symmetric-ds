@@ -20,6 +20,8 @@
  */
 package org.jumpmind.db.platform.informix;
 
+import java.sql.SQLException;
+
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -33,8 +35,16 @@ public class InformixJdbcSqlTemplate extends JdbcSqlTemplate {
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);        
         primaryKeyViolationCodes = new int[] {-268};
+        foreignKeyViolationCodes = new int[] {-691};
     }
-    
+
+    @Override
+    public boolean isUniqueKeyViolation(Throwable ex) {
+        SQLException sqlEx = findSQLException(ex);
+        return sqlEx != null && sqlEx.getMessage() != null && (sqlEx.getMessage().contains("duplicate value") ||
+                sqlEx.getErrorCode() == -268);
+    }    
+
     @Override
     public boolean allowsNullForIdentityColumn() {
         return false;

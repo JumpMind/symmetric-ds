@@ -280,6 +280,12 @@ public class GroupletService extends AbstractService implements IGroupletService
                 new int[] { Types.VARCHAR });
 
     }
+    
+    public void deleteAllGrouplets() {        
+        sqlTemplate.update(getSql("deleteAllGroupletLinksSql"));
+        sqlTemplate.update(getSql("deleteAllTriggerRouterGroupletsSql"));
+        sqlTemplate.update(getSql("deleteAllGroupletsSql"));
+    }
 
     public void saveGroupletLink(Grouplet grouplet, GroupletLink link) {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();

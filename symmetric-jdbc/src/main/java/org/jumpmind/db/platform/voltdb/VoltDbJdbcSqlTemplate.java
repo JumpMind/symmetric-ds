@@ -20,10 +20,7 @@
  */
 package org.jumpmind.db.platform.voltdb;
 
-import static org.jumpmind.db.model.ColumnTypes.*;
-
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,14 +37,13 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
-import org.springframework.jdbc.core.SqlTypeValue;
 
 public class VoltDbJdbcSqlTemplate extends JdbcSqlTemplate {
 
     public VoltDbJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, SymmetricLobHandler lobHandler,
             DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        settings.setResultSetType(java.sql.ResultSet.TYPE_SCROLL_INSENSITIVE);
+        settings.setResultSetType(ResultSet.TYPE_SCROLL_INSENSITIVE);
         settings.setOverrideIsolationLevel(Connection.TRANSACTION_SERIALIZABLE);
     }
     
@@ -137,18 +133,6 @@ public class VoltDbJdbcSqlTemplate extends JdbcSqlTemplate {
         }
         return key;
     }
-    
-
-//        setBigDecimal(parameterIndex, (BigDecimal)x);
-//        break;
-//    case Types.TIMESTAMP:
-//        setTimestamp(parameterIndex, (Timestamp)x);
-//        break;
-//    case Types.VARBINARY:
-//    case Types.VARCHAR:
-//    case Types.NVARCHAR:
-//        setString(parameterIndex, (String)x);
-//        break;
 
 }
  

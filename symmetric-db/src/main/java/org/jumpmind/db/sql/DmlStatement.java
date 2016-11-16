@@ -50,7 +50,7 @@ public class DmlStatement {
     protected static final Logger log = LoggerFactory.getLogger(DmlStatement.class);
 
     public enum DmlType {
-        INSERT, UPDATE, DELETE, UPSERT, COUNT, FROM, SELECT, SELECT_ALL, UNKNOWN
+        INSERT, UPDATE, DELETE, UPSERT, COUNT, FROM, WHERE, SELECT, SELECT_ALL, UNKNOWN
     };
 
     protected DmlType dmlType;
@@ -135,6 +135,9 @@ public class DmlStatement {
                     tableName, quote, databaseInfo.getCatalogSeparator(), databaseInfo.getSchemaSeparator()), keysColumns);
         } else if (type == DmlType.FROM) {
             this.sql = buildFromSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
+                    tableName, quote, databaseInfo.getCatalogSeparator(), databaseInfo.getSchemaSeparator()), keysColumns);
+        } else if (type == DmlType.WHERE) {
+            this.sql = buildWhereSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
                     tableName, quote, databaseInfo.getCatalogSeparator(), databaseInfo.getSchemaSeparator()), keysColumns);
         } else if (type == DmlType.SELECT) {
             this.sql = buildSelectSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
@@ -229,6 +232,12 @@ public class DmlStatement {
 
     protected String buildFromSql(String tableName, Column[] keyColumns) {
         StringBuilder sql = new StringBuilder(" from ").append(tableName).append(" where ");
+        appendColumnsEquals(sql, keyColumns, nullKeyValues, " and ");
+        return sql.toString();
+    }
+
+    protected String buildWhereSql(String tableName, Column[] keyColumns) {
+        StringBuilder sql = new StringBuilder("where ");
         appendColumnsEquals(sql, keyColumns, nullKeyValues, " and ");
         return sql.toString();
     }

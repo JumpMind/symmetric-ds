@@ -57,6 +57,8 @@ public interface IDataService {
 
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect);
 
+    public void reloadMissingForeignKeyRows(String nodeId, long dataId);
+
     /**
      * Sends a SQL command to the remote node for execution by creating a SQL event that is synced like other data
      * 

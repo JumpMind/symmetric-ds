@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -67,6 +68,11 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected OracleJdbcSqlTemplate createSqlTemplate() {
         return new OracleJdbcSqlTemplate(dataSource, settings, new OracleLobHandler(), getDatabaseInfo());
+    }
+
+    @Override
+    protected ISqlTemplate createSqlTemplateDirty() {
+        return sqlTemplate;
     }
 
     public String getName() {

@@ -21,22 +21,29 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class InitialLoadExtractorJob extends AbstractJob {
 
     protected InitialLoadExtractorJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.initial.load.extract", true, engine.getParameterService().is(
-                "start.initial.load.extract.job", true), engine, taskScheduler);
+        super("job.initial.load.extract", engine, taskScheduler);
     }
 
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.INITIAL_LOAD_EXTRACT_JOB_START, true);
+    }
+    
+    @Override
     public String getClusterLockName() {
         return ClusterConstants.INITIAL_LOAD_EXTRACT;
     }
 
     @Override
     void doJob(boolean force) throws Exception {
+        engine.getFileSyncExtractorService().queueWork(force);
         engine.getDataExtractorService().queueWork(force);
     }
 

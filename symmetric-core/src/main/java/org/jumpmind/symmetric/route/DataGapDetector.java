@@ -268,5 +268,8 @@ public class DataGapDetector {
     
     public void setFullGapAnalysis(boolean isFullGapAnalysis) {
     }
+    
+    public void setFullGapAnalysis(ISqlTransaction sqlTransaction, boolean b) {
+    }    
 
 }

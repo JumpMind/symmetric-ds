@@ -20,11 +20,10 @@
  */
 package org.jumpmind.symmetric.io;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.DmlStatement;
@@ -39,20 +38,19 @@ public class DbCompareDiffWriter {
     
     final static Logger log = LoggerFactory.getLogger(DbCompareDiffWriter.class);
     
-    public DbCompareDiffWriter(ISymmetricEngine targetEngine, DbCompareTables tables, String fileName) {
+    public DbCompareDiffWriter(ISymmetricEngine targetEngine, DbCompareTables tables, OutputStream stream) {
         super();
         this.targetEngine = targetEngine;
         this.tables = tables;
-        this.fileName = getFormattedFileName(fileName);
+        this.stream = stream;
     }
 
     private ISymmetricEngine targetEngine;
     private DbCompareTables tables;
     private String fileName;
-    private FileOutputStream stream;
+    private OutputStream stream;
     
     public void writeDelete(DbCompareRow targetCompareRow) {
-        stream = initStreamIfNeeded(stream, fileName);
         if (stream == null) {
             return;
         }
@@ -77,7 +75,6 @@ public class DbCompareDiffWriter {
     }
 
     public void writeInsert(DbCompareRow sourceCompareRow) { 
-        stream = initStreamIfNeeded(stream, fileName);
         if (stream == null) {
             return;
         }
@@ -107,7 +104,6 @@ public class DbCompareDiffWriter {
     }
 
     public void writeUpdate(DbCompareRow targetCompareRow, Map<Column, String> deltas) { 
-        stream = initStreamIfNeeded(stream, fileName);
         if (stream == null) {
             return;
         }
@@ -154,36 +150,4 @@ public class DbCompareDiffWriter {
             throw new RuntimeException("failed to write to stream '" + line + "'", ex);
         }
     }
-    
-    protected String getFormattedFileName(String intputFileName) {
-        if (!StringUtils.isEmpty(intputFileName)) {
-            // allow file per table.
-            String fileNameFormatted = intputFileName.replace("%t", "%s");
-            fileNameFormatted = String.format(fileNameFormatted, tables.getSourceTable().getName());   
-            fileNameFormatted = fileNameFormatted.replaceAll("\"", "").replaceAll("\\]", "").replaceAll("\\[", "");
-            return fileNameFormatted;
-        } else {
-            return null;
-        }
-    }    
-    
-    protected FileOutputStream initStreamIfNeeded(FileOutputStream diffStream, String fileName) {
-        if (diffStream != null) {
-            return diffStream;
-        } else if (fileName == null) {
-            return null;
-        } else {
-            if (fileName == null) {
-                return null;
-            }
-            log.info("Writing diffs to {}", fileName);
-            try {                
-                return new FileOutputStream(fileName);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to open stream to file '" + fileName + "'", e);
-            }
-        }
-    }    
-
-
 }

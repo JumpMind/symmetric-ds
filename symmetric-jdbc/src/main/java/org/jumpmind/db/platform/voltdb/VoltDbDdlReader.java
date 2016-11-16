@@ -22,18 +22,14 @@ package org.jumpmind.db.platform.voltdb;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
-import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.platform.IDdlReader;
 
 public class VoltDbDdlReader extends AbstractJdbcDdlReader {
     
@@ -77,74 +73,13 @@ public class VoltDbDdlReader extends AbstractJdbcDdlReader {
         return table;
     }
 
-    /**
-     * @param table
-     */
     protected void fixIndexKeyOrder(Table table) {
-        // VoltDB meta-data appears to always 
-        
     }
 
-    /**
-     * @param table
-     */
     protected void disableAutoIncrement(Table table) {
         for (Column column : table.getColumns()) {
             column.setAutoIncrement(false);
         } 
     }
-
-//    @Override
-//    public Database readTables(String catalog, String schema, String[] tableTypes) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public Table readTable(String catalog, String schema, String tableName) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public List<String> getTableTypes() {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    /* (non-Javadoc)
-//     * @see org.jumpmind.db.platform.IDdlReader#getCatalogNames()
-//     */
-//    @Override
-//    public List<String> getCatalogNames() {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    /* (non-Javadoc)
-//     * @see org.jumpmind.db.platform.IDdlReader#getSchemaNames(java.lang.String)
-//     */
-//    @Override
-//    public List<String> getSchemaNames(String catalog) {
-//        return null;
-//    }
-//
-//    /* (non-Javadoc)
-//     * @see org.jumpmind.db.platform.IDdlReader#getTableNames(java.lang.String, java.lang.String, java.lang.String[])
-//     */
-//    @Override
-//    public List<String> getTableNames(String catalog, String schema, String[] tableTypes) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    /* (non-Javadoc)
-//     * @see org.jumpmind.db.platform.IDdlReader#getColumnNames(java.lang.String, java.lang.String, java.lang.String)
-//     */
-//    @Override
-//    public List<String> getColumnNames(String catalog, String schema, String tableName) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
 
 }

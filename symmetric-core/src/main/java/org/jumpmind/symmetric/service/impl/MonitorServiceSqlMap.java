@@ -54,20 +54,30 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
         // Monitor Events
         
         putSql("selectMonitorEventSql",
-                "select monitor_id, node_id, event_time, type, value, threshold, severity_level, host_name, is_notified " +
+                "select monitor_id, node_id, event_time, type, event_value, event_count, threshold, severity_level, host_name, " +
+                "is_resolved, is_notified, last_update_time " +
                 "from $(monitor_event) ");
 
-        putSql("whereMonitorEventFilteredSql",
-                "where (type = ? or ? is null) and severity_level >= ? and (node_id = ? or ? is null) order by event_time desc");
+        putSql("whereMonitorEventNotResolvedSql", "where node_id = ? and is_resolved = 0");
+
+        putSql("whereMonitorEventFilteredSql", "where severity_level >= ?");
 
         putSql("whereMonitorEventForNotificationBySeveritySql",
                 "where is_notified = 0 and severity_level >= ?");
 
         putSql("insertMonitorEventSql",
                 "insert into $(monitor_event) " +
-                "(monitor_id, node_id, event_time, host_name, type, value, threshold, severity_level, is_notified) " + 
-                "values (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        
+                "(monitor_id, node_id, event_time, host_name, type, event_value, event_count, threshold, severity_level, " +
+                "is_resolved, is_notified, last_update_time) " + 
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+        putSql("updateMonitorEventSql",
+                "update $(monitor_event) set host_name = ?, type = ?, event_value = ?, event_count = ?, threshold = ?, severity_level = ?, " +
+                "is_resolved = 0, last_update_time = ? where monitor_id = ? and node_id = ? and event_time = ?");
+
+        putSql("updateMonitorEventResolvedSql",
+                "update $(monitor_event) set is_resolved = 1, last_update_time = ? where monitor_id = ? and node_id = ? and event_time = ?");
+
         putSql("updateMonitorEventNotifiedSql",
                 "update $(monitor_event) set is_notified = 1 where monitor_id = ? and node_id = ? and event_time = ?");
 

@@ -50,6 +50,7 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
         super(dataSource, settings, lobHandler, databaseInfo);
         this.nativeJdbcExtractor = nativeJdbcExtractor;
         primaryKeyViolationCodes = new int[] {423,511,515,530,547,2601,2615,2714};
+        foreignKeyViolationCodes = new int[] {546};
     }
 
     @Override

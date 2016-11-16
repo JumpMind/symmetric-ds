@@ -71,7 +71,9 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
         } else {
             databaseInfo.setDelimiterToken("");
             databaseInfo.setDelimitedIdentifiersSupported(false);
+            delimitedIdentifierModeOn = false;
         }
+        
     }
 
     @Override

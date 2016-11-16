@@ -27,5 +27,8 @@ final public class ErrorConstants {
 
     public static final String CONFLICT_STATE = "CONFLICT";
     public static final int CONFLICT_CODE = -999;
+    
+    public static final String FK_VIOLATION_STATE = "FK";
+    public static final int FK_VIOLATION_CODE = -900;
 
 }

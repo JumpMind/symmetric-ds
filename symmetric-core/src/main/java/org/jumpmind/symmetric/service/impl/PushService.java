@@ -155,23 +155,21 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                 node);
                     }
                     reloadBatchesProcessed = status.getReloadBatchesProcessed();
-                    log.debug("Push requested for {} {}", node, 
-                    		" channel " + nodeCommunication.getQueue());
+                    log.debug("Push requested for node {} channel {}", node, nodeCommunication.getQueue());
                     pushToNode(node, status);
                     if (!status.failed() && status.getBatchesProcessed() > 0 
                             && status.getBatchesProcessed() != lastBatchCount) {
                         log.info(
-                                "Pushed data to {}. {} data and {} batches were processed",
+                                "Pushed data to node {}. {} data and {} batches were processed",
                                 new Object[] { node, status.getDataProcessed(),
                                         status.getBatchesProcessed()});
                     } else if (status.failed()) {
-                        log.info(
+                        log.debug(
                                 "There was a failure while pushing data to {}. {} data and {} batches were processed",
                                 new Object[] { node, status.getDataProcessed(),
                                         status.getBatchesProcessed()});                        
                     }
-                    log.debug("Push completed for {} {}", node, 
-                    		" channel " + nodeCommunication.getQueue());
+                    log.debug("Push completed for {} channel {}", node, nodeCommunication.getQueue());
                     lastBatchCount = status.getBatchesProcessed();
                 } while (status.getReloadBatchesProcessed() > reloadBatchesProcessed && !status.failed());
             } finally {
@@ -207,8 +205,9 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             }
             
             if (processInfo.getStatus() != Status.ERROR) {
-                processInfo.setStatus(Status.OK);
+                processInfo.setStatus(Status.OK);            
             }
+            fireOnline(remote, status);
         } catch (Exception ex) {
             processInfo.setStatus(Status.ERROR);
             fireOffline(ex, remote, status);

@@ -202,6 +202,7 @@ public class TableConstants {
         List<String> tables = new ArrayList<String>(2);
         tables.add(getTableName(tablePrefix, SYM_NODE_IDENTITY));
         tables.add(getTableName(tablePrefix, SYM_NODE_CHANNEL_CTL));
+        tables.add(getTableName(tablePrefix, SYM_CONSOLE_EVENT));
         return tables;
     }
 

@@ -1,0 +1,125 @@
+A load is the process of seeding tables at a target node with data from a source node.  Instead of 
+capturing data, data is selected from the source table using a SQL statement and then it is streamed to the 
+client.
+
+ifndef::pro[]
+Initial loads, reverse initial loads, and table reloads can utilize the <<TABLE_RELOAD_REQUEST>> to request a load with a variety of options.  
+
+===== Initial Load (all tables)
+Insert a row into <<TABLE_RELOAD_REQUEST>> containing the value 'ALL' for both the trigger_id and router_id.
+[source,sql]
+----
+insert into SYM_TABLE_RELOAD_REQUEST (target_node_id, source_node_id, trigger_id, router_id, create_time, last_update_time) 
+     values ('store-001', 'corp-000', 'ALL', 'ALL', current_timestamp, current_timestamp); 
+----
+
+===== Partial Load
+Insert a row into <<TABLE_RELOAD_REQUEST>> for each trigger router combination to load.
+[source,sql]
+----
+insert into SYM_TABLE_RELOAD_REQUEST (target_node_id, source_node_id, trigger_id, router_id, create_time, last_update_time) 
+     values ('store-001', 'corp-000', 'item_selling_price', 'corp_2_store', current_timestamp, current_timestamp); 
+
+insert into SYM_TABLE_RELOAD_REQUEST (target_node_id, source_node_id, trigger_id, router_id, create_time, last_update_time) 
+     values ('store-001', 'corp-000', 'item', 'corp_2_store', current_timestamp, current_timestamp); 
+----
+
+===== Reverse Initial Load  (all tables)
+Insert a row into <<TABLE_RELOAD_REQUEST>> with the proper source and target nodes for the direction of the load.
+[source,sql]
+----
+insert into SYM_TABLE_RELOAD_REQUEST (target_node_id, source_node_id, trigger_id, router_id, create_time, last_update_time) 
+     values ('corp-000', 'store-001', 'ALL', 'ALL', current_timestamp, current_timestamp); 
+----
+
+===== Load data and create target tables
+Insert a row into <<TABLE_RELOAD_REQUEST>> and set the create_table to 1 to send a table creation prior to the load running.
+[source,sql]
+----
+insert into SYM_TABLE_RELOAD_REQUEST (target_node_id, source_node_id, trigger_id, router_id, create_time, create_table, last_update_time) 
+     values ('corp-000', 'store-001', 'ALL', 'ALL', current_timestamp, 1, current_timestamp); 
+----
+
+===== Load data and delete from target tables
+Insert a row into <<TABLE_RELOAD_REQUEST>> and set the delete_first to 1 to delete all data in the target table prior to the load running.
+[source,sql]
+----
+insert into SYM_TABLE_RELOAD_REQUEST (target_node_id, source_node_id, trigger_id, router_id, create_time, delete_first, last_update_time) 
+     values ('corp-000', 'store-001', 'ALL', 'ALL', current_timestamp, 1, current_timestamp); 
+----
+
+===== Load data for a specific table with partial data
+Insert a row into <<TABLE_RELOAD_REQUEST>> and set the reload_select to the where clause to run while extracting data.  There are 3 variables
+available for replacement.
+
+* $(groupId)
+* $(nodeId)
+* $(externalId)
+
+[source,sql]
+----
+insert into SYM_TABLE_RELOAD_REQUEST (target_node_id, source_node_id, trigger_id, router_id, create_time, reload_select, last_update_time) 
+     values ('store-001', 'corp-000', 'item_selling_price', 'corp_2_store', current_timestamp, 'store_id=$(externalId)', current_timestamp); 
+
+----
+
+===== Load table with custom SQL run before the load executes.
+Insert a row into <<TABLE_RELOAD_REQUEST>> and set the before_custom_sql to run before the load runs. The %s variable is available as replacement
+for the table name.
+
+[source,sql]
+----
+insert into SYM_TABLE_RELOAD_REQUEST (target_node_id, source_node_id, trigger_id, router_id, create_time, before_custom_sql, last_update_time) 
+     values ('store-001', 'corp-000', 'ALL', 'ALL', current_timestamp, 'truncate table %s', current_timestamp); 
+
+----
+endif::pro[]
+
+ifdef::pro[]
+As of 3.8 loading data has been consolidated into a single wizard.  
+Request a load by clicking the *Load Data* button on the manage nodes screen.
+
+image::manage/manage-load-data.png[]
+
+This will open a new window that will walk through the steps screen by screen to build the load needed.  If there were no selected rows on the manage nodes screen when this button was clicked the first screen will prompt for a source and target set of nodes.  Multiple selections can be made here as long as all source nodes or all target nodes belong to the same group. 
+
+image::manage/manage-load-data-source-target.png[]
+
+The next screen allows for a selection of all tables configured (full load) or a subset of tables configured (partial load).   Note, this will be the first screen provided if rows were already selected on the manage nodes screen when the load data button was selected.
+
+The second option on this screen is to determine what "before action" should occur before the load is run.  
+
+.Before Load Options
+|===
+
+|Nothing just send the data|This assumes the tables are present and not need cleared out before the load can be run.  If data already exists it will fall back to an update if the insert fails.  This allows the load to be run repeatedly as needed.
+
+|Create tables|This will send create table statements to the target to match the source before loading any data.  Use this option when the target database does not already contain the tables used on the source.
+
+|Delete all data|This will delete all data from the target table prior to loading data.  This can be useful to accommodate data that is in the target but no longer in the source.  By default just sending the data will only insert/update with the rows from the source so any old data will remain in place on the target unless this delete action is taken prior to loading.
+
+|Truncate tables|This will perform a truncate on all target tables prior to loading.
+
+|Run custom SQL|Allows a custom SQL statement to be executed on each table prior to loading.  The use of %s will server as a variable to be replaced at runtime with the table name.  Example: truncate table %s
+
+|===
+
+image::manage/manage-load-data-full-partial-before.png[]
+
+Partial loads will then see a table selection screen.  Full loads will immediately be taken to the summary screen.  The table selection screen allows individual tables to be selected as part of the load.   There is also the ability to provide a where clause to be used to extract the data for a load.  This allows control over what data should be loaded for a given table.   
+
+.Where clause variable replacements
+* $(groupId)
+* $(nodeId)
+* $(externalId)
+
+image::manage/manage-load-data-tables.png[]
+
+Finally a summary screen is presented to review all the settings for the load prior to adding it to the request queue.  Loads are checked by the routing process so once the load has been saved it will be picked up and begin processing on the next run of the routing job.
+
+image::manage/manage-load-data-summary.png[]
+
+A load's progress can be monitored on the <<Outgoing Loads>> screen or the <<Outgoing Batches>> screen. 
+
+endif::pro[]
+

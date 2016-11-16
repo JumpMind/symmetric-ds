@@ -250,6 +250,8 @@ public interface ISymmetricEngine {
     
     public IDataExtractorService getDataExtractorService();
     
+    public IDataExtractorService getFileSyncExtractorService();
+    
     public IDataLoaderService getDataLoaderService();
     
     public IIncomingBatchService getIncomingBatchService();   

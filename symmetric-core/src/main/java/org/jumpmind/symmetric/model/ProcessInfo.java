@@ -210,10 +210,14 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         return currentLoadId;
     }
 
-    public String getCurrentChannelId() {
+    public String getCurrentChannelThread() {
     	if (getKey().getChannelId() != null && getKey().getChannelId().length() > 0) {
     		return getKey().getChannelId();
     	}
+        return "";
+    }
+    
+    public String getCurrentChannelId() {
         return currentChannelId;
     }
 

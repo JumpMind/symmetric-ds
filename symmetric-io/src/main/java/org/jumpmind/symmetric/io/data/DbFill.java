@@ -366,7 +366,9 @@ public class DbFill {
                     List<Table> groupTables = new ArrayList<Table>();
                     if (cascading && dmlType == INSERT) {
                         groupTables.addAll(foreignTables.get(tableToProcess));
-                        System.out.println("Cascade insert " + tableToProcess.getName() + ": " + toStringTables(groupTables));
+                        if (groupTables.size() > 0) {
+                            log.info("Cascade insert " + tableToProcess.getName() + ": " + toStringTables(groupTables));
+                        }
                     } else if (cascadingSelect && dmlType == INSERT) {
                         List<Table> foreignList = foreignTables.get(tableToProcess);
                         for (Table foreignTable : foreignList) {

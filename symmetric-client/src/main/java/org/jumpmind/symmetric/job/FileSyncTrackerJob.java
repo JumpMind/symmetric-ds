@@ -28,11 +28,16 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class FileSyncTrackerJob extends AbstractJob {
 
     protected FileSyncTrackerJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.file.sync.tracker", true, engine.getParameterService().is(
-                ParameterConstants.FILE_SYNC_ENABLE)
-                && engine.getParameterService().is("start.file.sync.tracker.job", true), engine, taskScheduler);
+        super("job.file.sync.tracker", engine, taskScheduler);
     }
 
+    @Override
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE)
+                && engine.getParameterService().is(ParameterConstants.START_FILE_SYNC_TRACKER_JOB, true);
+    }
+    
+    @Override
     public String getClusterLockName() {
         return ClusterConstants.FILE_SYNC_TRACKER;
     }
@@ -43,5 +48,4 @@ public class FileSyncTrackerJob extends AbstractJob {
             engine.getFileSyncService().trackChanges(force);
         }
     }
-
 }

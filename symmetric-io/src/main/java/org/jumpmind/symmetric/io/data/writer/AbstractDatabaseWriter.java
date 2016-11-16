@@ -137,11 +137,15 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
             }            
         } else {
             context.put(CONFLICT_ERROR, null);
-            if (data.requiresTable()
-                    && (targetTable == null && data.getDataEventType() != DataEventType.SQL)) {
-                // if we cross batches and the table isn't specified, then
-                // use the last table we used
-                start(context.getLastParsedTable());
+            if (data.requiresTable() && sourceTable != null
+                    && targetTable == null && data.getDataEventType() != DataEventType.SQL ) {
+                Table lastTable = context.getLastParsedTable();
+                if (lastTable != null
+                        && lastTable.getFullyQualifiedTableNameLowerCase().equals(sourceTable.getFullyQualifiedTableNameLowerCase())) {
+                    // if we cross batches and the table isn't specified, then
+                    // use the last table we used
+                    start(lastTable);
+                }
             }
             if (targetTable != null || !data.requiresTable()
                     || (targetTable == null && data.getDataEventType() == DataEventType.SQL)) {

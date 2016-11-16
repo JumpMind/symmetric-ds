@@ -54,15 +54,27 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     
     protected int rsColumnCount;
 
+    protected IConnectionHandler connectionHandler;
+    
     public JdbcSqlReadCursor() {
+    }
+    
+    public JdbcSqlReadCursor(JdbcSqlTemplate sqlTemplate, ISqlRowMapper<T> mapper, String sql,
+            Object[] values, int[] types) {
+        this(sqlTemplate, mapper, sql, values, types, null);
     }
 
     public JdbcSqlReadCursor(JdbcSqlTemplate sqlTemplate, ISqlRowMapper<T> mapper, String sql,
-            Object[] values, int[] types) {
+            Object[] values, int[] types, IConnectionHandler connectionHandler) {
         this.sqlTemplate = sqlTemplate;
         this.mapper = mapper;
+        this.connectionHandler = connectionHandler;
+        
         try {
             c = sqlTemplate.getDataSource().getConnection();
+            if (this.connectionHandler != null) {
+                this.connectionHandler.before(c);
+            }
         	originalIsolationLevel = c.getTransactionIsolation();            
             autoCommitFlag = c.getAutoCommit();
             if (c.getTransactionIsolation() != sqlTemplate.getIsolationLevel()) {
@@ -76,7 +88,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                 if (values != null) {
                     PreparedStatement pstmt = c.prepareStatement(sql,
                             sqlTemplate.getSettings().getResultSetType(),
-                            java.sql.ResultSet.CONCUR_READ_ONLY);
+                            ResultSet.CONCUR_READ_ONLY);
                     sqlTemplate.setValues(pstmt, values, types, sqlTemplate.getLobHandler()
                             .getDefaultHandler());
                     st = pstmt;                    
@@ -85,8 +97,8 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                     rs = pstmt.executeQuery();
 
                 } else {
-                    st = c.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
-                            java.sql.ResultSet.CONCUR_READ_ONLY);
+                    st = c.createStatement(sqlTemplate.getSettings().getResultSetType(),
+                            ResultSet.CONCUR_READ_ONLY);
                     st.setQueryTimeout(sqlTemplate.getSettings().getQueryTimeout());
                     st.setFetchSize(sqlTemplate.getSettings().getFetchSize());
                     rs = st.executeQuery(sql);
@@ -144,6 +156,9 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     }
 
 	public void close() {
+	    if (this.connectionHandler != null) {
+	        this.connectionHandler.after(c);
+	    }
 		JdbcSqlTemplate.close(rs);
 		JdbcSqlTemplate.close(st);
 		JdbcSqlTemplate.close(autoCommitFlag, originalIsolationLevel, c);

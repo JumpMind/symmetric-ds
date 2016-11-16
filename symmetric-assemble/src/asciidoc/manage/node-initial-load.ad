@@ -1,31 +1,16 @@
-An initial load is the process of seeding tables at a target node with data from a source node.  Instead of 
-capturing data, data is selected from the source table using a SQL statement and then it is streamed to the 
-client.
+Loading data for 3.8 and above has been modified, see <<Load Data>>.
 
-ifdef::pro[]
-An initial load is requested by click the *Initial Load* button and selecting either *Send Load To* or *Receive Load From*.
-
-_Send Load To_ will queue up a load to be sent to the node that is selected from the node that is currently selected in the
-web interface.
-
-_Receive Load From_ will queue up a request for a load from the node that is selected to the current node.   
-
-image::manage/manage-nodes-send-load-to.png[]
-
-endif::pro[]
+ifndef::pro[]
 
 When a load is requested it will either set the `initial_load_enabled` or the `reverse_initial_load_enabled` flag on the 
 appropriate <<NODE_SECURITY>> row.
+
 
 When the <<Route Job>> runs next, it will create batches that represent the initial load.  Batches will be created on the reload 
 channel for each table that is defined by <<Table Triggers>> and linked by <<Table Routing>> in the direction that the load 
 was requested.  The default reload channel is the _"reload"_ channel.  At the
 same time reload batches are inserted, all previously pending batches
 for the node are marked as successfully sent.
-
-ifdef::pro[]
-A load's progress can be monitored on the <<Outgoing Loads>> screen or the <<Outgoing Batches>> screen. 
-endif::pro[]
 
 Each table defined by <<Table Triggers>> and linked by <<Table Routing>> is represented by a reload <<OUTGOING_BATCH>>.  The batches 
 are inserted in the defined order.  If the `initial_load_order` is the same then SymmetricDS tries to determine the order the 
@@ -86,19 +71,13 @@ IMPORTANT: When providing an
             `initial_load_select`
             be sure to test out the criteria against production data in a query
             browser. Do an explain plan to make sure you are properly using indexes.
+endif::pro[]
 
 ===== Initial Load Extract In Background
             
-By default, all data for a given table will be initial loaded in a single batch, regardless
-of the max batch size parameter on the reload channel.  That is, for a table with one million
-rows, all rows for that table will be initial loaded and sent to the destination node in a
-single batch. For large tables, this can result in a batch that can take a long time to
-extract and load.
-
-Initial loads for a table can be broken into multiple batches by setting
-`initial.load.use.extract.job.enabled` to true.  This parameter allows
-SymmetricDS to pre-extract initial load batches versus having them extracted when
-the batch is pulled or pushed.  When using this parameter, there are two ways to tell
+By default, initial loads for a table are broken into multiple batches.   SymmetricDS will pre-extract 
+initial load batches versus having them extracted when
+the batch is pulled or pushed.  There are two ways to tell
 SymmetricDS the number of batches to create for a given table.  The first is to specify
 a positive integer in the initial_load_batch_count column on
 <<Table Routing>>.  This
@@ -109,17 +88,24 @@ When 0 is specified for initial_load_batch_count, SymmetricDS will execute a cou
 the extract process and pre-create N batches based on the total number of records found
 in the table divided by the `max_batch_size` on the reload channel.
 
+By setting the `initial.load.use.extract.job.enabled` to false all data for a given table will be initial loaded 
+in a single batch, regardless of the max batch size parameter on the reload channel.  That is, for a table with one million
+rows, all rows for that table will be initial loaded and sent to the destination node in a
+single batch. For large tables, this can result in a batch that can take a long time to
+extract and load.
+
+ifndef::pro[]
 ===== Reverse Initial Loads
 
 Normal initial loads load data from the parent node to a client node. Occasionally, there may be need to do a one-time 
 initial load of data in the "reverse" direction.  A reverse initial load is started by setting the `reverse_initial_load_enabled` flag
 on <<NODE_SECURITY>>. 
 
-ifdef::pro[]
-A reverse initial load is requested from the user interface by pressing _Initial Load_ and selecting _Receive Load From_.
+===== Other Initial Load Settings
+
 endif::pro[]
 
-===== Other Initial Load Settings
+===== Initial Load Parameters
 
 There are several parameters that can be used to modify the behavior of an initial load.
 

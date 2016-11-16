@@ -33,6 +33,7 @@ public class InterbaseJdbcSqlTemplate extends JdbcSqlTemplate {
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
         primaryKeyViolationCodes = new int [] {335544665,335544349};
+        foreignKeyViolationCodes = new int[] {335544466};
     }
     
     @Override

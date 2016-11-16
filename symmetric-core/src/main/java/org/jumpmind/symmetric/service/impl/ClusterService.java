@@ -22,11 +22,14 @@ package org.jumpmind.symmetric.service.impl;
 
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PULL;
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PUSH;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_SCAN;
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_SCAN;
 import static org.jumpmind.symmetric.service.ClusterConstants.HEARTBEAT;
 import static org.jumpmind.symmetric.service.ClusterConstants.INITIAL_LOAD_EXTRACT;
+import static org.jumpmind.symmetric.service.ClusterConstants.MONITOR;
+import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PULL;
+import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PUSH;
 import static org.jumpmind.symmetric.service.ClusterConstants.PULL;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_DATA_GAPS;
 import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_INCOMING;
@@ -41,10 +44,8 @@ import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_CLUSTER;
 import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_EXCLUSIVE;
 import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
-import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PULL;
-import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PUSH;
-import static org.jumpmind.symmetric.service.ClusterConstants.MONITOR;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -104,6 +105,20 @@ public class ClusterService extends AbstractService implements IClusterService {
             }
         }
     }
+    
+    @Override
+    public synchronized void persistToTableForSnapshot() {
+        sqlTemplate.update(getSql("deleteSql"));
+        Collection<Lock> values = lockCache.values();
+        for (Lock lock : values) {
+            insertLock(lock);
+        }
+    }
+    
+    protected void insertLock(Lock lock) {
+        sqlTemplate.update(getSql("insertCompleteLockSql"), lock.getLockAction(), lock.getLockType(), lock.getLockingServerId(), lock.getLockTime(), lock.getSharedCount(), lock.isSharedEnable() ? 1 : 0, lock.getLastLockTime(), lock.getLastLockingServerId());
+    }
+
 
     protected void initLockTable(final String action) {
         initLockTable(action, TYPE_CLUSTER);

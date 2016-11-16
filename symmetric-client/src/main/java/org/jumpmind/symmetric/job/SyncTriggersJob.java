@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -31,17 +32,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class SyncTriggersJob extends AbstractJob {
 
     public SyncTriggersJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.synctriggers", true, engine.getParameterService().is("start.synctriggers.job"),
-                engine, taskScheduler);
+        super("job.synctriggers", engine, taskScheduler);
     }
 
     @Override
-    public void doJob(boolean force) throws Exception {
-        engine.getTriggerRouterService().syncTriggers();
+    public boolean isAutoStartConfigured() {
+        return engine.getParameterService().is(ParameterConstants.START_SYNCTRIGGERS_JOB);
     }
-
+    
+    @Override
     public String getClusterLockName() {
         return ClusterConstants.SYNCTRIGGERS;
+    }
+    
+    @Override
+    public void doJob(boolean force) throws Exception {
+        engine.getTriggerRouterService().syncTriggers();
     }
 
 }

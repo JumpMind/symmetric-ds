@@ -22,8 +22,6 @@ package org.jumpmind.util;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,8 +32,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Test;
-
-import com.sun.corba.se.impl.oa.poa.AOMEntry;
 
 public class SymRollingFileAppenderTest {
 
@@ -145,7 +141,6 @@ public class SymRollingFileAppenderTest {
         SymRollingFileAppender appender = getAppenderForTest(os);
 
         Exception ex = new Exception("Test exception.");
-        Exception ex2 = new Exception("Test exception.");
 
         LoggingEvent event1 = getLoggingEventForTest("Test Exception.", ex);
         LoggingEvent event2 = getLoggingEventForTest("Test Exception.", ex);

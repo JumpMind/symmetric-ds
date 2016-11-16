@@ -25,6 +25,7 @@ final public class DatabaseNamesConstants {
     private DatabaseNamesConstants() {
     }
 
+    public final static String GENERIC = "generic";
     public final static String H2 = "h2";
     public final static String HSQLDB = "hsqldb";
     public final static String HSQLDB2 = "hsqldb2";

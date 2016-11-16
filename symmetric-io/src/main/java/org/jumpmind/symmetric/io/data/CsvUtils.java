@@ -122,7 +122,7 @@ public class CsvUtils {
             writer.setNullString(nullString);
         }
         try {
-            writer.writeRecord(data);
+            writer.writeRecord(data, true);
         } catch (IOException e) {
             throw new IoException();
         }

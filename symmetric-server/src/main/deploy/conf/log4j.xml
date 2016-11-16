@@ -103,7 +103,15 @@
     <category name="com.vaadin.server.DefaultDeploymentConfiguration">
         <priority value="ERROR" />
     </category>
-
+    
+    <category name="com.vaadin.event.ConnectorActionManager">
+        <priority value="ERROR" />
+    </category>
+    
+    <category name="org.atmosphere.container">
+        <priority value="FATAL" />
+    </category>
+    
     <!-- Uncomment to see CSV protocol from sending batches -->
     <!--
     <category name="org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter">

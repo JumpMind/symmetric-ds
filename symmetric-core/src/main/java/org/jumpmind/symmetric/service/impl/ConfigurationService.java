@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +65,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     private long nodeGroupLinkCacheTime;
 
-    private List<Channel> defaultChannels;
+    private Map<String, Channel> defaultChannels;
     
     private Map<String, List<NodeGroupChannelWindow>> channelWindowsByChannelCache;
 
@@ -74,33 +75,43 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             INodeService nodeService) {
         super(parameterService, dialect);
         this.nodeService = nodeService;
-        this.defaultChannels = new ArrayList<Channel>();
-        this.defaultChannels
-                .add(new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 100, true, 0, true));
-        if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
-            this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 10000, 100, true, 0, false,
-                    true, false));
-        } else {
-            this.defaultChannels.add(new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false,
-                    true, false));
-        }
-                
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0,
-                false));
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0,
-                false));
-        this.defaultChannels.add(new Channel(Constants.CHANNEL_DYNAMIC, 99999, 1000, 100, true, 0,
-                false));
-        if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
-            this.defaultChannels.add(new Channel(Constants.CHANNEL_FILESYNC, 3, 100, 100, true, 0,
-                    false, "nontransactional", false, true));
-            this.defaultChannels.add(new Channel(Constants.CHANNEL_FILESYNC_RELOAD, 1, 100, 100,
-                    true, 0, false, "nontransactional", true, true));
-        }
+        
+        createDefaultChannels();
+        
         setSqlMap(new ConfigurationServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
+
+    protected void createDefaultChannels() {
+        Map<String, Channel> updatedDefaultChannels = new LinkedHashMap<String, Channel>();
+        updatedDefaultChannels.put(Constants.CHANNEL_CONFIG, 
+                new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 100, true, 0, true));
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
+            updatedDefaultChannels.put(Constants.CHANNEL_RELOAD, 
+                    new Channel(Constants.CHANNEL_RELOAD, 1, 10000, 100, true, 0, false, true, false));
+        } else {
+            updatedDefaultChannels.put(Constants.CHANNEL_RELOAD, 
+                    new Channel(Constants.CHANNEL_RELOAD, 1, 1, 1, true, 0, false, true, false));
+        }
+                
+        updatedDefaultChannels.put(Constants.CHANNEL_HEARTBEAT, 
+                new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0, false));
+        updatedDefaultChannels.put(Constants.CHANNEL_DEFAULT,
+                new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0, false));
+        updatedDefaultChannels.put(Constants.CHANNEL_DYNAMIC, 
+                new Channel(Constants.CHANNEL_DYNAMIC, 99999, 1000, 100, true, 0, false));
+        
+        if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {           
+            updatedDefaultChannels.put(Constants.CHANNEL_FILESYNC, 
+                    new Channel(Constants.CHANNEL_FILESYNC, 3, 100, 100, true, 0, false, "nontransactional", false, true));
+            updatedDefaultChannels.put(Constants.CHANNEL_FILESYNC_RELOAD, 
+                    new Channel(Constants.CHANNEL_FILESYNC_RELOAD, 1, 100, 100, true, 0, false, "nontransactional", true, true));
+        }
+        
+        this.defaultChannels = updatedDefaultChannels;
+    }
     
+    @Override
     public boolean isMasterToMaster() {
         boolean masterToMaster = false;
         Node me = nodeService.findIdentity();
@@ -110,6 +121,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return masterToMaster;
     }
 
+    @Override
     public boolean isMasterToMasterOnly() {
         boolean masterToMasterOnly = false;
         Node me = nodeService.findIdentity();
@@ -189,6 +201,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void deleteNodeGroupLink(NodeGroupLink link) {
         sqlTemplate.update(getSql("deleteNodeGroupLinkSql"), link.getSourceNodeGroupId(),
                 link.getTargetNodeGroupId());
+    }
+
+    public void deleteAllNodeGroupLinks() {
+        sqlTemplate.update(getSql("deleteAllNodeGroupLinksSql"));
     }
 
     public List<NodeGroup> getNodeGroups() {
@@ -405,11 +421,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return NodeGroupLinkAction.fromCode(code);
     }
 
+    @Override
     public void initDefaultChannels() {
         if (defaultChannels != null) {
             clearCache();
+            createDefaultChannels();
             List<NodeChannel> channels = getNodeChannels(false);
-            for (Channel defaultChannel : defaultChannels) {
+            
+            for (Channel defaultChannel : defaultChannels.values()) {
                 Channel channel = defaultChannel.findInList(channels);
                 if (channel == null) {
                     log.info("Auto-configuring {} channel", defaultChannel.getChannelId());
@@ -450,7 +469,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     String nodeGroupId = parameterService.getNodeGroupId();
                     Set<String> channelIds = getChannels(false).keySet();
                     for (String id : channelIds) {
-                        channelWindowsByChannel.put(channelId, sqlTemplate.query(getSql("selectNodeGroupChannelWindowSql"),
+                        channelWindowsByChannel.put(id, sqlTemplate.query(getSql("selectNodeGroupChannelWindowSql"),
                                 new NodeGroupChannelWindowMapper(), nodeGroupId, id));
                     }
 

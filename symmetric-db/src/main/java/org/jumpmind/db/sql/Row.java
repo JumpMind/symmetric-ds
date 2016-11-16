@@ -189,6 +189,8 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
             return (BigDecimal) obj;
         } else if (obj instanceof String) {
             return new BigDecimal(obj.toString());
+        } else if (obj instanceof Integer) {
+            return new BigDecimal(((Integer)obj).intValue());
         } else {
             checkForColumn(columnName);
             return null;

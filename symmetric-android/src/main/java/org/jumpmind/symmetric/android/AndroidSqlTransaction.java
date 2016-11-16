@@ -27,6 +27,8 @@ import java.util.Map;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.mapper.RowMapper;
 
 import android.database.sqlite.SQLiteDatabase;
 
@@ -54,6 +56,16 @@ public class AndroidSqlTransaction implements ISqlTransaction {
 
     public boolean isInBatchMode() {
         return false;
+    }
+    
+    @Override
+    public Row queryForRow(String sql, Object... args) {
+        List<Row> rows = query(sql, new RowMapper(), args, null);
+        if (rows.size() > 0) {
+            return rows.get(0);
+        } else {
+            return null;
+        }
     }
     
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Map<String, Object> namedParams) {

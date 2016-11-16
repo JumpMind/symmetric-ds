@@ -25,7 +25,6 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -711,8 +710,7 @@ public class RouterService extends AbstractService implements IRouterService {
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
                 .values());
 
-        gapDetector.setFullGapAnalysis(true);
-        context.commit();
+        gapDetector.setFullGapAnalysis(context.getSqlTransaction(), true);
 
         if (engine.getParameterService().is(ParameterConstants.ROUTING_LOG_STATS_ON_BATCH_ERROR)) {
             engine.getStatisticManager().addRouterStats(context.getStartDataId(), context.getEndDataId(), 
@@ -730,9 +728,11 @@ public class RouterService extends AbstractService implements IRouterService {
             } else {
                 batch.setStatus(Status.NE);
             }
-            engine.getOutgoingBatchService().updateOutgoingBatch(batch);
+            engine.getOutgoingBatchService().updateOutgoingBatch(context.getSqlTransaction(), batch);
             context.getBatchesByNodes().remove(batch.getNodeId());
         }
+        
+        context.commit();
 
         for (IDataRouter dataRouter : usedRouters) {
             dataRouter.contextCommitted(context);
@@ -906,7 +906,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
                         if (nodeIds.size() == 0) {
                             log.info(
-                                    "None of the target nodes specified in the data.node_list field ({}) were qualified nodes.  {} will not be routed using the {} router",
+                                    "None of the target nodes specified in the data.node_list field ({}) were qualified nodes. Data id {} will not be routed using the {} router",
                                     new Object[] {targetNodeIds, data.getDataId(), triggerRouter.getRouter().getRouterId() });
                         }
                     } else {
@@ -950,9 +950,11 @@ public class RouterService extends AbstractService implements IRouterService {
 
         } else {
             log.warn(
-                    "Could not find trigger routers for trigger history id of {}.  "
-                    + "Data with the id of {} and channel id {} will be assigned to an unrouted batch. There is a good chance that data was captured and the trigger router link was removed before the data could be routed",
-                    data.getTriggerHistory().getTriggerHistoryId(), data.getDataId(), data.getChannelId());
+                    "Could not find trigger routers for trigger history id of {} (table {}).  "
+                    + "Data with the id of {} and channel id {} will be assigned to an unrouted batch. "
+                    + "There is a good chance that data was captured and the trigger router link was removed before the data could be routed, or "
+                    + "that there is an orphaned symmetric trigger on the table.",
+                    data.getTriggerHistory().getTriggerHistoryId(), data.getTableName(), data.getDataId(), data.getChannelId());
             numberOfDataEventsInserted += insertDataEvents(processInfo, context, new DataMetaData(data, table,
                     null, context.getChannel()), new HashSet<String>(0));
         }
@@ -1011,7 +1013,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
                 batch.incrementEventCount(dataMetaData.getData().getDataEventType());
                 batch.incrementDataEventCount();
-                batch.incrementTableCount(dataMetaData.getTable().getName());
+                batch.incrementTableCount(dataMetaData.getTable().getNameLowerCase());
                 
                 if (!context.isProduceCommonBatches()
                         || (context.isProduceCommonBatches() && !dataEventAdded)) {
@@ -1083,7 +1085,7 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     public long getUnroutedDataCount() {
-        long maxDataIdAlreadyRouted = sqlTemplate
+        long maxDataIdAlreadyRouted = sqlTemplateDirty
                 .queryForLong(getSql("selectLastDataIdRoutedUsingDataGapSql"));
         long leftToRoute = engine.getDataService().findMaxDataId() - maxDataIdAlreadyRouted;
         

@@ -85,15 +85,15 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public int countIncomingBatchesInError() {
-        return sqlTemplate.queryForInt(getSql("countIncomingBatchesErrorsSql"));
+        return sqlTemplateDirty.queryForInt(getSql("countIncomingBatchesErrorsSql"));
     }
     
     public int countIncomingBatchesInError(String channelId) {
-        return sqlTemplate.queryForInt(getSql("countIncomingBatchesErrorsOnChannelSql"), channelId);
+        return sqlTemplateDirty.queryForInt(getSql("countIncomingBatchesErrorsOnChannelSql"), channelId);
     }
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows) {
-        return sqlTemplate.query(
+        return sqlTemplateDirty.query(
                 getSql("selectIncomingBatchPrefixSql", "findIncomingBatchErrorsSql"), maxRows,
                 new IncomingBatchMapper());
     }
@@ -157,7 +157,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             params.put("CHANNELS", channels);
             params.put("STATUSES", toStringList(statuses));
             params.put("CREATE_TIME", startAtCreateTime);
-            params.put("CREATE_TIME", startAtCreateTime);
             params.put("LOADS", loads);
             
             String where = buildBatchWhere(nodeIds, channels, statuses, loads);
@@ -174,7 +173,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             String sql = getSql("selectIncomingBatchPrefixSql", where, createTimeLimiter,
                     ascending ? " order by create_time" : " order by create_time desc");
 
-            return sqlTemplate.query(sql, maxRowsToRetrieve, new IncomingBatchMapper(), params);
+            return sqlTemplateDirty.query(sql, maxRowsToRetrieve, new IncomingBatchMapper(), params);
 
     }
 
@@ -266,13 +265,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 	                            batch.getIgnoreCount(), batch.getIgnoreRowCount(), batch.getMissingDeleteCount(),
 	                            batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
 	                            FormatUtils.abbreviateForLogging(batch.getSqlMessage()),
-	                            batch.getLastUpdatedHostName(), batch.getLastUpdatedTime() },
+	                            batch.getLastUpdatedHostName(), batch.getLastUpdatedTime(), batch.getSummary() },
 	                    new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.CHAR,
 	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
 	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
 	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, 
 	                            Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, 
-	                            Types.VARCHAR, Types.TIMESTAMP });
+	                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR });
         	}
         }
     }
@@ -347,13 +346,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             batch.getMissingDeleteCount(), batch.getSkipCount(),
                             batch.getSqlState(), batch.getSqlCode(),
                             FormatUtils.abbreviateForLogging(batch.getSqlMessage()),
-                            batch.getLastUpdatedHostName(), batch.getLastUpdatedTime(),
+                            batch.getLastUpdatedHostName(), batch.getLastUpdatedTime(), batch.getSummary(),
                             batch.getBatchId(), batch.getNodeId() }, new int[] { Types.CHAR,
                             Types.SMALLINT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR,
-                            Types.VARCHAR, Types.TIMESTAMP, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
+                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
         }
         return count;
     }
@@ -498,6 +497,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setLastUpdatedTime(rs.getDateTime("last_update_time"));
             batch.setCreateTime(rs.getDateTime("create_time"));
             batch.setErrorFlag(rs.getBoolean("error_flag"));
+            batch.setSummary(rs.getString("summary"));
             return batch;
         }
     }

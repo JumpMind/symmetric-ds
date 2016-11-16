@@ -104,7 +104,7 @@ public class SymmetricWebServer {
 
     public static final String DEFAULT_HTTPS_PORT = System.getProperty(SystemConstants.SYSPROP_DEFAULT_HTTPS_PORT, "31417");
 
-    public static final int DEFAULT_MAX_IDLE_TIME = 7200000;
+    public static final int DEFAULT_MAX_IDLE_TIME = 60000;
 
     /**
      * The type of HTTP connection to create for this SymmetricDS web server
@@ -330,6 +330,18 @@ public class SymmetricWebServer {
                     throw new IllegalStateException("Could not choose a single engine to return.  There are "
                             + engineHolder.getEngines().size() + " engines configured.");
                 }
+            }
+        }
+        return engine;
+    }
+
+    public ISymmetricEngine getEngine(String name) {
+        ISymmetricEngine engine = null;
+        ServletContext servletContext = getServletContext();
+        if (servletContext != null) {
+            SymmetricEngineHolder engineHolder = ServletUtils.getSymmetricEngineHolder(servletContext);
+            if (engineHolder != null) {
+                return engineHolder.getEngines().get(name);
             }
         }
         return engine;

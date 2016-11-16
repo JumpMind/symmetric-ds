@@ -191,7 +191,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
                     nodeCommunication.setFailCount(0);
                 }
                 status.setComplete(true);
-                save(nodeCommunication);
+                save(nodeCommunication, false);
             }
             return !failed;
         }

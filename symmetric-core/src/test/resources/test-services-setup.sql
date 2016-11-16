@@ -19,8 +19,8 @@
 -- under the License.
 --
 
-insert into sym_channel (channel_id, processing_order, max_batch_size, max_batch_to_send, contains_big_lob, enabled, description) values('testchannel', 1, 50, 50, 1, 1, null);
-insert into sym_channel (channel_id, processing_order, max_batch_size, max_batch_to_send, contains_big_lob, enabled, description) values('other', 0, 1, 50, 1, 1, null);
+insert into sym_channel (channel_id, processing_order, max_batch_size, max_batch_to_send, contains_big_lob, enabled, max_network_kbps, description) values('testchannel', 1, 50, 50, 1, 1, 0.00, null);
+insert into sym_channel (channel_id, processing_order, max_batch_size, max_batch_to_send, contains_big_lob, enabled, max_network_kbps, description) values('other', 0, 1, 50, 1, 1, 0.00, null);
 
 insert into sym_node_group (node_group_id, description) values ('symmetric','a group representing symmetric configuration');
 insert into sym_node_group (node_group_id, description) values ('test-root-group','a test config');

@@ -450,20 +450,21 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 List<IDatabaseUpgradeListener> databaseUpgradeListeners = extensionService
                         .getExtensionPointList(IDatabaseUpgradeListener.class);
 
+                for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
+                    String sql = listener.beforeUpgrade(this,
+                            this.parameterService.getTablePrefix(), modelFromDatabase,
+                            modelFromXml);
+                    SqlScript script = new SqlScript(sql, getPlatform().getSqlTemplate(), true,
+                            false, false, delimiter, null);
+                    script.setListener(resultsListener);
+                    script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+                }
+
                 String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml,
                         interceptors);
+
                 if (isNotBlank(alterSql)) {
                     log.info("There are SymmetricDS tables that needed altered");
-
-                    for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
-                        String sql = listener.beforeUpgrade(this,
-                                this.parameterService.getTablePrefix(), modelFromDatabase,
-                                modelFromXml);
-                        SqlScript script = new SqlScript(sql, getPlatform().getSqlTemplate(), true,
-                                false, false, delimiter, null);
-                        script.setListener(resultsListener);
-                        script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
-                    }
 
                     log.debug("Alter SQL generated: {}", alterSql);
 
@@ -658,7 +659,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String getEngineName() {
-        return parameterService.getString(ParameterConstants.ENGINE_NAME);
+        return parameterService.getEngineName();
     }
 
     public boolean supportsOpenCursorsAcrossCommit() {

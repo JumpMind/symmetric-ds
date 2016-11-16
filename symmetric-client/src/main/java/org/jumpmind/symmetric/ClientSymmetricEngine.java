@@ -277,6 +277,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
             DataSource dataSource, boolean waitOnAvailableDatabase) {
+        log.info("Initializing connection to database");
         if (dataSource == null) {
             String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);
             if (StringUtils.isNotBlank(jndiName)) {

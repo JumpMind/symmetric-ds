@@ -80,6 +80,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     private String fullyQualifiedTableName;
     
     private String fullyQualifiedTableNameLowerCase;
+    
+    private String tableNameLowerCase;
 
     public Table() {
     }
@@ -986,6 +988,13 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         }
         return fullyQualifiedTableNameLowerCase;
     }
+    
+    public String getNameLowerCase() {
+        if (tableNameLowerCase == null) {
+            tableNameLowerCase = getName().toLowerCase();
+        }
+        return tableNameLowerCase;
+    }    
 
     public static String getFullyQualifiedTableName(String catalogName, String schemaName,
             String tableName) {

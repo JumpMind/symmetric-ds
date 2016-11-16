@@ -70,7 +70,12 @@ public class AndroidDatabasePlatform extends AbstractDatabasePlatform {
     public ISqlTemplate getSqlTemplate() {
         return sqlTemplate;
     }
-    
+
+    @Override
+    public ISqlTemplate getSqlTemplateDirty() {
+        return sqlTemplate;
+    }
+
     @Override
     protected Object parseBigDecimal(String value) {
         /* sqlite allows blank data in integer fields */

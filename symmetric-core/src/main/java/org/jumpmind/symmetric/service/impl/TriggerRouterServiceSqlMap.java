@@ -45,6 +45,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                 + "select count(*) from $(trigger) where source_table_name=?   ");
 
         putSql("deleteRouterSql", "" + "delete from $(router) where router_id=?   ");
+        
+        putSql("deleteAllRoutersSql", "" + "delete from $(router)");
 
         putSql("inactivateTriggerHistorySql",
                 ""
@@ -169,6 +171,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("deleteTriggerRouterSql", ""
                 + "delete from $(trigger_router) where trigger_id=? and router_id=?   ");
+
+        putSql("deleteAllTriggerRoutersSql", "delete from $(trigger_router)");
 
         putSql("insertTriggerRouterSql",
                 ""

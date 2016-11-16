@@ -38,6 +38,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Level;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -54,6 +56,7 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.util.AppUtils;
+import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -176,6 +179,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         IIncomingBatchService clientIncomingBatchService = getClient().getIncomingBatchService();
 
+        // Running a query with dirty reads to make sure platform allows it
+        getServer().getDataService().findMaxDataId();        
+        
         assertEquals("The initial load errored out." + printRootAndClientDatabases(), 0,
                 clientIncomingBatchService.countIncomingBatchesInError());
         assertEquals(
@@ -200,7 +206,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 THIS_IS_A_TEST);
         
     }
-    
+
     @Test(timeout = 120000)
     public void test04LobSyncUsingStreaming() throws Exception {
         String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
@@ -1095,7 +1101,29 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         testAutoConfigureTablesAfterAlreadyCreated(getClient());
     }
     
-    
+    @Test
+    public void test31ReloadMissingForeignKeys() {
+        if (getClient().getSymmetricDialect().getName().equalsIgnoreCase(DatabaseNamesConstants.VOLTDB) ||
+                getClient().getSymmetricDialect().getName().equalsIgnoreCase(DatabaseNamesConstants.REDSHIFT) ||
+                getClient().getSymmetricDialect().getName().equalsIgnoreCase(DatabaseNamesConstants.GREENPLUM) ||
+                getClient().getSymmetricDialect().getName().equalsIgnoreCase(DatabaseNamesConstants.SQLITE) ||
+                getClient().getSymmetricDialect().getName().equalsIgnoreCase(DatabaseNamesConstants.GENERIC)) {
+            return;
+        }
+        ISqlTransaction tran = getServer().getSqlTemplate().startSqlTransaction();
+        getServer().getSymmetricDialect().disableSyncTriggers(tran);
+        tran.execute("insert into test_a (id) values ('1')");
+        tran.commit();
+        getServer().getSqlTemplate().update("insert into test_b (id,  aid) values('1', '1')");
+        int tries = 0;
+        while (clientPull()) {
+            if (tries++ > 10) {
+                Assert.fail("Unable to resolve missing foreign key");
+            }
+            AppUtils.sleep(1000);
+        }
+    }
+
     protected void testAutoConfigureTablesAfterAlreadyCreated(ISymmetricEngine engine) {
         ISymmetricDialect dialect = engine.getSymmetricDialect();
         assertEquals("Tables were altered when they should not have been", false, dialect.createOrAlterTablesIfNecessary());

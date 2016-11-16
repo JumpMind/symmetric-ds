@@ -39,34 +39,13 @@ public class VoltDbTriggerTemplate extends AbstractTriggerTemplate {
         triggerConcatCharacter = "||" ;
         newTriggerValue = "" ;
         oldTriggerValue = "" ;
-//        timeColumnTemplate = null;
-//        dateColumnTemplate = null;
-//        clobColumnTemplate = "case when $(tableAlias)..\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias)..\"$(columnName)\",$$\\$$,$$\\\\$$),'\"',$$\\\"$$) || '\"' end" ;
-//        blobColumnTemplate = "case when $(tableAlias)..\"$(columnName)\" is null then '' else '\"' || pg_catalog.encode($(tableAlias)..\"$(columnName)\", 'base64') || '\"' end" ;
-//        wrappedBlobColumnTemplate = "case when $(tableAlias)..\"$(columnName)\" is null then '' else '\"' || $(defaultSchema)$(prefixName)_largeobject($(tableAlias)..\"$(columnName)\") || '\"' end" ;
-//        booleanColumnTemplate = "case when $(tableAlias)..\"$(columnName)\" is null then '' when $(tableAlias)..\"$(columnName)\" then '\"1\"' else '\"0\"' end" ;
-//        triggerConcatCharacter = "||" ;
-//        newTriggerValue = "new" ;
-//        oldTriggerValue = "old" ;
-//        oldColumnPrefix = "" ;
-//        newColumnPrefix = "" ;
-//        otherColumnTemplate = null;
 
         sqlTemplates = new HashMap<String,String>();
 
         sqlTemplates.put("insertTriggerTemplate" , "");
         sqlTemplates.put("updateTriggerTemplate" , "");
         sqlTemplates.put("deleteTriggerTemplate" , "");
-        sqlTemplates.put("initialLoadSqlTemplate" ,
-"select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
+        sqlTemplates.put("initialLoadSqlTemplate" , "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
     }
 
-//
-//        sqlTemplates.put("deletePostTriggerTemplate" ,
-//"create trigger $(triggerName) after delete on $(schemaName)$(tableName)                                                                                                                                " +
-//"                                for each row execute procedure $(schemaName)f$(triggerName)();                                                                                                         " );
-//
-//        sqlTemplates.put("initialLoadSqlTemplate" ,
-//"select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
-//    }
 }

@@ -33,9 +33,11 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IPurgeListener;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -62,12 +64,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private IExtensionService extensionService;
     
+    private IStagingManager stagingManager;
+    
     public PurgeService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            IClusterService clusterService, IStatisticManager statisticManager, IExtensionService extensionService) {
+            IClusterService clusterService, IStatisticManager statisticManager, IExtensionService extensionService, IStagingManager stagingManager) {
         super(parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.statisticManager = statisticManager;
         this.extensionService = extensionService;
+        this.stagingManager = stagingManager;
         
         setSqlMap(new PurgeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -84,6 +89,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
         for (IPurgeListener purgeListener : purgeListeners) {
             rowsPurged += purgeListener.purgeOutgoing(force);
         }
+        
+        List<Long> remainingBatches = sqlTemplate.query(getSql("getAllOutgoingBatches"), new ISqlRowMapper<Long>() {
+            @Override
+            public Long mapRow(Row row) {
+                return row.getLong("batch_id");
+            }
+        });
+        long stagingFilesPurged = stagingManager.cleanExcessBatches(remainingBatches, Constants.STAGING_CATEGORY_OUTGOING);
+        log.info("The outgoing purge process removed " + stagingFilesPurged + " outgoing staging files.");
         return rowsPurged;
     }
 
@@ -98,6 +112,16 @@ public class PurgeService extends AbstractService implements IPurgeService {
         for (IPurgeListener purgeListener : purgeListeners) {
             rowsPurged += purgeListener.purgeIncoming(force);
         }
+        
+        List<Long> remainingBatches = sqlTemplate.query(getSql("getAllIncomingBatches"), new ISqlRowMapper<Long>() {
+            @Override
+            public Long mapRow(Row row) {
+                return row.getLong("batch_id");
+            }
+        });
+        long stagingFilesPurged = stagingManager.cleanExcessBatches(remainingBatches, Constants.STAGING_CATEGORY_INCOMING);
+        log.info("The incoming purge process removed " + stagingFilesPurged + " incoming staging files.");
+        
         return rowsPurged;
     }
 
@@ -156,16 +180,19 @@ public class PurgeService extends AbstractService implements IPurgeService {
         log.info("Getting range for outgoing batch");
         long[] minMax = queryForMinMax(getSql("selectOutgoingBatchRangeSql"),
                 new Object[] { time.getTime(), OutgoingBatch.Status.OK.name() });
+        long minGapStartId = sqlTemplate.queryForLong(getSql("minDataGapStartId"));
         int maxNumOfBatchIdsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
         int maxNumOfDataEventsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
-        int dataEventsPurgedCount = purgeByMinMax(minMax, MinMaxDeleteSql.DATA_EVENT,
+        int dataEventsPurgedCount = purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.DATA_EVENT,
                 time.getTime(), maxNumOfDataEventsToPurgeInTx);
         statisticManager.incrementPurgedDataEventRows(dataEventsPurgedCount);
-        int outgoingbatchPurgedCount = purgeByMinMax(minMax, MinMaxDeleteSql.OUTGOING_BATCH,
+        int outgoingbatchPurgedCount = purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.OUTGOING_BATCH,
                 time.getTime(), maxNumOfBatchIdsToPurgeInTx);
         statisticManager.incrementPurgedBatchOutgoingRows(outgoingbatchPurgedCount);
+        
+        
         return dataEventsPurgedCount + outgoingbatchPurgedCount;
     }
 
@@ -184,12 +211,13 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private long purgeDataRows(final Calendar time) {
         log.info("Getting range for data");
         long[] minMax = queryForMinMax(getSql("selectDataRangeSql"), new Object[0]);
+        long minGapStartId = sqlTemplate.queryForLong(getSql("minDataGapStartId"));
         int maxNumOfDataIdsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
-        int dataDeletedCount = purgeByMinMax(minMax, MinMaxDeleteSql.DATA, time.getTime(),
+        int dataDeletedCount = purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.DATA, time.getTime(),
                 maxNumOfDataIdsToPurgeInTx);
         statisticManager.incrementPurgedDataRows(dataDeletedCount);
-        int strandedDeletedCount = purgeByMinMax(minMax, MinMaxDeleteSql.STRANDED_DATA,
+        int strandedDeletedCount = purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.STRANDED_DATA,
                 time.getTime(), maxNumOfDataIdsToPurgeInTx);
         statisticManager.incrementPurgedDataRows(strandedDeletedCount);
         return dataDeletedCount + strandedDeletedCount;
@@ -245,7 +273,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return count;
     }
 
-    private int purgeByMinMax(long[] minMax, MinMaxDeleteSql identifier, Date retentionTime,
+    private int purgeByMinMax(long[] minMax, long minGapStartId, MinMaxDeleteSql identifier, Date retentionTime,
             int maxNumtoPurgeinTx) {
         long minId = minMax[0];
         long purgeUpToId = minMax[1];
@@ -291,8 +319,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     break;
                 case STRANDED_DATA:
                     deleteSql = getSql("deleteStrandedData");
-                    args = new Object[] { minId, maxId, cutoffTime, minId, maxId };
-                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP, idSqlType, idSqlType};
+                    args = new Object[] { minId, maxId, minGapStartId, cutoffTime, minId, maxId };
+                    argTypes = new int[] { idSqlType, idSqlType, idSqlType, Types.TIMESTAMP, idSqlType, idSqlType};
                     break;
             }
 

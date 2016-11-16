@@ -45,6 +45,8 @@ import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.DdlException;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ChangeCatalogConnectionHandler;
+import org.jumpmind.db.sql.IConnectionHandler;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
@@ -269,7 +271,9 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             sql.append(" and \"TABLE_SCHEMA\"=?");
             args.add(schema);
         }
-    	return platform.getSqlTemplate().query(sql.toString(), new StringMapper(), args.toArray(new Object[args.size()]));
+        
+    	return platform.getSqlTemplate().queryWithHandler(sql.toString(), new StringMapper(), 
+    	        new ChangeCatalogConnectionHandler(catalog) ,args.toArray(new Object[args.size()]));
     }
     
     @Override
@@ -329,4 +333,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
 		}, tableName, schema);
 	}
     
+    protected IConnectionHandler getConnectionHandler() {
+        return new ChangeCatalogConnectionHandler(platform.getDefaultCatalog());
+    }
 }

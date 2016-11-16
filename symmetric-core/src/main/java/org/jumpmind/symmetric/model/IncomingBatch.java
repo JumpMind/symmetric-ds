@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,7 +28,7 @@ import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.util.Statistics;
 
-public class IncomingBatch implements Serializable {
+public class IncomingBatch extends AbstractBatch {
 
     private static final long serialVersionUID = 1L;
 
@@ -48,21 +47,7 @@ public class IncomingBatch implements Serializable {
         }
     }
 
-    private long batchId;
-
-    private String nodeId;
-
-    private String channelId;
-
     private Status status;
-
-    private boolean errorFlag;
-
-    private long byteCount;
-
-    private long networkMillis;
-
-    private long filterMillis;
 
     private long databaseMillis;
 
@@ -71,8 +56,6 @@ public class IncomingBatch implements Serializable {
     private long fallbackInsertCount;
 
     private long fallbackUpdateCount;
-    
-    private long ignoreCount;
 
     private long ignoreRowCount;
     
@@ -85,18 +68,6 @@ public class IncomingBatch implements Serializable {
     private long failedLineNumber;    
 
     private long startTime;
-    
-    private String sqlState;
-
-    private int sqlCode;
-
-    private String sqlMessage;
-
-    private String lastUpdatedHostName;
-
-    private Date lastUpdatedTime;
-
-    private Date createTime;
 
     private boolean retry;
 
@@ -104,19 +75,19 @@ public class IncomingBatch implements Serializable {
     }
 
     public IncomingBatch(Batch batch) {
-        this.batchId = batch.getBatchId();
-        this.nodeId = batch.getSourceNodeId();
-        this.channelId = batch.getChannelId();
+        setBatchId(batch.getBatchId());
+        setNodeId(batch.getSourceNodeId());
+        setChannelId(batch.getChannelId());
         this.status = Status.LD;
     }
 
     public void setValues(Statistics readerStatistics, Statistics writerStatistics,
             boolean isSuccess) {
         if (readerStatistics != null) {
-            byteCount = readerStatistics.get(DataReaderStatistics.READ_BYTE_COUNT);
+            setByteCount(readerStatistics.get(DataReaderStatistics.READ_BYTE_COUNT));
         }
         if (writerStatistics != null) {
-            filterMillis = writerStatistics.get(DataWriterStatisticConstants.FILTERMILLIS);
+            setFilterMillis(writerStatistics.get(DataWriterStatisticConstants.FILTERMILLIS));
             databaseMillis = writerStatistics.get(DataWriterStatisticConstants.DATABASEMILLIS);
             statementCount = writerStatistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
             fallbackInsertCount = writerStatistics
@@ -125,10 +96,10 @@ public class IncomingBatch implements Serializable {
                     .get(DataWriterStatisticConstants.FALLBACKUPDATECOUNT);
             missingDeleteCount = writerStatistics
                     .get(DataWriterStatisticConstants.MISSINGDELETECOUNT);
-            ignoreCount = writerStatistics.get(DataWriterStatisticConstants.IGNORECOUNT);
+            setIgnoreCount(writerStatistics.get(DataWriterStatisticConstants.IGNORECOUNT));
             ignoreRowCount = writerStatistics.get(DataWriterStatisticConstants.IGNOREROWCOUNT);
-            startTime = writerStatistics.get(DataWriterStatisticConstants.STARTTIME);
-            lastUpdatedTime = new Date();
+            setStartTime(writerStatistics.get(DataWriterStatisticConstants.STARTTIME));
+            setLastUpdatedTime(new Date());
             if (!isSuccess) {
                 failedRowNumber = statementCount;
                 failedLineNumber = writerStatistics.get(DataWriterStatisticConstants.LINENUMBER);
@@ -140,22 +111,10 @@ public class IncomingBatch implements Serializable {
         if (value != null) {
             int splitIndex = value.indexOf("-");
             if (splitIndex > 0) {
-                nodeId = value.substring(0, splitIndex);
-                batchId = Long.parseLong(value.substring(splitIndex+1));
+                setNodeId(value.substring(0, splitIndex));
+                setBatchId(Long.parseLong(value.substring(splitIndex+1)));
             }
         }
-    }
-
-    public String getNodeBatchId() {
-        return nodeId + "-" + batchId;
-    }
-
-    public long getBatchId() {
-        return batchId;
-    }
-
-    public void setBatchId(long batchId) {
-        this.batchId = batchId;
     }
 
     public Status getStatus() {
@@ -174,52 +133,12 @@ public class IncomingBatch implements Serializable {
         }
     }
 
-    public String getNodeId() {
-        return nodeId;
-    }
-
-    public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
-    }
-
     public boolean isRetry() {
         return retry;
     }
 
     public void setRetry(boolean isRetry) {
         this.retry = isRetry;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public long getByteCount() {
-        return byteCount;
-    }
-
-    public void setByteCount(long byteCount) {
-        this.byteCount = byteCount;
-    }
-
-    public long getNetworkMillis() {
-        return networkMillis;
-    }
-
-    public void setNetworkMillis(long networkMillis) {
-        this.networkMillis = networkMillis;
-    }
-
-    public long getFilterMillis() {
-        return filterMillis;
-    }
-
-    public void setFilterMillis(long filterMillis) {
-        this.filterMillis = filterMillis;
     }
 
     public long getDatabaseMillis() {
@@ -286,46 +205,6 @@ public class IncomingBatch implements Serializable {
         this.startTime = startTime;
     }
 
-    public String getSqlState() {
-        return sqlState;
-    }
-
-    public void setSqlState(String sqlState) {
-        this.sqlState = sqlState;
-    }
-
-    public int getSqlCode() {
-        return sqlCode;
-    }
-
-    public void setSqlCode(int sqlCode) {
-        this.sqlCode = sqlCode;
-    }
-
-    public String getSqlMessage() {
-        return sqlMessage;
-    }
-
-    public void setSqlMessage(String sqlMessage) {
-        this.sqlMessage = sqlMessage;
-    }
-
-    public String getLastUpdatedHostName() {
-        return lastUpdatedHostName;
-    }
-
-    public void setLastUpdatedHostName(String lastUpdateHostName) {
-        this.lastUpdatedHostName = lastUpdateHostName;
-    }
-
-    public Date getLastUpdatedTime() {
-        return lastUpdatedTime;
-    }
-
-    public void setLastUpdatedTime(Date lastUpdateTime) {
-        this.lastUpdatedTime = lastUpdateTime;
-    }
-
     /**
      * An indicator to the incoming batch service as to whether this batch
      * should be saved off.
@@ -333,25 +212,9 @@ public class IncomingBatch implements Serializable {
      * @return
      */
     public boolean isPersistable() {
-        return batchId >= 0;
+        return getBatchId() >= 0;
     }
 
-    public String getChannelId() {
-        return channelId;
-    }
-
-    public void setChannelId(String channelId) {
-        this.channelId = channelId;
-    }
-
-    public void setErrorFlag(boolean errorFlag) {
-        this.errorFlag = errorFlag;
-    }
-
-    public boolean isErrorFlag() {
-        return errorFlag;
-    }
-    
     public void setFailedLineNumber(long failedLineNumber) {
         this.failedLineNumber = failedLineNumber;
     }
@@ -360,18 +223,6 @@ public class IncomingBatch implements Serializable {
         return failedLineNumber;
     }
     
-    public void setIgnoreCount(long ignoreCount) {
-        this.ignoreCount = ignoreCount;
-    }
-    
-    public void incrementIgnoreCount() {
-        this.ignoreCount++;
-    }
-    
-    public long getIgnoreCount() {
-        return ignoreCount;
-    }
-
     public long getIgnoreRowCount() {
 		return ignoreRowCount;
 	}
@@ -384,13 +235,9 @@ public class IncomingBatch implements Serializable {
 		this.ignoreRowCount = ignoreRowCount;
 	}
 
-	public String getStagedLocation() {
-        return Batch.getStagedLocation(false, nodeId);
-    }
-
     @Override
     public String toString() {
-        return Long.toString(batchId);
+        return Long.toString(getBatchId());
     }
 
     @Override
@@ -399,11 +246,11 @@ public class IncomingBatch implements Serializable {
             return false;
         }
         IncomingBatch b = (IncomingBatch) o;
-        return batchId == b.batchId && StringUtils.equals(nodeId, b.nodeId);
+        return getBatchId() == b.getBatchId() && StringUtils.equals(getNodeId(), b.getNodeId());
     }
     
     @Override
     public int hashCode() {
-        return (String.valueOf(batchId) + "-" + nodeId).hashCode();
+        return (String.valueOf(getBatchId()) + "-" + getNodeId()).hashCode();
     }
 }

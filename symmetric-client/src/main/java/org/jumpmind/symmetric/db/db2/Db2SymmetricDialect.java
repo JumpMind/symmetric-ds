@@ -119,6 +119,8 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
+        transaction.prepareAndExecute("set " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " = null");
+        transaction.prepareAndExecute("set " + getSourceNodeExpression() + " = null");
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
