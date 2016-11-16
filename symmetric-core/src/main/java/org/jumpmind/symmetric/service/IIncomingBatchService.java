@@ -78,6 +78,8 @@ public interface IIncomingBatchService {
     
     public List<IncomingBatchSummary> findIncomingBatchSummaryByChannel(Status... statuses);
     
+    public List<IncomingBatchSummary> findIncomingBatchSummary(Status... statuses);
+    
     public Map<String, Date> findLastUpdatedByChannel();
     
 }

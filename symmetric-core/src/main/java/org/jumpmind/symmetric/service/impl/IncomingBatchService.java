@@ -376,6 +376,20 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         String sql = getSql("selectIncomingBatchSummaryByStatusAndChannelSql").replace(":STATUS_LIST",
                 inList.substring(0, inList.length() - 1));
 
+        return sqlTemplate.query(sql, new IncomingBatchSummaryChannelMapper(), args);
+    }
+    
+    public List<IncomingBatchSummary> findIncomingBatchSummary(Status... statuses) {
+        Object[] args = new Object[statuses.length];
+        StringBuilder inList = new StringBuilder();
+        for (int i = 0; i < statuses.length; i++) {
+            args[i] = statuses[i].name();
+            inList.append("?,");
+        }
+
+        String sql = getSql("selectIncomingBatchSummaryByStatusSql").replace(":STATUS_LIST",
+                inList.substring(0, inList.length() - 1));
+
         return sqlTemplate.query(sql, new IncomingBatchSummaryMapper(), args);
     }
     
@@ -394,8 +408,20 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             summary.setStatus(Status.valueOf(rs.getString("status")));
             summary.setNodeId(rs.getString("node_id"));
             summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
-            summary.setChannel(rs.getString("channel_id"));
+            summary.setLastBatchUpdateTime(rs.getDateTime("last_update_time"));
             summary.setDataCount(rs.getInt("data"));
+            return summary;
+        }
+    }
+    
+    class IncomingBatchSummaryChannelMapper extends IncomingBatchSummaryMapper {
+        public IncomingBatchSummary mapRow(Row rs) {
+            IncomingBatchSummary summary = super.mapRow(rs);
+            summary.setChannel(rs.getString("channel_id"));
+            summary.setSqlMessage(rs.getString("sql_message"));
+            if (summary.getSqlMessage() != null) {
+                summary.setErrorBatchId(rs.getLong("batch_id"));
+            }
             return summary;
         }
     }

@@ -938,6 +938,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             summary.setStatus(Status.valueOf(rs.getString("status")));
             summary.setNodeId(rs.getString("node_id"));
             summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
+            summary.setLastBatchUpdateTime(rs.getDateTime("last_update_time"));
+            summary.setTotalBytes(rs.getLong("total_bytes"));
+            summary.setTotalMillis(rs.getLong("total_millis"));
             return summary;
         }
     }
@@ -946,6 +949,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         public OutgoingBatchSummary mapRow(Row rs) {
             OutgoingBatchSummary summary = super.mapRow(rs);
             summary.setChannel(rs.getString("channel_id"));
+            summary.setSqlMessage(rs.getString("sql_message"));
+            if (summary.getSqlMessage() != null) {
+                summary.setErrorBatchId(rs.getLong("batch_id"));
+            }
             return summary;
         }
     }

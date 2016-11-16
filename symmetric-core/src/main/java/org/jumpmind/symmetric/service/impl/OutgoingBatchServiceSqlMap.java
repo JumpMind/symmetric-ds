@@ -111,11 +111,15 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 "select count(*) from $(outgoing_batch) where status != 'OK' and channel_id=?");
 
         putSql("selectOutgoingBatchSummaryByStatusSql",
-                "select count(*) as batches, sum(data_event_count) as data, status, node_id, min(create_time) as oldest_batch_time       "
-                        + "  from $(outgoing_batch) where status in (:STATUS_LIST) group by status, node_id order by oldest_batch_time asc   ");
+                "select count(*) as batches, sum(data_event_count) as data, status, node_id, min(create_time) as oldest_batch_time,       "
+                        + " max(last_update_time) as last_update_time, sum(byte_count) as total_bytes, " 
+                        + " sum(router_millis + extract_millis + network_millis + filter_millis + load_millis) as total_millis "
+                        + " from $(outgoing_batch) where status in (:STATUS_LIST) group by status, node_id order by oldest_batch_time asc   ");
 
         putSql("selectOutgoingBatchSummaryByStatusAndChannelSql",
-                "select count(*) as batches, sum(data_event_count) as data, status, node_id, min(create_time) as oldest_batch_time, channel_id      "
+                "select count(*) as batches, sum(data_event_count) as data, status, node_id, min(create_time) as oldest_batch_time, channel_id,      "
+                        + " max(last_update_time) as last_update_time, max(sql_message) as sql_message, min(batch_id) as batch_id, "
+                        + " sum(byte_count) as total_bytes, sum(router_millis + extract_millis + network_millis + filter_millis + load_millis) as total_millis "
                         + "  from $(outgoing_batch) where status in (:STATUS_LIST) group by status, node_id, channel_id order by node_id, oldest_batch_time asc   ");
 
         putSql("updateOutgoingBatchesStatusSql",
