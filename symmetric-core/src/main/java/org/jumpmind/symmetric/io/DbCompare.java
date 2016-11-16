@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -43,6 +44,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.DbCompareReport.TableReport;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -393,6 +395,10 @@ public class DbCompare {
 
     protected Table loadTargetTable(DbCompareTables tables) {
         Table targetTable = null;
+        
+        String catalog = targetEngine.getDatabasePlatform().getDefaultCatalog();
+        String schema = targetEngine.getDatabasePlatform().getDefaultSchema();
+        
         if (config.isUseSymmetricConfig()) {
             TransformTableNodeGroupLink transform = getTransformFor(tables.getSourceTable());
             if (transform != null) {
@@ -401,13 +407,34 @@ public class DbCompare {
                 tables.setTransform(transform);
                 return targetTable;
             }
+            
+            TriggerRouter triggerRouter = getTriggerRouterFor(tables.getSourceTable());
+            if (triggerRouter != null) {
+                catalog = triggerRouter.getTargetCatalog(catalog);
+                schema = triggerRouter.getTargetSchema(schema);
+            }
         } 
 
         targetTable = targetEngine.getDatabasePlatform().
-                getTableFromCache(tables.getSourceTable().getName(), true);
+                getTableFromCache(catalog, schema, tables.getSourceTable().getName(), true);
         tables.setTargetTable(targetTable);
 
         return targetTable;
+    }
+
+    protected TriggerRouter getTriggerRouterFor(Table sourceTable) {
+        // TODO get routers.
+        Set<TriggerRouter> triggerRouters = sourceEngine.getTriggerRouterService().getTriggerRouterForTableForCurrentNode(
+                sourceTable.getCatalog(), sourceTable.getSchema(), sourceTable.getName(), false);
+        
+        for (TriggerRouter triggerRouter : triggerRouters) {
+            String routerTargetNodeGroupId = triggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId();
+            String compareTargetNodeGroupId = targetEngine.getNodeService().getCachedIdentity().getNodeGroupId();
+            if (StringUtils.equals(compareTargetNodeGroupId, routerTargetNodeGroupId)) {
+                return triggerRouter;
+            }
+        }
+        return null;
     }
 
     protected TransformTableNodeGroupLink getTransformFor(Table sourceTable) {
