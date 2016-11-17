@@ -110,6 +110,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
             Set<Node> possibleTargetNodes, boolean initialLoad, boolean initialLoadSelectUsed,
             TriggerRouter triggerRouter) {
+        
+        possibleTargetNodes = filterOutOlderNodes(dataMetaData, possibleTargetNodes);
 
         // the list of nodeIds that we will return
         Set<String> nodeIds = new HashSet<String>();
@@ -167,16 +169,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                                 && nodeThatMayBeRoutedTo.getNodeId().equals(sourceNodeId)) {
                             nodeIds.add(sourceNodeId);
                         }
-                    }
-                }
-
-            } else if (tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_EVENT)
-            		|| tableMatches(dataMetaData, TableConstants.SYM_MONITOR)
-            	    || tableMatches(dataMetaData, TableConstants.SYM_MONITOR_EVENT) 
-            	    || tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)) {
-                for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                    if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
-                        nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
                     }
                 }
             } else {
@@ -242,6 +234,22 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         }
 
         return nodeIds;
+    }
+    
+    protected Set<Node> filterOutOlderNodes(DataMetaData dataMetaData, Set<Node> possibleTargetNodes) {
+        if (tableMatches(dataMetaData, TableConstants.SYM_MONITOR)
+                || tableMatches(dataMetaData, TableConstants.SYM_MONITOR_EVENT) 
+                || tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)) {
+            Set<Node> targetNodes = new HashSet<Node>();
+            for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
+                if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
+                    targetNodes.add(nodeThatMayBeRoutedTo);
+                }
+            }
+            return targetNodes;
+        } else {
+            return possibleTargetNodes;
+        }
     }
 
     protected void routeNodeTables(Set<String> nodeIds, Map<String, String> columnValues,
