@@ -729,14 +729,18 @@ public class DataService extends AbstractService implements IDataService {
         
         if (reloadRequests != null && reloadRequests.size() > 0) {
             int deleteEventsSent = 0;
-            for (TriggerHistory triggerHistory : triggerHistories) {
+            
+            for (ListIterator<TriggerHistory> triggerHistoryIterator = triggerHistories
+                    .listIterator(triggerHistories.size()); triggerHistoryIterator.hasPrevious();) {
+                TriggerHistory triggerHistory = triggerHistoryIterator.previous();
                 List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                         .getTriggerHistoryId());
-                
                 TableReloadRequest currentRequest = reloadRequests.get(ParameterConstants.ALL + ParameterConstants.ALL);
                 boolean fullLoad = currentRequest == null ? false : true;
-                
-                for (TriggerRouter triggerRouter : triggerRouters) {
+
+                for (ListIterator<TriggerRouter> iterator = triggerRouters
+                        .listIterator(triggerRouters.size()); iterator.hasPrevious();) {
+                    TriggerRouter triggerRouter = iterator.previous();                
                     if (!fullLoad) {
                         currentRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
                     }
