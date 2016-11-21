@@ -657,7 +657,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     
     public synchronized void uninstall() {
         
-        log.warn("Attempting an uninstall of all SymmetricDS database objects from the database");
+        log.info("Attempting an uninstall of all SymmetricDS database objects from the database");
         
         stop();
         
@@ -719,7 +719,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         parameterService.setDatabaseHasBeenInitialized(false);
         
-        log.warn("Finished uninstalling SymmetricDS database objects from the database");
+        log.info("Finished uninstalling SymmetricDS database objects from the database");
         
     }    
 
