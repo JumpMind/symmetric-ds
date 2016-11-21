@@ -86,6 +86,9 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                 ""
                         + "select count(*) from $(trigger_hist) where (name_for_update_trigger=? or name_for_insert_trigger=? or name_for_delete_trigger=?) and trigger_id != ? and inactive_time is null   ");
 
+        putSql("selectCountOfTriggerHistory", ""
+                + "select count(*) from $(trigger_hist)     ");
+
         putSql("selectGroupTriggersSql", ""
                 + "where r.source_node_group_id = ? or r.target_node_group_id = ? order by t.channel_id   ");
 

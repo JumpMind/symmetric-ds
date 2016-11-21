@@ -384,6 +384,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return history;
     }
+    
+    public boolean hasAnyActiveTriggerHistories(){
+    	return sqlTemplate.queryForInt(getSql("selectCountOfTriggerHistory", "activeTriggerHistSql")) > 0;
+    }
 
     public List<TriggerHistory> getActiveTriggerHistories(Trigger trigger) {
         List<TriggerHistory> active = sqlTemplate.query(getSql("allTriggerHistSql", "activeTriggerHistSqlByTriggerId"),
