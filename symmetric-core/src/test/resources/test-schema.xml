@@ -320,12 +320,12 @@
 	</table>	
 
     <table name="test_a">
-        <column name="id" type="varchar" size="10" required="true" primaryKey="true"/>
+        <column name="id" type="VARCHAR" size="10" required="true" primaryKey="true"/>
     </table>
 
     <table name="test_b">
-        <column name="id" type="varchar" size="10" required="true" primaryKey="true"/>
-        <column name="aid" type="varchar" size="10" required="true" />
+        <column name="id" type="VARCHAR" size="10" required="true" primaryKey="true"/>
+        <column name="aid" type="VARCHAR" size="10" required="true" />
         <foreign-key foreignTable="test_a" name="fk_b_to_a_id">
             <reference local="aid" foreign="id" />
         </foreign-key>
