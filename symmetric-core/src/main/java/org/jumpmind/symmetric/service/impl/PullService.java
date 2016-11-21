@@ -111,6 +111,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node node = nodeCommunication.getNode();
+        
+        boolean immediatePullIfDataFound = parameterService.is(ParameterConstants.PULL_IMMEDIATE_IF_DATA_FOUND, false);
+        
         if (StringUtils.isNotBlank(node.getSyncUrl()) || !parameterService.isRegistrationServer()) {
             int pullCount = 0;
             long batchesProcessedCount = 0;
@@ -119,7 +122,11 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                 pullCount++;
                 log.debug("Pull requested for {}", node.toString());
                 if (pullCount > 1) {
-                    log.info("Immediate pull requested while in reload mode");
+                    if(immediatePullIfDataFound && pullCount > 2){
+                        log.info("Immediate pull requested while data found");
+                    }else{
+                        log.info("Immediate pull requested while in reload mode");
+                	}
                 }
 
                 try {
@@ -129,7 +136,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                     fireOffline(ex, node, status);
                 }
 
-                if (!status.failed() && (status.getDataProcessed() > 0 || status.getBatchesProcessed() > 0)) {
+                if (!status.failed() && ((status.getDataProcessed() > 0 && !immediatePullIfDataFound) || status.getBatchesProcessed() > batchesProcessedCount)) {
                     log.info(
                             "Pull data received from {} {}.  {} rows and {} batches were processed",
                             new Object[] { node.toString(), "on channel thread " + nodeCommunication.getQueue(),
@@ -146,7 +153,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                  * load so that the initial load completes as quickly as
                  * possible.
                  */
-            } while (nodeService.isDataLoadStarted() && !status.failed()
+            } while ((immediatePullIfDataFound || nodeService.isDataLoadStarted()) && !status.failed()
                     && status.getBatchesProcessed() > batchesProcessedCount);           
         } else {
             log.warn("Cannot pull node '{}' in the group '{}'.  The sync url is blank",
