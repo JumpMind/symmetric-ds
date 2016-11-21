@@ -142,23 +142,24 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node node = nodeCommunication.getNode();
+        boolean immediatePushIfDataFound = parameterService.is(ParameterConstants.PUSH_IMMEDIATE_IF_DATA_FOUND, false);
+        
         if (StringUtils.isNotBlank(node.getSyncUrl()) || 
                 !parameterService.isRegistrationServer()) {
             try {
                 startTimesOfNodesBeingPushedTo.put(nodeCommunication.getIdentifier(), new Date());
-                long reloadBatchesProcessed = 0;
-                long lastBatchCount = 0;
                 do {
-                    if (lastBatchCount > 0) {
-                        log.info(
-                                "Pushing to {} again because the last push contained reload batches",
-                                node);
-                    }
-                    reloadBatchesProcessed = status.getReloadBatchesProcessed();
+                	if (status.getBatchesProcessed() > 0) {
+	                    if (status.getReloadBatchesProcessed() > 0) {
+	                        log.info("Pushing to {} again because the last push contained reload batches", node);
+	                    } else {
+	                    	log.debug("Pushing to {} again because the last push contained batches", node);
+	                    }
+	                    status.resetCounts();
+                	}
                     log.debug("Push requested for node {} channel {}", node, nodeCommunication.getQueue());
                     pushToNode(node, status);
-                    if (!status.failed() && status.getBatchesProcessed() > 0 
-                            && status.getBatchesProcessed() != lastBatchCount) {
+                    if (!status.failed() && status.getBatchesProcessed() > 0) {
                         log.info(
                                 "Pushed data to node {}. {} data and {} batches were processed",
                                 new Object[] { node, status.getDataProcessed(),
@@ -170,8 +171,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                         status.getBatchesProcessed()});                        
                     }
                     log.debug("Push completed for {} channel {}", node, nodeCommunication.getQueue());
-                    lastBatchCount = status.getBatchesProcessed();
-                } while (status.getReloadBatchesProcessed() > reloadBatchesProcessed && !status.failed());
+                } while (((immediatePushIfDataFound && status.getBatchesProcessed() > 0) || status.getReloadBatchesProcessed() > 0)
+                		&& !status.failed());
             } finally {
                 startTimesOfNodesBeingPushedTo.remove(node.getNodeId());
             }

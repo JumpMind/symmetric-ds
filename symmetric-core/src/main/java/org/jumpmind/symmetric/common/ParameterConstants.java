@@ -74,6 +74,7 @@ final public class ParameterConstants {
     public final static String PUSH_THREAD_COUNT_PER_SERVER = "push.thread.per.server.count";
     public final static String PUSH_MINIMUM_PERIOD_MS = "push.period.minimum.ms";
     public final static String PUSH_LOCK_TIMEOUT_MS = "push.lock.timeout.ms";
+    public final static String PUSH_IMMEDIATE_IF_DATA_FOUND = "push.immediate.if.data.found";
 
     public final static String OFFLINE_PULL_THREAD_COUNT_PER_SERVER = "offline.pull.thread.per.server.count";
     public final static String OFFLINE_PULL_LOCK_TIMEOUT_MS = "offline.pull.lock.timeout.ms";
