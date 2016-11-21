@@ -27,6 +27,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -36,7 +37,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymmetricEngineAware {
+public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymmetricEngineAware, IBuiltInExtensionPoint {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 

@@ -1,12 +1,13 @@
 package org.jumpmind.symmetric.db;
 
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SoftwareUpgradeListener implements ISoftwareUpgradeListener, ISymmetricEngineAware {
+public class SoftwareUpgradeListener implements ISoftwareUpgradeListener, ISymmetricEngineAware, IBuiltInExtensionPoint {
 
 	protected static final Logger log = LoggerFactory.getLogger(SoftwareUpgradeListener.class);
 
