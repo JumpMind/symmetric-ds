@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IOfflineDetectorService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
@@ -73,7 +74,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     protected void fireOffline(Exception error, Node remoteNode, RemoteNodeStatus status) {
         String syncUrl = remoteNode.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remoteNode
                         .getSyncUrl();
-        Throwable cause = ExceptionUtils.getRootCause(error);
+        Throwable cause = getRootCause(error);
         if (cause == null) {
             cause = error;
         }
@@ -163,7 +164,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     protected boolean isOffline(Exception ex) {
         boolean offline = false;
         if (ex != null) {
-            Throwable cause = ExceptionUtils.getRootCause(ex);
+            Throwable cause = getRootCause(ex);
             if (cause == null) {
                 cause = ex;
             }
@@ -178,7 +179,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     protected boolean isNotAuthenticated(Exception ex) {
         boolean offline = false;
         if (ex != null) {
-            Throwable cause = ExceptionUtils.getRootCause(ex);
+            Throwable cause = getRootCause(ex);
             offline = ex instanceof AuthenticationException || 
                     cause instanceof AuthenticationException;
         }
@@ -188,7 +189,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     protected boolean isBusy(Exception ex) {
         boolean offline = false;
         if (ex != null) {
-            Throwable cause = ExceptionUtils.getRootCause(ex);
+            Throwable cause = getRootCause(ex);
             offline = ex instanceof ConnectionRejectedException || 
                     cause instanceof ConnectionRejectedException;
         }
@@ -198,7 +199,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     protected boolean isServiceUnavailable(Exception ex){
         boolean offline = false;
         if (ex != null) {
-            Throwable cause = ExceptionUtils.getRootCause(ex);
+            Throwable cause = getRootCause(ex);
             offline = ex instanceof ServiceUnavailableException || 
                     cause instanceof ServiceUnavailableException;
         }
@@ -208,7 +209,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     protected boolean isSyncDisabled(Exception ex) {
         boolean syncDisabled = false;
         if (ex != null) {
-            Throwable cause = ExceptionUtils.getRootCause(ex);
+            Throwable cause = getRootCause(ex);
             syncDisabled = cause instanceof SyncDisabledException;
             if (syncDisabled == false && ex instanceof SyncDisabledException) {
                 syncDisabled = true;
@@ -220,9 +221,11 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     protected boolean isRegistrationRequired(Exception ex) {
         boolean registrationRequired = false;
         if (ex != null) {
-            Throwable cause = ExceptionUtils.getRootCause(ex);
-            registrationRequired = cause instanceof RegistrationRequiredException;
-            if (registrationRequired == false && ex instanceof RegistrationRequiredException) {
+            Throwable cause = getRootCause(ex);
+            registrationRequired = cause instanceof RegistrationRequiredException || 
+                    cause instanceof RegistrationNotOpenException;
+            if (registrationRequired == false && (ex instanceof RegistrationRequiredException ||
+                    cause instanceof RegistrationNotOpenException)) {
                 registrationRequired = true;
             }
         }
@@ -232,7 +235,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     protected HttpException getHttpException(Exception ex) {
         HttpException exception = null;
         if (ex != null) {
-            Throwable cause = ExceptionUtils.getRootCause(ex);
+            Throwable cause = getRootCause(ex);
             if (cause instanceof HttpException) {
                 exception = (HttpException) cause; 
             } else if (ex instanceof HttpException) {
@@ -240,6 +243,14 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             }
         }
         return exception;
+    }
+    
+    protected Throwable getRootCause(Exception ex) {
+        Throwable cause = ExceptionUtils.getRootCause(ex);
+        if (cause == null) {
+            cause = ex;
+        }
+        return cause;
     }
 
 }
