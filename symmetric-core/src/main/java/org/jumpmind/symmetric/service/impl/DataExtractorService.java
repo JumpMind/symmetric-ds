@@ -22,10 +22,12 @@ package org.jumpmind.symmetric.service.impl;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -64,6 +66,7 @@ import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
@@ -85,7 +88,6 @@ import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
 import org.jumpmind.symmetric.io.data.reader.IExtractDataReaderSource;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
-import org.jumpmind.symmetric.io.data.reader.SimpleStagingDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
@@ -988,9 +990,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             OutgoingBatch currentBatch, boolean isRetry, IDataWriter dataWriter, BufferedWriter writer, ExtractMode mode) {
         if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode) {
             currentBatch.setSentCount(currentBatch.getSentCount() + 1);
-            if (currentBatch.getStatus() != Status.RS) {
-                changeBatchStatus(Status.SE, currentBatch, mode);
-            }
 
             long ts = System.currentTimeMillis();
 
@@ -1024,9 +1023,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     
                     Channel channel = configurationService.getChannel(currentBatch.getChannelId());
                     DataContext ctx = new DataContext();
-                    SimpleStagingDataReader dataReader = new SimpleStagingDataReader(BatchType.EXTRACT, currentBatch.getBatchId(), 
-                            currentBatch.getNodeId(), isRetry, extractedBatch, writer, ctx, channel.getMaxKBytesPerSecond());
-                    dataReader.process();
+                    transferFromStaging(mode, BatchType.EXTRACT, currentBatch, isRetry, extractedBatch, writer, ctx,
+                            channel.getMaxKBytesPerSecond());
                 } else {
                     IDataReader dataReader = new ProtocolDataReader(BatchType.EXTRACT,
                             currentBatch.getNodeId(), extractedBatch);
@@ -1060,6 +1058,90 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return currentBatch;
 
     }
+    
+    protected void transferFromStaging(ExtractMode mode, BatchType batchType, OutgoingBatch batch, boolean isRetry, IStagedResource stagedResource,
+            BufferedWriter writer, DataContext context, BigDecimal maxKBytesPerSec) {
+        final int MAX_WRITE_LENGTH = 32768;
+        BufferedReader reader = stagedResource.getReader();
+        try {
+            // Retry means we've sent this batch before, so let's ask to
+            // retry the batch from the target's staging
+            if (isRetry) {
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith(CsvConstants.BATCH)) {
+                        writer.write(CsvConstants.RETRY + "," + batch.getBatchId());
+                        writer.newLine();
+                        writer.write(CsvConstants.COMMIT + "," + batch.getBatchId());
+                        writer.newLine();
+                        break;
+                    } else {
+                        writer.write(line);
+                        writer.newLine();
+                    }
+                }
+            } else {
+                long totalCharsRead = 0, totalBytesRead = 0;
+                int numCharsRead = 0, numBytesRead = 0;
+                long startTime = System.currentTimeMillis(), ts = startTime, bts = startTime;
+                boolean isThrottled = maxKBytesPerSec != null && maxKBytesPerSec.compareTo(BigDecimal.ZERO) > 0;
+                long totalThrottleTime = 0;
+                int bufferSize = MAX_WRITE_LENGTH;
+
+                if (isThrottled) {
+                    bufferSize = maxKBytesPerSec.multiply(new BigDecimal(1024)).intValue();
+                }
+                char[] buffer = new char[bufferSize];
+
+                while ((numCharsRead = reader.read(buffer)) != -1) {
+                    writer.write(buffer, 0, numCharsRead);
+                    totalCharsRead += numCharsRead;
+
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new IoException("This thread was interrupted");
+                    }
+
+                    long batchStatusUpdateMillis = parameterService.getLong(ParameterConstants.OUTGOING_BATCH_UPDATE_STATUS_MILLIS);
+                    if (System.currentTimeMillis() - ts > batchStatusUpdateMillis && batch.getStatus() != Status.SE && batch.getStatus() != Status.RS) {
+                        changeBatchStatus(Status.SE, batch, mode);
+                    }
+                    if (System.currentTimeMillis() - ts > 60000) {
+                        log.info(
+                                "Batch '{}', for node '{}', for process 'send from stage' has been processing for {} seconds.  "
+                                        + "The following stats have been gathered: {}",
+                                new Object[] { batch.getBatchId(), batch.getNodeId(), (System.currentTimeMillis() - startTime) / 1000,
+                                        "CHARS=" + totalCharsRead });
+                        ts = System.currentTimeMillis();
+                    }
+
+                    if (isThrottled) {
+                        numBytesRead += new String(buffer, 0, numCharsRead).getBytes().length;
+                        totalBytesRead += numBytesRead;
+                        if (numBytesRead >= bufferSize) {
+                            long expectedMillis = (long) (((numBytesRead / 1024f) / maxKBytesPerSec.floatValue()) * 1000);
+                            long actualMillis = System.currentTimeMillis() - bts;
+                            if (actualMillis < expectedMillis) {
+                                totalThrottleTime += expectedMillis - actualMillis;
+                                Thread.sleep(expectedMillis - actualMillis);
+                            }
+                            numBytesRead = 0;
+                            bts = System.currentTimeMillis();
+                        }
+                    }
+                }
+                if (log.isDebugEnabled() && totalThrottleTime > 0) {
+                    log.debug("Batch '{}' for node '{}' took {}ms for {} bytes and was throttled for {}ms because limit is set to {} KB/s",
+                            batch.getBatchId(), batch.getNodeId(), (System.currentTimeMillis() - startTime), totalBytesRead,
+                            totalThrottleTime, maxKBytesPerSec);
+                }
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        } finally {
+            stagedResource.close();
+        }
+    }
+    
 
     public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId,
             long endBatchId) {
@@ -1952,5 +2034,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             return isRetry;
         }
     }
+
 
 }
