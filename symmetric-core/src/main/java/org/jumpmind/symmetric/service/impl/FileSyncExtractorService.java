@@ -89,7 +89,7 @@ public class FileSyncExtractorService extends DataExtractorService {
     @Override
     protected MultiBatchStagingWriter buildMultiBatchStagingWriter(ExtractRequest request, final Node sourceNode, final Node targetNode, 
             List<OutgoingBatch> batches, ProcessInfo processInfo, Channel channel) {
-        MultiBatchStagingWriter multiBatchStatingWriter = new MultiBatchStagingWriter(this, request, sourceNode.getNodeId(), stagingManager,
+        MultiBatchStagingWriter multiBatchStagingWriter = new MultiBatchStagingWriter(this, request, sourceNode.getNodeId(), stagingManager,
                 batches, channel.getMaxBatchSize(), processInfo) {
             @Override
             protected IDataWriter buildWriter(long memoryThresholdInBytes) {                
@@ -111,16 +111,18 @@ public class FileSyncExtractorService extends DataExtractorService {
                 return fileSyncWriter;
             }
         };
-        return multiBatchStatingWriter;
+        return multiBatchStagingWriter;
     }
     
     @Override
     protected void queue(String nodeId, String queue, RemoteNodeStatuses statuses) {
-        final NodeCommunication.CommunicationType TYPE = NodeCommunication.CommunicationType.FILE_EXTRACT;
-        int availableThreads = nodeCommunicationService.getAvailableThreads(TYPE);
-        NodeCommunication lock = nodeCommunicationService.find(nodeId, queue, TYPE);
-        if (availableThreads > 0) {
-            nodeCommunicationService.execute(lock, statuses, this);
+        if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {            
+            final NodeCommunication.CommunicationType TYPE = NodeCommunication.CommunicationType.FILE_XTRCT;
+            int availableThreads = nodeCommunicationService.getAvailableThreads(TYPE);
+            NodeCommunication lock = nodeCommunicationService.find(nodeId, queue, TYPE);
+            if (availableThreads > 0) {
+                nodeCommunicationService.execute(lock, statuses, this);
+            }
         }
     }
     

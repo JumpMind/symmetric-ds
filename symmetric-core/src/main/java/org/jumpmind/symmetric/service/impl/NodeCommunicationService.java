@@ -401,7 +401,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             case FILE_PUSH:
                 threadCountParameter = ParameterConstants.FILE_PUSH_THREAD_COUNT_PER_SERVER;
                 break;
-            case FILE_EXTRACT:
+            case FILE_XTRCT:
             case EXTRACT:
                 threadCountParameter = ParameterConstants.INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER;                
                 break;
@@ -463,7 +463,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             case FILE_PUSH:
                 parameter = ParameterConstants.FILE_PUSH_LOCK_TIMEOUT_MS;
                 break;
-            case FILE_EXTRACT:
+            case FILE_XTRCT:
             case EXTRACT:
                 parameter = ParameterConstants.INITIAL_LOAD_EXTRACT_TIMEOUT_MS;
                 break;
