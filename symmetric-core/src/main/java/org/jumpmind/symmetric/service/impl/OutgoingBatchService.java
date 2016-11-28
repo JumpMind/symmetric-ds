@@ -609,6 +609,30 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryChannelMapper(), args);
     }
 
+    public Map<String, Float> getNodeThroughputByChannel() {
+        String sql = getSql("getNodeThroughputByChannelSql");
+        NodeThroughputMapper mapper = new NodeThroughputMapper();
+        
+        List<Object> temp = sqlTemplateDirty.query(sql, mapper);
+        return mapper.getThroughputMap();
+    }
+    
+    private class NodeThroughputMapper implements ISqlRowMapper<Object> {
+        Map<String, Float> throughputMap = new HashMap<String, Float>();
+        
+        @Override
+        public Object mapRow(Row row) {
+            throughputMap.put(row.getString("node_id") + "-" + row.getString("channel_id") + "-" + row.get("direction"), row.getFloat("rows_per_milli"));
+            return null;
+        }
+
+        public Map<String, Float> getThroughputMap() {
+            return throughputMap;
+        }
+        
+        
+    }
+    
     public Set<Long> getActiveLoads(String sourceNodeId) {
         Set<Long> loads = new HashSet<Long>();
         

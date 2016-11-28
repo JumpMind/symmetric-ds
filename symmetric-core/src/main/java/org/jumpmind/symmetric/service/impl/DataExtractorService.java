@@ -829,7 +829,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                     synchronized (lock) {
                         if (!isPreviouslyExtracted(currentBatch)) {
-                            currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
+                            
                             if (currentBatch.getExtractStartTime() == null) {
                                 currentBatch.setExtractStartTime(new Date());
                             }
@@ -852,6 +852,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             extractTimeInMs = System.currentTimeMillis() - ts;
                             Statistics stats = getExtractStats(writer);
                             transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);
+                            currentBatch.setExtractCount(stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
                             extractTimeInMs = extractTimeInMs - transformTimeInMs;
                             byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                         }

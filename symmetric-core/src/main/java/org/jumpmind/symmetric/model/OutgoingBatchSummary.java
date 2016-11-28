@@ -41,6 +41,7 @@ public class OutgoingBatchSummary implements Serializable {
     private long errorBatchId;
     private long totalBytes;
     private long totalMillis;
+    private float averageRowsPerMilli;
     
     public String getNodeId() {
         return nodeId;
@@ -129,4 +130,14 @@ public class OutgoingBatchSummary implements Serializable {
     public void setTotalMillis(long totalMillis) {
         this.totalMillis = totalMillis;
     }
+    
+    public float getAverageRowsPerMilli() {
+        return averageRowsPerMilli;
+    }
+
+    public void setAverageRowsPerMilli(float averageRowsPerMilli) {
+        this.averageRowsPerMilli = averageRowsPerMilli;
+    }
+
+    
 }

@@ -37,6 +37,7 @@ import org.jumpmind.symmetric.statistic.ChannelStatsByPeriodMap;
 import org.jumpmind.symmetric.statistic.HostStats;
 import org.jumpmind.symmetric.statistic.HostStatsByPeriodMap;
 import org.jumpmind.symmetric.statistic.JobStats;
+import org.jumpmind.symmetric.statistic.NodeStatsByPeriodMap;
 
 /**
  * @see IStatisticService
@@ -85,6 +86,13 @@ public class StatisticService extends AbstractService implements IStatisticServi
         List<ChannelStats> list = sqlTemplateDirty.query(getSql("selectChannelStatsSql"),
                 new ChannelStatsMapper(), start, end, nodeId);        
         return new ChannelStatsByPeriodMap(start, end, list, periodSizeInMinutes);
+    }    
+
+    public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end,
+            String nodeId, int periodSizeInMinutes) {
+        List<ChannelStats> list = sqlTemplateDirty.query(getSql("selectNodeStatsSql"),
+                new ChannelStatsMapper(), start, end, nodeId);        
+        return new NodeStatsByPeriodMap(start, end, list, periodSizeInMinutes);
     }    
 
     public void save(HostStats stats) {
@@ -139,8 +147,12 @@ public class StatisticService extends AbstractService implements IStatisticServi
         public ChannelStats mapRow(Row rs) {
             ChannelStats stats = new ChannelStats();
             stats.setNodeId(rs.getString("node_id"));
-            stats.setHostName(rs.getString("host_name"));
-            stats.setChannelId(rs.getString("channel_id"));
+            try {
+                stats.setHostName(rs.getString("host_name"));
+                stats.setChannelId(rs.getString("channel_id"));
+            }
+            catch (Exception e) {
+            }
             stats.setStartTime(truncateToMinutes(rs.getDateTime("start_time")));
             stats.setEndTime(truncateToMinutes(rs.getDateTime("end_time")));
             stats.setDataRouted(rs.getLong("data_routed"));
