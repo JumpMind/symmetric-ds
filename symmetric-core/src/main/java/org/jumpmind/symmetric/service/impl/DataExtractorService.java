@@ -140,6 +140,7 @@ import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.transport.BatchBufferedWriter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.util.SymmetricUtils;
@@ -981,8 +982,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected boolean isRetry(OutgoingBatch currentBatch, Node remoteNode) {
+        boolean offline = parameterService.is(ParameterConstants.NODE_OFFLINE, false);
         IStagedResource previouslyExtracted = getStagedResource(currentBatch);
-        return previouslyExtracted != null && previouslyExtracted.exists() && previouslyExtracted.getState() != State.CREATE
+        return !offline && previouslyExtracted != null && previouslyExtracted.exists() && previouslyExtracted.getState() != State.CREATE
                 && currentBatch.getStatus() != OutgoingBatch.Status.RS && currentBatch.getSentCount() > 0 && remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0);
     }
 
@@ -992,11 +994,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             currentBatch.setSentCount(currentBatch.getSentCount() + 1);
 
             long ts = System.currentTimeMillis();
-
             IStagedResource extractedBatch = getStagedResource(currentBatch);
             if (extractedBatch != null) {
                 if (mode == ExtractMode.FOR_SYM_CLIENT && writer != null) {                   
-                    if (!isRetry && parameterService.is(ParameterConstants.OUTGOING_BATCH_COPY_TO_INCOMING_STAGING)) {
+                    if (!isRetry && parameterService.is(ParameterConstants.OUTGOING_BATCH_COPY_TO_INCOMING_STAGING) &&
+                            !parameterService.is(ParameterConstants.NODE_OFFLINE, false)) {
                         ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
                         if (targetEngine != null) {
                             try {
@@ -1134,6 +1136,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             batch.getBatchId(), batch.getNodeId(), (System.currentTimeMillis() - startTime), totalBytesRead,
                             totalThrottleTime, maxKBytesPerSec);
                 }
+            }
+            
+            if (writer instanceof BatchBufferedWriter) {
+                ((BatchBufferedWriter)writer).getBatchIds().add(batch.getBatchId());
+                
             }
         } catch (Throwable t) {
             throw new RuntimeException(t);
