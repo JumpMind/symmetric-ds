@@ -220,17 +220,17 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("getNodeThroughputByChannelSql", "select node_id, channel_id, direction, rows_per_milli from ( "
                 + "  select node_id, channel_id, 'outgoing' as direction, "
-                + "  sum(byte_count)  / avg(datediff(ms, create_time, last_update_time)) as rows_per_milli "
+                + "  sum(byte_count)  / avg(datediff(create_time, last_update_time)) as rows_per_milli "
                 + "  from sym_outgoing_batch where status = 'OK' and sent_count = 1 "
                 + "  group by node_id, channel_id order by node_id "
-                + "  ) "
+                + "  ) a "
                 + "  union all "
                 + "  select * from ( "
                 + "  select node_id, channel_id, 'incoming' as direction, "
-                + "  sum(statement_count)  / avg(datediff(ms, create_time, last_update_time)) as rows_per_milli "
+                + "  sum(statement_count)  / avg(datediff(create_time, last_update_time)) as rows_per_milli "
                 + "  from sym_incoming_batch where status = 'OK'  "
                 + "  group by node_id, channel_id order by node_id "
-                + "  )");
+                + "  ) b");
     }
 
 }
