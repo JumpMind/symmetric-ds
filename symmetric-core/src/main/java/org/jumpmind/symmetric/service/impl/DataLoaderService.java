@@ -499,6 +499,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         sourceNode.getNodeId(), listener, executor);
                 new SimpleStagingDataWriter(transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING, 
                         memoryThresholdInBytes, BatchType.LOAD, targetNodeId, ctx, loadListener).process();
+                
+                /* Previously submitted tasks will still be executed */
                 executor.shutdown();
 
                 OutputStreamWriter outWriter = null;
