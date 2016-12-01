@@ -218,16 +218,20 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + "   last_update_hostname, current_timestamp, create_time, 'copy' from $(outgoing_batch) where node_id=? and channel_id=? and batch_id > ?)     ");
 
 
-        putSql("getNodeThroughputByChannelSql", "select node_id, channel_id, direction, rows_per_milli from ( "
+        putSql("getNodeThroughputByChannelSql", "select node_id, channel_id, direction, total_rows, "
+                + "  average_create_time, average_last_update_time from ( "
                 + "  select node_id, channel_id, 'outgoing' as direction, "
-                + "  sum(byte_count)  / avg(datediff(create_time, last_update_time)) as rows_per_milli "
+                + "  sum(byte_count) as total_rows, avg(create_time) as average_create_time, "
+                + "  avg(last_update_time) as average_last_update_time "
                 + "  from sym_outgoing_batch where status = 'OK' and sent_count = 1 "
                 + "  group by node_id, channel_id order by node_id "
                 + "  ) a "
                 + "  union all "
-                + "  select * from ( "
+                + "  select node_id, channel_id, direction, total_rows, average_create_time, "
+                + "  average_last_update_time from ( "
                 + "  select node_id, channel_id, 'incoming' as direction, "
-                + "  sum(statement_count)  / avg(datediff(create_time, last_update_time)) as rows_per_milli "
+                + "  sum(statement_count) as total_rows, avg(create_time) as average_create_time, "
+                + "  avg(last_update_time) as average_last_update_time "
                 + "  from sym_incoming_batch where status = 'OK'  "
                 + "  group by node_id, channel_id order by node_id "
                 + "  ) b");

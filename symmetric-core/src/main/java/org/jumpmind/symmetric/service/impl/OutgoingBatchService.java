@@ -622,7 +622,13 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         
         @Override
         public Object mapRow(Row row) {
-            throughputMap.put(row.getString("node_id") + "-" + row.getString("channel_id") + "-" + row.get("direction"), row.getFloat("rows_per_milli"));
+            Long totalRows = row.getLong("total_rows");
+            Date avgCreateTime = row.getDateTime("average_create_time");
+            Date avgLastUpdatedTime = row.getDateTime("average_last_update_time");
+            long avgTime = avgLastUpdatedTime.getTime() - avgCreateTime.getTime();
+            
+            throughputMap.put(row.getString("node_id") + "-" + row.getString("channel_id") + "-" + 
+                    row.get("direction"), (float) (avgTime > 0 ? totalRows / avgTime : totalRows));
             return null;
         }
 
