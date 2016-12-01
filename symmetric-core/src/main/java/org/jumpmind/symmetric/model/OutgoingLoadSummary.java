@@ -84,6 +84,10 @@ public class OutgoingLoadSummary implements Serializable {
         this.pendingBatchCount = pendingBatchCount;
     }
 
+    public int getTotalBatchCount() {
+        return getPendingBatchCount() + getFinishedBatchCount();
+    }
+    
     public long getCurrentBatchId() {
         return currentBatchId;
     }

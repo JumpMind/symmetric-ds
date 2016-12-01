@@ -125,6 +125,8 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         
         putSql("deleteCapturedConfigChannelDataSql", "delete from $(data) where channel_id='config'");
         
+        putSql("findLastCaptureTimeByChannelSql", 
+                "select max(create_time) as create_time, channel_id from $(data) group by channel_id ");        
 
     }
 

@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.writer;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -101,6 +102,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
     public void start(Batch batch) {
         this.batch = batch;
         this.statistics.put(batch, new Statistics());
+        this.statistics.get(batch).set(DataWriterStatisticConstants.STARTTIME, new Date().getTime());
     }
 
     public boolean start(Table table) {
@@ -126,7 +128,8 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
          */
         if (sourceTable != null && targetTable == null && 
                 data.requiresTable() && (writerSettings.isIgnoreMissingTables()
-                || batch.getBatchId() == IoConstants.IGNORE_TABLES_BATCH)) {
+                || batch.getBatchId() == IoConstants.IGNORE_TABLES_BATCH)
+                && !batch.getChannelId().equals("config")) {
             String qualifiedName = sourceTable.getFullyQualifiedTableName();
             if (!missingTables.contains(qualifiedName)) {
                 log.warn("Did not find the {} table in the target database", qualifiedName);

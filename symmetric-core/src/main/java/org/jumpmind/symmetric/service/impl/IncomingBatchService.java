@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.model.IncomingBatchSummary;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -362,7 +363,68 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 IncomingBatch.Status.OK.name());
         return ids;
     }
+    
+    public List<IncomingBatchSummary> findIncomingBatchSummaryByChannel(Status... statuses) {
+        Object[] args = new Object[statuses.length];
+        StringBuilder inList = new StringBuilder();
+        for (int i = 0; i < statuses.length; i++) {
+            args[i] = statuses[i].name();
+            inList.append("?,");
+        }
 
+        String sql = getSql("selectIncomingBatchSummaryByStatusAndChannelSql").replace(":STATUS_LIST",
+                inList.substring(0, inList.length() - 1));
+
+        return sqlTemplate.query(sql, new IncomingBatchSummaryChannelMapper(), args);
+    }
+    
+    public List<IncomingBatchSummary> findIncomingBatchSummary(Status... statuses) {
+        Object[] args = new Object[statuses.length];
+        StringBuilder inList = new StringBuilder();
+        for (int i = 0; i < statuses.length; i++) {
+            args[i] = statuses[i].name();
+            inList.append("?,");
+        }
+
+        String sql = getSql("selectIncomingBatchSummaryByStatusSql").replace(":STATUS_LIST",
+                inList.substring(0, inList.length() - 1));
+
+        return sqlTemplate.query(sql, new IncomingBatchSummaryMapper(), args);
+    }
+    
+    @Override
+    public Map<String, Date> findLastUpdatedByChannel() {
+        Map<String, Date> captureMap = new HashMap<String, Date>();
+        LastCaptureByChannelMapper mapper = new LastCaptureByChannelMapper(captureMap);
+        List<String> temp = sqlTemplate.query(getSql("lastUpdateByChannelSql"), mapper);
+        return mapper.getCaptureMap();
+    }
+
+    class IncomingBatchSummaryMapper implements ISqlRowMapper<IncomingBatchSummary> {
+        public IncomingBatchSummary mapRow(Row rs) {
+            IncomingBatchSummary summary = new IncomingBatchSummary();
+            summary.setBatchCount(rs.getInt("batches"));
+            summary.setStatus(Status.valueOf(rs.getString("status")));
+            summary.setNodeId(rs.getString("node_id"));
+            summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
+            summary.setLastBatchUpdateTime(rs.getDateTime("last_update_time"));
+            summary.setDataCount(rs.getInt("data"));
+            return summary;
+        }
+    }
+    
+    class IncomingBatchSummaryChannelMapper extends IncomingBatchSummaryMapper {
+        public IncomingBatchSummary mapRow(Row rs) {
+            IncomingBatchSummary summary = super.mapRow(rs);
+            summary.setChannel(rs.getString("channel_id"));
+            summary.setSqlMessage(rs.getString("sql_message"));
+            if (summary.getSqlMessage() != null) {
+                summary.setErrorBatchId(rs.getLong("batch_id"));
+            }
+            return summary;
+        }
+    }
+    
     class BatchIdMapper implements ISqlRowMapper<BatchId> {
         Map<String, BatchId> ids;
 
@@ -379,6 +441,24 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         }
     }
 
+    class LastCaptureByChannelMapper implements ISqlRowMapper<String> {
+        private Map<String, Date> captureMap;
+        
+        public LastCaptureByChannelMapper(Map<String, Date> map) {
+            captureMap = map;
+        }
+        
+        public Map<String, Date> getCaptureMap() {
+            return captureMap;
+        }
+        
+        @Override
+        public String mapRow(Row row) {
+            captureMap.put(row.getString("CHANNEL_ID"), row.getDateTime("LAST_UPDATE_TIME"));
+            return null;
+        }
+    }
+    
     class IncomingBatchMapper implements ISqlRowMapper<IncomingBatch> {
         
         IncomingBatch batchToRefresh = null;

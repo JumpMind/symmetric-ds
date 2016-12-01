@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -162,4 +163,6 @@ public interface IDataService {
     
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String channelId);
 
+    public Map<String, Date> getLastDataCaptureByChannel();
+    
 }

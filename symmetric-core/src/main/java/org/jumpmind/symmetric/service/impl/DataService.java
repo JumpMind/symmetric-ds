@@ -424,11 +424,19 @@ public class DataService extends AbstractService implements IDataService {
                         Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests);
                         
                         String symNodeSecurityReloadChannel = null;
+                        int totalTableCount = 0;
                         try {
-                        	symNodeSecurityReloadChannel = triggerRoutersByHistoryId.get(triggerHistories.get(0)
-                        			.getTriggerHistoryId()).get(0).getTrigger().getReloadChannelId();
+                        	for (List<TriggerRouter> triggerRouterList : triggerRoutersByHistoryId.values()) {
+                        		if (triggerRouterList.size() > 0) {
+                        			TriggerRouter tr = triggerRouterList.get(0);
+                        			symNodeSecurityReloadChannel = tr.getTrigger().getReloadChannelId();
+                        		}
+                        		totalTableCount += triggerRouterList.size();
+                        	}
                         }
                         catch (Exception e) { }
+                        
+                        processInfo.setDataCount(totalTableCount);
                         
                         if (isFullLoad || (reloadRequests != null && reloadRequests.size() > 0)) {
                             insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,
@@ -1357,6 +1365,7 @@ public class DataService extends AbstractService implements IDataService {
         outgoingBatch.setCreateBy(createBy);
         outgoingBatch.setLoadFlag(isLoad);
         outgoingBatch.incrementEventCount(eventType);
+        outgoingBatch.incrementDataEventCount();
         if (tableName != null) {            
             outgoingBatch.incrementTableCount(tableName.toLowerCase());
         }
@@ -1381,6 +1390,11 @@ public class DataService extends AbstractService implements IDataService {
         } else {
             return String.format("Could not enable initial load for %s", nodeId);
         }
+    }
+
+    private void insertNodeSecurityUpdate(ISqlTransaction transaction, String nodeIdRecord,
+            String targetNodeId, boolean isLoad, long loadId, String createBy) {
+        insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNodeId, isLoad, loadId, createBy, null);
     }
     
     private void insertNodeSecurityUpdate(ISqlTransaction transaction, String nodeIdRecord,
@@ -2032,6 +2046,14 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    @Override
+    public Map<String, Date> getLastDataCaptureByChannel() {
+        Map<String, Date> captureMap = new HashMap<String, Date>();
+        LastCaptureByChannelMapper mapper = new LastCaptureByChannelMapper(captureMap);
+        List<String> temp = sqlTemplate.query(getSql("findLastCaptureTimeByChannelSql"), mapper);
+        return mapper.getCaptureMap();
+    }
+    
     class TableRow {
         Table table;
         Row row;
@@ -2111,6 +2133,24 @@ public class DataService extends AbstractService implements IDataService {
             }
             data.setTriggerHistory(triggerHistory);
             return data;
+        }
+    }
+    
+    public class LastCaptureByChannelMapper implements ISqlRowMapper<String> {
+        private Map<String, Date> captureMap;
+        
+        public LastCaptureByChannelMapper(Map<String, Date> map) {
+            captureMap = map;
+        }
+        
+        public Map<String, Date> getCaptureMap() {
+            return captureMap;
+        }
+        
+        @Override
+        public String mapRow(Row row) {
+            captureMap.put(row.getString("CHANNEL_ID"), row.getDateTime("CREATE_TIME"));
+            return null;
         }
     }
 }
