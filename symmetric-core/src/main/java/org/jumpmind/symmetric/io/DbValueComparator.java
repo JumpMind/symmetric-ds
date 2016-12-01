@@ -34,7 +34,6 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +59,6 @@ public class DbValueComparator {
         dateFormats.add(new SimpleDateFormat("MM-dd-yyyy HH:mm:ss.S"));
     }
 
-    @SuppressWarnings("unchecked")
     public int compareValues(Column sourceColumn, Column targetColumn, String sourceValue, String targetValue) {
 
         if (sourceValue == null && targetValue == null) {
@@ -167,7 +165,7 @@ public class DbValueComparator {
         }
 
         if (sourceValue instanceof Comparable<?>) {
-            return ((Comparable)sourceValue).compareTo(targetValue);            
+            return ((Comparable<Object>)sourceValue).compareTo(targetValue);            
         } else if (sourceValue instanceof String) {
             return ((String)sourceValue).compareTo((String)targetValue);
         } else {

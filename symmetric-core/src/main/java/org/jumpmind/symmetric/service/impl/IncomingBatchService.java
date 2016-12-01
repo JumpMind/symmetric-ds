@@ -362,9 +362,17 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 IncomingBatch.Status.OK.name());
         return ids;
     }
+    
+    @Override
+    public List<BatchId> getAllBatches() {
+        return sqlTemplateDirty.query(getSql("getAllBatchesSql"), new BatchIdMapper());
+    }
 
     class BatchIdMapper implements ISqlRowMapper<BatchId> {
         Map<String, BatchId> ids;
+        
+        public BatchIdMapper() {
+        }
 
         public BatchIdMapper(Map<String, BatchId> ids) {
             this.ids = ids;
@@ -374,7 +382,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             BatchId batch = new BatchId();
             batch.setBatchId(rs.getLong("batch_id"));
             batch.setNodeId(rs.getString("node_id"));
-            ids.put(rs.getString("channel_id"), batch);
+            if (ids != null) {
+               ids.put(rs.getString("channel_id"), batch);
+            }
             return batch;
         }
     }
