@@ -22,15 +22,17 @@ package org.jumpmind.symmetric.job;
 
 import java.util.Date;
 
+import org.jumpmind.symmetric.model.JobDefinition;
+
 public interface IJob {
+    
+    public String getName();
+    
+    public JobDefinition getJobDefinition();
 
     public void start();
 
     public boolean stop();
-
-    public String getName();
-    
-    public String getClusterLockName();    
 
     public void pause();
 
@@ -39,8 +41,6 @@ public interface IJob {
     public boolean isPaused();
 
     public boolean isStarted();
-    
-    public boolean isAutoStartConfigured();
 
     public long getLastExecutionTimeInMs();
 
@@ -53,11 +53,7 @@ public interface IJob {
     public long getTotalExecutionTimeInMs();
 
     public long getAverageExecutionTimeInMs();
-
-    public String getCronExpression();
-
-    public long getTimeBetweenRunsInMs();  
     
     public boolean invoke(boolean force);
-
+    
 }

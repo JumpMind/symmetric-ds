@@ -625,6 +625,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         isInitialized = true;
                     }
 
+                    jobManager.init();
+                    
                     if (startJobs && jobManager != null) {
                         jobManager.startJobs();
                     }

@@ -853,5 +853,22 @@
             <reference local="router_id" foreign="router_id" />
         </foreign-key>
     </table>
+    
+    <table name="job" description="Defines custom jobs that can be executed in the SymmetricDS instance.">
+        <column name="job_name" type="VARCHAR" size="50" required="true" primaryKey="true" description="The unique name of the job" />
+        <column name="external_id" type="VARCHAR" size="255" required="true" primaryKey="true" description="Target the job at a specific external id. To target all nodes, use the value of 'ALL.'" />
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Target the job at a specific node group id. To target all groups, use the value of 'ALL.'"/>                
+        <column name="job_type" type="VARCHAR" size="10" required="true" description="The type of the job. Valid values are 'snapshot_replication', 'java' and 'bsh'. The system exclusively uses the 'built_in' job type." />
+        <column name="startup_type" type="VARCHAR" size="10" required="true" description="AUTOMATIC, MANUAL, or DISABLED." />
+        <column name="schedule_type" type="VARCHAR" size="10" required="true" description="Valid values are PERIODIC, and CRON." /> 
+        <column name="schedule" type="VARCHAR" size="50" required="true" description="The schedule on which the job runs.  If the schedule_type is PERIODIC, this is a numeric value that defines the period on milliseconds.  If this is CRON, a cron expression is expected." />
+        <column name="requires_registration" type="BOOLEANINT" size="1" required="true" default="1"  description="Does the engine need to be registered for this job to run?" />
+        <column name="job_expression" type="LONGVARCHAR" description="The payload of the job.  For bsh (beanshell) jobs, this should be bsh script.  For Java jobs, this should be Java code of a class which implements the IJob interface." />
+        <column name="description" type="VARCHAR" size="255"   description="An optional description of the job for users of the system." />
+        <column name="create_by" type="VARCHAR" size="50" description="The user who created this entry." />
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50" description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
+    </table>    
 
 </database>

@@ -20,34 +20,32 @@
  */
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
-import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
+import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class StageManagementJob extends AbstractJob {
 
-    private IStagingManager stagingManager;
-
-    public StageManagementJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler,
-            IStagingManager stagingManager) {
+    public StageManagementJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("job.stage.management", engine, taskScheduler);
-        this.stagingManager = stagingManager;
     }
     
     @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.START_STAGE_MGMT_JOB);
-    }
-
+    public JobDefaults getDefaults() {
+        return new JobDefaults()
+                .scheduleType(ScheduleType.PERIODIC)
+                .schedule(EVERY_FIFTEEN_MINUTES)
+                .startupType(StartupType.AUTOMATIC)
+                .description("Purges the staging area according to the stream.to.file.ttl.ms parameter.");
+    } 
+    
     @Override
-    public String getClusterLockName() {
-        return ClusterConstants.STAGE_MANAGEMENT;
-    }
-
-    @Override
-    void doJob(boolean force) throws Exception {
+    public void doJob(boolean force) throws Exception {
+        IStagingManager stagingManager = engine.getStagingManager();
         if (stagingManager != null) {
             stagingManager.clean(engine.getParameterService()
                     .getLong(ParameterConstants.STREAM_TO_FILE_TIME_TO_LIVE_MS));

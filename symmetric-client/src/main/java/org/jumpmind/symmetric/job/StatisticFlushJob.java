@@ -21,9 +21,11 @@
 
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
+import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.util.LogSummaryAppender;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -37,17 +39,16 @@ public class StatisticFlushJob extends AbstractJob {
     public StatisticFlushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("job.stat.flush", engine, taskScheduler);
     }
-
-    @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.START_STATISTIC_FLUSH_JOB);
-    }
     
     @Override
-    public String getClusterLockName() {
-        return ClusterConstants.STATISTICS;
-    }
-
+    public JobDefaults getDefaults() {
+        return new JobDefaults()
+                .scheduleType(ScheduleType.CRON)
+                .schedule(EVERY_5_MINUTES)
+                .startupType(StartupType.AUTOMATIC)
+                .description("Flushed accumulated statistics out to the database from memory.");
+    } 
+    
     @Override
     public void doJob(boolean force) throws Exception {
         engine.getStatisticManager().flush();

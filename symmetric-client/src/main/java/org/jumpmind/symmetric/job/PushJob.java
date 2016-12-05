@@ -20,9 +20,10 @@
  */
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
+import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
@@ -32,16 +33,16 @@ public class PushJob extends AbstractJob {
 
     public PushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("job.push", engine, taskScheduler);
-    }    
+    }
     
     @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.START_PUSH_JOB);
-    }
-    @Override
-    public String getClusterLockName() {
-        return ClusterConstants.PUSH;
-    }
+    public JobDefaults getDefaults() {
+        return new JobDefaults()
+                .scheduleType(ScheduleType.PERIODIC)
+                .schedule(EVERY_30_SECONDS)
+                .startupType(StartupType.AUTOMATIC)
+                .description("Push batches to other nodes.");
+    }     
     
     @Override
     public void doJob(boolean force) throws Exception {

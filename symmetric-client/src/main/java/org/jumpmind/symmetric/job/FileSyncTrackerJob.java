@@ -21,29 +21,31 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
+import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class FileSyncTrackerJob extends AbstractJob {
 
-    protected FileSyncTrackerJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+    public FileSyncTrackerJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("job.file.sync.tracker", engine, taskScheduler);
     }
 
     @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE)
-                && engine.getParameterService().is(ParameterConstants.START_FILE_SYNC_TRACKER_JOB, true);
-    }
-    
+    public JobDefaults getDefaults() {
+        boolean fileSyncEnabeld = engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE); 
+
+        return new JobDefaults()
+                .scheduleType(ScheduleType.CRON)
+                .schedule(EVERY_5_MINUTES)
+                .startupType(fileSyncEnabeld ? StartupType.AUTOMATIC : StartupType.DISABLED)
+                .description("For FileSync, scan and track changes in sync'd directories.");
+    }    
+
     @Override
-    public String getClusterLockName() {
-        return ClusterConstants.FILE_SYNC_TRACKER;
-    }
-    
-    @Override
-    void doJob(boolean force) throws Exception {
+    public void doJob(boolean force) throws Exception {
         if (engine != null) {
             engine.getFileSyncService().trackChanges(force);
         }
