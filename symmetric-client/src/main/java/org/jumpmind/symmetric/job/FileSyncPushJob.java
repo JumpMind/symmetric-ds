@@ -21,29 +21,32 @@
 package org.jumpmind.symmetric.job;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+
+import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
+import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class FileSyncPushJob extends AbstractJob {
 
-    protected FileSyncPushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+    public FileSyncPushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("job.file.sync.push", engine, taskScheduler);
     }
     
     @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE)
-                && engine.getParameterService().is(ParameterConstants.START_FILE_SYNC_PUSH_JOB, true);
+    public JobDefaults getDefaults() {
+        boolean fileSyncEnabeld = engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE); 
+        
+        return new JobDefaults()
+                .scheduleType(ScheduleType.PERIODIC)
+                .schedule(EVERY_MINUTE)
+                .startupType(fileSyncEnabeld ? StartupType.AUTOMATIC : StartupType.DISABLED)
+                .description("For FileSync, push pending files to other nodes.");
     }    
-
-    @Override
-    public String getClusterLockName() {
-        return ClusterConstants.FILE_SYNC_PUSH;
-    }
     
     @Override
-    void doJob(boolean force) throws Exception {
+    public void doJob(boolean force) throws Exception {
         engine.getFileSyncService().pushFilesToNodes(force);
     }
     

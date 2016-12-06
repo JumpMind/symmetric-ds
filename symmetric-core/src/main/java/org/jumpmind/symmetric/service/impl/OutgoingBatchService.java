@@ -38,6 +38,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.mapper.LongMapper;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -960,6 +961,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return loads.values();
     }
     
+        @Override
+    public List<Long> getAllBatches() {
+        return sqlTemplateDirty.query(getSql("getAllBatchesSql"), new LongMapper());
+    }
+    
     class OutgoingBatchSummaryMapper implements ISqlRowMapper<OutgoingBatchSummary> {
         public OutgoingBatchSummary mapRow(Row rs) {
             OutgoingBatchSummary summary = new OutgoingBatchSummary();
@@ -1053,5 +1059,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         }
     }
+        
 
 }

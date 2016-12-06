@@ -26,11 +26,12 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.job.IJob;
 import org.jumpmind.symmetric.job.IJobManager;
+import org.jumpmind.symmetric.model.JobDefinition;
+import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -319,26 +320,29 @@ public class AndroidJobManager implements IJobManager {
             return totalRunTimeInMs;
         }
 
-        public String getCronExpression() {
-            throw new NotImplementedException();
-        }
-
         public long getTimeBetweenRunsInMs() {
             return 1000l;
-        }
+         }
 
-        public void setCronExpression(String cronExpression) {
-            throw new NotImplementedException();
-        }
-
-        public void setTimeBetweenRunsInMs(long timeBetweenRunsInMs) {
-            throw new NotImplementedException();
+        @Override
+        public JobDefinition getJobDefinition() {
+            return null;
         }
     }
 
     @Override
     public void startJobsAfterConfigChange() {
-        // No action on Android.
+        // No action on Android
+    }
+
+    @Override
+    public void init() {
+        // No action on Android        
+    }
+
+    @Override
+    public void saveJob(JobDefinition jobDefinition) {
+        // No action on Android
     }
 
 }

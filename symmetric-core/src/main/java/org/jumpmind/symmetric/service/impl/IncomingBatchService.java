@@ -399,7 +399,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         List<String> temp = sqlTemplate.query(getSql("lastUpdateByChannelSql"), mapper);
         return mapper.getCaptureMap();
     }
-
+    
+    @Override
+    public List<BatchId> getAllBatches() {
+        return sqlTemplateDirty.query(getSql("getAllBatchesSql"), new BatchIdMapper());
+    }
+    
     class IncomingBatchSummaryMapper implements ISqlRowMapper<IncomingBatchSummary> {
         public IncomingBatchSummary mapRow(Row rs) {
             IncomingBatchSummary summary = new IncomingBatchSummary();
@@ -427,6 +432,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     
     class BatchIdMapper implements ISqlRowMapper<BatchId> {
         Map<String, BatchId> ids;
+        
+        public BatchIdMapper() {
+        }
 
         public BatchIdMapper(Map<String, BatchId> ids) {
             this.ids = ids;
@@ -436,7 +444,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             BatchId batch = new BatchId();
             batch.setBatchId(rs.getLong("batch_id"));
             batch.setNodeId(rs.getString("node_id"));
-            ids.put(rs.getString("channel_id"), batch);
+            if (ids != null) {
+               ids.put(rs.getString("channel_id"), batch);
+            }
             return batch;
         }
     }

@@ -88,6 +88,8 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("lastUpdateByChannelSql", "select max(last_update_time) as last_update_time, channel_id from $(incoming_batch) group by channel_id");
         
+        putSql("getAllBatchesSql", "select batch_id, node_id from $(incoming_batch)");
+    
     }
 
 }

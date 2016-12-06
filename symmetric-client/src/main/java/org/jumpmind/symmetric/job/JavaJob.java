@@ -20,35 +20,28 @@
  */
 package org.jumpmind.symmetric.job;
 
-import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.model.JobDefinition.JobType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-/*
- * Background job that is responsible for pushing data to linked nodes.
- */
-public class OfflinePushJob extends AbstractJob {
-
-    public OfflinePushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.offline.push", engine, taskScheduler);
+public class JavaJob extends AbstractJob {
+    
+    public JavaJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super(jobName, engine, taskScheduler);
+    }
+    
+    public JobType getJobType() {
+        return JobType.JAVA;
     }
     
     @Override
     public JobDefaults getDefaults() {
-        return new JobDefaults()
-                .scheduleType(ScheduleType.PERIODIC)
-                .schedule(EVERY_MINUTE)
-                .startupType(StartupType.MANUAL)
-                .description("Pushes/creates offline batch files.");
-    }    
+        return new JobDefaults();
+    }     
 
     @Override
     public void doJob(boolean force) throws Exception {
-        if (engine != null) {
-            engine.getOfflinePushService().pushData(force).getDataProcessedCount();
-        }
+        // TODO parse expression into class.
     }
 
 }

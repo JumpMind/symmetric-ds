@@ -213,26 +213,26 @@ abstract public class AbstractService implements IService {
 
         StringBuilder where = new StringBuilder();
         boolean needsAnd = false;
-        if (nodeIds.size() > 0) {
+        if (nodeIds != null && nodeIds.size() > 0) {
             where.append("node_id in (:NODES)");
             needsAnd = true;
         }
         
-        if (channels.size() > 0) {
+        if (channels != null && channels.size() > 0) {
             if (needsAnd) {
                 where.append(" and ");
             }
             where.append("channel_id in (:CHANNELS)");
             needsAnd = true;
         }
-        if (loads.size() > 0) {
+        if (loads != null && loads.size() > 0) {
             if (needsAnd) {
                 where.append(" and ");
             }
             where.append("load_id in (:LOADS)");
             needsAnd = true;
         }
-        if (statuses.size() > 0) {
+        if (statuses != null && statuses.size() > 0) {
             if (needsAnd) {
                 where.append(" and ");
             }

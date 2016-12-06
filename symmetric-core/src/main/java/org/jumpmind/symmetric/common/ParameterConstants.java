@@ -39,6 +39,8 @@ final public class ParameterConstants {
 
     private static Map<String, ParameterMetaData> parameterMetaData = new DefaultParameterParser("/symmetric-default.properties").parse();
 
+    public final static String MINUTES_BEFORE_NODE_REPORTED_AS_OFFLINE = "console.report.as.offline.minutes";
+
     private ParameterConstants() {
     }
     

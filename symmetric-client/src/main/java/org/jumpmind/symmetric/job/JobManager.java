@@ -22,8 +22,13 @@ package org.jumpmind.symmetric.job;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.JobDefinition;
+import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.service.impl.AbstractService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -31,41 +36,62 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 /*
  * @see IJobManager
  */
-public class JobManager implements IJobManager {
+public class JobManager extends AbstractService implements IJobManager {
 
     static final Logger log = LoggerFactory.getLogger(JobManager.class);
 
     private List<IJob> jobs;
-    
     private ThreadPoolTaskScheduler taskScheduler;
+    private ISymmetricEngine engine;
+    private JobCreator jobCreator = new JobCreator();
     
     public JobManager(ISymmetricEngine engine) {
+        super(engine.getParameterService(), engine.getSymmetricDialect());
         
+        this.engine = engine;
+
+        ISymmetricDialect dialect = engine.getSymmetricDialect();
         this.taskScheduler = new ThreadPoolTaskScheduler();
+        setSqlMap(new JobManagerSqlMap(engine.getSymmetricDialect().getPlatform(), createSqlReplacementTokens()));        
+                
         this.taskScheduler.setThreadNamePrefix(String.format("%s-job-", engine.getParameterService().getEngineName()));
         this.taskScheduler.setPoolSize(20);
-        this.taskScheduler.initialize();
+        this.taskScheduler.initialize();    
+    }
+    
+    protected Map<String, String> createSqlReplacementTokens() {
+        Map<String, String> replacementTokens = createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
+                .getDatabaseInfo().getDelimiterToken());
+        replacementTokens.putAll(symmetricDialect.getSqlReplacementTokens());
+        return replacementTokens;
+    }    
+    
+    @Override
+    public void init() {
+        if (this.jobs != null && !this.jobs.isEmpty()) {
+            for (IJob job : jobs) {
+                if (job.isStarted()) {                    
+                    job.stop();
+                }
+            }
+        }
+        List<JobDefinition> jobDefitions = loadJobs(engine);
+        
+        BuiltInJobs builtInJobs = new BuiltInJobs();
+        jobDefitions = builtInJobs.syncBuiltInJobs(jobDefitions, engine, taskScheduler); // TODO save built in hobs
         
         this.jobs = new ArrayList<IJob>();
-        this.jobs.add(new RouterJob(engine, taskScheduler));
-        this.jobs.add(new PushJob(engine, taskScheduler));
-        this.jobs.add(new PullJob(engine, taskScheduler));
-        this.jobs.add(new OfflinePushJob(engine, taskScheduler));
-        this.jobs.add(new OfflinePullJob(engine, taskScheduler));
-        this.jobs.add(new OutgoingPurgeJob(engine, taskScheduler));
-        this.jobs.add(new IncomingPurgeJob(engine, taskScheduler));
-        this.jobs.add(new StatisticFlushJob(engine, taskScheduler));
-        this.jobs.add(new SyncTriggersJob(engine, taskScheduler));
-        this.jobs.add(new HeartbeatJob(engine, taskScheduler));
-        this.jobs.add(new WatchdogJob(engine, taskScheduler));
-        this.jobs.add(new StageManagementJob(engine, taskScheduler, engine.getStagingManager()));
-        this.jobs.add(new RefreshCacheJob(engine, taskScheduler));
-        this.jobs.add(new FileSyncTrackerJob(engine,taskScheduler));
-        this.jobs.add(new FileSyncPullJob(engine,taskScheduler));
-        this.jobs.add(new FileSyncPushJob(engine,taskScheduler));
-        this.jobs.add(new InitialLoadExtractorJob(engine,taskScheduler));
-        this.jobs.add(new MonitorJob(engine, taskScheduler));
-        this.jobs.add(new ReportStatusJob(engine, taskScheduler));
+        
+        for (JobDefinition jobDefinition : jobDefitions) {
+            jobs.add(jobCreator.createJob(jobDefinition, engine, taskScheduler));
+        }
+    }
+
+    protected List<JobDefinition> loadJobs(ISymmetricEngine engine) {
+        // List<IJob>  jobs = new ArrayList<IJob>();
+       return sqlTemplate.query(getSql("loadCustomJobs"), new JobMapper());
+      //  return new ArrayList<JobDefinition>();
+//        return null;
     }
 
     @Override
@@ -85,7 +111,8 @@ public class JobManager implements IJobManager {
     @Override
     public synchronized void startJobs() {
         for (IJob job : jobs) {
-            if (job.isAutoStartConfigured()) {
+            if (isAutoStartConfigured(job) 
+                    && StartupType.AUTOMATIC == job.getJobDefinition().getStartupType()) {
                 job.start();
             } else {
                 log.info("Job {} not configured for auto start", job.getName());
@@ -93,13 +120,21 @@ public class JobManager implements IJobManager {
         }
     }
     
+
     @Override
     public synchronized void startJobsAfterConfigChange() {
         for (IJob job : jobs) {
-            if (job.isAutoStartConfigured() && !job.isStarted()) {
+            if (isAutoStartConfigured(job) 
+                    && StartupType.AUTOMATIC == job.getJobDefinition().getStartupType() 
+                    && !job.isStarted()) {
                 job.start();
             }
         }        
+    }
+    
+    protected boolean isAutoStartConfigured(IJob job) {
+        String key = "start." + job.getName();
+        return engine.getParameterService().is(key, true);
     }
 
     @Override
@@ -121,5 +156,18 @@ public class JobManager implements IJobManager {
     @Override
     public List<IJob> getJobs() {
         return jobs;
+    }
+
+    @Override
+    public void saveJob(JobDefinition job) {
+        Object[] args = { job.getDescription(), job.getJobType().toString(), job.getSchedule(), 
+                job.getStartupType().toString(), job.getScheduleType().toString(), job.getJobExpression(), 
+                job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
+
+        if (sqlTemplate.update(getSql("updateJobSql"), args) == 0) {
+            sqlTemplate.update(getSql("insertJobSql"), args);
+        } 
+        init();
+        startJobsAfterConfigChange();
     }
 }

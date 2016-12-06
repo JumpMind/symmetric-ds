@@ -18,42 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.job;
+package org.jumpmind.db.sql.mapper;
 
-import java.util.Date;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.Row;
 
-import org.jumpmind.symmetric.model.JobDefinition;
+public class LongMapper implements ISqlRowMapper<Long> {
 
-public interface IJob {
-    
-    public String getName();
-    
-    public JobDefinition getJobDefinition();
-
-    public void start();
-
-    public boolean stop();
-
-    public void pause();
-
-    public void unpause();
-
-    public boolean isPaused();
-
-    public boolean isStarted();
-
-    public long getLastExecutionTimeInMs();
-
-    public Date getLastFinishTime();
-
-    public boolean isRunning();
-
-    public long getNumberOfRuns();
-
-    public long getTotalExecutionTimeInMs();
-
-    public long getAverageExecutionTimeInMs();
-    
-    public boolean invoke(boolean force);
-    
+    public Long mapRow(Row row) {     
+        return row.longValue();
+    }
 }

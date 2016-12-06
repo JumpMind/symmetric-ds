@@ -20,35 +20,40 @@
  */
 package org.jumpmind.symmetric.job;
 
-import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.model.JobDefinition.JobType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-/*
- * Background job that is responsible for pushing data to linked nodes.
- */
-public class OfflinePushJob extends AbstractJob {
+import bsh.Interpreter;
 
-    public OfflinePushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.offline.push", engine, taskScheduler);
+public class BshJob extends AbstractJob {
+
+    public BshJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super(jobName, engine, taskScheduler);
     }
     
-    @Override
-    public JobDefaults getDefaults() {
-        return new JobDefaults()
-                .scheduleType(ScheduleType.PERIODIC)
-                .schedule(EVERY_MINUTE)
-                .startupType(StartupType.MANUAL)
-                .description("Pushes/creates offline batch files.");
-    }    
+    public JobType getJobType() {
+        return JobType.BSH;
+    }
 
     @Override
     public void doJob(boolean force) throws Exception {
-        if (engine != null) {
-            engine.getOfflinePushService().pushData(force).getDataProcessedCount();
+        try {            
+            Interpreter interpreter = new Interpreter();
+            interpreter.set("engine", engine);
+            interpreter.set("sqlTemplate", engine.getDatabasePlatform().getSqlTemplate());
+            interpreter.set("log", log);
+            if (getJobDefinition().getJobExpression() != null) {                
+                interpreter.eval(getJobDefinition().getJobExpression());
+            }
+        } catch (Exception ex) {
+            log.error("Exception during bsh job '" + this.getName() + "'", ex);
         }
+    }
+
+    @Override
+    public JobDefaults getDefaults() {
+        return new JobDefaults();
     }
 
 }

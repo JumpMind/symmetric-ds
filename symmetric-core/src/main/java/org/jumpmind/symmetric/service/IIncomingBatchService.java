@@ -82,4 +82,5 @@ public interface IIncomingBatchService {
     
     public Map<String, Date> findLastUpdatedByChannel();
     
+    public List<BatchId> getAllBatches();
 }

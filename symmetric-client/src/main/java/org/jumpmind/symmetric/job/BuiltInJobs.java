@@ -1,0 +1,105 @@
+/**
+ * Licensed to JumpMind Inc under one or more contributor
+ * license agreements.  See the NOTICE file distributed
+ * with this work for additional information regarding
+ * copyright ownership.  JumpMind Inc licenses this file
+ * to you under the GNU General Public License, version 3.0 (GPLv3)
+ * (the "License"); you may not use this file except in compliance
+ * with the License.
+ *
+ * You should have received a copy of the GNU General Public License,
+ * version 3.0 (GPLv3) along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.jumpmind.symmetric.job;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.JobDefinition;
+import org.jumpmind.symmetric.model.JobDefinition.JobType;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+public class BuiltInJobs {
+    
+//    public List<IJob> loadAndSyncBuiltInJobs(ISqlTemplate sqlTemplate, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+//        List<IJob> jobTemplates = getBuiltInJobs(engine, taskScheduler);
+//        List<IJob> jobRows = getBuiltInJobsFromDb(sqlTemplate);
+//        return null;
+//    }
+    
+    public List<JobDefinition> syncBuiltInJobs(List<JobDefinition> existingJobs, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        List<IJob> builtInJobs = getBuiltInJobs(engine, taskScheduler);
+        List<JobDefinition> builtInJobDefs = new ArrayList<JobDefinition>(builtInJobs.size());
+        
+        for (IJob job : builtInJobs) {
+            // TODO, should use from the DB.
+            existingJobs.add(job.getJobDefinition());
+        }
+        
+        return existingJobs;
+    }
+    
+//    public List<IJob> 
+//    
+//    private List<IJob> getBuiltInJobsFromDb(ISqlTemplate sqlTemplate) {
+//        return null;
+//    }
+
+    public List<IJob> getBuiltInJobs(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        List<IJob> builtInJobs = new ArrayList<IJob>(20);
+        
+        builtInJobs.add(new RouterJob(engine, taskScheduler));
+        builtInJobs.add(new PushJob(engine, taskScheduler));
+        builtInJobs.add(new PullJob(engine, taskScheduler));
+        builtInJobs.add(new OfflinePushJob(engine, taskScheduler));
+        builtInJobs.add(new OfflinePullJob(engine, taskScheduler));
+        builtInJobs.add(new OutgoingPurgeJob(engine, taskScheduler));
+        builtInJobs.add(new IncomingPurgeJob(engine, taskScheduler));
+        builtInJobs.add(new StatisticFlushJob(engine, taskScheduler));
+        builtInJobs.add(new SyncTriggersJob(engine, taskScheduler));
+        builtInJobs.add(new HeartbeatJob(engine, taskScheduler));
+        builtInJobs.add(new WatchdogJob(engine, taskScheduler));
+        builtInJobs.add(new StageManagementJob(engine, taskScheduler));
+        builtInJobs.add(new RefreshCacheJob(engine, taskScheduler));
+        builtInJobs.add(new FileSyncTrackerJob(engine,taskScheduler));
+        builtInJobs.add(new FileSyncPullJob(engine,taskScheduler));
+        builtInJobs.add(new FileSyncPushJob(engine,taskScheduler));
+        builtInJobs.add(new InitialLoadExtractorJob(engine,taskScheduler));
+        builtInJobs.add(new MonitorJob(engine, taskScheduler));
+        builtInJobs.add(new ReportStatusJob(engine, taskScheduler));
+
+        for (IJob builtInJob : builtInJobs) {
+            setBuiltInDefaults(builtInJob);
+        }
+
+        return builtInJobs;
+    }
+    
+
+    protected void setBuiltInDefaults(IJob argBuiltInJob) {
+        AbstractJob builtInJob = (AbstractJob)argBuiltInJob;
+        JobDefinition jobDefinition = new JobDefinition();
+        jobDefinition.setJobName(builtInJob.getName());
+        jobDefinition.setDescription(builtInJob.getDefaults().getDescription());
+        jobDefinition.setRequiresRegistration(builtInJob.getDefaults().isRequiresRegisteration());
+        jobDefinition.setExternalId(ParameterConstants.ALL);
+        jobDefinition.setNodeGroupId(ParameterConstants.ALL);
+        jobDefinition.setJobType(JobType.BUILT_IN);
+        jobDefinition.setStartupType(builtInJob.getDefaults().getStartupType());
+        jobDefinition.setJobExpression(argBuiltInJob.getClass().getName());
+        jobDefinition.setCreateBy("SymmetricDS");
+        jobDefinition.setScheduleType(builtInJob.getDefaults().getScheduleType());
+        jobDefinition.setSchedule(builtInJob.getDefaults().getSchedule());
+        builtInJob.setJobDefinition(jobDefinition);
+    }    
+}

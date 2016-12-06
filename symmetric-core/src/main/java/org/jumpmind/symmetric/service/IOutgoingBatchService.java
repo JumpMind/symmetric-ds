@@ -121,5 +121,7 @@ public interface IOutgoingBatchService {
     public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummaries(int loadId);
     
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId);
+    
+    public List<Long> getAllBatches();
 
 }

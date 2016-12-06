@@ -548,18 +548,17 @@ public class SnapshotUtil {
             List<IJob> jobs = jobManager.getJobs();
             Map<String, Lock> locks = clusterService.findLocks();
             for (IJob job : jobs) {
-                Lock lock = locks.get(job.getClusterLockName());
+                Lock lock = locks.get(job.getName());
                 String status = getJobStatus(job, lock);
                 String runningServerId = lock != null ? lock.getLockingServerId() : "";
                 String lastServerId = clusterService.getServerId();
                 if (lock != null) {
                     lastServerId = lock.getLastLockingServerId();
                 }
-                String schedule = StringUtils.isBlank(job.getCronExpression()) ? Long.toString(job
-                        .getTimeBetweenRunsInMs()) : job.getCronExpression();
+                String schedule = job.getJobDefinition().getSchedule();
                 String lastFinishTime = getLastFinishTime(job, lock);
     
-                writer.write(StringUtils.rightPad(job.getClusterLockName().replace("_", " "), 30)+ 
+                writer.write(StringUtils.rightPad(job.getName().replace("_", " "), 30)+ 
                         StringUtils.rightPad(schedule, 20) + StringUtils.rightPad(status, 10) + 
                         StringUtils.rightPad(runningServerId == null ? "" : runningServerId, 30) +
                         StringUtils.rightPad(lastServerId == null ? "" : lastServerId, 30) + 

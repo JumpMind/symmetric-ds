@@ -78,6 +78,7 @@ public class TableConstants {
     public static final String SYM_MONITOR_EVENT = "monitor_event";
     public static final String SYM_NOTIFICATION = "notification";
     public static final String SYM_CONTEXT = "context";
+    public static final String SYM_JOB = "job";
 
     private static List<String> tablesWithPrefix;
 
@@ -189,6 +190,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_MONITOR_EVENT));
         tables.add(getTableName(tablePrefix, SYM_NOTIFICATION));
         tables.add(getTableName(tablePrefix, SYM_CONTEXT));
+        tables.add(getTableName(tablePrefix, SYM_JOB));
         return tables;
     }
 

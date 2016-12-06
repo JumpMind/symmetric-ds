@@ -20,9 +20,10 @@
  */
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
+import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
@@ -35,20 +36,15 @@ public class PullJob extends AbstractJob {
     }
     
     @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.START_PULL_JOB);
+    public JobDefaults getDefaults() {
+        return new JobDefaults()
+                .requiresRegisteration(false)
+                .scheduleType(ScheduleType.PERIODIC)
+                .schedule(EVERY_30_SECONDS)
+                .startupType(StartupType.AUTOMATIC)
+                .description("Pull data from other nodes.");
     }
-    
-    @Override
-    public boolean isRequiresRegistration() {
-        return false;
-    }     
-    
-    @Override
-    public String getClusterLockName() {
-        return ClusterConstants.PULL;
-    }
-    
+      
     @Override
     public void doJob(boolean force) throws Exception {
         engine.getPullService().pullData(force);

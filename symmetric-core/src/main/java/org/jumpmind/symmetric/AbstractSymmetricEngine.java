@@ -331,7 +331,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.concurrentConnectionManager = new ConcurrentConnectionManager(parameterService,
                 statisticManager);
         this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
-                statisticManager, extensionService, stagingManager);
+                statisticManager, extensionService);
         this.transformService = new TransformService(parameterService, symmetricDialect,
                 configurationService, extensionService);
         this.loadFilterService = new LoadFilterService(parameterService, symmetricDialect,
@@ -625,6 +625,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         isInitialized = true;
                     }
 
+                    jobManager.init();
+                    
                     if (startJobs && jobManager != null) {
                         jobManager.startJobs();
                     }

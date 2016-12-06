@@ -20,9 +20,10 @@
  */
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
+import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class MonitorJob extends AbstractJob {
@@ -32,15 +33,14 @@ public class MonitorJob extends AbstractJob {
     }
     
     @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.START_MONITOR_JOB);
-    }
-    
-    @Override
-    public String getClusterLockName() {
-        return ClusterConstants.MONITOR;
-    }
-
+    public JobDefaults getDefaults() {
+        return new JobDefaults()
+                .scheduleType(ScheduleType.PERIODIC)
+                .schedule(EVERY_10_SECONDS)
+                .startupType(StartupType.AUTOMATIC)
+                .description("Invoke scheduled monitors and potentially generate notifications.");
+    }     
+        
     @Override
     public void doJob(boolean force) throws Exception {
         if (engine != null) {

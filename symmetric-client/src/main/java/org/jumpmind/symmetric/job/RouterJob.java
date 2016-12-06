@@ -20,9 +20,11 @@
  */
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.EVERY_10_SECONDS;
+
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
+import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 
@@ -34,20 +36,19 @@ public class RouterJob extends AbstractJob {
     public RouterJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super("job.routing", engine, taskScheduler);
     }
-
-    @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.START_ROUTE_JOB);
-    }
     
     @Override
-    public String getClusterLockName() {
-        return ClusterConstants.ROUTE;
-    }
+    public JobDefaults getDefaults() {
+        return new JobDefaults()
+                .scheduleType(ScheduleType.PERIODIC)
+                .schedule(EVERY_10_SECONDS)
+                .startupType(StartupType.AUTOMATIC)
+                .description("Create outgoing batches.");
+    }    
     
     @Override
-    void doJob(boolean force) throws Exception {
+    public void doJob(boolean force) throws Exception {
         engine.getRouterService().routeData(force);
     }
-    
+
 }
