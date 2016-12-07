@@ -22,7 +22,9 @@ package org.jumpmind.symmetric.web;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
@@ -34,6 +36,8 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
     protected List<IUriHandler> uriHandlers;
     
     protected SymmetricEngineHolder engineHolder;
+        
+    protected Map<String, Integer> errorCountByNode = new HashMap<String, Integer>();
 
     public ServerSymmetricEngine(File propertiesFile) {
         super(propertiesFile);
@@ -88,6 +92,27 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
             this.uriHandlers.add(new BatchUriHandler(parameterService, dataExtractorService));
         }
     }
+    
+    public synchronized int getErrorCountFor(String nodeId) {
+        Integer errorCount = errorCountByNode.get(nodeId);
+        if (errorCount == null) {
+            errorCount = 1;
+        }
+        return errorCount;
+    }
+    
+    public synchronized void incrementErrorCountForNode(String nodeId) {
+        Integer errorCount = errorCountByNode.get(nodeId);
+        if (errorCount == null) {
+            errorCount = 1;
+        }
+        errorCountByNode.put(nodeId, errorCount+1);
+    }
+    
+    public synchronized void resetErrorCountForNode(String nodeId) {
+        errorCountByNode.put(nodeId, 0);
+    }
+    
 
     public List<IUriHandler> getUriHandlers() {
         return uriHandlers;

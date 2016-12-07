@@ -47,7 +47,6 @@ public class DbCompareDiffWriter {
 
     private ISymmetricEngine targetEngine;
     private DbCompareTables tables;
-    private String fileName;
     private OutputStream stream;
     
     public void writeDelete(DbCompareRow targetCompareRow) {

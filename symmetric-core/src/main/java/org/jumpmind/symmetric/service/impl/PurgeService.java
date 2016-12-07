@@ -33,11 +33,9 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IPurgeListener;
-import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -64,15 +62,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private IExtensionService extensionService;
     
-    private IStagingManager stagingManager;
-    
     public PurgeService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            IClusterService clusterService, IStatisticManager statisticManager, IExtensionService extensionService, IStagingManager stagingManager) {
+            IClusterService clusterService, IStatisticManager statisticManager, IExtensionService extensionService) {
         super(parameterService, symmetricDialect);
         this.clusterService = clusterService;
         this.statisticManager = statisticManager;
         this.extensionService = extensionService;
-        this.stagingManager = stagingManager;
         
         setSqlMap(new PurgeServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -88,16 +83,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
         for (IPurgeListener purgeListener : purgeListeners) {
             rowsPurged += purgeListener.purgeOutgoing(force);
-        }
-        
-        List<Long> remainingBatches = sqlTemplate.query(getSql("getAllOutgoingBatches"), new ISqlRowMapper<Long>() {
-            @Override
-            public Long mapRow(Row row) {
-                return row.getLong("batch_id");
-            }
-        });
-        long stagingFilesPurged = stagingManager.cleanExcessBatches(remainingBatches, Constants.STAGING_CATEGORY_OUTGOING);
-        log.info("The outgoing purge process removed " + stagingFilesPurged + " outgoing staging files.");
+        }        
         return rowsPurged;
     }
 
@@ -112,16 +98,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         for (IPurgeListener purgeListener : purgeListeners) {
             rowsPurged += purgeListener.purgeIncoming(force);
         }
-        
-        List<Long> remainingBatches = sqlTemplate.query(getSql("getAllIncomingBatches"), new ISqlRowMapper<Long>() {
-            @Override
-            public Long mapRow(Row row) {
-                return row.getLong("batch_id");
-            }
-        });
-        long stagingFilesPurged = stagingManager.cleanExcessBatches(remainingBatches, Constants.STAGING_CATEGORY_INCOMING);
-        log.info("The incoming purge process removed " + stagingFilesPurged + " incoming staging files.");
-        
+               
         return rowsPurged;
     }
 
