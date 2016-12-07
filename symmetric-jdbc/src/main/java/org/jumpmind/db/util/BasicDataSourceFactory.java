@@ -20,6 +20,7 @@
  */
 package org.jumpmind.db.util;
 
+import java.math.BigInteger;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.ArrayList;
@@ -122,12 +123,24 @@ public class BasicDataSourceFactory {
             }
         }
         
-        String initSql = properties.get(BasicDataSourcePropertyConstants.DB_POOL_INIT_SQL, null);
-        if (StringUtils.isNotBlank(initSql)) {
-            List<String> initSqlList = new ArrayList<String>(1);
-            initSqlList.add(initSql);
-            dataSource.setConnectionInitSqls(initSqlList);
+        List<String> initSqlList = new ArrayList<String>(3);
+        
+        
+        if (dataSource.getDriverClassName().equals("org.sqlite.JDBC") && !password.isEmpty()) {
+            initSqlList.add(String.format("pragma hexkey = '%x'", new BigInteger(1, password.getBytes())));
+            initSqlList.add("select 1 from sqlite_master");
         }
+        
+        
+        String initSql = properties.get(BasicDataSourcePropertyConstants.DB_POOL_INIT_SQL, null);
+        if (StringUtils.isNotBlank(initSql)){
+        	initSqlList.add(initSql);
+        }
+        
+        if(!initSqlList.isEmpty()){
+        	dataSource.setConnectionInitSqls(initSqlList);
+        }
+        
         return dataSource;
 
     }
