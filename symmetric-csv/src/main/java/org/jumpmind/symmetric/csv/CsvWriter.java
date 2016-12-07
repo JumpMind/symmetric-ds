@@ -293,7 +293,7 @@ public class CsvWriter {
             return;
         }
         // We want an empty string to be a quoted element
-        else if (content.equals("")) {
+        else if (userSettings.UseTextQualifier && content.equals("")) {
             textQualify = true;
         }
         // END
