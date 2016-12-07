@@ -73,4 +73,8 @@ public interface IDdlBuilder {
     
     public String getColumnTypeDdl(Table table, Column column);
 
+    public String defineSavepoint(String savepointName);
+
+    public String rollbackToSavepoint(String savepointName);
+
 }

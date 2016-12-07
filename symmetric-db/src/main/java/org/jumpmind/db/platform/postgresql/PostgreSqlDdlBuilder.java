@@ -261,6 +261,20 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         }
     }
 
+    public String defineSavepoint(String savepointName) {
+        StringBuffer result = new StringBuffer();
+        result.append("SAVEPOINT ");
+        result.append(getDelimitedIdentifier(savepointName));
+        return result.toString();
+    }
+
+    public String rollbackToSavepoint(String savepointName) {
+        StringBuffer result = new StringBuffer();
+        result.append("ROLLBACK TO SAVEPOINT ");
+        result.append(getDelimitedIdentifier(savepointName));
+        return result.toString();
+    }
+
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {

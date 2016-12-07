@@ -67,4 +67,18 @@ public class RedshiftDdlBuilder extends AbstractDdlBuilder {
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
     }
 
+    public String defineSavepoint(String savepointName) {
+        StringBuffer result = new StringBuffer();
+        result.append("SAVEPOINT ");
+        result.append(getDelimitedIdentifier(savepointName));
+        return result.toString();
+    }
+
+    public String rollbackToSavepoint(String savepointName) {
+        StringBuffer result = new StringBuffer();
+        result.append("ROLLBACK TO SAVEPOINT ");
+        result.append(getDelimitedIdentifier(savepointName));
+        return result.toString();
+    }
+
 }

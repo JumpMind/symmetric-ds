@@ -161,6 +161,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
             if (requireNewStatement(DmlType.INSERT, data, false, true, null)) {
                 this.lastUseConflictDetection = true;
+
+                if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                    transaction.execute(platform.getDdlBuilder().defineSavepoint("beforeInsert"));
+                }
+
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.INSERT, targetTable, writerSettings.getTextColumnExpression());
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
@@ -181,14 +186,12 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 }
             } catch (SqlException ex) {
                 if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
-                    if (!platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
-                        context.put(CONFLICT_ERROR, ex);
-                        context.put(CUR_DATA,getCurData(transaction));
-                        return LoadStatus.CONFLICT;
-                    } else {
-                        log.info("Detected a conflict via an exception, but cannot perform conflict resolution because the database in use requires savepoints");
-                        throw ex;
-                    }
+                  if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                      transaction.execute(platform.getDdlBuilder().rollbackToSavepoint("beforeInsert"));
+                  }
+                  context.put(CONFLICT_ERROR, ex);
+                  context.put(CUR_DATA,getCurData(transaction));
+                  return LoadStatus.CONFLICT;
                 } else {
                     throw ex;
                 }
@@ -281,6 +284,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             && lookupDataMap.get(column.getName()) == null;
                 }
 
+                if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                    transaction.execute(platform.getDdlBuilder().defineSavepoint("beforeDelete"));
+                }
+
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE,
                         targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
                         lookupKeys.toArray(new Column[lookupKeys.size()]), null, nullKeyValues, writerSettings.getTextColumnExpression());
@@ -296,12 +303,14 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 if (count > 0) {
                         return LoadStatus.SUCCESS;
                 } else {
+                    if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                        transaction.execute(platform.getDdlBuilder().rollbackToSavepoint("beforeDelete"));
+                    }
                     context.put(CUR_DATA,null); // since a delete conflicted, there's no row to delete, so no cur data.
                     return LoadStatus.CONFLICT;
                 }
             } catch (SqlException ex) {
-                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
-                        && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
                     context.put(CUR_DATA,null); // since a delete conflicted, there's no row to delete, so no cur data.
                     return LoadStatus.CONFLICT;
                 } else {
@@ -433,6 +442,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                                 && lookupDataMap.get(column.getName()) == null;
                     }
 
+                    if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                        transaction.execute(platform.getDdlBuilder().defineSavepoint("beforeUpdate"));
+                    }
+
                     this.currentDmlStatement = platform.createDmlStatement(DmlType.UPDATE,
                             targetTable.getCatalog(), targetTable.getSchema(),
                             targetTable.getName(),
@@ -463,8 +476,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         return LoadStatus.CONFLICT;
                     }
                 } catch (SqlException ex) {
-                    if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
-                            && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                    if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
+                        if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                            transaction.execute(platform.getDdlBuilder().rollbackToSavepoint("beforeUpdate"));
+                        }
+
                         context.put(CUR_DATA,getCurData(transaction));
                         return LoadStatus.CONFLICT;
                     } else {
