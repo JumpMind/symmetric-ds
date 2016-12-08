@@ -146,8 +146,18 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         } while (updateCount > 0);
     }
 
+    @Override
     public void markAllChannelAsSent(String channelId) {
-        sqlTemplate.update(getSql("cancelChannelBatchesSql"), channelId);
+        markAllChannelAsSent(channelId, null);
+    }
+    
+    @Override
+    public void markAllChannelAsSent(String channelId, String tableName) {
+        String sql = getSql("cancelChannelBatchesSql");
+        if (!StringUtils.isEmpty(tableName)) {
+            sql += getSql("cancelChannelBatchesTableSql");
+        }
+        sqlTemplate.update(sql, channelId, tableName);
     }
 
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId) {
