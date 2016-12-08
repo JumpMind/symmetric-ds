@@ -34,7 +34,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class WatchdogJob extends AbstractJob {
 
     public WatchdogJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.watchdog", engine, taskScheduler);
+        super(ClusterConstants.WATCHDOG, engine, taskScheduler);
     }   
     
     @Override
@@ -44,16 +44,16 @@ public class WatchdogJob extends AbstractJob {
                 .scheduleType(ScheduleType.PERIODIC)
                 .schedule(EVERY_HOUR)
                 .startupType(StartupType.AUTOMATIC)
-                .description("Disable nodes that have been offline for a configurable period of time.");
+                .description("Disable nodes that have been offline for a while");
     } 
 
     @Override
     public void doJob(boolean force) throws Exception {
-        if (engine.getClusterService().lock(ClusterConstants.WATCHDOG)) {
+        if (engine.getClusterService().lock(getName())) {
             try {
                 engine.getNodeService().checkForOfflineNodes();
             } finally {
-                engine.getClusterService().unlock(ClusterConstants.WATCHDOG);
+                engine.getClusterService().unlock(getName());
             }
         }
     }

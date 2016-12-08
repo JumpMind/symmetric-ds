@@ -25,6 +25,7 @@ import static org.jumpmind.symmetric.job.JobDefaults.EVERY_10_SECONDS;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 
@@ -34,7 +35,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class RouterJob extends AbstractJob {
     
     public RouterJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.routing", engine, taskScheduler);
+        super(ClusterConstants.ROUTE, engine, taskScheduler);
     }
     
     @Override
@@ -43,7 +44,7 @@ public class RouterJob extends AbstractJob {
                 .scheduleType(ScheduleType.PERIODIC)
                 .schedule(EVERY_10_SECONDS)
                 .startupType(StartupType.AUTOMATIC)
-                .description("Create outgoing batches.");
+                .description("Create outgoing batches");
     }    
     
     @Override

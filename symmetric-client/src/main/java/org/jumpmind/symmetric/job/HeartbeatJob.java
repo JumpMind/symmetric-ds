@@ -24,6 +24,7 @@ import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
@@ -32,13 +33,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class HeartbeatJob extends AbstractJob {
 
     public HeartbeatJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.heartbeat", engine, taskScheduler);
+        super(ClusterConstants.HEARTBEAT, engine, taskScheduler);
     }
     
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
-                .description("Record a heartbeat.")
+                .description("Record a heartbeat")
                 .requiresRegisteration(false)
                 .scheduleType(ScheduleType.PERIODIC)
                 .schedule(EVERY_FIFTEEN_MINUTES)

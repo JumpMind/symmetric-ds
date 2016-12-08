@@ -25,6 +25,7 @@ import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
@@ -33,7 +34,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class IncomingPurgeJob extends AbstractJob {
 
     public IncomingPurgeJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.purge.incoming", engine, taskScheduler);
+        super(ClusterConstants.PURGE_INCOMING, engine, taskScheduler);
     }
     
     @Override
@@ -42,7 +43,7 @@ public class IncomingPurgeJob extends AbstractJob {
                 .scheduleType(ScheduleType.CRON)
                 .schedule(EVERY_NIGHT_AT_MIDNIGHT)
                 .startupType(StartupType.AUTOMATIC)
-                .description("Purge incoming data.");
+                .description("Purge incoming data");
     }    
     
     @Override

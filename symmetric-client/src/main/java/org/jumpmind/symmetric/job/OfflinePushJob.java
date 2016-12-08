@@ -24,6 +24,7 @@ import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
@@ -32,7 +33,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class OfflinePushJob extends AbstractJob {
 
     public OfflinePushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.offline.push", engine, taskScheduler);
+        super(ClusterConstants.OFFLINE_PUSH, engine, taskScheduler);
     }
     
     @Override
@@ -41,7 +42,7 @@ public class OfflinePushJob extends AbstractJob {
                 .scheduleType(ScheduleType.PERIODIC)
                 .schedule(EVERY_MINUTE)
                 .startupType(StartupType.MANUAL)
-                .description("Pushes/creates offline batch files.");
+                .description("Creates offline batch files");
     }    
 
     @Override
