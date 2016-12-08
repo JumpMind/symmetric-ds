@@ -596,6 +596,9 @@
         <column name="transform_load_millis" type="BIGINT" required="true" default="0" description="Not implemented. The number of milliseconds spent transforming the data on the load side." />
         <column name="total_extract_millis" type="BIGINT" required="true" default="0" description="Not implemented. The total number of milliseconds spent processing a batch on the extract side." />
         <column name="total_load_millis" type="BIGINT" required="true" default="0" description="Not implemented. The total number of milliseconds spent processing a batch on the load side." />
+        <column name="extract_start_time" type="TIMESTAMP" description="The time the batch started extracting from the source." />
+        <column name="transfer_start_time" type="TIMESTAMP" description="The time the batch started transfering across the network." />
+        <column name="load_start_time" type="TIMESTAMP" description="The time the batch started loading into the target." />
         <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
         <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
         <column name="sql_message" type="LONGVARCHAR" description="For a status of error (ER), this is the error message that describes the error." />

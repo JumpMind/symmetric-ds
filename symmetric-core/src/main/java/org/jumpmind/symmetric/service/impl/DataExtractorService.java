@@ -670,6 +670,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if (currentBatch.getStatus() != Status.OK) {
                                 currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
                                 changeBatchStatus(Status.LD, currentBatch, mode);
+                                processInfo.setStatus(ProcessInfo.Status.LOADING);
+                                processInfo.setCurrentTableName(currentBatch.getSummary());
                             }
                         } catch (ExecutionException e) {
                             if (isNotBlank(e.getMessage()) && e.getMessage().contains("string truncation")) {
@@ -830,7 +832,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                     synchronized (lock) {
                         if (!isPreviouslyExtracted(currentBatch)) {
-                            currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
+                            
+                            if (currentBatch.getExtractStartTime() == null) {
+                                currentBatch.setExtractStartTime(new Date());
+                            }
                             if (updateBatchStatistics) {
                                 changeBatchStatus(Status.QY, currentBatch, mode);
                             }
@@ -850,6 +855,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             extractTimeInMs = System.currentTimeMillis() - ts;
                             Statistics stats = getExtractStats(writer);
                             transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);
+                            currentBatch.setExtractCount(stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
                             extractTimeInMs = extractTimeInMs - transformTimeInMs;
                             byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                         }
@@ -992,6 +998,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             OutgoingBatch currentBatch, boolean isRetry, IDataWriter dataWriter, BufferedWriter writer, ExtractMode mode) {
         if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode) {
             currentBatch.setSentCount(currentBatch.getSentCount() + 1);
+
+            if (currentBatch.getStatus() != Status.RS) {
+                currentBatch.setTransferStartTime(new Date());
+            }
 
             long ts = System.currentTimeMillis();
             IStagedResource extractedBatch = getStagedResource(currentBatch);

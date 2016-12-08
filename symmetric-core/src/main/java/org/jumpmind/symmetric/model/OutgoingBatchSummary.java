@@ -35,7 +35,14 @@ public class OutgoingBatchSummary implements Serializable {
     private int dataCount;
     private OutgoingBatch.Status status;
     private Date oldestBatchCreateTime;
-
+    private Date lastBatchUpdateTime;
+    private String channel;
+    private String sqlMessage;
+    private long errorBatchId;
+    private long totalBytes;
+    private long totalMillis;
+    private float averageRowsPerMilli;
+    
     public String getNodeId() {
         return nodeId;
     }
@@ -76,4 +83,61 @@ public class OutgoingBatchSummary implements Serializable {
         this.oldestBatchCreateTime = oldestBatchCreateTime;
     }
 
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    public Date getLastBatchUpdateTime() {
+        return lastBatchUpdateTime;
+    }
+
+    public void setLastBatchUpdateTime(Date lastBatchUpdateTime) {
+        this.lastBatchUpdateTime = lastBatchUpdateTime;
+    }
+
+    public String getSqlMessage() {
+        return sqlMessage;
+    }
+
+    public void setSqlMessage(String sqlMessage) {
+        this.sqlMessage = sqlMessage;
+    }
+
+    public long getErrorBatchId() {
+        return errorBatchId;
+    }
+
+    public void setErrorBatchId(long errorBatchId) {
+        this.errorBatchId = errorBatchId;
+    }
+
+    public long getTotalBytes() {
+        return totalBytes;
+    }
+
+    public void setTotalBytes(long totalBytes) {
+        this.totalBytes = totalBytes;
+    }
+
+    public long getTotalMillis() {
+        return totalMillis;
+    }
+
+    public void setTotalMillis(long totalMillis) {
+        this.totalMillis = totalMillis;
+    }
+    
+    public float getAverageRowsPerMilli() {
+        return averageRowsPerMilli;
+    }
+
+    public void setAverageRowsPerMilli(float averageRowsPerMilli) {
+        this.averageRowsPerMilli = averageRowsPerMilli;
+    }
+
+    
 }

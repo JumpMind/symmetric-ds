@@ -98,6 +98,8 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     private Map<Status, ProcessInfo> statusHistory;
     
+    private Map<Status, Date> statusStartHistory;
+    
     private Date endTime;
 
     public ProcessInfo() {
@@ -136,6 +138,12 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     public void setStatus(Status status) {
         if (statusHistory == null) {
         	statusHistory = new HashMap<Status, ProcessInfo>();
+        }
+        if (statusStartHistory == null) {
+        	statusStartHistory = new HashMap<Status, Date>();
+        }
+        if (!statusStartHistory.containsKey(this.status)) {
+        	statusStartHistory.put(this.status, this.startTime);
         }
     	statusHistory.put(this.status, this.copy());
         statusHistory.put(status, this);
@@ -281,8 +289,25 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     	return this.statusHistory;
     }
     
+    
+    public void setStatusHistory(Map<Status, ProcessInfo> statusHistory) {
+		this.statusHistory = statusHistory;
+	}
+
+	public void setStatusStartHistory(Map<Status, Date> statusStartHistory) {
+		this.statusStartHistory = statusStartHistory;
+	}
+
+	public Map<Status, Date> getStatusStartHistory() {
+    	return this.statusStartHistory;
+    }
+    
     public ProcessInfo getStatusHistory(Status status) {
     	return this.statusHistory == null ? null : this.statusHistory.get(status);
+    }
+    
+    public Date getStatusStartHistory(Status status) {
+    	return this.statusStartHistory == null ? null : this.statusStartHistory.get(status);
     }
     
     @Override
