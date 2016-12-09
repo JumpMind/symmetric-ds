@@ -77,7 +77,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 
     public boolean start(Table table) {
     	this.table = table;
-        if (super.start(table)) {
+        if (super.start(table) && targetTable != null) {
             needsBinaryConversion = false;
             if (! batch.getBinaryEncoding().equals(BinaryEncoding.NONE)) {
                     for (Column column : targetTable.getColumns()) {
@@ -130,7 +130,6 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                         writer.setForceQualifier(true);
                         writer.setNullString("\\N");
                         Column[] columns = targetTable.getColumns();
-                        boolean lastWasBinary = false;
                         for (int i = 0; i < columns.length; i++) {
                             if (columns[i].isOfBinaryType() && parsedData[i] != null) {
                                 if (i > 0) {
@@ -139,20 +138,13 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                                 out.write('"');
                                 if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
                                     out.write(escape(Hex.decodeHex(parsedData[i].toCharArray())));
-//                                    out.write(parsedData[i].getBytes());
                                 } else if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
-//                                    out.write(escape(Base64.decodeBase64(parsedData[i].getBytes())));
                                     out.write(new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes()))).getBytes());
                                 }
                                 out.write('"');
-                                lastWasBinary = true;
                             } else {
-//                                if (lastWasBinary) {
-//                                    out.write(',');
-//                                } 
                                 writer.write(parsedData[i], true);
                                 writer.flush();
-                                lastWasBinary = false;
                             }
                         }
                         writer.endRecord();
