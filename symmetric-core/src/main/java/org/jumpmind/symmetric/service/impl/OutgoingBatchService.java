@@ -403,6 +403,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         
         String sql = null;
         Object[] params = null;
+        int[] types = null;
         
         if (channelThread != null) {
         	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchChannelSql");
@@ -410,6 +411,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                     OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                     OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name()};
+        	types = new int[] {
+        	        Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR,
+        	        Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR
+        	};
         }
         else {
         	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql");
@@ -417,10 +422,15 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                     OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                     OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name()};
+            types = new int[] {
+                    Types.VARCHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR,
+                    Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR
+            };
+
         }
         
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
-                sql, maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels), params, null);
+                sql, maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels), params, types);
         
         OutgoingBatches batches = new OutgoingBatches(list);
 
