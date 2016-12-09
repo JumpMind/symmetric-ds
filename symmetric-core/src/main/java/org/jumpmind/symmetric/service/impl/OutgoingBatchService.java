@@ -613,8 +613,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public Map<String, Float> getNodeThroughputByChannel() {
         String sql = getSql("getNodeThroughputByChannelSql");
         NodeThroughputMapper mapper = new NodeThroughputMapper();
-        
-        List<Object> temp = sqlTemplateDirty.query(sql, mapper);
+        sqlTemplateDirty.query(sql, mapper);
         return mapper.getThroughputMap();
     }
     
@@ -686,11 +685,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     
     public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummaries(int loadId) {
         LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper(this.symmetricDialect.getTablePrefix());
-        List<Object> obj = sqlTemplateDirty.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
+        sqlTemplateDirty.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
         return mapper.getResults();
     }
     
-    private class LoadStatusByQueueMapper implements ISqlRowMapper {
+    private class LoadStatusByQueueMapper implements ISqlRowMapper<Object> {
         Map<String, Map<String, LoadStatusSummary>> results = new TreeMap<String, Map<String, LoadStatusSummary>>(Collections.reverseOrder());
         String tablePrefix;
         
@@ -701,7 +700,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         public Object mapRow(Row rs) {
             String queue = rs.getString("queue");
             String status = rs.getString("status");
-            Integer loadId = rs.getInt("load_id");
             
             Map<String, LoadStatusSummary> statusMap = results.get(queue);
             if (statusMap == null) {
