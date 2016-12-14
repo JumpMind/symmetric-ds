@@ -212,7 +212,7 @@
         </foreign-key>
     </table>
 
-    <table name="grouplet" description="This tables defines named groups to which nodes can belong to based on their external id.  Grouplets are used to designate that synchronization should only affect an explicit subset of nodes in a node group.">
+    <table name="grouplet" description="Deprecated in 3.9.  This tables defines named groups to which nodes can belong to based on their external id.  Grouplets are used to designate that synchronization should only affect an explicit subset of nodes in a node group.">
         <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
         <column name="grouplet_link_policy" type="CHAR" size="1" required="true" default="I" description="Specified whether the external ids in the grouplet_link are included in the group or excluded from the grouplet.  In the case of excluded, the grouplet starts with all external ids and removes the excluded ones listed.  Use 'I' for inclusive and 'E' for exclusive." />
         <column name="description" type="VARCHAR" size="255" description="A description of this grouplet."/>
@@ -221,7 +221,7 @@
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
     </table>
 
-    <table name="grouplet_link" description="This tables defines nodes belong to a grouplet based on their external.id">
+    <table name="grouplet_link" description="Deprecated in 3.9. This tables defines nodes belong to a grouplet based on their external.id">
         <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
         <column name="external_id" type="VARCHAR" size="255" required="true" primaryKey="true"  description="Provides a means to select the nodes that belong to a grouplet. " />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
@@ -550,6 +550,7 @@
         <column name="severity_level" type="INTEGER" required="true" default="0" description="Severity level configured for the monitor." />
         <column name="is_resolved" type="BOOLEANINT" required="true" default="0" description="Whether an event is resolved because its value dropped below the threshold." />
         <column name="is_notified" type="BOOLEANINT" required="true" default="0" description="Whether a notification was run." />
+        <column name="details" type="LONGVARCHAR" description="JSON formatted details about the event" />
         <column name="last_update_time" type="TIMESTAMP" description="Timestamp when the event was last updated." />
     </table>
 
@@ -840,7 +841,7 @@
         </foreign-key>
     </table>
 
-    <table name="trigger_router_grouplet" description="This tables defines what grouplets are associated with what trigger routers.  The existence of the grouplet for a trigger_router enables nodes associated with the grouplet and at the same time it disables the trigger router for all other nodes.">
+    <table name="trigger_router_grouplet" description="Deprecated in 3.9. This tables defines what grouplets are associated with what trigger routers.  The existence of the grouplet for a trigger_router enables nodes associated with the grouplet and at the same time it disables the trigger router for all other nodes.">
         <column name="grouplet_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for the grouplet." />
         <column name="trigger_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="The id of a trigger." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />

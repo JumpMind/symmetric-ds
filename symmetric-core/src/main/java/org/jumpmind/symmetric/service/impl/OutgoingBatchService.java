@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -147,8 +148,18 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         } while (updateCount > 0);
     }
 
+    @Override
     public void markAllChannelAsSent(String channelId) {
-        sqlTemplate.update(getSql("cancelChannelBatchesSql"), channelId);
+        markAllChannelAsSent(channelId, null);
+    }
+    
+    @Override
+    public void markAllChannelAsSent(String channelId, String tableName) {
+        String sql = getSql("cancelChannelBatchesSql");
+        if (!StringUtils.isEmpty(tableName)) {
+            sql += getSql("cancelChannelBatchesTableSql");
+        }
+        sqlTemplate.update(sql, channelId, tableName);
     }
 
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId) {
@@ -398,6 +409,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         
         String sql = null;
         Object[] params = null;
+        int[] types = null;
         
         if (channelThread != null) {
         	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchChannelSql");
@@ -405,6 +417,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                     OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                     OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name()};
+        	types = new int[] {
+        	        Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR,
+        	        Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR
+        	};
         }
         else {
         	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql");
@@ -412,10 +428,15 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                     OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                     OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name()};
+            types = new int[] {
+                    Types.VARCHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR,
+                    Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR
+            };
+
         }
         
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
-                sql, maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels), params, null);
+                sql, maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels), params, types);
         
         OutgoingBatches batches = new OutgoingBatches(list);
 
@@ -611,8 +632,16 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public Map<String, Float> getNodeThroughputByChannel() {
-        String sql = getSql("getNodeThroughputByChannelSql");
-        NodeThroughputMapper mapper = new NodeThroughputMapper();
+        
+        String sqlName = "getNodeThroughputByChannelSql";
+        boolean isAverageDateSupported = true;
+        
+        if (platform.getName().equals(DatabaseNamesConstants.H2)) {
+            sqlName = "getNodeThroughputByChannelH2Sql";
+            isAverageDateSupported = false;
+        }
+        String sql = getSql(sqlName);
+        NodeThroughputMapper mapper = new NodeThroughputMapper(isAverageDateSupported);
         
         List<Object> temp = sqlTemplateDirty.query(sql, mapper);
         return mapper.getThroughputMap();
@@ -620,13 +649,25 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     
     private class NodeThroughputMapper implements ISqlRowMapper<Object> {
         Map<String, Float> throughputMap = new HashMap<String, Float>();
+        boolean isAverageDateSupported;
+        
+        public NodeThroughputMapper(boolean isAverageDateSupported) {
+            this.isAverageDateSupported = isAverageDateSupported;
+        }
         
         @Override
         public Object mapRow(Row row) {
             Long totalRows = row.getLong("total_rows");
-            Date avgCreateTime = row.getDateTime("average_create_time");
-            Date avgLastUpdatedTime = row.getDateTime("average_last_update_time");
-            long avgTime = avgLastUpdatedTime.getTime() - avgCreateTime.getTime();
+            long avgTime = 0;
+            
+            if (this.isAverageDateSupported) {
+                Date avgCreateTime = row.getDateTime("average_create_time");
+                Date avgLastUpdatedTime = row.getDateTime("average_last_update_time");
+                avgTime = avgLastUpdatedTime.getTime() - avgCreateTime.getTime();
+            }
+            else {
+                avgTime = row.getLong("average_create_time") - row.getLong("average_last_update_time");
+            }
             
             throughputMap.put(row.getString("node_id") + "-" + row.getString("channel_id") + "-" + 
                     row.get("direction"), (float) (avgTime > 0 ? totalRows / avgTime : totalRows));
@@ -686,11 +727,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     
     public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummaries(int loadId) {
         LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper(this.symmetricDialect.getTablePrefix());
-        List<Object> obj = sqlTemplateDirty.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
+        sqlTemplateDirty.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
         return mapper.getResults();
     }
     
-    private class LoadStatusByQueueMapper implements ISqlRowMapper {
+    private class LoadStatusByQueueMapper implements ISqlRowMapper<Object> {
         Map<String, Map<String, LoadStatusSummary>> results = new TreeMap<String, Map<String, LoadStatusSummary>>(Collections.reverseOrder());
         String tablePrefix;
         
@@ -701,7 +742,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         public Object mapRow(Row rs) {
             String queue = rs.getString("queue");
             String status = rs.getString("status");
-            Integer loadId = rs.getInt("load_id");
             
             Map<String, LoadStatusSummary> statusMap = results.get(queue);
             if (statusMap == null) {

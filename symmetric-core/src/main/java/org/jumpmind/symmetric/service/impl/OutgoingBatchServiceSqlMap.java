@@ -45,6 +45,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("cancelChannelBatchesSql",
                 "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0 where channel_id=? and status != 'OK'");
+        
+        putSql("cancelChannelBatchesTableSql", " and summary=?");
 
         putSql("insertOutgoingBatchSql",
                         "insert into $(outgoing_batch)                                                                                                                "
@@ -234,6 +236,24 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + "  select node_id, channel_id, 'incoming' as direction, "
                 + "  sum(statement_count) as total_rows, avg(create_time) as average_create_time, "
                 + "  avg(last_update_time) as average_last_update_time "
+                + "  from sym_incoming_batch where status = 'OK'  "
+                + "  group by node_id, channel_id order by node_id "
+                + "  ) b");
+        
+        putSql("getNodeThroughputByChannelH2Sql", "select node_id, channel_id, direction, total_rows, "
+                + "  average_create_time, average_last_update_time from ( "
+                + "  select node_id, channel_id, 'outgoing' as direction, "
+                + "  sum(byte_count) as total_rows, avg(datediff('ms', '1970-01-01', create_time)) as average_create_time, "
+                + "  avg(datediff('ms', '1970-01-01', last_update_time)) as average_last_update_time "
+                + "  from sym_outgoing_batch where status = 'OK' and sent_count = 1 "
+                + "  group by node_id, channel_id order by node_id "
+                + "  ) a "
+                + "  union all "
+                + "  select node_id, channel_id, direction, total_rows, average_create_time, "
+                + "  average_last_update_time from ( "
+                + "  select node_id, channel_id, 'incoming' as direction, "
+                + "  sum(statement_count) as total_rows, avg(datediff('ms', '1970-01-01', create_time)) as average_create_time, "
+                + "  avg(datediff('ms', '1970-01-01', last_update_time)) as average_last_update_time "
                 + "  from sym_incoming_batch where status = 'OK'  "
                 + "  group by node_id, channel_id order by node_id "
                 + "  ) b");
