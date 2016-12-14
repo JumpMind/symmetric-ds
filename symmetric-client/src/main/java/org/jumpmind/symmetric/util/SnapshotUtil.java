@@ -513,8 +513,12 @@ public class SnapshotUtil {
                         Long.toString(gaps.get(0).getStartId()));
                 runtimeProperties.setProperty("data.gap.end.id",
                         Long.toString(gaps.get(gaps.size()-1).getEndId()));                
-
             }
+            
+            runtimeProperties.setProperty("data.id.min",
+                    Long.toString(engine.getDataService().findMinDataId()));            
+            runtimeProperties.setProperty("data.id.max",
+                    Long.toString(engine.getDataService().findMaxDataId()));            
 
             runtimeProperties.put("jvm.title", Runtime.class.getPackage().getImplementationTitle());
             runtimeProperties.put("jvm.vendor", Runtime.class.getPackage().getImplementationVendor());
