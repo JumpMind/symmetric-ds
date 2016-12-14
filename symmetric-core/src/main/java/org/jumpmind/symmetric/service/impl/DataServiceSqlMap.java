@@ -121,7 +121,9 @@ public class DataServiceSqlMap extends AbstractSqlMap {
 
         putSql("deleteAllDataGapsSql", "delete from $(data_gap)");
 
-        putSql("selectMaxDataIdSql", "" + "select max(data_id) from $(data)   ");
+        putSql("selectMaxDataIdSql", "select max(data_id) from $(data)   ");
+        
+        putSql("selectMinDataIdSql", "select min(data_id) from $(data)   ");
         
         putSql("deleteCapturedConfigChannelDataSql", "delete from $(data) where channel_id='config'");
         
