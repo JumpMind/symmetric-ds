@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Monitor;
+import org.jumpmind.symmetric.model.MonitorEvent;
 
 public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExtensionPoint {
 
@@ -47,7 +48,8 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
     }
 
     @Override
-    public long check(Monitor monitor) {
+    public MonitorEvent check(Monitor monitor) {
+        MonitorEvent event = new MonitorEvent();
         int availableProcessors = osBean.getAvailableProcessors();
         long prevUpTime = runtimeBean.getUptime();
         long prevProcessCpuTime = getProcessCpuTime();
@@ -62,7 +64,8 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
         long elapsedCpu = processCpuTime - prevProcessCpuTime;
         long elapsedTime = upTime - prevUpTime;
 
-        return (long) (elapsedCpu / (elapsedTime * 1000f * availableProcessors));
+        event.setValue((long) (elapsedCpu / (elapsedTime * 1000f * availableProcessors)));
+        return event;
     }
 
     protected long getProcessCpuTime() {

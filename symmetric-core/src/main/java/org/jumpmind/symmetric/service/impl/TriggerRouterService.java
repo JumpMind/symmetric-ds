@@ -1163,7 +1163,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public void syncTriggers(StringBuilder sqlBuffer, boolean force) {
         if ((parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS) || isCalledFromSymmetricAdminTool())) {
             synchronized (this) {
-                if (clusterService.lock(ClusterConstants.SYNCTRIGGERS)) {
+                if (clusterService.lock(ClusterConstants.SYNC_TRIGGERS)) {
                     try {
                         String additionalMessage = "";
                         if (isCalledFromSymmetricAdminTool()
@@ -1215,11 +1215,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                 true, activeTriggerHistories, true);
                         resetTriggerRouterCacheByNodeGroupId();
                     } finally {
-                        clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
+                        clusterService.unlock(ClusterConstants.SYNC_TRIGGERS);
                         log.info("Done synchronizing triggers");
                     }
                 } else {
-                    Lock lock = clusterService.findLocks().get(ClusterConstants.SYNCTRIGGERS);
+                    Lock lock = clusterService.findLocks().get(ClusterConstants.SYNC_TRIGGERS);
                     if (lock != null) {
                         log.info("Sync triggers was locked by the cluster service.  The locking server id was: {}.  The lock time was: {}", lock.getLockingServerId(), lock.getLockTime());
                     } else {

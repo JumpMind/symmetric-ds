@@ -36,7 +36,6 @@ include::configuration/file-routing.ad[]
 include::configuration/conflicts.ad[]
 include::configuration/transforms.ad[]
 include::configuration/load-filters.ad[]
-include::configuration/grouplets.ad[]
 include::configuration/extensions.ad[]
 include::configuration/parameters.ad[]
 

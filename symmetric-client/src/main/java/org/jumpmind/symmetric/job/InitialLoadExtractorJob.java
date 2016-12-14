@@ -24,18 +24,19 @@ import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class InitialLoadExtractorJob extends AbstractJob {
 
     public InitialLoadExtractorJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.initial.load.extract", engine, taskScheduler);
+        super(ClusterConstants.INITIAL_LOAD_EXTRACT, engine, taskScheduler);
     }
     
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
-                .description("Extract data for initial loads.")
+                .description("Extract data for initial loads")
                 .scheduleType(ScheduleType.PERIODIC)
                 .schedule(EVERY_10_SECONDS)
                 .startupType(StartupType.AUTOMATIC);

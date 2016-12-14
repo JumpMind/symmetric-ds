@@ -26,6 +26,7 @@ import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Monitor;
+import org.jumpmind.symmetric.model.MonitorEvent;
 
 public class MonitorTypeDisk implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
    
@@ -37,8 +38,10 @@ public class MonitorTypeDisk implements IMonitorType, ISymmetricEngineAware, IBu
     }
 
     @Override
-    public long check(Monitor monitor) {
-        return (long) ((1f - ((double) tempDirectory.getUsableSpace() / (double) tempDirectory.getTotalSpace())) * 100f);
+    public MonitorEvent check(Monitor monitor) {
+        MonitorEvent event = new MonitorEvent();
+        event.setValue((long) ((1f - ((double) tempDirectory.getUsableSpace() / (double) tempDirectory.getTotalSpace())) * 100f));
+        return event;
     }
 
     @Override

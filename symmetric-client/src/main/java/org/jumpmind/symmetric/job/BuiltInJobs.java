@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.model.JobDefinition.JobType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class BuiltInJobs {
-    
+
 //    public List<IJob> loadAndSyncBuiltInJobs(ISqlTemplate sqlTemplate, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
 //        List<IJob> jobTemplates = getBuiltInJobs(engine, taskScheduler);
 //        List<IJob> jobRows = getBuiltInJobsFromDb(sqlTemplate);

@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Date;
 
+import org.apache.commons.lang.math.NumberUtils;
+
 public class JobDefinition {
     
     public enum JobType {BUILT_IN, BSH, JAVA}
@@ -42,6 +44,15 @@ public class JobDefinition {
     private Date createTime;
     private String lastUpdateBy;
     private Date lastUpdateTime;
+    
+    public void commitChanges() {
+        if (NumberUtils.isNumber(getSchedule())) {
+            setScheduleType(ScheduleType.PERIODIC);
+        } else {                
+//            CronTrigger cronTrigger = new CronTrigger(getSchedule()); // for validation
+            setScheduleType(ScheduleType.CRON);
+        }
+    }
     
     public String getJobName() {
         return jobName;

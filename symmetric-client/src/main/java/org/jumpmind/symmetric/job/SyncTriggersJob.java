@@ -25,6 +25,7 @@ import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
@@ -33,7 +34,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class SyncTriggersJob extends AbstractJob {
 
     public SyncTriggersJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.synctriggers", engine, taskScheduler);
+        super(ClusterConstants.SYNC_TRIGGERS, engine, taskScheduler);
     }
     
     @Override
@@ -42,7 +43,7 @@ public class SyncTriggersJob extends AbstractJob {
                 .scheduleType(ScheduleType.CRON)
                 .schedule(EVERY_NIGHT_AT_MIDNIGHT)
                 .startupType(StartupType.AUTOMATIC)
-                .description("Sync trigger definitions with physical database triggers.");
+                .description("Sync trigger config with physical database triggers");
     } 
     
     @Override

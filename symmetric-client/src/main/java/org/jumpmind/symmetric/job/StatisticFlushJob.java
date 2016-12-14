@@ -21,11 +21,13 @@
 
 package org.jumpmind.symmetric.job;
 
-import static org.jumpmind.symmetric.job.JobDefaults.*;
+import static org.jumpmind.symmetric.job.JobDefaults.EVERY_5_MINUTES;
+
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.util.LogSummaryAppender;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -37,7 +39,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class StatisticFlushJob extends AbstractJob {
 
     public StatisticFlushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.stat.flush", engine, taskScheduler);
+        super(ClusterConstants.STATISTICS, engine, taskScheduler);
     }
     
     @Override
@@ -46,7 +48,7 @@ public class StatisticFlushJob extends AbstractJob {
                 .scheduleType(ScheduleType.CRON)
                 .schedule(EVERY_5_MINUTES)
                 .startupType(StartupType.AUTOMATIC)
-                .description("Flushed accumulated statistics out to the database from memory.");
+                .description("Write statistics out to the database");
     } 
     
     @Override

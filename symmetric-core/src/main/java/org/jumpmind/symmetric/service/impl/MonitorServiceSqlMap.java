@@ -55,7 +55,7 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
         
         putSql("selectMonitorEventSql",
                 "select monitor_id, node_id, event_time, type, event_value, event_count, threshold, severity_level, host_name, " +
-                "is_resolved, is_notified, last_update_time " +
+                "is_resolved, is_notified, details, last_update_time " +
                 "from $(monitor_event) ");
 
         putSql("whereMonitorEventNotResolvedSql", "where node_id = ? and is_resolved = 0");
@@ -68,12 +68,12 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
         putSql("insertMonitorEventSql",
                 "insert into $(monitor_event) " +
                 "(monitor_id, node_id, event_time, host_name, type, event_value, event_count, threshold, severity_level, " +
-                "is_resolved, is_notified, last_update_time) " + 
-                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "is_resolved, is_notified, details, last_update_time) " + 
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         putSql("updateMonitorEventSql",
                 "update $(monitor_event) set host_name = ?, type = ?, event_value = ?, event_count = ?, threshold = ?, severity_level = ?, " +
-                "is_resolved = 0, last_update_time = ? where monitor_id = ? and node_id = ? and event_time = ?");
+                "is_resolved = 0, last_update_time = ?, details = ? where monitor_id = ? and node_id = ? and event_time = ?");
 
         putSql("updateMonitorEventResolvedSql",
                 "update $(monitor_event) set is_resolved = 1, last_update_time = ? where monitor_id = ? and node_id = ? and event_time = ?");

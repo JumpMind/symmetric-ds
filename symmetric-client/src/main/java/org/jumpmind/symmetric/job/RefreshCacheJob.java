@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.job;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /*
@@ -31,7 +32,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class RefreshCacheJob extends AbstractJob {
 
     public RefreshCacheJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.refresh.cache", engine, taskScheduler);
+        super(ClusterConstants.REFRESH_CACHE, engine, taskScheduler);
     }
     
     @Override
@@ -40,7 +41,7 @@ public class RefreshCacheJob extends AbstractJob {
                 .scheduleType(ScheduleType.CRON)
                 .schedule("0/30 * * * * *")
                 .startupType(StartupType.AUTOMATIC)
-                .description("Refresh configuration cache.");
+                .description("Refresh configuration cache");
     } 
     
     @Override

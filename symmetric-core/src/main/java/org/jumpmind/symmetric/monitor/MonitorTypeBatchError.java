@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Monitor;
+import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
@@ -44,8 +45,9 @@ public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAwar
     }
     
     @Override
-    public long check(Monitor monitor) {
+    public MonitorEvent check(Monitor monitor) {
         int outgoingErrorCount = 0;
+        MonitorEvent event = new MonitorEvent();
         OutgoingBatches outgoingBatches = outgoingBatchService.getOutgoingBatchErrors(1000);
         for (OutgoingBatch batch : outgoingBatches.getBatches()) {
             int batchErrorMinutes = (int) (System.currentTimeMillis() - batch.getCreateTime().getTime()) / 60000;
@@ -63,7 +65,8 @@ public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAwar
             }
         }
 
-        return outgoingErrorCount + incomingErrorCount;
+        event.setValue(outgoingErrorCount + incomingErrorCount);
+        return event;
     }
 
     @Override

@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -45,7 +46,7 @@ public class ReportStatusJob extends AbstractJob {
             Collections.synchronizedMap(new HashMap<String, Integer>());
 
     public ReportStatusJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.report.status", engine, taskScheduler);
+        super(ClusterConstants.REPORT_STATUS, engine, taskScheduler);
     }    
     
     @Override
@@ -54,7 +55,7 @@ public class ReportStatusJob extends AbstractJob {
                 .scheduleType(ScheduleType.CRON)
                 .schedule(EVERY_5_MINUTES)
                 .startupType(StartupType.DISABLED)
-                .description("Related to hybrid-pull.");
+                .description("Related to hybrid-pull");
     } 
 
     @Override

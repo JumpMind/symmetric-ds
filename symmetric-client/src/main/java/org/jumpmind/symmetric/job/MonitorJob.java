@@ -24,12 +24,13 @@ import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class MonitorJob extends AbstractJob {
 
     public MonitorJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.monitor", engine, taskScheduler);
+        super(ClusterConstants.MONITOR, engine, taskScheduler);
     }
     
     @Override
@@ -38,7 +39,7 @@ public class MonitorJob extends AbstractJob {
                 .scheduleType(ScheduleType.PERIODIC)
                 .schedule(EVERY_10_SECONDS)
                 .startupType(StartupType.AUTOMATIC)
-                .description("Invoke scheduled monitors and potentially generate notifications.");
+                .description("Run monitors and generate notifications");
     }     
         
     @Override

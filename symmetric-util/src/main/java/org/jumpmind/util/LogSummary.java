@@ -20,10 +20,14 @@
  */
 package org.jumpmind.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.apache.log4j.Level;
 
 public class LogSummary implements Comparable<LogSummary> {
 
+    
     private Level level;
 
     private String mostRecentThreadName;
@@ -38,12 +42,37 @@ public class LogSummary implements Comparable<LogSummary> {
 
     private String message;
 
+    private String stackTrace;
+    
+    private Integer levelInt;
+    
     public void setLevel(Level level) {
         this.level = level;
     }
 
     public Level getLevel() {
         return level;
+    }
+
+    public String getStackTrace() {
+        if (this.stackTrace == null && this.throwable != null) {
+            StringWriter st = new StringWriter();
+            throwable.printStackTrace(new PrintWriter(st));
+            this.stackTrace = st.toString();
+        }
+        return this.stackTrace;
+    }
+    
+    public void setStackTrace(String st) {
+        this.stackTrace = st;
+    }
+
+    public Integer getLevelInt() {
+        return this.levelInt != null ? this.levelInt : this.level != null ? this.level.toInt() : 0;
+    }
+
+    public void setLevelInt(Integer levelInt) {
+        this.levelInt = levelInt;
     }
 
     public long getFirstOccurranceTime() {
@@ -93,7 +122,7 @@ public class LogSummary implements Comparable<LogSummary> {
     public Throwable getThrowable() {
         return throwable;
     }
-
+    
     @Override
     public int compareTo(LogSummary other) {
         if (mostRecentTime == other.mostRecentTime) {
@@ -102,4 +131,7 @@ public class LogSummary implements Comparable<LogSummary> {
             return mostRecentTime > other.mostRecentTime ? 1 : -1;
         }
     }
+    
+    
+    
 }

@@ -350,10 +350,10 @@ public class DataService extends AbstractService implements IDataService {
     
     public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo) {
 
-        if (engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS)) {
+        if (engine.getClusterService().lock(ClusterConstants.SYNC_TRIGGERS)) {
             try {
                 synchronized (engine.getTriggerRouterService()) {
-                    engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS);
+                    engine.getClusterService().lock(ClusterConstants.SYNC_TRIGGERS);
 
                     boolean isFullLoad = reloadRequests == null 
                             || (reloadRequests.size() == 1 && reloadRequests.get(0).isFullLoadRequest());
@@ -525,7 +525,7 @@ public class DataService extends AbstractService implements IDataService {
                     }
                 }
             } finally {
-                engine.getClusterService().unlock(ClusterConstants.SYNCTRIGGERS);
+                engine.getClusterService().unlock(ClusterConstants.SYNC_TRIGGERS);
             }
         } else {
             log.info("Not attempting to insert reload events because sync trigger is currently running");

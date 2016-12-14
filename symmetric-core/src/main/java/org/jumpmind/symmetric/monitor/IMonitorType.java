@@ -22,10 +22,11 @@ package org.jumpmind.symmetric.monitor;
 
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.model.Monitor;
+import org.jumpmind.symmetric.model.MonitorEvent;
 
 public interface IMonitorType extends IExtensionPoint {
 
-    public long check(Monitor monitor);
+    public MonitorEvent check(Monitor monitor);
     
     public boolean requiresClusterLock();
     

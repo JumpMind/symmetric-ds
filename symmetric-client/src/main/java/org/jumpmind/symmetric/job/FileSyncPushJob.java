@@ -26,12 +26,13 @@ import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class FileSyncPushJob extends AbstractJob {
 
     public FileSyncPushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.file.sync.push", engine, taskScheduler);
+        super(ClusterConstants.FILE_SYNC_PUSH, engine, taskScheduler);
     }
     
     @Override
@@ -42,7 +43,7 @@ public class FileSyncPushJob extends AbstractJob {
                 .scheduleType(ScheduleType.PERIODIC)
                 .schedule(EVERY_MINUTE)
                 .startupType(fileSyncEnabeld ? StartupType.AUTOMATIC : StartupType.DISABLED)
-                .description("For FileSync, push pending files to other nodes.");
+                .description("Push files to other nodes");
     }    
     
     @Override

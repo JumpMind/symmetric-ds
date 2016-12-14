@@ -25,6 +25,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Monitor;
+import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -40,10 +41,12 @@ public class MonitorTypeOfflineNodes implements IMonitorType, ISymmetricEngineAw
     }
 
     @Override
-    public long check(Monitor monitor) {
+    public MonitorEvent check(Monitor monitor) {
         int minutesBeforeNodeIsOffline = parameterService.getInt(
                 ParameterConstants.MINUTES_BEFORE_NODE_REPORTED_AS_OFFLINE, 24 * 60);
-        return nodeService.findOfflineNodeIds(minutesBeforeNodeIsOffline).size();
+        MonitorEvent event = new MonitorEvent();
+        event.setValue(nodeService.findOfflineNodeIds(minutesBeforeNodeIsOffline).size());
+        return event;
     }
 
     @Override

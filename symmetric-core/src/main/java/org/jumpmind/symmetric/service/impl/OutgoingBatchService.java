@@ -632,6 +632,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public Map<String, Float> getNodeThroughputByChannel() {
+<<<<<<< HEAD
         
         String sqlName = "getNodeThroughputByChannelSql";
         boolean isAverageDateSupported = true;
@@ -644,6 +645,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         NodeThroughputMapper mapper = new NodeThroughputMapper(isAverageDateSupported);
         
         List<Object> temp = sqlTemplateDirty.query(sql, mapper);
+=======
+        String sql = getSql("getNodeThroughputByChannelSql");
+        NodeThroughputMapper mapper = new NodeThroughputMapper();
+        sqlTemplateDirty.query(sql, mapper);
+>>>>>>> branch '3.9' of https://github.com/JumpMind/symmetric-ds.git
         return mapper.getThroughputMap();
     }
     

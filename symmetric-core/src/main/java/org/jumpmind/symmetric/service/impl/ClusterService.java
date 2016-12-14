@@ -20,30 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PULL;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PUSH;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_SCAN;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_SHARED;
-import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
-import static org.jumpmind.symmetric.service.ClusterConstants.HEARTBEAT;
-import static org.jumpmind.symmetric.service.ClusterConstants.INITIAL_LOAD_EXTRACT;
-import static org.jumpmind.symmetric.service.ClusterConstants.MONITOR;
-import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PULL;
-import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PUSH;
-import static org.jumpmind.symmetric.service.ClusterConstants.PULL;
-import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_DATA_GAPS;
-import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_INCOMING;
-import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_OUTGOING;
-import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_STATISTICS;
-import static org.jumpmind.symmetric.service.ClusterConstants.PUSH;
-import static org.jumpmind.symmetric.service.ClusterConstants.ROUTE;
-import static org.jumpmind.symmetric.service.ClusterConstants.STAGE_MANAGEMENT;
-import static org.jumpmind.symmetric.service.ClusterConstants.STATISTICS;
-import static org.jumpmind.symmetric.service.ClusterConstants.SYNCTRIGGERS;
-import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_CLUSTER;
-import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_EXCLUSIVE;
-import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_SHARED;
-import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
+import static org.jumpmind.symmetric.service.ClusterConstants.*;
 
 import java.util.Collection;
 import java.util.Date;
@@ -70,7 +47,7 @@ import org.jumpmind.util.AppUtils;
 public class ClusterService extends AbstractService implements IClusterService {
 
     private static final String[] actions = new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING,
-            PURGE_STATISTICS, SYNCTRIGGERS, PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL,
+            PURGE_STATISTICS, SYNC_TRIGGERS, PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL,
             FILE_SYNC_PUSH, FILE_SYNC_TRACKER, FILE_SYNC_SCAN, INITIAL_LOAD_EXTRACT, OFFLINE_PUSH, OFFLINE_PULL, MONITOR };
     
     private static final String[] sharedActions = new String[] { FILE_SYNC_SHARED };
