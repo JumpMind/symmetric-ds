@@ -1818,18 +1818,24 @@ public class DataService extends AbstractService implements IDataService {
                 .getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         List<DataGap> gaps = findDataGapsByStatus(DataGap.Status.GP);
         boolean lastGapExists = false;
-        long maxDataEventId = 0;
+        long lastGapStartId = 0;
         for (DataGap dataGap : gaps) {
             lastGapExists |= dataGap.gapSize() >= maxDataToSelect - 1;
-            maxDataEventId = maxDataEventId < dataGap.getEndId() ? dataGap.getEndId() : maxDataEventId;
+            lastGapStartId = Math.max(lastGapStartId, dataGap.getEndId());
         }
 
         if (!lastGapExists) {
-            maxDataEventId = maxDataEventId == 0 ? findMaxDataEventDataId() : maxDataEventId;
-            if (maxDataEventId > 0) {
-                maxDataEventId++;
+            if (lastGapStartId == 0) {
+                long maxRoutedDataId = findMaxDataEventDataId();
+                long minDataId = findMinDataId() - 1; // -1 to make sure the ++ operation doesn't move past a piece of unrouted data.
+                // At this point, determine the startId as the GREATER of the smallest known data id 
+                // or the largest known data id that was already routed.
+                lastGapStartId = Math.max(minDataId, maxRoutedDataId); 
             }
-            DataGap gap = new DataGap(maxDataEventId, maxDataEventId + maxDataToSelect);
+            if (lastGapStartId > 0) {
+                lastGapStartId++;
+            }
+            DataGap gap = new DataGap(lastGapStartId, lastGapStartId + maxDataToSelect);
             log.info("Inserting missing last data gap: {}", gap);
             insertDataGap(gap);
             gaps = findDataGaps();
@@ -2035,6 +2041,10 @@ public class DataService extends AbstractService implements IDataService {
 
     public long findMaxDataId() {
         return sqlTemplateDirty.queryForLong(getSql("selectMaxDataIdSql"));
+    }
+    
+    public long findMinDataId() {
+        return sqlTemplateDirty.queryForLong(getSql("selectMinDataIdSql"));
     }
     
     
