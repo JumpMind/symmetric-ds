@@ -56,12 +56,14 @@ public class TypedPropertiesFactory implements ITypedPropertiesFactory {
         factoryBean.setProperties(properties);
         factoryBean.setLocations(buildLocations(propertiesFile));
         try {
-            return new TypedProperties(factoryBean.getObject());
+            TypedProperties properties = new TypedProperties(factoryBean.getObject());
+            SymmetricUtils.replaceSystemAndEnvironmentVariables(properties);
+            return properties;
         } catch (IOException e) {
             throw new IoException(e);
         }
     }
-
+    
     protected Resource[] buildLocations(File propertiesFile) {
         /*
          * System properties always override the properties found in

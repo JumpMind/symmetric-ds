@@ -24,6 +24,7 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class CollectionUtils {
 
@@ -38,6 +39,14 @@ public class CollectionUtils {
             return new HashMap<String, T>(0);
         }
     }   
+    
+    public static Map<String,String> toMap(Properties properties) {
+        Map<String,String> map = new HashMap<String, String>(properties.size());
+        for (Object key : properties.keySet()) {
+            map.put((String)key, (String)properties.get(key));
+        }
+        return map;
+    }
     
     /**
      * Copies the specified range of the specified array into a new array.

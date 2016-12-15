@@ -32,8 +32,8 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IExtensionService;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.AppUtils;
-import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,6 +165,7 @@ abstract public class AbstractParameterService {
                 if (parameters == null || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached < timeoutTime)) {
                     try {
                         parameters = rereadApplicationParameters();
+                        SymmetricUtils.replaceSystemAndEnvironmentVariables(parameters);
                         lastTimeParameterWereCached = System.currentTimeMillis();
                         cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
                     } catch (SqlException ex) {
@@ -195,7 +196,7 @@ abstract public class AbstractParameterService {
     	if (externalId==null) {
     		String value = getString(ParameterConstants.EXTERNAL_ID);
     		value = substituteScripts(value);
-    		externalId = substituteVariablesFromValue(value);
+    		externalId = value;
     		if (log.isDebugEnabled()) {
         		log.debug("External Id eval results in: {}",externalId);
         	}
@@ -207,7 +208,6 @@ abstract public class AbstractParameterService {
     	if (syncUrl==null) {
     		String value = getString(ParameterConstants.SYNC_URL);
     		value = substituteScripts(value);
-    		value = substituteVariablesFromValue(value);
     		if (value != null) {
     			value = value.trim();
             }
@@ -223,7 +223,7 @@ abstract public class AbstractParameterService {
     	if (nodeGroupId==null) {
     		String value = getString(ParameterConstants.NODE_GROUP_ID);
     		value = substituteScripts(value);
-    		nodeGroupId = substituteVariablesFromValue(value);
+    		nodeGroupId = value;
     		if (log.isDebugEnabled()) {
         		log.debug("Node Group Id eval results in: {}",nodeGroupId);
         	}
@@ -235,11 +235,10 @@ abstract public class AbstractParameterService {
     	if (registrationUrl==null) {
     		String value = getString(ParameterConstants.REGISTRATION_URL);
     		value = substituteScripts(value);
-    		value = substituteVariablesFromValue(value);
     		if (value != null) {
     			value = value.trim();
             }
-    		registrationUrl=value;
+    		registrationUrl = value;
     		if (log.isDebugEnabled()) {
         		log.debug("Registration URL eval results in: {}",registrationUrl);
         	}
@@ -251,10 +250,10 @@ abstract public class AbstractParameterService {
     	if (engineName==null) {
     		String value = getString(ParameterConstants.ENGINE_NAME,"SymmetricDS");
     		value = substituteScripts(value);
-    		engineName = substituteVariablesFromValue(value);
+    		engineName = value;
         	if (log.isDebugEnabled()) {
         		log.debug("Engine Name eval results in: {}",engineName);
-        	}
+        	}        	
         }
         return engineName;
     }
@@ -294,35 +293,6 @@ abstract public class AbstractParameterService {
         }
     }
     	
-    protected String substituteVariablesFromValue(String value) {
-        if (!StringUtils.isBlank(value)) {
-            if (value.contains("hostName")) {
-                value = FormatUtils.replace("hostName", AppUtils.getHostName(), value);
-            }
-            if (value.contains("portNumber")) {
-                value = FormatUtils.replace("portNumber", AppUtils.getPortNumber(), value);
-            }
-            if (value.contains("ipAddress")) {
-                value = FormatUtils.replace("ipAddress", AppUtils.getIpAddress(), value);
-            }
-            if (value.contains("engineName")) {
-                value = FormatUtils.replace("engineName", getEngineName(), value);
-            }
-            if (value.contains("nodeGroupId")) {
-                value = FormatUtils.replace("nodeGroupId", getNodeGroupId(), value);
-            }
-            if (value.contains("externalId")) {
-                value = FormatUtils.replace("externalId", getExternalId(), value);
-            }
-            if (value.contains("syncUrl")) {
-                value = FormatUtils.replace("syncUrl", getSyncUrl(), value);
-            }
-            if (value.contains("registrationUrl")) {
-                value = FormatUtils.replace("registrationUrl", getRegistrationUrl(), value);
-            }
-        }
-        return value;
-    }
 
     public void setExtensionService(IExtensionService extensionService) {
         this.extensionService = extensionService;
