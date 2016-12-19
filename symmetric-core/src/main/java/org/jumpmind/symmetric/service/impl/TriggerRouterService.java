@@ -955,7 +955,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void insert(TriggerHistory newHistRecord) {
-        newHistRecord.setTriggerHistoryId((int)sequenceService.nextVal(Constants.SEQUENCE_TRIGGER_HIST));
+        if (newHistRecord.getTriggerHistoryId() <= 0) {
+            newHistRecord.setTriggerHistoryId((int)sequenceService.nextVal(Constants.SEQUENCE_TRIGGER_HIST));
+        }
         historyMap.put(newHistRecord.getTriggerHistoryId(), newHistRecord);
         sqlTemplate.update(
                 getSql("insertTriggerHistorySql"),
