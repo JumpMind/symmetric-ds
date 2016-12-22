@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.mapper.LongMapper;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -145,8 +146,18 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         } while (updateCount > 0);
     }
 
+    @Override
     public void markAllChannelAsSent(String channelId) {
-        sqlTemplate.update(getSql("cancelChannelBatchesSql"), channelId);
+        markAllChannelAsSent(channelId, null);
+    }
+    
+    @Override
+    public void markAllChannelAsSent(String channelId, String tableName) {
+        String sql = getSql("cancelChannelBatchesSql");
+        if (!StringUtils.isEmpty(tableName)) {
+            sql += getSql("cancelChannelBatchesTableSql");
+        }
+        sqlTemplate.update(sql, channelId, tableName);
     }
 
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId) {
@@ -392,6 +403,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         
         String sql = null;
         Object[] params = null;
+        int[] types = null;
         
         if (channelThread != null) {
         	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchChannelSql");
@@ -399,6 +411,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                     OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                     OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name()};
+        	types = new int[] {
+        	        Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR,
+        	        Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR
+        	};
         }
         else {
         	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql");
@@ -406,10 +422,15 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                     OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                     OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name()};
+            types = new int[] {
+                    Types.VARCHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR,
+                    Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR
+            };
+
         }
         
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
-                sql, maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels), params, null);
+                sql, maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels), params, types);
         
         OutgoingBatches batches = new OutgoingBatches(list);
 
@@ -787,6 +808,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return loads;
     }
     
+    @Override
+    public List<Long> getAllBatches() {
+        return sqlTemplateDirty.query(getSql("getAllBatchesSql"), new LongMapper());
+    }
+    
     class OutgoingBatchSummaryMapper implements ISqlRowMapper<OutgoingBatchSummary> {
         public OutgoingBatchSummary mapRow(Row rs) {
             OutgoingBatchSummary summary = new OutgoingBatchSummary();
@@ -862,5 +888,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         }
     }
+        
 
 }

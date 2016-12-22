@@ -74,4 +74,6 @@ public interface IIncomingBatchService {
 
     public Map<String,BatchId> findMaxBatchIdsByChannel();
     
+    public List<BatchId> getAllBatches();
+    
 }

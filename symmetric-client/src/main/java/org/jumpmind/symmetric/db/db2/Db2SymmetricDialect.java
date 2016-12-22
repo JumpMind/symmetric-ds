@@ -47,11 +47,11 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     public boolean createOrAlterTablesIfNecessary(String... tables) {
         boolean tablesCreated = super.createOrAlterTablesIfNecessary(tables);
         if (tablesCreated) {
+            log.info("Resetting auto increment columns for {}", parameterService.getTablePrefix() + "_data");
             long dataId = platform.getSqlTemplate().queryForLong("select max(data_id) from " + parameterService.getTablePrefix()
                     + "_data") + 1;
             platform.getSqlTemplate().update("alter table " + parameterService.getTablePrefix()
                     + "_data alter column data_id restart with " + dataId);
-            log.info("Resetting auto increment columns for {}", parameterService.getTablePrefix() + "_data");
         }
         return tablesCreated;
     }
@@ -83,18 +83,20 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     @Override
     public void createRequiredDatabaseObjects() {  
+        String sql = "select " + getSourceNodeExpression() + " from " + parameterService.getTablePrefix() + "_node_identity";
     	try {
-    		String sql = "select " + getSourceNodeExpression() + " from " + parameterService.getTablePrefix() + "_node_identity";
     		platform.getSqlTemplate().query(sql);                                                                                                                                                    
         }
     	catch (Exception e) {
+    	    log.debug("Failed checking for variable (usually means it doesn't exist yet) '" + sql + "'", e);
     		platform.getSqlTemplate().update("create variable " + getSourceNodeExpression() + " varchar(50)");
     	}
+    	sql = "select " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " from " + parameterService.getTablePrefix() + "_node_identity";
     	try {
-    		String sql = "select " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " from " + parameterService.getTablePrefix() + "_node_identity";
     		platform.getSqlTemplate().query(sql);                                                                                                                                                    
         }
     	catch (Exception e) {
+    	    log.debug("Failed checking for variable (usually means it doesn't exist yet) '" + sql + "'", e);
     		platform.getSqlTemplate().update("create variable " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " varchar(50)");
     	}
     }

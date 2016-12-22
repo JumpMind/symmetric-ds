@@ -52,6 +52,8 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
+import org.jumpmind.symmetric.job.IJob;
+import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.BatchAckResult;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -338,6 +340,31 @@ public class RestService {
     public final QueryResults getQueryNode(@PathVariable("engine") String engineName,
             @RequestParam(value = "query") String sql, @RequestParam(value = "isquery", defaultValue = "true") boolean isQuery) {
         return queryNodeImpl(getSymmetricEngine(engineName), sql, isQuery);
+    }
+
+    /**
+     * Execute the named job.  This can be used to control when jobs are run via and external application.  You would typically 
+     * disable the job first so it no longer runs automatically.  
+     */
+    @ApiOperation(value = "Execute the named job.  This can be used to control when jobs are run via and external application.  "
+            + "You would typically disable the job first so it no longer runs automatically.  Jobs you might want to control include: "
+            + "job.route, job.push, job.pull, job.offline.push, job.offline.pull")
+    @RequestMapping(value = "engine/{engine}/invokejob", method = {RequestMethod.GET, RequestMethod.POST})
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public boolean invokeJob(@PathVariable("engine") String engineName, @RequestParam("jobname") String jobName) {
+        IJobManager jobManager = getSymmetricEngine(engineName).getJobManager();
+        IJob job = jobManager.getJob(jobName);
+        if (job == null) {
+            log.warn("Could not find a job with the name '{}' in the '{}' engine", jobName, engineName);
+            return false;
+        } else if (!job.isRunning()) {
+            log.info("Invoking '{}' via the REST API", jobName);
+            return job.invoke(true);
+        } else {
+            log.info("Could not invoke the '{}' job via the REST API because it is already running", jobName);
+            return false;
+        }
     }
 
     /**

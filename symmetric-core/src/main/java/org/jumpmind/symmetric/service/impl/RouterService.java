@@ -241,7 +241,8 @@ public class RouterService extends AbstractService implements IRouterService {
                                 .getRegistrationTime() != null)) {
 
                     List<NodeSecurity> nodeSecurities = findNodesThatAreReadyForInitialLoad();
-                    if (nodeSecurities != null) {
+                    if (nodeSecurities != null && nodeSecurities.size() > 0) {
+                        gapDetector.setFullGapAnalysis(true);
                         boolean reverseLoadFirst = parameterService
                                 .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
                         boolean isInitialLoadQueued = false;
@@ -906,8 +907,8 @@ public class RouterService extends AbstractService implements IRouterService {
 
                         if (nodeIds.size() == 0) {
                             log.info(
-                                    "None of the target nodes specified in the data.node_list field ({}) were qualified nodes. Data id {} will not be routed using the {} router",
-                                    new Object[] {targetNodeIds, data.getDataId(), triggerRouter.getRouter().getRouterId() });
+                                    "None of the target nodes specified in the data.node_list field ({}) were qualified nodes. Data id {} for table '{}' will not be routed using the {} router",
+                                    new Object[] {targetNodeIds, data.getDataId(), data.getTableName(), triggerRouter.getRouter().getRouterId() });
                         }
                     } else {
                         try {

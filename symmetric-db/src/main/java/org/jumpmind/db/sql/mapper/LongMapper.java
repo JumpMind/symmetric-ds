@@ -18,20 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.io.stage;
+package org.jumpmind.db.sql.mapper;
 
-import java.util.Collection;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.Row;
 
-public interface IStagingManager {
+public class LongMapper implements ISqlRowMapper<Long> {
 
-    public IStagedResource find(Object... path);
-    
-    public IStagedResource find(String path);
-
-    public IStagedResource create(long memoryThresholdInBytes, Object... path);
-    
-    public long clean(long timeToLiveInMs);
-    
-    public Collection<String> getResourceReferences();
-
+    public Long mapRow(Row row) {     
+        return row.longValue();
+    }
 }

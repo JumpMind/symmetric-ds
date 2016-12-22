@@ -18,20 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.io.stage;
+package org.jumpmind.symmetric.service.impl;
 
-import java.util.Collection;
 
-public interface IStagingManager {
+import static org.junit.Assert.assertTrue;
 
-    public IStagedResource find(Object... path);
-    
-    public IStagedResource find(String path);
+import org.jumpmind.symmetric.model.NodeCommunication;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
+import org.junit.Test;
 
-    public IStagedResource create(long memoryThresholdInBytes, Object... path);
-    
-    public long clean(long timeToLiveInMs);
-    
-    public Collection<String> getResourceReferences();
+public class NodeCommunicationServiceTest {
 
+    @Test
+    public void testNodeCommunicationTypeLengths() {
+        final int MAX_LENGTH_IN_DB = 10;
+        
+        for (CommunicationType communicationType : NodeCommunication.CommunicationType.values()) {
+            String msg = communicationType.name() + " is too long for DB. " +  communicationType.name().length() + " <= " + MAX_LENGTH_IN_DB;
+            assertTrue(msg, communicationType.name().length() <= MAX_LENGTH_IN_DB);
+        }
+    }
 }

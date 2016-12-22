@@ -31,7 +31,8 @@ public enum TriggerReBuildReason {
     TABLE_SYNC_CONFIGURATION_CHANGED("C"),
     FORCED("F"),
     TRIGGERS_MISSING("T"),
-    TRIGGER_TEMPLATE_CHANGED("E");
+    TRIGGER_TEMPLATE_CHANGED("E"),
+    TRIGGER_HIST_MISSIG("H");
 
     private String code;
 

@@ -45,6 +45,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("cancelChannelBatchesSql",
                 "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0 where channel_id=? and status != 'OK'");
+        
+        putSql("cancelChannelBatchesTableSql", " and summary=?");
 
         putSql("insertOutgoingBatchSql",
                         "insert into $(outgoing_batch)                                                                                                                "
@@ -174,6 +176,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + "  (select batch_id, ?, channel_id, 'NE', load_id, extract_job_flag, load_flag, common_flag, reload_event_count, other_event_count,          " 
                 + "   last_update_hostname, current_timestamp, create_time, 'copy' from $(outgoing_batch) where node_id=? and channel_id=? and batch_id > ?)     ");
 
+        
+        putSql("getAllBatchesSql", "select batch_id from $(outgoing_batch)");
 
     }
 

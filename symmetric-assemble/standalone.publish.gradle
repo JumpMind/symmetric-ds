@@ -7,7 +7,7 @@ apply plugin:'maven'
 
 configurations{ allJars }
 
-artifacts{ allJars file("/Users/cshenso/Dropbox/Jdbc/postgresql-9.4-1204.jdbc4.jar") }
+artifacts{ allJars file("/Users/cshenso/Dropbox/Jdbc/postgresql-9.4.1212.jre7.jar") }
 
 configurations { deployerJars }
 
@@ -22,7 +22,7 @@ uploadAllJars {
             repository(url: deployUploadUrl) {
                 authentication(userName: deployUser, password: deployPassword)
             }
-            pom.version = "9.4-1204.jdbc4"
+            pom.version = "9.4-1212.jre7"
             pom.artifactId = "postgresql"
             pom.groupId = "jdbc.postgresql"
         }

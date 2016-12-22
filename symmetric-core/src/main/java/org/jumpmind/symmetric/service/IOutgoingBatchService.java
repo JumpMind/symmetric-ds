@@ -46,6 +46,8 @@ public interface IOutgoingBatchService {
     public void markAllConfigAsSentForNode(String nodeId);
     
     public void markAllChannelAsSent(String channelId);
+    
+    public void markAllChannelAsSent(String channelId, String tableName);
 
     public void updateAbandonedRoutingBatches();
 
@@ -112,5 +114,7 @@ public interface IOutgoingBatchService {
     public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummarySql(long loadId);
     
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId);
+    
+    public List<Long> getAllBatches();
 
 }
