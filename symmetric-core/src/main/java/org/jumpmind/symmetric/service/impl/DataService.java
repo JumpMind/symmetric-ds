@@ -1550,7 +1550,8 @@ public class DataService extends AbstractService implements IDataService {
 
     public void reloadMissingForeignKeyRows(String nodeId, long dataId) {
         Data data = findData(dataId);
-        Table table = platform.getTableFromCache(data.getTableName(), false);
+        TriggerHistory hist = data.getTriggerHistory();
+        Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
         Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
 
         List<TableRow> tableRows = new ArrayList<TableRow>();
