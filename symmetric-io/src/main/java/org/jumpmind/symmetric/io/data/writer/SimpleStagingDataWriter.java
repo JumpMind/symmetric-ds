@@ -22,8 +22,6 @@ package org.jumpmind.symmetric.io.data.writer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -129,7 +127,7 @@ public class SimpleStagingDataWriter {
                     log.debug("Creating staged resource for batch {}", batch.getNodeBatchId());
                     resource = stagingManager.create(memoryThresholdInBytes, category, location, batch.getBatchId());
                 }
-                writer = new BufferedWriter(new FileWriter(new File("/Users/cshenso/Downloads/test.text")));
+                writer = resource.getWriter();
                 writeLine(nodeLine);
                 writeLine(binaryLine);
                 writeLine(channelLine);
