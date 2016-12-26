@@ -141,9 +141,10 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     tokens = csvReader.getValues();
                 }
                 bytesRead += logDebugAndCountBytes(tokens);
+                Statistics stats = null;
                 if (batch != null) {
-                    statistics.get(batch)
-                            .increment(DataReaderStatistics.READ_BYTE_COUNT, bytesRead);
+                    stats = statistics.get(batch);
+                    stats.increment(DataReaderStatistics.READ_BYTE_COUNT, bytesRead);
                     bytesRead = 0;
                 }
                 
@@ -152,6 +153,11 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                                 || tokens[0].equals(CsvConstants.KEYS) || tokens[0]
                                     .equals(CsvConstants.COLUMNS))) {
                     return table;
+                }
+                
+                if (stats != null && (tokens[0].equals(CsvConstants.INSERT) || tokens[0].equals(CsvConstants.UPDATE)
+                        || tokens[0].equals(CsvConstants.DELETE))) {
+                    stats.increment(DataReaderStatistics.READ_RECORD_COUNT, 1);
                 }
                 
                 if (tokens[0].equals(CsvConstants.INSERT)) {

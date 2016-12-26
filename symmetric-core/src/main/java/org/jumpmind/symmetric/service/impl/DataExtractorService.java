@@ -85,6 +85,7 @@ import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.ProtocolException;
+import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
 import org.jumpmind.symmetric.io.data.reader.IExtractDataReaderSource;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
@@ -852,6 +853,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);
                             extractTimeInMs = extractTimeInMs - transformTimeInMs;
                             byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
+                            
+                            statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(),
+                                    byteCount);
+                            statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
+                                    stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
+                            
                         }
                     }
                 } catch (RuntimeException ex) {
@@ -894,11 +901,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                 if (byteCount > 0) {
                     currentBatch.setByteCount(byteCount);
-                    statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(),
-                            byteCount);
-                    statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
-                            currentBatch.getExtractCount());
                 }
+
             }
 
         }
@@ -1036,11 +1040,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
                     new DataProcessor(dataReader, new ProcessInfoDataWriter(dataWriter, processInfo), "send from stage")
                             .process(ctx);
-                    if (dataWriter.getStatistics().size() > 0) {
-                        Statistics stats = dataWriter.getStatistics().values().iterator().next();
+                    if (dataReader.getStatistics().size() > 0) {
+                        Statistics stats = dataReader.getStatistics().values().iterator().next();
                         statisticManager.incrementDataSent(currentBatch.getChannelId(),
-                                stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
-                        long byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
+                                stats.get(DataReaderStatistics.READ_RECORD_COUNT));
+                        long byteCount = stats.get(DataReaderStatistics.READ_BYTE_COUNT);
                         statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), byteCount);
                     } else {
                         log.warn("Could not find recorded statistics for batch {}",
@@ -1129,8 +1133,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             numBytesRead = 0;
                             bts = System.currentTimeMillis();
                         }
+                    } else {
+                        totalBytesRead += new String(buffer, 0, numCharsRead).getBytes().length;
                     }
                 }
+                
+                statisticManager.incrementDataSent(batch.getChannelId(), batch.getDataEventCount());
+                statisticManager.incrementDataBytesSent(batch.getChannelId(), totalBytesRead);
+
                 if (log.isDebugEnabled() && totalThrottleTime > 0) {
                     log.debug("Batch '{}' for node '{}' took {}ms for {} bytes and was throttled for {}ms because limit is set to {} KB/s",
                             batch.getBatchId(), batch.getNodeId(), (System.currentTimeMillis() - startTime), totalBytesRead,
