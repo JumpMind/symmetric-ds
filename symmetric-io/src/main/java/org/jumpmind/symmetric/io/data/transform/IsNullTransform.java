@@ -4,12 +4,12 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IsNullTransform implements ISingleValueColumnTransform, IExtensionPoint {
+public class IsNullTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 

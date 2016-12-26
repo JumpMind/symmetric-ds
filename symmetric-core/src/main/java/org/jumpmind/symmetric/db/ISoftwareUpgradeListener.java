@@ -1,8 +1,8 @@
 package org.jumpmind.symmetric.db;
 
-import org.jumpmind.extension.IExtensionPoint;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 
-public interface ISoftwareUpgradeListener extends IExtensionPoint {
+public interface ISoftwareUpgradeListener extends IBuiltInExtensionPoint {
 	
 	public void upgrade(String databaseVersion, String softwareVersion);
 }
