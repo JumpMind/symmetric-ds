@@ -121,6 +121,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                  */
                 routeNodeTables(nodeIds, columnValues, rootNetworkedNode, me, routingContext,
                         dataMetaData, possibleTargetNodes, initialLoad);
+                        
+                engine.getNodeService().clearCache();
+                
             } else if (tableMatches(dataMetaData, TableConstants.SYM_TABLE_RELOAD_REQUEST)) {
                 String sourceNodeId = columnValues.get("SOURCE_NODE_ID");
                 String reloadEnabled = columnValues.get("RELOAD_ENABLED");
