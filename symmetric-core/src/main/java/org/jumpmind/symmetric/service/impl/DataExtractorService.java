@@ -471,7 +471,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return extract(processInfo, targetNode, null, transport);
     }
     
-    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode, String channelId,
+    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode, String queue,
             IOutgoingTransport transport) {
 
         /*
@@ -484,8 +484,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         
         OutgoingBatches batches = null;
-        if (channelId != null) {
-        	batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), channelId, false);
+        if (queue != null) {
+        	batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue, false);
         }
         else {
         	batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
@@ -493,7 +493,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         if (batches.containsBatches()) {
 
-            ChannelMap channelMap = transport.getSuspendIgnoreChannelLists(configurationService,
+            ChannelMap channelMap = transport.getSuspendIgnoreChannelLists(configurationService, queue,
                     targetNode);
 
             List<OutgoingBatch> activeBatches = filterBatchesForExtraction(batches, channelMap);

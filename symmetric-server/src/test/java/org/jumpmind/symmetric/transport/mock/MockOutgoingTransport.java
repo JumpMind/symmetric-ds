@@ -71,7 +71,7 @@ public class MockOutgoingTransport implements IOutgoingTransport {
         return writer.getBuffer().toString();
     }
 
-    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, Node targetNode) {
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode) {
         return new ChannelMap();
     }
 

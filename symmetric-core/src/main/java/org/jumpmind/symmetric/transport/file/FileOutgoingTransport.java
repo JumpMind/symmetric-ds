@@ -105,7 +105,7 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
     }
 
     @Override
-    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, Node targetNode) {
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode) {
         return configurationService.getSuspendIgnoreChannelLists();
     }
 
