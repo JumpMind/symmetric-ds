@@ -74,7 +74,7 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
         return writer;
     }
 
-    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, Node targetNode) {
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode) {
         return configurationService.getSuspendIgnoreChannelLists();
     }
 }
