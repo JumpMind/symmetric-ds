@@ -1598,6 +1598,13 @@ public class DataService extends AbstractService implements IDataService {
             if (visited.add(tableRow)) {
                 for (ForeignKey fk : tableRow.getTable().getForeignKeys()) {
                     Table table = platform.getTableFromCache(fk.getForeignTableName(), false);
+                    if (table == null) {
+                        table = fk.getForeignTable();
+                        if (table == null) {                            
+                            table = platform.getTableFromCache(tableRow.getTable().getCatalog(), 
+                                    tableRow.getTable().getSchema(), fk.getForeignTableName(), false);
+                        }
+                    }
                     if (table != null) {
                         Table foreignTable = (Table) table.clone();
                         for (Column column : foreignTable.getColumns()) {
