@@ -1551,6 +1551,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public void reloadMissingForeignKeyRows(String nodeId, long dataId) {
         Data data = findData(dataId);
+        log.debug("reloadMissingForeignKeyRows for nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
         TriggerHistory hist = data.getTriggerHistory();
         Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
         Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
@@ -1566,6 +1567,11 @@ public class DataService extends AbstractService implements IDataService {
             throw new RuntimeException(e);
         }
         
+        if (foreignTableRows.isEmpty()) {
+            log.info("Could not determine foreign table rows to fix foreign key violation for "
+                    + "nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
+        }
+        
         Collections.reverse(foreignTableRows);
         for (TableRow foreignTableRow : foreignTableRows) {
             Table foreignTable = foreignTableRow.getTable();
@@ -1577,7 +1583,11 @@ public class DataService extends AbstractService implements IDataService {
             if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
                 schema = null;
             }
-
+            
+            log.info("Issuing foreign key correction reload "
+                    + "nodeId {} catalog '{}' schema '{}' foreign table name '{}' where sql '{}' "
+                    + "to correct dataId '{}' table '{}'",
+                    nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(), dataId, data.getTableName());
             reloadTable(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql());
         }        
     }
@@ -1619,6 +1629,9 @@ public class DataService extends AbstractService implements IDataService {
     
                         TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql);
                         fkDepList.add(foreignTableRow);
+                        log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
+                    } else {
+                        log.debug("Foreign table '{}' not found for foreign key '{}'", fk.getForeignTableName(), fk.getName());
                     }
                 }
             }
