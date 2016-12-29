@@ -2145,8 +2145,8 @@ public class DataService extends AbstractService implements IDataService {
                     engine.getTriggerRouterService().insert(triggerHistory);
                     log.warn("Could not find a trigger history row for the table {} for data_id {}.  \"Attempting\" to generate a new trigger history row", tableName, data.getDataId());
                 } else {
+                    triggerHistory = new TriggerHistory(-1);
                     log.warn("A captured data row could not be matched with an existing trigger history row and we could not find a matching trigger.  The data_id of {} will be ignored", data.getDataId());
-                    return null;
                 }
             } else {
                 if (!triggerHistory.getSourceTableName().equals(data.getTableName())) {
