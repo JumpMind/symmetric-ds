@@ -34,8 +34,11 @@ public class MonitorTypeLog implements IMonitorType, ISymmetricEngineAware, IBui
         List<LogSummary> all = new ArrayList<LogSummary>();
         MonitorEvent event = new MonitorEvent();
         
-        all.addAll(LogSummaryAppenderUtils.getLogSummaryErrors(engine.getEngineName()));
-        all.addAll(LogSummaryAppenderUtils.getLogSummaryWarnings(engine.getEngineName()));
+        if (monitor.getSeverityLevel() == Monitor.SEVERE) {
+            all.addAll(LogSummaryAppenderUtils.getLogSummaryErrors(engine.getEngineName()));
+        } else if (monitor.getSeverityLevel() == Monitor.WARNING) {
+            all.addAll(LogSummaryAppenderUtils.getLogSummaryWarnings(engine.getEngineName()));
+        }
         
         Collections.sort(all);
 
