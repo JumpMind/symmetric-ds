@@ -81,6 +81,7 @@ import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IDataService;
@@ -1818,18 +1819,24 @@ public class DataService extends AbstractService implements IDataService {
                 .getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         List<DataGap> gaps = findDataGapsByStatus(DataGap.Status.GP);
         boolean lastGapExists = false;
-        long maxDataEventId = 0;
+        long lastGapStartId = 0;
         for (DataGap dataGap : gaps) {
             lastGapExists |= dataGap.gapSize() >= maxDataToSelect - 1;
-            maxDataEventId = maxDataEventId < dataGap.getEndId() ? dataGap.getEndId() : maxDataEventId;
+            lastGapStartId = Math.max(lastGapStartId, dataGap.getEndId());
         }
 
         if (!lastGapExists) {
-            maxDataEventId = maxDataEventId == 0 ? findMaxDataEventDataId() : maxDataEventId;
-            if (maxDataEventId > 0) {
-                maxDataEventId++;
+            if (lastGapStartId == 0) {
+                long maxRoutedDataId = findMaxDataEventDataId();
+                long minDataId = findMinDataId() - 1; // -1 to make sure the ++ operation doesn't move past a piece of unrouted data.
+                // At this point, determine the startId as the GREATER of the smallest known data id 
+                // or the largest known data id that was already routed.
+                lastGapStartId = Math.max(minDataId, maxRoutedDataId); 
             }
-            DataGap gap = new DataGap(maxDataEventId, maxDataEventId + maxDataToSelect);
+            if (lastGapStartId > 0) {
+                lastGapStartId++;
+            }
+            DataGap gap = new DataGap(lastGapStartId, lastGapStartId + maxDataToSelect);
             log.info("Inserting missing last data gap: {}", gap);
             insertDataGap(gap);
             gaps = findDataGaps();
@@ -2037,6 +2044,10 @@ public class DataService extends AbstractService implements IDataService {
         return sqlTemplateDirty.queryForLong(getSql("selectMaxDataIdSql"));
     }
     
+    public long findMinDataId() {
+        return sqlTemplateDirty.queryForLong(getSql("selectMinDataIdSql"));
+    }
+    
     
     @Override
     public void deleteCapturedConfigChannelData() {
@@ -2104,7 +2115,8 @@ public class DataService extends AbstractService implements IDataService {
             data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA", false));
             data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
             data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID", false));
-            data.putAttribute(CsvData.ATTRIBUTE_TABLE_NAME, row.getString("TABLE_NAME"));
+            String tableName = row.getString("TABLE_NAME");
+            data.putAttribute(CsvData.ATTRIBUTE_TABLE_NAME, tableName);
             data.setDataEventType(DataEventType.getEventType(row.getString("EVENT_TYPE")));
             data.putAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID, row.getString("SOURCE_NODE_ID"));
             data.putAttribute(CsvData.ATTRIBUTE_EXTERNAL_DATA, row.getString("EXTERNAL_DATA"));
@@ -2117,7 +2129,26 @@ public class DataService extends AbstractService implements IDataService {
             TriggerHistory triggerHistory = engine.getTriggerRouterService().getTriggerHistory(
                     triggerHistId);
             if (triggerHistory == null) {
-                triggerHistory = new TriggerHistory(triggerHistId);
+                Table table = platform.getTableFromCache(null, null, tableName, true);
+                Trigger trigger = null;
+                List<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getAllTriggerRoutersForCurrentNode(engine.getNodeService().findIdentity().getNodeGroupId());
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    if (triggerRouter.getTrigger().getSourceTableName().equalsIgnoreCase(tableName)) {
+                        trigger = triggerRouter.getTrigger();
+                        break;
+                    }
+                }
+                
+                if (table != null && trigger != null) {
+                    triggerHistory = new TriggerHistory(table, trigger, engine.getSymmetricDialect().getTriggerTemplate());
+                    triggerHistory.setTriggerHistoryId(triggerHistId);
+                    triggerHistory.setLastTriggerBuildReason(TriggerReBuildReason.TRIGGER_HIST_MISSIG);
+                    engine.getTriggerRouterService().insert(triggerHistory);
+                    log.warn("Could not find a trigger history row for the table {} for data_id {}.  \"Attempting\" to generate a new trigger history row", tableName, data.getDataId());
+                } else {
+                    log.warn("A captured data row could not be matched with an existing trigger history row and we could not find a matching trigger.  The data_id of {} will be ignored", data.getDataId());
+                    return null;
+                }
             } else {
                 if (!triggerHistory.getSourceTableName().equals(data.getTableName())) {
                     log.warn("There was a mismatch between the data table name {} and the trigger_hist "
