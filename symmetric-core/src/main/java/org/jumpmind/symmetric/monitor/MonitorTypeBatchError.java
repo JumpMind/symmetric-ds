@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.monitor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
@@ -32,8 +33,14 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected IOutgoingBatchService outgoingBatchService;
     
@@ -48,11 +55,16 @@ public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAwar
     public MonitorEvent check(Monitor monitor) {
         int outgoingErrorCount = 0;
         MonitorEvent event = new MonitorEvent();
+        
+        List<OutgoingBatch> outgoingErrors = new ArrayList<OutgoingBatch>();
+        List<IncomingBatch> incomingErrors = new ArrayList<IncomingBatch>();
+        
         OutgoingBatches outgoingBatches = outgoingBatchService.getOutgoingBatchErrors(1000);
         for (OutgoingBatch batch : outgoingBatches.getBatches()) {
             int batchErrorMinutes = (int) (System.currentTimeMillis() - batch.getCreateTime().getTime()) / 60000;
             if (batchErrorMinutes >= monitor.getThreshold()) {
                 outgoingErrorCount++;
+                outgoingErrors.add(batch);
             }
         }
 
@@ -62,10 +74,21 @@ public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAwar
             int batchErrorMinutes = (int) (System.currentTimeMillis() - batch.getCreateTime().getTime()) / 60000;
             if (batchErrorMinutes >= monitor.getThreshold()) {
                 incomingErrorCount++;
+                incomingErrors.add(batch);
             }
         }
 
         event.setValue(outgoingErrorCount + incomingErrorCount);
+        
+        BatchErrorWrapper wrapper = new BatchErrorWrapper();
+        if (outgoingErrors.size() > 0) {
+            wrapper.setOutgoingErrors(outgoingErrors);
+        }
+        if (incomingErrors.size() > 0) {
+            wrapper.setIncomingErrors(incomingErrors);
+        }
+        
+        event.setDetails(serializeDetails(wrapper));
         return event;
     }
 
@@ -79,5 +102,19 @@ public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAwar
         outgoingBatchService = engine.getOutgoingBatchService();
         incomingBatchService = engine.getIncomingBatchService();
     }
+    
+    protected String serializeDetails(BatchErrorWrapper details) {
+        ObjectMapper mapper = new ObjectMapper();
+        
+        String result = null;
+        try {
+            result = mapper.writeValueAsString(details);
+        } catch(JsonProcessingException jpe) {
+            log.warn("Unable to convert batch errors to JSON", jpe);
+        }
+       
+        return result;
+    }
+    
 
 }
