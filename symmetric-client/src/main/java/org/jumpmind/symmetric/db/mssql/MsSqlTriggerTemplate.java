@@ -269,7 +269,15 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
     }
 
     @Override
-    protected String getColumnSize(Column column) {
+    protected String getColumnSize(Table table, Column column) {
+        int totalSize = 0;
+        for (Column c : table.getColumns()) {
+            totalSize += c.getSizeAsInt();
+        }
+        if (castToNVARCHAR && totalSize > 8000) {
+            return "max";
+        }
+        
         if (castToNVARCHAR && column.getSizeAsInt() > 4000) {
             return "max";
         }
