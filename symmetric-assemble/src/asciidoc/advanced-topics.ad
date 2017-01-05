@@ -67,6 +67,10 @@ IMPORTANT: Please see <<Initial Loads>> for important details around initial loa
 and registration when using registration redirect.
 
 
+=== Offline Synchronization
+
+include::advanced/offline.ad[]
+
 === Encrypted Passwords
        
 The `db.user` and `db.password` properties will accept encrypted text, which protects
