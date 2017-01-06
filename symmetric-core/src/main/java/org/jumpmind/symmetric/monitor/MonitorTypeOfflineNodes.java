@@ -20,16 +20,26 @@
  */
 package org.jumpmind.symmetric.monitor;
 
+import java.util.List;
+
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
+import org.jumpmind.symmetric.monitor.MonitorTypeLog.LogSummaryMixIn;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.util.LogSummary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MonitorTypeOfflineNodes implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected INodeService nodeService;
     
@@ -45,7 +55,9 @@ public class MonitorTypeOfflineNodes implements IMonitorType, ISymmetricEngineAw
         int minutesBeforeNodeIsOffline = parameterService.getInt(
                 ParameterConstants.MINUTES_BEFORE_NODE_REPORTED_AS_OFFLINE, 24 * 60);
         MonitorEvent event = new MonitorEvent();
-        event.setValue(nodeService.findOfflineNodeIds(minutesBeforeNodeIsOffline).size());
+        List<String> offlineNodes = nodeService.findOfflineNodeIds(minutesBeforeNodeIsOffline);
+        event.setValue(offlineNodes.size());
+        event.setDetails(serializeDetails(offlineNodes));
         return event;
     }
 
@@ -58,6 +70,19 @@ public class MonitorTypeOfflineNodes implements IMonitorType, ISymmetricEngineAw
     public void setSymmetricEngine(ISymmetricEngine engine) {
         nodeService = engine.getNodeService();
         parameterService = engine.getParameterService();
+    }
+    
+    protected String serializeDetails(List<String> offlineNodes) {
+        ObjectMapper mapper = new ObjectMapper();
+        
+        String result = null;
+        try {
+            result = mapper.writeValueAsString(offlineNodes);
+        } catch(JsonProcessingException jpe) {
+            log.warn("Unable to convert list of offline nodes to JSON", jpe);
+        }
+       
+        return result;
     }
 
 }
