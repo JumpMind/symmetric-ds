@@ -137,7 +137,6 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         String poolId = req.getRequestURI();
         String nodeId = getNodeId(req);
         String threadChannel = req.getHeader(WebConstants.THREAD_CHANNEL);
-        
         concurrentConnectionManager.releaseConnection(nodeId, threadChannel, poolId);
     }
 

@@ -863,8 +863,11 @@ abstract public class AbstractTriggerTemplate {
         String formattedColumnText = FormatUtils.replace("columnName",
                 String.format("%s%s", columnPrefix, column.getName()), templateToUse);
         
+        Table sourceTable = symmetricDialect.getPlatform().getTableFromCache(trigger.getSourceCatalogName(), 
+                trigger.getSourceSchemaName(), trigger.getSourceTableName(), false);
+        
         formattedColumnText = FormatUtils.replace("columnSize",
-                getColumnSize(column), formattedColumnText);
+                getColumnSize(sourceTable, column), formattedColumnText);
 
         formattedColumnText = FormatUtils.replace("masterCollation",
                 symmetricDialect.getMasterCollation(), formattedColumnText);
@@ -883,7 +886,7 @@ abstract public class AbstractTriggerTemplate {
 
     }
     
-    protected String getColumnSize(Column column) {
+    protected String getColumnSize(Table table, Column column) {
         return column.getSize();
     }
 

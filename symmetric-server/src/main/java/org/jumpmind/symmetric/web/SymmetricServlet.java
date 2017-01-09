@@ -127,7 +127,7 @@ public class SymmetricServlet extends HttpServlet {
                 }
             } else {
                 log.warn(
-                        "The request path of the url is not supported.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
+                        "The request path of the url could not be handled. Check the engine.name of the target node vs. the sync URL of the source node. The request was {} from the host {} with an ip address of {}.  The query string was: {}",
                         new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                                 req.getRemoteAddr(), req.getQueryString() });
                 ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST);
