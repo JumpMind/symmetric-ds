@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvConstants;
@@ -44,7 +45,7 @@ public class SimpleStagingDataWriter {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    protected BufferedReader reader;
+    protected CsvReader reader;
     protected IStagingManager stagingManager;
     protected IProtocolDataWriterListener[] listeners;
     protected long memoryThresholdInBytes;
@@ -55,10 +56,12 @@ public class SimpleStagingDataWriter {
 
     protected BufferedWriter writer;
     protected Batch batch;
-    
+
     public SimpleStagingDataWriter(BufferedReader reader, IStagingManager stagingManager, String category, long memoryThresholdInBytes,
             BatchType batchType, String targetNodeId, DataContext context, IProtocolDataWriterListener... listeners) {
-        this.reader = reader;
+        this.reader = new CsvReader(reader);
+        this.reader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
+        this.reader.setSafetySwitch(false);
         this.stagingManager = stagingManager;
         this.memoryThresholdInBytes = memoryThresholdInBytes;
         this.category = category;
@@ -72,12 +75,14 @@ public class SimpleStagingDataWriter {
         String catalogLine = null, schemaLine = null, nodeLine = null, binaryLine = null, channelLine = null;
         TableLine tableLine = null;
         Map<TableLine, TableLine> syncTableLines = new HashMap<TableLine, TableLine>();
-        Map<TableLine, TableLine> batchTableLines = new HashMap<TableLine,TableLine>();
+        Map<TableLine, TableLine> batchTableLines = new HashMap<TableLine, TableLine>();
         IStagedResource resource = null;
         String line = null;
         long startTime = System.currentTimeMillis(), ts = startTime, lineCount = 0;
 
-        while ((line = readLine()) != null) {
+        
+        while (reader.readRecord()) {
+            line = reader.getRawRecord();
             if (line.startsWith(CsvConstants.CATALOG)) {
                 catalogLine = line;
                 writeLine(line);
@@ -87,7 +92,7 @@ public class SimpleStagingDataWriter {
             } else if (line.startsWith(CsvConstants.TABLE)) {
                 tableLine = new TableLine(catalogLine, schemaLine, line);
                 TableLine batchTableLine = batchTableLines.get(tableLine);
-                
+
                 if (batchTableLine != null) {
                     tableLine = batchTableLine;
                     writeLine(line);
@@ -113,10 +118,11 @@ public class SimpleStagingDataWriter {
                 tableLine.columnsLine = line;
                 writeLine(line);
             } else if (line.startsWith(CsvConstants.BATCH)) {
-                batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine),
-                        getBinaryEncoding(binaryLine), getArgLine(nodeLine), targetNodeId, false);
+                batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine), getBinaryEncoding(binaryLine),
+                        getArgLine(nodeLine), targetNodeId, false);
                 String location = batch.getStagedLocation();
-                resource = stagingManager.find(category, location, batch.getBatchId());
+                 resource = stagingManager.find(category, location,
+                 batch.getBatchId());
                 if (resource == null || resource.getState() == State.DONE) {
                     log.debug("Creating staged resource for batch {}", batch.getNodeBatchId());
                     resource = stagingManager.create(memoryThresholdInBytes, category, location, batch.getBatchId());
@@ -140,17 +146,18 @@ public class SimpleStagingDataWriter {
                     writer = null;
                 }
                 batchTableLines.clear();
-                
+
                 if (listeners != null) {
                     for (IProtocolDataWriterListener listener : listeners) {
                         listener.end(context, batch, resource);
                     }
                 }
             } else if (line.startsWith(CsvConstants.RETRY)) {
-                batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine),
-                        getBinaryEncoding(binaryLine), getArgLine(nodeLine), targetNodeId, false);
+                batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine), getBinaryEncoding(binaryLine),
+                        getArgLine(nodeLine), targetNodeId, false);
                 String location = batch.getStagedLocation();
-                resource = stagingManager.find(category, location, batch.getBatchId());
+                resource = stagingManager.find(category, location,
+                batch.getBatchId());
                 if (resource == null || resource.getState() == State.CREATE) {
                     resource = null;
                     writer = null;
@@ -168,29 +175,31 @@ public class SimpleStagingDataWriter {
             } else if (line.startsWith(CsvConstants.CHANNEL)) {
                 channelLine = line;
             } else {
-                int size = line.length();
+                int size = line.length();                
                 if (size > MAX_WRITE_LENGTH) {
                     log.debug("Exceeded max line length with {}", size);
                     for (int i = 0; i < size; i = i + MAX_WRITE_LENGTH) {
                         int end = i + MAX_WRITE_LENGTH;
                         writer.append(line, i, end < size ? end : size);
                     }
+                    writer.append("\n");
                 } else {
                     writeLine(line);
                 }
             }
-            
+
             lineCount++;
             if (System.currentTimeMillis() - ts > 60000) {
-                log.info("Batch '{}', for node '{}', for process 'transfer to stage' has been processing for {} seconds.  The following stats have been gathered: {}",
-                        new Object[] { (batch != null ? batch.getBatchId() : 0), 
-                        (batch != null ? batch.getTargetNodeId() : ""), (System.currentTimeMillis() - startTime) / 1000,
-                        "LINES=" + lineCount + ", BYTES=" + ((resource == null) ? 0 : resource.getSize()) });
+                log.info(
+                        "Batch '{}', for node '{}', for process 'transfer to stage' has been processing for {} seconds.  The following stats have been gathered: {}",
+                        new Object[] { (batch != null ? batch.getBatchId() : 0), (batch != null ? batch.getTargetNodeId() : ""),
+                                (System.currentTimeMillis() - startTime) / 1000,
+                                "LINES=" + lineCount + ", BYTES=" + ((resource == null) ? 0 : resource.getSize()) });
                 ts = System.currentTimeMillis();
             }
         }
     }
-    
+
     protected String getArgLine(String line) throws IOException {
         if (line != null) {
             int i = line.indexOf(",");
@@ -201,7 +210,7 @@ public class SimpleStagingDataWriter {
         }
         return null;
     }
-    
+
     protected BinaryEncoding getBinaryEncoding(String line) throws IOException {
         String value = getArgLine(line);
         if (value != null) {
@@ -209,30 +218,15 @@ public class SimpleStagingDataWriter {
         }
         return null;
     }
-    
+
     protected void writeLine(String line) throws IOException {
         if (line != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Writing staging data: {}", line);
             }
             writer.write(line);
+            writer.write("\n");            
         }
-    }
-
-    protected String readLine() throws IOException {
-        StringBuilder sb = new StringBuilder();
-        int ch;
-        while ((ch = reader.read()) != -1) {
-            sb.append((char) ch);
-            if (ch == '\n') {
-                break;
-            }
-        }
-        String str = sb.toString();
-        if (str.length() == 0) {
-            return null;
-        }
-        return str;
     }
 
     class TableLine {
@@ -241,13 +235,13 @@ public class SimpleStagingDataWriter {
         String tableLine;
         String keysLine;
         String columnsLine;
-        
+
         public TableLine(String catalogLine, String schemaLine, String tableLine) {
             this.catalogLine = catalogLine;
             this.schemaLine = schemaLine;
             this.tableLine = tableLine;
         }
-        
+
         @Override
         public boolean equals(Object o) {
             if (o == null || !(o instanceof TableLine)) {
@@ -257,7 +251,7 @@ public class SimpleStagingDataWriter {
             return StringUtils.equals(catalogLine, t.catalogLine) && StringUtils.equals(schemaLine, t.schemaLine)
                     && StringUtils.equals(tableLine, t.tableLine);
         }
-        
+
         @Override
         public int hashCode() {
             return (catalogLine + "." + schemaLine + "." + tableLine).hashCode();

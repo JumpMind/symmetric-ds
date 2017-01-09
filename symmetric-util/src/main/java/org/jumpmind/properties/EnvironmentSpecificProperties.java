@@ -37,7 +37,6 @@ import org.jumpmind.exception.IoException;
  * any properties whose prefix matches any combination of supplied environment
  * tokens. Any matches it finds, it removes the prefix and keeps a reference to
  * the new property.
- * <p/>
  */
 public class EnvironmentSpecificProperties extends TypedProperties {
 

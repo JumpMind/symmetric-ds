@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.io.stage;
 import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_INCOMING;
 import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_OUTGOING;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,8 +23,8 @@ public class BatchStagingManager extends StagingManager {
     @Override
     public long clean(long ttlInMs) {
         boolean recordIncomingBatchesEnabled = engine.getIncomingBatchService().isRecordOkBatchesEnabled();
-        List<Long> outgoingBatches = engine.getOutgoingBatchService().getAllBatches();
-        List<BatchId> incomingBatches = engine.getIncomingBatchService().getAllBatches();
+        List<Long> outgoingBatches = ttlInMs == 0 ? new ArrayList<Long>() : engine.getOutgoingBatchService().getAllBatches();
+        List<BatchId> incomingBatches =  ttlInMs == 0 ? new ArrayList<BatchId>() :  engine.getIncomingBatchService().getAllBatches();
         synchronized (StagingManager.class) {
             log.trace("Purging staging area");
             Set<String> keys = new HashSet<String>(resourceList.keySet());

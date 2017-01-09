@@ -17,7 +17,6 @@ dependencies {
 allprojects {
 
     apply plugin: 'eclipse-wtp'
-    apply plugin: 'maven-publish'
 
     group = 'org.jumpmind.symmetric'
     
@@ -85,7 +84,22 @@ subprojects { subproject ->
 
     sourceCompatibility=1.6
     targetCompatibility=1.6
-
+    
+    javadoc {
+        failOnError = false
+    }
+    
+    install.enabled = !project.properties.containsKey('pro')
+    uploadArchives.enabled = !project.properties.containsKey('pro')
+    
+    
+    task sourcesJar(type: Jar, dependsOn:classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+    
+    artifacts { archives sourcesJar }    
+    
     uploadArchives {
         repositories.mavenDeployer {
             configuration = configurations.deployerJars
@@ -94,13 +108,6 @@ subprojects { subproject ->
             }
         }
     }
-
-    task sourcesJar(type: Jar, dependsOn:classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-    
-    artifacts { archives sourcesJar }
 
     task deploy {
         description 'Shortcut for Maven users'

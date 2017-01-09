@@ -80,7 +80,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
 
     synchronized public boolean releaseConnection(String nodeId, String channelId, String poolId) {
 		String reservationId = getReservationIdentifier(nodeId, channelId);
-    	
+    	log.debug("Releasing connection for {} {}", poolId, reservationId);
 		Map<String, Reservation> reservations = getReservationMap(poolId);
         Reservation reservation = reservations.remove(reservationId);
         if (reservation != null) {
@@ -88,6 +88,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
                     poolId);
             return true;
         } else {
+            log.warn("Failed to release connection for {}", reservationId);
             return false;
         }
 	}
@@ -124,7 +125,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
             ReservationType reservationRequest) {
     	
     	String reservationId = getReservationIdentifier(nodeId, channelId);
-    	
+    	log.debug("Reserving connection for {} {}", poolId, reservationId);
         Map<String, Reservation> reservations = getReservationMap(poolId);
         int maxPoolSize = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
         long timeout = parameterService.getLong(ParameterConstants.CONCURRENT_RESERVATION_TIMEOUT);
@@ -184,10 +185,10 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         long currentTime = System.currentTimeMillis();
         String[] keys = reservations.keySet().toArray(new String[reservations.size()]);
         if (keys != null) {
-            for (String nodeId : keys) {
-                Reservation reservation = reservations.get(nodeId);
+            for (String key : keys) {
+                Reservation reservation = reservations.get(key);
                 if (reservation.timeToLiveInMs < currentTime) {
-                    reservations.remove(nodeId);
+                    reservations.remove(key);
                 }
             }
         }

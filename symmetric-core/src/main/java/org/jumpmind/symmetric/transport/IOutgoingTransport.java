@@ -44,5 +44,5 @@ public interface IOutgoingTransport {
      * request
      * @param targetNode
      */
-    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, Node targetNode);
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode);
 }
