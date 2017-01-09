@@ -154,7 +154,7 @@ public class AppUtils {
     }
 
     /**
-     * This method will return the timezone in RFC822 format. </p> The format
+     * This method will return the timezone in RFC822 format. <p> The format
      * ("-+HH:MM") has advantages over the older timezone codes ("AAA"). The
      * difference of 5 hours from GMT is obvious with "-05:00" but only implied
      * with "EST". There is no ambiguity saying "-06:00", but you don't know if

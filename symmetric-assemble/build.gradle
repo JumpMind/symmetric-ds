@@ -16,6 +16,10 @@ buildscript {
 project.buildDir='target'
 apply from: symAssembleDir + '/common.gradle'
 
+if (project.properties.containsKey('pro')) {
+    install.enabled = false
+    uploadArchives.enabled = false
+}
 
 task generateJavadoc(type: Javadoc) {
     destinationDir = new File(buildDir, 'doc/javadoc')
@@ -37,13 +41,6 @@ subprojects { subproject ->
         }
     }  
     
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-               from components.java
-            }
-        }
-    }  
 }
 
 project(":symmetric-csv") {
