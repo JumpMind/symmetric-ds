@@ -4,8 +4,10 @@ import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_INCOMING;
 import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_OUTGOING;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -19,12 +21,24 @@ public class BatchStagingManager extends StagingManager {
         super(directory);
         this.engine = engine;
     }
+    
+    protected Map<String, Long> getBiggestBatchIds(List<BatchId> batches) {
+        Map<String,Long> biggest = new HashMap<String,Long>();
+        for (BatchId batchId : batches) {
+            Long batchNumber = biggest.get(batchId.getNodeId());
+            if (batchNumber == null || batchNumber < batchId.getBatchId()) {
+                biggest.put(batchId.getNodeId(), batchId.getBatchId());
+            }
+        }        
+        return biggest;
+    }
 
     @Override
     public long clean(long ttlInMs) {
         boolean recordIncomingBatchesEnabled = engine.getIncomingBatchService().isRecordOkBatchesEnabled();
         List<Long> outgoingBatches = ttlInMs == 0 ? new ArrayList<Long>() : engine.getOutgoingBatchService().getAllBatches();
         List<BatchId> incomingBatches =  ttlInMs == 0 ? new ArrayList<BatchId>() :  engine.getIncomingBatchService().getAllBatches();
+        Map<String, Long> biggestIncomingByNode = getBiggestBatchIds(incomingBatches);
         synchronized (StagingManager.class) {
             log.trace("Purging staging area");
             Set<String> keys = new HashSet<String>(resourceList.keySet());
@@ -57,7 +71,9 @@ public class BatchStagingManager extends StagingManager {
                     } else if (path[0].equals(STAGING_CATEGORY_INCOMING)) {
                         try {
                             BatchId batchId = new BatchId(new Long(path[path.length - 1]), path[1]);
-                            if ((recordIncomingBatchesEnabled && !incomingBatches.contains(batchId))
+                            Long biggestBatchId = biggestIncomingByNode.get(batchId.getNodeId());
+                            if ((recordIncomingBatchesEnabled && !incomingBatches.contains(batchId) && 
+                                    biggestBatchId != null && biggestBatchId > batchId.getBatchId())
                                     || (!recordIncomingBatchesEnabled && resourceIsOld) || ttlInMs == 0) {
                                 purgedFileCount++;
                                 purgedFileSize+=resource.getSize();
