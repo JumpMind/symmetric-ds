@@ -51,7 +51,7 @@ public class BatchStagingManager extends StagingManager {
                  * resource could have deleted itself between the time the keys
                  * were cloned and now
                  */
-                if (resource != null) {
+                if (resource != null && !resource.isInUse()) {
                     boolean resourceIsOld = (System.currentTimeMillis() - resource.getLastUpdateTime()) > ttlInMs;
                     if (path[0].equals(STAGING_CATEGORY_OUTGOING)) {
                         try {
