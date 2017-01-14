@@ -289,7 +289,7 @@ public class StagedResource implements IStagedResource {
                 log.warn("We had to delete the memory buffer for {} because it already existed", getPath());
                 this.memoryBuffer = null;
             }
-            this.memoryBuffer = new StringBuilder();
+            this.memoryBuffer = threshold > 0 ? new StringBuilder() : null;
             writer = new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer,
                     this.file));
         }

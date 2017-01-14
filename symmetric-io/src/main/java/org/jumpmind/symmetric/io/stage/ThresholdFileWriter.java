@@ -85,13 +85,16 @@ public class ThresholdFileWriter extends Writer {
     public void write(char[] cbuf, int off, int len) throws IOException {
         if (fileWriter != null) {
             fileWriter.write(cbuf, off, len);
-        } else if (len + buffer.length() > threshhold) {
+        } else if (buffer == null || len + buffer.length() > threshhold) {
             file.getParentFile().mkdirs();
             fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), IoConstants.ENCODING));
-            fileWriter.write(buffer.toString());
+            if (buffer != null) {
+                fileWriter.write(buffer.toString());
+                buffer.setLength(0);
+                buffer = null;
+            }
             fileWriter.write(cbuf, off, len);
-            fileWriter.flush();
-            buffer.setLength(0);
+            fileWriter.flush();            
         } else {
             buffer.append(new String(cbuf), off, len);
         }
@@ -110,8 +113,10 @@ public class ThresholdFileWriter extends Writer {
             file.delete();
         }
         file = null;
-        buffer.setLength(0);
-        buffer.trimToSize();
+        if (buffer != null) {
+            buffer.setLength(0);
+            buffer.trimToSize();
+        }
     }
 
 }
