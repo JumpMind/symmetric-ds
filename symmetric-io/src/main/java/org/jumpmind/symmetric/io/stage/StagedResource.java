@@ -65,7 +65,7 @@ public class StagedResource implements IStagedResource {
     
     private Map<Thread, InputStream> inputStreams = null;
     
-    private Map<Thread, BufferedReader> readers = new HashMap<Thread, BufferedReader>();
+    private Map<Thread, BufferedReader> readers = null;
 
     private BufferedWriter writer;
     
@@ -104,7 +104,7 @@ public class StagedResource implements IStagedResource {
     }
     
     public boolean isInUse() {
-        return readers.size() > 0 || writer != null || 
+        return (readers != null && readers.size() > 0) || writer != null || 
                 (inputStreams != null && inputStreams.size() > 0) ||
                 outputStream != null;
     }
@@ -132,13 +132,14 @@ public class StagedResource implements IStagedResource {
                     
                     if (!FileUtils.deleteQuietly(newFile)) {
                         log.warn("Failed to delete '{}' in preparation for renaming '{}'", newFile.getAbsolutePath(), file.getAbsoluteFile());
-                        if (readers.size() > 0) {
+                        if (readers != null && readers.size() > 0) {
                             for (Thread thread : readers.keySet()) {
                                 BufferedReader reader = readers.get(thread);
                                 log.warn("Closing unwanted reader for '{}' that had been created on thread '{}'", newFile.getAbsolutePath(), thread.getName());                                         
                                 IOUtils.closeQuietly(reader);                                
                             }
                         }
+                        readers = null;
                         
                         if (!FileUtils.deleteQuietly(newFile)) {
                             log.warn("Failed to delete '{}' for a second time", newFile.getAbsolutePath());
@@ -167,18 +168,20 @@ public class StagedResource implements IStagedResource {
 
     public BufferedReader getReader() {
         Thread thread = Thread.currentThread();
-        BufferedReader reader = readers.get(thread);
+        BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader == null) {
             if (file.exists()) {
                 try {
                     reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),
                             IoConstants.ENCODING));
+                    createReadersMap();
                     readers.put(thread, reader);
                 } catch (IOException ex) {
                     throw new IoException(ex);
                 }
             } else if (memoryBuffer != null && memoryBuffer.length() > 0) {
                 reader = new BufferedReader(new StringReader(memoryBuffer.toString()));
+                createReadersMap();
                 readers.put(thread, reader);
             } else {
                 throw new IllegalStateException(
@@ -188,13 +191,38 @@ public class StagedResource implements IStagedResource {
         }
         return reader;
     }
+    
+    private synchronized final void createReadersMap() {
+        if (readers == null) {
+            readers = new HashMap<Thread, BufferedReader>(path.contains("common") ? 10 : 1);
+        }
+    }
+    
+    private synchronized final void closeReadersMap() {
+        if (readers != null && readers.size() == 0) {
+            readers = null;
+        }
+    }
+    
+    private synchronized final void createInputStreamsMap() {
+        if (inputStreams == null) {
+            inputStreams = new HashMap<Thread, InputStream>(path.contains("common") ? 10 : 1);
+        }
+    }
+    
+    private synchronized final void closeInputStreamsMap() {
+        if (inputStreams != null && inputStreams.size() == 0) {
+            inputStreams = null;
+        }
+    }    
 
     public void close() {
         Thread thread = Thread.currentThread();
-        BufferedReader reader = readers.get(thread);
+        BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader != null) {
             IOUtils.closeQuietly(reader);
             readers.remove(thread);
+            closeReadersMap();
         }
 
         if (writer != null) {
@@ -207,12 +235,11 @@ public class StagedResource implements IStagedResource {
             outputStream = null;
         }
         
-        if (inputStreams != null) {
-            InputStream inputStream = inputStreams.get(thread);
-            if (inputStream != null) {
-                IOUtils.closeQuietly(inputStream);
-                inputStreams.remove(thread);
-            }
+        InputStream inputStream = inputStreams != null ? inputStreams.get(thread) : null;
+        if (inputStream != null) {
+            IOUtils.closeQuietly(inputStream);
+            inputStreams.remove(thread);
+            closeInputStreamsMap();
         }
     }
     
@@ -235,14 +262,12 @@ public class StagedResource implements IStagedResource {
 
     public InputStream getInputStream() {
         Thread thread = Thread.currentThread();
-        if (inputStreams == null) {
-            inputStreams = new HashMap<Thread, InputStream>();
-        }
-        InputStream reader = inputStreams.get(thread);
+        InputStream reader = inputStreams != null ? inputStreams.get(thread) : null;
         if (reader == null) {
             if (file.exists()) {
                 try {
                     reader = new BufferedInputStream(new FileInputStream(file));
+                    createInputStreamsMap();
                     inputStreams.put(thread, reader);
                 } catch (IOException ex) {
                     throw new IoException(ex);
