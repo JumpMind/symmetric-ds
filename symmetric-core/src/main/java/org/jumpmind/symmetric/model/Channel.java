@@ -71,7 +71,7 @@ public class Channel implements Serializable {
     
     private boolean fileSyncFlag = false;
 
-    private String queue;
+    private String queue = "default";
     
     public Channel() {
     }
