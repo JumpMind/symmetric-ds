@@ -153,6 +153,9 @@ public class StagingManager implements IStagingManager {
         String filePath = buildFilePath(path);
         StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, filePath,
                 this);
+        if (resource.exists()) {
+            resource.delete();
+        }
         this.resourceList.put(filePath, resource);
         return resource;
     }
@@ -173,16 +176,7 @@ public class StagingManager implements IStagingManager {
     }
     
     public IStagedResource find(String path) {
-        IStagedResource resource = resourceList.get(path);
-        if (resource != null) {
-            if (!resource.exists()
-                    && (resource.getState() == State.READY || resource.getState() == State.DONE)) {
-                resource.delete();
-                resource = null;
-            }
-        }
-
-        return resource;
+        return resourceList.get(path);
     }
 
     public IStagedResource find(Object... path) {

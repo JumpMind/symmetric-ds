@@ -53,8 +53,6 @@ public class StagedResource implements IStagedResource {
 
     private String path;
 
-    private File file;
-
     private StringBuilder memoryBuffer;
 
     private long lastUpdateTime;
@@ -75,7 +73,6 @@ public class StagedResource implements IStagedResource {
         this.threshold = threshold;
         this.directory = directory;
         this.stagingManager = stagingManager;
-        this.file = file;
         this.path = file.getAbsolutePath();
         this.path = this.path.replaceAll("\\\\", "/");
         this.path = this.path.substring(directory.getAbsolutePath().length(), file
@@ -97,8 +94,6 @@ public class StagedResource implements IStagedResource {
         this.directory = directory;
         this.path = path;
         this.stagingManager = stagingManager;
-        this.file = new File(directory, String.format("%s.%s", path,
-                State.CREATE.getExtensionName()));
         lastUpdateTime = System.currentTimeMillis();
         this.state = State.CREATE;
     }
@@ -110,7 +105,8 @@ public class StagedResource implements IStagedResource {
     }
     
     public boolean isFileResource() {     
-        return file != null && file.exists();
+        File file = buildFile(state);
+        return (memoryBuffer == null || memoryBuffer.length() == 0) && file.exists();
     }
 
     protected File buildFile(State state) {
@@ -122,6 +118,7 @@ public class StagedResource implements IStagedResource {
     }
 
     public void setState(State state) {
+        File file = buildFile(this.state);
         if (file.exists()) {
             File newFile = buildFile(state);
             if (!newFile.equals(file)) {
@@ -152,9 +149,7 @@ public class StagedResource implements IStagedResource {
                                     file.getAbsolutePath(), state);
                     log.warn(msg);
                     throw new IllegalStateException(msg);
-                } else {
-                    this.file = newFile;
-                }
+                } 
             }
         } 
         
@@ -166,10 +161,11 @@ public class StagedResource implements IStagedResource {
         this.state = state;
     }
 
-    public BufferedReader getReader() {
+    public synchronized BufferedReader getReader() {
         Thread thread = Thread.currentThread();
         BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader == null) {
+            File file = buildFile(state);
             if (file.exists()) {
                 try {
                     reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),
@@ -246,6 +242,7 @@ public class StagedResource implements IStagedResource {
     public OutputStream getOutputStream() {
         try {            
             if (outputStream == null) {
+                File file = buildFile(state);
                 if (file.exists()) {
                     log.warn("We had to delete {} because it already existed",
                             file.getAbsolutePath());
@@ -260,10 +257,11 @@ public class StagedResource implements IStagedResource {
         }
     }
 
-    public InputStream getInputStream() {
+    public synchronized InputStream getInputStream() {
         Thread thread = Thread.currentThread();
         InputStream reader = inputStreams != null ? inputStreams.get(thread) : null;
         if (reader == null) {
+            File file = buildFile(state);
             if (file.exists()) {
                 try {
                     reader = new BufferedInputStream(new FileInputStream(file));
@@ -282,6 +280,7 @@ public class StagedResource implements IStagedResource {
     
     public BufferedWriter getWriter() {
         if (writer == null) {
+            File file = buildFile(state);
             if (file.exists()) {
                 log.warn("We had to delete {} because it already existed", file.getAbsolutePath());
                 file.delete();
@@ -291,12 +290,13 @@ public class StagedResource implements IStagedResource {
             }
             this.memoryBuffer = threshold > 0 ? new StringBuilder() : null;
             writer = new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer,
-                    this.file));
+                    file));
         }
         return writer;
     }
 
     public long getSize() {
+        File file = buildFile(state);
         if (file.exists()) {
             return file.length();
         } else if (memoryBuffer != null) {
@@ -307,6 +307,7 @@ public class StagedResource implements IStagedResource {
     }
 
     public boolean exists() {
+        File file = buildFile(state);
         return (file.exists() && file.length() > 0) || (memoryBuffer != null && memoryBuffer.length() > 0);
     }
 
@@ -323,7 +324,7 @@ public class StagedResource implements IStagedResource {
         boolean deleted = true;
         
         close();
-        
+        File file = buildFile(state);
         if (file.exists()) {
             FileUtils.deleteQuietly(file);
             deleted = !file.exists();            
@@ -343,7 +344,7 @@ public class StagedResource implements IStagedResource {
     }
 
     public File getFile() {
-        return file;
+        return buildFile(state);
     }
 
     public String getPath() {
@@ -352,6 +353,7 @@ public class StagedResource implements IStagedResource {
 
     @Override
     public String toString() {
+        File file = buildFile(state);
         return file.exists() ? file.getAbsolutePath() : String.format("%d bytes in memory",
                 memoryBuffer != null ? memoryBuffer.length() : 0);
     }
