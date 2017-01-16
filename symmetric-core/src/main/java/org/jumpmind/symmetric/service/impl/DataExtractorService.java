@@ -1004,13 +1004,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 long memoryThresholdInBytes = extractedBatch.isFileResource() ? 0 :
                                     targetEngine.getParameterService().getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
                                 Node sourceNode = nodeService.findIdentity();
-                                IStagedResource targetResource = targetEngine.getStagingManager().create(memoryThresholdInBytes, 
+                                IStagedResource targetResource = targetEngine.getStagingManager().create( 
                                         Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
                                         currentBatch.getBatchId());
                                 if (extractedBatch.isFileResource()) {
                                     SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
                                 } else {
-                                    IOUtils.copy(extractedBatch.getReader(), targetResource.getWriter());
+                                    IOUtils.copy(extractedBatch.getReader(), targetResource.getWriter(memoryThresholdInBytes));
                                     extractedBatch.close();
                                     targetResource.close();
                                 }

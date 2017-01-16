@@ -47,8 +47,6 @@ public class StagedResource implements IStagedResource {
 
     static final Logger log = LoggerFactory.getLogger(StagedResource.class);
 
-    private long threshold;
-
     private File directory;
 
     private String path;
@@ -69,15 +67,10 @@ public class StagedResource implements IStagedResource {
     
     private StagingManager stagingManager;
 
-    public StagedResource(long threshold, File directory, File file, StagingManager stagingManager) {
-        this.threshold = threshold;
+    public StagedResource(File directory, File file, StagingManager stagingManager) {
         this.directory = directory;
         this.stagingManager = stagingManager;
-        this.path = file.getAbsolutePath();
-        this.path = this.path.replaceAll("\\\\", "/");
-        this.path = this.path.substring(directory.getAbsolutePath().length(), file
-                .getAbsolutePath().length());
-        this.path = this.path.substring(1, path.lastIndexOf("."));
+        this.path = toPath(directory, file);
         if (file.exists()) {
             lastUpdateTime = file.lastModified();
             String fileName = file.getName();
@@ -88,14 +81,28 @@ public class StagedResource implements IStagedResource {
                     file.getAbsolutePath()));
         }
     }
-
-    public StagedResource(long threshold, File directory, String path, StagingManager stagingManager) {
-        this.threshold = threshold;
+    
+    public StagedResource(File directory, String path, StagingManager stagingManager) {
         this.directory = directory;
         this.path = path;
         this.stagingManager = stagingManager;
-        lastUpdateTime = System.currentTimeMillis();
-        this.state = State.CREATE;
+        lastUpdateTime = System.currentTimeMillis();        
+        if (buildFile(State.READY).exists()) {
+            this.state = State.READY;
+        } else if (buildFile(State.DONE).exists()){
+            this.state = State.DONE;
+        } else {
+            this.state = State.CREATE;        
+        }
+    }    
+    
+    protected static String toPath(File directory, File file) {
+        String path = file.getAbsolutePath();
+        path = path.replaceAll("\\\\", "/");
+        path = path.substring(directory.getAbsolutePath().length(), file
+                .getAbsolutePath().length());
+        path = path.substring(1, path.lastIndexOf("."));
+        return path;
     }
     
     public boolean isInUse() {
@@ -237,6 +244,16 @@ public class StagedResource implements IStagedResource {
             inputStreams.remove(thread);
             closeInputStreamsMap();
         }
+        
+        boolean isFileResource = this.isFileResource();
+        
+        if (isFileResource || this.state == State.DONE) {
+            stagingManager.inUse.remove(path);
+        }
+        
+        if (!isFileResource && this.state == State.DONE) {
+            stagingManager.resourcePaths.remove(path);
+        }
     }
     
     public OutputStream getOutputStream() {
@@ -278,7 +295,7 @@ public class StagedResource implements IStagedResource {
         return reader;
     }
     
-    public BufferedWriter getWriter() {
+    public BufferedWriter getWriter(long threshold) {
         if (writer == null) {
             File file = buildFile(state);
             if (file.exists()) {
@@ -336,7 +353,8 @@ public class StagedResource implements IStagedResource {
         }
         
         if (deleted) {
-            stagingManager.resourceList.remove(getPath());
+            stagingManager.resourcePaths.remove(path);
+            stagingManager.inUse.remove(path);
         }
         
         return deleted;

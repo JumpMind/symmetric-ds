@@ -5,7 +5,6 @@ import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_OUTGOING;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,11 +40,11 @@ public class BatchStagingManager extends StagingManager {
         Map<String, Long> biggestIncomingByNode = getBiggestBatchIds(incomingBatches);
         synchronized (StagingManager.class) {
             log.trace("Purging staging area");
-            Set<String> keys = new HashSet<String>(resourceList.keySet());
+            Set<String> keys = getResourceReferences();
             long purgedFileCount = 0;
             long purgedFileSize = 0;
             for (String key : keys) {
-                IStagedResource resource = resourceList.get(key);
+                IStagedResource resource = find(key);
                 String[] path = key.split("/");
                 /*
                  * resource could have deleted itself between the time the keys

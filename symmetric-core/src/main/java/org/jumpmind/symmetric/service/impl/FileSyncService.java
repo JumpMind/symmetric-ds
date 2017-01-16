@@ -496,7 +496,7 @@ INodeCommunicationExecutor {
                         stagedResource = previouslyStagedResource;
                     } else  {
                         if (dataWriter == null) {                        
-                            stagedResource = stagingManager.create(memoryThresholdInBytes,
+                            stagedResource = stagingManager.create(
                                     Constants.STAGING_CATEGORY_OUTGOING, processInfo.getSourceNodeId(),
                                     targetNode.getNodeId(), "filesync.zip");                            
                             dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
