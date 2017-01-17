@@ -42,6 +42,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -930,8 +931,7 @@ public class RouterService extends AbstractService implements IRouterService {
                             failureMessage.append(data.getTableName());
                             failureMessage.append(".\n");
                             data.writeCsvDataDetails(failureMessage);
-                            log.error(failureMessage.toString());
-                            throw ex;
+                            throw new SymmetricException(failureMessage.toString(), ex);
                         }
                     }
 
