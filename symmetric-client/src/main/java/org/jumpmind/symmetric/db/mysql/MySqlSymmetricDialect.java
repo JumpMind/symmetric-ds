@@ -103,7 +103,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         } else if (this.functionTemplateKeySuffix.equals(PRE_5_7_6)){
             String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
             if (!installed(SQL_FUNCTION_INSTALLED, function)) {
-            	 String sql = "create function $(functionName)()                                                                                               \n" + 
+            	 String sql = "create function $(functionName)()                                                                                          \n" + 
                          " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                           \n" + 
                          " begin                                                                                                                          \n" + 
                          "    declare comm_value varchar(50);                                                                                             \n" + 
@@ -118,16 +118,16 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         } else {
             String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
             if (!installed(SQL_FUNCTION_INSTALLED, function)) {
-            	String sql = "create function $(functionName)()                                                                                                    \n" + 
-            			" returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                                \n" + 
-            			" begin                                                                                                                               \n" + 
-            			"    declare comm_value varchar(50);                                                                                                  \n" + 
-            			"    declare comm_cur cursor for select TRX_ID from INFORMATION_SCHEMA.INNODB_TRX where TRX_MYSQL_THREAD_ID = CONNECTION_ID(); \n" + 
-            			"    open comm_cur;                                                                                                                   \n" + 
-            			"    fetch comm_cur into comm_value;                                                                                                  \n" + 
-            			"    close comm_cur;                                                                                                                  \n" + 
-            			"    return concat(concat(connection_id(), '.'), comm_value);                                                                         \n" + 
-            			" end                                                                                                                                 \n";
+            	String sql = "create function $(functionName)()                                                                                           \n" + 
+            			" returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                            \n" + 
+            			" begin                                                                                                                           \n" + 
+            			"    declare comm_value varchar(50);                                                                                              \n" + 
+            			"    declare comm_cur cursor for select TRX_ID from INFORMATION_SCHEMA.INNODB_TRX where TRX_MYSQL_THREAD_ID = CONNECTION_ID();    \n" + 
+            			"    open comm_cur;                                                                                                               \n" + 
+            			"    fetch comm_cur into comm_value;                                                                                              \n" + 
+            			"    close comm_cur;                                                                                                              \n" + 
+            			"    return concat(concat(connection_id(), '.'), comm_value);                                                                     \n" + 
+            			" end                                                                                                                             \n";
                 install(sql, function);
             }                    
         }
