@@ -48,6 +48,8 @@ public class StagedResource implements IStagedResource {
     static final Logger log = LoggerFactory.getLogger(StagedResource.class);
 
     private File directory;
+    
+    private File file;
 
     private String path;
 
@@ -71,11 +73,12 @@ public class StagedResource implements IStagedResource {
         this.directory = directory;
         this.stagingManager = stagingManager;
         this.path = toPath(directory, file);
-        if (file.exists()) {
+        if (file.exists()) {            
             lastUpdateTime = file.lastModified();
             String fileName = file.getName();
             String extension = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
             this.state = State.valueOf(extension.toUpperCase());
+            this.file = file;
         } else {
             throw new IllegalStateException(String.format("The passed in file, %s, does not exist",
                     file.getAbsolutePath()));
@@ -92,8 +95,9 @@ public class StagedResource implements IStagedResource {
         } else if (buildFile(State.DONE).exists()){
             this.state = State.DONE;
         } else {
-            this.state = State.CREATE;        
+            this.state = State.CREATE;       
         }
+        this.file = buildFile(state);
     }    
     
     protected static String toPath(File directory, File file) {
@@ -112,8 +116,7 @@ public class StagedResource implements IStagedResource {
     }
     
     public boolean isFileResource() {     
-        File file = buildFile(state);
-        return (memoryBuffer == null || memoryBuffer.length() == 0) && file.exists();
+        return file != null && file.exists();
     }
 
     protected File buildFile(State state) {
@@ -125,8 +128,7 @@ public class StagedResource implements IStagedResource {
     }
 
     public void setState(State state) {
-        File file = buildFile(this.state);
-        if (file.exists()) {
+        if (file != null && file.exists()) {
             File newFile = buildFile(state);
             if (!newFile.equals(file)) {
                 if (newFile.exists()) {
@@ -172,8 +174,7 @@ public class StagedResource implements IStagedResource {
         Thread thread = Thread.currentThread();
         BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader == null) {
-            File file = buildFile(state);
-            if (file.exists()) {
+            if (file != null && file.exists()) {
                 try {
                     reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),
                             IoConstants.ENCODING));
@@ -259,8 +260,7 @@ public class StagedResource implements IStagedResource {
     public OutputStream getOutputStream() {
         try {            
             if (outputStream == null) {
-                File file = buildFile(state);
-                if (file.exists()) {
+                if (file != null && file.exists()) {
                     log.warn("We had to delete {} because it already existed",
                             file.getAbsolutePath());
                     file.delete();
@@ -278,8 +278,7 @@ public class StagedResource implements IStagedResource {
         Thread thread = Thread.currentThread();
         InputStream reader = inputStreams != null ? inputStreams.get(thread) : null;
         if (reader == null) {
-            File file = buildFile(state);
-            if (file.exists()) {
+            if (file != null && file.exists()) {
                 try {
                     reader = new BufferedInputStream(new FileInputStream(file));
                     createInputStreamsMap();
@@ -297,8 +296,7 @@ public class StagedResource implements IStagedResource {
     
     public BufferedWriter getWriter(long threshold) {
         if (writer == null) {
-            File file = buildFile(state);
-            if (file.exists()) {
+            if (file != null && file.exists()) {
                 log.warn("We had to delete {} because it already existed", file.getAbsolutePath());
                 file.delete();
             } else if (this.memoryBuffer != null) {
@@ -313,8 +311,7 @@ public class StagedResource implements IStagedResource {
     }
 
     public long getSize() {
-        File file = buildFile(state);
-        if (file.exists()) {
+        if (file != null && file.exists()) {
             return file.length();
         } else if (memoryBuffer != null) {
             return memoryBuffer.length();
@@ -324,8 +321,7 @@ public class StagedResource implements IStagedResource {
     }
 
     public boolean exists() {
-        File file = buildFile(state);
-        return (file.exists() && file.length() > 0) || (memoryBuffer != null && memoryBuffer.length() > 0);
+        return (file != null && file.exists() && file.length() > 0) || (memoryBuffer != null && memoryBuffer.length() > 0);
     }
 
     public long getLastUpdateTime() {
@@ -341,8 +337,7 @@ public class StagedResource implements IStagedResource {
         boolean deleted = true;
         
         close();
-        File file = buildFile(state);
-        if (file.exists()) {
+        if (file != null && file.exists()) {
             FileUtils.deleteQuietly(file);
             deleted = !file.exists();            
         }
@@ -362,7 +357,7 @@ public class StagedResource implements IStagedResource {
     }
 
     public File getFile() {
-        return buildFile(state);
+        return file;
     }
 
     public String getPath() {
@@ -371,8 +366,7 @@ public class StagedResource implements IStagedResource {
 
     @Override
     public String toString() {
-        File file = buildFile(state);
-        return file.exists() ? file.getAbsolutePath() : String.format("%d bytes in memory",
+        return (file != null && file.exists()) ? file.getAbsolutePath() : String.format("%d bytes in memory",
                 memoryBuffer != null ? memoryBuffer.length() : 0);
     }
 
