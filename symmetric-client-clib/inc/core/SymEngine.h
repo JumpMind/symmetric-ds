@@ -54,6 +54,7 @@
 #include "service/PurgeService.h"
 #include "service/OfflinePullService.h"
 #include "service/OfflinePushService.h"
+#include "service/FileSyncService.h"
 
 typedef struct SymEngine {
     SymProperties *properties;
@@ -80,6 +81,7 @@ typedef struct SymEngine {
     SymConfigurationService *configurationService;
     SymSequenceService *sequenceService;
     SymPurgeService *purgeService;
+    SymFileSyncService *fileSyncService;
 
     unsigned short (*start)(struct SymEngine *this);
     unsigned short (*stop)(struct SymEngine *this);

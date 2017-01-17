@@ -269,7 +269,17 @@ static SymTrigger * buildTriggerForSymmetricTable(SymTriggerRouterService *this,
     trigger->useCaptureOldData = 0;
     if (SymStringUtils_equals(tableName, SYM_NODE_HOST)) {
         trigger->channelId = SYM_CHANNEL_HEARTBEAT;
-    } else {
+    } else if (SymStringUtils_equals(tableName, SYM_FILE_SNAPSHOT)) {
+        trigger->channelId = SYM_CHANNEL_FILESYNC;
+        trigger->reloadChannelId = SYM_CHANNEL_FILESYNC_RELOAD;
+        trigger->useCaptureOldData = 1;
+        unsigned short syncEnabled = this->parameterService->is(this->parameterService, SYM_PARAMETER_FILE_SYNC_ENABLE, 0);
+        trigger->syncOnInsert = syncEnabled;
+        trigger->syncOnUpdate = syncEnabled;
+        trigger->syncOnDelete = 0;
+    }
+
+    else {
         trigger->channelId = SYM_CHANNEL_CONFIG;
     }
 

@@ -19,6 +19,8 @@
  * under the License.
  */
 #include "symclient_test.h"
+#include "file/FileTriggerTracker.h"
+#include "file/DirectorySnapshot.h"
 
 int main() {
     if (CU_initialize_registry() != CUE_SUCCESS) {
@@ -32,10 +34,37 @@ int main() {
             //SymStringBuilderTest_CUnit() != CUE_SUCCESS ||
             //SymStringArrayTest_CUnit() != CUE_SUCCESS ||
             //SymPropertiesTest_CUnit() != CUE_SUCCESS ||
-               SymStringUtilsTest_CUnit() != CUE_SUCCESS ||
+            // SymStringUtilsTest_CUnit() != CUE_SUCCESS ||
             //SymHexTest_CUnit() != CUE_SUCCESS ||
             //SymBase64Test_CUnit() != CUE_SUCCESS ||
-            1==0) {
+            1==1) {
+
+        //        SymFileTriggerTracker *tracker =
+        //                SymFileTriggerTracker_new(NULL);
+        //        printf("Running tracker...");
+        //        tracker->trackChanges(tracker);
+
+        printf("manuals\n");
+        SymList *list1 =
+                SymFileUtils_listFilesRecursive("./tmp/manuals");
+        printf("manuals2\n");
+        SymList *list2 =
+                SymFileUtils_listFilesRecursive("./tmp/manuals2");
+        SymDirectorySnapshot *snapshot1 = SymDirectorySnapshot_newWithFileList(NULL, list1);
+        SymDirectorySnapshot *snapshot2 = SymDirectorySnapshot_newWithFileList(NULL, list2);
+        SymDirectorySnapshot *changes = snapshot1->diff(snapshot1, snapshot2);
+        if (changes->fileSnapshots->size == 0) {
+            SymLog_info("No Changes detected");
+        } else {
+            int i;
+            for (i = 0; i < changes->fileSnapshots->size; ++i) {
+                SymFileSnapshot *change = changes->fileSnapshots->get(changes->fileSnapshots, i);
+                SymLog_info("Change: %s (%s)", change->fileName, change->lastEventType);
+
+            }
+        }
+
+
         CU_cleanup_registry();
         return CU_get_error();
     }

@@ -27,6 +27,7 @@
 #include "util/List.h"
 #include "util/StringBuilder.h"
 #include "util/StringUtils.h"
+#include "util/StringArray.h"
 #include "util/List.h"
 #include "db/model/Column.h"
 
@@ -43,6 +44,7 @@ typedef struct SymTable {
     char * (*getTableKey)(struct SymTable *this);
     char * (*getFullyQualifiedTableName)(struct SymTable *this);
     SymList * (*getPrimaryKeyColumns)(struct SymTable *this);
+    SymStringArray * (*getColumnNames)(struct SymTable *this);
     void (*destroy)(struct SymTable *this);
 } SymTable;
 

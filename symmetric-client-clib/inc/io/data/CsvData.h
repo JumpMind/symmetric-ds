@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "util/Map.h"
 #include "util/StringArray.h"
 #include "io/data/DataEventType.h"
 
@@ -31,7 +32,8 @@ typedef struct SymCsvData {
     SymStringArray *rowData;
     SymStringArray *oldData;
     SymStringArray *pkData;
-
+    SymMap * (*toColumnNameValuePairsRowData)(struct SymCsvData *this, SymStringArray *keyNames);
+    SymMap * (*toColumnNameValuePairsOldData)(struct SymCsvData *this, SymStringArray *keyNames);
     void (*reset)(struct SymCsvData *this);
     void (*destroy)(struct SymCsvData *this);
 } SymCsvData;

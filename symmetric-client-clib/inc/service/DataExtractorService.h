@@ -38,6 +38,8 @@
 #include "util/List.h"
 #include "common/Log.h"
 #include "common/ParameterConstants.h"
+#include "io/writer/DataWriter.h"
+#include "service/ConfigurationService.h"
 
 typedef struct SymDataExtractorInfo {
     SymOutgoingBatchService *outgoingBatchService;
@@ -56,12 +58,14 @@ typedef struct SymDataExtractorService {
     SymDataService *dataService;
     SymTriggerRouterService *triggerRouterService;
     SymParameterService *parameterService;
+    SymConfigurationService *configurationService;
     SymDatabasePlatform *platform;
     SymList * (*extract)(struct SymDataExtractorService *this, SymNode *node, SymOutgoingTransport *transport);
+    SymList * (*extractOutgoingBatch)(struct SymDataExtractorService *this, SymNode *targetNode, SymDataWriter *dataWriter, SymOutgoingBatch *currentBatch);
     void (*destroy)(struct SymDataExtractorService *this);
 } SymDataExtractorService;
 
 SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this, SymNodeService *nodeService, SymOutgoingBatchService *outgoingBatchService,
-        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymParameterService *parameterService, SymDatabasePlatform *platform);
+        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymParameterService *parameterService, SymConfigurationService *configurationService, SymDatabasePlatform *platform);
 
 #endif

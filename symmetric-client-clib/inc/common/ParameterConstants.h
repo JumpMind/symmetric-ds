@@ -96,4 +96,16 @@
 #define SYM_PARAMETER_SQLITE_BUSY_TIMEOUT_MS "sqlite.busy.timeout.ms"
 #define SYM_PARAMETER_SQLITE_INIT_SQL "sqlite.init.sql"
 
+#define SYM_PARAMETER_FILE_SYNC_ENABLE "file.sync.enable"
+#define SYM_PARAMETER_FILE_SYNC_USE_CRC "file.sync.use.crc"
+#define SYM_PARAMETER_FILE_SYNC_PREVENT_PING_BACK "file.sync.prevent.ping.back"
+
+#define SYM_PARAMETER_START_FILE_SYNC_TRACKER_JOB "start.file.sync.tracker.job"
+#define SYM_PARAMETER_START_FILE_SYNC_PUSH_JOB "start.file.sync.push.job"
+#define SYM_PARAMETER_START_FILE_SYNC_PULL_JOB "start.file.sync.pull.job"
+#define SYM_PARAMETER_FILE_SYNC_TRACKER_PERIOD_MS "file.tracker.period.minimum.ms"
+#define SYM_PARAMETER_FILE_PUSH_MINIMUM_PERIOD_MS "file.push.period.minimum.ms"
+#define SYM_PARAMETER_FILE_PULL_MINIMUM_PERIOD_MS "file.pull.period.minimum.ms"
+
+
 #endif

@@ -30,6 +30,7 @@
 #include "util/StringUtils.h"
 #include "util/Properties.h"
 #include "common/Log.h"
+#include "util/StringBuilder.h"
 
 int SymNativeClient_runSymmetricEngine(SymProperties *properties);
 

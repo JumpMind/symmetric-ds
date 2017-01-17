@@ -178,6 +178,16 @@ SymList * SymTable_getPrimaryKeyColumns(SymTable *this) {
     return primaryKeyColumns;
 }
 
+SymStringArray * SymTable_getColumnNames(SymTable *this) {
+    SymStringArray * columnNames = SymStringArray_new(NULL);
+    int i;
+    for (i = 0; i < this->columns->size; ++i) {
+        SymColumn *column = this->columns->get(this->columns, i);
+        columnNames->add(columnNames, column->name);
+    }
+    return columnNames;
+}
+
 void SymTable_destroy(SymTable *this) {
 //    free(this->name); probably stack memory.
 //    free(this->catalog);
@@ -198,6 +208,7 @@ SymTable * SymTable_new(SymTable *this) {
     this->getTableKey = (void *) &SymTable_getTableKey;
     this->getFullyQualifiedTableName = (void *) &SymTable_getFullyQualifiedTableNameThis;
     this->getPrimaryKeyColumns = (void *) &SymTable_getPrimaryKeyColumns;
+    this->getColumnNames = (void *) &SymTable_getColumnNames;
     this->destroy = (void *) &SymTable_destroy;
     return this;
 }

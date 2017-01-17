@@ -29,6 +29,8 @@
 #include "transport/TransportManager.h"
 #include "transport/http/HttpIncomingTransport.h"
 #include "transport/http/HttpOutgoingTransport.h"
+#include "transport/http/HttpFileSyncOutgoingTransport.h"
+#include "transport/http/HttpFileSyncIncomingTransport.h"
 #include "util/StringBuilder.h"
 #include "util/List.h"
 #include "util/AppUtils.h"

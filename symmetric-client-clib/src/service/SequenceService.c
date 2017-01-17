@@ -144,6 +144,8 @@ static void create(SymSequenceService *this, SymSequence *sequence) {
 
     int error;
     sqlTemplate->update(sqlTemplate, SYM_SQL_INSERT_SEQUENCE, args, NULL, &error);
+
+    args->destroy(args);
 }
 
 static void initSequence(SymSequenceService *this, char *name, long initialValue) {

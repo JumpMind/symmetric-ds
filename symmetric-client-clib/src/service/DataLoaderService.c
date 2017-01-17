@@ -21,8 +21,9 @@
 #include "service/DataLoaderService.h"
 #include "common/Log.h"
 
-static void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *remote, SymNode *local, SymNodeSecurity *localSecurity,
-        SymList *incomingBatches) {
+
+void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *remote, SymNode *local, SymNodeSecurity *localSecurity,
+            SymList *incomingBatches) {
     int sendAck = -1;
     int numberOfStatusSendRetries = this->parameterService->getInt(this->parameterService,
             SYM_PARAMETER_DATA_LOADER_NUM_OF_ACK_RETRIES, 5);
@@ -169,6 +170,7 @@ SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymP
     this->incomingBatchService = incomingBatchService;
     this->dataLoaderFactory = SymDefaultDataLoaderFactory_new(NULL, parameterService, incomingBatchService, platform, dialect);
 
+    this->sendAck = (void *) &SymDataLoaderService_sendAck;
     this->loadDataFromPull = (void *) &SymDataLoaderService_loadDataFromPull;
     this->loadDataFromRegistration = (void *) &SymDataLoaderService_loadDataFromRegistration;
     this->loadDataFromOfflineTransport = (void *) &SymDataLoaderService_loadDataFromOfflineTransport;
