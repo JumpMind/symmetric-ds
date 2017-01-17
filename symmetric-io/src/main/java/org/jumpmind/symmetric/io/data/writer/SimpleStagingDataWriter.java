@@ -125,9 +125,9 @@ public class SimpleStagingDataWriter {
                  batch.getBatchId());
                 if (resource == null || resource.getState() == State.DONE) {
                     log.debug("Creating staged resource for batch {}", batch.getNodeBatchId());
-                    resource = stagingManager.create(memoryThresholdInBytes, category, location, batch.getBatchId());
+                    resource = stagingManager.create(category, location, batch.getBatchId());
                 }
-                writer = resource.getWriter();
+                writer = resource.getWriter(memoryThresholdInBytes);
                 writeLine(nodeLine);
                 writeLine(binaryLine);
                 writeLine(channelLine);

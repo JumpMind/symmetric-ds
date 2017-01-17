@@ -287,7 +287,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected void createStagingFile() {
     	//TODO: We should use constants for dir structure path, 
     	//      but we don't want to depend on symmetric core.
-        this.stagedInputFile = stagingManager.create(0, "bulkloaddir",
+        this.stagedInputFile = stagingManager.create("bulkloaddir",
                 table.getName() + this.getBatch().getBatchId() + ".csv");
     }
 

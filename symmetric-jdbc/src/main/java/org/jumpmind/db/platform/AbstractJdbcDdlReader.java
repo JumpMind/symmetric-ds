@@ -563,9 +563,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     
                     ResultSet tableData = null;
                     try {
-                        log.debug("getting table metadata for " + table);
+                        log.debug("getting table metadata for {}", table);
                         tableData = metaData.getTables(getTableNamePattern(table));
-                        log.debug("done getting table metadata for " + table);
+                        log.debug("done getting table metadata for {}", table);
                         if (tableData != null && tableData.next()) {
                             Map<String, Object> values = readMetaData(tableData, initColumnsForTable());
                             return readTable(connection, metaData, values);
@@ -581,6 +581,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             if (e.getMessage()!=null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
                 return null;
             } else {
+                log.error("Failed to get metadata for {}", Table.getFullyQualifiedTableName(catalog, schema, table));
                 throw e;
             }
         }

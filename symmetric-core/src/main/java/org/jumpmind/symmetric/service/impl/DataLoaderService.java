@@ -962,6 +962,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     incomingBatch.setStatus(Status.RS);
                     incomingBatchService.updateIncomingBatch(incomingBatch);
                 }
+                isError = true;
             } else {
                 futures.add(executor.submit(loadBatchFromStage));
             }

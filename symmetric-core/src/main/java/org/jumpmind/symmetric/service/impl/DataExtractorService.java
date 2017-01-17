@@ -810,8 +810,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             if (currentBatch.getStatus() == Status.IG) {
                 cleanupIgnoredBatch(sourceNode, targetNode, currentBatch, writer);
-            } else if (!isPreviouslyExtracted(currentBatch)) {                
-                int maxPermits = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
+            } else if (!isPreviouslyExtracted(currentBatch)) {
                 String semaphoreKey = useStagingDataWriter ? Long.toString(currentBatch
                         .getBatchId()) : currentBatch.getNodeBatchId();
                 Semaphore lock = null;
@@ -819,7 +818,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     synchronized (locks) {
                         lock = locks.get(semaphoreKey);
                         if (lock == null) {
-                            lock = new Semaphore(maxPermits);
+                            lock = new Semaphore(1);
                             locks.put(semaphoreKey, lock);
                         }
                         try {
@@ -829,7 +828,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
 
-                    synchronized (lock) {
                         if (!isPreviouslyExtracted(currentBatch)) {
                             currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
                             if (updateBatchStatistics) {
@@ -860,7 +858,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
                             
                         }
-                    }
                 } catch (RuntimeException ex) {
                     IStagedResource resource = getStagedResource(currentBatch);
                     if (resource != null) {
@@ -871,9 +868,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 } finally {
                     lock.release();
                     synchronized (locks) {
-                        if (lock.availablePermits() == maxPermits) {
-                            locks.remove(semaphoreKey);
-                        }
+                        locks.remove(semaphoreKey);
                     }
                 }
             }
@@ -1009,13 +1004,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 long memoryThresholdInBytes = extractedBatch.isFileResource() ? 0 :
                                     targetEngine.getParameterService().getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
                                 Node sourceNode = nodeService.findIdentity();
-                                IStagedResource targetResource = targetEngine.getStagingManager().create(memoryThresholdInBytes, 
+                                IStagedResource targetResource = targetEngine.getStagingManager().create( 
                                         Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
                                         currentBatch.getBatchId());
                                 if (extractedBatch.isFileResource()) {
                                     SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
                                 } else {
-                                    IOUtils.copy(extractedBatch.getReader(), targetResource.getWriter());
+                                    IOUtils.copy(extractedBatch.getReader(), targetResource.getWriter(memoryThresholdInBytes));
                                     extractedBatch.close();
                                     targetResource.close();
                                 }

@@ -93,7 +93,7 @@ public class FileSyncExtractorService extends DataExtractorService {
                 batches, channel.getMaxBatchSize(), processInfo) {
             @Override
             protected IDataWriter buildWriter(long memoryThresholdInBytes) {                
-                IStagedResource stagedResource = stagingManager.create(memoryThresholdInBytes,
+                IStagedResource stagedResource = stagingManager.create(
                             fileSyncService.getStagingPathComponents(outgoingBatch));
                 
                 log.info("Exacting file sync batch {} to {}", outgoingBatch.getNodeBatchId(), stagedResource);

@@ -221,8 +221,7 @@ public class TransformService extends AbstractService implements ITransformServi
             if (System.currentTimeMillis() - lastCacheTimeInMs >= cacheTimeoutInMs
                     || byByLinkByTransformPoint == null) {
 
-                byByLinkByTransformPoint = new HashMap<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>>();
-
+                byByLinkByTransformPoint = new HashMap<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>>(2);
                 List<TransformTableNodeGroupLink> transforms = getTransformTablesFromDB(true, true);
 
                 for (TransformTableNodeGroupLink transformTable : transforms) {
@@ -230,7 +229,7 @@ public class TransformService extends AbstractService implements ITransformServi
                     Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = byByLinkByTransformPoint
                             .get(nodeGroupLink);
                     if (byTransformPoint == null) {
-                        byTransformPoint = new HashMap<TransformPoint, List<TransformTableNodeGroupLink>>();
+                        byTransformPoint = new HashMap<TransformPoint, List<TransformTableNodeGroupLink>>(2);
                         byByLinkByTransformPoint.put(nodeGroupLink,
                                 byTransformPoint);
                     }
