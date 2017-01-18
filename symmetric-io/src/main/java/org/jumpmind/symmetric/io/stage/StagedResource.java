@@ -168,6 +168,7 @@ public class StagedResource implements IStagedResource {
         }
         refreshLastUpdateTime();
         this.state = state;
+        this.file = buildFile(state);
     }
 
     public synchronized BufferedReader getReader() {
