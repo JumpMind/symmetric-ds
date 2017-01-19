@@ -158,7 +158,7 @@ abstract public class AbstractTriggerTemplate {
         if (concatInCsv) {
             sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
             String columnsText = buildColumnsString(tableAlias,
-                    tableAlias, "", columns, DataEventType.INSERT,
+                    tableAlias, "", table, columns, DataEventType.INSERT,
                     false, channel, triggerRouter.getTrigger()).columnString;
             if (isNotBlank(textColumnExpression)) {
                 columnsText = textColumnExpression.replace("$(columnName)", columnsText);
@@ -180,7 +180,7 @@ abstract public class AbstractTriggerTemplate {
                         String columnExpression = null;
                         if (useTriggerTemplateForColumnTemplatesDuringInitialLoad()) {
                             ColumnString columnString = fillOutColumnTemplate(tableAlias,
-                                    tableAlias, "", column, DataEventType.INSERT, false, channel,
+                                    tableAlias, "", table, column, DataEventType.INSERT, false, channel,
                                     triggerRouter.getTrigger());
                             columnExpression = columnString.columnString;
                             if (isNotBlank(textColumnExpression)
@@ -297,7 +297,7 @@ abstract public class AbstractTriggerTemplate {
 
         Column[] columns = table.getColumns();
         String columnsText = buildColumnsString(symmetricDialect.getInitialLoadTableAlias(),
-                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
+                symmetricDialect.getInitialLoadTableAlias(), "", table, columns, DataEventType.INSERT,
                 false, channel, trigger).columnString;
         sql = FormatUtils.replace("columns", columnsText, sql);
         sql = FormatUtils.replace("oracleToClob",
@@ -326,7 +326,7 @@ abstract public class AbstractTriggerTemplate {
 
         Column[] columns = table.getPrimaryKeyColumns();
         String columnsText = buildColumnsString(symmetricDialect.getInitialLoadTableAlias(),
-                symmetricDialect.getInitialLoadTableAlias(), "", columns, DataEventType.INSERT,
+                symmetricDialect.getInitialLoadTableAlias(), "", table, columns, DataEventType.INSERT,
                 false, channel, trigger).toString();
         sql = FormatUtils.replace("columns", columnsText, sql);
         sql = FormatUtils.replace("oracleToClob",
@@ -457,7 +457,7 @@ abstract public class AbstractTriggerTemplate {
 
         Column[] orderedColumns = table.getColumns();
         ColumnString columnString = buildColumnsString(ORIG_TABLE_ALIAS, newTriggerValue,
-                newColumnPrefix, orderedColumns, dml, false, channel, trigger);
+                newColumnPrefix, table, orderedColumns, dml, false, channel, trigger);
         ddl = FormatUtils.replace("columns", columnString.toString(), ddl);
 
         ddl = replaceDefaultSchemaAndCatalog(ddl);
@@ -467,7 +467,7 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace(
                 "oldColumns",
                 trigger.isUseCaptureOldData() ? buildColumnsString(ORIG_TABLE_ALIAS,
-                        oldTriggerValue, oldColumnPrefix, orderedColumns, dml, true, channel,
+                        oldTriggerValue, oldColumnPrefix, table, orderedColumns, dml, true, channel,
                         trigger).toString() : "null", ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
 
@@ -480,7 +480,7 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace(
                 "oldKeys",
                 buildColumnsString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix,
-                        primaryKeyColumns, dml, true, channel, trigger).toString(), ddl);
+                        table, primaryKeyColumns, dml, true, channel, trigger).toString(), ddl);
         ddl = FormatUtils.replace(
                 "oldNewPrimaryKeyJoin",
                 aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue,
@@ -688,7 +688,7 @@ abstract public class AbstractTriggerTemplate {
     }
 
     protected ColumnString buildColumnsString(String origTableAlias, String tableAlias,
-            String columnPrefix, Column[] columns, DataEventType dml, boolean isOld,
+            String columnPrefix, Table table, Column[] columns, DataEventType dml, boolean isOld,
             Channel channel, Trigger trigger) {
         String columnsText = "";
         boolean containsLob = false;
@@ -701,7 +701,7 @@ abstract public class AbstractTriggerTemplate {
             Column column = columns[i];
             if (column != null) {
                 ColumnString columnString = fillOutColumnTemplate(origTableAlias, tableAlias,
-                        columnPrefix, column, dml, isOld, channel, trigger);
+                        columnPrefix, table, column, dml, isOld, channel, trigger);
                 columnsText = columnsText + "\n          " + columnString.columnString
                         + lastCommandToken;
                 containsLob |= columnString.isBlobClob;
@@ -718,7 +718,7 @@ abstract public class AbstractTriggerTemplate {
     }
     
     protected ColumnString fillOutColumnTemplate(String origTableAlias, String tableAlias,
-            String columnPrefix, Column column, DataEventType dml, boolean isOld, Channel channel,
+            String columnPrefix, Table table, Column column, DataEventType dml, boolean isOld, Channel channel,
             Trigger trigger) {
         boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
         String templateToUse = null;
@@ -863,11 +863,8 @@ abstract public class AbstractTriggerTemplate {
         String formattedColumnText = FormatUtils.replace("columnName",
                 String.format("%s%s", columnPrefix, column.getName()), templateToUse);
         
-        Table sourceTable = symmetricDialect.getPlatform().getTableFromCache(trigger.getSourceCatalogName(), 
-                trigger.getSourceSchemaName(), trigger.getSourceTableName(), false);
-        
         formattedColumnText = FormatUtils.replace("columnSize",
-                getColumnSize(sourceTable, column), formattedColumnText);
+                getColumnSize(table, column), formattedColumnText);
 
         formattedColumnText = FormatUtils.replace("masterCollation",
                 symmetricDialect.getMasterCollation(), formattedColumnText);

@@ -236,7 +236,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
             TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
             String defaultCatalog, String defaultSchema, String ddl) {
         ddl = FormatUtils.replace("oldColumns", trigger.isUseCaptureOldData() ?
-                super.buildColumnsString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, table.getColumns(), dml, true, channel, trigger).toString() : "convert(VARCHAR,null)", ddl);
+                super.buildColumnsString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, table, table.getColumns(), dml, true, channel, trigger).toString() : "convert(VARCHAR,null)", ddl);
         ddl = super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);
         Column[] columns = table.getPrimaryKeyColumns();
