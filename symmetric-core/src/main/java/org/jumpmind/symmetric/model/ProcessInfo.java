@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.util.AppUtils;
 
 public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Cloneable {
 
@@ -345,22 +346,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         ThreadInfo info = threadBean.getThreadInfo(threadId, 100);
         if (info != null) {
             String threadName = info.getThreadName();
-            StringBuilder formattedTrace = new StringBuilder();
-            StackTraceElement[] trace = info.getStackTrace();
-            for (StackTraceElement stackTraceElement : trace) {
-                formattedTrace.append(stackTraceElement.getClassName());
-                formattedTrace.append(".");
-                formattedTrace.append(stackTraceElement.getMethodName());
-                formattedTrace.append("()");
-                int lineNumber = stackTraceElement.getLineNumber();
-                if (lineNumber > 0) {
-                    formattedTrace.append(": ");
-                    formattedTrace.append(stackTraceElement.getLineNumber());
-                }
-                formattedTrace.append("\n");
-            }
-
-            return new ThreadData(threadName, formattedTrace.toString());
+            return new ThreadData(threadName, AppUtils.formatStackTrace(info.getStackTrace()));
         } else {
             return null;
         }
