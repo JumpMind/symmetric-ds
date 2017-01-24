@@ -26,8 +26,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
-#include <fcntl.h>
-#include <ftw.h>
 #include <zip.h>
 #include <utime.h>
 #include "common/Log.h"
