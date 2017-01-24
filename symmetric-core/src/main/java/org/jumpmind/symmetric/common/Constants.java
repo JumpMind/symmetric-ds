@@ -71,6 +71,8 @@ final public class Constants {
     
     public static final String DEPLOYMENT_TYPE_PROFESSIONAL = "professional";
     
+    public static final String DEPLOYMENT_TYPE_CCLIENT = "cclient";
+    
     public static final String DEPLOYMENT_TYPE_REST = "rest";
     
     /**
