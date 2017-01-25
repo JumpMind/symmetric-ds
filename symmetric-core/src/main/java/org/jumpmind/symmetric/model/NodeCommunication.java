@@ -28,10 +28,11 @@ public class NodeCommunication implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum CommunicationType {
-        PULL, PUSH, FILE_PUSH, FILE_PULL, OFFLN_PULL, OFFLN_PUSH, EXTRACT, FILE_XTRCT;
+        PULL, PUSH, FILE_PUSH, FILE_PULL, OFFLN_PULL, OFFLN_PUSH, EXTRACT, FILE_XTRCT, OFF_FSPULL, OFF_FSPUSH;
         
         public static boolean isPullType(CommunicationType communicationType) {
-            return communicationType == PULL || communicationType == CommunicationType.FILE_PULL || communicationType == OFFLN_PULL;
+            return communicationType == PULL || communicationType == CommunicationType.FILE_PULL 
+                    || communicationType == OFFLN_PULL || communicationType == CommunicationType.OFF_FSPULL;
         }
     };
     

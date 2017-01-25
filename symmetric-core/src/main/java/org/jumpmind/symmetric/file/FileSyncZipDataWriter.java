@@ -35,13 +35,13 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
-import org.jumpmind.symmetric.model.FileConflictStrategy;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
@@ -282,7 +282,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
         boolean cclient = false;
         Node node = nodeService.findNode(nodeId, true);
         if (node != null) {
-            cclient = StringUtils.equals(node.getDeploymentType(), "cclient");
+            cclient = StringUtils.equals(node.getDeploymentType(), Constants.DEPLOYMENT_TYPE_CCLIENT);
         }
         return cclient;
     }

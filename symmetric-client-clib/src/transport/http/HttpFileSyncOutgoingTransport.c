@@ -62,7 +62,7 @@ long SymHttpFileSyncOutgoingTransport_process(SymHttpFileSyncOutgoingTransport *
                 CURLFORM_END);
 
         if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_VERIFIED_SERVERS, 1)) {
-            curl_heasy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
         }
         if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_ALLOW_SELF_SIGNED_CERTS, 1)) {
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);

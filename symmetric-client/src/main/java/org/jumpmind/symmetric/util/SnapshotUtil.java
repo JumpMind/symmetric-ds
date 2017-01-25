@@ -78,6 +78,7 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.JarBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +87,8 @@ import org.slf4j.LoggerFactory;
 public class SnapshotUtil {
 
     protected static final Logger log = LoggerFactory.getLogger(SnapshotUtil.class);
+    
+    protected static final int THREAD_INDENT_SPACE = 50;
 
     public static File getSnapshotDirectory(ISymmetricEngine engine) {
         File snapshotsDir = new File(engine.getParameterService().getTempDirectory(), "snapshots");
@@ -273,7 +276,7 @@ public class SnapshotUtil {
             }
         }
         
-        final int THREAD_INDENT_SPACE = 50;
+        
         fwriter = null;
         try {
             fwriter = new FileWriter(new File(tmpDir, "threads.txt"));
@@ -284,25 +287,7 @@ public class SnapshotUtil {
                 if (info != null) {
                     String threadName = info.getThreadName();
                     fwriter.append(StringUtils.rightPad(threadName, THREAD_INDENT_SPACE));
-                    StackTraceElement[] trace = info.getStackTrace();
-                    boolean first = true;
-                    for (StackTraceElement stackTraceElement : trace) {
-                        if (!first) {
-                            fwriter.append(StringUtils.rightPad("", THREAD_INDENT_SPACE));
-                        } else {
-                            first = false;
-                        }
-                        fwriter.append(stackTraceElement.getClassName());
-                        fwriter.append(".");
-                        fwriter.append(stackTraceElement.getMethodName());
-                        fwriter.append("()");
-                        int lineNumber = stackTraceElement.getLineNumber();
-                        if (lineNumber > 0) {
-                            fwriter.append(": ");
-                            fwriter.append(Integer.toString(stackTraceElement.getLineNumber()));
-                        }
-                        fwriter.append("\n");
-                    }
+                    fwriter.append(AppUtils.formatStackTrace(info.getStackTrace(), THREAD_INDENT_SPACE, false));
                     fwriter.append("\n");
                 }
             }
