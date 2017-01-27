@@ -107,5 +107,7 @@
 #define SYM_PARAMETER_FILE_PUSH_MINIMUM_PERIOD_MS "file.push.period.minimum.ms"
 #define SYM_PARAMETER_FILE_PULL_MINIMUM_PERIOD_MS "file.pull.period.minimum.ms"
 
+#define SYM_PARAMETER_TRANSPORT_HTTP_TIMEOUT "http.timeout.ms"
+
 
 #endif

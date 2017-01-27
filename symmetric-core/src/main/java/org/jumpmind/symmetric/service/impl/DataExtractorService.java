@@ -983,8 +983,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected boolean isRetry(OutgoingBatch currentBatch, Node remoteNode) {
         boolean offline = parameterService.is(ParameterConstants.NODE_OFFLINE, false);
         IStagedResource previouslyExtracted = getStagedResource(currentBatch);
+        boolean cclient = StringUtils.equals(remoteNode.getDeploymentType(), Constants.DEPLOYMENT_TYPE_CCLIENT);
         return !offline && previouslyExtracted != null && previouslyExtracted.exists() && previouslyExtracted.getState() != State.CREATE
-                && currentBatch.getStatus() != OutgoingBatch.Status.RS && currentBatch.getSentCount() > 0 && remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0);
+                && currentBatch.getStatus() != OutgoingBatch.Status.RS && currentBatch.getSentCount() > 0 && remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0)
+                && !cclient;
     }
 
     protected OutgoingBatch sendOutgoingBatch(ProcessInfo processInfo, Node targetNode,

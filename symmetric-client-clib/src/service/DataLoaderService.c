@@ -51,6 +51,19 @@ static SymList * SymDataLoaderService_loadDataFromTransport(SymDataLoaderService
     SymLog_debug("Transport rc = %ld" , rc);
 
     SymList *batchesProcessed = processor->getBatchesProcessed(processor);
+
+    if (status->failed) {
+        int i;
+        for (i = 0; i < batchesProcessed->size; ++i) {
+            SymIncomingBatch* batch = batchesProcessed->get(batchesProcessed, i);
+            if (SymStringUtils_equals(batch->status, "LD")) {
+                batch->status = "ER";
+                batch->sqlCode = status->status;
+                batch->sqlMessage = status->failureMessage;
+            }
+        }
+    }
+
     if (writer->isSyncTriggersNeeded) {
         this->triggerRouterService->syncTriggers(this->triggerRouterService, 0);
     }

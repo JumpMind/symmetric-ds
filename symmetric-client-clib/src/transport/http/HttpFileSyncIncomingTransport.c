@@ -36,12 +36,8 @@ long SymHttpFileSyncIncomingTransport_process(SymHttpFileSyncIncomingTransport *
             SymLog_error("Could not open zip file for writing %s", zipFileName);
             return 500;
         }
-        if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_VERIFIED_SERVERS, 1)) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
-        }
-        if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_ALLOW_SELF_SIGNED_CERTS, 1)) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-        }
+
+        SymCurlConfig_configure(curl, this->parameterService);
         curl_easy_setopt(curl, CURLOPT_URL, this->url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, SymHttpFileSyncIncomingTransport_writeCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
