@@ -179,7 +179,9 @@ public class SimpleStagingDataWriter {
                     TableLine syncLine = syncTableLines.get(tableLine);
                     if (syncLine != null) {
                         log.debug("Injecting keys and columns to be backwards compatible");
+                        batchLine.keysLine = syncLine.keysLine;
                         writeLine(syncLine.keysLine);
+                        batchLine.columnsLine = syncLine.columnsLine;
                         writeLine(syncLine.columnsLine);
                     }
                 }
