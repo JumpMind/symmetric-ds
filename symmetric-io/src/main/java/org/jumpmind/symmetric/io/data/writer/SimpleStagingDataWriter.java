@@ -79,7 +79,6 @@ public class SimpleStagingDataWriter {
         IStagedResource resource = null;
         String line = null;
         long startTime = System.currentTimeMillis(), ts = startTime, lineCount = 0;
-
         
         while (reader.readRecord()) {
             line = reader.getRawRecord();
@@ -175,7 +174,16 @@ public class SimpleStagingDataWriter {
             } else if (line.startsWith(CsvConstants.CHANNEL)) {
                 channelLine = line;
             } else {
-                int size = line.length();                
+                TableLine batchLine = batchTableLines.get(tableLine);
+                if (batchLine != null && batchLine.columnsLine == null) {
+                    TableLine syncLine = syncTableLines.get(tableLine);
+                    if (syncLine != null) {
+                        log.debug("Injecting keys and columns to be backwards compatible");
+                        writeLine(syncLine.keysLine);
+                        writeLine(syncLine.columnsLine);
+                    }
+                }
+                int size = line.length();
                 if (size > MAX_WRITE_LENGTH) {
                     log.debug("Exceeded max line length with {}", size);
                     for (int i = 0; i < size; i = i + MAX_WRITE_LENGTH) {
