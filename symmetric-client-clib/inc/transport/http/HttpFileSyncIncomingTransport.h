@@ -32,6 +32,7 @@
 #include "common/ParameterConstants.h"
 #include "common/Log.h"
 #include "model/RemoteNodeStatus.h"
+#include "transport/http/CurlConfig.h"
 
 typedef struct SymHttpFileSyncIncomingTransport {
     SymIncomingTransport super;

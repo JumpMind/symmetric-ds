@@ -657,7 +657,7 @@ SymList * /*<IncomingBatch>*/ SymFileSyncService_processZip(SymFileSyncService *
                 free(batchInfo);
                 free(batchDir);
                 free(tmpOutputDir);
-                free(cmd);
+//                free(cmd);
                 free(fileListProcessed);
                 free(outputFileName);
             }

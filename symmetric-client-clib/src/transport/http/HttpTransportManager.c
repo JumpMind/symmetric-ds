@@ -80,6 +80,9 @@ static char * getAcknowledgementData(SymList *batches) {
             sb->append(sb, SYM_WEB_CONSTANTS_ACK_BATCH_OK);
         } else {
             sb->appendf(sb, "%ld", batch->failedRowNumber);
+            sb->appendf(sb, "&%s%ld=%s", SYM_WEB_CONSTANTS_ACK_SQL_STATE, batch->batchId, batch->sqlState);
+            sb->appendf(sb, "&%s%ld=%d", SYM_WEB_CONSTANTS_ACK_SQL_CODE, batch->batchId, batch->sqlCode);
+            sb->appendf(sb, "&%s%ld=%s", SYM_WEB_CONSTANTS_ACK_SQL_MESSAGE, batch->batchId, batch->sqlMessage);
         }
     }
     iter->destroy(iter);
@@ -274,11 +277,11 @@ void SymHttpTransportManager_handleCurlRc(int curlRc, long httpCode, char* url, 
     }
 
     if (curlRc != CURLE_OK) {
-        SymLog_error("Error %d from curl, cannot retrieve %s", curlRc, url);
-        SymLog_error("%s", curl_easy_strerror(curlRc));
+        char* msg = SymStringUtils_format("Error %d from curl ('%s'), cannot retrieve %s", curlRc, curl_easy_strerror(curlRc),  url);
+        SymLog_error(msg);
 
         status->failed = 1;
-        status->failureMessage = SymStringUtils_format("%s", curl_easy_strerror(curlRc));
+        status->failureMessage = msg;
         status->status = SYM_REMOTE_NODE_STATUS_OFFLINE;
     } else if (httpCode == SYM_TRANSPORT_NO_CONTENT) {
         status->status = httpCode;
