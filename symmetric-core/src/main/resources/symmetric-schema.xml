@@ -402,6 +402,16 @@
         </foreign-key>
     </table>
 
+	<table name="node_group_table_info" description="Available tables by catalog schema for each node group">
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a node group, usually named something meaningful, like 'store' or 'warehouse'."/>
+        <column name="catalog_name" type="VARCHAR" size="255" required="true" primaryKey="true" description="Name of catalog for given table" />
+        <column name="schema_name" type="VARCHAR" size="255" required="true" primaryKey="true" description="Name of schema for given table" />
+        <column name="table_name" type="VARCHAR" size="255" required="true" primaryKey="true" description="Table name" />
+        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />  
+    </table>
+    
     <table name="node_host" description="Representation of an physical workstation or server that is hosting the SymmetricDS software. In a clustered environment there may be more than one entry per node in this table.">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
         <column name="host_name" type="VARCHAR" size="60" required="true" primaryKey="true"  description="The host name of a workstation or server. If more than one instance of SymmetricDS runs on the same server, then this value can be a 'server id' specified by -Druntime.symmetric.cluster.server.id" />
@@ -567,7 +577,7 @@
         <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
     </table>
 
-    <table name="outgoing_batch" description="Used for tracking the sending a collection of data to a node in the system. A new outgoing_batch is created and given a status of 'NE'. After sending the outgoing_batch to its target node, the status becomes 'SE'. The node responds with either a success status of 'OK' or an error status of 'ER'. An error while sending to the node also results in an error status of 'ER' regardless of whether the node sends that acknowledgement. ">
+	<table name="outgoing_batch" description="Used for tracking the sending a collection of data to a node in the system. A new outgoing_batch is created and given a status of 'NE'. After sending the outgoing_batch to its target node, the status becomes 'SE'. The node responds with either a success status of 'OK' or an error status of 'ER'. An error while sending to the node also results in an error status of 'ER' regardless of whether the node sends that acknowledgement. ">
         <column name="batch_id" type="BIGINT" required="true" primaryKey="true" description="A unique id for the batch." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node that this batch is targeted at." />
         <column name="channel_id" type="VARCHAR" size="128"  description="The channel that this batch is part of." />

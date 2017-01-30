@@ -40,6 +40,7 @@ import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
@@ -861,6 +862,32 @@ public class NodeService extends AbstractService implements INodeService {
         for (IOfflineServerListener listener : extensionService.getExtensionPointList(IOfflineServerListener.class)) {
             for (Node node : offlineClientNodeList) {
                 listener.clientNodeOffline(node);
+            }
+        }
+    }
+    
+    @Override
+    public void captureTableMetaInfo(boolean force, String tablePrefix) {
+        if (this.cachedNodeIdentity != null) {
+            int existingCount = sqlTemplate.queryForInt(getSql("findNodeGroupTableMetaCountSql"), this.cachedNodeIdentity.getNodeGroupId());
+            
+            if (force || existingCount == 0) {
+                Date now = new Date();
+                for (String catalog : this.platform.getDdlReader().getCatalogNames()) {
+                    for (String schema : this.platform.getDdlReader().getSchemaNames(catalog)) {
+                        for (String tableName : this.platform.getDdlReader().getTableNames(catalog, schema, new String[] { "TABLE" })) {
+                            //TableConstants.getTables(tablePrefix)
+                            sqlTemplate.update(getSql("insertNodeGroupTableMetaCountSql"), 
+                                    this.cachedNodeIdentity.getNodeGroupId(),
+                                    catalog,
+                                    schema,
+                                    tableName,
+                                    now,
+                                    this.cachedNodeIdentity.getNodeId(),
+                                    now);
+                        }
+                    }
+                }
             }
         }
     }

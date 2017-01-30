@@ -77,6 +77,7 @@ public class TableConstants {
     public static final String SYM_MONITOR = "monitor";
     public static final String SYM_MONITOR_EVENT = "monitor_event";
     public static final String SYM_NOTIFICATION = "notification";
+    public static final String SYM_NODE_GROUP_TABLE_INFO = "node_group_table_info";
     public static final String SYM_CONTEXT = "context";
     public static final String SYM_JOB = "job";
 
@@ -191,6 +192,8 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_NOTIFICATION));
         tables.add(getTableName(tablePrefix, SYM_CONTEXT));
         tables.add(getTableName(tablePrefix, SYM_JOB));
+        tables.add(getTableName(tablePrefix, SYM_NODE_GROUP_TABLE_INFO));
+        
         return tables;
     }
 

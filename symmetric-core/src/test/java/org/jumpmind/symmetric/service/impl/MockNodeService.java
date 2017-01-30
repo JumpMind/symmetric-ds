@@ -315,4 +315,9 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
+    
+    @Override
+    public void captureTableMetaInfo(boolean force, String tablePrefix) {
+        
+    }
 }

@@ -195,4 +195,6 @@ public interface INodeService {
 
     public NetworkedNode getRootNetworkedNode();
     
+    public void captureTableMetaInfo(boolean force, String tablePrefix);
+    
 }
