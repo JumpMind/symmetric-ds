@@ -175,10 +175,15 @@ public class SimpleStagingDataWriter {
                 channelLine = line;
             } else {
                 TableLine batchLine = batchTableLines.get(tableLine);
-                if (batchLine != null && batchLine.columnsLine == null) {
+                if (batchLine == null || (batchLine != null && batchLine.columnsLine == null)) {
                     TableLine syncLine = syncTableLines.get(tableLine);
                     if (syncLine != null) {
                         log.debug("Injecting keys and columns to be backwards compatible");
+                        if (batchLine == null) {
+                            batchLine = syncLine;
+                            batchTableLines.put(batchLine, batchLine);
+                            writeLine(batchLine.tableLine);
+                        }
                         batchLine.keysLine = syncLine.keysLine;
                         writeLine(syncLine.keysLine);
                         batchLine.columnsLine = syncLine.columnsLine;
