@@ -226,10 +226,14 @@ public class SnapshotUtil {
         
         extract(export, new File(tmpDir, "sym_trigger_hist.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST));
-        
-        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
-              engine.getNodeCommunicationService().persistToTableForSnapshot();
-              engine.getClusterService().persistToTableForSnapshot();
+        try {
+            if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+                  engine.getNodeCommunicationService().persistToTableForSnapshot();
+                  engine.getClusterService().persistToTableForSnapshot();
+            }
+        } 
+        catch (Exception e) {
+            log.warn("Unable to add SYM_NODE_COMMUNICATION to the snapshot.", e);
         }
             
         extract(export, new File(tmpDir, "sym_lock.csv"),
