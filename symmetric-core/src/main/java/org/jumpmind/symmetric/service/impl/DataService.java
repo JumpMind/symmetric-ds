@@ -1550,51 +1550,56 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void reloadMissingForeignKeyRows(String nodeId, long dataId) {
-        Data data = findData(dataId);
-        log.debug("reloadMissingForeignKeyRows for nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
-        TriggerHistory hist = data.getTriggerHistory();
-        Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
-        Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
-
-        List<TableRow> tableRows = new ArrayList<TableRow>();
-        Row row = new Row(dataMap.size());
-        row.putAll(dataMap);
-        tableRows.add(new TableRow(table, row, null, null, null));
-        List<TableRow> foreignTableRows;
         try {
-            foreignTableRows = getForeignTableRows(tableRows);
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
-        
-        if (foreignTableRows.isEmpty()) {
-            log.info("Could not determine foreign table rows to fix foreign key violation for "
-                    + "nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
-        }
-        
-        Collections.reverse(foreignTableRows);
-        Set<TableRow> visited = new HashSet<TableRow>();
-        
-        for (TableRow foreignTableRow : foreignTableRows) {
-            if (visited.add(foreignTableRow)) {
-                Table foreignTable = foreignTableRow.getTable();
-                String catalog = foreignTable.getCatalog();
-                String schema = foreignTable.getSchema();
-                if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
-                    catalog = null;
-                }
-                if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
-                    schema = null;
-                }
-            
-                log.info("Issuing foreign key correction reload "
-                        + "nodeId {} catalog '{}' schema '{}' foreign table name '{}' fk name '{}' where sql '{}' "
-                        + "to correct dataId '{}' table '{}' for column '{}'",
-                        nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(), 
-                        dataId, data.getTableName(), foreignTableRow.getReferenceColumnName());
-                reloadTable(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql());
+            Data data = findData(dataId);
+            log.debug("reloadMissingForeignKeyRows for nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
+            TriggerHistory hist = data.getTriggerHistory();
+            Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+            Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+    
+            List<TableRow> tableRows = new ArrayList<TableRow>();
+            Row row = new Row(dataMap.size());
+            row.putAll(dataMap);
+            tableRows.add(new TableRow(table, row, null, null, null));
+            List<TableRow> foreignTableRows;
+            try {
+                foreignTableRows = getForeignTableRows(tableRows);
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
             }
-        }        
+            
+            if (foreignTableRows.isEmpty()) {
+                log.info("Could not determine foreign table rows to fix foreign key violation for "
+                        + "nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
+            }
+            
+            Collections.reverse(foreignTableRows);
+            Set<TableRow> visited = new HashSet<TableRow>();
+            
+            for (TableRow foreignTableRow : foreignTableRows) {
+                if (visited.add(foreignTableRow)) {
+                    Table foreignTable = foreignTableRow.getTable();
+                    String catalog = foreignTable.getCatalog();
+                    String schema = foreignTable.getSchema();
+                    if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
+                        catalog = null;
+                    }
+                    if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
+                        schema = null;
+                    }
+                
+                    log.info("Issuing foreign key correction reload "
+                            + "nodeId {} catalog '{}' schema '{}' foreign table name '{}' fk name '{}' where sql '{}' "
+                            + "to correct dataId '{}' table '{}' for column '{}'",
+                            nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(), 
+                            dataId, data.getTableName(), foreignTableRow.getReferenceColumnName());
+                    reloadTable(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql());
+                }
+            }        
+        }
+        catch (Exception e) {
+            log.error("Unknown exception while processing foreign key.", e);
+        }
     }
 
     protected List<TableRow> getForeignTableRows(List<TableRow> tableRows) throws CloneNotSupportedException {
@@ -1635,9 +1640,13 @@ public class DataService extends AbstractService implements IDataService {
                     Row foreignRow = new Row(foreignTable.getColumnCount());
                     if (foreignTable.getForeignKeyCount() > 0) {
                         DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
-                        Map<String, Object> values = sqlTemplate.queryForMap(selectSt.getSql(), 
-                                whereRow.toArray(foreignTable.getPrimaryKeyColumnNames()));
-                        foreignRow.putAll(values);
+                        Object[] keys = whereRow.toArray(foreignTable.getPrimaryKeyColumnNames());
+                        Map<String, Object> values = sqlTemplate.queryForMap(selectSt.getSql(), keys);
+                        if (values == null) {
+                            log.warn("Unable to reload rows for missing foreign key data, parent data not found.  Using sql='{}' with keys '{}'",selectSt.getSql(), keys);
+                        } else {
+                            foreignRow.putAll(values);
+                        }
                     }
 
                     TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql,referenceColumnName, fk.getName());
