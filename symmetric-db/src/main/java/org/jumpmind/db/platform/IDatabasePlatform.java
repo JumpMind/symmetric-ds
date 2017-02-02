@@ -185,4 +185,6 @@ public interface IDatabasePlatform {
     
     public void makePlatformSpecific(Database database);
     
+    public boolean isSuccessfulUpdateCount(int count);
+    
 }
