@@ -182,13 +182,36 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                 "select h.node_id, h.heartbeat_time, h.timezone_offset from $(node_host) h inner join $(node) n on h.node_id=n.node_id"
               + " where n.sync_enabled = 1 and h.heartbeat_time = (select max(hh.heartbeat_time) from $(node_host) hh where hh.node_id = h.node_id)");
         
-        putSql("findNodeGroupTableMetaCountSql",
+        putSql("findNodeGroupTableInfoCountSql",
                 "select count(table_name) from $(node_group_table_info) where node_group_id = ?");
         
-        putSql("insertNodeGroupTableMetaCountSql",
-                "insert into $(node_group_table_info) (node_group_id, catalog_name, schema_name, table_name, create_time, last_update_by, last_update_time) "
-                + "values (?,?,?,?,?,?,?)");
+        putSql("insertNodeGroupTableInfoSql",
+                "insert into $(node_group_table_info) (node_group_id, catalog_name, schema_name, table_name,"
+                + " default_catalog, default_schema, create_time, last_update_by, last_update_time) "
+                + "values (?,?,?,?,?,?,?,?,?)");
+        
+        putSql("selectNodeGroupTableInfoSql",
+                "select node_group_id, catalog_name, schema_name, table_name, default_catalog, default_schema,"
+                + "create_time, last_update_by, last_update_time from $(node_group_table_info) where node_group_id = ?");
 
+        putSql("deleteNodeGroupTableInfoSql",
+                "delete from $(node_group_table_info) where node_group_id = ? and catalog_name = ? and schema_name = ? and table_name = ? ");
+
+        putSql("selectCatalogsByNodeGroupTableInfoSql", "select catalog_name from $(node_group_table_info) "
+                + "where node_group_id = ? group by catalog_name");
+       
+        putSql("selectDefaultCatalogByNodeGroupTableInfoSql", "select catalog_name from $(node_group_table_info) "
+                + "where node_group_id = ? and default_catalog = 1 group by catalog_name");
+        
+        putSql("selectSchemasByNodeGroupTableInfoSql", "select schema_name from $(node_group_table_info) "
+                + "where node_group_id = ? and catalog_name = ? group by schema_name");
+        
+        putSql("selectDefaultSchemaByNodeGroupTableInfoSql", "select schema_name from $(node_group_table_info) "
+                + "where node_group_id = ? and catalog_name = ? and default_schema = 1 group by schema_name");
+        
+        putSql("selectTablesByNodeGroupTableInfoSql", "select table_name from $(node_group_table_info) "
+                + "where node_group_id = ? and catalog_name = ? and schema_name = ? ");
+        
     }
 
 }

@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,17 +66,17 @@ public class NodeService extends AbstractService implements INodeService {
     private IExtensionService extensionService;
 
     private Node cachedNodeIdentity;
-    
+
     private Map<String, NodeSecurity> securityCache;
 
     private long securityCacheTime;
 
     private Map<String, Node> nodeCache = new HashMap<String, Node>();
-    
+
     private long nodeCacheTime;
-    
+
     private Map<String, List<Node>> sourceNodesCache = new HashMap<String, List<Node>>();
-    
+
     private Map<String, List<Node>> targetNodesCache = new HashMap<String, List<Node>>();
 
     private long nodeLinkCacheTime;
@@ -89,8 +90,7 @@ public class NodeService extends AbstractService implements INodeService {
         super(parameterService, dialect);
         this.extensionService = extensionService;
         extensionService.addExtensionPoint(new DefaultNodeIdCreator(parameterService, this, securityService));
-        setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens()));
+        setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
 
     public String findSymmetricVersion() {
@@ -101,7 +101,7 @@ public class NodeService extends AbstractService implements INodeService {
         Node node = findIdentity();
         return node != null ? node.getNodeId() : null;
     }
-    
+
     @Override
     public String getExternalId(String nodeId) {
         String externalId = null;
@@ -113,8 +113,8 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public Collection<Node> findEnabledNodesFromNodeGroup(String nodeGroupId) {
-        return sqlTemplate.query(getSql("selectNodePrefixSql", "findEnabledNodesFromNodeGroupSql"),
-                new NodeRowMapper(), new Object[] { nodeGroupId });
+        return sqlTemplate.query(getSql("selectNodePrefixSql", "findEnabledNodesFromNodeGroupSql"), new NodeRowMapper(),
+                new Object[] { nodeGroupId });
     }
 
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {
@@ -122,15 +122,12 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public Collection<Node> findNodesWithOpenRegistration() {
-        return sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWithOpenRegistrationSql"),
-                new NodeRowMapper());
+        return sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWithOpenRegistrationSql"), new NodeRowMapper());
     }
 
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId, boolean recursive) {
         Set<Node> all = new HashSet<Node>();
-        List<Node> list = sqlTemplate.query(
-                getSql("selectNodePrefixSql", "findNodesCreatedByMeSql"), new NodeRowMapper(),
-                originalNodeId);
+        List<Node> list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesCreatedByMeSql"), new NodeRowMapper(), originalNodeId);
         if (list.size() > 0) {
             all.addAll(list);
             if (recursive) {
@@ -147,10 +144,9 @@ public class NodeService extends AbstractService implements INodeService {
      * with it.
      */
     public Node findNode(String id) {
-        List<Node> list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodeSql"),
-        new NodeRowMapper(), id);
+        List<Node> list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodeSql"), new NodeRowMapper(), id);
         return (Node) getFirstEntry(list);
-    } 
+    }
 
     public Node findNode(String id, boolean useCache) {
         if (useCache) {
@@ -170,50 +166,35 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public Node findNodeByExternalId(String nodeGroupId, String externalId) {
-        List<Node> list = sqlTemplate.query(
-                getSql("selectNodePrefixSql", "findNodeByExternalIdSql"), new NodeRowMapper(),
-                nodeGroupId, externalId);
+        List<Node> list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodeByExternalIdSql"), new NodeRowMapper(), nodeGroupId,
+                externalId);
         return (Node) getFirstEntry(list);
     }
 
-    public void ignoreNodeChannelForExternalId(boolean enabled, String channelId,
-            String nodeGroupId, String externalId) {
+    public void ignoreNodeChannelForExternalId(boolean enabled, String channelId, String nodeGroupId, String externalId) {
         Node node = findNodeByExternalId(nodeGroupId, externalId);
-        if (sqlTemplate.update(getSql("nodeChannelControlIgnoreSql"), new Object[] {
-                enabled ? 1 : 0, node.getNodeId(), channelId }) == 0) {
-            sqlTemplate.update(getSql("insertNodeChannelControlSql"),
-                    new Object[] { node.getNodeId(), channelId, enabled ? 1 : 0, 0 });
+        if (sqlTemplate.update(getSql("nodeChannelControlIgnoreSql"), new Object[] { enabled ? 1 : 0, node.getNodeId(), channelId }) == 0) {
+            sqlTemplate.update(getSql("insertNodeChannelControlSql"), new Object[] { node.getNodeId(), channelId, enabled ? 1 : 0, 0 });
         }
     }
 
     public List<NodeHost> findNodeHosts(String nodeId) {
-        return sqlTemplate.query(getSql("selectNodeHostPrefixSql", "selectNodeHostByNodeIdSql"),
-                new NodeHostRowMapper(), nodeId);
+        return sqlTemplate.query(getSql("selectNodeHostPrefixSql", "selectNodeHostByNodeIdSql"), new NodeHostRowMapper(), nodeId);
     }
-    
+
     public void deleteNodeHost(String nodeId) {
         platform.getSqlTemplate().update(getSql("deleteNodeHostSql"), new Object[] { nodeId });
     }
 
     public void updateNodeHost(NodeHost nodeHost) {
 
-    	Object[] params = new Object[] {
-    		nodeHost.getIpAddress(),
-            nodeHost.getOsUser(), nodeHost.getOsName(),
-            nodeHost.getOsArch(), nodeHost.getOsVersion(),
-            nodeHost.getAvailableProcessors(),
-            nodeHost.getFreeMemoryBytes(),
-            nodeHost.getTotalMemoryBytes(),
-            nodeHost.getMaxMemoryBytes(),
-            nodeHost.getJavaVersion(), nodeHost.getJavaVendor(),
-            nodeHost.getJdbcVersion(),
-            nodeHost.getSymmetricVersion(),
-            nodeHost.getTimezoneOffset(),
-            nodeHost.getHeartbeatTime(),
-            nodeHost.getLastRestartTime(), nodeHost.getNodeId(),
-            nodeHost.getHostName() };
+        Object[] params = new Object[] { nodeHost.getIpAddress(), nodeHost.getOsUser(), nodeHost.getOsName(), nodeHost.getOsArch(),
+                nodeHost.getOsVersion(), nodeHost.getAvailableProcessors(), nodeHost.getFreeMemoryBytes(), nodeHost.getTotalMemoryBytes(),
+                nodeHost.getMaxMemoryBytes(), nodeHost.getJavaVersion(), nodeHost.getJavaVendor(), nodeHost.getJdbcVersion(),
+                nodeHost.getSymmetricVersion(), nodeHost.getTimezoneOffset(), nodeHost.getHeartbeatTime(), nodeHost.getLastRestartTime(),
+                nodeHost.getNodeId(), nodeHost.getHostName() };
 
-    	if (sqlTemplate.update(getSql("updateNodeHostSql"), params) == 0) {
+        if (sqlTemplate.update(getSql("updateNodeHostSql"), params) == 0) {
             sqlTemplate.update(getSql("insertNodeHostSql"), params);
         }
 
@@ -293,35 +274,27 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void save(Node node) {
         if (!updateNode(node)) {
-            sqlTemplate.update(
-                    getSql("insertNodeSql"),
-                    new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
-                            node.getDatabaseVersion(), node.getSchemaVersion(),
-                            node.getSymmetricVersion(), node.getSyncUrl(), new Date(),
-                            node.isSyncEnabled() ? 1 : 0, AppUtils.getTimezoneOffset(),
-                            node.getBatchToSendCount(), node.getBatchInErrorCount(),
-                            node.getCreatedAtNodeId(), node.getDeploymentType(), node.getNodeId() },
-                    new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                            Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR });
+            sqlTemplate.update(getSql("insertNodeSql"),
+                    new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(),
+                            node.getSchemaVersion(), node.getSymmetricVersion(), node.getSyncUrl(), new Date(), node.isSyncEnabled() ? 1 : 0,
+                            AppUtils.getTimezoneOffset(), node.getBatchToSendCount(), node.getBatchInErrorCount(), node.getCreatedAtNodeId(),
+                            node.getDeploymentType(), node.getNodeId() },
+                    new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.TIMESTAMP, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR });
             flushNodeGroupCache();
         }
     }
 
     public boolean updateNode(Node node) {
-        boolean updated = sqlTemplate.update(
-                getSql("updateNodeSql"),
-                new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
-                        node.getDatabaseVersion(), node.getSchemaVersion(),
-                        node.getSymmetricVersion(), node.getSyncUrl(), new Date(),
-                        node.isSyncEnabled() ? 1 : 0,  AppUtils.getTimezoneOffset(),
-                        node.getBatchToSendCount(), node.getBatchInErrorCount(),
-                        node.getCreatedAtNodeId(), node.getDeploymentType(), node.getNodeId() },
-                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                        Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR }) == 1;
+        boolean updated = sqlTemplate.update(getSql("updateNodeSql"),
+                new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(),
+                        node.getSchemaVersion(), node.getSymmetricVersion(), node.getSyncUrl(), new Date(), node.isSyncEnabled() ? 1 : 0,
+                        AppUtils.getTimezoneOffset(), node.getBatchToSendCount(), node.getBatchInErrorCount(), node.getCreatedAtNodeId(),
+                        node.getDeploymentType(), node.getNodeId() },
+                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.TIMESTAMP, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR }) == 1;
         return updated;
     }
 
@@ -347,13 +320,11 @@ public class NodeService extends AbstractService implements INodeService {
     public Node findIdentity(boolean useCache, boolean logSqlError) {
         if (cachedNodeIdentity == null || useCache == false) {
             try {
-                List<Node> list = sqlTemplate.query(
-                        getSql("selectNodePrefixSql", "findNodeIdentitySql"), new NodeRowMapper());
+                List<Node> list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodeIdentitySql"), new NodeRowMapper());
                 cachedNodeIdentity = (Node) getFirstEntry(list);
             } catch (SqlException ex) {
                 if (logSqlError) {
-                    log.info("Failed to load the node identity because: {}.  Returning {}",
-                            ex.getMessage(), cachedNodeIdentity);
+                    log.info("Failed to load the node identity because: {}.  Returning {}", ex.getMessage(), cachedNodeIdentity);
                 }
             }
         }
@@ -374,8 +345,8 @@ public class NodeService extends AbstractService implements INodeService {
         if (node != null) {
             List<Node> list = sourceNodesCache.get(eventAction.name());
             if (list == null || (System.currentTimeMillis() - nodeLinkCacheTime) >= cacheTimeoutInMs) {
-                list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoTargetMeSql"),
-                        new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
+                list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoTargetMeSql"), new NodeRowMapper(), node.getNodeGroupId(),
+                        eventAction.name());
                 sourceNodesCache.put(eventAction.name(), list);
                 nodeLinkCacheTime = System.currentTimeMillis();
             }
@@ -391,8 +362,8 @@ public class NodeService extends AbstractService implements INodeService {
         if (node != null) {
             List<Node> list = targetNodesCache.get(eventAction.name());
             if (list == null || (System.currentTimeMillis() - nodeLinkCacheTime) >= cacheTimeoutInMs) {
-                list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoITargetSql"),
-                        new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
+                list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoITargetSql"), new NodeRowMapper(), node.getNodeGroupId(),
+                        eventAction.name());
                 targetNodesCache.put(eventAction.name(), list);
                 nodeLinkCacheTime = System.currentTimeMillis();
             }
@@ -461,8 +432,7 @@ public class NodeService extends AbstractService implements INodeService {
             Map<String, NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
             return nodeSecurities.get(nodeId);
         } else {
-            List<NodeSecurity> list = sqlTemplate.query(getSql("findNodeSecuritySql"),
-                    new NodeSecurityRowMapper(), new Object[] { nodeId },
+            List<NodeSecurity> list = sqlTemplate.query(getSql("findNodeSecuritySql"), new NodeSecurityRowMapper(), new Object[] { nodeId },
                     new int[] { Types.VARCHAR });
             return getFirstEntry(list);
         }
@@ -482,9 +452,7 @@ public class NodeService extends AbstractService implements INodeService {
                 return null;
             }
         } catch (UniqueKeyException ex) {
-            log.error(
-                    "Could not find a node security row for '{}'",
-                    nodeId);
+            log.error("Could not find a node security row for '{}'", nodeId);
             throw ex;
         }
     }
@@ -500,8 +468,7 @@ public class NodeService extends AbstractService implements INodeService {
     public void insertNodeSecurity(String id) {
         String password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(new Node(id, null, null));
         password = filterPasswordOnSaveIfNeeded(password);
-        sqlTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, password,
-                null });
+        sqlTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, password, null });
         flushNodeAuthorizedCache();
     }
 
@@ -512,8 +479,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     public List<NodeSecurity> findNodeSecurityWithLoadEnabled() {
         if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
-            return sqlTemplate.query(
-                    getSql("findNodeSecurityWithLoadEnabledSql"), new NodeSecurityRowMapper());
+            return sqlTemplate.query(getSql("findNodeSecurityWithLoadEnabledSql"), new NodeSecurityRowMapper());
         } else {
             List<NodeSecurity> list = new ArrayList<NodeSecurity>();
             for (NodeSecurity nodeSecurity : findAllNodeSecurity(true).values()) {
@@ -526,13 +492,11 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public Map<String, NodeSecurity> findAllNodeSecurity(boolean useCache) {
-        long maxSecurityCacheTime = parameterService
-                .getLong(ParameterConstants.CACHE_TIMEOUT_NODE_SECURITY_IN_MS);
+        long maxSecurityCacheTime = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_SECURITY_IN_MS);
         Map<String, NodeSecurity> all = securityCache;
-        if (all == null || System.currentTimeMillis() - securityCacheTime >= maxSecurityCacheTime
-                || securityCacheTime == 0 || !useCache) {
-            all = (Map<String, NodeSecurity>) sqlTemplate.queryForMap(
-                    getSql("findAllNodeSecuritySql"), new NodeSecurityRowMapper(), "node_id");
+        if (all == null || System.currentTimeMillis() - securityCacheTime >= maxSecurityCacheTime || securityCacheTime == 0 || !useCache) {
+            all = (Map<String, NodeSecurity>) sqlTemplate.queryForMap(getSql("findAllNodeSecuritySql"), new NodeSecurityRowMapper(),
+                    "node_id");
             securityCache = all;
             securityCacheTime = System.currentTimeMillis();
         }
@@ -546,11 +510,9 @@ public class NodeService extends AbstractService implements INodeService {
     public boolean isNodeAuthorized(String nodeId, String password) {
         Map<String, NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
         NodeSecurity nodeSecurity = nodeSecurities.get(nodeId);
-        if (nodeSecurity != null
-                && !nodeId.equals(findIdentityNodeId()) && ((nodeSecurity.getNodePassword() != null
-                        && !nodeSecurity.getNodePassword().equals("") && nodeSecurity
-                        .getNodePassword().equals(password)) || nodeSecurity
-                            .isRegistrationEnabled())) {
+        if (nodeSecurity != null && !nodeId.equals(findIdentityNodeId())
+                && ((nodeSecurity.getNodePassword() != null && !nodeSecurity.getNodePassword().equals("")
+                        && nodeSecurity.getNodePassword().equals(password)) || nodeSecurity.isRegistrationEnabled())) {
             return true;
         }
         return false;
@@ -584,29 +546,20 @@ public class NodeService extends AbstractService implements INodeService {
 
     public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security) {
         security.setNodePassword(filterPasswordOnSaveIfNeeded(security.getNodePassword()));
-        boolean updated = transaction.prepareAndExecute(
-                getSql("updateNodeSecuritySql"),
-                new Object[] { security.getNodePassword(),
-                        security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
-                        security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(),
-                        security.getCreatedAtNodeId(),
-                        security.isRevInitialLoadEnabled() ? 1 : 0,
-                        security.getRevInitialLoadTime(),
-                        security.getInitialLoadId(),
-                        security.getInitialLoadCreateBy(),
-                        security.getRevInitialLoadId(),
-                        security.getRevInitialLoadCreateBy(),
-                        security.getNodeId() }, new int[] {
-                        Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
-                        Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
-                        Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR,
-                        Types.VARCHAR }) == 1;
+        boolean updated = transaction.prepareAndExecute(getSql("updateNodeSecuritySql"),
+                new Object[] { security.getNodePassword(), security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
+                        security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getCreatedAtNodeId(),
+                        security.isRevInitialLoadEnabled() ? 1 : 0, security.getRevInitialLoadTime(), security.getInitialLoadId(),
+                        security.getInitialLoadCreateBy(), security.getRevInitialLoadId(), security.getRevInitialLoadCreateBy(),
+                        security.getNodeId() },
+                new int[] { Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER, Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER,
+                        Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.VARCHAR }) == 1;
         flushNodeAuthorizedCache();
         return updated;
     }
 
-    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
-            boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy) {
+    public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange,
+            long loadId, String createBy) {
         try {
             if (!syncChange) {
                 symmetricDialect.disableSyncTriggers(transaction, nodeId);
@@ -653,8 +606,8 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId,
-            boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy) {
+    public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange,
+            long loadId, String createBy) {
         try {
             if (!syncChange) {
                 symmetricDialect.disableSyncTriggers(transaction, nodeId);
@@ -703,8 +656,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId) {
-        return sqlTemplate.queryForInt(getSql("isNodeRegisteredSql"), new Object[] { nodeGroupId,
-                externalId }) > 0;
+        return sqlTemplate.queryForInt(getSql("isNodeRegisteredSql"), new Object[] { nodeGroupId, externalId }) > 0;
     }
 
     public boolean isDataLoadCompleted() {
@@ -732,8 +684,7 @@ public class NodeService extends AbstractService implements INodeService {
             }
             return NodeStatus.DATA_LOAD_NOT_STARTED;
         } catch (SqlException ex) {
-            log.error("Could not query table after {} ms.  The status is unknown.",
-                    (System.currentTimeMillis() - ts), ex);
+            log.error("Could not query table after {} ms.  The status is unknown.", (System.currentTimeMillis() - ts), ex);
             return NodeStatus.STATUS_UNKNOWN;
         }
     }
@@ -759,8 +710,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void checkForOfflineNodes() {
-        long offlineNodeDetectionMinutes = parameterService
-                .getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES);
+        long offlineNodeDetectionMinutes = parameterService.getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES);
         List<IOfflineServerListener> offlineServerListeners = extensionService.getExtensionPointList(IOfflineServerListener.class);
         // Only check for offline nodes if there is a listener and the
         // offline detection period is a positive value. The default value
@@ -775,8 +725,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public List<Node> findOfflineNodes() {
-        return findOfflineNodes(parameterService
-                .getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES));
+        return findOfflineNodes(parameterService.getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES));
     }
 
     public List<Node> findOfflineNodes(long minutesOffline) {
@@ -795,15 +744,12 @@ public class NodeService extends AbstractService implements INodeService {
                 // checking the hearbeat time.
                 Date clientNodeCurrentTime = null;
                 if (offset != null) {
-                    clientNodeCurrentTime = AppUtils
-                            .getLocalDateForOffset(offset);
+                    clientNodeCurrentTime = AppUtils.getLocalDateForOffset(offset);
                 } else {
                     clientNodeCurrentTime = new Date();
                 }
-                long cutOffTimeMillis = clientNodeCurrentTime.getTime()
-                        - offlineNodeDetectionMillis;
-                if (time == null
-                        || time.getTime() < cutOffTimeMillis) {
+                long cutOffTimeMillis = clientNodeCurrentTime.getTime() - offlineNodeDetectionMillis;
+                if (time == null || time.getTime() < cutOffTimeMillis) {
                     offlineNodeList.add(findNode(nodeId));
                 }
             }
@@ -842,15 +788,12 @@ public class NodeService extends AbstractService implements INodeService {
                 // checking the hearbeat time.
                 Date clientNodeCurrentTime = null;
                 if (offset != null) {
-                    clientNodeCurrentTime = AppUtils
-                            .getLocalDateForOffset(offset);
+                    clientNodeCurrentTime = AppUtils.getLocalDateForOffset(offset);
                 } else {
                     clientNodeCurrentTime = new Date();
                 }
-                long cutOffTimeMillis = clientNodeCurrentTime.getTime()
-                        - offlineNodeDetectionMillis;
-                if (time == null
-                        || time.getTime() < cutOffTimeMillis) {
+                long cutOffTimeMillis = clientNodeCurrentTime.getTime() - offlineNodeDetectionMillis;
+                if (time == null || time.getTime() < cutOffTimeMillis) {
                     offlineNodeList.add(nodeId);
                 }
             }
@@ -865,30 +808,133 @@ public class NodeService extends AbstractService implements INodeService {
             }
         }
     }
-    
+
     @Override
     public void captureTableMetaInfo(boolean force, String tablePrefix) {
         if (this.cachedNodeIdentity != null) {
-            int existingCount = sqlTemplate.queryForInt(getSql("findNodeGroupTableMetaCountSql"), this.cachedNodeIdentity.getNodeGroupId());
+            String nodeGroupId = this.cachedNodeIdentity.getNodeGroupId();
+
+            // int existingCount =
+            // sqlTemplate.queryForInt(getSql("findNodeGroupTableInfoCountSql"),
+            // nodeGroupId);
+            NodeGroupTableMetaRowMapper mapper = new NodeGroupTableMetaRowMapper();
+            sqlTemplate.query(getSql("selectNodeGroupTableInfoSql"), mapper, nodeGroupId);
+
+            log.info("Node group meta info, group " + nodeGroupId + ", results found " + mapper.getPrevious().size());
             
-            if (force || existingCount == 0) {
+            //f (force || mapper.getPrevious().size() == 0) {
                 Date now = new Date();
+                Set<String> symTables = null;
+                if (tablePrefix != null) {
+                    symTables = new HashSet<String>(TableConstants.getTables(tablePrefix));
+                }
+
+                String defaultCatalog = getSymmetricDialect().getPlatform().getDefaultCatalog();
+                String defaultSchema = getSymmetricDialect().getPlatform().getDefaultSchema();
+                
                 for (String catalog : this.platform.getDdlReader().getCatalogNames()) {
                     for (String schema : this.platform.getDdlReader().getSchemaNames(catalog)) {
                         for (String tableName : this.platform.getDdlReader().getTableNames(catalog, schema, new String[] { "TABLE" })) {
-                            //TableConstants.getTables(tablePrefix)
-                            sqlTemplate.update(getSql("insertNodeGroupTableMetaCountSql"), 
-                                    this.cachedNodeIdentity.getNodeGroupId(),
-                                    catalog,
-                                    schema,
-                                    tableName,
-                                    now,
-                                    this.cachedNodeIdentity.getNodeId(),
-                                    now);
+                            if (symTables != null && tableName != null && !symTables.contains(tableName.toLowerCase())
+                                    && !tableName.toLowerCase().startsWith(tablePrefix)) {
+                                
+                                boolean defaultCatalogFlag = false;
+                                boolean defaultSchemaFlag = false;
+                                
+                                String key = catalog + ":" + schema + ":" + tableName;
+                                if (mapper.getPrevious().contains(key)) {
+                                    mapper.getPrevious().remove(key);
+                                } else {
+                                    if (catalog != null && catalog.equals(defaultCatalog)) {
+                                        defaultCatalogFlag = true;
+                                    }
+                                    if (schema != null && schema.equals(defaultSchema)) {
+                                        defaultSchemaFlag = true;
+                                    }
+                                    log.info("Node group meta info, table needs added to meta info for " + nodeGroupId + " : " + key);
+                                    
+                                    sqlTemplate.update(getSql("insertNodeGroupTableInfoSql"), nodeGroupId, catalog, schema, tableName,
+                                            defaultCatalogFlag, defaultSchemaFlag, now, this.cachedNodeIdentity.getNodeId(), now);
+                                }
+                            }
                         }
                     }
                 }
+                if (mapper.getPrevious().size() > 0) {
+                    Iterator<String> i = mapper.getPrevious().iterator();
+                    while (i.hasNext()) {
+                        String key = i.next();
+                        String values[] = key.split(":");
+                        log.info("Node group meta info, table to be removed from meta info for " + nodeGroupId + " : " + key);
+                        
+                        sqlTemplate.update(getSql("deleteNodeGroupTableInfoSql"), nodeGroupId, values[0], values[1], values[2]);
+                    }
+                }
+            //}
+        }
+    }
+
+    @Override
+    public List<String> getCatalogsFromTableMetaInfo(String nodeGroupId) {
+        return sqlTemplate.query(getSql("selectCatalogsByNodeGroupTableInfoSql"), new ISqlRowMapper<String>() {
+            @Override
+            public String mapRow(Row row) {
+                return row.getString("catalog_name");
             }
+        }, nodeGroupId);
+    }
+    
+    @Override
+    public List<String> getDefaultCatalogFromTableMetaInfo(String nodeGroupId) {
+        return sqlTemplate.query(getSql("selectDefaultCatalogByNodeGroupTableInfoSql"), new ISqlRowMapper<String>() {
+            @Override
+            public String mapRow(Row row) {
+                return row.getString("catalog_name");
+            }
+        }, nodeGroupId);
+    }
+
+    @Override
+    public List<String> getSchemasFromTableMetaInfo(String nodeGroupId, String catalog) {
+        return sqlTemplate.query(getSql("selectSchemasByNodeGroupTableInfoSql"), new ISqlRowMapper<String>() {
+            @Override
+            public String mapRow(Row row) {
+                return row.getString("schema_name");
+            }
+        }, nodeGroupId, catalog);
+    }
+    
+    @Override
+    public List<String> getDefaultSchemaFromTableMetaInfo(String nodeGroupId, String catalog) {
+        return sqlTemplate.query(getSql("selectDefaultSchemaByNodeGroupTableInfoSql"), new ISqlRowMapper<String>() {
+            @Override
+            public String mapRow(Row row) {
+                return row.getString("schema_name");
+            }
+        }, nodeGroupId, catalog);
+    }
+
+    @Override
+    public List<String> getTablesFromTableMetaInfo(String nodeGroupId, String catalog, String schema) {
+        return sqlTemplate.query(getSql("selectTablesByNodeGroupTableInfoSql"), new ISqlRowMapper<String>() {
+            @Override
+            public String mapRow(Row row) {
+                return row.getString("table_name");
+            }
+        }, nodeGroupId, catalog, schema);
+    }
+    
+    class NodeGroupTableMetaRowMapper implements ISqlRowMapper<Object> {
+        Set<String> previous = new HashSet<String>();
+
+        @Override
+        public Object mapRow(Row row) {
+            previous.add(row.getString("catalog_name") + ":" + row.getString("schema_name") + ":" + row.getString("table_name"));
+            return null;
+        }
+
+        public Set<String> getPrevious() {
+            return this.previous;
         }
     }
 
@@ -916,8 +962,7 @@ public class NodeService extends AbstractService implements INodeService {
         public NodeSecurity mapRow(Row rs) {
             NodeSecurity nodeSecurity = new NodeSecurity();
             nodeSecurity.setNodeId(rs.getString("node_id"));
-            nodeSecurity.setNodePassword(filterPasswordOnRenderIfNeeded(rs
-                    .getString("node_password")));
+            nodeSecurity.setNodePassword(filterPasswordOnRenderIfNeeded(rs.getString("node_password")));
             nodeSecurity.setRegistrationEnabled(rs.getBoolean("registration_enabled"));
             nodeSecurity.setRegistrationTime(rs.getDateTime("registration_time"));
             nodeSecurity.setInitialLoadEnabled(rs.getBoolean("initial_load_enabled"));

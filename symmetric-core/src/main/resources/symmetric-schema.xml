@@ -407,6 +407,8 @@
         <column name="catalog_name" type="VARCHAR" size="255" required="true" primaryKey="true" description="Name of catalog for given table" />
         <column name="schema_name" type="VARCHAR" size="255" required="true" primaryKey="true" description="Name of schema for given table" />
         <column name="table_name" type="VARCHAR" size="255" required="true" primaryKey="true" description="Table name" />
+        <column name="default_catalog" type="BOOLEANINT" size="1" default="0" description="Whether or not this catalog is the default" />
+        <column name="default_schema" type="BOOLEANINT" size="1" default="0" description="Whether or not this schema is the default" />
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />  

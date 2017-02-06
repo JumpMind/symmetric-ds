@@ -108,69 +108,71 @@ public class MonitorService extends AbstractService implements IMonitorService {
     public synchronized void update() {
         Map<String, IMonitorType> monitorTypes = extensionService.getExtensionPointMap(IMonitorType.class);
         Node identity = nodeService.findIdentity();
-        List<Monitor> activeMonitors = getActiveMonitorsForNode(identity.getNodeGroupId(), identity.getExternalId());
-        Map<String, MonitorEvent> unresolved = getMonitorEventsNotResolvedForNode(identity.getNodeId());
-
-        for (Monitor monitor : activeMonitors) {
-            IMonitorType monitorType = monitorTypes.get(monitor.getType());
-            if (monitorType != null) {
-                if (!monitorType.requiresClusterLock()) {
-                    Long lastCheckTimeLong = checkTimesByType.get(monitor.getMonitorId());
-                    long lastCheckTime = lastCheckTimeLong != null ? lastCheckTimeLong : 0;
-                    if (lastCheckTime == 0 || (System.currentTimeMillis() - lastCheckTime) / 1000 >= monitor.getRunPeriod()) {
-                        checkTimesByType.put(monitor.getMonitorId(), System.currentTimeMillis());
-                        updateMonitor(monitor, monitorType, identity, unresolved);
-                    }
-                }
-            } else {
-                log.warn("Could not find monitor of type '" + monitor.getType() + "'");
-            }
-        }
-        
-        if (clusterService.lock(ClusterConstants.MONITOR)) {
-            Lock lock = clusterService.findLocks().get(ClusterConstants.MONITOR);
-            long clusterLastCheckTime = lock.getLastLockTime() != null ? lock.getLastLockTime().getTime() : 0;
-            
-            try {
-                for (Monitor monitor : activeMonitors) {
-                    IMonitorType monitorType = monitorTypes.get(monitor.getType());
-                    if (monitorType != null && monitorType.requiresClusterLock() && 
-                            (System.currentTimeMillis() - clusterLastCheckTime) / 1000 >= monitor.getRunPeriod()) {
-                        updateMonitor(monitor, monitorType, identity, unresolved);
-                    }
-                }
-                
-                int minSeverityLevel = Integer.MAX_VALUE;
-                List<Notification> notifications = getActiveNotificationsForNode(identity.getNodeGroupId(), identity.getExternalId());
-                if (notifications.size() > 0) {
-                    for (Notification notification : notifications) {
-                        if (notification.getSeverityLevel() < minSeverityLevel) {
-                            minSeverityLevel = notification.getSeverityLevel();
-                        }
-                    }
+        if (identity != null) {
+            List<Monitor> activeMonitors = getActiveMonitorsForNode(identity.getNodeGroupId(), identity.getExternalId());
+            Map<String, MonitorEvent> unresolved = getMonitorEventsNotResolvedForNode(identity.getNodeId());
     
-                    Map<String, INotificationType> notificationTypes = extensionService.getExtensionPointMap(INotificationType.class);
-                    List<MonitorEvent> allMonitorEvents = getMonitorEventsForNotification(minSeverityLevel);
-                    for (Notification notification : notifications) {
-                        List<MonitorEvent> monitorEvents = new ArrayList<MonitorEvent>();
-                        for (MonitorEvent monitorEvent : allMonitorEvents) {
-                            if (monitorEvent.getSeverityLevel() >= notification.getSeverityLevel()) {
-                                monitorEvents.add(monitorEvent);
-                            }
+            for (Monitor monitor : activeMonitors) {
+                IMonitorType monitorType = monitorTypes.get(monitor.getType());
+                if (monitorType != null) {
+                    if (!monitorType.requiresClusterLock()) {
+                        Long lastCheckTimeLong = checkTimesByType.get(monitor.getMonitorId());
+                        long lastCheckTime = lastCheckTimeLong != null ? lastCheckTimeLong : 0;
+                        if (lastCheckTime == 0 || (System.currentTimeMillis() - lastCheckTime) / 1000 >= monitor.getRunPeriod()) {
+                            checkTimesByType.put(monitor.getMonitorId(), System.currentTimeMillis());
+                            updateMonitor(monitor, monitorType, identity, unresolved);
                         }
-                        if (monitorEvents.size() > 0) {
-                            INotificationType notificationType = notificationTypes.get(notification.getType());
-                            if (notificationType != null) {
-                                notificationType.notify(notification, monitorEvents);
-                                updateMonitorEventAsNotified(monitorEvents);
-                            } else {
-                                log.warn("Could not find notification of type '" + notification.getType() + "'");
-                            }
-                        }
-                    }                
+                    }
+                } else {
+                    log.warn("Could not find monitor of type '" + monitor.getType() + "'");
                 }
-            } finally {
-                clusterService.unlock(ClusterConstants.MONITOR);
+            }
+            
+            if (clusterService.lock(ClusterConstants.MONITOR)) {
+                Lock lock = clusterService.findLocks().get(ClusterConstants.MONITOR);
+                long clusterLastCheckTime = lock.getLastLockTime() != null ? lock.getLastLockTime().getTime() : 0;
+                
+                try {
+                    for (Monitor monitor : activeMonitors) {
+                        IMonitorType monitorType = monitorTypes.get(monitor.getType());
+                        if (monitorType != null && monitorType.requiresClusterLock() && 
+                                (System.currentTimeMillis() - clusterLastCheckTime) / 1000 >= monitor.getRunPeriod()) {
+                            updateMonitor(monitor, monitorType, identity, unresolved);
+                        }
+                    }
+                    
+                    int minSeverityLevel = Integer.MAX_VALUE;
+                    List<Notification> notifications = getActiveNotificationsForNode(identity.getNodeGroupId(), identity.getExternalId());
+                    if (notifications.size() > 0) {
+                        for (Notification notification : notifications) {
+                            if (notification.getSeverityLevel() < minSeverityLevel) {
+                                minSeverityLevel = notification.getSeverityLevel();
+                            }
+                        }
+        
+                        Map<String, INotificationType> notificationTypes = extensionService.getExtensionPointMap(INotificationType.class);
+                        List<MonitorEvent> allMonitorEvents = getMonitorEventsForNotification(minSeverityLevel);
+                        for (Notification notification : notifications) {
+                            List<MonitorEvent> monitorEvents = new ArrayList<MonitorEvent>();
+                            for (MonitorEvent monitorEvent : allMonitorEvents) {
+                                if (monitorEvent.getSeverityLevel() >= notification.getSeverityLevel()) {
+                                    monitorEvents.add(monitorEvent);
+                                }
+                            }
+                            if (monitorEvents.size() > 0) {
+                                INotificationType notificationType = notificationTypes.get(notification.getType());
+                                if (notificationType != null) {
+                                    notificationType.notify(notification, monitorEvents);
+                                    updateMonitorEventAsNotified(monitorEvents);
+                                } else {
+                                    log.warn("Could not find notification of type '" + notification.getType() + "'");
+                                }
+                            }
+                        }                
+                    }
+                } finally {
+                    clusterService.unlock(ClusterConstants.MONITOR);
+                }
             }
         }
     }
