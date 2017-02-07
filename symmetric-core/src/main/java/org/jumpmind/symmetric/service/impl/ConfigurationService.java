@@ -122,7 +122,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     @Override
-    public boolean isMasterToMasterOnly() {
+    public boolean containsMasterToMaster() {
         boolean masterToMasterOnly = false;
         Node me = nodeService.findIdentity();
         if (me != null) {
@@ -131,6 +131,24 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return masterToMasterOnly;
     }
 
+    @Override
+    public boolean isMasterToMasterOnly() {
+        Node me = nodeService.findIdentity();
+        int masterCount=0;
+        int otherCount=0;
+        if (me != null) {
+            for (NodeGroupLink nodeGroupLink : getNodeGroupLinksFor(me.getNodeGroupId(), false)) {
+                if (nodeGroupLink.getTargetNodeGroupId().equals(me.getNodeGroupId())) {
+                    masterCount++;
+                }
+                else {
+                    otherCount++;
+                }
+            }
+        }
+        return masterCount > 1 && otherCount == 0;
+    }
+    
     public boolean refreshFromDatabase() {
         Date date1 = sqlTemplate.queryForObject(getSql("selectMaxChannelLastUpdateTime"),
                 Date.class);

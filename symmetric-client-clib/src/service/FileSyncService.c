@@ -605,9 +605,12 @@ SymList * /*<IncomingBatch>*/ SymFileSyncService_processZip(SymFileSyncService *
         batchesProcessed->add(batchesProcessed, incomingBatch);
         if (incomingBatchService->acquireIncomingBatch(incomingBatchService, incomingBatch)) {
             char* syncScript = SymStringUtils_format("%s/%s", batchDir, "sync.sh");
-            if (SymFileUtils_exists(syncScript)) {
+            unsigned short syncScriptExists = SymFileUtils_exists(syncScript);
+
+            SymLog_debug("syncScriptExists=%d for path %s", syncScriptExists, syncScript);
+
+            if (syncScriptExists) {
                 // In Java this would be a beanshell.  Here we assume a shell script we'll exec.
-                // TODO *** *here, exec the script, everything is tee'd up.
                 char *tmpOutputDir = SymStringUtils_format("tmp/staging/filesync_incoming/processing/%s/", batchId);
                 SymFileUtils_mkdir(tmpOutputDir);
 
@@ -621,8 +624,11 @@ SymList * /*<IncomingBatch>*/ SymFileSyncService_processZip(SymFileSyncService *
 
                 int rc = system(cmd);
 
-                if (rc == 0 && SymFileUtils_exists(fileListProcessed)) {
-                    // TODO read in the output
+                unsigned short outputFileExists = SymFileUtils_exists(fileListProcessed);
+
+                SymLog_debug("Script rc=%d, outputFileExists=%d", rc, outputFileExists);
+
+                if (rc == 0 && outputFileExists) {
                     SymProperties *filesToEventType = SymProperties_newWithFile(NULL, fileListProcessed);
 
                     if (this->engine->parameterService->is(this->engine->parameterService, SYM_PARAMETER_FILE_SYNC_PREVENT_PING_BACK, 1)) {
@@ -657,7 +663,6 @@ SymList * /*<IncomingBatch>*/ SymFileSyncService_processZip(SymFileSyncService *
                 free(batchInfo);
                 free(batchDir);
                 free(tmpOutputDir);
-//                free(cmd);
                 free(fileListProcessed);
                 free(outputFileName);
             }

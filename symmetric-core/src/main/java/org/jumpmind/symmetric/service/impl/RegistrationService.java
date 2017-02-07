@@ -547,7 +547,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 node.setNodeId(nodeId);
                 node.setSyncEnabled(false);
                 
-                boolean masterToMasterOnly = configurationService.isMasterToMasterOnly();
+                boolean masterToMasterOnly = configurationService.containsMasterToMaster();
                 node.setCreatedAtNodeId(masterToMasterOnly ? null: me.getNodeId());
                 nodeService.save(node);
 

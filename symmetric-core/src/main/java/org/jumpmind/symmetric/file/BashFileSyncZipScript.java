@@ -70,6 +70,9 @@ public class BashFileSyncZipScript extends FileSyncZipScript {
         }
                                                         
         appendln("if [ \"$processFile\" = true ] ; then ");
+        // This line guards against shell script syntax error caused by empty "if...fi" when the source
+        // file was removed before extraction.
+        appendln("  echo \"#Processing " + snapshot.getFileName() + "\" >> \"$outputFileName\""); 
         
         switch (eventType) {
             case CREATE:
