@@ -160,7 +160,7 @@ public class NodeService extends AbstractService implements INodeService {
             }
             return nodeCache.get(id);
         } else {
-            return findAllNodesAsMap().get(id);
+            return findNode(id);
         }
     }
 
