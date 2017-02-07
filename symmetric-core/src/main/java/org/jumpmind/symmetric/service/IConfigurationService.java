@@ -118,6 +118,8 @@ public interface IConfigurationService {
      */
     public boolean isMasterToMaster();
     
+    public boolean containsMasterToMaster();
+
     public boolean isMasterToMasterOnly();
 
 }
