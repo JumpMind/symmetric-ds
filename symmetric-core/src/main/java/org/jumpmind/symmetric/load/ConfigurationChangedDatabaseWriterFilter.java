@@ -275,7 +275,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         
         if (context.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
             IJobManager jobManager = engine.getJobManager();
-            if (jobManager != null) {
+            if (jobManager != null && jobManager.isStarted()) {
                 log.info("About to restart jobs because a new schedule came through the data loader");
                 jobManager.stopJobs();
                 jobManager.startJobs();
