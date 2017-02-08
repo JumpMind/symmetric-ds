@@ -42,4 +42,6 @@ public interface IJobManager {
     
     public IJob getJob(String name);
     
+    public boolean isStarted();
+    
 }
