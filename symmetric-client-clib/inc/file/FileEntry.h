@@ -22,6 +22,7 @@
 #define SYM_FILEENTRY_H_
 
 #include <stdlib.h>
+#include <stdint.h>
 #include "util/Date.h"
 
 
