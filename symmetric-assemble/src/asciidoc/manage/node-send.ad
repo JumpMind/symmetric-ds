@@ -3,11 +3,8 @@ Events other than data changes can be sent to nodes in the synchronization netwo
 SQL Scripts:: Sql can be sent to be executed on a target node
 BSH Scripts:: Beanshell scripts can be sent to be executed on a target node
 Table Schema:: The schema the source node can be replicated to the target node individually
-Table Data:: Tables can be loaded or reloaded individually
 
-ifdef::pro[]
-image::manage/manage-nodes-send.png[]
-endif::pro[]
+ifndef::pro[]
 
 ===== Table Data
            
@@ -21,10 +18,6 @@ if more than one table is involved, be sure to send any tables which are referre
 the channel's synchronization will block because SymmetricDS is unable to insert or update the row because the foreign key relationship refers to
 a non-existent row in the destination!
 
-ifdef::pro[]
-If you click on the *Send* button and select *Table Data* you will be prompted to select the tables you want to send.  Events will be queued up
-for each node that is selected on the Manage Nodes screen.
-endif::pro[]
 
 You can manually insert "reload" events into the <<DATA>> table that represent the table/s to reload.  These reload events are created in 
 the source database.
@@ -64,3 +57,5 @@ The following is an example insert statement:
 This insert statement generates N rows, one for each configured table that starts with sale_.  It uses the most recent
 trigger history id for the corresponding table.  It takes advantage of the initial load order for each trigger-router to
 create the three rows in the correct order (the order corresponding to the order in which the tables would have been initial loaded).
+
+endif::pro[]
