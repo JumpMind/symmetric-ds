@@ -22,12 +22,11 @@
 #define SYM_FILEENTRY_H_
 
 #include <stdlib.h>
-#include <stdint.h>
 #include "util/Date.h"
 
 
 typedef struct SymFileEntry {
-    __uint8_t fileType; // DT_DIR, DR_REG, etc.
+    int fileType; // DT_DIR, DR_REG, etc.
     char *directory;
     char *fileName;
     long fileSize;
