@@ -794,49 +794,42 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
 
         if (!changes.isEmpty()) {
-            // we can only copy the data if no required columns without default
-            // value and non-autoincrement have been added
-            boolean canMigrateData = true;
 
-            for (Iterator<TableChange> it = changes.iterator(); canMigrateData && it.hasNext();) {
+            for (Iterator<TableChange> it = changes.iterator(); it.hasNext();) {
                 TableChange change = it.next();
 
                 if (change instanceof AddColumnChange) {
                     AddColumnChange addColumnChange = (AddColumnChange) change;
 
+                    // we can only copy the data if no required columns without default
+                    // value and non-autoincrement have been added
                     if (addColumnChange.getNewColumn().isRequired()
                             && !addColumnChange.getNewColumn().isAutoIncrement()
                             && (addColumnChange.getNewColumn().getDefaultValue() == null)) {
-                        log.warn("Data cannot be retained in table "
+                        throw new DdlException("Data cannot be retained in table "
                                 + change.getChangedTable().getName()
                                 + " because of the addition of the required column "
-                                + addColumnChange.getNewColumn().getName());
-                        canMigrateData = false;
+                                + addColumnChange.getNewColumn().getName() + " - aborting.");
                     }
                 }
             }
 
             Table realTargetTable = getRealTargetTableFor(desiredModel, sourceTable, targetTable);
 
-            if (canMigrateData) {
-                Table tempTable = getTemporaryTableFor(sourceTable);
-                dropTemporaryTable(tempTable, ddl);
-                createTemporaryTable(tempTable, ddl);
-                writeCopyDataStatement(sourceTable, tempTable, ddl);
-                /*
-                 * Note that we don't drop the indices here because the DROP
-                 * TABLE will take care of that Likewise, foreign keys have
-                 * already been dropped as necessary
-                 */
-                dropTable(sourceTable, ddl, false, true);
-                createTable(realTargetTable, ddl, false, true);
-                writeCopyDataStatement(tempTable, targetTable, ddl);
-                dropTemporaryTable(tempTable, ddl);
-                writeFixLastIdentityValues(targetTable, ddl);
-            } else {
-                dropTable(sourceTable, ddl, false, false);
-                createTable(realTargetTable, ddl, false, false);
-            }
+            Table tempTable = getTemporaryTableFor(sourceTable);
+            dropTemporaryTable(tempTable, ddl);
+            createTemporaryTable(tempTable, ddl);
+            writeCopyDataStatement(sourceTable, tempTable, ddl);
+            /*
+             * Note that we don't drop the indices here because the DROP
+             * TABLE will take care of that Likewise, foreign keys have
+             * already been dropped as necessary
+             */
+            dropTable(sourceTable, ddl, false, true);
+            createTable(realTargetTable, ddl, false, true);
+            writeCopyDataStatement(tempTable, targetTable, ddl);
+            dropTemporaryTable(tempTable, ddl);
+            writeFixLastIdentityValues(targetTable, ddl);
         } else {
             ddl.append(tableDdl);
         }
@@ -849,7 +842,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             throw new DdlException(ex);
         }
     }
-    
 
     /**
      * Allows database-specific implementations to handle changes in a database
