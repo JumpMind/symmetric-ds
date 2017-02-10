@@ -22,6 +22,7 @@ package org.jumpmind.db;
 
 import java.io.InputStreamReader;
 import java.sql.Types;
+import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -33,6 +34,8 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
 
@@ -58,7 +61,6 @@ public class DatabasePlatformTest {
         platform.createDatabase(DatabaseXmlUtil.read(new InputStreamReader(
                 DatabasePlatformTest.class.getResourceAsStream("/testCreateDatabase.xml"))), true,
                 true);
-
     }
 
     @Before
@@ -171,7 +173,7 @@ public class DatabasePlatformTest {
         platform.createDatabase(database, true, false);        
         return platform.getTableFromCache(table.getName(), true);    
     }
-    
+  
     @Test 
     public void testDisableAutoincrement() throws Exception {
         Table table = new Table("TEST_AUTOPK_DISABLE");
@@ -202,7 +204,7 @@ public class DatabasePlatformTest {
         }
         
     }
-
+    
     @Test
     public void testUpgradePrimaryKeyAutoIncrementFromIntToBigInt() throws Exception {
         boolean upgradeSupported = !platform.getName().equals(DatabaseNamesConstants.DERBY)
@@ -269,7 +271,7 @@ public class DatabasePlatformTest {
             return "test_upgrade_id";
         }
     }
-
+    
     @Test
     public void testCreateAndReadTestSimpleTable() throws Exception {
         Table table = platform.getTableFromCache(SIMPLE_TABLE, true);
@@ -286,7 +288,7 @@ public class DatabasePlatformTest {
                 .getColumnWithName("id").isAutoIncrement());
     }
     
-    
+  
     @Test
     public void testNvarcharType() {
         Table table = new Table("test_nvarchar");
@@ -294,5 +296,16 @@ public class DatabasePlatformTest {
         table.addColumn(new Column("note", false, ColumnTypes.NVARCHAR, 100, 0));
         platform.createTables(true, false, table);
     }
-
+    
+    @Test
+    public void getPermissionsTest() {
+    	List<PermissionResult> results = platform.checkSymTablePermissions(PermissionType.values());
+    	
+    	for (PermissionResult result : results) {
+    		System.out.println(result.toString());
+    		if (result.getException() != null) {
+    			System.out.println(result.getException().toString());
+    		}
+    	}
+    }
 }

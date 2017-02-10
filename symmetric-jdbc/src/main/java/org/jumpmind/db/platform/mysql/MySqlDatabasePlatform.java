@@ -24,6 +24,10 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -55,13 +59,13 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected MySqlDdlReader createDdlReader() {
         return new MySqlDdlReader(this);
-    }    
-    
+    }
+
     @Override
     protected MySqlJdbcSqlTemplate createSqlTemplate() {
         return new MySqlJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
     }
-    
+
     /*
      * According to the documentation (and experience) the jdbc driver for mysql
      * requires the fetch size to be as follows.
@@ -77,16 +81,55 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public String getName() {
         return DatabaseNamesConstants.MYSQL;
     }
-    
+
     public String getDefaultSchema() {
         return null;
     }
-    
-    public String getDefaultCatalog() {  
+
+    public String getDefaultCatalog() {
         if (StringUtils.isBlank(defaultCatalog)) {
             defaultCatalog = getSqlTemplate().queryForObject("select database()", String.class);
         }
         return defaultCatalog;
     }
 
+    @Override
+    public PermissionResult getCreateSymTriggerPermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
+                + " FOR EACH ROW INSERT INTO " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " VALUES(NULL,NULL)";
+
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+
+        try {
+            getSqlTemplate().update(triggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+        }
+
+        return result;
+    }
+
+    @Override
+    public PermissionResult getCreateSymRoutinePermission() {
+        String routineSql = "CREATE PROCEDURE TEST_PROC() BEGIN SELECT 1; END";
+        String dropSql = "DROP PROCEDURE IF EXISTS TEST_PROC";
+
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, Status.FAIL);
+
+        try {
+            getSqlTemplate().update(dropSql);
+            getSqlTemplate().update(routineSql);
+            result.setStatus(Status.PASS);
+            getSqlTemplate().update(dropSql);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE ROUTINE Privilege");
+        }
+        return result;
+    }
 }

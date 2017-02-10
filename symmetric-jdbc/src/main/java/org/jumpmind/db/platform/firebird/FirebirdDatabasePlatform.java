@@ -23,6 +23,10 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -71,4 +75,23 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return null;
     }
     
+    @Override
+	public PermissionResult getCreateSymTriggerPermission() {
+    	String delimiter = getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+        
+    	String triggerSql = "CREATE TRIGGER TEST_TRIGGER FOR " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " AFTER UPDATE AS BEGIN END";	
+
+       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+		
+		try {
+			getSqlTemplate().update(triggerSql);
+			result.setStatus(Status.PASS);
+		} catch (SqlException e) {
+			result.setException(e);
+			result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+		}
+		
+		return result;
+    }
 }
