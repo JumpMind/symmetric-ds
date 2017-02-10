@@ -57,10 +57,12 @@ import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
@@ -80,6 +82,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     /* The default name for models read from the database, if no name as given. */
     protected static final String MODEL_DEFAULT_NAME = "default";
+    
+    protected static final String PERMISSION_TEST_TABLE_NAME = "SYM_PERMISSION_TEST";
 
     /* The model reader for this platform. */
     protected IDdlReader ddlReader;
@@ -916,6 +920,159 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 }
             }
         }
+    }
+
+    public List<PermissionResult> checkSymTablePermissions(PermissionType... permissionTypes) {
+        List<PermissionResult> results = new ArrayList<PermissionResult>();
+        Database database = new Database();
+        PermissionResult createResult = getCreateSymTablePermission(database);
+        PermissionResult createTriggerResult = getCreateSymTriggerPermission();
+        PermissionResult dropTriggerResult = getDropSymTriggerPermission();
+        boolean drop = false;
+        for (PermissionType permissionType : permissionTypes) {
+            switch (permissionType) {
+                case CREATE_TABLE:
+                    results.add(createResult);
+                    break;
+                case ALTER_TABLE:
+                    PermissionResult alterResult = getAlterSymTablePermission(database);
+                    results.add(alterResult);
+                    break;
+                case CREATE_TRIGGER:
+                    results.add(createTriggerResult);
+                    break;
+                case DROP_TRIGGER:
+                    results.add(dropTriggerResult);
+                    break;
+                case EXECUTE:
+                    PermissionResult executeResult = getExecuteSymPermission();
+                    results.add(executeResult);
+                    break;
+                case DROP_TABLE:
+                    drop = true;
+                    break;
+                case CREATE_FUNCTION:
+                    PermissionResult createFunctionResult = getCreateSymFunctionPermission();
+                    results.add(createFunctionResult);
+                    break;
+                case CREATE_ROUTINE:
+                    PermissionResult createRoutineResult = getCreateSymRoutinePermission();
+                    results.add(createRoutineResult);
+                    break;
+            }
+        }
+        PermissionResult dropPermission = getDropSymTablePermission();
+        if (drop) {
+            results.add(dropPermission);
+        }
+        return results;
+    }
+
+    protected PermissionResult getCreateSymTablePermission(Database database) {
+        Column idColumn = new Column("TEST_ID");
+        idColumn.setMappedType("INTEGER");
+        Column valueColumn = new Column("TEST_VALUE");
+        valueColumn.setMappedType("INTEGER");
+
+        Table table = new Table(PERMISSION_TEST_TABLE_NAME, idColumn, valueColumn);
+
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, Status.FAIL);
+        getDropSymTablePermission();
+
+        try {
+            database.addTable(table);
+            createDatabase(database, false, false);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE permission");
+        }
+
+        return result;
+    }
+
+    protected PermissionResult getDropSymTablePermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+        String dropSql = "DROP TABLE " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter;
+
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, Status.FAIL);
+
+        try {
+            getSqlTemplate().update(dropSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant DROP permission");
+        }
+
+        return result;
+    }
+
+    protected PermissionResult getAlterSymTablePermission(Database database) {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+        Column idColumn = new Column("TEST_ID");
+        idColumn.setMappedType("INTEGER");
+        Column valueColumn = new Column("TEST_VALUE");
+        valueColumn.setMappedType("INTEGER");
+        Column alterColumn = new Column("TEST_ALTER");
+        alterColumn.setMappedType("INTEGER");
+
+        Table table = new Table(PERMISSION_TEST_TABLE_NAME, idColumn, valueColumn);
+        Table alterTable = new Table(PERMISSION_TEST_TABLE_NAME, idColumn, valueColumn, alterColumn);
+
+        PermissionResult result = new PermissionResult(PermissionType.ALTER_TABLE, Status.FAIL);
+
+        try {
+            database.removeAllTablesExcept();
+            database.addTable(alterTable);
+            alterDatabase(database, false);
+            database.removeAllTablesExcept();
+            database.addTable(table);
+            alterDatabase(database, false);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant ALTER permission");
+        }
+
+        return result;
+    }
+
+    protected PermissionResult getDropSymTriggerPermission() {
+        String dropTriggerSql = "DROP TRIGGER TEST_TRIGGER";
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, Status.FAIL);
+
+        try {
+            getSqlTemplate().update(dropTriggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant DROP TRIGGER permission or TRIGGER permission");
+        }
+
+        return result;
+    }
+
+    protected PermissionResult getCreateSymTriggerPermission() {
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.UNIMPLEMENTED);
+        return result;
+    }
+
+    protected PermissionResult getExecuteSymPermission() {
+        PermissionResult result = new PermissionResult(PermissionType.EXECUTE, Status.NOT_APPLICABLE);
+        return result;
+    }
+
+    protected PermissionResult getCreateSymRoutinePermission() {
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, Status.NOT_APPLICABLE);
+        return result;
+    }
+
+    protected PermissionResult getCreateSymFunctionPermission() {
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_FUNCTION, Status.NOT_APPLICABLE);
+        return result;
     }
 
 }

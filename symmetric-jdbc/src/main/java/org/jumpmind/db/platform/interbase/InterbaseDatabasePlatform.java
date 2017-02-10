@@ -23,13 +23,16 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * The platform implementation for the Interbase database.
  */
 public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
-    
+
     /* The interbase jdbc driver. */
     public static final String JDBC_DRIVER = "interbase.interclient.Driver";
 
@@ -51,8 +54,8 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected InterbaseDdlReader createDdlReader() {
         return new InterbaseDdlReader(this);
-    }    
-    
+    }
+
     @Override
     protected InterbaseJdbcSqlTemplate createSqlTemplate() {
         return new InterbaseJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
@@ -62,12 +65,18 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return DatabaseNamesConstants.INTERBASE;
     }
 
-    public String getDefaultCatalog() {     
+    public String getDefaultCatalog() {
+        return null;
+    }
+
+    public String getDefaultSchema() {
         return null;
     }
     
-    public String getDefaultSchema() {
-        return null;
+    @Override
+    public PermissionResult getDropSymTriggerPermission() {     
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, Status.UNIMPLEMENTED);
+        return result;
     }
     
 }

@@ -27,6 +27,10 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -48,15 +52,15 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
-    protected IDdlBuilder createDdlBuilder() {      
-       return new MsSql2000DdlBuilder(getName());    
+    protected IDdlBuilder createDdlBuilder() {
+        return new MsSql2000DdlBuilder(getName());
     }
 
     @Override
     protected MsSqlDdlReader createDdlReader() {
         return new MsSqlDdlReader(this);
-    }    
-    
+    }
+
     @Override
     protected MsSqlJdbcSqlTemplate createSqlTemplate() {
         return new MsSqlJdbcSqlTemplate(dataSource, settings, getDatabaseInfo());
@@ -68,16 +72,14 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     public String getDefaultCatalog() {
         if (StringUtils.isBlank(defaultCatalog)) {
-            defaultCatalog = (String) getSqlTemplate().queryForObject("select DB_NAME()",
-                    String.class);
+            defaultCatalog = (String) getSqlTemplate().queryForObject("select DB_NAME()", String.class);
         }
         return defaultCatalog;
     }
 
     public String getDefaultSchema() {
         if (StringUtils.isBlank(defaultSchema)) {
-            defaultSchema = (String) getSqlTemplate().queryForObject("select current_user",
-                    String.class);
+            defaultSchema = (String) getSqlTemplate().queryForObject("select current_user", String.class);
         }
         return defaultSchema;
     }
@@ -98,6 +100,46 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected Object parseFloat(String value) {
         return cleanNumber(value).replace(',', '.');
     }
+
+    @Override
+    public PermissionResult getCreateSymTriggerPermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
+                + " AFTER UPDATE AS SELECT 1 GO";
+
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+
+        try {
+            getSqlTemplate().update(triggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+        }
+
+        return result;
+    }
+
+    @Override
+    public PermissionResult getCreateSymFunctionPermission() {
+        String routineSql = "CREATE FUNCTION TEST_FUNC() RETURNS INTEGER BEGIN RETURN 1; END";
+        String dropSql = "IF OBJECT_ID('TEST_FUNC') IS NOT NULL DROP FUNCTION TEST_FUNC";
+
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_FUNCTION, Status.FAIL);
+
+        try {
+            getSqlTemplate().update(dropSql);
+            getSqlTemplate().update(routineSql);
+            result.setStatus(Status.PASS);
+            getSqlTemplate().update(dropSql);
+        } catch (SqlException e) {
+            result.setException(e);
+            if (result.getSolution() != null) {
+                result.setSolution("Grant CREATE FUNCTION Privilege");
+            }
+        }
+        return result;
+    }
 }
-
-

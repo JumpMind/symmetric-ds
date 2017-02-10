@@ -29,6 +29,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -240,5 +241,7 @@ public interface ISymmetricDialect {
     public IParameterService getParameterService();
     
     public void setExtensionService(IExtensionService extensionService);
+    
+    public PermissionType[] getSymTablePermissions();
     
 }
