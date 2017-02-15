@@ -32,6 +32,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -193,6 +197,61 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
             }
         }
         return objectValues;
+    }
+    
+    @Override
+   	public PermissionResult getCreateSymTriggerPermission() {
+       	String delimiter = getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+           
+       	String triggerSql = "CREATE OR REPLACE FUNCTION TEST_TRIGGER() RETURNS trigger AS $$ BEGIN END $$ LANGUAGE plpgsql";
+
+       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+   		
+   		try {
+   			getSqlTemplate().update(triggerSql);
+   			result.setStatus(Status.PASS);
+   		} catch (SqlException e) {
+   			result.setException(e);
+   			result.setSolution("Grant CREATE TRIGGER permission and/or DROP TRIGGER permission");
+   		}
+   		
+   		return result;
+    }
+    
+    @Override
+   	public PermissionResult getDropSymTriggerPermission() {
+       	String dropTriggerSql = "DROP FUNCTION TEST_TRIGGER()";
+
+       	PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, PermissionResult.Status.FAIL);
+   		
+   		try {
+   			getSqlTemplate().update(dropTriggerSql);
+   			result.setStatus(PermissionResult.Status.PASS);
+   		} catch (SqlException e) {
+   			result.setException(e);
+   		}
+   		
+   		return result;
+    }
+    
+    @Override
+    protected PermissionResult getDropSymTablePermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+        String dropSql = "drop table " + PERMISSION_TEST_TABLE_NAME;
+
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, Status.FAIL);
+
+        try {
+            getSqlTemplate().update(dropSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant DROP permission");
+        }
+
+        return result;
     }
     
 }

@@ -32,6 +32,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -417,4 +418,9 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         return "$(anyNonBlobColumnChanged)";
     }
 
+    @Override
+    public PermissionType[] getSymTablePermissions() {
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER, PermissionType.CREATE_FUNCTION};
+        return permissions;
+    }
 }

@@ -30,6 +30,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
@@ -37,16 +41,16 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     public static final String JDBC_DRIVER = "com.informix.jdbc.IfxDriver";
 
     public static final String JDBC_SUBPROTOCOL = "informix-sqli";
-    
+
     private Map<String, String> sqlScriptReplacementTokens;
 
     public InformixDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-        
+
         sqlScriptReplacementTokens = new HashMap<String, String>();
         sqlScriptReplacementTokens.put("current_timestamp", "current");
     }
-    
+
     @Override
     protected InformixDdlBuilder createDdlBuilder() {
         return new InformixDdlBuilder();
@@ -55,8 +59,8 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     @Override
     protected InformixDdlReader createDdlReader() {
         return new InformixDdlReader(this);
-    }    
-    
+    }
+
     @Override
     protected InformixJdbcSqlTemplate createSqlTemplate() {
         return new InformixJdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
@@ -65,7 +69,6 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     public String getName() {
         return DatabaseNamesConstants.INFORMIX;
     }
-    
 
     public String getDefaultCatalog() {
         return null;
@@ -73,20 +76,39 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
 
     public String getDefaultSchema() {
         if (StringUtils.isBlank(defaultSchema)) {
-            defaultSchema = getSqlTemplate().queryForObject("select trim(user) from sysmaster:sysdual",
-                    String.class);
+            defaultSchema = getSqlTemplate().queryForObject("select trim(user) from sysmaster:sysdual", String.class);
         }
         return defaultSchema;
     }
-        
+
     @Override
     public Map<String, String> getSqlScriptReplacementTokens() {
         return sqlScriptReplacementTokens;
     }
-    
+
     @Override
     public boolean isClob(int type) {
         return type == Types.CLOB;
     }
-    
+
+    @Override
+    public PermissionResult getCreateSymTriggerPermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER DELETE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
+                + " FOR EACH ROW(DELETE FROM " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " WHERE TEST_ID IS NULL)";
+
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+
+        try {
+            getSqlTemplate().update(triggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+        }
+
+        return result;
+    }
 }

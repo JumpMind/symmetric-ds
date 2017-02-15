@@ -913,7 +913,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             Callable<IncomingBatch> loadBatchFromStage = new Callable<IncomingBatch>() {
                 public IncomingBatch call() throws Exception {
                     IncomingBatch incomingBatch = null;
-                    if (!isError) {
+                    if (!isError && resource != null && resource.exists()) {
                         try {
                             processInfo.setStatus(ProcessInfo.Status.LOADING);
                             
@@ -949,6 +949,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             }
                             resource.setState(State.DONE);
                         }
+                    } else {
+                        log.info("The batch {} was missing in staging.  Setting status to resend", batch.getNodeBatchId());
+                        incomingBatch = new IncomingBatch(batch);
+                        incomingBatch.setStatus(Status.RS);
+                        incomingBatchService.updateIncomingBatch(incomingBatch);
                     }
                     return incomingBatch;
                 }

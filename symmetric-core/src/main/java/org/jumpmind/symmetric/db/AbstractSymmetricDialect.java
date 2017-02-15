@@ -38,6 +38,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlResultsListener;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -814,5 +815,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     
     public void setExtensionService(IExtensionService extensionService) {
         this.extensionService = extensionService;
+    }
+    
+    public PermissionType[] getSymTablePermissions() {
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER };
+        return permissions;
     }
 }
