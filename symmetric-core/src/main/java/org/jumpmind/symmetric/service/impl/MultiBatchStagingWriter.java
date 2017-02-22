@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -227,6 +228,10 @@ public class MultiBatchStagingWriter implements IDataWriter {
         this.currentDataWriter.start(batch);
         processInfo.incrementBatchCount();
         
+        if (table == null) {
+            throw new SymmetricException("'table' cannot null while starting new batch.  Batch: " + 
+                    outgoingBatch + ". Check trigger/router configs.");
+        }
         this.currentDataWriter.start(table);
     }
 
