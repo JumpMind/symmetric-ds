@@ -1618,6 +1618,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     reloadSource.close();
                     reloadSource = null;
                 }
+                lastTriggerHistory = null;
             }
 
             if (data == null) {
