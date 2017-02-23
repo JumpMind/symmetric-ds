@@ -86,8 +86,7 @@ public class JobManager implements IJobManager {
     }
     
     /*
-     * Start the jobs if they are configured to be started in
-     * symmetric.properties
+     * Start the jobs if they are configured to be started
      */
     @Override
     public synchronized void startJobs() {

@@ -265,10 +265,6 @@ project(':symmetric-server') {
                     include 'bin/setenv'
                     fileMode 0755
                 }
-                from('../symmetric-core/src/main/resources/symmetric-default.properties') {
-                    rename 'symmetric-default.properties', 'conf/symmetric.properties'
-                    fileMode 0664
-                }
                 into('doc') { from ("$symAssembleDir/target/doc") }
                 into('lib') {
                     from project(":symmetric-wrapper").configurations.compile {

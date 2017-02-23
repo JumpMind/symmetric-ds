@@ -59,15 +59,6 @@
                     </row>
                     <row>
                         <entry>
-                            <emphasis>conf/symmetric.properties</emphasis>
-                        </entry>
-                        <entry>N</entry>
-                        <entry> Changes to this file in the conf directory of a standalone install apply to all engines in
-                            the JVM.
-                        </entry>
-                    </row>
-                    <row>
-                        <entry>
                             <emphasis>symmetric-override.properties</emphasis>
                         </entry>
                         <entry>N</entry>

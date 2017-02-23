@@ -53,7 +53,7 @@ public interface ISymmetricDialect {
 
     /*
      * Get the name of this symmetric instance. This can be set in
-     * symmetric.properties using the symmetric.runtime.engine.name property.
+     * symmetric.properties using the engine.name property.
      */
     public String getEngineName();
 
