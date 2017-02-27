@@ -128,7 +128,6 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
-import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
 
@@ -295,8 +294,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                              * redirect for the ack
                              */
                             String url = transport.getRedirectionUrl();
-                            url = url.replace(HttpTransportManager.buildRegistrationUrl("", local),
-                                    "");
+                            int index = url.indexOf("/registration?");
+                            if (index >= 0) {
+                                url = url.substring(0, index);
+                            }
+                            log.info("Setting the sync url for ack to: {}", url);
                             remote.setSyncUrl(url);
                         }
                         sendAck(remote, local, localSecurity, list, transportManager);
