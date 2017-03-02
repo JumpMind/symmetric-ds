@@ -27,14 +27,14 @@ public interface ISequenceService {
 
     public long nextVal(String name);
 
-    public long nextVal(ISqlTransaction transaction, String name);
-
     public long currVal(String name);
-
-    public long currVal(ISqlTransaction transaction, String name);
 
     public void create(Sequence sequence);
     
     public void init();
     
+    @Deprecated
+    public long currVal(ISqlTransaction transaction, String name);
+    @Deprecated
+    public long nextVal(ISqlTransaction transaction, String name);
 }

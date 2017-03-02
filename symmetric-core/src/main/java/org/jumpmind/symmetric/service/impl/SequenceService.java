@@ -86,19 +86,17 @@ public class SequenceService extends AbstractService implements ISequenceService
 
     public synchronized long nextVal(String name) {
         if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && getSequenceDefinition(name).getCacheSize() > 0) {
-            return nextValFromCache(null, name);
+            return nextValFromCache(name);
         }
         return nextValFromDatabase(name);
     }
 
+    @Deprecated
     public synchronized long nextVal(ISqlTransaction transaction, String name) {
-        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && getSequenceDefinition(transaction, name).getCacheSize() > 0) {
-            return nextValFromCache(transaction, name);
-        }
-        return nextValFromDatabase(transaction, name);
+        return nextVal(name);
     }
 
-    protected long nextValFromCache(ISqlTransaction transaction, String name) {
+    protected long nextValFromCache(String name) {
         CachedRange range = sequenceCache.get(name);
         if (range != null) {
             long currentValue = range.getCurrentValue();
@@ -109,7 +107,7 @@ public class SequenceService extends AbstractService implements ISequenceService
                 sequenceCache.remove(name);
             }
         }
-        return nextValFromDatabase(transaction, name);
+        return nextValFromDatabase(name);
     }
     
     protected long nextValFromDatabase(final String name) {
@@ -122,7 +120,8 @@ public class SequenceService extends AbstractService implements ISequenceService
 
     protected long nextValFromDatabase(ISqlTransaction transaction, String name) {
         if (transaction == null) {
-            return nextValFromDatabase(name);
+            long v= nextValFromDatabase(name);
+            return v;
         } else {
             long sequenceTimeoutInMs = parameterService.getLong(
                     ParameterConstants.SEQUENCE_TIMEOUT_MS, 5000);
@@ -149,16 +148,16 @@ public class SequenceService extends AbstractService implements ISequenceService
                 nextVal = sequence.getMinValue();
             } else {
                 throw new IllegalStateException(String.format(
-                        "The sequence named %s has reached it's max value.  "
-                                + "No more numbers can be handled out.", name));
+                        "The sequence named %s has reached its max value. (%d) "
+                                + "No more numbers can be handed out.", sequence.getMaxValue()));
             }
         } else if (nextVal < sequence.getMinValue()) {
             if (sequence.isCycle()) {
                 nextVal = sequence.getMaxValue();
             } else {
                 throw new IllegalStateException(String.format(
-                        "The sequence named %s has reached it's min value.  "
-                                + "No more numbers can be handled out.", name));
+                        "The sequence named %s has reached its min value. (%d) "
+                                + "No more numbers can be handed out.", name, sequence.getMinValue()));
             }
         }
 
@@ -208,14 +207,9 @@ public class SequenceService extends AbstractService implements ISequenceService
         return sequence;
     }
 
+    @Deprecated
     public synchronized long currVal(ISqlTransaction transaction, String name) {
-        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
-            CachedRange range = sequenceCache.get(name);
-            if (range != null) {
-                return range.getCurrentValue();
-            }
-        }
-        return transaction.queryForLong(getSql("getCurrentValueSql"), name);
+        return currVal(name);
     }
 
     public synchronized long currVal(final String name) {
@@ -228,7 +222,7 @@ public class SequenceService extends AbstractService implements ISequenceService
 
         return new DoTransaction<Long>() {
             public Long execute(ISqlTransaction transaction) {
-                return currVal(transaction, name);    
+                return transaction.queryForLong(getSql("getCurrentValueSql"), name);    
             }            
         }.execute();
     }

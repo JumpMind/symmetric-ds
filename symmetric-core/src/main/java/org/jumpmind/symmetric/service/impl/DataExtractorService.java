@@ -1358,7 +1358,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String queue,
             TriggerRouter triggerRouter, long startBatchId, long endBatchId) {
-        long requestId = sequenceService.nextVal(transaction, Constants.SEQUENCE_EXTRACT_REQ);
+        long requestId = sequenceService.nextVal(Constants.SEQUENCE_EXTRACT_REQ);
         transaction.prepareAndExecute(getSql("insertExtractRequestSql"),
                 new Object[] { requestId, nodeId, queue, ExtractStatus.NE.name(), startBatchId,
                         endBatchId, triggerRouter.getTrigger().getTriggerId(),
