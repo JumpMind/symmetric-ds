@@ -68,28 +68,13 @@ public class StagedResource implements IStagedResource {
     private BufferedWriter writer;
     
     private StagingManager stagingManager;
-
-    public StagedResource(File directory, File file, StagingManager stagingManager) {
-        this.directory = directory;
-        this.stagingManager = stagingManager;
-        this.path = toPath(directory, file);
-        if (file.exists()) {            
-            lastUpdateTime = file.lastModified();
-            String fileName = file.getName();
-            String extension = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
-            this.state = State.valueOf(extension.toUpperCase());
-            this.file = file;
-        } else {
-            throw new IllegalStateException(String.format("The passed in file, %s, does not exist",
-                    file.getAbsolutePath()));
-        }
-    }
     
     public StagedResource(File directory, String path, StagingManager stagingManager) {
         this.directory = directory;
         this.path = path;
         this.stagingManager = stagingManager;
-        lastUpdateTime = System.currentTimeMillis();        
+        lastUpdateTime = System.currentTimeMillis();   
+        
         if (buildFile(State.READY).exists()) {
             this.state = State.READY;
         } else if (buildFile(State.DONE).exists()){
@@ -98,6 +83,9 @@ public class StagedResource implements IStagedResource {
             this.state = State.CREATE;       
         }
         this.file = buildFile(state);
+        if (file.exists()) {
+            lastUpdateTime = file.lastModified();
+        }
     }    
     
     protected static String toPath(File directory, File file) {
