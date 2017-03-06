@@ -106,6 +106,7 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.ExtractRequest.ExtractStatus;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeCommunication;
@@ -1377,6 +1378,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * in the background.
      */
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
+        if (!isApplicable(nodeCommunication, status)) {
+            log.debug("{} failed isApplicable check and will not run.", this);
+            return;
+        }
+        
         List<ExtractRequest> requests = getExtractRequestsForNode(nodeCommunication);
         long ts = System.currentTimeMillis();
         /*
@@ -1507,6 +1513,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 throw ex;
             }
         }
+    }
+    
+    protected boolean isApplicable(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
+        return nodeCommunication.getCommunicationType() != CommunicationType.FILE_XTRCT;
     }
 
     protected ProcessType getProcessType() {
