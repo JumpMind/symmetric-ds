@@ -266,7 +266,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                     isInitialLoadQueued = true;
                                     ts = System.currentTimeMillis() - ts;
                                     if (ts > Constants.LONG_OPERATION_THRESHOLD) {
-                                        log.warn("Inserted reload events for node {} in {} ms",
+                                        log.warn("Inserted reload events for node {} took longer than expected.  It took {} ms",
                                                 security.getNodeId(), ts);
                                     } else {
                                         log.info("Inserted reload events for node {} in {} ms",
