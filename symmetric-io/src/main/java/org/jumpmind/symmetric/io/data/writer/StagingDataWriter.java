@@ -94,7 +94,7 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
     protected void endBatch(Batch batch) {
         IStagedResource resource = getStagedResource(batch);
         resource.close();
-        resource.setState(State.READY);
+        resource.setState(State.DONE);
         flushNodeId = true;
         processedTables.clear();
         table = null;        

@@ -75,9 +75,7 @@ public class StagedResource implements IStagedResource {
         this.stagingManager = stagingManager;
         lastUpdateTime = System.currentTimeMillis();   
         
-        if (buildFile(State.READY).exists()) {
-            this.state = State.READY;
-        } else if (buildFile(State.DONE).exists()){
+        if (buildFile(State.DONE).exists()){
             this.state = State.DONE;
         } else {
             this.state = State.CREATE;       

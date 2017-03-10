@@ -1017,7 +1017,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     extractedBatch.close();
                                     targetResource.close();
                                 }
-                                targetResource.setState(State.READY);
+                                targetResource.setState(State.DONE);
                                 isRetry = true;
                             } catch (Exception e) {
                                 throw new RuntimeException(e);

@@ -64,7 +64,7 @@ public class StagingManager implements IStagingManager {
     protected void refreshResourceList() {
         synchronized (StagingManager.class) {
             Collection<File> files = FileUtils.listFiles(this.directory,
-                    new String[] { State.CREATE.getExtensionName(), State.READY.getExtensionName(),
+                    new String[] { State.CREATE.getExtensionName(), State.DONE.getExtensionName(),
                             State.DONE.getExtensionName() }, true);
             for (File file : files) {
                 try {
@@ -100,10 +100,7 @@ public class StagingManager implements IStagingManager {
                 if (resource != null) {
                     boolean resourceIsOld = (System.currentTimeMillis() - resource
                             .getLastUpdateTime()) > ttlInMs;
-                    if ((resource.getState() == State.DONE ||
-                            (resource.getState() == State.READY && resource.getPath().contains("/common/")) ||
-                            (resource.getState() == State.READY && ttlInMs == 0)) 
-                            && resourceIsOld) {
+                    if (resource.getState() == State.DONE && resourceIsOld) {
                         if (!resource.isInUse()) {
                             boolean file = resource.isFileResource();
                             long size = resource.getSize();

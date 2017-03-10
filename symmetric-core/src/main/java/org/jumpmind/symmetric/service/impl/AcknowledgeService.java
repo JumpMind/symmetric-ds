@@ -131,15 +131,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     }
                 } else if (status == Status.RS) {
                     log.info("The outgoing batch {} received resend request", outgoingBatch.getNodeBatchId());
-                } else if (!outgoingBatch.isCommonFlag()) {
-                    IStagedResource stagingResource = stagingManager.find(
-                            Constants.STAGING_CATEGORY_OUTGOING, outgoingBatch.getNodeId(),
-                            outgoingBatch.getBatchId());
-                    if (stagingResource != null) {
-                        stagingResource.setState(State.DONE);
-                    }
                 }
-
+                
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
                 if (status == Status.OK) {
                     Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());

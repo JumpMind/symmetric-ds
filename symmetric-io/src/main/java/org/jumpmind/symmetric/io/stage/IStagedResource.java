@@ -29,7 +29,7 @@ import java.io.OutputStream;
 public interface IStagedResource {
 
     public enum State {
-        CREATE, READY, DONE;
+        CREATE, DONE;
 
         public String getExtensionName() {
             return name().toLowerCase();
