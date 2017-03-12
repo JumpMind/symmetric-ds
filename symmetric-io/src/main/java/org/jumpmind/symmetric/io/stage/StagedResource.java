@@ -148,10 +148,6 @@ public class StagedResource implements IStagedResource {
             }
         } 
         
-        if (memoryBuffer != null && state == State.DONE) {
-            this.memoryBuffer.setLength(0);
-            this.memoryBuffer = null;
-        }
         refreshLastUpdateTime();
         this.state = state;
         this.file = buildFile(state);
