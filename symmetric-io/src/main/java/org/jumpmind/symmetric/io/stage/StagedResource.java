@@ -235,9 +235,6 @@ public class StagedResource implements IStagedResource {
             stagingManager.inUse.remove(path);
         }
         
-        if (!isFileResource && this.state == State.DONE) {
-            stagingManager.resourcePaths.remove(path);
-        }
     }
     
     public OutputStream getOutputStream() {
