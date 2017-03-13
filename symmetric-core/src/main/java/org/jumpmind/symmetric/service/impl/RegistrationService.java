@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.UnknownHostException;
 import java.sql.Types;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,6 +43,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
@@ -558,10 +560,16 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 password = filterPasswordOnSaveIfNeeded(password);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, masterToMasterOnly ? null : me.getNodeId() });
+                NodeHost nodeHost = new NodeHost(node.getNodeId());
+                nodeHost.setHeartbeatTime(new Date());
+                nodeHost.setIpAddress(remoteAddress);
+                nodeHost.setHostName(remoteHost);
+                nodeService.updateNodeHost(nodeHost);
                 nodeService.flushNodeAuthorizedCache();
                 nodeService.flushNodeCache();
                 nodeService.insertNodeGroup(node.getNodeGroupId(), null);
                 nodeService.flushNodeGroupCache();
+                
                 log.info(
                         "Just opened registration for external id of {} and a node group of {} and a node id of {}",
                         new Object[] { node.getExternalId(), node.getNodeGroupId(), nodeId });
