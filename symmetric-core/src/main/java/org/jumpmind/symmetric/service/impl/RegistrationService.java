@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
@@ -560,11 +562,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 password = filterPasswordOnSaveIfNeeded(password);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, masterToMasterOnly ? null : me.getNodeId() });
-                NodeHost nodeHost = new NodeHost(node.getNodeId());
-                nodeHost.setHeartbeatTime(new Date());
-                nodeHost.setIpAddress(remoteAddress);
-                nodeHost.setHostName(remoteHost);
-                nodeService.updateNodeHost(nodeHost);
+                
+                if (isNotBlank(remoteHost)) {
+                    NodeHost nodeHost = new NodeHost(node.getNodeId());
+                    nodeHost.setHeartbeatTime(new Date());
+                    nodeHost.setIpAddress(remoteAddress);
+                    nodeHost.setHostName(remoteHost);
+                    nodeService.updateNodeHost(nodeHost);
+                }
                 nodeService.flushNodeAuthorizedCache();
                 nodeService.flushNodeCache();
                 nodeService.insertNodeGroup(node.getNodeGroupId(), null);
