@@ -607,6 +607,18 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         }
         return false;
     }
+    
+    public boolean hasNTypeColumns() {
+        for (Iterator< Column>it = columns.iterator(); it.hasNext();) {
+            Column column = (Column) it.next();
+            if (column.getJdbcTypeCode() == ColumnTypes.NCHAR || column.getJdbcTypeCode() == ColumnTypes.NVARCHAR
+                    || column.getJdbcTypeCode() == ColumnTypes.LONGNVARCHAR || column.getJdbcTypeCode() == ColumnTypes.NCLOB) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Finds the column with the specified name, using case insensitive
