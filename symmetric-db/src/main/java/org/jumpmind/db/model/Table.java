@@ -612,13 +612,13 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         for (Iterator< Column>it = columns.iterator(); it.hasNext();) {
             Column column = (Column) it.next();
             if (column.getJdbcTypeCode() == ColumnTypes.NCHAR || column.getJdbcTypeCode() == ColumnTypes.NVARCHAR
-                    || column.getJdbcTypeCode() == ColumnTypes.LONGNVARCHAR || column.getJdbcTypeCode() == ColumnTypes.NCLOB) {
+                    || column.getJdbcTypeCode() == ColumnTypes.LONGNVARCHAR || column.getJdbcTypeCode() == ColumnTypes.NCLOB
+                    || column.getJdbcTypeName().startsWith("NVARCHAR") || column.getJdbcTypeName().startsWith("NCHAR")) {
                 return true;
             }
         }
         return false;
     }
-
 
     /**
      * Finds the column with the specified name, using case insensitive
