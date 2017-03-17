@@ -61,6 +61,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.ext.INodeRegistrationListener;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
@@ -273,6 +274,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 transport = transportManager.getRegisterTransport(local,
                         parameterService.getRegistrationUrl());
                 log.info("Using registration URL of {}", transport.getUrl());
+                
+                List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationUrlUpdated(transport.getUrl());
+                }
+                
                 remote = new Node();
                 remote.setSyncUrl(parameterService.getRegistrationUrl());
                 isRegisterTransport = true;
