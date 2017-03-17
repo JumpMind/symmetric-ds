@@ -90,6 +90,7 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
+        Integer type = (Integer) values.get("DATA_TYPE");
         if ("YEAR".equals(typeName)) {
             // it is safe to map a YEAR to INTEGER
             return Types.INTEGER;
@@ -110,6 +111,8 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
                 return isBinary ? Types.BLOB : Types.LONGVARCHAR;
             }
             return super.mapUnknownJdbcTypeForColumn(values);
+        } else if (type != null && type == Types.OTHER) {
+            return Types.LONGVARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
