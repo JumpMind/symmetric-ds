@@ -239,7 +239,7 @@ abstract public class AbstractTriggerTemplate {
         sql = replaceDefaultSchemaAndCatalog(sql);
         sql = FormatUtils.replace("prefixName", symmetricDialect.getTablePrefix(), sql);
         sql = FormatUtils.replace("oracleToClob",
-                triggerRouter.getTrigger().isUseCaptureLobs() ? "to_clob('')||" : "", sql);
+                triggerRouter.getTrigger().isUseCaptureLobs() ? toClobExpression(table) : "", sql);
 
         return sql;
     }
@@ -301,7 +301,7 @@ abstract public class AbstractTriggerTemplate {
                 false, channel, trigger).columnString;
         sql = FormatUtils.replace("columns", columnsText, sql);
         sql = FormatUtils.replace("oracleToClob",
-                trigger.isUseCaptureLobs() ? "to_clob('')||" : "", sql);
+                trigger.isUseCaptureLobs() ? toClobExpression(table) : "", sql);
 
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName",
@@ -330,7 +330,7 @@ abstract public class AbstractTriggerTemplate {
                 false, channel, trigger).toString();
         sql = FormatUtils.replace("columns", columnsText, sql);
         sql = FormatUtils.replace("oracleToClob",
-                trigger.isUseCaptureLobs() ? "to_clob('')||" : "", sql);
+                trigger.isUseCaptureLobs() ? toClobExpression(table) : "", sql);
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
         sql = FormatUtils.replace("schemaName",
                 triggerHistory == null ? getSourceTablePrefix(table)
@@ -531,7 +531,7 @@ abstract public class AbstractTriggerTemplate {
         ddl = replaceDefaultSchemaAndCatalog(ddl);
 
         ddl = FormatUtils.replace("oracleToClob",
-                trigger.isUseCaptureLobs() ? "to_clob('')||" : "", ddl);
+                trigger.isUseCaptureLobs() ? toClobExpression(table) : "", ddl);
 
         switch (dml) {
             case DELETE:
@@ -546,6 +546,14 @@ abstract public class AbstractTriggerTemplate {
                 break;
         }
         return ddl;
+    }
+    
+    protected String toClobExpression(Table table) {
+        if (table.hasNTypeColumns()) {
+            return "to_nclob('')||";
+        } else {
+            return "to_clob('')||";
+        }
     }
     
     protected String getChannelExpression(Trigger trigger) {
