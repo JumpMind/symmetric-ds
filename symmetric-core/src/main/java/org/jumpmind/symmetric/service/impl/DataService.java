@@ -1116,17 +1116,6 @@ public class DataService extends AbstractService implements IDataService {
         return sqlTemplate.queryForInt(getSql("countDataInRangeSql"), firstDataId, secondDataId);
     }
 
-    public void checkForAndUpdateMissingChannelIds(long firstDataId, long lastDataId) {
-        int numberUpdated = sqlTemplate.update(getSql("checkForAndUpdateMissingChannelIdSql"),
-                Constants.CHANNEL_DEFAULT, firstDataId, lastDataId);
-        if (numberUpdated > 0) {
-            log.warn(
-                    "There were {} data records found between {} and {} that have an invalid channel_id.  Updating them to be on the '{}' channel.",
-                    new Object[] { numberUpdated, firstDataId, lastDataId,
-                            Constants.CHANNEL_DEFAULT });
-        }
-    }
-
     public void insertCreateEvent(final Node targetNode, TriggerHistory triggerHistory, String routerId,
             boolean isLoad, long loadId, String createBy) {
         ISqlTransaction transaction = null;
