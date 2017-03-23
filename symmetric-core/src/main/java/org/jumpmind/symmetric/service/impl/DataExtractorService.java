@@ -769,9 +769,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         if (mode != ExtractMode.EXTRACT_ONLY) {
             long batchStatusUpdateMillis = parameterService.getLong(ParameterConstants.OUTGOING_BATCH_UPDATE_STATUS_MILLIS);
-            if (currentBatch.getStatus() == Status.RQ || currentBatch.getStatus() == Status.LD ||
+            int batchStatusUpdateDataCount = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_UPDATE_STATUS_DATA_COUNT);
+            Channel channel = configurationService.getChannel(currentBatch.getChannelId());
+            
+            if (currentBatch.getStatus() == Status.RQ || 
+                    currentBatch.getStatus() == Status.LD ||
                     currentBatch.getLastUpdatedTime() == null ||
-                    System.currentTimeMillis() - batchStatusUpdateMillis >= currentBatch.getLastUpdatedTime().getTime()) {
+                    System.currentTimeMillis() - batchStatusUpdateMillis >= currentBatch.getLastUpdatedTime().getTime() ||
+                    channel.isReloadFlag() || 
+                    currentBatch.getDataEventCount() > batchStatusUpdateDataCount) {
                 outgoingBatchService.updateOutgoingBatch(currentBatch);
                 return true;
             }
