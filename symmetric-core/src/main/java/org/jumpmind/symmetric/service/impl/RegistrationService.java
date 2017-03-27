@@ -555,6 +555,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
      * @see IRegistrationService#reOpenRegistration(String)
      */
     public synchronized void reOpenRegistration(String nodeId) {
+        reOpenRegistration(nodeId, null, null);
+    }
+    
+    protected synchronized void reOpenRegistration(String nodeId, String remoteHost, String remoteAddress) {
         Node node = nodeService.findNode(nodeId);
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
         String password = null;
@@ -572,13 +576,22 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 // node table, but not in node security.
                 // lets go ahead and try to insert into node security.
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
-                        nodeId, password, nodeService.findNode(nodeId).getNodeId() });
+                        nodeId, password, nodeService.findNode(nodeId).getNodeId() });                
                 log.info("Registration was opened for {}", nodeId);
             } else if (updateCount == 0) {
                 log.warn("Registration was already enabled for {}.  No need to reenable it", nodeId);
             } else {
                 log.info("Registration was reopened for {}", nodeId);
             }
+            
+            if (isNotBlank(remoteHost)) {
+                NodeHost nodeHost = new NodeHost(node.getNodeId());
+                nodeHost.setHeartbeatTime(new Date());
+                nodeHost.setIpAddress(remoteAddress);
+                nodeHost.setHostName(remoteHost);
+                nodeService.updateNodeHost(nodeHost);
+            }
+            
             nodeService.flushNodeAuthorizedCache();
         } else {
             log.warn("There was no row with a node id of {} to 'reopen' registration for", nodeId);
@@ -644,7 +657,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         "Just opened registration for external id of {} and a node group of {} and a node id of {}",
                         new Object[] { node.getExternalId(), node.getNodeGroupId(), nodeId });
             } else {
-                reOpenRegistration(nodeId);
+                reOpenRegistration(nodeId, remoteHost, remoteAddress);
             }
             return nodeId;
         } else {
