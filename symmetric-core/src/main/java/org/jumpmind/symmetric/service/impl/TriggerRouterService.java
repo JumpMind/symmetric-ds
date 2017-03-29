@@ -1260,12 +1260,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return null;
     }
+    
+    private int getNumberOfThreadsToUseForSyncTriggers() {
+        int numThreads = parameterService.getInt(ParameterConstants.SYNC_TRIGGERS_THREAD_COUNT_PER_SERVER);
+        if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS, false)) {
+            numThreads = 1;
+        }
+        return numThreads;        
+    }
 
     protected void inactivateTriggers(final List<Trigger> triggersThatShouldBeActive,
             final StringBuilder sqlBuffer, List<TriggerHistory> activeTriggerHistories) {
         final boolean ignoreCase = this.parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE);
         final Map<String, Set<Table>> tablesByTriggerId = new HashMap<String, Set<Table>>();
-        int numThreads = parameterService.getInt(ParameterConstants.SYNC_TRIGGERS_THREAD_COUNT_PER_SERVER);
+        int numThreads = getNumberOfThreadsToUseForSyncTriggers();
         ExecutorService executor = Executors.newFixedThreadPool(numThreads, new SyncTriggersThreadFactory());
         List<Future<?>> futures = new ArrayList<Future<?>>();
 
@@ -1507,7 +1515,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected void updateOrCreateDatabaseTriggers(final List<Trigger> triggers, final StringBuilder sqlBuffer,
             final boolean force, final boolean verifyInDatabase, final List<TriggerHistory> activeTriggerHistories, 
             final boolean useTableCache) {
-        int numThreads = parameterService.getInt(ParameterConstants.SYNC_TRIGGERS_THREAD_COUNT_PER_SERVER);
+        int numThreads = getNumberOfThreadsToUseForSyncTriggers();
         ExecutorService executor = Executors.newFixedThreadPool(numThreads, new SyncTriggersThreadFactory());
         List<Future<?>> futures = new ArrayList<Future<?>>();
 
