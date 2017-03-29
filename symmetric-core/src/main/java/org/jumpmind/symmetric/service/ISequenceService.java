@@ -33,8 +33,8 @@ public interface ISequenceService {
     
     public void init();
     
-    @Deprecated
     public long currVal(ISqlTransaction transaction, String name);
-    @Deprecated
+    
     public long nextVal(ISqlTransaction transaction, String name);
+    
 }

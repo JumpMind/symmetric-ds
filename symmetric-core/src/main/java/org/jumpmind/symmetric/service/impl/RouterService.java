@@ -1004,7 +1004,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (dataMetaData.getData().getDataEventType() == DataEventType.RELOAD) {
                     long loadId = context.getLastLoadId();
                     if (loadId < 0) {
-                        loadId = engine.getSequenceService().nextVal(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                        loadId = engine.getSequenceService().nextVal(context.getSqlTransaction(), Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
                         context.setLastLoadId(loadId);
                     }
                     batch.setLoadId(loadId);
