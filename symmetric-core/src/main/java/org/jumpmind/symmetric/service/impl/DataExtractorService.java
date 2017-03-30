@@ -210,7 +210,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
     }
     
-    protected boolean filter(boolean pre38, boolean pre37, String tableName) {
+    protected boolean filter(Node targetNode, String tableName) {
+        
+        boolean pre37 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.7.0");
+        boolean pre38 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.8.0");
+        
+        boolean pre3818 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.8.18");
+
         tableName = tableName.toLowerCase();
         boolean include = true;
         if (pre37 && tableName.contains(TableConstants.SYM_EXTENSION)) {
@@ -218,6 +224,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         if (pre38 && (tableName.contains(TableConstants.SYM_MONITOR) || 
                 tableName.contains(TableConstants.SYM_NOTIFICATION))) {
+            include = false;
+        }
+        
+        if (pre3818 && tableName.contains(TableConstants.SYM_CONSOLE_USER_HIST)) {
             include = false;
         }
         return include;
@@ -248,15 +258,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             List<SelectFromTableEvent> initialLoadEvents = new ArrayList<SelectFromTableEvent>(
                     triggerRouters.size() * 2);
 
-            boolean pre37 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.7.0");
-            boolean pre38 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.8.0");
-
             for (int i = triggerRouters.size() - 1; i >= 0; i--) {
                 TriggerRouter triggerRouter = triggerRouters.get(i);
                 String channelId = triggerRouter.getTrigger().getChannelId();
                 if (Constants.CHANNEL_CONFIG.equals(channelId)
                         || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
-                    if (filter(pre37, pre38, triggerRouter.getTrigger().getSourceTableName())) {
+                    if (filter(targetNode, triggerRouter.getTrigger().getSourceTableName())) {
 
                         TriggerHistory triggerHistory = triggerRouterService
                                 .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
@@ -296,8 +303,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 String channelId = triggerRouter.getTrigger().getChannelId();
                 if (Constants.CHANNEL_CONFIG.equals(channelId)
                         || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
-                    if (!(pre37 && triggerRouter.getTrigger().getSourceTableName().toLowerCase()
-                            .contains("extension"))) {
+                    if (filter(targetNode, triggerRouter.getTrigger().getSourceTableName())) {
                         TriggerHistory triggerHistory = triggerRouterService
                                 .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
                                         .getTriggerId(), null, null, null);
