@@ -34,18 +34,16 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
-import org.jumpmind.symmetric.load.IDataLoaderFactory;
-import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class PostgresBulkDataLoaderFactory implements IDataLoaderFactory {
+public class PostgresBulkDataLoaderFactory extends DefaultDataLoaderFactory {
 
     private NativeJdbcExtractor jdbcExtractor;
-    private IParameterService parameterService;
     
     public PostgresBulkDataLoaderFactory(ISymmetricEngine engine) {
+        super(engine.getParameterService());
         this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
-        this.parameterService = engine.getParameterService();
     }
 
     public String getTypeName() {
@@ -59,7 +57,8 @@ public class PostgresBulkDataLoaderFactory implements IDataLoaderFactory {
 
         int maxRowsBeforeFlush = parameterService.getInt("postgres.bulk.load.max.rows.before.flush", 10000);
         
-        return new PostgresBulkDatabaseWriter(symmetricDialect.getPlatform(), jdbcExtractor,
+        return new PostgresBulkDatabaseWriter(symmetricDialect.getPlatform(), 
+                buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData), jdbcExtractor,
                 maxRowsBeforeFlush);
     }
 
