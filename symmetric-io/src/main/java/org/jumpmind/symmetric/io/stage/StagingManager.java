@@ -40,7 +40,7 @@ public class StagingManager implements IStagingManager {
 
     protected static final Logger log = LoggerFactory.getLogger(StagingManager.class);
 
-    protected File directory;
+    private File directory;
     
     protected Set<String> resourcePaths;
     
@@ -56,25 +56,22 @@ public class StagingManager implements IStagingManager {
     }
     
     public Set<String> getResourceReferences() {
-        synchronized (StagingManager.class) {
+        synchronized (resourcePaths) {
             return new TreeSet<String>(resourcePaths);
         }
     }
 
-    protected void refreshResourceList() {
-        synchronized (StagingManager.class) {
-            Collection<File> files = FileUtils.listFiles(this.directory,
-                    new String[] { State.CREATE.getExtensionName(), State.DONE.getExtensionName(),
-                            State.DONE.getExtensionName() }, true);
-            for (File file : files) {
-                try {
-                    String path = StagedResource.toPath(directory, file);
-                    if (!resourcePaths.contains(path)) {
-                        resourcePaths.add(path);
-                    }
-                } catch (IllegalStateException ex) {
-                    log.warn(ex.getMessage());
+    private void refreshResourceList() {
+        Collection<File> files = FileUtils.listFiles(this.directory,
+                new String[] { State.CREATE.getExtensionName(), State.DONE.getExtensionName(), State.DONE.getExtensionName() }, true);
+        for (File file : files) {
+            try {
+                String path = StagedResource.toPath(directory, file);
+                if (!resourcePaths.contains(path)) {
+                    resourcePaths.add(path);
                 }
+            } catch (IllegalStateException ex) {
+                log.warn(ex.getMessage());
             }
         }
     }

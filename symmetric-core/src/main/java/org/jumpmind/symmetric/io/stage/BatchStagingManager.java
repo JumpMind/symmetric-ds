@@ -39,7 +39,9 @@ public class BatchStagingManager extends StagingManager {
         if (purgeBasedOnTTL) {
             return super.clean(ttlInMs);
         } else {
-            return purgeStagingBasedOnDatabaseStatus(ttlInMs);
+            synchronized (StagingManager.class) {
+                return purgeStagingBasedOnDatabaseStatus(ttlInMs);
+            }
         }
     }
     
