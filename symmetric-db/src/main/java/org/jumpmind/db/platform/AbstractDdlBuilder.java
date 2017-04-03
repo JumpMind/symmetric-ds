@@ -1811,6 +1811,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (column.isPrimaryKey() && databaseInfo.isPrimaryKeyEmbedded()) {
             writeColumnEmbeddedPrimaryKey(table, column, ddl);
         }
+        
+        if (column.isUnique() && databaseInfo.isUniqueEmbedded()) {
+            writeColumnUniqueStmt(ddl);
+        }
 
         if (column.isAutoIncrement() && !databaseInfo.isDefaultValueUsedForIdentitySpec()) {
             if (!databaseInfo.isNonPKIdentityColumnsSupported() && !column.isPrimaryKey()) {
@@ -2077,6 +2081,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         ddl.append("NOT NULL");
     }
 
+    protected void writeColumnUniqueStmt(StringBuilder ddl) {
+        ddl.append(" UNIQUE ");
+    }
+    
     /**
      * Compares the current column in the database with the desired one. Type,
      * nullability, size, scale, default value, and precision radix are the
