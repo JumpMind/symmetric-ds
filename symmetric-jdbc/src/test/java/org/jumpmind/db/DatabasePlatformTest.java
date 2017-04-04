@@ -189,7 +189,7 @@ public class DatabasePlatformTest {
         Table tableFromDatabase = dropCreateAndThenReadTable(table);
         
         table.getColumnWithName("ID").setAutoIncrement(false);
-        table.getColumnWithName("COL1").setSize("1000");
+        table.getColumnWithName("COL1").setSize("254");
         table.getColumnWithName("COL1").setRequired(true);
         
         platform.alterTables(false, table);
@@ -200,7 +200,7 @@ public class DatabasePlatformTest {
         
         /* sqlite character fields do not limit based on size */
         if (!platform.getName().equals(DatabaseNamesConstants.SQLITE)) {
-            assertEquals(1000, tableFromDatabase.getColumnWithName("COL1").getSizeAsInt());
+            assertEquals(254, tableFromDatabase.getColumnWithName("COL1").getSizeAsInt());
         }
         
     }
