@@ -71,7 +71,10 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     }
 
     public String getDefaultCatalog() {
-        return null;
+//        if (StringUtils.isBlank(defaultCatalog)) {
+//            defaultCatalog = getSqlTemplate().queryForObject("select trim(sqc_currdb) from sysmaster:syssqlcurall where sqc_sessionid = dbinfo('sessionid')", String.class);
+//        }
+        return defaultCatalog;
     }
 
     public String getDefaultSchema() {
