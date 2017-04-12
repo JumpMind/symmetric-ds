@@ -1646,11 +1646,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (data == null) {
                 data = this.cursor.next();
                 if (data != null) {
-                    TriggerHistory triggerHistory = data.getTriggerHistory();
                     String routerId = data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID);
 
                     if (data.getDataEventType() == DataEventType.RELOAD) {
-
+                        TriggerHistory triggerHistory = data.getTriggerHistory();
                         String triggerId = triggerHistory.getTriggerId();
 
                         TriggerRouter triggerRouter = triggerRouterService
@@ -1677,6 +1676,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             return next();
                         }
                     } else {
+                        TriggerHistory triggerHistory = data.getTriggerHistory();
                         Trigger trigger = triggerRouterService.getTriggerById(
                                 triggerHistory.getTriggerId(), false);
                         if (trigger != null || triggerHistory.getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
@@ -1758,8 +1758,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
 
-                    lastTriggerHistory = triggerHistory;
-                    lastRouterId = routerId;
+                    if (data != null) {
+                        lastTriggerHistory = data.getTriggerHistory();
+                        lastRouterId = routerId;
+                    }
                 } else {
                     closeCursor();
                 }

@@ -670,11 +670,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
                 String catalog = (String) values.get(getResultSetCatalogName());
                 table.setCatalog(catalog);
-                metaData.setCatalog(catalog);
 
                 String schema = (String) values.get(getResultSetSchemaName());
                 table.setSchema(schema);
-                metaData.setSchemaPattern(schema);
 
                 table.setDescription((String) values.get("REMARKS"));
 

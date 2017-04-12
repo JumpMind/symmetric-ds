@@ -28,9 +28,6 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.io.stage.IStagedResource;
-import org.jumpmind.symmetric.io.stage.IStagedResource.State;
-import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.BatchAckResult;
 import org.jumpmind.symmetric.model.Channel;
@@ -59,7 +56,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
     public BatchAckResult ack(final BatchAck batch) {
 
         IRegistrationService registrationService = engine.getRegistrationService();
-        IStagingManager stagingManager = engine.getStagingManager();
         IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
         
     	BatchAckResult result = new BatchAckResult(batch);
