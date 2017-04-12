@@ -26,6 +26,7 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -71,6 +72,11 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     public String getDefaultSchema() {
         return null;
+    }
+    
+    @Override
+    protected ISqlTemplate createSqlTemplateDirty() {
+        return sqlTemplate;
     }
     
     @Override
