@@ -122,8 +122,10 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
             	String sql = "create function $(functionName)()                                                                                           \n" + 
             			" returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                            \n" + 
             			" begin                                                                                                                           \n" + 
+            			"    declare done int default 0;                                                                                                  \n" +
             			"    declare comm_value varchar(50);                                                                                              \n" + 
             			"    declare comm_cur cursor for select TRX_ID from INFORMATION_SCHEMA.INNODB_TRX where TRX_MYSQL_THREAD_ID = CONNECTION_ID();    \n" + 
+            			"    declare continue handler for not found set done = 1;                                                                         \n" +
             			"    open comm_cur;                                                                                                               \n" + 
             			"    fetch comm_cur into comm_value;                                                                                              \n" + 
             			"    close comm_cur;                                                                                                              \n" + 
