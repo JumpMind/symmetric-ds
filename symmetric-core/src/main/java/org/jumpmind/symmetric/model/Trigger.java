@@ -72,7 +72,7 @@ public class Trigger implements Serializable {
 
     private boolean useCaptureOldData = true;
 
-    private boolean useHandleKeyUpdates = false;
+    private boolean useHandleKeyUpdates = true;
 
     private String nameForInsertTrigger;
 
