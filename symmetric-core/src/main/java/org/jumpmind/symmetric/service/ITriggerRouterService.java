@@ -125,9 +125,6 @@ public interface ITriggerRouterService {
     
     public void createTriggersOnChannelForTables(String channelId, String catalogName, String schemaName, List<String> tables, String lastUpdateBy);
     
-    public List<Trigger> createTriggersOnChannelForTablesWithReturn(String channelId, String catalogName,
-            String schemaName, List<String> tables, String lastUpdateBy);
-            
     public boolean isTriggerBeingUsed(String triggerId);
     
     public boolean doesTriggerExist(String triggerId);
