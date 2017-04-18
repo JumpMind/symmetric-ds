@@ -117,6 +117,8 @@ public class StagedResource implements IStagedResource {
         if (file != null && file.exists()) {
             File newFile = buildFile(state);
             if (!newFile.equals(file)) {
+                closeInternal();
+                
                 if (newFile.exists()) {
                     if (writer != null || outputStream != null) {
                         throw new IoException("Could not write '{}' it is currently being written to", newFile.getAbsolutePath());                                
@@ -138,6 +140,7 @@ public class StagedResource implements IStagedResource {
                         }
                     }
                 }
+                
                 if (!file.renameTo(newFile)) {
                     String msg = String
                             .format("Had trouble renaming file.  The current name is %s and the desired state was %s",
@@ -202,8 +205,17 @@ public class StagedResource implements IStagedResource {
             inputStreams = null;
         }
     }    
-
+    
     public void close() {
+        closeInternal();
+        if (isFileResource()) {
+            stagingManager.inUse.remove(path);
+        } else if (state == State.DONE) {
+            deleteInternal();
+        }        
+    }
+    
+    private void closeInternal() {
         Thread thread = Thread.currentThread();
         BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader != null) {
@@ -228,15 +240,6 @@ public class StagedResource implements IStagedResource {
             inputStreams.remove(thread);
             closeInputStreamsMap();
         }
-        
-        boolean isFileResource = this.isFileResource();
-        
-        if (isFileResource) {
-            stagingManager.inUse.remove(path);
-        } else if (state == State.DONE) {
-            deleteInternal();
-        }
-        
     }
     
     public OutputStream getOutputStream() {
