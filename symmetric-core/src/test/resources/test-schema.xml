@@ -34,6 +34,7 @@
 		<column name="id" type="INTEGER" required="true" primaryKey="true" />
 		<column name="varchar_value" type="VARCHAR" size="255" />
 		<column name="longvarchar_value" type="LONGVARCHAR" />
+        <column name="varbinary_value" type="VARBINARY" />
 		<column name="timestamp_value" type="TIMESTAMP" />
 		<column name="date_value" type="DATE" />
 		<column name="bit_value" type="BIT" size="1" />

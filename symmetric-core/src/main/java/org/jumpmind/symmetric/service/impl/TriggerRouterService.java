@@ -1609,6 +1609,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             Column[] columns = trigger.filterExcludedAndIncludedColumns(table.getColumns());
             for (Column column : columns) {
                 foundPk |= column.isPrimaryKey();
+                if (foundPk) {
+                    break;
+                }
             }
             if (!foundPk) {
                 table = platform.makeAllColumnsPrimaryKeys(table);
