@@ -1453,6 +1453,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     
                     extractOutgoingBatch(processInfo, targetNode, multiBatchStatingWriter, 
                             firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT);
+                    
+                    for (OutgoingBatch outgoingBatch : batches) {
+                        resource = getStagedResource(outgoingBatch);  
+                        if (resource != null) {
+                            resource.setState(State.DONE);        
+                        }
+                    }
 
                 } else {
                     log.info("Batches already had an OK status for request {}, batches {} to {}.  Not extracting", new Object[] { request.getRequestId(), request.getStartBatchId(),
