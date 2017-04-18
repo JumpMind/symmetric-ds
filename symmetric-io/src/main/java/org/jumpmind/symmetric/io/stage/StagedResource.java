@@ -231,8 +231,10 @@ public class StagedResource implements IStagedResource {
         
         boolean isFileResource = this.isFileResource();
         
-        if (isFileResource || this.state == State.DONE) {
+        if (isFileResource) {
             stagingManager.inUse.remove(path);
+        } else if (state == State.DONE) {
+            deleteInternal();
         }
         
     }
@@ -312,28 +314,28 @@ public class StagedResource implements IStagedResource {
         this.lastUpdateTime = System.currentTimeMillis();
     }
 
-    public boolean delete() {
-        
-        boolean deleted = true;
-        
+    public boolean delete() {        
         close();
+        return deleteInternal();
+    }
+    
+    private boolean deleteInternal() {
+        boolean deleted = true;
         if (file != null && file.exists()) {
             FileUtils.deleteQuietly(file);
-            deleted = !file.exists();            
+            deleted = !file.exists();
         }
 
         if (memoryBuffer != null) {
             memoryBuffer.setLength(0);
             memoryBuffer = null;
         }
-        
+
         if (deleted) {
             stagingManager.resourcePaths.remove(path);
             stagingManager.inUse.remove(path);
         }
-        
         return deleted;
-        
     }
 
     public File getFile() {

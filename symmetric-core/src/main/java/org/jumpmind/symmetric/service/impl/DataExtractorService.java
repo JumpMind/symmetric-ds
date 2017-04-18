@@ -474,7 +474,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
             IOutgoingTransport transport) {
-
         return extract(processInfo, targetNode, null, transport);
     }
     
@@ -493,8 +492,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         OutgoingBatches batches = null;
         if (queue != null) {
         	batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue, false);
-        }
-        else {
+        } else {
         	batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
         }
 
@@ -1025,9 +1023,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 if (extractedBatch.isFileResource()) {
                                     SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
                                 } else {
-                                    IOUtils.copy(extractedBatch.getReader(), targetResource.getWriter(memoryThresholdInBytes));
-                                    extractedBatch.close();
-                                    targetResource.close();
+                                    try {
+                                        IOUtils.copy(extractedBatch.getReader(), targetResource.getWriter(memoryThresholdInBytes));
+                                    } finally {
+                                        extractedBatch.close();
+                                        targetResource.close();
+                                    }
                                 }
                                 targetResource.setState(State.DONE);
                                 isRetry = true;
@@ -1165,6 +1166,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } catch (Throwable t) {
             throw new RuntimeException(t);
         } finally {
+            stagedResource.setState(State.DONE);
             stagedResource.close();
         }
     }
