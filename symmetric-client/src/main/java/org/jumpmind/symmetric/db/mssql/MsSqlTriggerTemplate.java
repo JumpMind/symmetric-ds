@@ -233,10 +233,9 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
     	StringBuilder builder = new StringBuilder();
     	
     	for(Column column : table.getColumns()){
-    		boolean isLob = symmetricDialect.getPlatform().isLob(column.getMappedTypeCode());
-    		if(isLob){
-    			continue;
-    		}
+    		if(isNotComparable(column)){
+     			continue;
+     		}
     		if(builder.length() > 0){
     			builder.append(",");
     		}
