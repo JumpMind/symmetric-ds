@@ -49,6 +49,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -1488,6 +1489,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void syncTriggers(Table table, boolean force) {
         boolean ignoreCase = this.parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE);
+        
+        if (table == null) {
+            throw new SymmetricException("'table' cannot be null, check that the table exists.");
+        }        
 
         /* Re-lookup just in case the table was just altered */
         platform.resetCachedTableModel();
