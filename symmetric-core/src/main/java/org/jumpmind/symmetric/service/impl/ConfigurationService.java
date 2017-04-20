@@ -182,12 +182,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
         link.setLastUpdateTime(new Date());
         if (sqlTemplate.update(getSql("updateNodeGroupLinkSql"), link.getDataEventAction().name(),
-                link.isSyncConfigEnabled() ? 1 : 0, link.getLastUpdateTime(),
+                link.isSyncConfigEnabled() ? 1 : 0, link.isReversible() ? 1 : 0,
+                        link.getLastUpdateTime(),
                 link.getLastUpdateBy(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId()) == 0) {
             link.setCreateTime(new Date());
             sqlTemplate.update(getSql("insertNodeGroupLinkSql"), link.getDataEventAction().name(),
                     link.getSourceNodeGroupId(), link.getTargetNodeGroupId(),
-                    link.isSyncConfigEnabled() ? 1 : 0, link.getLastUpdateTime(),
+                    link.isSyncConfigEnabled() ? 1 : 0, link.isReversible() ? 1 : 0,
+                            link.getLastUpdateTime(),
                     link.getLastUpdateBy(), link.getCreateTime());
         }
     }
@@ -625,6 +627,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             link.setTargetNodeGroupId(row.getString("target_node_group_id"));
             link.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
             link.setSyncConfigEnabled(row.getBoolean("sync_config_enabled"));
+            link.setReversible(row.getBoolean("is_reversible"));
             link.setCreateTime(row.getDateTime("create_time"));
             link.setLastUpdateBy(row.getString("last_update_by"));
             link.setLastUpdateTime(row.getDateTime("last_update_time"));

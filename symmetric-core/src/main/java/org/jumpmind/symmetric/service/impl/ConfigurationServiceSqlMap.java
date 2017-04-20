@@ -39,7 +39,7 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
               + "   source_node_group_id = ? and target_node_group_id = ?        ");
 
         putSql("groupsLinksSql", ""
-                + "select source_node_group_id, target_node_group_id, data_event_action, sync_config_enabled, last_update_time, last_update_by, create_time from   "
+                + "select source_node_group_id, target_node_group_id, data_event_action, sync_config_enabled, is_reversible, last_update_time, last_update_by, create_time from   "
                 + "  $(node_group_link) order by source_node_group_id  ");
 
         putSql("updateNodeGroupSql",
@@ -51,12 +51,12 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
                 + "  (description, node_group_id, last_update_time, last_update_by, create_time) values(?,?,?,?,?)                     ");
 
         putSql("updateNodeGroupLinkSql", ""
-                + "update $(node_group_link) set data_event_action=?, sync_config_enabled=?, last_update_time=?, last_update_by=? where   "
+                + "update $(node_group_link) set data_event_action=?, sync_config_enabled=?, is_reversible=?, last_update_time=?, last_update_by=? where   "
                 + "  source_node_group_id=? and target_node_group_id=?             ");
 
         putSql("insertNodeGroupLinkSql",
                          "insert into $(node_group_link)                                              "
-                        + "  (data_event_action, source_node_group_id, target_node_group_id, sync_config_enabled, last_update_time, last_update_by, create_time) values(?,?,?,?,?,?,?)");
+                        + "  (data_event_action, source_node_group_id, target_node_group_id, sync_config_enabled, is_reversible, last_update_time, last_update_by, create_time) values(?,?,?,?,?,?,?,?)");
 
         putSql("selectNodeGroupsSql", ""
                 + "select node_group_id, description, last_update_time, last_update_by, create_time from $(node_group) order by node_group_id   ");
