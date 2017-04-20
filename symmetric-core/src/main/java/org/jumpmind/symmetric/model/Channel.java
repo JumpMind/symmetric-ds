@@ -73,7 +73,7 @@ public class Channel implements Serializable {
 
     private String queue = "default";
 
-    private NodeGroupLinkAction dataEventAction = NodeGroupLinkAction.W;
+    private NodeGroupLinkAction dataEventAction = null;
     
     public Channel() {
     }
