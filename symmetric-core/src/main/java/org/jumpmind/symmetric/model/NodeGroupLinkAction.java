@@ -26,7 +26,7 @@ package org.jumpmind.symmetric.model;
  */
 public enum NodeGroupLinkAction {
     
-    P("pushes to"), W("waits for pull from"), R("only routes to");
+    P("pushes to"), W("waits for pull from"), B("both pushes to and waits for pull from"), R("only routes to");
     
     private String description;
     
@@ -40,6 +40,8 @@ public enum NodeGroupLinkAction {
                 return P;
             } else if (W.name().equals(code)) {
                 return W;
+            } else if (B.name().equals(code)) {
+                return B;
             } else if (R.name().equals(code)) {
                 return R;
             }

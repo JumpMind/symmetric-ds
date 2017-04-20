@@ -526,7 +526,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return list;
     }
-
+    
     public Map<String, Channel> getChannels(boolean refreshCache) {
         long channelCacheTimeoutInMs = parameterService.getLong(
                 ParameterConstants.CACHE_TIMEOUT_CHANNEL_IN_MS, 60000);
@@ -566,6 +566,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                     channel.setFileSyncFlag(row.getBoolean("file_sync_flag"));
                                     channel.setQueue(row.getString("queue"));
                                     channel.setMaxKBytesPerSecond(row.getBigDecimal("max_network_kbps"));
+                                    channel.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
                                     return channel;
                                 }
                             });
@@ -578,6 +579,16 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             }
         }
 
+        return channels;
+    }
+
+    public Map<String, Channel> getChannels(NodeGroupLinkAction eventAction, boolean refreshCache) {
+        Map<String, Channel> channels = new HashMap<String, Channel>();
+        for (Channel channel : getChannels(refreshCache).values()) {
+            if (channel.getDataEventAction() != null && channel.getDataEventAction().equals(eventAction)) {
+                channels.put(channel.getChannelId(), channel);
+            }
+        }
         return channels;
     }
 

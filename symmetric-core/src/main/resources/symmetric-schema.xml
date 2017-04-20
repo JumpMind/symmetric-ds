@@ -44,6 +44,7 @@
         <column name="description" type="VARCHAR" size="255" description="Description on the type of data carried in this channel."/>
         <column name="queue" type="VARCHAR" size="25" default="default" required="true" description="User provided queue name for channel to operate on.  Creates multi-threaded channels.  Defaults to 'default' thread"/>
         <column name="max_network_kbps" type="DECIMAL" size="10,3" default="0.000" required="true" description="The maximum network transfer rate in kilobytes per second.  Zero or negative means unlimited.  When throttling the channel, make sure the channel is on its own queue or within a queue of channels that are throttled at the same rate.  This is currently only implemented when staging is enabled."/>
+        <column name="data_event_action" type="CHAR" size="1" required="false" description="For a node group link with a data event action of B (both), select how to send changes to the target node group. (P = Push, W = Wait for Pull)" />
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
@@ -389,7 +390,7 @@
     <table name="node_group_link" description="A source node_group sends its data updates to a target NodeGroup using a pull, push, or custom technique.">
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes should be captured." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes will be sent." />
-        <column name="data_event_action" type="CHAR" size="1" default="W" required="true" description="The notification scheme used to send data changes to the target node group. (P = Push, W = Wait for Pull, R = Route-Only) " />
+        <column name="data_event_action" type="CHAR" size="1" default="W" required="true" description="The notification scheme used to send data changes to the target node group. (P = Push, W = Wait for Pull, B = Both Push and Wait for Pull (control from channel), R = Route-Only) " />
         <column name="sync_config_enabled" type="BOOLEANINT" size="1" default="1" required="true"  description="Indicates whether configuration that has changed should be synchronized to target nodes on this link." />
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />

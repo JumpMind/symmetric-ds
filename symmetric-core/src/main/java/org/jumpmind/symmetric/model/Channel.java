@@ -72,6 +72,8 @@ public class Channel implements Serializable {
     private boolean fileSyncFlag = false;
 
     private String queue = "default";
+
+    private NodeGroupLinkAction dataEventAction = NodeGroupLinkAction.W;
     
     public Channel() {
     }
@@ -285,6 +287,14 @@ public class Channel implements Serializable {
 
     public void setMaxKBytesPerSecond(BigDecimal maxKBytesPerSecond) {
         this.maxKBytesPerSecond = maxKBytesPerSecond;
+    }
+
+    public NodeGroupLinkAction getDataEventAction() {
+        return dataEventAction;
+    }
+
+    public void setDataEventAction(NodeGroupLinkAction dataEventAction) {
+        this.dataEventAction = dataEventAction;
     }
 
     @Override

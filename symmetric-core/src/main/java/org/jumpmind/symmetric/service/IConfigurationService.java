@@ -89,6 +89,8 @@ public interface IConfigurationService {
     
     public Map<String, Channel> getChannels(boolean refreshCache);
 
+    public Map<String, Channel> getChannels(NodeGroupLinkAction eventAction, boolean refreshCache);
+
     public NodeChannel getNodeChannel(String channelId, String nodeId, boolean refreshExtractMillis);
 
     public void clearCache();
