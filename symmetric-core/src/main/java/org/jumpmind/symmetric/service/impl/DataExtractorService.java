@@ -106,11 +106,12 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.ExtractRequest.ExtractStatus;
-import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeCommunication;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
@@ -119,7 +120,6 @@ import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoDataWriter;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
-import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.Router;
@@ -492,9 +492,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         OutgoingBatches batches = null;
         if (queue != null) {
-            batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue,
-                    processInfo.getKey().getProcessType().equals(ProcessInfoKey.ProcessType.PUSH_JOB) ? NodeGroupLinkAction.P :
-                        processInfo.getKey().getProcessType().equals(ProcessInfoKey.ProcessType.PULL_HANDLER) ? NodeGroupLinkAction.W : null, false);
+            NodeGroupLinkAction defaultAction = configurationService.getNodeGroupLinkFor(nodeService.findIdentity().getNodeGroupId(),
+                    targetNode.getNodeGroupId(), false).getDataEventAction();
+            ProcessInfoKey.ProcessType processType = processInfo.getKey().getProcessType();
+            NodeGroupLinkAction action = null;
+
+            if (processType.equals(ProcessInfoKey.ProcessType.PUSH_JOB)) {
+                action = NodeGroupLinkAction.P;
+            } else if (processType.equals(ProcessInfoKey.ProcessType.PULL_HANDLER)) {
+                action = NodeGroupLinkAction.W;
+            }
+            batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue, action, defaultAction, false);
         } else {
             batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
         }

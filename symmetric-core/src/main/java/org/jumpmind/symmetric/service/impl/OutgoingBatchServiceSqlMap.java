@@ -73,6 +73,11 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectOutgoingBatchChannelActionSql", 
                 " join $(channel) c on c.channel_id = b.channel_id" + 
+                " where c.data_event_action = ?" +
+                " and b.node_id = ? and c.queue = ? and b.status in (?, ?, ?, ?, ?, ?, ?, ?) order by b.batch_id asc   ");
+
+        putSql("selectOutgoingBatchChannelActionNullSql", 
+                " join $(channel) c on c.channel_id = b.channel_id" + 
                 " where (c.data_event_action is null or c.data_event_action = ?)" +
                 " and b.node_id = ? and c.queue = ? and b.status in (?, ?, ?, ?, ?, ?, ?, ?) order by b.batch_id asc   ");
 
