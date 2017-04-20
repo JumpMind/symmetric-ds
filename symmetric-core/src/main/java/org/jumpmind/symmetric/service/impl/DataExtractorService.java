@@ -493,8 +493,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         OutgoingBatches batches = null;
         if (queue != null) {
             batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue,
-                    processInfo.getKey().getProcessType().equals(ProcessInfoKey.ProcessType.PUSH_JOB) ?
-                            NodeGroupLinkAction.P : NodeGroupLinkAction.W, false);
+                    processInfo.getKey().getProcessType().equals(ProcessInfoKey.ProcessType.PUSH_JOB) ? NodeGroupLinkAction.P :
+                        processInfo.getKey().getProcessType().equals(ProcessInfoKey.ProcessType.PULL_HANDLER) ? NodeGroupLinkAction.W : null, false);
         } else {
             batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
         }
