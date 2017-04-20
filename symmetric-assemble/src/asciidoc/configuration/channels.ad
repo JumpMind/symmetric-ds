@@ -47,17 +47,9 @@ Data loaders can also use other techniques to increase performance of data loads
 
 |ftp_localhost|Sends the data in CSV format to a configured ftp location.  These locations are setup in the TODO {SYM_HOME}/conf/ftp-extensions.xml
 
-|mysql_bulk|MySQL bulk loader.  
-
-|mssql_bulk|Microsoft SQL Server bulk loader.  
-
-|postgres_bulk|PostgreSQL bulk loader.  
-
-|oracle_bulk|Oracle bulk loader. 
+|bulk|Assigns the appropriate bulk loader to this channel.  Supported bulk loaders include:  Microsoft SQL, PostgreSQL, MySQL and Amazon Redshift over S3. 
 
 |mongodb|MongoDB data loader.
-
-|redshift_bulk|Amazon Redshift bulk loader over S3.
 
 |===
 

@@ -284,6 +284,79 @@ public class DbExportImportTest extends AbstractServiceTest {
     }
 
     @Test
+    public void importUniqueKeywordTable () throws Exception {
+        ISymmetricEngine engine = getSymmetricEngine();
+        DbImport dbImport = new DbImport(engine.getDatabasePlatform());
+        dbImport.setFormat(DbImport.Format.XML);
+        dbImport.setDropIfExists(true);
+        dbImport.setAlterCaseToMatchDatabaseDefaultCase(true);
+        dbImport.importTables(getClass().getResourceAsStream("/test-dbimport-unique.xml"));
+
+        IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
+        Database testTables = platform.readDatabaseFromXml("/test-dbimport-unique.xml", true);
+        Table table = testTables.findTable("test_db_import_unique", false);
+        Assert.assertEquals(0, platform.getSqlTemplate().queryForInt("select count(*) from " + table.getName()));
+        Assert.assertEquals(table.getColumnWithName("string_required_value").isUnique(), true);
+
+        DbImport importCsv = new DbImport(engine.getDatabasePlatform());
+        importCsv.setFormat(DbImport.Format.SQL);
+        importCsv.importTables(getClass().getResourceAsStream("/test-dbimport-unique-good.sql"));
+        Assert.assertEquals(5, platform.getSqlTemplate().queryForInt("select count(*) from " + table.getName()));
+
+        dbImport.importTables(getClass().getResourceAsStream("/test-dbimport-unique.xml"));
+
+        try {
+            importCsv.importTables(getClass().getResourceAsStream("/test-dbimport-unique-bad-line-2.sql"));
+            Assert.fail("Expected a sql exception");
+        } catch (SqlException ex) {
+        }
+
+        Assert.assertEquals(0, platform.getSqlTemplate().queryForInt("select count(*) from " + table.getName()));
+
+        importCsv.setCommitRate(1);
+        importCsv.setForceImport(true);
+        importCsv.importTables(getClass().getResourceAsStream("/test-dbimport-unique-bad-line-2.sql"));
+        Assert.assertEquals(4, platform.getSqlTemplate().queryForInt("select count(*) from " + table.getName()));
+    }
+
+    @Test
+    public void exportUniqueKeywordSqliteTable() throws Exception {
+        String dbName = engine.getDatabasePlatform().getName();
+        if (dbName.equals(DatabaseNamesConstants.SQLITE)) {
+            ISymmetricEngine engine = getSymmetricEngine();
+            DbImport dbImport = new DbImport(engine.getDatabasePlatform());
+            dbImport.setFormat(DbImport.Format.XML);
+            dbImport.setDropIfExists(true);
+            dbImport.setAlterCaseToMatchDatabaseDefaultCase(true);
+            dbImport.importTables(getClass().getResourceAsStream("/test-dbimport-unique.xml"));
+
+            IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
+            Database testTables = platform.readDatabaseFromXml("/test-dbimport-unique.xml", true);
+            Table table = testTables.findTable("test_db_import_unique", false);
+            Assert.assertEquals(0, platform.getSqlTemplate().queryForInt("select count(*) from " + table.getName()));
+            Assert.assertEquals(table.getColumnWithName("string_required_value").isUnique(), true);
+            
+            final int RECORD_COUNT = 100;
+
+            DbFill fill = new DbFill(platform);
+            fill.setRecordCount(RECORD_COUNT);
+            fill.fillTables(table.getName());
+            Assert.assertEquals(RECORD_COUNT, platform.getSqlTemplate().queryForInt("select count(*) from " + table.getName()));
+            
+            DbExport export = new DbExport(platform);
+            export.setFormat(Format.XML);
+            export.setNoCreateInfo(false);
+            export.setNoData(true);
+            String xmlOutput = export.exportTables(new String[] { table.getName() });
+            
+            dbImport.importTables(xmlOutput);
+            table = testTables.findTable("test_db_import_unique", false);
+            Assert.assertEquals(0, platform.getSqlTemplate().queryForInt("select count(*) from " + table.getName()));
+            Assert.assertEquals(table.getColumnWithName("string_required_value").isUnique(), true);
+        }
+    }
+
+    @Test
     public void importSymXmlData() throws Exception {
         final String FILE = "/test-dbimport-1-sym_xml-1.xml";
         ISymmetricEngine engine = getSymmetricEngine();

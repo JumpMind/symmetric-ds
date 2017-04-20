@@ -25,7 +25,11 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -97,4 +101,44 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return !column.isOfBinaryType() || "RAW".equals(jdbcTypeName);
     }
 
+    @Override
+   	public PermissionResult getCreateSymTriggerPermission() {
+       	String delimiter = getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+           
+       	String triggerSql = "CREATE OR REPLACE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " BEGIN END";	
+       	
+       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+       	
+   		try {
+   			getSqlTemplate().update(triggerSql);
+   			result.setStatus(Status.PASS);
+   		} catch (SqlException e) {
+   			result.setException(e);
+   			result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+   		}
+   		
+   		return result;
+    }
+    
+    @Override
+    public PermissionResult getExecuteSymPermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+           
+        String executeSql = "SELECT DBMS_LOB.GETLENGTH('TEST'), UTL_RAW.CAST_TO_RAW('TEST') FROM DUAL";  
+        
+        PermissionResult result = new PermissionResult(PermissionType.EXECUTE, Status.FAIL);
+        
+        try {
+            getSqlTemplate().update(executeSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant EXECUTE on DBMS_LOB and UTL_RAW");
+        }
+        
+        return result;
+    }
+    
 }

@@ -61,6 +61,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.ext.INodeRegistrationListener;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
@@ -128,7 +129,6 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
-import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
 
@@ -274,6 +274,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 transport = transportManager.getRegisterTransport(local,
                         parameterService.getRegistrationUrl());
                 log.info("Using registration URL of {}", transport.getUrl());
+                
+                List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationUrlUpdated(transport.getUrl());
+                }
+                
                 remote = new Node();
                 remote.setSyncUrl(parameterService.getRegistrationUrl());
                 isRegisterTransport = true;
@@ -295,8 +301,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                              * redirect for the ack
                              */
                             String url = transport.getRedirectionUrl();
-                            url = url.replace(HttpTransportManager.buildRegistrationUrl("", local),
-                                    "");
+                            int index = url.indexOf("/registration?");
+                            if (index >= 0) {
+                                url = url.substring(0, index);
+                            }
+                            log.info("Setting the sync url for ack to: {}", url);
                             remote.setSyncUrl(url);
                         }
                         sendAck(remote, local, localSecurity, list, transportManager);
@@ -913,7 +922,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             Callable<IncomingBatch> loadBatchFromStage = new Callable<IncomingBatch>() {
                 public IncomingBatch call() throws Exception {
                     IncomingBatch incomingBatch = null;
-                    if (!isError) {
+                    if (!isError && resource != null && resource.exists()) {
                         try {
                             processInfo.setStatus(ProcessInfo.Status.LOADING);
                             
@@ -949,6 +958,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             }
                             resource.setState(State.DONE);
                         }
+                    } else {
+                        log.info("The batch {} was missing in staging.  Setting status to resend", batch.getNodeBatchId());
+                        incomingBatch = new IncomingBatch(batch);
+                        incomingBatch.setStatus(Status.RS);
+                        incomingBatchService.updateIncomingBatch(incomingBatch);
                     }
                     return incomingBatch;
                 }

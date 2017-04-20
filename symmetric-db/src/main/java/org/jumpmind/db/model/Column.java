@@ -68,6 +68,9 @@ public class Column implements Cloneable, Serializable {
     /** Whether the column's value is incremented automatically. */
     private boolean autoIncrement;
 
+    /** Whether the column's value is unique using the unique constraint keyword (e.g. SQLite). */
+    private boolean unique;
+    
     /**
      * The mapped JDBC type code
      */
@@ -244,6 +247,25 @@ public class Column implements Cloneable, Serializable {
      */
     public void setAutoIncrement(boolean autoIncrement) {
         this.autoIncrement = autoIncrement;
+    }
+    
+    /**
+     * Determines whether this column is an unique column.
+     * 
+     * @return <code>true</code> if this column is an unique column
+     */
+    public boolean isUnique() {
+        return unique;
+    }
+
+    /**
+     * Specifies whether this column is an unique column.
+     * 
+     * @param autoIncrement
+     *            <code>true</code> if this column is a unique column
+     */
+    public void setUnique(boolean unique) {
+        this.unique = unique;
     }
 
     /**

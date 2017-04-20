@@ -68,36 +68,22 @@ public class StagedResource implements IStagedResource {
     private BufferedWriter writer;
     
     private StagingManager stagingManager;
-
-    public StagedResource(File directory, File file, StagingManager stagingManager) {
-        this.directory = directory;
-        this.stagingManager = stagingManager;
-        this.path = toPath(directory, file);
-        if (file.exists()) {            
-            lastUpdateTime = file.lastModified();
-            String fileName = file.getName();
-            String extension = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
-            this.state = State.valueOf(extension.toUpperCase());
-            this.file = file;
-        } else {
-            throw new IllegalStateException(String.format("The passed in file, %s, does not exist",
-                    file.getAbsolutePath()));
-        }
-    }
     
     public StagedResource(File directory, String path, StagingManager stagingManager) {
         this.directory = directory;
         this.path = path;
         this.stagingManager = stagingManager;
-        lastUpdateTime = System.currentTimeMillis();        
-        if (buildFile(State.READY).exists()) {
-            this.state = State.READY;
-        } else if (buildFile(State.DONE).exists()){
+        lastUpdateTime = System.currentTimeMillis();   
+        
+        if (buildFile(State.DONE).exists()){
             this.state = State.DONE;
         } else {
             this.state = State.CREATE;       
         }
         this.file = buildFile(state);
+        if (file.exists()) {
+            lastUpdateTime = file.lastModified();
+        }
     }    
     
     protected static String toPath(File directory, File file) {
@@ -131,6 +117,8 @@ public class StagedResource implements IStagedResource {
         if (file != null && file.exists()) {
             File newFile = buildFile(state);
             if (!newFile.equals(file)) {
+                closeInternal();
+                
                 if (newFile.exists()) {
                     if (writer != null || outputStream != null) {
                         throw new IoException("Could not write '{}' it is currently being written to", newFile.getAbsolutePath());                                
@@ -152,6 +140,7 @@ public class StagedResource implements IStagedResource {
                         }
                     }
                 }
+                
                 if (!file.renameTo(newFile)) {
                     String msg = String
                             .format("Had trouble renaming file.  The current name is %s and the desired state was %s",
@@ -162,10 +151,6 @@ public class StagedResource implements IStagedResource {
             }
         } 
         
-        if (memoryBuffer != null && state == State.DONE) {
-            this.memoryBuffer.setLength(0);
-            this.memoryBuffer = null;
-        }
         refreshLastUpdateTime();
         this.state = state;
         this.file = buildFile(state);
@@ -220,8 +205,17 @@ public class StagedResource implements IStagedResource {
             inputStreams = null;
         }
     }    
-
+    
     public void close() {
+        closeInternal();
+        if (isFileResource()) {
+            stagingManager.inUse.remove(path);
+        } else if (state == State.DONE) {
+            deleteInternal();
+        }        
+    }
+    
+    private void closeInternal() {
         Thread thread = Thread.currentThread();
         BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader != null) {
@@ -245,16 +239,6 @@ public class StagedResource implements IStagedResource {
             IOUtils.closeQuietly(inputStream);
             inputStreams.remove(thread);
             closeInputStreamsMap();
-        }
-        
-        boolean isFileResource = this.isFileResource();
-        
-        if (isFileResource || this.state == State.DONE) {
-            stagingManager.inUse.remove(path);
-        }
-        
-        if (!isFileResource && this.state == State.DONE) {
-            stagingManager.resourcePaths.remove(path);
         }
     }
     
@@ -333,28 +317,28 @@ public class StagedResource implements IStagedResource {
         this.lastUpdateTime = System.currentTimeMillis();
     }
 
-    public boolean delete() {
-        
-        boolean deleted = true;
-        
+    public boolean delete() {        
         close();
+        return deleteInternal();
+    }
+    
+    private boolean deleteInternal() {
+        boolean deleted = true;
         if (file != null && file.exists()) {
             FileUtils.deleteQuietly(file);
-            deleted = !file.exists();            
+            deleted = !file.exists();
         }
 
         if (memoryBuffer != null) {
             memoryBuffer.setLength(0);
             memoryBuffer = null;
         }
-        
+
         if (deleted) {
             stagingManager.resourcePaths.remove(path);
             stagingManager.inUse.remove(path);
         }
-        
         return deleted;
-        
     }
 
     public File getFile() {

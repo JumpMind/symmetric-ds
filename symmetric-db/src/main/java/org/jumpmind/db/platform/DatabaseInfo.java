@@ -77,6 +77,12 @@ public class DatabaseInfo {
    
     /** Whether indices are embedded inside the create table statement. */
     private boolean indicesEmbedded = false;
+    
+    /**
+     * Whether unique constraints are embedded inside the column definition
+     * statement.
+     */
+    private boolean uniqueEmbedded = true;
 
     private boolean triggersSupported = true;
 
@@ -459,6 +465,28 @@ public class DatabaseInfo {
      */
     public void setIndicesEmbedded(boolean indicesEmbedded) {
         this.indicesEmbedded = indicesEmbedded;
+    }
+    
+    /**
+     * Determines whether unique constraints are embedded in the column
+     * definition or as separate constraint statements. The default is
+     * non-embedded unique.
+     * 
+     * @return <code>true</code> if unique constraints are embedded
+     */
+    public boolean isUniqueEmbedded() {
+        return uniqueEmbedded;
+    }
+
+    /**
+     * Specifies whether the unique constraints are embedded in the column
+     * definition  or as separate constraint statements.
+     * 
+     * @param primaryKeyEmbedded
+     *            Whether unique constraints are embedded
+     */
+    public void setUniqueEmbedded(boolean unique) {
+        this.uniqueEmbedded = unique;
     }
 
     /**

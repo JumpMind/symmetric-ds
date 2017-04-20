@@ -472,8 +472,6 @@ INodeCommunicationExecutor {
         }
 
         IStagingManager stagingManager = engine.getStagingManager();
-        long memoryThresholdInBytes = parameterService
-                .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
         long maxBytesToSync = parameterService 
                 .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);        
 
@@ -752,7 +750,7 @@ INodeCommunicationExecutor {
 
     protected IStagedResource getStagedResource(OutgoingBatch currentBatch) {
         IStagedResource stagedResource = engine.getStagingManager().find(getStagingPathComponents(currentBatch));
-        if (stagedResource != null && stagedResource.getState() == State.READY) {
+        if (stagedResource != null && stagedResource.getState() == State.DONE) {
             return stagedResource;
         } else {
             return null;

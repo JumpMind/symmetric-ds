@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.BatchId;
 
 public class BatchStagingManager extends StagingManager {
@@ -34,6 +35,17 @@ public class BatchStagingManager extends StagingManager {
 
     @Override
     public long clean(long ttlInMs) {
+        boolean purgeBasedOnTTL = engine.getParameterService().is(ParameterConstants.STREAM_TO_FILE_PURGE_ON_TTL_ENABLED, false);
+        if (purgeBasedOnTTL) {
+            return super.clean(ttlInMs);
+        } else {
+            synchronized (StagingManager.class) {
+                return purgeStagingBasedOnDatabaseStatus(ttlInMs);
+            }
+        }
+    }
+    
+    protected long purgeStagingBasedOnDatabaseStatus(long ttlInMs) {
         boolean recordIncomingBatchesEnabled = engine.getIncomingBatchService().isRecordOkBatchesEnabled();
         List<Long> outgoingBatches = ttlInMs == 0 ? new ArrayList<Long>() : engine.getOutgoingBatchService().getAllBatches();
         List<BatchId> incomingBatches =  ttlInMs == 0 ? new ArrayList<BatchId>() :  engine.getIncomingBatchService().getAllBatches();

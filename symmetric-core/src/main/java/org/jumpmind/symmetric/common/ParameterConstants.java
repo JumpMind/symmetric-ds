@@ -66,7 +66,9 @@ final public class ParameterConstants {
     public final static String START_REFRESH_CACHE_JOB = "start.refresh.cache.job";
     public final static String START_FILE_SYNC_TRACKER_JOB = "start.file.sync.tracker.job";
     public final static String START_FILE_SYNC_PUSH_JOB = "start.file.sync.push.job";
-    public final static String START_FILE_SYNC_PULL_JOB = "start.file.sync.pull.job";    
+    public final static String START_FILE_SYNC_PULL_JOB = "start.file.sync.pull.job";   
+    
+    public final static String ROUTE_ON_EXTRACT = "route.on.extract";
 
     public final static String PULL_THREAD_COUNT_PER_SERVER = "pull.thread.per.server.count";
     public final static String PULL_MINIMUM_PERIOD_MS = "pull.period.minimum.ms";
@@ -148,6 +150,7 @@ final public class ParameterConstants {
     public final static String STREAM_TO_FILE_ENABLED = "stream.to.file.enabled";
     public final static String STREAM_TO_FILE_THRESHOLD = "stream.to.file.threshold.bytes";
     public final static String STREAM_TO_FILE_TIME_TO_LIVE_MS = "stream.to.file.ttl.ms";
+    public final static String STREAM_TO_FILE_PURGE_ON_TTL_ENABLED = "stream.to.file.purge.on.ttl.enabled";
 
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
 
@@ -373,6 +376,8 @@ final public class ParameterConstants {
     public final static String DBF_ROUTER_VALIDATE_HEADER = "dbf.router.validate.header";
     
     public final static String OUTGOING_BATCH_UPDATE_STATUS_MILLIS = "outgoing.batches.update.status.millis";
+    
+    public final static String OUTGOING_BATCH_UPDATE_STATUS_DATA_COUNT = "outgoing.batches.update.status.data.count";
     
     public final static String FIREBIRD_EXTRACT_VARCHAR_ROW_OLD_PK_DATA = "firebird.extract.varchar.row.old.pk.data";
     

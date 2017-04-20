@@ -266,7 +266,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                     isInitialLoadQueued = true;
                                     ts = System.currentTimeMillis() - ts;
                                     if (ts > Constants.LONG_OPERATION_THRESHOLD) {
-                                        log.warn("Inserted reload events for node {} in {} ms",
+                                        log.warn("Inserted reload events for node {} took longer than expected.  It took {} ms",
                                                 security.getNodeId(), ts);
                                     } else {
                                         log.info("Inserted reload events for node {} in {} ms",
@@ -312,7 +312,7 @@ public class RouterService extends AbstractService implements IRouterService {
     public void processTableRequestLoads(Node source, ProcessInfo processInfo) {
         List<TableReloadRequest> loadsToProcess = engine.getDataService().getTableReloadRequestToProcess(source.getNodeId());
         if (loadsToProcess.size() > 0) {
-        	processInfo.setStatus(ProcessInfo.Status.CREATING);
+            processInfo.setStatus(ProcessInfo.Status.CREATING);
             log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
             gapDetector.setFullGapAnalysis(true);
             
@@ -1004,7 +1004,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (dataMetaData.getData().getDataEventType() == DataEventType.RELOAD) {
                     long loadId = context.getLastLoadId();
                     if (loadId < 0) {
-                        loadId = engine.getSequenceService().nextVal(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                        loadId = engine.getSequenceService().nextVal(context.getSqlTransaction(), Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
                         context.setLastLoadId(loadId);
                     }
                     batch.setLoadId(loadId);

@@ -49,6 +49,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -231,13 +232,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void createTriggersOnChannelForTables(String channelId, String catalogName,
-            String schemaName, List<String> tables, String lastUpdateBy) {
-        createTriggersOnChannelForTablesWithReturn(channelId, catalogName, schemaName, tables, lastUpdateBy);
-    }
-    
-    public List<Trigger> createTriggersOnChannelForTablesWithReturn(String channelId, String catalogName,
-            String schemaName, List<String> tables, String lastUpdateBy) {
-        
+            String schemaName, List<String> tables, String lastUpdateBy) {       
         List<Trigger> createdTriggers = new ArrayList<Trigger>();
         
         List<Trigger> existingTriggers = getTriggers();
@@ -282,8 +277,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             saveTrigger(trigger);
             createdTriggers.add(trigger);
         }
-        return createdTriggers;
-    
     }
     
     public Collection<Trigger> findMatchingTriggers(List<Trigger> triggers, String catalog, String schema,
@@ -485,6 +478,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 || tableName.equals(TableConstants.getTableName(tablePrefix,
                         TableConstants.SYM_TABLE_RELOAD_REQUEST)));
         Trigger trigger = new Trigger();
+        trigger.setUseHandleKeyUpdates(false);
         trigger.setTriggerId(tableName);
         trigger.setSyncOnDelete(syncChanges);
         trigger.setSyncOnInsert(syncChanges);
@@ -1260,12 +1254,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         return null;
     }
+    
+    private int getNumberOfThreadsToUseForSyncTriggers() {
+        int numThreads = parameterService.getInt(ParameterConstants.SYNC_TRIGGERS_THREAD_COUNT_PER_SERVER);
+        if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS, false)) {
+            numThreads = 1;
+        }
+        return numThreads;        
+    }
 
     protected void inactivateTriggers(final List<Trigger> triggersThatShouldBeActive,
             final StringBuilder sqlBuffer, List<TriggerHistory> activeTriggerHistories) {
         final boolean ignoreCase = this.parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE);
         final Map<String, Set<Table>> tablesByTriggerId = new HashMap<String, Set<Table>>();
-        int numThreads = parameterService.getInt(ParameterConstants.SYNC_TRIGGERS_THREAD_COUNT_PER_SERVER);
+        int numThreads = getNumberOfThreadsToUseForSyncTriggers();
         ExecutorService executor = Executors.newFixedThreadPool(numThreads, new SyncTriggersThreadFactory());
         List<Future<?>> futures = new ArrayList<Future<?>>();
 
@@ -1487,6 +1489,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public void syncTriggers(Table table, boolean force) {
         boolean ignoreCase = this.parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE);
+        
+        if (table == null) {
+            throw new SymmetricException("'table' cannot be null, check that the table exists.");
+        }        
 
         /* Re-lookup just in case the table was just altered */
         platform.resetCachedTableModel();
@@ -1507,7 +1513,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected void updateOrCreateDatabaseTriggers(final List<Trigger> triggers, final StringBuilder sqlBuffer,
             final boolean force, final boolean verifyInDatabase, final List<TriggerHistory> activeTriggerHistories, 
             final boolean useTableCache) {
-        int numThreads = parameterService.getInt(ParameterConstants.SYNC_TRIGGERS_THREAD_COUNT_PER_SERVER);
+        int numThreads = getNumberOfThreadsToUseForSyncTriggers();
         ExecutorService executor = Executors.newFixedThreadPool(numThreads, new SyncTriggersThreadFactory());
         List<Future<?>> futures = new ArrayList<Future<?>>();
 
@@ -1608,6 +1614,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             Column[] columns = trigger.filterExcludedAndIncludedColumns(table.getColumns());
             for (Column column : columns) {
                 foundPk |= column.isPrimaryKey();
+                if (foundPk) {
+                    break;
+                }
             }
             if (!foundPk) {
                 table = platform.makeAllColumnsPrimaryKeys(table);

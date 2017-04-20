@@ -9,8 +9,16 @@ buildscript {
         classpath 'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.6'
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
-        classpath "com.smokejumperit.gradle.license:Gradle-License-Report:0.0.2"
+        classpath ("com.smokejumperit.gradle.license:Gradle-License-Report:0.0.2") {
+            // guava 21 requires Java 8, setting up for a clean build with only Java 1.7 tools.
+            exclude group: 'com.google.guava', module: 'guava'
+        }
+        classpath 'com.google.guava:guava:20.0'
     }
+}
+
+task buildScriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
+    configurations = project.buildscript.configurations
 }
 
 project.buildDir='target'
@@ -264,10 +272,6 @@ project(':symmetric-server') {
                     include 'bin/sym_service'
                     include 'bin/setenv'
                     fileMode 0755
-                }
-                from('../symmetric-core/src/main/resources/symmetric-default.properties') {
-                    rename 'symmetric-default.properties', 'conf/symmetric.properties'
-                    fileMode 0664
                 }
                 into('doc') { from ("$symAssembleDir/target/doc") }
                 into('lib') {

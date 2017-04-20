@@ -106,6 +106,7 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.ExtractRequest.ExtractStatus;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeCommunication;
@@ -209,7 +210,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
     }
     
-    protected boolean filter(boolean pre38, boolean pre37, String tableName) {
+    protected boolean filter(Node targetNode, String tableName) {
+        
+        boolean pre37 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.7.0");
+        boolean pre38 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.8.0");
+        
+        boolean pre3818 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.8.18");
+
         tableName = tableName.toLowerCase();
         boolean include = true;
         if (pre37 && tableName.contains(TableConstants.SYM_EXTENSION)) {
@@ -217,6 +224,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         if (pre38 && (tableName.contains(TableConstants.SYM_MONITOR) || 
                 tableName.contains(TableConstants.SYM_NOTIFICATION))) {
+            include = false;
+        }
+        
+        if (pre3818 && tableName.contains(TableConstants.SYM_CONSOLE_USER_HIST)) {
             include = false;
         }
         return include;
@@ -247,15 +258,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             List<SelectFromTableEvent> initialLoadEvents = new ArrayList<SelectFromTableEvent>(
                     triggerRouters.size() * 2);
 
-            boolean pre37 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.7.0");
-            boolean pre38 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.8.0");
-
             for (int i = triggerRouters.size() - 1; i >= 0; i--) {
                 TriggerRouter triggerRouter = triggerRouters.get(i);
                 String channelId = triggerRouter.getTrigger().getChannelId();
                 if (Constants.CHANNEL_CONFIG.equals(channelId)
                         || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
-                    if (filter(pre37, pre38, triggerRouter.getTrigger().getSourceTableName())) {
+                    if (filter(targetNode, triggerRouter.getTrigger().getSourceTableName())) {
 
                         TriggerHistory triggerHistory = triggerRouterService
                                 .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
@@ -295,8 +303,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 String channelId = triggerRouter.getTrigger().getChannelId();
                 if (Constants.CHANNEL_CONFIG.equals(channelId)
                         || Constants.CHANNEL_HEARTBEAT.equals(channelId)) {
-                    if (!(pre37 && triggerRouter.getTrigger().getSourceTableName().toLowerCase()
-                            .contains("extension"))) {
+                    if (filter(targetNode, triggerRouter.getTrigger().getSourceTableName())) {
                         TriggerHistory triggerHistory = triggerRouterService
                                 .getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
                                         .getTriggerId(), null, null, null);
@@ -467,7 +474,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
             IOutgoingTransport transport) {
-
         return extract(processInfo, targetNode, null, transport);
     }
     
@@ -478,7 +484,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
          * make sure that data is routed before extracting if the route job is
          * not configured to start automatically
          */
-        if (!parameterService.is(ParameterConstants.START_ROUTE_JOB)) {
+        if (!parameterService.is(ParameterConstants.START_ROUTE_JOB) && parameterService.is(ParameterConstants.ROUTE_ON_EXTRACT)) {
             routerService.routeData(true);
         }
 
@@ -486,8 +492,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         OutgoingBatches batches = null;
         if (queue != null) {
         	batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue, false);
-        }
-        else {
+        } else {
         	batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
         }
 
@@ -768,9 +773,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         if (mode != ExtractMode.EXTRACT_ONLY) {
             long batchStatusUpdateMillis = parameterService.getLong(ParameterConstants.OUTGOING_BATCH_UPDATE_STATUS_MILLIS);
-            if (currentBatch.getStatus() == Status.RQ || currentBatch.getStatus() == Status.LD ||
+            int batchStatusUpdateDataCount = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_UPDATE_STATUS_DATA_COUNT);
+            Channel channel = configurationService.getChannel(currentBatch.getChannelId());
+            
+            if (currentBatch.getStatus() == Status.RQ || 
+                    currentBatch.getStatus() == Status.LD ||
                     currentBatch.getLastUpdatedTime() == null ||
-                    System.currentTimeMillis() - batchStatusUpdateMillis >= currentBatch.getLastUpdatedTime().getTime()) {
+                    System.currentTimeMillis() - batchStatusUpdateMillis >= currentBatch.getLastUpdatedTime().getTime() ||
+                    channel.isReloadFlag() || 
+                    currentBatch.getDataEventCount() > batchStatusUpdateDataCount) {
                 outgoingBatchService.updateOutgoingBatch(currentBatch);
                 return true;
             }
@@ -1012,11 +1023,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 if (extractedBatch.isFileResource()) {
                                     SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
                                 } else {
-                                    IOUtils.copy(extractedBatch.getReader(), targetResource.getWriter(memoryThresholdInBytes));
-                                    extractedBatch.close();
-                                    targetResource.close();
+                                    try {
+                                        IOUtils.copy(extractedBatch.getReader(), targetResource.getWriter(memoryThresholdInBytes));
+                                    } finally {
+                                        extractedBatch.close();
+                                        targetResource.close();
+                                    }
                                 }
-                                targetResource.setState(State.READY);
+                                targetResource.setState(State.DONE);
                                 isRetry = true;
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
@@ -1152,6 +1166,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } catch (Throwable t) {
             throw new RuntimeException(t);
         } finally {
+            stagedResource.setState(State.DONE);
             stagedResource.close();
         }
     }
@@ -1377,6 +1392,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * in the background.
      */
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
+        if (!isApplicable(nodeCommunication, status)) {
+            log.debug("{} failed isApplicable check and will not run.", this);
+            return;
+        }
+        
         List<ExtractRequest> requests = getExtractRequestsForNode(nodeCommunication);
         long ts = System.currentTimeMillis();
         /*
@@ -1433,6 +1453,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     
                     extractOutgoingBatch(processInfo, targetNode, multiBatchStatingWriter, 
                             firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT);
+                    
+                    for (OutgoingBatch outgoingBatch : batches) {
+                        resource = getStagedResource(outgoingBatch);  
+                        if (resource != null) {
+                            resource.setState(State.DONE);        
+                        }
+                    }
 
                 } else {
                     log.info("Batches already had an OK status for request {}, batches {} to {}.  Not extracting", new Object[] { request.getRequestId(), request.getStartBatchId(),
@@ -1507,6 +1534,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 throw ex;
             }
         }
+    }
+    
+    protected boolean isApplicable(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
+        return nodeCommunication.getCommunicationType() != CommunicationType.FILE_XTRCT;
     }
 
     protected ProcessType getProcessType() {
@@ -1618,16 +1649,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     reloadSource.close();
                     reloadSource = null;
                 }
+                lastTriggerHistory = null;
             }
 
             if (data == null) {
                 data = this.cursor.next();
                 if (data != null) {
-                    TriggerHistory triggerHistory = data.getTriggerHistory();
                     String routerId = data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID);
 
                     if (data.getDataEventType() == DataEventType.RELOAD) {
-
+                        TriggerHistory triggerHistory = data.getTriggerHistory();
                         String triggerId = triggerHistory.getTriggerId();
 
                         TriggerRouter triggerRouter = triggerRouterService
@@ -1654,6 +1685,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             return next();
                         }
                     } else {
+                        TriggerHistory triggerHistory = data.getTriggerHistory();
                         Trigger trigger = triggerRouterService.getTriggerById(
                                 triggerHistory.getTriggerId(), false);
                         if (trigger != null || triggerHistory.getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
@@ -1735,8 +1767,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
 
-                    lastTriggerHistory = triggerHistory;
-                    lastRouterId = routerId;
+                    if (data != null) {
+                        lastTriggerHistory = data.getTriggerHistory();
+                        lastRouterId = routerId;
+                    }
                 } else {
                     closeCursor();
                 }

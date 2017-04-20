@@ -39,6 +39,8 @@ public class JobManager implements IJobManager {
     
     private ThreadPoolTaskScheduler taskScheduler;
     
+    private boolean started = false;
+    
     public JobManager(ISymmetricEngine engine) {
         
         this.taskScheduler = new ThreadPoolTaskScheduler();
@@ -67,6 +69,11 @@ public class JobManager implements IJobManager {
         this.jobs.add(new MonitorJob(engine, taskScheduler));
         this.jobs.add(new ReportStatusJob(engine, taskScheduler));
     }
+    
+    @Override
+    public boolean isStarted() {
+        return started;
+    }
 
     @Override
     public IJob getJob(String name) {
@@ -79,8 +86,7 @@ public class JobManager implements IJobManager {
     }
     
     /*
-     * Start the jobs if they are configured to be started in
-     * symmetric.properties
+     * Start the jobs if they are configured to be started
      */
     @Override
     public synchronized void startJobs() {
@@ -91,6 +97,7 @@ public class JobManager implements IJobManager {
                 log.info("Job {} not configured for auto start", job.getName());
             }
         }
+        started = true;
     }
     
     @Override
@@ -108,6 +115,7 @@ public class JobManager implements IJobManager {
             job.stop();
         }      
         Thread.interrupted();
+        started = false;
     }
     
     @Override

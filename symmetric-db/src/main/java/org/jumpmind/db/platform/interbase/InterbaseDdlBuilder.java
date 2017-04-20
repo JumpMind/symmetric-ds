@@ -1,5 +1,7 @@
 package org.jumpmind.db.platform.interbase;
 
+import java.sql.Connection;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -95,6 +97,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
 
+        databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_READ_COMMITTED);
     }
 
     @Override

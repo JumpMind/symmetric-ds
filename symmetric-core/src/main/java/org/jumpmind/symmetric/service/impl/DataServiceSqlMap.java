@@ -75,12 +75,6 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("selectMaxDataEventDataIdSql", ""
                 + "select max(data_id) from $(data_event)   ");
 
-        putSql("checkForAndUpdateMissingChannelIdSql", ""
-                + "update $(data) set channel_id=?                           "
-                + "  where                                                         "
-                + "  data_id >= ? and data_id <= ? and                             "
-                + "  channel_id not in (select channel_id from $(channel))   ");
-
         putSql("countDataInRangeSql", ""
                 + "select count(*) from $(data) where data_id > ? and data_id < ?   ");
 

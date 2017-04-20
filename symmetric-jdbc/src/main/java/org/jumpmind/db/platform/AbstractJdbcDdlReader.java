@@ -649,6 +649,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         String tableName = (String) values.get("TABLE_NAME");
+        if (tableName == null) {
+            tableName = (String) values.get("NAME");
+        }
         try {
             Table table = null;
 
@@ -667,11 +670,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
                 String catalog = (String) values.get(getResultSetCatalogName());
                 table.setCatalog(catalog);
-                metaData.setCatalog(catalog);
 
                 String schema = (String) values.get(getResultSetSchemaName());
                 table.setSchema(schema);
-                metaData.setSchemaPattern(schema);
 
                 table.setDescription((String) values.get("REMARKS"));
 
@@ -1434,6 +1435,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     rs = meta.getTables(catalog, schema, null, tableTypes);
                     while (rs.next()) {
                         String tableName = rs.getString("TABLE_NAME");
+                        if (tableName == null) {
+                            tableName = rs.getString("NAME");
+                        }
                         list.add(tableName);
                     }
                     return list;

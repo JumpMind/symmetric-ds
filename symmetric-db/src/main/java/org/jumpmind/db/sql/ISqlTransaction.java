@@ -26,6 +26,8 @@ import java.util.Map;
 import org.jumpmind.db.model.Table;
 
 public interface ISqlTransaction {
+    
+    public void addSqlTransactionListener(ISqlTransactionListener listener);
 
     public boolean isInBatchMode();
 

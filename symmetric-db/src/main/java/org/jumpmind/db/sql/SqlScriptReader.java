@@ -103,7 +103,7 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
                             sql.setLength(0);
                         }
                     } else {
-                        checkStatementEndsIndex = sql.length()-1;
+                        checkStatementEndsIndex = sql.length();
                     }
                     line = readLine();
                 } while (line != null);

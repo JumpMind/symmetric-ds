@@ -28,6 +28,7 @@ import java.util.Map;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlTransactionListenerAdapter;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -91,7 +92,15 @@ public class SequenceService extends AbstractService implements ISequenceService
         return nextValFromDatabase(name);
     }
 
-    public synchronized long nextVal(ISqlTransaction transaction, String name) {
+    public synchronized long nextVal(ISqlTransaction transaction, final String name) {
+        if (transaction != null) {
+            transaction.addSqlTransactionListener(new SqlTransactionListenerAdapter() {
+                @Override
+                public void transactionRolledBack() {
+                    sequenceCache.remove(name);
+                }
+            });
+        }
         if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && getSequenceDefinition(transaction, name).getCacheSize() > 0) {
             return nextValFromCache(transaction, name);
         }

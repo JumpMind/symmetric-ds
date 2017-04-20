@@ -141,7 +141,7 @@ public class SimpleStagingDataWriter {
                 if (writer != null) {
                     writeLine(line);
                     resource.close();
-                    resource.setState(State.READY);
+                    resource.setState(State.DONE);
                     writer = null;
                 }
                 batchTableLines.clear();

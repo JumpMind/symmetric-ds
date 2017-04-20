@@ -24,11 +24,11 @@ Authentication Method:: Method to authenticate the user.
 .Roles
 |===
 
-|Admin|Admin users can read and write data and have full control of the SymmetricDS web console.
+|Admin|Admin users have access to all functionalities of the SymmetricDS web console, including the Manage, Configure, and Explore tabs. Admin users also have full access to the connected databases.
 
-|Read|Read users can read data, but cannot write data.  Read users have a limited control of the SymmetricDS web console.
+|Read|Read users can view the Manage and Configure tabs, but have no control over editing. Read users don't have any access to the Explore tab, LDAP settings, Mail Server Settings, Monitor settings, or Notification settings. 
 
-|Write|Write users can read and write data, but have a limited control of the SymmetricDS web console. 
+|Write|Write users have access to most functionalities of the SymmetricDS web console, including the Manage, Configure, and Explore tabs. Write users also have full access to the connected databases, but do not have any access to LDAP settings, Mail Server Settings, Monitor settings, or Notification settings.
 
 |===            
 

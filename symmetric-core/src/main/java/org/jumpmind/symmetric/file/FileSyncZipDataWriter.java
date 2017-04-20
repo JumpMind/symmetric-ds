@@ -259,9 +259,9 @@ public class FileSyncZipDataWriter implements IDataWriter {
         } catch (IOException e) {
             throw new IoException(e);
         } finally {
-            if (stagedResource != null) {                
+            if (stagedResource != null) {
+                stagedResource.setState(IStagedResource.State.DONE);
                 stagedResource.close();
-                stagedResource.setState(IStagedResource.State.READY);
             }
         }
     }

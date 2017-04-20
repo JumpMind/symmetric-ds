@@ -18,22 +18,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.ext;
+package org.jumpmind.db.platform;
 
-import java.util.List;
-
-import org.jumpmind.extension.IExtensionPoint;
-
-/**
- * An API that is responsible for finding and registering available
- * extension points.
- */
-public interface IExtensionPointManager {
-
-    public void register();
-    
-    public List<ExtensionPointMetaData> getExtensionPoints();
-    
-    public <T extends IExtensionPoint> T getExtensionPoint(String name);
-    
+public enum PermissionType {
+	CREATE_TABLE, ALTER_TABLE, DROP_TABLE, CREATE_TRIGGER, DROP_TRIGGER, EXECUTE, CREATE_ROUTINE, CREATE_FUNCTION  
 }
