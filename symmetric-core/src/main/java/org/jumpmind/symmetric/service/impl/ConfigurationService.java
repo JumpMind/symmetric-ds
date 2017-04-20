@@ -582,16 +582,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return channels;
     }
 
-    public Map<String, Channel> getChannels(NodeGroupLinkAction eventAction, boolean refreshCache) {
-        Map<String, Channel> channels = new HashMap<String, Channel>();
-        for (Channel channel : getChannels(refreshCache).values()) {
-            if (channel.getDataEventAction() != null && channel.getDataEventAction().equals(eventAction)) {
-                channels.put(channel.getChannelId(), channel);
-            }
-        }
-        return channels;
-    }
-
     public Channel getChannel(String channelId) {
         NodeChannel nodeChannel = getNodeChannel(channelId, false);
         if (nodeChannel != null) {

@@ -119,6 +119,7 @@ import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoDataWriter;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.Router;
@@ -477,7 +478,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return extract(processInfo, targetNode, null, transport);
     }
     
-    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode, String queue,
+    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode, String queue, 
             IOutgoingTransport transport) {
 
         /*
@@ -491,9 +492,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         OutgoingBatches batches = null;
         if (queue != null) {
-        	batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue, false);
+            batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue,
+                    processInfo.getKey().getProcessType().equals(ProcessInfoKey.ProcessType.PUSH_JOB) ?
+                            NodeGroupLinkAction.P : NodeGroupLinkAction.W, false);
         } else {
-        	batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
+            batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
         }
 
         if (batches.containsBatches()) {

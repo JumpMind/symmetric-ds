@@ -374,7 +374,7 @@ public class NodeService extends AbstractService implements INodeService {
             List<Node> list = sourceNodesCache.get(eventAction.name());
             if (list == null || (System.currentTimeMillis() - nodeLinkCacheTime) >= cacheTimeoutInMs) {
                 list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoTargetMeSql"),
-                        new NodeRowMapper(), node.getNodeGroupId(), eventAction.name(), NodeGroupLinkAction.B);
+                        new NodeRowMapper(), node.getNodeGroupId(), eventAction.name(), NodeGroupLinkAction.B.name());
                 sourceNodesCache.put(eventAction.name(), list);
                 nodeLinkCacheTime = System.currentTimeMillis();
             }
@@ -391,7 +391,7 @@ public class NodeService extends AbstractService implements INodeService {
             List<Node> list = targetNodesCache.get(eventAction.name());
             if (list == null || (System.currentTimeMillis() - nodeLinkCacheTime) >= cacheTimeoutInMs) {
                 list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoITargetSql"),
-                        new NodeRowMapper(), node.getNodeGroupId(), eventAction.name(), NodeGroupLinkAction.B);
+                        new NodeRowMapper(), node.getNodeGroupId(), eventAction.name(), NodeGroupLinkAction.B.name());
                 targetNodesCache.put(eventAction.name(), list);
                 nodeLinkCacheTime = System.currentTimeMillis();
             }
