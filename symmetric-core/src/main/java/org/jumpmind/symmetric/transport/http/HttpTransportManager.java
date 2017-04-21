@@ -32,6 +32,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.codec.binary.Base64;
@@ -60,6 +62,10 @@ import org.jumpmind.util.AppUtils;
 public class HttpTransportManager extends AbstractTransportManager implements ITransportManager {
 
     private ISymmetricEngine engine;
+    private AtomicReference<String> cachedHostName = new AtomicReference<String>();
+    private AtomicReference<String> cachedIpAddress = new AtomicReference<String>();
+    private AtomicLong cacheTime = new AtomicLong(-1);
+    private long hostCacheTtl = 0;
 
     public HttpTransportManager() {
     }
@@ -67,6 +73,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public HttpTransportManager(ISymmetricEngine engine) {
         super(engine.getExtensionService());
         this.engine = engine;
+        hostCacheTtl = engine.getParameterService().getLong("cache.security.token.host.time.ms", 5*60*1000);
     }
 
     public int sendCopyRequest(Node local) throws IOException {
@@ -318,9 +325,41 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         sb.append(WebConstants.SECURITY_TOKEN);
         sb.append("=");
         sb.append(securityToken);
-        append(sb, WebConstants.HOST_NAME, AppUtils.getHostName());
-        append(sb, WebConstants.IP_ADDRESS, AppUtils.getIpAddress());        
+        String[] hostAndIpAddress = getHostAndIpAddress();
+        append(sb, WebConstants.HOST_NAME, hostAndIpAddress[0]);
+        append(sb, WebConstants.IP_ADDRESS, hostAndIpAddress[1]);        
         return sb.toString();
+    }
+    
+    protected String[] getHostAndIpAddress() {
+        String hostName, ipAddress;
+        if (cachedHostName.get() == null || cachedIpAddress.get() == null || cacheTimeExpired(cacheTime)) {
+            cachedHostName.set(null);
+            cachedIpAddress.set(null);
+            hostName = AppUtils.getHostName();
+            ipAddress = AppUtils.getIpAddress();
+            if (!StringUtils.isEmpty(hostName) && !"unknown".equals(hostName)) {
+                cachedHostName.set(hostName);
+            }
+            if (!StringUtils.isEmpty(ipAddress) && !"unknown".equals(ipAddress)) {
+                cachedIpAddress.set(ipAddress);
+            }
+            cacheTime.set(System.currentTimeMillis());
+        } else {
+            hostName = cachedHostName.get();
+            ipAddress = cachedIpAddress.get();
+        }
+        
+        return new String[] {hostName, ipAddress};
+    }
+
+    protected boolean cacheTimeExpired(AtomicLong argCacheTime) {
+        long cacheTimeLong = argCacheTime.get();
+        if (cacheTimeLong == -1 || (System.currentTimeMillis()-cacheTimeLong) > hostCacheTtl) {
+            return true;
+        } else {
+            return false;            
+        }
     }
 
     protected String addNodeId(String base, String nodeId, String connector) {
