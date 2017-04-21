@@ -397,11 +397,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public OutgoingBatches getOutgoingBatches(String nodeId, String channelThread, boolean includeDisabledChannels) {
-        return getOutgoingBatches(nodeId, channelThread, null, includeDisabledChannels);
+        return getOutgoingBatches(nodeId, channelThread, null, null, includeDisabledChannels);
     }
     
     @Override
-    public OutgoingBatches getOutgoingBatches(String nodeId, String channelThread, NodeGroupLinkAction eventAction, boolean includeDisabledChannels) {
+    public OutgoingBatches getOutgoingBatches(String nodeId, String channelThread, NodeGroupLinkAction eventAction, NodeGroupLinkAction defaultEventAction,
+            boolean includeDisabledChannels) {
         long ts = System.currentTimeMillis();
         final int maxNumberOfBatchesToSelect = parameterService.getInt(
                 ParameterConstants.OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
@@ -411,7 +412,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         int[] types = null;
 
         if (eventAction != null) {
-            sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchChannelActionSql");
+            if (eventAction.equals(defaultEventAction)) {
+                sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchChannelActionNullSql");                
+            } else {
+                sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchChannelActionSql");                                
+            }
+            
             params = new Object[] { eventAction.name(),
                 nodeId, channelThread, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
                 OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
