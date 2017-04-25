@@ -30,6 +30,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
+import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.impl.ContextService;
@@ -115,6 +116,12 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
     
     public boolean isTransactionIdOverrideSupported() {
         return false;
+    }
+
+    @Override
+    protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
+    	/* gets filled/replaced by trigger template as it will compare by each column */
+        return "$(anyColumnChanged)";
     }
     
     @Override
