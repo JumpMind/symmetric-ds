@@ -101,11 +101,13 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             String collation = platform.getSqlTemplate().queryForString("select collation_name from information_schema.columns " +
                     "where table_schema = ? and table_name = ? and column_name = ?",
                     catalog, tableName, columnName);
-            boolean isBinary = collation != null && collation.equalsIgnoreCase("utf8_bin");
+            boolean isBinary = collation != null && collation.endsWith("_bin");
 
             if ("LONGTEXT".equals(typeName)) {
                 return isBinary ? Types.BLOB : Types.CLOB;
             } else if ("MEDIUMTEXT".equals(typeName)) {
+                return isBinary ? Types.BLOB : Types.LONGVARCHAR;
+            } else if ("TEXT".equals(typeName)) {
                 return isBinary ? Types.BLOB : Types.LONGVARCHAR;
             } else if ("TINYTEXT".equals(typeName)) {
                 return isBinary ? Types.BLOB : Types.LONGVARCHAR;
