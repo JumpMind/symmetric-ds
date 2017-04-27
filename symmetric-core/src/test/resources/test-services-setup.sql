@@ -52,8 +52,8 @@ insert into sym_node values ('pull3', 'test-group-for-root-to-pull', 'test', 1, 
 insert into sym_node values ('55555', 'test-node-group2', '00011', 1, 'http://snoopdog.com', null, '2.0', '2.0', null, null, current_timestamp, null, 0, 0, '00000', 'engine');
 
 -- For testCheckForOfflineNodes.  These nodes have an old heartbeat and will be set to offline
-insert into sym_node values ('66666', 'unit-test-only', '66666', 1, null, null, '2.0', null, null, {ts '2000-01-01 00:00:00'}, null, 0, 0, '00000', 'engine');
-insert into sym_node values ('77777', 'unit-test-only', '77777', 1, null, null, '2.0', null, null, {ts '2000-01-01 00:00:00'}, '-08:00', 0, 0, '00000', 'engine');
+insert into sym_node values ('66666', 'unit-test-only', '66666', 1, null, null, '2.0', '2.0', null, null, {ts '2000-01-01 00:00:00'}, null, 0, 0, '00000', 'engine');
+insert into sym_node values ('77777', 'unit-test-only', '77777', 1, null, null, '2.0', '2.0', null, null, {ts '2000-01-01 00:00:00'}, '-08:00', 0, 0, '00000', 'engine');
 
 -- For testFindNodesThatOriginatedHere
 insert into sym_node values ('44001', 'unit-test-only', '44001', 1, null, null, '2.0', '2.0', null, null, current_timestamp, null, 0, 0, '00011', 'engine');
