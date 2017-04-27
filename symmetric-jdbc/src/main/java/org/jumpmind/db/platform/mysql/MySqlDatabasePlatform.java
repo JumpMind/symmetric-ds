@@ -1,5 +1,7 @@
 package org.jumpmind.db.platform.mysql;
 
+import java.sql.Types;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -22,6 +24,10 @@ package org.jumpmind.db.platform.mysql;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
@@ -131,5 +137,23 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setSolution("Grant CREATE ROUTINE Privilege");
         }
         return result;
+    }
+    
+    @Override
+    public void makePlatformSpecific(Database database) {
+        for (Table table : database.getTables()) {
+            for (Column column : table.getColumns()) {
+                try {
+                    if (column.getMappedTypeCode() == Types.DATE 
+                            && column.findPlatformColumn(DatabaseNamesConstants.ORACLE) != null) {
+                        column.setMappedType(TypeMap.TIMESTAMP);
+                        column.setMappedTypeCode(Types.TIMESTAMP);
+                        column.setScale(6);
+                    }
+                }
+                catch (Exception e) {}
+            }
+        }
+        super.makePlatformSpecific(database);
     }
 }

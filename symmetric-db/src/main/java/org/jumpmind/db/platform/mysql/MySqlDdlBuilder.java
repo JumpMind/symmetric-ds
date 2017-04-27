@@ -319,6 +319,9 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
                 && (column.getMappedTypeCode() == Types.DECIMAL || column.getMappedTypeCode() == Types.NUMERIC)) {
             sqlType = "BIGINT";
         }
+        if (column.getMappedTypeCode() == Types.TIMESTAMP && column.getScale() > 0) {
+            sqlType = "TIMESTAMP(" + column.getScale() + ")";
+        }
         return sqlType;
     }
 
