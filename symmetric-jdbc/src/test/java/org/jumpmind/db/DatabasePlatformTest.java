@@ -35,6 +35,7 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
@@ -302,10 +303,7 @@ public class DatabasePlatformTest {
     	List<PermissionResult> results = platform.checkSymTablePermissions(PermissionType.values());
     	
     	for (PermissionResult result : results) {
-    		System.out.println(result.toString());
-    		if (result.getException() != null) {
-    			System.out.println(result.getException().toString());
-    		}
+    		assertTrue(!result.getStatus().equals(Status.FAIL));
     	}
     }
 }
