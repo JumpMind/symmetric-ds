@@ -68,6 +68,7 @@ public class JobManager implements IJobManager {
         this.jobs.add(new InitialLoadExtractorJob(engine,taskScheduler));
         this.jobs.add(new MonitorJob(engine, taskScheduler));
         this.jobs.add(new ReportStatusJob(engine, taskScheduler));
+        this.jobs.add(new SyncConfigJob(engine, taskScheduler));
     }
     
     @Override

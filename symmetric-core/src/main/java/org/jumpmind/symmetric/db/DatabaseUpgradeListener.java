@@ -118,6 +118,9 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             engine.getSqlTemplate().update("update  " + tablePrefix + "_" + TableConstants.SYM_CHANNEL +
             		" set max_batch_size = 10000 where reload_flag = 1 and max_batch_size = 10000");
         }
+
+        engine.getPullService().pullConfigData(false);
+
         return sb.toString();
     }
 

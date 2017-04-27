@@ -52,12 +52,13 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("insertNodeSql",
                 "insert into $(node) (node_group_id, external_id, database_type, database_version, schema_version, symmetric_version, sync_url," +
                 "heartbeat_time, sync_enabled, timezone_offset, batch_to_send_count, batch_in_error_count, created_at_node_id, " +
-                "deployment_type, node_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                "deployment_type, config_version, node_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
         putSql("updateNodeSql",
                 "update $(node) set node_group_id=?, external_id=?, database_type=?,                                                                       "
                         + "  database_version=?, schema_version=?, symmetric_version=?, sync_url=?, heartbeat_time=?,                                                      "
-                        + "  sync_enabled=?, timezone_offset=?, batch_to_send_count=?, batch_in_error_count=?, created_at_node_id=?, deployment_type=? where node_id = ?   ");
+                        + "  sync_enabled=?, timezone_offset=?, batch_to_send_count=?, batch_in_error_count=?, "
+                        + "  created_at_node_id=?, deployment_type=?, config_version = ? where node_id = ?");
 
         putSql("findNodeSql", "where node_id = ?   ");
 
@@ -151,7 +152,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectNodePrefixSql",
                           "select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,                                                                                                                                    "
-                        + "  c.schema_version, c.database_type, c.database_version, c.symmetric_version, c.created_at_node_id, c.heartbeat_time, c.timezone_offset, c.batch_to_send_count, c.batch_in_error_count, c.deployment_type from   "
+                        + "  c.schema_version, c.database_type, c.database_version, c.symmetric_version, c.created_at_node_id, c.heartbeat_time, c.timezone_offset, c.batch_to_send_count, c.batch_in_error_count, c.deployment_type, c.config_version from   "
                         + "  $(node) c                                                                                                                                                                                                ");
 
         putSql("updateNodeSecuritySql",
