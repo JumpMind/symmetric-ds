@@ -817,6 +817,8 @@ public class RouterService extends AbstractService implements IRouterService {
         final int maxNumberOfEventsBeforeFlush = parameterService
                 .getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
         try {
+            long ts = System.currentTimeMillis();
+            
             nextData = reader.take();
             do {
                 if (nextData != null) {
@@ -860,6 +862,17 @@ public class RouterService extends AbstractService implements IRouterService {
                                         context.getChannel().getChannelId(), statsDataEventCount);
                                 statsDataEventCount = 0;
                             }
+                        }
+              
+                        long routeTs = System.currentTimeMillis() - ts;
+                        if (routeTs > 60000 && context != null) {
+                            log.info(
+                                    "Routing for channel '{}' has been processing for {} seconds. The following stats have been gathered: "
+                                            + "startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, transactions={}, dataGaps={}",
+                                    new Object[] { context.getChannel().getChannelId(), (routeTs / 1000), context.getStartDataId(),
+                                            context.getEndDataId(), context.getDataReadCount(), context.getPeekAheadFillCount(),
+                                            context.getTransactions().toString(), context.getDataGaps().toString() });
+                            ts = System.currentTimeMillis();
                         }
 
                         context.setLastDataProcessed(data);
