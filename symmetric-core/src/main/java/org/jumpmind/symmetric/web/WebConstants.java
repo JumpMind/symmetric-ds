@@ -114,5 +114,7 @@ public class WebConstants {
     public static final String BATCH_TO_SEND_COUNT = "Batch-To-Send-Count";
     
     public static final String THREAD_CHANNEL = "threadChannel";
+    
+    public static final String CONFIG_VERSION = "configVersion";
 
 }

@@ -58,6 +58,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -465,6 +466,51 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw e;
         }
         return list;
+    }
+
+    public void loadDataFromConfig(Node remote, RemoteNodeStatus status, boolean force) throws IOException {
+        if (engine.getParameterService().isRegistrationServer()) {
+            return;
+        }
+        Node local = nodeService.findIdentity();
+        try {
+            NodeSecurity localSecurity = nodeService.findNodeSecurity(local.getNodeId(), true);
+            String configVersion = force ? "" : local.getConfigVersion();
+
+            IIncomingTransport transport = engine.getTransportManager().getConfigTransport(remote, local,
+                    localSecurity.getNodePassword(), Version.version(), configVersion, remote.getSyncUrl());
+
+            ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
+                    .getNodeId(), Constants.CHANNEL_CONFIG, local.getNodeId(), ProcessType.PULL_CONFIG_JOB));
+            try {
+                log.info("Requesting current configuration {symmetricVersion={}, configVersion={}}", 
+                        Version.version(), local.getConfigVersion());
+                List<IncomingBatch> list = loadDataFromTransport(processInfo, remote, transport, null);
+                if (containsError(list)) {
+                    processInfo.setStatus(ProcessInfo.Status.ERROR);
+                } else {
+                    if (list.size() > 0) {
+                        status.updateIncomingStatus(list);
+                        local.setConfigVersion(Version.version());
+                        nodeService.save(local);
+                    }
+                    processInfo.setStatus(ProcessInfo.Status.OK);
+                }
+            } catch (RuntimeException e) {
+                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                throw e;
+            } catch (IOException e) {
+                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                throw e;
+            }
+        } catch (RegistrationRequiredException e) {
+            log.warn("Failed to pull configuration from node '{}'. It probably is missing a node security record for '{}'.",
+                    remote.getNodeId(), local.getNodeId());
+        } catch (MalformedURLException e) {
+            log.error("Could not connect to the {} node's transport because of a bad URL: '{}' {}",
+                    remote.getNodeId(), remote.getSyncUrl(), e);
+            throw e;
+        }
     }
 
     /**

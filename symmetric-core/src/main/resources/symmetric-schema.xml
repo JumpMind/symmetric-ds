@@ -334,6 +334,7 @@
         <column name="sync_url" type="VARCHAR" size="255" description="The URL to contact the node for synchronization." />
         <column name="schema_version" type="VARCHAR" size="50" description="The version of the database schema this node manages. Useful for specifying synchronization by version. "/>
         <column name="symmetric_version" type="VARCHAR" size="50"  description="The version of SymmetricDS running at this node." />
+        <column name="config_version" type="VARCHAR" size="50"  description="The version of configuration running at this node." />
         <column name="database_type" type="VARCHAR" size="50"  description="The database product name at this node as reported by JDBC."  />
         <column name="database_version" type="VARCHAR" size="50"  description="The database product version at this node as reported by JDBC." />
         <column name="heartbeat_time" type="TIMESTAMP"  description="Deprecated.  Use node_host.heartbeat_time instead." />

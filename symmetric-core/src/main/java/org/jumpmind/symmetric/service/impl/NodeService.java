@@ -299,11 +299,12 @@ public class NodeService extends AbstractService implements INodeService {
                             node.getSymmetricVersion(), node.getSyncUrl(), new Date(),
                             node.isSyncEnabled() ? 1 : 0, AppUtils.getTimezoneOffset(),
                             node.getBatchToSendCount(), node.getBatchInErrorCount(),
-                            node.getCreatedAtNodeId(), node.getDeploymentType(), node.getNodeId() },
+                            node.getCreatedAtNodeId(), node.getDeploymentType(), 
+                            node.getConfigVersion(), node.getNodeId() },
                     new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
                             Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR });
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
             flushNodeGroupCache();
         }
     }
@@ -316,11 +317,12 @@ public class NodeService extends AbstractService implements INodeService {
                         node.getSymmetricVersion(), node.getSyncUrl(), new Date(),
                         node.isSyncEnabled() ? 1 : 0,  AppUtils.getTimezoneOffset(),
                         node.getBatchToSendCount(), node.getBatchInErrorCount(),
-                        node.getCreatedAtNodeId(), node.getDeploymentType(), node.getNodeId() },
+                        node.getCreatedAtNodeId(), node.getDeploymentType(), 
+                        node.getConfigVersion(), node.getNodeId() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
                         Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR }) == 1;
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) == 1;
         return updated;
     }
 
@@ -881,6 +883,7 @@ public class NodeService extends AbstractService implements INodeService {
             node.setBatchToSendCount(rs.getInt("batch_to_send_count"));
             node.setBatchInErrorCount(rs.getInt("batch_in_error_count"));
             node.setDeploymentType(rs.getString("deployment_type"));
+            node.setConfigVersion(rs.getString("config_version"));
             return node;
         }
     }

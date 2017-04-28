@@ -51,6 +51,8 @@ public interface IDataLoaderService {
 
     public List<IncomingBatch> loadDataFromOfflineTransport(Node remote, RemoteNodeStatus status, IIncomingTransport transport) throws IOException;
 
+    public void loadDataFromConfig(Node remote, RemoteNodeStatus status, boolean force) throws IOException;
+
     public List<String> getAvailableDataLoaderFactories();
         
     public List<IncomingBatch> loadDataBatch(String batchData);
