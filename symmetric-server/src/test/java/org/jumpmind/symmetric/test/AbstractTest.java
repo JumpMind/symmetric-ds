@@ -39,6 +39,7 @@ import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.exception.InterruptedException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.EnvironmentSpecificProperties;
@@ -140,6 +141,14 @@ abstract public class AbstractTest {
                 }
             }
         }
+    }
+    
+    protected ISqlTemplate template(SymmetricWebServer webServer) {
+        return webServer.getEngine().getDatabasePlatform().getSqlTemplate();
+    }
+    
+    protected ISqlTemplate template(ISymmetricEngine engine) {
+        return engine.getDatabasePlatform().getSqlTemplate();
     }
 
     protected SymmetricWebServer getWebServer(String name) {
