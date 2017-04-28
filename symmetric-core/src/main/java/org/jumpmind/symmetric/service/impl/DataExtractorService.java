@@ -563,7 +563,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             OutgoingBatch currentBatch = null;
             ExecutorService executor = null;
             try {
-                final long maxBytesToSync = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
                 final boolean streamToFileEnabled = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED);
                 long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
                 Node sourceNode = nodeService.findIdentity();
@@ -584,56 +583,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
                     processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
                     final OutgoingBatch extractBatch = currentBatch;
-
                     Callable<FutureOutgoingBatch> callable = new Callable<FutureOutgoingBatch>() {
                         public FutureOutgoingBatch call() throws Exception {
-                            FutureOutgoingBatch outgoingBatch = new FutureOutgoingBatch(extractBatch, false);
-                            if (!status.shouldExtractSkip) {
-                                if (extractBatch.isExtractJobFlag() && extractBatch.getStatus() != Status.IG) {
-                                    if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
-                                        if (extractBatch.getStatus() != Status.RQ && extractBatch.getStatus() != Status.IG
-                                                && !isPreviouslyExtracted(extractBatch)) {
-                                            /*
-                                             * the batch must have been purged. it needs to be re-extracted
-                                             */
-                                            log.info("Batch {} is marked as ready but it has been deleted.  Rescheduling it for extraction",
-                                                    extractBatch.getNodeBatchId());
-                                            if (mode != ExtractMode.EXTRACT_ONLY) {
-                                                resetExtractRequest(extractBatch);
-                                            }
-                                            status.shouldExtractSkip = outgoingBatch.isExtractSkipped = true;
-                                        } else if (extractBatch.getStatus() == Status.RQ) {
-                                            log.info("Batch {} is not ready for delivery.  It is currently scheduled for extraction",
-                                                    extractBatch.getNodeBatchId());
-                                            status.shouldExtractSkip = outgoingBatch.isExtractSkipped = true;
-                                        }
-                                    } else {
-                                        extractBatch.setStatus(Status.NE);
-                                        extractBatch.setExtractJobFlag(false);
-                                    }
-                                } else {
-                                    try {
-                                        boolean isRetry = isRetry(extractBatch, targetNode);
-                                        outgoingBatch = new FutureOutgoingBatch(extractOutgoingBatch(processInfo, targetNode, 
-                                                dataWriter, extractBatch, streamToFileEnabled, true, mode), isRetry);
-                                        status.batchExtractCount++;
-                                        status.byteExtractCount += extractBatch.getByteCount();
-                                        
-                                        if (status.byteExtractCount >= maxBytesToSync && status.batchExtractCount < activeBatches.size()) {
-                                            log.info("Reached the total byte threshold after {} of {} batches were extracted for node '{}'.  " + 
-                                                    "The remaining batches will be extracted on a subsequent sync",
-                                                    new Object[] { status.batchExtractCount, activeBatches.size(), targetNode.getNodeId() });
-                                            status.shouldExtractSkip = true;
-                                        }
-                                    } catch (Exception e) {
-                                        status.shouldExtractSkip = outgoingBatch.isExtractSkipped = true;
-                                        throw e;
-                                    }
-                                }
-                            } else {
-                                outgoingBatch.isExtractSkipped = true;
-                            }
-                            return outgoingBatch;
+                            return extractBatch(extractBatch, status, processInfo, targetNode, dataWriter, mode, activeBatches);
                         }
                     };
                     
@@ -768,6 +720,62 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } else {
             return Collections.emptyList();
         }
+    }
+    
+    protected FutureOutgoingBatch extractBatch(OutgoingBatch extractBatch, FutureExtractStatus status, ProcessInfo processInfo,
+            Node targetNode, IDataWriter dataWriter, ExtractMode mode, List<OutgoingBatch> activeBatches) throws Exception {
+        FutureOutgoingBatch outgoingBatch = new FutureOutgoingBatch(extractBatch, false);
+        final long maxBytesToSync = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+        final boolean streamToFileEnabled = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED);
+        if (!status.shouldExtractSkip) {
+            if (extractBatch.isExtractJobFlag() && extractBatch.getStatus() != Status.IG) {
+                if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
+                    if (extractBatch.getStatus() != Status.RQ && extractBatch.getStatus() != Status.IG
+                            && !isPreviouslyExtracted(extractBatch)) {
+                        /*
+                         * the batch must have been purged. it needs to be
+                         * re-extracted
+                         */
+                        log.info("Batch {} is marked as ready but it has been deleted.  Rescheduling it for extraction",
+                                extractBatch.getNodeBatchId());
+                        if (mode != ExtractMode.EXTRACT_ONLY) {
+                            resetExtractRequest(extractBatch);
+                        }
+                        status.shouldExtractSkip = outgoingBatch.isExtractSkipped = true;
+                    } else if (extractBatch.getStatus() == Status.RQ) {
+                        log.info("Batch {} is not ready for delivery.  It is currently scheduled for extraction",
+                                extractBatch.getNodeBatchId());
+                        status.shouldExtractSkip = outgoingBatch.isExtractSkipped = true;
+                    }
+                } else {
+                    extractBatch.setStatus(Status.NE);
+                    extractBatch.setExtractJobFlag(false);
+                }
+            } else {
+                try {
+                    boolean isRetry = isRetry(extractBatch, targetNode);
+                    outgoingBatch = new FutureOutgoingBatch(
+                            extractOutgoingBatch(processInfo, targetNode, dataWriter, extractBatch, streamToFileEnabled, true, mode),
+                            isRetry);
+                    status.batchExtractCount++;
+                    status.byteExtractCount += extractBatch.getByteCount();
+
+                    if (status.byteExtractCount >= maxBytesToSync && status.batchExtractCount < activeBatches.size()) {
+                        log.info(
+                                "Reached the total byte threshold after {} of {} batches were extracted for node '{}'.  "
+                                        + "The remaining batches will be extracted on a subsequent sync",
+                                new Object[] { status.batchExtractCount, activeBatches.size(), targetNode.getNodeId() });
+                        status.shouldExtractSkip = true;
+                    }
+                } catch (Exception e) {
+                    status.shouldExtractSkip = outgoingBatch.isExtractSkipped = true;
+                    throw e;
+                }
+            }
+        } else {
+            outgoingBatch.isExtractSkipped = true;
+        }
+        return outgoingBatch;
     }
 
     protected void writeKeepAliveAck(BufferedWriter writer, Node sourceNode, boolean streamToFileEnabled) {
