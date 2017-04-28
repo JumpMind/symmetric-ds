@@ -47,10 +47,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -147,6 +145,7 @@ import org.jumpmind.symmetric.transport.BatchBufferedWriter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.util.SymmetricUtils;
+import org.jumpmind.util.CustomizableThreadFactory;
 import org.jumpmind.util.Statistics;
 
 /**
@@ -569,7 +568,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
                 Node sourceNode = nodeService.findIdentity();
                 final FutureExtractStatus status = new FutureExtractStatus();
-                executor = Executors.newFixedThreadPool(1, new DataExtractorThreadFactory());
+                executor = Executors.newFixedThreadPool(1, new CustomizableThreadFactory(String.format("dataextractor-%s-%s", targetNode.getNodeGroupId(), targetNode.getNodeGroupId())));
                 List<Future<FutureOutgoingBatch>> futures = new ArrayList<Future<FutureOutgoingBatch>>();
 
                 processInfo.setBatchCount(activeBatches.size());
@@ -854,36 +853,35 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
 
-                        if (!isPreviouslyExtracted(currentBatch)) {
-                            currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
-                            if (updateBatchStatistics) {
-                                changeBatchStatus(Status.QY, currentBatch, mode);
-                            }
-                            currentBatch.resetStats();
-                            DataContext ctx = new DataContext();
-                            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_ID, targetNode.getNodeId());
-                            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_EXTERNAL_ID, targetNode.getExternalId());
-                            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_GROUP_ID, targetNode.getNodeGroupId());
-                            ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
-                            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
-                            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_ID, sourceNode.getNodeId());
-                            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID, sourceNode.getExternalId());
-                            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_GROUP_ID, sourceNode.getNodeGroupId());
-                            
-                            IDataReader dataReader = buildExtractDataReader(sourceNode, targetNode, currentBatch, processInfo);
-                            new DataProcessor(dataReader, writer, "extract").process(ctx);
-                            extractTimeInMs = System.currentTimeMillis() - ts;
-                            Statistics stats = getExtractStats(writer);
-                            transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);
-                            extractTimeInMs = extractTimeInMs - transformTimeInMs;
-                            byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
-                            
-                            statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(),
-                                    byteCount);
-                            statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
-                                    stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
-                            
+                    if (!isPreviouslyExtracted(currentBatch)) {
+                        currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
+                        if (updateBatchStatistics) {
+                            changeBatchStatus(Status.QY, currentBatch, mode);
                         }
+                        currentBatch.resetStats();
+                        DataContext ctx = new DataContext();
+                        ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_ID, targetNode.getNodeId());
+                        ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_EXTERNAL_ID, targetNode.getExternalId());
+                        ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_GROUP_ID, targetNode.getNodeGroupId());
+                        ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
+                        ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
+                        ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_ID, sourceNode.getNodeId());
+                        ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID, sourceNode.getExternalId());
+                        ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_GROUP_ID, sourceNode.getNodeGroupId());
+
+                        IDataReader dataReader = buildExtractDataReader(sourceNode, targetNode, currentBatch, processInfo);
+                        new DataProcessor(dataReader, writer, "extract").process(ctx);
+                        extractTimeInMs = System.currentTimeMillis() - ts;
+                        Statistics stats = getExtractStats(writer);
+                        transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);
+                        extractTimeInMs = extractTimeInMs - transformTimeInMs;
+                        byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
+
+                        statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(), byteCount);
+                        statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
+                                stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
+
+                    }
                 } catch (RuntimeException ex) {
                     IStagedResource resource = getStagedResource(currentBatch);
                     if (resource != null) {
@@ -1011,7 +1009,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         IStagedResource previouslyExtracted = getStagedResource(currentBatch);
         boolean cclient = StringUtils.equals(remoteNode.getDeploymentType(), Constants.DEPLOYMENT_TYPE_CCLIENT);
         return !offline && previouslyExtracted != null && previouslyExtracted.exists() && previouslyExtracted.getState() != State.CREATE
-                && currentBatch.getStatus() != OutgoingBatch.Status.RS && currentBatch.getSentCount() > 0 && remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0)
+                && currentBatch.getStatus() != OutgoingBatch.Status.RS && currentBatch.getSentCount() > 0 && 
+                remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0)
                 && !cclient;
     }
 
@@ -2054,23 +2053,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             return initialLoadSelect;
         }
 
-    }
-
-    class DataExtractorThreadFactory implements ThreadFactory {
-        AtomicInteger threadNumber = new AtomicInteger(1);
-        String namePrefix = parameterService.getEngineName().toLowerCase() + "-data-extractor-";
-
-        public Thread newThread(Runnable runnable) {
-            Thread thread = new Thread(runnable);
-            thread.setName(namePrefix + threadNumber.getAndIncrement());
-            if (thread.isDaemon()) {
-                thread.setDaemon(false);
-            }
-            if (thread.getPriority() != Thread.NORM_PRIORITY) {
-                thread.setPriority(Thread.NORM_PRIORITY);
-            }
-            return thread;
-        }
     }
 
     class FutureExtractStatus {
