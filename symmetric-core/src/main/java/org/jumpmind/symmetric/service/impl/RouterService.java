@@ -869,7 +869,7 @@ public class RouterService extends AbstractService implements IRouterService {
                             log.info(
                                     "Routing for channel '{}' has been processing for {} seconds. The following stats have been gathered: "
                                             + "totalDataRoutedCount={}, totalDataEventCount={}, startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, transactions={}, dataGaps={}",
-                                    new Object[] { totalDataCount, totalDataEventCount, context.getChannel().getChannelId(), ((System.currentTimeMillis()-startTime) / 1000), context.getStartDataId(),
+                                    new Object[] {  context.getChannel().getChannelId(), totalDataCount, totalDataEventCount, ((System.currentTimeMillis()-startTime) / 1000), context.getStartDataId(),
                                             context.getEndDataId(), context.getDataReadCount(), context.getPeekAheadFillCount(),
                                             context.getTransactions().toString(), context.getDataGaps().toString() });
                             ts = System.currentTimeMillis();
