@@ -320,7 +320,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
             sqlType = "BIGINT";
         }
         if (column.getMappedTypeCode() == Types.TIMESTAMP && column.getScale() > 0) {
-            sqlType = "TIMESTAMP(" + column.getScale() + ")";
+            sqlType = "DATETIME(" + column.getScale() + ")";
         }
         return sqlType;
     }
