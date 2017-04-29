@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -58,6 +59,8 @@ public class MultiBatchStagingWriter implements IDataWriter {
 
     protected long startTime, ts, rowCount, byteCount;
     
+    protected boolean cancelled = false;
+    
     public MultiBatchStagingWriter(DataExtractorService dataExtractorService, ExtractRequest request, String sourceNodeId, IStagingManager stagingManager,
             List<OutgoingBatch> batches, long maxBatchSize, ProcessInfo processInfo) {
         this.dataExtractorService = dataExtractorService;
@@ -89,19 +92,33 @@ public class MultiBatchStagingWriter implements IDataWriter {
 
     @Override
     public void close() {
-        while (batches.size() > 0) {
+        while (!cancelled && batches.size() > 0) {
             startNewBatch();
             end(this.table);
             end(this.batch, false);
+            closeCurrentDataWriter();
         }
+        closeCurrentDataWriter();
+    }
+    
+    private void closeCurrentDataWriter() {
         if (this.currentDataWriter != null) {
+            Statistics stats = this.currentDataWriter.getStatistics().get(batch);
+            this.outgoingBatch.setByteCount(stats.get(DataWriterStatisticConstants.BYTECOUNT));
+            this.outgoingBatch.setExtractMillis(System.currentTimeMillis() - batch.getStartTime().getTime());
             this.currentDataWriter.close();
+            this.currentDataWriter = null;
+            checkSend();
         }
     }
 
     @Override
     public Map<Batch, Statistics> getStatistics() {
-        return currentDataWriter.getStatistics();
+        if (currentDataWriter != null) {
+            return currentDataWriter.getStatistics();
+        } else {
+            return Collections.emptyMap();
+        }
     }
 
     public void start(Batch batch) {
@@ -132,11 +149,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
         if (this.outgoingBatch.getDataEventCount() >= maxBatchSize && this.batches.size() > 0) {
             this.currentDataWriter.end(table);
             this.currentDataWriter.end(batch, false);
-            Statistics stats = this.currentDataWriter.getStatistics().get(batch);
-            this.outgoingBatch.setByteCount(stats.get(DataWriterStatisticConstants.BYTECOUNT));
-            this.outgoingBatch.setExtractMillis(System.currentTimeMillis() - batch.getStartTime().getTime());
-            this.currentDataWriter.close();   
-            checkSend();
+            closeCurrentDataWriter();
             startNewBatch();
         }
         if (System.currentTimeMillis() - ts > 60000) {
@@ -155,10 +168,11 @@ public class MultiBatchStagingWriter implements IDataWriter {
                 resource.setState(State.DONE);
             }
             this.outgoingBatch = this.dataExtractorService.outgoingBatchService.findOutgoingBatch(outgoingBatch.getBatchId(), outgoingBatch.getNodeId());
-            if (outgoingBatch.getStatus() == Status.RQ) {
+            if (outgoingBatch.getIgnoreCount() == 0) {
                 this.outgoingBatch.setStatus(Status.NE);
                 this.dataExtractorService.outgoingBatchService.updateOutgoingBatch(this.outgoingBatch);
             } else {
+                cancelled = true;
                 throw new CancellationException();
             }
         }
