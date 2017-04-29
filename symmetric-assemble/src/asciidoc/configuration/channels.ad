@@ -61,6 +61,7 @@ ifdef::pro[]
 .Advanced Options
 endif::pro[]
 
+Group Link Direction:: For a node group link that is reversible, the channel can specify either "push" or "pull" to override the default group link communication.  If this field is empty, the default group link communication is used.  
 Enabled:: Indicates whether the channel is enabled or disabled.  If a channel is disabled, data is still captured for changes
 that occur on the source system, but it will not be routed and sent to the target until the channel is re-enabled.
 Reload Channel:: Indicates whether a channel is available for initial loads and reverse initial loads.

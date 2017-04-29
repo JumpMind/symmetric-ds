@@ -246,5 +246,11 @@ public class InternalTransportManager extends AbstractTransportManager implement
         public void run(ISymmetricEngine engine, InputStream is, OutputStream os) throws Exception;
     }
 
+    @Override
+    public IIncomingTransport getConfigTransport(Node remote, Node local, String securityToken,
+            String symmetricVersion, String configVersion, String registrationUrl) throws IOException {
+        return null;
+    }
+
 	
 }

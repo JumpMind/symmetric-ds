@@ -24,9 +24,16 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 
 import java.util.HashMap;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.util.FormatUtils;
 
 public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
 
@@ -73,7 +80,7 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                 .put("updateTriggerTemplate",
                         "create trigger $(triggerName) after update on $(schemaName)$(tableName)   \n"
                                 + "for each row    \n"
-                                + "  when ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition))       \n"
+                                + "  when ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) and ($(dataHasChangedCondition))       \n"
                                 + "  begin   \n"
                                 + "    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)   \n"
                                 + "    values(   \n" + "      '$(targetTableName)',   \n" + "      'U',   \n"
@@ -102,5 +109,36 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)");
 
         // formatter:on
+    }
+
+    @Override
+    protected String replaceTemplateVariables(DataEventType dml, Trigger trigger,
+            TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
+            String defaultCatalog, String defaultSchema, String ddl) {
+        ddl =  super.replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
+                defaultCatalog, defaultSchema, ddl);
+
+        ddl = FormatUtils.replace("anyColumnChanged",
+        		buildColumnsAreNotEqualString(table, newTriggerValue, oldTriggerValue), ddl);
+
+        return ddl;
+    }
+
+    private String buildColumnsAreNotEqualString(Table table, String table1Name, String table2Name){
+    	StringBuilder builder = new StringBuilder();
+    	
+    	for(Column column : table.getColumns()){
+            if (builder.length() > 0) {
+                builder.append(" or ");
+            }
+
+            builder.append(String.format("((%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NOT NULL AND %1$s.\"%2$s\"<>%3$s.\"%2$s\") or "
+                            + "(%1$s.\"%2$s\" IS NULL AND %3$s.\"%2$s\" IS NOT NULL) or "
+                            + "(%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NULL))", table1Name, column.getName(), table2Name));
+    	}
+    	if (builder.length() == 0) {
+    	    builder.append("1=1");
+    	}
+    	return builder.toString();
     }
 }

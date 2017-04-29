@@ -56,6 +56,7 @@ final public class ParameterConstants {
     public final static String START_ROUTE_JOB = "start.route.job";
     public final static String START_HEARTBEAT_JOB = "start.heartbeat.job";
     public final static String START_SYNCTRIGGERS_JOB = "start.synctriggers.job";
+    public final static String START_SYNC_CONFIG_JOB = "start.sync.config.job";
     public final static String START_STATISTIC_FLUSH_JOB = "start.stat.flush.job";
     public final static String START_STAGE_MGMT_JOB = "start.stage.management.job";
     public final static String START_WATCHDOG_JOB = "start.watchdog.job";
@@ -116,6 +117,7 @@ final public class ParameterConstants {
     public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
     public final static String AUTO_SYNC_TRIGGERS = "auto.sync.triggers";
     public final static String AUTO_SYNC_TRIGGERS_AT_STARTUP = "auto.sync.triggers.at.startup";
+    public final static String AUTO_SYNC_CONFIG_AT_STARTUP = "auto.sync.config.at.startup";
     public final static String AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED = "auto.sync.triggers.after.config.change";
     public final static String AUTO_SYNC_TRIGGERS_AFTER_CONFIG_LOADED = "auto.sync.triggers.after.config.loaded";
     public final static String AUTO_REFRESH_AFTER_CONFIG_CHANGED = "auto.refresh.after.config.changes.detected";

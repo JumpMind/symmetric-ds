@@ -239,7 +239,7 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected PermissionResult getDropSymTablePermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-        String dropSql = "drop table " + PERMISSION_TEST_TABLE_NAME;
+        String dropSql = "drop table " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter;
 
         PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, Status.FAIL);
 

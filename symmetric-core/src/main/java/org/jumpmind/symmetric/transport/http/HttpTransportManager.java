@@ -252,6 +252,16 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
                 getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize(), true);
     }    
 
+    public IIncomingTransport getConfigTransport(Node remote, Node local, String securityToken,
+            String symmetricVersion, String configVersion, String registrationUrl) throws IOException {
+        StringBuilder builder = new StringBuilder(buildURL("config", remote, local,
+                securityToken, registrationUrl));
+        append(builder, WebConstants.SYMMETRIC_VERSION, symmetricVersion);
+        append(builder, WebConstants.CONFIG_VERSION, configVersion);
+        HttpURLConnection conn = createGetConnectionFor(new URL(builder.toString()));
+        return new HttpIncomingTransport(conn, engine.getParameterService());
+    }
+
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl)
             throws IOException {
         return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(

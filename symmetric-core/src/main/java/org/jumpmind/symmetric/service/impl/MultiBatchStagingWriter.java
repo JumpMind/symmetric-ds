@@ -3,26 +3,27 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.StagingDataWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.util.Statistics;
 
 public class MultiBatchStagingWriter implements IDataWriter {
@@ -149,26 +150,16 @@ public class MultiBatchStagingWriter implements IDataWriter {
     public void checkSend() {
         if (this.dataExtractorService.parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)
                 && this.outgoingBatch.getStatus() != Status.OK) {
-            this.outgoingBatch.setStatus(Status.NE);
-            ISqlTransaction transaction = null;
-            try {
-                transaction = this.dataExtractorService.sqlTemplate.startSqlTransaction();
-                this.dataExtractorService.outgoingBatchService.updateOutgoingBatch(transaction, this.outgoingBatch);
-                transaction.commit();
-            } catch (Error ex) {
-                if (transaction != null) {
-                    transaction.rollback();
-                }
-                throw ex;
-            } catch (RuntimeException ex) {
-                if (transaction != null) {
-                    transaction.rollback();
-                }
-                throw ex;
-            } finally {
-                if (transaction != null) {
-                    transaction.close();
-                }
+            IStagedResource resource = this.dataExtractorService.getStagedResource(outgoingBatch);
+            if (resource != null) {
+                resource.setState(State.DONE);
+            }
+            this.outgoingBatch = this.dataExtractorService.outgoingBatchService.findOutgoingBatch(outgoingBatch.getBatchId(), outgoingBatch.getNodeId());
+            if (outgoingBatch.getStatus() == Status.RQ) {
+                this.outgoingBatch.setStatus(Status.NE);
+                this.dataExtractorService.outgoingBatchService.updateOutgoingBatch(this.outgoingBatch);
+            } else {
+                throw new CancellationException();
             }
         }
     }

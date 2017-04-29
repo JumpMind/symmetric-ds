@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
@@ -154,5 +156,22 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         }
     }
 
+    public RemoteNodeStatus pullConfigData(boolean force) {
+        Node local = nodeService.findIdentity();
+        RemoteNodeStatus status = null;
+
+        if (!parameterService.isRegistrationServer() && local != null && (force || !Version.version().equals(local.getConfigVersion()))) {
+            Node remote = new Node();
+            remote.setSyncUrl(parameterService.getRegistrationUrl());    
+            status = new RemoteNodeStatus(remote.getNodeId(), Constants.CHANNEL_CONFIG, configurationService.getChannels(false));
+
+            try {
+                dataLoaderService.loadDataFromConfig(remote, status, force);
+            } catch (Exception e) {
+                fireOffline(e, remote, status);
+            }
+        }
+        return status;
+    }
 
 }

@@ -618,6 +618,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                         parameterService.getSyncUrl())) {
                             heartbeat(false);
                         }
+                        
+                        if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIG_AT_STARTUP, true)) {
+                            pullService.pullConfigData(false);
+                        }
 
                     } else {
                         log.info("Starting unregistered node [group={}, externalId={}]",

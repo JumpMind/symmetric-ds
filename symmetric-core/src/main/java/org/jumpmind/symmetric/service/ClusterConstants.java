@@ -40,6 +40,7 @@ public class ClusterConstants {
     public static final String HEARTBEAT = "HEARTBEAT";
     public static final String INITIAL_LOAD_EXTRACT = "INITIAL_LOAD_EXTRACT";
     public static final String SYNCTRIGGERS = "SYNCTRIGGERS";
+    public static final String SYNC_CONFIG = "SYNC_CONFIG";
     public static final String WATCHDOG = "WATCHDOG";
     public static final String STATISTICS = "STATISTICS";
     public static final String FILE_SYNC_TRACKER = "FILE_SYNC_TRACKER";
