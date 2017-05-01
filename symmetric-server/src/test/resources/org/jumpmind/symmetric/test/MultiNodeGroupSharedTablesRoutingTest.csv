@@ -140,22 +140,6 @@ insert,"client","server","P","1","0","2017-04-26 15:54:14.481","admin","2017-04-
 insert,"client2","server","P","1","0","2017-04-26 15:54:22.581","admin","2017-04-26 15:54:22.580"
 catalog,
 schema,
-table,sym_parameter
-insert,"ALL","ALL","console.license.key","FkkKM8BkOcXu583sRWwy5VVW+PUXFeapqwajMatYCKgTB44Uu4moCzBZAdkcngvogPcC37tZD2Dj
-4Wkol5ryPoAUcslTKT3CHvDh+l21AkhcSY+OY4Izk/DjNq/xjNkgQn6sDqGnKchi1oRsvVudpdyr
-3GtnZojCsh+A6kv71C1kbjeDUgO/f53u/qdAd9L7jbmqz757q6hbbpSPuY1WRVdrQG03D7wKN1D2
-252xKYOAwq7cm3j7ElhXDL6+efCYmwOt6v8oSG6FUe6NYeOeN+eTzAe3zhv2+VWuaX4jBWefKz6t
-2leJttN/y9RtsI9DzQ3zyBmx9mGqFXLZB2qfrNjP65eIKGUmeDA1hs31Ndhxd9NjwUwnyiEFPW/o
-0CsIqdIMe97E1X0x/rTbTI9DgucwnMmyqB9UpzhN4IXg/Tk8i7jTd1lCUsFdfwqoDAIc8wCAxcSZ
-vMjdYIKEXwyd/9crxjpIk4bH90mEJt39iUgmi6K3NTTT1g4UWsjU00+B3ntaZLaeyu+Hkvsmwp4t
-PUd4yX+9/PWnoJ2qQAs0AOgcsnRQ/SEDvGEEeyBjlK/xYmeZwyvsL2lsQmAQ4rO/TVX67IPqpSfZ
-iXKUUEIpoQtXi8VBfTOMywahlp+Es9IV07L27qK2oa01V9GSUmHQpWZ4EGufMONPVAKtRtzJr2ur
-zql3ZR98OllNMizafpucLLoGlp24yNI6ZU4EMq0LjaohjiAEzNbJ4UacJf3cZC1lqfpGGKuB8ZUt
-p+Xbi+3AvQXHKW3ARipRz+vff55sLsUuW6n35PV9cFuiXvOo64uKMcWLsnt4tsC5oGc4FLQwsyrE
-QW8fH8CRlgku1B1KPgUYFBGHaGZIUJQADMFMbqHUCmJwpJeSif2/0jC9JH03F2+3lPcUSDagoUfg
-XkwQ9A==","2017-04-26 15:52:53.899","admin","2017-04-26 15:52:53.899"
-catalog,
-schema,
 table,sym_channel
 insert,"config","0","2000","100","10000","0","1","1","1","1","0","0","1","default","default",,"default","0.000",,"2017-04-26 15:52:32.235",,"2017-04-26 15:52:32.228"
 insert,"default","99999","1000","100","10000","0","1","1","1","1","0","0","0","default","default",,"default","0.000",,"2017-04-26 15:52:32.245",,"2017-04-26 15:52:32.244"
