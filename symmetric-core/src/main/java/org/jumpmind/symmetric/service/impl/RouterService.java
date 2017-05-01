@@ -818,7 +818,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 .getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
         try {
             long ts = System.currentTimeMillis();
-            
+            long startTime = System.currentTimeMillis();
             nextData = reader.take();
             do {
                 if (nextData != null) {
@@ -868,8 +868,8 @@ public class RouterService extends AbstractService implements IRouterService {
                         if (routeTs > 60000 && context != null) {
                             log.info(
                                     "Routing for channel '{}' has been processing for {} seconds. The following stats have been gathered: "
-                                            + "startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, transactions={}, dataGaps={}",
-                                    new Object[] { context.getChannel().getChannelId(), (routeTs / 1000), context.getStartDataId(),
+                                            + "totalDataRoutedCount={}, totalDataEventCount={}, startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, transactions={}, dataGaps={}",
+                                    new Object[] {  context.getChannel().getChannelId(), ((System.currentTimeMillis()-startTime) / 1000), totalDataCount, totalDataEventCount, context.getStartDataId(),
                                             context.getEndDataId(), context.getDataReadCount(), context.getPeekAheadFillCount(),
                                             context.getTransactions().toString(), context.getDataGaps().toString() });
                             ts = System.currentTimeMillis();
@@ -881,6 +881,14 @@ public class RouterService extends AbstractService implements IRouterService {
                     data = null;
                 }
             } while (data != null);
+            
+            long routeTime = System.currentTimeMillis() - startTime;
+            if (routeTime > 60000 && context != null) {
+                log.info(
+                        "Done routing for channel '{}' which took {} seconds",
+                        new Object[] { context.getChannel().getChannelId(), ((System.currentTimeMillis() - startTime) / 1000) });
+                ts = System.currentTimeMillis();
+            }
 
         } finally {
             reader.setReading(false);

@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,7 +51,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
@@ -881,13 +881,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         new DataProcessor(dataReader, writer, "extract").process(ctx);
                         extractTimeInMs = System.currentTimeMillis() - ts;
                         Statistics stats = getExtractStats(writer);
-                        transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);
-                        extractTimeInMs = extractTimeInMs - transformTimeInMs;
-                        byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
-
-                        statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(), byteCount);
-                        statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
-                                stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
+                        if (stats != null) {
+                            transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);
+                            extractTimeInMs = extractTimeInMs - transformTimeInMs;
+                            byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
+                            statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(), byteCount);
+                            statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
+                                    stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
+                        }
 
                     }
                 } catch (RuntimeException ex) {
@@ -949,7 +950,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } else {
             statisticsMap = writer.getStatistics();
         }
-        return statisticsMap.values().iterator().next();
+        if (statisticsMap.size() > 0) {
+            return statisticsMap.values().iterator().next();
+        } else {
+            return null;
+        }
     }
 
     protected IDataWriter wrapWithTransformWriter(Node sourceNode, Node targetNode, ProcessInfo processInfo, IDataWriter dataWriter,
@@ -1034,24 +1039,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (!isRetry && parameterService.is(ParameterConstants.OUTGOING_BATCH_COPY_TO_INCOMING_STAGING) &&
                             !parameterService.is(ParameterConstants.NODE_OFFLINE, false)) {
                         ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
-                        if (targetEngine != null) {
+                        if (targetEngine != null && extractedBatch.isFileResource()) {
                             try {
-                                long memoryThresholdInBytes = extractedBatch.isFileResource() ? 0 :
-                                    targetEngine.getParameterService().getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
                                 Node sourceNode = nodeService.findIdentity();
                                 IStagedResource targetResource = targetEngine.getStagingManager().create( 
                                         Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
                                         currentBatch.getBatchId());
-                                if (extractedBatch.isFileResource()) {
-                                    SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
-                                } else {
-                                    try {
-                                        IOUtils.copy(extractedBatch.getReader(), targetResource.getWriter(memoryThresholdInBytes));
-                                    } finally {
-                                        extractedBatch.close();
-                                        targetResource.close();
-                                    }
-                                }
+                                SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
                                 targetResource.setState(State.DONE);
                                 isRetry = true;
                             } catch (Exception e) {
@@ -1516,12 +1510,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                     if (!areBatchesOk) {
                         for (OutgoingBatch outgoingBatch : batches) {
-                            if (parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)) {
-                            	if (outgoingBatch.getStatus() == Status.RQ) {
-                            		outgoingBatch.setStatus(Status.NE);
-                                	outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
-                            	}
-                            } else {
+                            if (!parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)) {
                             	outgoingBatch.setStatus(Status.NE);
                             	outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
                             }
@@ -1547,6 +1536,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.OK);
 
+            } catch (CancellationException ex) {
+                log.info("Cancelled extract request {}. Starting at batch {}.  Ending at batch {}",
+                        new Object[] { request.getRequestId(), request.getStartBatchId(),
+                        request.getEndBatchId() });
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.OK);
             } catch (RuntimeException ex) {
                 log.debug(
                         "Failed to extract batches for request {}. Starting at batch {}.  Ending at batch {}",

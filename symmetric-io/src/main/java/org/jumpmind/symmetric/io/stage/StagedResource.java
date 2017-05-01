@@ -323,7 +323,7 @@ public class StagedResource implements IStagedResource {
     }
     
     private boolean deleteInternal() {
-        boolean deleted = true;
+        boolean deleted = false;
         if (file != null && file.exists()) {
             FileUtils.deleteQuietly(file);
             deleted = !file.exists();
@@ -332,12 +332,13 @@ public class StagedResource implements IStagedResource {
         if (memoryBuffer != null) {
             memoryBuffer.setLength(0);
             memoryBuffer = null;
+            deleted = true;
         }
 
         if (deleted) {
             stagingManager.resourcePaths.remove(path);
             stagingManager.inUse.remove(path);
-        }
+        }        
         return deleted;
     }
 
