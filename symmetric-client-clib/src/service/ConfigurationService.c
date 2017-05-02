@@ -119,6 +119,23 @@ SymMap * SymConfigurationService_getChannels(SymConfigurationService *this, unsi
     return channels;
 }
 
+SymList * /*<SymChannel>*/ SymConfigurationService_getFileSyncChannels(SymConfigurationService *this, unsigned int refreshCache) {
+    SymMap* channels = this->getChannels(this, refreshCache);
+    SymList* list = channels->values(channels);
+    SymList* fileSyncChannels = SymList_new(NULL);
+
+    int i;
+    for (i = 0; i < list->size; ++i) {
+        SymChannel *channel = list->get(list, i);
+        if (channel->fileSyncFlag) {
+            fileSyncChannels->add(fileSyncChannels, channel);
+        }
+    }
+
+    channels->destroy(channels);
+    return fileSyncChannels;
+}
+
 SymChannel * SymConfigurationService_getChannel(SymConfigurationService *this, char *channelId) {
     // TODO refactor to use getNodeChannels like the Java code.
     SymMap *channels = SymConfigurationService_getChannels(this, 0);
@@ -146,6 +163,7 @@ SymConfigurationService * SymConfigurationService_new(SymConfigurationService *t
     this->getNodeGroupLinks = (void *) &SymConfigurationService_getNodeGroupLinks;
     this->getNodeGroupLinkFor = (void *) &SymConfigurationService_getNodeGroupLinkFor;
     this->getNodeGroupLinksFor = (void *) &SymConfigurationService_getNodeGroupLinksFor;
+    this->getFileSyncChannels = (void *) &SymConfigurationService_getFileSyncChannels;
     this->clearCache = (void *) &SymConfigurationService_clearCache;
     this->destroy = (void *) &SymConfigurationService_destroy;
     return this;

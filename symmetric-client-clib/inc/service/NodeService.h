@@ -51,6 +51,7 @@ typedef struct SymNodeService {
     SymList * (*findNodesToPushTo)(struct SymNodeService *this);
     SymList * (*findSourceNodesFor)(struct SymNodeService *this, SymNodeGroupLinkAction nodeGroupLinkAction);
     SymList * (*findTargetNodesFor)(struct SymNodeService *this, SymNodeGroupLinkAction nodeGroupLinkAction);
+    SymNode * (*findNode)(struct SymNodeService *this, char* nodeId);
     unsigned short (*isDataloadStarted)(struct SymNodeService *this);
     unsigned short (*isDataloadCompleted)(struct SymNodeService *this);
     int (*getNodeStatus)(struct SymNodeService *this);
@@ -112,5 +113,7 @@ total_memory_bytes=?, max_memory_bytes=?, java_version=?, java_vendor=?, jdbc_ve
 last_restart_time=? where node_id=? and host_name=? "
 
 #define SYM_SQL_FIND_ENABLED_NODES_FROM_NODE_GROUP_SQL "where node_group_id = ? and sync_enabled=1 order by node_id"
+
+#define SYM_SQL_FIND_NODE "where node_id = ?   "
 
 #endif

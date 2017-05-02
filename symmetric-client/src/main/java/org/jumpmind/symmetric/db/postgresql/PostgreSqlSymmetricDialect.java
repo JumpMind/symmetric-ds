@@ -154,10 +154,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return platform.getSqlTemplate().queryForInt("select count(*) from information_schema.triggers where trigger_name = ? "
                 + "and event_object_table = ? and trigger_schema = ?", new Object[] { triggerName.toLowerCase(),
-                tableName, schema == null ? platform.getDefaultSchema() : schema }) > 0 ||
-                platform.getSqlTemplate().queryForInt("select count(*) from information_schema.routines where routine_name = ? "
-                        + "and routine_schema = ?", new Object[] { "f" + triggerName.toLowerCase(),
-                        schema == null ? platform.getDefaultSchema() : schema }) > 0;
+                tableName, schema == null ? platform.getDefaultSchema() : schema }) > 0;
     }
     
     @Override
@@ -168,27 +165,22 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
             String quoteChar = platform.getDatabaseInfo().getDelimiterToken();
             schemaName = table.getSchema() == null ? "" : (quoteChar + table.getSchema()
                     + quoteChar + ".");
-            final String dropSql = "drop trigger " + triggerName + " on " + schemaName + quoteChar
+            final String dropSql = "drop trigger IF EXISTS " + triggerName + " on " + schemaName + quoteChar
                     + table.getName() + quoteChar;
             logSql(dropSql, sqlBuffer);
-            final String dropFunction = "drop function " + schemaName + "f" + triggerName
+            final String dropFunction = "drop function IF EXISTS " + schemaName + "f" + triggerName
                     + "() cascade";
             logSql(dropFunction, sqlBuffer);
             if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-                String sql = null;
                 try {
-                    sql = dropSql;
                     platform.getSqlTemplate().update(dropSql);
                 } catch (Exception e) {
-                    log.warn("Tried to remove trigger using: {} and failed because: {}", sql,
-                            e.getMessage());
+                    log.warn("Failed to remove trigger using: " + dropSql, e);
                 }
                 try {
-                    sql = dropFunction;
                     platform.getSqlTemplate().update(dropFunction);
                 } catch (Exception e) {
-                    log.warn("Tried to remove function using: {} and failed because: {}", sql,
-                            e.getMessage());
+                    log.warn("Failed to remove function using: " + dropFunction, e);
                 }
             }
         }

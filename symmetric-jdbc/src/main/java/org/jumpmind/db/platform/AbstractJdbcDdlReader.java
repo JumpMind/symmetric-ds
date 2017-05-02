@@ -563,9 +563,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     
                     ResultSet tableData = null;
                     try {
-                        log.debug("getting table metadata for " + table);
+                        log.debug("getting table metadata for {}", table);
                         tableData = metaData.getTables(getTableNamePattern(table));
-                        log.debug("done getting table metadata for " + table);
+                        log.debug("done getting table metadata for {}", table);
                         if (tableData != null && tableData.next()) {
                             Map<String, Object> values = readMetaData(tableData, initColumnsForTable());
                             return readTable(connection, metaData, values);
@@ -581,6 +581,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             if (e.getMessage()!=null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
                 return null;
             } else {
+                log.error("Failed to get metadata for {}", Table.getFullyQualifiedTableName(catalog, schema, table));
                 throw e;
             }
         }
@@ -648,6 +649,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         String tableName = (String) values.get("TABLE_NAME");
+        if (tableName == null) {
+            tableName = (String) values.get("NAME");
+        }
         try {
             Table table = null;
 
@@ -666,11 +670,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
                 String catalog = (String) values.get(getResultSetCatalogName());
                 table.setCatalog(catalog);
-                metaData.setCatalog(catalog);
 
                 String schema = (String) values.get(getResultSetSchemaName());
                 table.setSchema(schema);
-                metaData.setSchemaPattern(schema);
 
                 table.setDescription((String) values.get("REMARKS"));
 
@@ -695,10 +697,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             }
             return table;
         } catch (RuntimeException ex) {
-            log.error("Failed to read table: {}", tableName);
+            log.error(String.format("Failed to read table: %s.  Error: %s", tableName, ex.getMessage()));
             throw ex;
         } catch (SQLException ex) {
-            log.error("Failed to read table: {}", tableName);
+            log.error(String.format("Failed to read table: %s.  Error: %s", tableName, ex.getMessage()));
             throw ex;
         }
     }
@@ -1433,6 +1435,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     rs = meta.getTables(catalog, schema, null, tableTypes);
                     while (rs.next()) {
                         String tableName = rs.getString("TABLE_NAME");
+                        if (tableName == null) {
+                            tableName = rs.getString("NAME");
+                        }
                         list.add(tableName);
                     }
                     return list;

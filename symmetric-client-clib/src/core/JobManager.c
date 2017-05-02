@@ -46,6 +46,12 @@ void SymJobManager_invoke(SymJobManager *this) {
         this->engine->syncTriggers(this->engine);
         time(&this->lastSyncTriggersTime);
     }
+    if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_PULL_JOB, SYM_PARAMETER_PULL_PERIOD_MS, this->lastPullTime)) {
+        SymLog_debug("PULL ============================");
+        SymRemoteNodeStatuses *statuses = this->engine->pull(this->engine);
+        time(&this->lastPullTime);
+        statuses->destroy(statuses);
+    }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_ROUTE_JOB, SYM_PARAMETER_ROUTE_PERIOD_MS, this->lastRouteTime)) {
         SymLog_debug("ROUTE ============================");
         this->engine->route(this->engine);
@@ -65,12 +71,6 @@ void SymJobManager_invoke(SymJobManager *this) {
         time(&this->lastPushTime);
         pushStatus->destroy(pushStatus);
     }
-    if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_PULL_JOB, SYM_PARAMETER_PULL_PERIOD_MS, this->lastPullTime)) {
-        SymLog_debug("PULL ============================");
-        SymRemoteNodeStatuses *statuses = this->engine->pull(this->engine);
-        time(&this->lastPullTime);
-        statuses->destroy(statuses);
-    }
     if (SymJobManager_shouldRun(this, SYM_PARAMETER_START_PURGE_JOB, SYM_PARAMETER_PURGE_PERIOD_MS, this->lastPurgeTime)) {
         SymLog_debug("PURGE ============================");
         this->engine->purge(this->engine);
@@ -88,6 +88,24 @@ void SymJobManager_invoke(SymJobManager *this) {
         time(&this->lastOfflinePullTime);
         statuses->destroy(statuses);
     }
+    if (this->engine->parameterService->is(this->engine->parameterService, SYM_PARAMETER_FILE_SYNC_ENABLE, 0)
+            && SymJobManager_shouldRun(this, SYM_PARAMETER_START_FILE_SYNC_PULL_JOB, SYM_PARAMETER_FILE_PULL_MINIMUM_PERIOD_MS, this->lastFilePullTime)) {
+        SymLog_debug("FILE SYNC PULL ============================");
+        this->engine->fileSyncService->pullFilesFromNodes(this->engine->fileSyncService);
+        time(&this->lastFilePullTime);
+    }
+    if (this->engine->parameterService->is(this->engine->parameterService, SYM_PARAMETER_FILE_SYNC_ENABLE, 0)
+            && SymJobManager_shouldRun(this, SYM_PARAMETER_START_FILE_SYNC_TRACKER_JOB, SYM_PARAMETER_FILE_SYNC_TRACKER_PERIOD_MS, this->lastFileTrackerTime)) {
+        SymLog_debug("FILE_SYNC_TRACKER ============================");
+        this->engine->fileSyncService->trackChanges(this->engine->fileSyncService, 0);
+        time(&this->lastFileTrackerTime);
+    }
+    if (this->engine->parameterService->is(this->engine->parameterService, SYM_PARAMETER_FILE_SYNC_ENABLE, 0)
+            && SymJobManager_shouldRun(this, SYM_PARAMETER_START_FILE_SYNC_PUSH_JOB, SYM_PARAMETER_FILE_PUSH_MINIMUM_PERIOD_MS, this->lastFilePushTime)) {
+        SymLog_debug("FILE SYNC PUSH ============================");
+        this->engine->fileSyncService->pushFilesToNodes(this->engine->fileSyncService);
+        time(&this->lastFilePushTime);
+    }
 }
 
 void SymJobManager_startJobs(SymJobManager *this) {
@@ -98,7 +116,8 @@ void SymJobManager_startJobs(SymJobManager *this) {
 
     this->lastRouteTime = this->lastPullTime = this->lastPushTime =
             this->lastHeartbeatTime = this->lastPurgeTime = this->lastSyncTriggersTime =
-                    this->lastOfflinePullTime = this->lastOfflinePushTime = now;
+                    this->lastOfflinePullTime = this->lastOfflinePushTime =
+                            this->lastFilePullTime = this->lastFileTrackerTime = this->lastFilePushTime = now;
 
     this->started = 1;
 

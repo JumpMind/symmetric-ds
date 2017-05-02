@@ -80,6 +80,9 @@ static char * getAcknowledgementData(SymList *batches) {
             sb->append(sb, SYM_WEB_CONSTANTS_ACK_BATCH_OK);
         } else {
             sb->appendf(sb, "%ld", batch->failedRowNumber);
+            sb->appendf(sb, "&%s%ld=%s", SYM_WEB_CONSTANTS_ACK_SQL_STATE, batch->batchId, batch->sqlState);
+            sb->appendf(sb, "&%s%ld=%d", SYM_WEB_CONSTANTS_ACK_SQL_CODE, batch->batchId, batch->sqlCode);
+            sb->appendf(sb, "&%s%ld=%s", SYM_WEB_CONSTANTS_ACK_SQL_MESSAGE, batch->batchId, batch->sqlMessage);
         }
     }
     iter->destroy(iter);
@@ -193,11 +196,17 @@ SymBatchAck * SymHttpTransportManager_getBatchInfo(SymMap *parameters, char *bat
 }
 
 SymList * SymHttpTransportManager_readAcknowledgement(SymHttpTransportManager *this, char *parameterString1, char *parameterString2) {
+    SymList *batchAcks = SymList_new(NULL);
+    if (parameterString1 == NULL) {
+        return batchAcks;
+    }
+
     SymStringBuilder *sb = SymStringBuilder_newWithString(parameterString1);
-    sb->append(sb, "&")->append(sb, parameterString2);
+    if (parameterString2) {
+        sb->append(sb, "&")->append(sb, parameterString2);
+    }
 
     SymMap *parameters = SymHttpTransportManager_getParametersFromQueryUrl(parameterString1);
-    SymList *batchAcks = SymList_new(NULL);
     SymStringArray *keys = parameters->keys(parameters);
     int i;
     for (i = 0; i < keys->size; i++) {
@@ -219,8 +228,16 @@ SymHttpIncomingTransport * SymHttpTransportManager_getPullTransport(SymHttpTrans
     return SymHttpIncomingTransport_new(NULL, buildUrl("pull", remote, local, securityToken, registrationUrl), this->parameterService);
 }
 
+SymHttpIncomingTransport * SymHttpTransportManager_getFileSyncPullTransport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
+    return (SymHttpIncomingTransport*)SymHttpFileSyncIncomingTransport_new(NULL, buildUrl("filesync/pull", remote, local, securityToken, registrationUrl), this->parameterService);
+}
+
 SymHttpOutgoingTransport * SymHttpTransportManager_getPushTransport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
     return SymHttpOutgoingTransport_new(NULL, buildUrl("push", remote, local, securityToken, registrationUrl), this->parameterService);
+}
+
+SymHttpOutgoingTransport * SymHttpTransportManager_getFileSyncPushTransport(SymHttpTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
+    return (SymHttpOutgoingTransport*)SymHttpFileSyncOutgoingTransport_new(NULL, buildUrl("filesync/push", remote, local, securityToken, registrationUrl), this->parameterService);
 }
 
 SymHttpIncomingTransport * SymHttpTransportManager_getRegisterTransport(SymHttpTransportManager *this, SymNode *local, char *registrationUrl) {
@@ -244,6 +261,8 @@ char * SymHttpTransportManager_strerror(long rc) {
         return "Access Denied";
     } else if (rc == SYM_TRANSPORT_SC_SERVICE_BUSY) {
         return "Service Busy";
+    } else if (rc == SYM_TRANSPORT_NO_CONTENT) {
+        return "No Content";
     }
     return "Unknown Error";
 }
@@ -258,12 +277,17 @@ void SymHttpTransportManager_handleCurlRc(int curlRc, long httpCode, char* url, 
     }
 
     if (curlRc != CURLE_OK) {
-        SymLog_error("Error %d from curl, cannot retrieve %s", curlRc, url);
-        SymLog_error("%s", curl_easy_strerror(curlRc));
+        char* msg = SymStringUtils_format("Error %d from curl ('%s'), cannot retrieve %s", curlRc, curl_easy_strerror(curlRc),  url);
+        SymLog_error(msg);
 
         status->failed = 1;
-        status->failureMessage = SymStringUtils_format("%s", curl_easy_strerror(curlRc));
+        status->failureMessage = msg;
         status->status = SYM_REMOTE_NODE_STATUS_OFFLINE;
+    } else if (httpCode == SYM_TRANSPORT_NO_CONTENT) {
+        status->status = httpCode;
+        status->failed = 0;
+        status->failureMessage = SymHttpTransportManager_strerror(httpCode);
+        SymLog_debug("HTTP response code of %ld, %s. URL: %s", httpCode, status->failureMessage, url);
     } else {
         status->status = httpCode;
         if (httpCode != SYM_TRANSPORT_OK) {
@@ -284,6 +308,8 @@ SymHttpTransportManager * SymHttpTransportManager_new(SymHttpTransportManager *t
     SymTransportManager *super = &this->super;
     super->sendAcknowledgement = (void *) &SymHttpTransportManager_sendAcknowledgement;
     super->getPullTransport = (void *) &SymHttpTransportManager_getPullTransport;
+    super->getFileSyncPullTransport = (void *) &SymHttpTransportManager_getFileSyncPullTransport;
+    super->getFileSyncPushTransport = (void *) &SymHttpTransportManager_getFileSyncPushTransport;
     super->getPushTransport = (void *) &SymHttpTransportManager_getPushTransport;
     super->getRegisterTransport = (void *) &SymHttpTransportManager_getRegisterTransport;
     super->readAcknowledgement = (void *) SymHttpTransportManager_readAcknowledgement;

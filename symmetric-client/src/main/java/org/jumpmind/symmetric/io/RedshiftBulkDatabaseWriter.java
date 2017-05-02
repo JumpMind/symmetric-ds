@@ -128,7 +128,7 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
                         try {
                             String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
                             String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '"', CsvWriter.ESCAPE_MODE_DOUBLED, "\\N");
-                            stagedInputFile.getWriter().write(formattedData);
+                            stagedInputFile.getWriter(0).write(formattedData);
                             loadedRows++;
                             loadedBytes += formattedData.getBytes().length;
                         } catch (Exception ex) {
@@ -211,7 +211,7 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
     }
 
     protected void createStagingFile() {
-        stagedInputFile = stagingManager.create(0, "bulkloaddir", table.getName() + getBatch().getBatchId() + ".csv");
+        stagedInputFile = stagingManager.create("bulkloaddir", table.getName() + getBatch().getBatchId() + ".csv");
     }
 
 }

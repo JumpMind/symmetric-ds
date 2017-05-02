@@ -72,6 +72,7 @@ public class TableConstants {
     public static final String SYM_FILE_SNAPSHOT = "file_snapshot";
     public static final String SYM_FILE_INCOMING = "file_incoming";
     public static final String SYM_CONSOLE_USER = "console_user";
+    public static final String SYM_CONSOLE_USER_HIST = "console_user_hist";
     public static final String SYM_CONSOLE_EVENT = "console_event";
     public static final String SYM_EXTENSION = "extension";
     public static final String SYM_MONITOR = "monitor";

@@ -24,6 +24,7 @@ import java.lang.management.ThreadInfo;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
+import org.jumpmind.util.AppUtils;
 
 public abstract class AbstractMonitorType implements IMonitorType, ISymmetricEngineAware {
 
@@ -60,11 +61,7 @@ public abstract class AbstractMonitorType implements IMonitorType, ISymmetricEng
     protected String logStackTrace(ThreadInfo info) {
         StringBuilder sb = new StringBuilder();
         sb.append("Stack trace for thread ").append(info.getThreadId()).append(":\n");
-        for (StackTraceElement element : info.getStackTrace()) {
-            sb.append(element.getClassName()).append(".").append(element.getMethodName());
-            sb.append("(").append(element.getFileName()).append(":").append(element.getLineNumber()).append(")");
-            sb.append("\n");
-        }
+        sb.append(AppUtils.formatStackTrace(info.getStackTrace()));
         return sb.toString();
     }
 

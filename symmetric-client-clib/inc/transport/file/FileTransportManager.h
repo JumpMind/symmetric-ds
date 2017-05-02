@@ -25,6 +25,8 @@
 #include"transport/TransportManager.h"
 #include "transport/file/FileIncomingTransport.h"
 #include "transport/file/FileOutgoingTransport.h"
+#include "transport/file/OfflineFileSyncIncomingTransport.h"
+#include "transport/file/OfflineFileSyncOutgoingTransport.h"
 
 typedef struct SymFileTransportManager {
     SymTransportManager super;

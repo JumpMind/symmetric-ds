@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.io.PostgresBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.AbstractWriterTest.TableCsvData;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class PostgresBulkDatabaseWriterTest extends AbstractWriterTest {
 
     @Override
     protected long writeData(TableCsvData... datas) {
-        return writeData(new PostgresBulkDatabaseWriter(platform,
+        return writeData(new PostgresBulkDatabaseWriter(platform, new DatabaseWriterSettings(),
                 new CommonsDbcpNativeJdbcExtractor(), 1000), datas);
     }
 

@@ -59,9 +59,16 @@ public class AndroidJobManager implements IJobManager {
     protected long lastFileSyncTrackerTime = System.currentTimeMillis();
     
     protected long lastFileSyncPushTime = System.currentTimeMillis();    
+    
+    protected boolean started = false;
 
     public AndroidJobManager(ISymmetricEngine engine) {
         this.engine = engine;
+    }
+    
+    @Override
+    public boolean isStarted() {
+        return started;
     }
 
     public List<IJob> getJobs() {
@@ -77,12 +84,14 @@ public class AndroidJobManager implements IJobManager {
             job = new Job();
             job.start();
         }
+        started = true;
     }
 
     public void stopJobs() {
         if (job != null) {
             job.stop();
         }
+        started = false;
     }
 
     public IJob getJob(String name) {

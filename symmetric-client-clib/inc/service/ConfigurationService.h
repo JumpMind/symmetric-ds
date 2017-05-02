@@ -38,6 +38,7 @@ typedef struct SymConfigurationService {
     SymList *nodeGroupLinksCache;
     time_t nodeGroupLinkCacheTime;
     SymMap * (*getChannels)(struct SymConfigurationService *this, unsigned int refreshCache);
+    SymList * /*<SymChannel>*/ (*getFileSyncChannels)(struct SymConfigurationService *this, unsigned int refreshCache);
     SymChannel * (*getChannel)(struct SymConfigurationService *this, char *channelId);
     SymList * (*getNodeGroupLinks)(struct SymConfigurationService *this, unsigned short refreshCache);
     SymNodeGroupLink * (*getNodeGroupLinkFor)(struct SymConfigurationService *this, char *sourceNodeGroupId, char *targetNodeGroupId,

@@ -157,7 +157,7 @@ public class NodeService extends AbstractService implements INodeService {
             }
             return nodeCache.get(id);
         } else {
-            return findAllNodesAsMap().get(id);
+            return findNode(id);
         }
     }
 
@@ -274,27 +274,41 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void save(Node node) {
         if (!updateNode(node)) {
-            sqlTemplate.update(getSql("insertNodeSql"),
-                    new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(),
-                            node.getSchemaVersion(), node.getSymmetricVersion(), node.getSyncUrl(), new Date(), node.isSyncEnabled() ? 1 : 0,
-                            AppUtils.getTimezoneOffset(), node.getBatchToSendCount(), node.getBatchInErrorCount(), node.getCreatedAtNodeId(),
-                            node.getDeploymentType(), node.getNodeId() },
-                    new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.TIMESTAMP, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR });
+
+            sqlTemplate.update(
+                    getSql("insertNodeSql"),
+                    new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
+                            node.getDatabaseVersion(), node.getSchemaVersion(),
+                            node.getSymmetricVersion(), node.getSyncUrl(), new Date(),
+                            node.isSyncEnabled() ? 1 : 0, AppUtils.getTimezoneOffset(),
+                            node.getBatchToSendCount(), node.getBatchInErrorCount(),
+                            node.getCreatedAtNodeId(), node.getDeploymentType(), 
+                            node.getConfigVersion(), node.getNodeId() },
+                    new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+                            Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+
             flushNodeGroupCache();
         }
     }
 
     public boolean updateNode(Node node) {
-        boolean updated = sqlTemplate.update(getSql("updateNodeSql"),
-                new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(),
-                        node.getSchemaVersion(), node.getSymmetricVersion(), node.getSyncUrl(), new Date(), node.isSyncEnabled() ? 1 : 0,
-                        AppUtils.getTimezoneOffset(), node.getBatchToSendCount(), node.getBatchInErrorCount(), node.getCreatedAtNodeId(),
-                        node.getDeploymentType(), node.getNodeId() },
-                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.TIMESTAMP, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR }) == 1;
+
+        boolean updated = sqlTemplate.update(
+                getSql("updateNodeSql"),
+                new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
+                        node.getDatabaseVersion(), node.getSchemaVersion(),
+                        node.getSymmetricVersion(), node.getSyncUrl(), new Date(),
+                        node.isSyncEnabled() ? 1 : 0,  AppUtils.getTimezoneOffset(),
+                        node.getBatchToSendCount(), node.getBatchInErrorCount(),
+                        node.getCreatedAtNodeId(), node.getDeploymentType(), 
+                        node.getConfigVersion(), node.getNodeId() },
+                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+                        Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) == 1;
+
         return updated;
     }
 
@@ -954,6 +968,7 @@ public class NodeService extends AbstractService implements INodeService {
             node.setBatchToSendCount(rs.getInt("batch_to_send_count"));
             node.setBatchInErrorCount(rs.getInt("batch_in_error_count"));
             node.setDeploymentType(rs.getString("deployment_type"));
+            node.setConfigVersion(rs.getString("config_version"));
             return node;
         }
     }

@@ -46,31 +46,85 @@ SymList * SymDataExtractorService_extract(SymDataExtractorService *this, SymNode
     SymOutgoingBatches *batches = this->outgoingBatchService->getOutgoingBatches(this->outgoingBatchService, targetNode->nodeId);
 
     if (batches->containsBatches(batches)) {
+        if (this->parameterService->is(this->parameterService, SYM_PARAMETER_FILE_SYNC_ENABLE, 0)) {
+            SymList/*<SymChannel>*/ *fileSyncChannels = this->configurationService->getFileSyncChannels(this->configurationService, 0);
+            int i;
+            for (i = 0; i < fileSyncChannels->size; ++i) {
+                SymChannel *channel = fileSyncChannels->get(fileSyncChannels, i);
+                batches->filterBatchesForChannel(batches, channel->channelId);
+            }
+        }
+
         // TODO: filter for local and remote suspended channels
         // TODO: update ignored batches
 
-        SymDataExtractorInfo info;
-        info.bytesSentCount = 0;
-        info.batchesSentCount = 0;
-        info.maxBytesToSync = this->parameterService->getLong(this->parameterService, SYM_PARAMETER_TRANSPORT_MAX_BYTES_TO_SYNC, 1048576);
-        info.sourceNode = this->nodeService->findIdentity(this->nodeService);
-        info.targetNode = targetNode;
-        info.outgoingBatchService = this->outgoingBatchService;
-        info.processedBatches = processedBatches;
-        info.batches = batches;
+        if (batches->containsBatches(batches)) {
+            SymDataExtractorInfo info;
+            info.bytesSentCount = 0;
+            info.batchesSentCount = 0;
+            info.maxBytesToSync = this->parameterService->getLong(this->parameterService, SYM_PARAMETER_TRANSPORT_MAX_BYTES_TO_SYNC, 1048576);
+            info.sourceNode = this->nodeService->findIdentity(this->nodeService);
+            info.targetNode = targetNode;
+            info.outgoingBatchService = this->outgoingBatchService;
+            info.processedBatches = processedBatches;
+            info.batches = batches;
 
-        SymDataReader *reader = (SymDataReader *) SymExtractDataReader_new(NULL, batches->batches, info.sourceNode->nodeId, targetNode->nodeId,
-                this->dataService, this->triggerRouterService, this->platform, (void *) SymDataExtractorService_batchProcessed, (void *) &info);
-        SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataWriter_new(NULL, info.sourceNode->nodeId, reader);
+            SymDataReader *reader = (SymDataReader *) SymExtractDataReader_new(NULL, batches->batches, info.sourceNode->nodeId, targetNode->nodeId,
+                    this->dataService, this->triggerRouterService, this->platform, (void *) SymDataExtractorService_batchProcessed, (void *) &info);
+            SymDataProcessor *processor = (SymDataProcessor *) SymProtocolDataWriter_new(NULL, info.sourceNode->nodeId, reader);
 
-        long rc = transport->process(transport, processor, NULL);
-        SymLog_debug("Transport rc = %ld" , rc);
+            long rc = transport->process(transport, processor, NULL);
+            SymLog_debug("Transport rc = %ld" , rc);
 
-        reader->destroy(reader);
-        processor->destroy(processor);
+            reader->destroy(reader);
+            processor->destroy(processor);
+        }
     }
     batches->destroy(batches);
-	return processedBatches;
+    return processedBatches;
+}
+
+SymList * SymDataExtractorService_extractOutgoingBatch(SymDataExtractorService *this, SymNode *targetNode, SymDataWriter *dataWriter, SymOutgoingBatch *currentBatch) {
+
+    if (!SymStringUtils_equals(currentBatch->status, "OK")) {
+        SymNode *node = this->nodeService->findIdentity(this->nodeService);
+        time_t ts = time(NULL);
+        long extractTimeInMs = 0l;
+        long byteCount = 0l;
+
+        if (SymStringUtils_equals(currentBatch->status, "IG")) {
+            // TODO cleanupIgnoredBatch(sourceNode, targetNode, currentBatch, writer);
+        } else {
+            SymList *processedBatches = SymList_new(NULL);
+            SymOutgoingBatches * batches = SymOutgoingBatches_new(NULL);
+            SymList * /*<SymOutgoingBatch>*/ batchList = SymList_new(NULL);
+            batchList->add(batchList, currentBatch);
+            batches->batches = batchList;
+
+            currentBatch->extractCount = currentBatch->extractCount + 1;
+            SymDataExtractorInfo info;
+            info.bytesSentCount = 0;
+            info.batchesSentCount = 0;
+            info.maxBytesToSync = this->parameterService->getLong(this->parameterService, SYM_PARAMETER_TRANSPORT_MAX_BYTES_TO_SYNC, 1048576);
+            info.sourceNode = this->nodeService->findIdentity(this->nodeService);
+            info.targetNode = targetNode;
+            info.outgoingBatchService = this->outgoingBatchService;
+            info.processedBatches = processedBatches;
+            info.batches = batches;
+
+            SymDataReader *reader = (SymDataReader *) SymExtractDataReader_new(NULL, batches->batches, info.sourceNode->nodeId, targetNode->nodeId,
+                    this->dataService, this->triggerRouterService, this->platform, (void *) SymDataExtractorService_batchProcessed, (void *) &info);
+
+            reader->open(reader);
+            SymDataProcessor_processWithReader(NULL, dataWriter, reader);
+            reader->close(reader);
+
+            extractTimeInMs = time(NULL) - ts;
+            currentBatch->extractMillis = extractTimeInMs*1000;
+        }
+    }
+
+    return currentBatch;
 }
 
 void SymDataExtractorService_destroy(SymDataExtractorService *this) {
@@ -78,17 +132,19 @@ void SymDataExtractorService_destroy(SymDataExtractorService *this) {
 }
 
 SymDataExtractorService * SymDataExtractorService_new(SymDataExtractorService *this, SymNodeService *nodeService, SymOutgoingBatchService *outgoingBatchService,
-        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymParameterService *parameterService, SymDatabasePlatform *platform) {
+        SymDataService *dataService, SymTriggerRouterService *triggerRouterService, SymParameterService *parameterService, SymConfigurationService *configurationService, SymDatabasePlatform *platform) {
     if (this == NULL) {
         this = (SymDataExtractorService *) calloc(1, sizeof(SymDataExtractorService));
     }
     this->nodeService = nodeService;
     this->outgoingBatchService = outgoingBatchService;
     this->dataService = dataService;
+    this->configurationService = configurationService;
     this->parameterService = parameterService;
     this->triggerRouterService = triggerRouterService;
     this->platform = platform;
     this->extract = (void *) &SymDataExtractorService_extract;
+    this->extractOutgoingBatch = (void *) &SymDataExtractorService_extractOutgoingBatch;
     this->destroy = (void *) &SymDataExtractorService_destroy;
     return this;
 }

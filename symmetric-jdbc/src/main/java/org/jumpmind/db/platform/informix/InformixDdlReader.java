@@ -20,6 +20,8 @@
  */
 package org.jumpmind.db.platform.informix;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -50,8 +52,22 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
+    }    
+    
+    @Override
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String, Object> values) throws SQLException {
+        String catalog = metaData.getCatalog();
+        Table t =  super.readTable(connection, metaData, values);
+        if (t != null && (isBlank(catalog) || catalog.equals(getDefaultCatalogPattern()))) {
+            /* The default catalog is null so by default if no 
+             * catalog is provided it must be null as well */
+            t.setCatalog(null);
+        }
+        return t;
     }
+    
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {

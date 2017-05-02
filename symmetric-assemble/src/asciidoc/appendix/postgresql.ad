@@ -8,13 +8,14 @@ Starting with PostgreSQL 8.3, SymmetricDS supports the transaction identifier.
 Binary Large Object (BLOB) replication is supported for both byte array (BYTEA) and object ID (OID) data types.
 
 In order to function properly, SymmetricDS needs to use session variables.
-On PostgreSQL, session variables are enabled using a custom variable class. Add the following line to the postgresql.conf file of PostgreSQL server:
+Before PostgreSQL 9.2, session variables are enabled using a custom variable class. Add the following line to the postgresql.conf file of PostgreSQL server on versions before 9.2:
 
 ----
 custom_variable_classes = 'symmetric'
 ----
 
-This setting is required, and SymmetricDS will log an error and exit if it cannot set session variables.
+This setting is required on versions before 9.2, and SymmetricDS will log an error and exit if it cannot set session variables. 
+PostgreSQL versions 9.2 or later do not require this setting.
 
 Before database triggers can be created by in PostgreSQL, the plpgsql language handler must be installed on the database. 
 If plpgsql is not already installed, the following statements can be run by the administrator on the database:

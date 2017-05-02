@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.route;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,13 +62,14 @@ public class BshDataRouter extends AbstractDataRouter implements IBuiltInExtensi
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed,
             TriggerRouter triggerRouter) {
+        Set<String> boundVariableNames = new LinkedHashSet<String>();
         try {
             long ts = System.currentTimeMillis();
             Interpreter interpreter = getInterpreter(context);
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.init.ms");
             HashSet<String> targetNodes = new HashSet<String>();
             ts = System.currentTimeMillis();
-            bind(interpreter, dataMetaData, nodes, targetNodes, initialLoad);
+            bind(interpreter, dataMetaData, nodes, targetNodes, boundVariableNames, initialLoad);
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.bind.ms");
             ts = System.currentTimeMillis();
             Object returnValue = interpreter.eval(dataMetaData.getRouter().getRouterExpression());
@@ -82,7 +84,7 @@ public class BshDataRouter extends AbstractDataRouter implements IBuiltInExtensi
                     throw new RuntimeException("Routing script failed at line " + ((TargetError)e).getErrorLineNumber(), t);
                 }
             } else {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Failed to evaluate bsh router script.  Bound variables were: "  + boundVariableNames, e);
             }
         }
     }
@@ -121,21 +123,26 @@ public class BshDataRouter extends AbstractDataRouter implements IBuiltInExtensi
     }
 
     protected void bind(Interpreter interpreter, DataMetaData dataMetaData, Set<Node> nodes,
-            Set<String> targetNodes, boolean initialLoad) throws EvalError {
-        interpreter.set("log", log);
-        interpreter.set("initialLoad", initialLoad);
-        interpreter.set("dataMetaData", dataMetaData);
-        interpreter.set("nodes", nodes);
-        interpreter.set("nodeIds", toNodeIds(nodes, null));
-        interpreter.set("identityNodeId", engine.getNodeService().findIdentityNodeId());
-        interpreter.set("targetNodes", targetNodes);
-        interpreter.set("engine", engine);
+            Set<String> targetNodes, Set<String> boundVariableNames, boolean initialLoad) throws EvalError {
+        bind(interpreter, boundVariableNames, "log", log);
+        bind(interpreter, boundVariableNames, "initialLoad", initialLoad);
+        bind(interpreter, boundVariableNames, "dataMetaData", dataMetaData);
+        bind(interpreter, boundVariableNames, "nodes", nodes);
+        bind(interpreter, boundVariableNames, "nodeIds", toNodeIds(nodes, null));
+        bind(interpreter, boundVariableNames, "identityNodeId", engine.getNodeService().findIdentityNodeId());
+        bind(interpreter, boundVariableNames, "targetNodes", targetNodes);
+        bind(interpreter, boundVariableNames, "engine", engine);
         Map<String, Object> params = getDataObjectMap(dataMetaData, engine.getSymmetricDialect(),
                 true);
         if (params != null) {
             for (String param : params.keySet()) {
-                interpreter.set(param, params.get(param));
+                bind(interpreter, boundVariableNames, param, params.get(param));
             }
         }
     }
+    
+    protected void bind(Interpreter interpreter, Set<String> boundVariableNames, String name, Object value) throws EvalError {
+        interpreter.set(name, value);
+        boundVariableNames.add(name);        
+    }   
 }

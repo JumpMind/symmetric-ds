@@ -192,14 +192,14 @@ public class DataService extends AbstractService implements IDataService {
 
                         } else {
                             log.error(
-                                    "Could not reload table for node {} because the router {} target node group id {} did not match",
-                                    new Object[] { request.getTargetNodeId(),
+                                    "Could not reload table {} for node {} because the router {} target node group id {} did not match",
+                                    new Object[] { trigger.getSourceTableName(), request.getTargetNodeId(),
                                             request.getRouterId(), link.getTargetNodeGroupId() });
                         }
                     } else {
                         log.error(
-                                "Could not reload table for node {} because the router {} source node group id {} did not match",
-                                new Object[] { request.getTargetNodeId(), request.getRouterId(),
+                                "Could not reload table {}  for node {} because the router {} source node group id {} did not match",
+                                new Object[] { trigger.getSourceTableName(), request.getTargetNodeId(), request.getRouterId(),
                                         link.getSourceNodeGroupId() });
                     }
                 } else {
@@ -209,7 +209,7 @@ public class DataService extends AbstractService implements IDataService {
                                     request.getRouterId() });
                 }
             } else {
-                log.error("Could not reload table for node {} because the node could not be found",
+                log.error("Could not reload table for node {} because the target node could not be found",
                         request.getTargetNodeId());
             }
         }
@@ -392,7 +392,7 @@ public class DataService extends AbstractService implements IDataService {
 
                         transaction = platform.getSqlTemplate().startSqlTransaction();
 
-                        long loadId = engine.getSequenceService().nextVal(transaction,
+                        long loadId = engine.getSequenceService().nextVal(transaction, 
                                 Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
                         processInfo.setCurrentLoadId(loadId);
                         
@@ -1124,17 +1124,6 @@ public class DataService extends AbstractService implements IDataService {
         return sqlTemplate.queryForInt(getSql("countDataInRangeSql"), firstDataId, secondDataId);
     }
 
-    public void checkForAndUpdateMissingChannelIds(long firstDataId, long lastDataId) {
-        int numberUpdated = sqlTemplate.update(getSql("checkForAndUpdateMissingChannelIdSql"),
-                Constants.CHANNEL_DEFAULT, firstDataId, lastDataId);
-        if (numberUpdated > 0) {
-            log.warn(
-                    "There were {} data records found between {} and {} that an invalid channel_id.  Updating them to be on the '{}' channel.",
-                    new Object[] { numberUpdated, firstDataId, lastDataId,
-                            Constants.CHANNEL_DEFAULT });
-        }
-    }
-
     public void insertCreateEvent(final Node targetNode, TriggerHistory triggerHistory, String routerId,
             boolean isLoad, long loadId, String createBy) {
         ISqlTransaction transaction = null;
@@ -1245,10 +1234,8 @@ public class DataService extends AbstractService implements IDataService {
                                             : routerId }, new int[] { Types.NUMERIC, Types.NUMERIC,
                                     Types.VARCHAR });
         } catch (RuntimeException ex) {
-            log.error("Could not insert a data event: data_id={} batch_id={} router_id={}",
-                    new Object[] { dataId, batchId, routerId });
-            log.error("", ex);
-            throw ex;
+            throw new RuntimeException(String.format("Could not insert a data event: data_id=%s batch_id=%s router_id=%s",
+                    dataId, batchId, routerId ), ex);
         }
     }
 
@@ -1428,7 +1415,7 @@ public class DataService extends AbstractService implements IDataService {
         Node sourceNode = engine.getNodeService().findIdentity();
         Node targetNode = engine.getNodeService().findNode(nodeId);
         if (targetNode == null) {
-            log.error("Could not send schema to the node {}.  It does not exist", nodeId);
+            log.error("Could not send schema to the node {}.  The target node does not exist", nodeId);
             return false;
         }
 
@@ -1564,59 +1551,70 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void reloadMissingForeignKeyRows(String nodeId, long dataId) {
-        Data data = findData(dataId);
-        log.debug("reloadMissingForeignKeyRows for nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
-        TriggerHistory hist = data.getTriggerHistory();
-        Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
-        Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
-
-        List<TableRow> tableRows = new ArrayList<TableRow>();
-        Row row = new Row(dataMap.size());
-        row.putAll(dataMap);
-        tableRows.add(new TableRow(table, row, null));
-        List<TableRow> foreignTableRows;
         try {
-            foreignTableRows = getForeignTableRows(tableRows, new HashSet<TableRow>());
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
-        
-        if (foreignTableRows.isEmpty()) {
-            log.info("Could not determine foreign table rows to fix foreign key violation for "
-                    + "nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
-        }
-        
-        Collections.reverse(foreignTableRows);
-        for (TableRow foreignTableRow : foreignTableRows) {
-            Table foreignTable = foreignTableRow.getTable();
-            String catalog = foreignTable.getCatalog();
-            String schema = foreignTable.getSchema();
-            if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
-                catalog = null;
-            }
-            if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
-                schema = null;
+            Data data = findData(dataId);
+            log.debug("reloadMissingForeignKeyRows for nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
+            TriggerHistory hist = data.getTriggerHistory();
+            Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+            Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+    
+            List<TableRow> tableRows = new ArrayList<TableRow>();
+            Row row = new Row(dataMap.size());
+            row.putAll(dataMap);
+            tableRows.add(new TableRow(table, row, null, null, null));
+            List<TableRow> foreignTableRows;
+            try {
+                foreignTableRows = getForeignTableRows(tableRows, new HashSet<TableRow>());
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
             }
             
-            log.info("Issuing foreign key correction reload "
-                    + "nodeId {} catalog '{}' schema '{}' foreign table name '{}' where sql '{}' "
-                    + "to correct dataId '{}' table '{}'",
-                    nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(), dataId, data.getTableName());
-            reloadTable(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql());
-        }        
+            if (foreignTableRows.isEmpty()) {
+                log.info("Could not determine foreign table rows to fix foreign key violation for "
+                        + "nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
+            }
+            
+            Collections.reverse(foreignTableRows);
+            Set<TableRow> visited = new HashSet<TableRow>();
+            
+            for (TableRow foreignTableRow : foreignTableRows) {
+                if (visited.add(foreignTableRow)) {
+                    Table foreignTable = foreignTableRow.getTable();
+                    String catalog = foreignTable.getCatalog();
+                    String schema = foreignTable.getSchema();
+                    if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
+                        catalog = null;
+                    }
+                    if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
+                        schema = null;
+                    }
+                
+                    log.info("Issuing foreign key correction reload "
+                            + "nodeId {} catalog '{}' schema '{}' foreign table name '{}' fk name '{}' where sql '{}' "
+                            + "to correct dataId '{}' table '{}' for column '{}'",
+                            nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(), 
+                            dataId, data.getTableName(), foreignTableRow.getReferenceColumnName());
+                    reloadTable(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql());
+                }
+            }        
+        }
+        catch (Exception e) {
+            log.error("Unknown exception while processing foreign key for node id: " + nodeId + " data id " + dataId, e);
+        }
     }
 
     protected List<TableRow> getForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited) throws CloneNotSupportedException {
         List<TableRow> fkDepList = new ArrayList<TableRow>();
         for (TableRow tableRow : tableRows) {
-            if (visited.add(tableRow)) {
+            if (!visited.contains(tableRow)) {
+                visited.add(tableRow);
                 for (ForeignKey fk : tableRow.getTable().getForeignKeys()) {
                     Table table = platform.getTableFromCache(fk.getForeignTableName(), false);
                     if (table == null) {
                         table = fk.getForeignTable();
-                        if (table == null) {                            
-                            table = platform.getTableFromCache(tableRow.getTable().getCatalog(), 
-                                    tableRow.getTable().getSchema(), fk.getForeignTableName(), false);
+                        if (table == null) {
+                            table = platform.getTableFromCache(tableRow.getTable().getCatalog(), tableRow.getTable().getSchema(),
+                                    fk.getForeignTableName(), false);
                         }
                     }
                     if (table != null) {
@@ -1625,41 +1623,67 @@ public class DataService extends AbstractService implements IDataService {
                             column.setPrimaryKey(false);
                         }
                         Row whereRow = new Row(fk.getReferenceCount());
+                        String referenceColumnName = null;
+                        boolean[] nullValues = new boolean[fk.getReferenceCount()];
+                        int index = 0;
                         for (Reference ref : fk.getReferences()) {
                             Column foreignColumn = foreignTable.findColumn(ref.getForeignColumnName());
                             Object value = tableRow.getRow().get(ref.getLocalColumnName());
+                            nullValues[index++] = value == null;
+                            referenceColumnName = ref.getLocalColumnName();
                             whereRow.put(foreignColumn.getName(), value);
                             foreignColumn.setPrimaryKey(true);
                         }
-                        
-                        DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable, null);
-                        String whereSql = whereSt.buildDynamicSql(symmetricDialect.getBinaryEncoding(), whereRow, false, true, 
-                                foreignTable.getPrimaryKeyColumns()).substring(6);
-                        String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
-                        if (delimiter != null && delimiter.length() > 0) {
-                            whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
+
+                        boolean allNullValues = true;
+                        for (boolean b : nullValues) {
+                            if (!b) {
+                                allNullValues = false;
+                                break;
+                            }
                         }
-                        
-                        Row foreignRow = new Row(foreignTable.getColumnCount());
-                        if (foreignTable.getForeignKeyCount() > 0) {
-                            DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
-                            Map<String, Object> values = sqlTemplate.queryForMap(selectSt.getSql(), 
-                                    whereRow.toArray(foreignTable.getPrimaryKeyColumnNames()));
-                            foreignRow.putAll(values);
+
+                        if (!allNullValues) {
+                            DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable.getCatalog(),
+                                    foreignTable.getSchema(), foreignTable.getName(), foreignTable.getPrimaryKeyColumns(),
+                                    foreignTable.getColumns(), nullValues, null);
+                            String whereSql = whereSt.buildDynamicSql(symmetricDialect.getBinaryEncoding(), whereRow, false, true,
+                                    foreignTable.getPrimaryKeyColumns()).substring(6);
+                            String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
+                            if (delimiter != null && delimiter.length() > 0) {
+                                whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
+                            }
+
+                            Row foreignRow = new Row(foreignTable.getColumnCount());
+                            if (foreignTable.getForeignKeyCount() > 0) {
+                                DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
+                                Object[] keys = whereRow.toArray(foreignTable.getPrimaryKeyColumnNames());
+                                Map<String, Object> values = sqlTemplate.queryForMap(selectSt.getSql(), keys);
+                                if (values == null) {
+                                    log.warn(
+                                            "Unable to reload rows for missing foreign key data for table '{}', parent data not found.  Using sql='{}' with keys '{}'",
+                                            table.getName(), selectSt.getSql(), keys);
+                                } else {
+                                    foreignRow.putAll(values);
+                                }
+                            }
+
+                            TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql, referenceColumnName, fk.getName());
+                            fkDepList.add(foreignTableRow);
+                            log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
+                        } else {
+                            log.debug("The foreign table reference was null for {}", foreignTable.getName());
                         }
-    
-                        TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql);
-                        fkDepList.add(foreignTableRow);
-                        log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
                     } else {
                         log.debug("Foreign table '{}' not found for foreign key '{}'", fk.getForeignTableName(), fk.getName());
+                    }
+                    if (fkDepList.size() > 0) {
+                        fkDepList.addAll(getForeignTableRows(fkDepList, visited));
                     }
                 }
             }
         }
-        if (fkDepList.size() > 0) {
-            fkDepList.addAll(getForeignTableRows(fkDepList, visited));
-        }
+
         return fkDepList;
     }
 
@@ -2090,11 +2114,38 @@ public class DataService extends AbstractService implements IDataService {
         Table table;
         Row row;
         String whereSql;
+        String referenceColumnName;
+        String fkName;
+        String fkColumnValues = null;
         
-        public TableRow(Table table, Row row, String whereSql) {
+        public TableRow(Table table, Row row, String whereSql, String referenceColumnName, String fkName) {
             this.table = table;
             this.row = row;
             this.whereSql = whereSql;
+            this.referenceColumnName = referenceColumnName;
+            this.fkName = fkName;
+        }
+        
+        protected String getFkColumnValues() {
+            if (fkColumnValues == null) {
+                StringBuilder builder = new StringBuilder();
+                ForeignKey[] keys = table.getForeignKeys();
+                for (ForeignKey foreignKey : keys) {
+                    if (foreignKey.getName().equals(fkName)) {
+                        Reference[] refs = foreignKey.getReferences();
+                        for (Reference ref : refs) {
+                            Object value = row.get(ref.getLocalColumnName());
+                            if (value != null) {
+                                builder.append("\"").append(value).append("\",");
+                            } else {
+                                builder.append("null,");
+                            }
+                        }
+                    }
+                }
+                fkColumnValues = builder.toString();
+            }
+            return fkColumnValues;
         }
 
         @Override
@@ -2103,6 +2154,7 @@ public class DataService extends AbstractService implements IDataService {
             int result = 1;
             result = prime * result + ((table == null) ? 0 : table.hashCode());
             result = prime * result + ((whereSql == null) ? 0 : whereSql.hashCode());
+            result = prime * result + ((getFkColumnValues() == null) ? 0 : getFkColumnValues().hashCode());
             return result;
         }
 
@@ -2110,9 +2162,15 @@ public class DataService extends AbstractService implements IDataService {
         public boolean equals(Object o) {
             if (o instanceof TableRow) {
                 TableRow tr = (TableRow) o;
-                return tr.table.equals(table) && tr.whereSql.equals(whereSql);
+                return tr.table.equals(table) && tr.whereSql.equals(whereSql) 
+                        && tr.getFkColumnValues().equals(getFkColumnValues().toString());
             }
             return false;
+        }
+        
+        @Override
+        public String toString() {
+            return table.getFullyQualifiedTableName() + ":" + whereSql + ":" + getFkColumnValues();
         }
                 
         public Table getTable() {
@@ -2126,6 +2184,15 @@ public class DataService extends AbstractService implements IDataService {
         public String getWhereSql() {
             return whereSql;
         }
+        public String getReferenceColumnName() {
+            return referenceColumnName;
+        }
+        public String getFkName() {
+            return fkName;
+        }
+        
+        
+        
     }
 
     public class DataMapper implements ISqlRowMapper<Data> {
@@ -2168,7 +2235,8 @@ public class DataService extends AbstractService implements IDataService {
                     log.warn("Could not find a trigger history row for the table {} for data_id {}.  \"Attempting\" to generate a new trigger history row", tableName, data.getDataId());
                 } else {
                     triggerHistory = new TriggerHistory(-1);
-                    log.warn("A captured data row could not be matched with an existing trigger history row and we could not find a matching trigger.  The data_id of {} will be ignored", data.getDataId());
+                    log.warn("A captured data row could not be matched with an existing trigger history "
+                            + "row and we could not find a matching trigger.  The data_id of {} (table {}) will be ignored", data.getDataId(), data.getTableName());
                 }
             } else {
                 if (!triggerHistory.getSourceTableName().equals(data.getTableName())) {

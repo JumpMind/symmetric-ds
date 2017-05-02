@@ -43,9 +43,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -58,9 +56,11 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.ext.INodeRegistrationListener;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
@@ -128,9 +128,9 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
-import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
+import org.jumpmind.util.CustomizableThreadFactory;
 
 /**
  * Responsible for writing batch data to the database
@@ -274,6 +274,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 transport = transportManager.getRegisterTransport(local,
                         parameterService.getRegistrationUrl());
                 log.info("Using registration URL of {}", transport.getUrl());
+                
+                List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationUrlUpdated(transport.getUrl());
+                }
+                
                 remote = new Node();
                 remote.setSyncUrl(parameterService.getRegistrationUrl());
                 isRegisterTransport = true;
@@ -295,8 +301,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                              * redirect for the ack
                              */
                             String url = transport.getRedirectionUrl();
-                            url = url.replace(HttpTransportManager.buildRegistrationUrl("", local),
-                                    "");
+                            int index = url.indexOf("/registration?");
+                            if (index >= 0) {
+                                url = url.substring(0, index);
+                            }
+                            log.info("Setting the sync url for ack to: {}", url);
                             remote.setSyncUrl(url);
                         }
                         sendAck(remote, local, localSecurity, list, transportManager);
@@ -458,6 +467,51 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return list;
     }
 
+    public void loadDataFromConfig(Node remote, RemoteNodeStatus status, boolean force) throws IOException {
+        if (engine.getParameterService().isRegistrationServer()) {
+            return;
+        }
+        Node local = nodeService.findIdentity();
+        try {
+            NodeSecurity localSecurity = nodeService.findNodeSecurity(local.getNodeId(), true);
+            String configVersion = force ? "" : local.getConfigVersion();
+
+            IIncomingTransport transport = engine.getTransportManager().getConfigTransport(remote, local,
+                    localSecurity.getNodePassword(), Version.version(), configVersion, remote.getSyncUrl());
+
+            ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
+                    .getNodeId(), Constants.CHANNEL_CONFIG, local.getNodeId(), ProcessType.PULL_CONFIG_JOB));
+            try {
+                log.info("Requesting current configuration {symmetricVersion={}, configVersion={}}", 
+                        Version.version(), local.getConfigVersion());
+                List<IncomingBatch> list = loadDataFromTransport(processInfo, remote, transport, null);
+                if (containsError(list)) {
+                    processInfo.setStatus(ProcessInfo.Status.ERROR);
+                } else {
+                    if (list.size() > 0) {
+                        status.updateIncomingStatus(list);
+                        local.setConfigVersion(Version.version());
+                        nodeService.save(local);
+                    }
+                    processInfo.setStatus(ProcessInfo.Status.OK);
+                }
+            } catch (RuntimeException e) {
+                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                throw e;
+            } catch (IOException e) {
+                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                throw e;
+            }
+        } catch (RegistrationRequiredException e) {
+            log.warn("Failed to pull configuration from node '{}'. It probably is missing a node security record for '{}'.",
+                    remote.getNodeId(), local.getNodeId());
+        } catch (MalformedURLException e) {
+            log.error("Could not connect to the {} node's transport because of a bad URL: '{}' {}",
+                    remote.getNodeId(), remote.getSyncUrl(), e);
+            throw e;
+        }
+    }
+
     /**
      * Load database from input stream and return a list of batch statuses. This
      * is used for a pull request that responds with data, and the
@@ -494,7 +548,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             String targetNodeId = nodeService.findIdentityNodeId();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
-                ExecutorService executor = Executors.newFixedThreadPool(1, new DataLoaderThreadFactory());
+                ExecutorService executor = Executors.newFixedThreadPool(1, new CustomizableThreadFactory(String.format("dataloader-%s-%s", sourceNode.getNodeGroupId(), sourceNode.getNodeId())));
                 LoadIntoDatabaseOnArrivalListener loadListener = new LoadIntoDatabaseOnArrivalListener(processInfo,
                         sourceNode.getNodeId(), listener, executor);
                 new SimpleStagingDataWriter(transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING, 
@@ -861,23 +915,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    class DataLoaderThreadFactory implements ThreadFactory {
-        AtomicInteger threadNumber = new AtomicInteger(1);
-        String namePrefix = parameterService.getEngineName().toLowerCase() + "-data-loader-";
-
-        public Thread newThread(Runnable runnable) {
-            Thread thread = new Thread(runnable);
-            thread.setName(namePrefix + threadNumber.getAndIncrement());
-            if (thread.isDaemon()) {
-                thread.setDaemon(false);
-            }
-            if (thread.getPriority() != Thread.NORM_PRIORITY) {
-                thread.setPriority(Thread.NORM_PRIORITY);
-            }
-            return thread;
-        }
-    }
-
     class LoadIntoDatabaseOnArrivalListener implements IProtocolDataWriterListener {
 
         private ManageIncomingBatchListener listener;
@@ -913,7 +950,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             Callable<IncomingBatch> loadBatchFromStage = new Callable<IncomingBatch>() {
                 public IncomingBatch call() throws Exception {
                     IncomingBatch incomingBatch = null;
-                    if (!isError) {
+                    if (!isError && resource != null && resource.exists()) {
                         try {
                             processInfo.setStatus(ProcessInfo.Status.LOADING);
                             
@@ -949,6 +986,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             }
                             resource.setState(State.DONE);
                         }
+                    } else {
+                        log.info("The batch {} was missing in staging.  Setting status to resend", batch.getNodeBatchId());
+                        incomingBatch = new IncomingBatch(batch);
+                        incomingBatch.setStatus(Status.RS);
+                        incomingBatchService.updateIncomingBatch(incomingBatch);
                     }
                     return incomingBatch;
                 }
@@ -962,6 +1004,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     incomingBatch.setStatus(Status.RS);
                     incomingBatchService.updateIncomingBatch(incomingBatch);
                 }
+                isError = true;
             } else {
                 futures.add(executor.submit(loadBatchFromStage));
             }

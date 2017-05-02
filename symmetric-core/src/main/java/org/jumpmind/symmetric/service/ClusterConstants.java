@@ -39,6 +39,7 @@ public class ClusterConstants {
     public static final String PURGE_DATA_GAPS = "Purge Data Gaps";
     public static final String HEARTBEAT = "Heartbeat";
     public static final String INITIAL_LOAD_EXTRACT = "Initial Load Extract";
+    public static final String SYNC_CONFIG = "Sync Config";
     public static final String SYNC_TRIGGERS = "Sync Triggers";
     public static final String WATCHDOG = "Watchdog";
     public static final String STATISTICS = "Statistics";

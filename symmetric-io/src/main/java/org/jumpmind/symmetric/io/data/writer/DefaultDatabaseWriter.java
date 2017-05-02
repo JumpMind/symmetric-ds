@@ -533,15 +533,19 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             List<String> sqlStatements = getSqlStatements(script);
             long count = 0;
             for (String sql : sqlStatements) {
-
-                sql = preprocessSqlStatement(sql);
-                transaction.prepare(sql);
-                if (log.isDebugEnabled()) {
-                    log.debug("About to run: {}", sql);
-                }
-                count += transaction.prepareAndExecute(sql);
-                if (log.isDebugEnabled()) {
-                    log.debug("{} rows updated when running: {}", count, sql);
+                try {
+                    sql = preprocessSqlStatement(sql);
+                    transaction.prepare(sql);
+                    if (log.isDebugEnabled()) {
+                        log.debug("About to run: {}", sql);
+                    }
+                    count += transaction.prepareAndExecute(sql);
+                    if (log.isDebugEnabled()) {
+                        log.debug("{} rows updated when running: {}", count, sql);
+                    }
+                } catch (RuntimeException ex) {
+                    log.error("Failed to run the following sql: {}", sql);
+                    throw ex;
                 }
             }
             statistics.get(batch).increment(DataWriterStatisticConstants.SQLCOUNT);

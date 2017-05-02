@@ -249,24 +249,40 @@ Some variables are provided to the script:
 
 |===
 
-.Tranform Expression Example Returning a String
+.Transform Expression Example Returning a String
 ====
 ----
 if (currentValue > oldValue) { 
-	return currentValue * .9 
+	return currentValue * .9;
 } else { 
-	return PRICE 
+	return PRICE; 
 }
 ----
 ====
 
-.Tranform Expression Example Returning a NewAndOldValue object
+.Transform Expression Example Returning a NewAndOldValue object
 ====
 ----
 if (currentValue != null && currentValue.length() == 0) { 
 	return org.jumpmind.symmetric.io.data.transform.NewAndOldValue(null, oldValue);
 } else { 
 	return currentValue;
+}
+----
+====
+
+.Transform Expression Example Accessing Old/New Values for the Additional Column 'path'
+====
+----
+String newFilePath = PATH;
+String oldFilePath = null;
+if (transformedData.getOldSourceValues() != null) {
+    oldFilePath = transformedData.getOldSourceValues().get("path");
+}
+if (oldFilePath == null) {
+    return newFilePath;
+} else {
+    return oldFilePath;
 }
 ----
 ====

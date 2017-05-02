@@ -22,9 +22,10 @@ package org.jumpmind.symmetric.io.stage;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils;
@@ -34,43 +35,43 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+
 public class StagingManager implements IStagingManager {
 
     protected static final Logger log = LoggerFactory.getLogger(StagingManager.class);
 
-    protected File directory;
-
-    protected Map<String, IStagedResource> resourceList = new ConcurrentHashMap<String, IStagedResource>();
+    private File directory;
+    
+    protected Set<String> resourcePaths;
+    
+    protected Map<String, IStagedResource> inUse;
 
     public StagingManager(String directory) {
         log.info("The staging directory was initialized at the following location: " + directory);
         this.directory = new File(directory);
         this.directory.mkdirs();
+        this.resourcePaths = Collections.synchronizedSet(new TreeSet<String>());
+        this.inUse = new ConcurrentHashMap<String, IStagedResource>();
         refreshResourceList();
     }
     
-    public Collection<String> getResourceReferences() {
-        synchronized (StagingManager.class) {
-            return resourceList.keySet();
+    public Set<String> getResourceReferences() {
+        synchronized (resourcePaths) {
+            return new TreeSet<String>(resourcePaths);
         }
     }
 
-    protected void refreshResourceList() {
-        synchronized (StagingManager.class) {
-            Collection<File> files = FileUtils.listFiles(this.directory,
-                    new String[] { State.CREATE.getExtensionName(), State.READY.getExtensionName(),
-                            State.DONE.getExtensionName() }, true);
-            for (File file : files) {
-                try {
-                    StagedResource resource = new StagedResource(0, directory,
-                            file, this);
-                    String path = resource.getPath();
-                    if (!resourceList.containsKey(path)) {
-                        resourceList.put(path, resource);
-                    }
-                } catch (IllegalStateException ex) {
-                    log.warn(ex.getMessage());
+    private void refreshResourceList() {
+        Collection<File> files = FileUtils.listFiles(this.directory,
+                new String[] { State.CREATE.getExtensionName(), State.DONE.getExtensionName(), State.DONE.getExtensionName() }, true);
+        for (File file : files) {
+            try {
+                String path = StagedResource.toPath(directory, file);
+                if (!resourcePaths.contains(path)) {
+                    resourcePaths.add(path);
                 }
+            } catch (IllegalStateException ex) {
+                log.warn(ex.getMessage());
             }
         }
     }
@@ -85,21 +86,18 @@ public class StagingManager implements IStagingManager {
     public long clean(long ttlInMs) {
         synchronized (StagingManager.class) {
             log.trace("Cleaning staging area");
-            Set<String> keys = new HashSet<String>(resourceList.keySet());
+            Set<String> keys = getResourceReferences();
             long purgedFileCount = 0;
             long purgedFileSize = 0;
             long purgedMemCount = 0;
             long purgedMemSize = 0;
             for (String key : keys) {
-                IStagedResource resource = resourceList.get(key);
+                IStagedResource resource = new StagedResource(directory, key, this);
                 /* resource could have deleted itself between the time the keys were cloned and now */
                 if (resource != null) {
                     boolean resourceIsOld = (System.currentTimeMillis() - resource
                             .getLastUpdateTime()) > ttlInMs;
-                    if ((resource.getState() == State.DONE ||
-                            (resource.getState() == State.READY && resource.getPath().contains("/common/")) ||
-                            (resource.getState() == State.READY && ttlInMs == 0)) 
-                            && resourceIsOld) {
+                    if (resource.getState() == State.DONE && resourceIsOld) {
                         if (!resource.isInUse()) {
                             boolean file = resource.isFileResource();
                             long size = resource.getSize();
@@ -111,7 +109,7 @@ public class StagingManager implements IStagingManager {
                                     purgedMemCount++;
                                     purgedMemSize += size;
                                 }
-                                resourceList.remove(key);
+                                resourcePaths.remove(key);
                             } else {
                                 log.warn("Failed to delete the '{}' staging resource",
                                         resource.getPath());
@@ -149,11 +147,15 @@ public class StagingManager implements IStagingManager {
     /**
      * Create a handle that can be written to
      */
-    public IStagedResource create(long memoryThresholdInBytes, Object... path) {
+    public IStagedResource create(Object... path) {
         String filePath = buildFilePath(path);
-        StagedResource resource = new StagedResource(memoryThresholdInBytes, directory, filePath,
+        StagedResource resource = new StagedResource(directory, filePath,
                 this);
-        this.resourceList.put(filePath, resource);
+        if (resource.exists()) {
+            resource.delete();
+        }
+        this.inUse.put(filePath, resource);
+        this.resourcePaths.add(filePath);
         return resource;
     }
 
@@ -173,15 +175,10 @@ public class StagingManager implements IStagingManager {
     }
     
     public IStagedResource find(String path) {
-        IStagedResource resource = resourceList.get(path);
-        if (resource != null) {
-            if (!resource.exists()
-                    && (resource.getState() == State.READY || resource.getState() == State.DONE)) {
-                resource.delete();
-                resource = null;
-            }
+        IStagedResource resource = inUse.get(path);
+        if (resource == null && resourcePaths.contains(path)) {
+            resource = new StagedResource(directory, path, this);
         }
-
         return resource;
     }
 

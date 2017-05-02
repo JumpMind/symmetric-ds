@@ -123,6 +123,10 @@ public class MockTransportManager implements ITransportManager {
 		return outgoingTransport;
 	}
 
-
+    @Override
+    public IIncomingTransport getConfigTransport(Node remote, Node local, String securityToken,
+            String symmetricVersion, String configVersion, String registrationUrl) throws IOException {
+        return null;
+    }
 
 }

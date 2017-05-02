@@ -18,22 +18,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.ext;
+#ifndef SYM_FILETRIGGERROUTER_H_
+#define SYM_FILETRIGGERROUTER_H_
 
-import java.util.List;
+#include <stdlib.h>
+#include "util/Date.h"
+#include "model/Router.h"
+#include "model/FileTrigger.h"
 
-import org.jumpmind.extension.IExtensionPoint;
 
-/**
- * An API that is responsible for finding and registering available
- * extension points.
- */
-public interface IExtensionPointManager {
+typedef struct SymFileTriggerRouter {
+    SymFileTrigger *fileTrigger;
+    SymRouter *router;
+    unsigned short enabled;
+    unsigned short initialLoadEnabled;
+    char *targetBaseDir;
+    char *triggerId;
+    char *routerId;
+    char *conflictStrategy;
+    SymDate *createTime;
+    char *lastUpdateBy;
+    SymDate *lastUpdateTime;
 
-    public void register();
-    
-    public List<ExtensionPointMetaData> getExtensionPoints();
-    
-    public <T extends IExtensionPoint> T getExtensionPoint(String name);
-    
-}
+    void (*destroy)(struct SymFileTriggerRouter *this);
+} SymFileTriggerRouter;
+
+SymFileTriggerRouter * SymFileTriggerRouter_new(SymFileTriggerRouter *this);
+
+#endif /* SYM_FILETRIGGERROUTER_H_ */
