@@ -334,7 +334,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 batch.setErrorFlag(false);
             }
             batch.setLastUpdatedHostName(clusterService.getServerId());
-            batch.setLastUpdatedTime(new Date());
             count =  transaction.prepareAndExecute(
                     getSql("updateIncomingBatchSql"),
                     new Object[] { batch.getStatus().name(), batch.isErrorFlag() ? 1 : 0,
@@ -346,13 +345,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             batch.getMissingDeleteCount(), batch.getSkipCount(),
                             batch.getSqlState(), batch.getSqlCode(),
                             FormatUtils.abbreviateForLogging(batch.getSqlMessage()),
-                            batch.getLastUpdatedHostName(), batch.getLastUpdatedTime(), batch.getSummary(),
+                            batch.getLastUpdatedHostName(), batch.getSummary(),
                             batch.getBatchId(), batch.getNodeId() }, new int[] { Types.CHAR,
                             Types.SMALLINT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR,
-                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
+                            Types.VARCHAR, Types.VARCHAR, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
         }
         return count;
     }
@@ -396,7 +395,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public Map<String, Date> findLastUpdatedByChannel() {
         Map<String, Date> captureMap = new HashMap<String, Date>();
         LastCaptureByChannelMapper mapper = new LastCaptureByChannelMapper(captureMap);
-        List<String> temp = sqlTemplate.query(getSql("lastUpdateByChannelSql"), mapper);
+        sqlTemplate.query(getSql("lastUpdateByChannelSql"), mapper);
         return mapper.getCaptureMap();
     }
     
