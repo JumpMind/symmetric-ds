@@ -42,5 +42,6 @@ char * SymStringUtils_replaceWithLength(char *str, size_t length, char *searchFo
 void SymStringUtils_replaceChar(char *str, char oldChar, char newChar);
 unsigned short SymStringUtils_startsWith(char *str, char *suffix);
 unsigned short SymStringUtils_endsWith(char *str, char *suffix);
+unsigned short SymStringUtils_isNumeric(char *str);
 
 #endif

@@ -206,6 +206,21 @@ void SymMap_resetAll(SymMap *this, void (*destroyObject)(void *object)) {
     }
 }
 
+char* SymMap_toString(SymMap *this) {
+    SymStringBuilder *buff = SymStringBuilder_new(NULL);
+    buff->append(buff, "{");
+    SymStringArray* keys = this->keys(this);
+    int i;
+    for (i = 0; i < keys->size; ++i) {
+        char* key = keys->get(keys, i);
+        buff->append(buff, "[");
+        buff->appendf(buff, "%s=%s", key, this->get(this, key));
+        buff->append(buff, "]");
+    }
+    buff->append(buff, "}");
+    return buff->destroyAndReturn(buff);
+}
+
 void SymMap_reset(SymMap *this) {
     SymMap_resetAll(this, NULL);
 }
@@ -235,6 +250,7 @@ SymMap * SymMap_new(SymMap *this, int size) {
     this->putByInt = (void *) &SymMap_putByInt;
     this->remove = (void *) &SymMap_remove;
     this->removeByInt = (void *) &SymMap_removeByInt;
+    this->toString = (void *) &SymMap_toString;
     this->reset = (void *) &SymMap_reset;
     this->resetAll = (void *) &SymMap_resetAll;
     this->destroy = (void *) &SymMap_destroy;

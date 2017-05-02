@@ -33,6 +33,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,7 @@ public class LogSqlBuilder {
     public void logSql(Logger loggerArg, String message, String sql, Object[] args, int[] types, long executionTimeMillis) {
         boolean longRunning = executionTimeMillis >= logSlowSqlThresholdMillis;
         if (loggerArg.isDebugEnabled() || longRunning) {
+            
             StringBuilder logEntry = new StringBuilder();
             if (longRunning) {                
                 logEntry.append("Long Running: ");
@@ -67,6 +69,12 @@ public class LogSqlBuilder {
                 logEntry.append(buildDynamicSqlForLog(sql, args, types));
             } else {
                 logEntry.append(sql);
+            }
+            
+            // Development support: Allow a logger like "org.jumpmind.db.sql.JdbcSqlTemplate=TRACE"
+            if (loggerArg.isTraceEnabled()) {
+                logEntry.append("\r\n");
+                logEntry.append(AppUtils.formatStackTrace(Thread.currentThread().getStackTrace(), 8, true));
             }
             
             if (longRunning) {

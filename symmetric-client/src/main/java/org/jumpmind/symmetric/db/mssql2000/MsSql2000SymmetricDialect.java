@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.db.mssql2000;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.db.mssql.MsSqlSymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -116,5 +117,11 @@ public class MsSql2000SymmetricDialect extends MsSqlSymmetricDialect {
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
+    }
+    
+    @Override
+    public PermissionType[] getSymTablePermissions() {
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER, PermissionType.CREATE_FUNCTION};
+        return permissions;
     }
 }

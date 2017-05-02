@@ -42,9 +42,9 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
 
     public static final String CONTEXT_TABLE_NAME = "context";
 
-    static final String CONTEXT_TABLE_CREATE = "create global temporary table %s (id varchar(30), context_value varchar(30)) on commit preserve rows";
+    static final String CONTEXT_TABLE_CREATE = "create global temporary table %s (name varchar(30), context_value varchar(30)) on commit preserve rows";
 
-    static final String CONTEXT_TABLE_INSERT = "insert into %s (id, context_value) values (?, ?)";
+    static final String CONTEXT_TABLE_INSERT = "insert into %s (name, context_value) values (?, ?)";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 

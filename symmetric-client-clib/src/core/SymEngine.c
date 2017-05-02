@@ -192,7 +192,7 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
     this->routerService = SymRouterService_new(NULL, this->outgoingBatchService, this->sequenceService, this->dataService, this->nodeService, this->configurationService,
             this->parameterService, this->triggerRouterService, this->platform);
     this->dataExtractorService = SymDataExtractorService_new(NULL, this->nodeService, this->outgoingBatchService, this->dataService,
-            this->triggerRouterService, this->parameterService, this->platform);
+            this->triggerRouterService, this->parameterService, this->configurationService, this->platform);
     this->registrationService = SymRegistrationService_new(NULL, this->nodeService, this->dataLoaderService, this->parameterService,
             this->configurationService, this->dataService);
     this->pullService = SymPullService_new(NULL, this->nodeService, this->dataLoaderService, this->registrationService,
@@ -205,6 +205,7 @@ SymEngine * SymEngine_new( SymEngine *this, SymProperties *properties) {
             this->dataExtractorService, this->offlineTransportManager, this->parameterService,
             this->configurationService, this->acknowledgeService, this->nodeCommunicationService);
     this->purgeService = SymPurgeService_new(NULL, this->parameterService, this->dialect, this->platform);
+    this->fileSyncService = SymFileSyncService_new(NULL, this);
 
     return this;
 }

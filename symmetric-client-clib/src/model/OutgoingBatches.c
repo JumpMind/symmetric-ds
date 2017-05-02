@@ -24,6 +24,23 @@ unsigned short SymOutgoingBatches_containsBatches(SymOutgoingBatches *this) {
     return this->batches && this->batches->size > 0;
 }
 
+SymList * SymOutgoingBatches_filterBatchesForChannel(SymOutgoingBatches *this, char *channelId) {
+    SymList *batchList = SymList_new(NULL);
+    if (channelId != NULL) {
+        int i;
+        for (i = 0; i < this->batches->size; ++i) {
+            SymOutgoingBatch *batch = this->batches->get(this->batches, i);
+            if (SymStringUtils_equals(channelId, batch->channelId)) {
+                this->batches->remove(this->batches, i);
+                batchList->add(batchList, batch);
+                i--;
+            }
+        }
+    }
+
+    return batchList;
+}
+
 void SymOutgoingBatches_destroy(SymOutgoingBatches *this) {
     this->batches->destroy(this->batches);
     free(this);
@@ -35,6 +52,7 @@ SymOutgoingBatches * SymOutgoingBatches_new(SymOutgoingBatches *this) {
     }
     this->batches = SymList_new(NULL);
     this->containsBatches = (void *) &SymOutgoingBatches_containsBatches;
+    this->filterBatchesForChannel = (void *) &SymOutgoingBatches_filterBatchesForChannel;
     this->destroy = (void *) SymOutgoingBatches_destroy;
     return this;
 }

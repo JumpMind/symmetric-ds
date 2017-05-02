@@ -325,6 +325,28 @@ SymList * SymNodeService_findEnabledNodesFromNodeGroup(SymNodeService *this, cha
     return nodes;
 }
 
+SymNode * SymNodeService_findNode(SymNodeService *this, char* nodeId) {
+    int error;
+    SymSqlTemplate *sqlTemplate = this->platform->getSqlTemplate(this->platform);
+    SymStringBuilder *sb = SymStringBuilder_newWithString(SYM_SQL_SELECT_NODE_PREFIX);
+    sb->append(sb, SYM_SQL_FIND_NODE);
+
+    SymStringArray *args = SymStringArray_new(NULL);
+    args->add(args, nodeId);
+
+    SymList *nodes = sqlTemplate->query(sqlTemplate, sb->str, args, NULL, &error, (void *) SymNodeService_nodeMapper);
+    SymNode *node = NULL;
+
+    if (nodes->size > 0) {
+        node = nodes->get(nodes, 0);
+    }
+
+    nodes->destroy(nodes);
+    sb->destroy(sb);
+    args->destroy(args);
+    return node;
+}
+
 void SymNodeService_destroy(SymNodeService *this) {
     if (this->lastRestartTime) {
         this->lastRestartTime->destroy(this->lastRestartTime);
@@ -351,6 +373,7 @@ SymNodeService * SymNodeService_new(SymNodeService *this, SymDatabasePlatform *p
     this->save = (void *) &SymNodeService_save;
     this->updateNodeHostForCurrentNode = (void *) &SymNodeService_updateNodeHostForCurrentNode;
     this->findEnabledNodesFromNodeGroup = (void*) &SymNodeService_findEnabledNodesFromNodeGroup;
+    this->findNode = (void*) &SymNodeService_findNode;
     this->destroy = (void *) &SymNodeService_destroy;
     return this;
 }

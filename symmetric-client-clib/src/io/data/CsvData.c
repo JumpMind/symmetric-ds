@@ -20,6 +20,27 @@
  */
 #include "io/data/CsvData.h"
 
+SymMap * SymCsvData_toColumnNameValuePairsValues(SymCsvData *this, SymStringArray *values, SymStringArray *keyNames) {
+    SymMap *map = SymMap_new(NULL, 16);
+    if (values != NULL && keyNames != NULL && values->size >= keyNames->size) {
+        int i;
+        for (i = 0; i < keyNames->size; ++i) {
+            map->put(map, keyNames->get(keyNames, i), values->get(values, i));
+        }
+    }
+    return map;
+}
+
+SymMap * SymCsvData_toColumnNameValuePairsRowData(SymCsvData *this, SymStringArray *keyNames) {
+    SymStringArray *values = this->rowData;
+    return SymCsvData_toColumnNameValuePairsValues(this, values, keyNames);
+}
+
+SymMap * SymCsvData_toColumnNameValuePairsOldData(SymCsvData *this, SymStringArray *keyNames) {
+    SymStringArray *values = this->oldData;
+    return SymCsvData_toColumnNameValuePairsValues(this, values, keyNames);
+}
+
 void SymCsvData_reset(SymCsvData *this) {
     if (this->rowData) {
         this->rowData->destroy(this->rowData);
@@ -41,6 +62,8 @@ SymCsvData * SymCsvData_new(SymCsvData *this) {
     if (this == NULL) {
         this = (SymCsvData *) calloc(1, sizeof(SymCsvData));
     }
+    this->toColumnNameValuePairsRowData = (void *) &SymCsvData_toColumnNameValuePairsRowData;
+    this->toColumnNameValuePairsOldData = (void *) &SymCsvData_toColumnNameValuePairsOldData;
     this->reset = (void *) &SymCsvData_reset;
     this->destroy = (void *) &SymCsvData_destroy;
     return this;

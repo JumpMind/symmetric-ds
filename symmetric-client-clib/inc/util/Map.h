@@ -28,6 +28,7 @@ typedef struct SymMap {
     SymStringArray * (*keys)(struct SymMap *this);
     SymList * (*values)(struct SymMap *this);
     SymList * (*entries)(struct SymMap *this);
+    char * (*toString)(struct SymMap *this);
     void (*reset)(struct SymMap *this);
     void (*resetAll)(struct SymMap *this, void (*destroyObject)(void *object));
     void (*destroy)(struct SymMap *this);

@@ -389,4 +389,75 @@ CREATE TABLE sym_trigger_router( \
     FOREIGN KEY (trigger_id) REFERENCES sym_trigger (trigger_id) \
 ); \
 "
+
+#define CREATE_SYM_FILE_INCOMING "\
+CREATE TABLE sym_file_incoming(             \
+    relative_dir VARCHAR NOT NULL,          \
+    file_name VARCHAR NOT NULL,             \
+    last_event_type VARCHAR NOT NULL,       \
+    node_id VARCHAR NOT NULL,               \
+    file_modified_time INTEGER,             \
+    PRIMARY KEY (relative_dir, file_name)   \
+);                                          \
+"
+
+#define CREATE_SYM_FILE_SNAPSHOT "\
+CREATE TABLE sym_file_snapshot(                                     \
+    trigger_id VARCHAR NOT NULL,                                    \
+    router_id VARCHAR NOT NULL,                                     \
+    relative_dir VARCHAR NOT NULL,                                  \
+    file_name VARCHAR NOT NULL,                                     \
+    channel_id VARCHAR DEFAULT 'filesync' NOT NULL,                 \
+    reload_channel_id VARCHAR DEFAULT 'filesync_reload' NOT NULL,   \
+    last_event_type VARCHAR NOT NULL,                               \
+    crc32_checksum INTEGER,                                         \
+    file_size INTEGER,                                              \
+    file_modified_time INTEGER,                                     \
+    last_update_time TIMESTAMP NOT NULL,                            \
+    last_update_by VARCHAR,                                         \
+    create_time TIMESTAMP NOT NULL,                                 \
+    PRIMARY KEY (trigger_id, router_id, relative_dir, file_name)    \
+);                                                                  \
+CREATE INDEX SYM_IDX_F_SNPSHT_CHID ON sym_file_snapshot (reload_channel_id); \
+"
+
+#define CREATE_SYM_FILE_TRIGGER "\
+CREATE TABLE sym_file_trigger(                                      \
+    trigger_id VARCHAR NOT NULL PRIMARY KEY ,                       \
+    channel_id VARCHAR DEFAULT 'filesync' NOT NULL,                 \
+    reload_channel_id VARCHAR DEFAULT 'filesync_reload' NOT NULL,   \
+    base_dir VARCHAR NOT NULL,                                      \
+    recurse INTEGER DEFAULT 1 NOT NULL,                             \
+    includes_files VARCHAR,                                         \
+    excludes_files VARCHAR,                                         \
+    sync_on_create INTEGER DEFAULT 1 NOT NULL,                      \
+    sync_on_modified INTEGER DEFAULT 1 NOT NULL,                    \
+    sync_on_delete INTEGER DEFAULT 1 NOT NULL,                      \
+    sync_on_ctl_file INTEGER DEFAULT 0 NOT NULL,                    \
+    delete_after_sync INTEGER DEFAULT 0 NOT NULL,                   \
+    before_copy_script VARCHAR,                                     \
+    after_copy_script VARCHAR,                                      \
+    create_time TIMESTAMP NOT NULL,                                 \
+    last_update_by VARCHAR,                                         \
+    last_update_time TIMESTAMP NOT NULL                             \
+);                                                                  \
+"
+
+#define CREATE_SYM_FILE_TRIGGER_ROUTER "\
+CREATE TABLE sym_file_trigger_router(                                     \
+    trigger_id VARCHAR NOT NULL,                                          \
+    router_id VARCHAR NOT NULL,                                           \
+    enabled INTEGER DEFAULT 1 NOT NULL,                                   \
+    initial_load_enabled INTEGER DEFAULT 1 NOT NULL,                      \
+    target_base_dir VARCHAR,                                              \
+    conflict_strategy VARCHAR DEFAULT 'source_wins' NOT NULL,             \
+    create_time TIMESTAMP NOT NULL,                                       \
+    last_update_by VARCHAR,                                               \
+    last_update_time TIMESTAMP NOT NULL,                                  \
+    PRIMARY KEY (trigger_id, router_id),                                  \
+    FOREIGN KEY (trigger_id) REFERENCES sym_file_trigger (trigger_id),    \
+    FOREIGN KEY (router_id) REFERENCES sym_router (router_id)             \
+);                                                                        \
+"
+
 #endif

@@ -22,6 +22,7 @@ package org.jumpmind.db;
 
 import java.io.InputStreamReader;
 import java.sql.Types;
+import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -33,6 +34,9 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
 
@@ -58,7 +62,6 @@ public class DatabasePlatformTest {
         platform.createDatabase(DatabaseXmlUtil.read(new InputStreamReader(
                 DatabasePlatformTest.class.getResourceAsStream("/testCreateDatabase.xml"))), true,
                 true);
-
     }
 
     @Before
@@ -171,7 +174,7 @@ public class DatabasePlatformTest {
         platform.createDatabase(database, true, false);        
         return platform.getTableFromCache(table.getName(), true);    
     }
-    
+  
     @Test 
     public void testDisableAutoincrement() throws Exception {
         Table table = new Table("TEST_AUTOPK_DISABLE");
@@ -187,7 +190,7 @@ public class DatabasePlatformTest {
         Table tableFromDatabase = dropCreateAndThenReadTable(table);
         
         table.getColumnWithName("ID").setAutoIncrement(false);
-        table.getColumnWithName("COL1").setSize("1000");
+        table.getColumnWithName("COL1").setSize("254");
         table.getColumnWithName("COL1").setRequired(true);
         
         platform.alterTables(false, table);
@@ -198,11 +201,11 @@ public class DatabasePlatformTest {
         
         /* sqlite character fields do not limit based on size */
         if (!platform.getName().equals(DatabaseNamesConstants.SQLITE)) {
-            assertEquals(1000, tableFromDatabase.getColumnWithName("COL1").getSizeAsInt());
+            assertEquals(254, tableFromDatabase.getColumnWithName("COL1").getSizeAsInt());
         }
         
     }
-
+    
     @Test
     public void testUpgradePrimaryKeyAutoIncrementFromIntToBigInt() throws Exception {
         boolean upgradeSupported = !platform.getName().equals(DatabaseNamesConstants.DERBY)
@@ -269,7 +272,7 @@ public class DatabasePlatformTest {
             return "test_upgrade_id";
         }
     }
-
+    
     @Test
     public void testCreateAndReadTestSimpleTable() throws Exception {
         Table table = platform.getTableFromCache(SIMPLE_TABLE, true);
@@ -286,7 +289,7 @@ public class DatabasePlatformTest {
                 .getColumnWithName("id").isAutoIncrement());
     }
     
-    
+  
     @Test
     public void testNvarcharType() {
         Table table = new Table("test_nvarchar");
@@ -294,5 +297,13 @@ public class DatabasePlatformTest {
         table.addColumn(new Column("note", false, ColumnTypes.NVARCHAR, 100, 0));
         platform.createTables(true, false, table);
     }
-
+    
+    @Test
+    public void getPermissionsTest() {
+    	List<PermissionResult> results = platform.checkSymTablePermissions(PermissionType.values());
+    	
+    	for (PermissionResult result : results) {
+    		assertTrue(!result.getStatus().equals(Status.FAIL));
+    	}
+    }
 }

@@ -35,13 +35,13 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
-import org.jumpmind.symmetric.model.FileConflictStrategy;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
@@ -152,14 +152,15 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 if (zos == null) {
                     zos = new ZipOutputStream(stagedResource.getOutputStream());
                 }
+                
+                FileSyncZipScript script = createFileSyncZipScript(batch.getTargetNodeId());
+                script.buildScriptStart(batch);
 
                 Map<String, LastEventType> entries = new HashMap<String, LastEventType>();
-                StringBuilder script = new StringBuilder("fileList = new HashMap();\n");
                 for (FileSnapshot snapshot : snapshotEvents) {
                     FileTriggerRouter triggerRouter = fileSyncService.getFileTriggerRouter(
                             snapshot.getTriggerId(), snapshot.getRouterId());
                     if (triggerRouter != null) {
-                        StringBuilder command = new StringBuilder("\n");
                         LastEventType eventType = snapshot.getLastEventType();
 
                         FileTrigger fileTrigger = triggerRouter.getFileTrigger();
@@ -169,32 +170,6 @@ public class FileSyncZipDataWriter implements IDataWriter {
                             targetBaseDir = ((fileTrigger.getBaseDir()==null)?null:fileTrigger.getBaseDir().replace('\\', '/'));
                         }
                         targetBaseDir = StringEscapeUtils.escapeJava(targetBaseDir);
-
-                        command.append("targetBaseDir = \"").append(targetBaseDir).append("\";\n");
-                                                                                                             
-                        command.append("if (targetBaseDir.startsWith(\"${androidBaseDir}\")) {                      \n");
-                        command.append("    targetBaseDir = targetBaseDir.replace(\"${androidBaseDir}\", \"\");     \n");
-                        command.append("    targetBaseDir = androidBaseDir + targetBaseDir;                         \n");
-                        command.append("} else if (targetBaseDir.startsWith(\"${androidAppFilesDir}\")) {           \n");
-                        command.append("    targetBaseDir = targetBaseDir.replace(\"${androidAppFilesDir}\", \"\"); \n");
-                        command.append("    targetBaseDir = androidAppFilesDir + targetBaseDir;                     \n");
-                        command.append("}                                                                           \n");
-                        
-                        command.append("processFile = true;\n");
-                        command.append("sourceFileName = \"").append(snapshot.getFileName())
-                                .append("\";\n");
-                        command.append("targetRelativeDir = \""); 
-                        if (!snapshot.getRelativeDir().equals(".")) {
-                            command.append(StringEscapeUtils.escapeJava(snapshot
-                                    .getRelativeDir()));
-                            command.append("\";\n");
-                        } else {
-                            command.append("\";\n");
-                        }
-                        command.append("targetFileName = sourceFileName;\n");                        
-                        command.append("sourceFilePath = \"");
-                        command.append(StringEscapeUtils.escapeJava(snapshot.getRelativeDir()))
-                                .append("\";\n");
 
                         StringBuilder entryName = new StringBuilder(Long.toString(batch
                                 .getBatchId()));
@@ -209,81 +184,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                             entryName.append("/");
                         }
 
-                        if (StringUtils.isNotBlank(fileTrigger.getBeforeCopyScript())) {
-                            command.append(fileTrigger.getBeforeCopyScript()).append("\n");
-                        }
-                                                                        
-                        command.append("if (processFile) {\n");
                         String targetFile = "targetBaseDir + \"/\" + targetRelativeDir + \"/\" + targetFileName"; 
-                        
-                        switch (eventType) {
-                            case CREATE:
-                            case MODIFY:
-                                if (file.exists()) {
-                                    command.append("  File targetBaseDirFile = new File(targetBaseDir);\n");
-                                    command.append("  if (!targetBaseDirFile.exists()) {\n");
-                                    command.append("    targetBaseDirFile.mkdirs();\n");
-                                    command.append("  }\n");
-                                    command.append("  java.io.File sourceFile = new java.io.File(batchDir + \"/\""); 
-                                    if (!snapshot.getRelativeDir().equals(".")) {
-                                        command.append(" + sourceFilePath + \"/\"");
-                                    }
-                                    command.append(" + sourceFileName");
-                                    command.append(");\n");
-                                    
-                                    command.append("  java.io.File targetFile = new java.io.File(");
-                                    command.append(targetFile);
-                                    command.append(");\n");
-                                    
-                                    // no need to copy directory if it already exists
-                                    command.append("  if (targetFile.exists() && targetFile.isDirectory()) {\n");
-                                    command.append("      processFile = false;\n");
-                                    command.append("  }\n");
-                                    
-                                    // conflict resolution
-                                    FileConflictStrategy conflictStrategy = triggerRouter.getConflictStrategy();
-                                    if (conflictStrategy == FileConflictStrategy.TARGET_WINS ||
-                                            conflictStrategy == FileConflictStrategy.MANUAL) {
-                                        command.append("  if (targetFile.exists() && !targetFile.isDirectory()) {\n");
-                                        command.append("    long targetChecksum = org.apache.commons.io.FileUtils.checksumCRC32(targetFile);\n");
-                                        command.append("    if (targetChecksum != " + snapshot.getOldCrc32Checksum() + "L) {\n");
-                                        if (conflictStrategy == FileConflictStrategy.MANUAL) {
-                                            command.append("      throw new org.jumpmind.symmetric.file.FileConflictException(targetFileName + \" was in conflict \");\n");
-                                        } else {
-                                            command.append("      processFile = false;\n");
-                                        }
-                                        command.append("    }\n");
-                                        command.append("  }\n");
-                                    } 
-                                    
-                                    command.append("  if (processFile) {\n");
-                                    command.append("    if (sourceFile.isDirectory()) {\n");
-                                    command.append("      org.apache.commons.io.FileUtils.copyDirectory(sourceFile, targetFile, true);\n");                                    
-                                    command.append("    } else {\n");
-                                    command.append("      org.apache.commons.io.FileUtils.copyFile(sourceFile, targetFile, true);\n");                                    
-                                    command.append("    }\n");
-                                    command.append("  }\n");
-                                    command.append("  fileList.put(").append(targetFile)
-                                            .append(",\"");
-                                    command.append(eventType.getCode());
-                                    command.append("\");\n");
-                                }
-                                break;
-                            case DELETE:
-                                command.append("  org.apache.commons.io.FileUtils.deleteQuietly(new java.io.File(");
-                                command.append(targetFile);
-                                command.append("));\n");
-                                command.append("  fileList.put(").append(targetFile).append(",\"");
-                                command.append(eventType.getCode());
-                                command.append("\");\n");
-                                break;
-                            default:
-                                break;
-                        }
-
-                        if (StringUtils.isNotBlank(fileTrigger.getAfterCopyScript())) {
-                            command.append(fileTrigger.getAfterCopyScript()).append("\n");
-                        }
 
                         LastEventType previousEventForEntry = entries.get(entryName.toString());
                         boolean process = true;
@@ -293,7 +194,6 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 process = false;
                             }
                         }
-                        
                         
                         if (process) {
                             if (eventType != LastEventType.DELETE) {
@@ -320,9 +220,8 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 }
                             }
 
-                            command.append("}\n\n");
-                            script.append(command.toString());
-
+                            script.buildScriptFileSnapshot(batch, snapshot, triggerRouter, fileTrigger, 
+                                    file, targetBaseDir, targetFile);
                         }
 
                     } else {
@@ -332,10 +231,10 @@ public class FileSyncZipDataWriter implements IDataWriter {
                     }
                 }
                 
-                script.append("return fileList;\n");
-                ZipEntry entry = new ZipEntry(batch.getBatchId() + "/sync.bsh");
+                script.buildScriptEnd(batch);
+                ZipEntry entry = new ZipEntry(batch.getBatchId() + "/" + script.getScriptFileName(batch));
                 zos.putNextEntry(entry);
-                IOUtils.write(script.toString(), zos);
+                IOUtils.write(script.getScript().toString(), zos);
                 zos.closeEntry();
                 
                 entry = new ZipEntry(batch.getBatchId() + "/batch-info.txt");
@@ -360,15 +259,32 @@ public class FileSyncZipDataWriter implements IDataWriter {
         } catch (IOException e) {
             throw new IoException(e);
         } finally {
-            if (stagedResource != null) {                
+            if (stagedResource != null) {
+                stagedResource.setState(IStagedResource.State.DONE);
                 stagedResource.close();
-                stagedResource.setState(IStagedResource.State.READY);
             }
         }
     }
 
     public boolean readyToSend() {
         return byteCount > maxBytesToSync;
+    }
+
+    protected FileSyncZipScript createFileSyncZipScript(String targetNodeId) {
+        if (isCClient(targetNodeId)) {
+            return new BashFileSyncZipScript();
+        } else {
+            return new BeanShellFileSyncZipScript();
+        }
+    }
+    
+    protected boolean isCClient(String nodeId) {
+        boolean cclient = false;
+        Node node = nodeService.findNode(nodeId, true);
+        if (node != null) {
+            cclient = StringUtils.equals(node.getDeploymentType(), Constants.DEPLOYMENT_TYPE_CCLIENT);
+        }
+        return cclient;
     }
     
 }

@@ -37,8 +37,20 @@ SymFileIncomingTransport * SymFileTransportManager_getPullTransport(SymFileTrans
              SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_ERROR_DIR, local, ""));
 }
 
+SymOfflineFileSyncIncomingTransport * SymFileTransportManager_getFileSyncPullTransport(SymFileTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl) {
+     return SymOfflineFileSyncIncomingTransport_new(NULL, remote, local,
+             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_INCOMING_DIR, local, "./tmp/offline/incoming"),
+             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_ARCHIVE_DIR, local, ""),
+             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_ERROR_DIR, local, ""));
+}
+
 SymFileOutgoingTransport * SymFileTransportManager_getPushTransport(SymFileTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
     return SymFileOutgoingTransport_new(NULL, remote, local,
+            SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_OUTGOING_DIR, local, "./tmp/offline/outgoing"));
+}
+
+SymOfflineFileSyncOutgoingTransport * SymFileTransportManager_getFileSyncPushTransport(SymFileTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl) {
+    return SymOfflineFileSyncOutgoingTransport_new(NULL, remote, local,
             SymFileTransportManager_getDirName(this, SYM_PARAMETER_NODE_OFFLINE_OUTGOING_DIR, local, "./tmp/offline/outgoing"));
 }
 
@@ -78,6 +90,8 @@ SymFileTransportManager * SymFileTransportManager_new(SymFileTransportManager *t
     super->sendAcknowledgement = (void *) &SymFileTransportManager_sendAcknowledgement;
     super->getPullTransport = (void *) &SymFileTransportManager_getPullTransport;
     super->getPushTransport = (void *) &SymFileTransportManager_getPushTransport;
+    super->getFileSyncPullTransport = (void *) &SymFileTransportManager_getFileSyncPullTransport;
+    super->getFileSyncPushTransport = (void *) &SymFileTransportManager_getFileSyncPushTransport;
     super->readAcknowledgement = (void *) SymFileTransportManager_readAcknowledgement;
     super->destroy = (void *) &SymFileTransportManager_destroy;
     return this;

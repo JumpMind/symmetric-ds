@@ -20,7 +20,7 @@
  */
 #include "service/PushService.h"
 
-static SymList * readAcks(SymList *batches, SymOutgoingTransport *transport, SymTransportManager *transportManager, SymAcknowledgeService *acknowledgeService) {
+SymList * SymPushService_readAcks(SymList *batches, SymOutgoingTransport *transport, SymTransportManager *transportManager, SymAcknowledgeService *acknowledgeService) {
     SymList *batchIds = SymList_new(NULL);
     SymIterator *iter = batches->iterator(batches);
     while (iter->hasNext(iter)) {
@@ -69,7 +69,7 @@ void SymPushService_pushToNode(SymPushService *this, SymNode *remote, SymRemoteN
     SymList *extractedBatches = this->dataExtractorService->extract(this->dataExtractorService, remote, transport);
     if (extractedBatches->size > 0) {
         SymLog_info("Push data sent to %s:%s:%s", remote->nodeGroupId, remote->externalId, remote->nodeId);
-        SymList *batchAcks = readAcks(extractedBatches, transport, this->transportManager, this->acknowledgeService);
+        SymList *batchAcks = this->readAcks(extractedBatches, transport, this->transportManager, this->acknowledgeService);
         status->updateOutgoingStatus(status, extractedBatches, batchAcks);
         batchAcks->destroy(batchAcks);
     }
@@ -148,6 +148,7 @@ SymPushService * SymPushService_new(SymPushService *this, SymNodeService *nodeSe
     this->acknowledgeService = acknowledgeService;
     this->nodeCommunicationService = nodeCommunicationService;
     this->pushData = (void *) &SymPushService_pushData;
+    this->readAcks = (void *) &SymPushService_readAcks;
     this->destroy = (void *) &SymPushService_destroy;
     return this;
 }

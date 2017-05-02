@@ -31,6 +31,7 @@ SymBatch * SymBatch_new(SymBatch *this) {
     if (this == NULL) {
         this = (SymBatch *) calloc(1, sizeof(SymBatch));
     }
+    this->isIgnore = 0;
     this->destroy = (void *) &SymBatch_destroy;
     return this;
 }

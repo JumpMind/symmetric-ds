@@ -56,6 +56,7 @@ final public class ParameterConstants {
     public final static String START_ROUTE_JOB = "start.route.job";
     public final static String START_HEARTBEAT_JOB = "start.heartbeat.job";
     public final static String START_SYNCTRIGGERS_JOB = "start.synctriggers.job";
+    public final static String START_SYNC_CONFIG_JOB = "start.sync.config.job";
     public final static String START_STATISTIC_FLUSH_JOB = "start.stat.flush.job";
     public final static String START_STAGE_MGMT_JOB = "start.stage.management.job";
     public final static String START_WATCHDOG_JOB = "start.watchdog.job";
@@ -66,7 +67,9 @@ final public class ParameterConstants {
     public final static String START_REFRESH_CACHE_JOB = "start.refresh.cache.job";
     public final static String START_FILE_SYNC_TRACKER_JOB = "start.file.sync.tracker.job";
     public final static String START_FILE_SYNC_PUSH_JOB = "start.file.sync.push.job";
-    public final static String START_FILE_SYNC_PULL_JOB = "start.file.sync.pull.job";    
+    public final static String START_FILE_SYNC_PULL_JOB = "start.file.sync.pull.job";   
+    
+    public final static String ROUTE_ON_EXTRACT = "route.on.extract";
 
     public final static String PULL_THREAD_COUNT_PER_SERVER = "pull.thread.per.server.count";
     public final static String PULL_MINIMUM_PERIOD_MS = "pull.period.minimum.ms";
@@ -118,6 +121,7 @@ final public class ParameterConstants {
     public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
     public final static String AUTO_SYNC_TRIGGERS = "auto.sync.triggers";
     public final static String AUTO_SYNC_TRIGGERS_AT_STARTUP = "auto.sync.triggers.at.startup";
+    public final static String AUTO_SYNC_CONFIG_AT_STARTUP = "auto.sync.config.at.startup";
     public final static String AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED = "auto.sync.triggers.after.config.change";
     public final static String AUTO_SYNC_TRIGGERS_AFTER_CONFIG_LOADED = "auto.sync.triggers.after.config.loaded";
     public final static String AUTO_REFRESH_AFTER_CONFIG_CHANGED = "auto.refresh.after.config.changes.detected";
@@ -152,6 +156,7 @@ final public class ParameterConstants {
     public final static String STREAM_TO_FILE_ENABLED = "stream.to.file.enabled";
     public final static String STREAM_TO_FILE_THRESHOLD = "stream.to.file.threshold.bytes";
     public final static String STREAM_TO_FILE_TIME_TO_LIVE_MS = "stream.to.file.ttl.ms";
+    public final static String STREAM_TO_FILE_PURGE_ON_TTL_ENABLED = "stream.to.file.purge.on.ttl.enabled";
 
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
 
@@ -377,6 +382,8 @@ final public class ParameterConstants {
     public final static String DBF_ROUTER_VALIDATE_HEADER = "dbf.router.validate.header";
     
     public final static String OUTGOING_BATCH_UPDATE_STATUS_MILLIS = "outgoing.batches.update.status.millis";
+    
+    public final static String OUTGOING_BATCH_UPDATE_STATUS_DATA_COUNT = "outgoing.batches.update.status.data.count";
     
     public final static String FIREBIRD_EXTRACT_VARCHAR_ROW_OLD_PK_DATA = "firebird.extract.varchar.row.old.pk.data";
     

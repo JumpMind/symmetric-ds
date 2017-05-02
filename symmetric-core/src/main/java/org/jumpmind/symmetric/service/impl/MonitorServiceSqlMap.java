@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.util.Map;
 
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class MonitorServiceSqlMap extends AbstractSqlMap {
@@ -29,10 +30,18 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
     public MonitorServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
 
+        // Bug Fix for Interbase Keyword TYPE
+        String type = "type";
+        if (platform.getName().equals(DatabaseNamesConstants.INTERBASE)) {
+            String delimiter = platform.getDatabaseInfo().getDelimiterToken();
+            delimiter = delimiter != null ? delimiter : "";
+            type = delimiter + "TYPE" + delimiter;
+        }   
+        
         // Monitors
         
         putSql("selectMonitorSql", 
-                "select monitor_id, external_id, node_group_id, type, expression, enabled, threshold, run_period, run_count, " +
+                "select monitor_id, external_id, node_group_id, " + type + ", expression, enabled, threshold, run_period, run_count, " +
                 "severity_level, create_time, last_update_by, last_update_time from $(monitor)");
 
         putSql("whereMonitorByNodeSql",
@@ -40,12 +49,12 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
 
         putSql("insertMonitorSql",
                 "insert into $(monitor) " +
-                "(monitor_id, external_id, node_group_id, type, expression, enabled, threshold, run_period, run_count, severity_level, " +
+                "(monitor_id, external_id, node_group_id, " + type + ", expression, enabled, threshold, run_period, run_count, severity_level, " +
                 "create_time, last_update_by, last_update_time) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         putSql("updateMonitorSql",
                 "update $(monitor) " +
-                "set external_id = ?, node_group_id = ?, type = ?, expression = ?, enabled = ?, threshold = ?, run_period = ?, run_count = ?," +
+                "set external_id = ?, node_group_id = ?, " + type + " = ?, expression = ?, enabled = ?, threshold = ?, run_period = ?, run_count = ?," +
                 " severity_level = ?, last_update_by = ?, last_update_time = ? where monitor_id = ?");
 
         putSql("deleteMonitorSql",
@@ -54,7 +63,7 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
         // Monitor Events
         
         putSql("selectMonitorEventSql",
-                "select monitor_id, node_id, event_time, type, event_value, event_count, threshold, severity_level, host_name, " +
+                "select monitor_id, node_id, event_time, " + type + ", event_value, event_count, threshold, severity_level, host_name, " +
                 "is_resolved, is_notified, details, last_update_time " +
                 "from $(monitor_event) ");
 
@@ -67,13 +76,14 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
 
         putSql("insertMonitorEventSql",
                 "insert into $(monitor_event) " +
-                "(monitor_id, node_id, event_time, host_name, type, event_value, event_count, threshold, severity_level, " +
+                "(monitor_id, node_id, event_time, host_name, " + type + ", event_value, event_count, threshold, severity_level, " +
                 "is_resolved, is_notified, details, last_update_time) " + 
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         putSql("updateMonitorEventSql",
-                "update $(monitor_event) set host_name = ?, type = ?, event_value = ?, event_count = ?, threshold = ?, severity_level = ?, " +
-                "is_resolved = 0, last_update_time = ?, details = ? where monitor_id = ? and node_id = ? and event_time = ?");
+                "update $(monitor_event) set host_name = ?, " + type + " = ?, event_value = ?, event_count = ?, threshold = ?, severity_level = ?, " +
+                "is_resolved = 0, last_update_time = ?, details = ?  where monitor_id = ? and node_id = ? and event_time = ?");
+
 
         putSql("updateMonitorEventResolvedSql",
                 "update $(monitor_event) set is_resolved = 1, last_update_time = ? where monitor_id = ? and node_id = ? and event_time = ?");
@@ -87,7 +97,7 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
         // Notifications
         
         putSql("selectNotificationSql",
-                "select notification_id, node_group_id, external_id, severity_level, type, expression, enabled, create_time, " +
+                "select notification_id, node_group_id, external_id, severity_level, " + type + ", expression, enabled, create_time, " +
                 "last_update_by, last_update_time " +
                 "from $(notification)");
         
@@ -96,13 +106,13 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
                 
         putSql("insertNotificationSql",
                 "insert into $(notification) " +
-                "(notification_id, node_group_id, external_id, severity_level, type, expression, enabled, create_time, " +
+                "(notification_id, node_group_id, external_id, severity_level, " + type + ", expression, enabled, create_time, " +
                 "last_update_by, last_update_time) " +
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         putSql("updateNotificationSql",
                 "update $(notification) " +
-                "set node_group_id = ?, external_id = ?, severity_level = ?, type = ?, expression = ?, enabled = ?, create_time = ?, " +
+                "set node_group_id = ?, external_id = ?, severity_level = ?, " + type + " = ?, expression = ?, enabled = ?, create_time = ?, " +
                 "last_update_by = ?, last_update_time = ? where notification_id = ?");
         
         putSql("deleteNotificationSql",

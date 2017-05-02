@@ -24,6 +24,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "util/List.h"
+#include "io/writer/DataWriter.h"
+#include "io/reader/DataReader.h"
+#include "io/data/DataContext.h"
+#include "util/CsvUtils.h"
 
 typedef struct SymDataProcessor {
     void (*open)(struct SymDataProcessor *this);
@@ -34,5 +38,6 @@ typedef struct SymDataProcessor {
 } SymDataProcessor;
 
 SymDataProcessor * SymDataProcessor_new(SymDataProcessor *this);
+void SymDataProcessor_processWithReader(SymDataContext *context, SymDataWriter *writer, SymDataReader *reader);
 
 #endif

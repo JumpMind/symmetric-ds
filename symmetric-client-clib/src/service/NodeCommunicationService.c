@@ -107,9 +107,11 @@ SymList * SymNodeCommunicationService_list(SymNodeCommunicationService *this, Sy
         case SYM_COMMUNICATION_TYPE_PUSH:
             nodesToCommunicateWith = SymNodeCommunicationService_removeOfflineNodes(this, this->nodeService->findNodesToPushTo(this->nodeService));
             break;
+        case SYM_COMMUNICATION_TYPE_OFF_FSPUSH:
         case SYM_COMMUNICATION_TYPE_OFFLN_PUSH:
             nodesToCommunicateWith = SymNodeCommunicationService_getNodesToCommunicateWithOffline(this, SYM_COMMUNICATION_TYPE_PUSH);
             break;
+        case SYM_COMMUNICATION_TYPE_OFF_FSPULL:
         case SYM_COMMUNICATION_TYPE_OFFLN_PULL:
             nodesToCommunicateWith = SymNodeCommunicationService_getNodesToCommunicateWithOffline(this, SYM_COMMUNICATION_TYPE_PULL);
             break;

@@ -56,9 +56,9 @@ Sync On Insert:: Determines if changes will be captured for inserts.
 Sync On Update:: Determines if changes will be captured for updates.
 Sync On Delete:: Determines if changes will be captured for deletes.
 Reload Channel Id:: The channel_id of the channel that will be used for initial loads.
-Sync On Insert Condition:: Specify a condition for the insert trigger firing using an expression specific to the database.   This will be appended to the "WHERE" clause in a SQL expression.  
-Sync On Update Condition:: Specify a condition for the update trigger firing using an expression specific to the database.   This will be appended to the "WHERE" clause in a SQL expression.  
-Sync On Delete Condition:: Specify a condition for the delete trigger firing using an expression specific to the database.   This will be appended to the "WHERE" clause in a SQL expression.  
+Sync On Insert Condition:: Specify a condition for the insert trigger firing using an expression specific to the database.   On most platforms, it is added to an "IF" statement in the trigger text.  On SQL-Server it is added to the "WHERE" clause of a query for inserted/deleted logical tables.  
+Sync On Update Condition:: Specify a condition for the update trigger firing using an expression specific to the database.   On most platforms, it is added to an "IF" statement in the trigger text.  On SQL-Server it is added to the "WHERE" clause of a query for inserted/deleted logical tables.  
+Sync On Delete Condition:: Specify a condition for the delete trigger firing using an expression specific to the database.   On most platforms, it is added to an "IF" statement in the trigger text.  On SQL-Server it is added to the "WHERE" clause of a query for inserted/deleted logical tables.  
 Custom Insert Trigger Text:: Specify insert trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apache Derby.
 Custom Update Trigger Text:: Specify update trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apache Derby.
 Custom Delete Trigger Text:: Specify delete trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apache Derby.

@@ -22,8 +22,12 @@ package org.jumpmind.symmetric.android;
 
 import java.math.BigDecimal;
 
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.sqlite.SqliteDdlBuilder;
 import org.jumpmind.db.platform.sqlite.SqliteDdlReader;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -110,4 +114,27 @@ public class AndroidDatabasePlatform extends AbstractDatabasePlatform {
         }
     }
 
+    @Override
+    public PermissionResult getCreateSymTablePermission(Database database) {     
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, Status.UNIMPLEMENTED);
+        return result;
+    }
+    
+    @Override
+    public PermissionResult getDropSymTablePermission() {     
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, Status.UNIMPLEMENTED);
+        return result;
+    }
+    
+    @Override
+    public PermissionResult getAlterSymTablePermission(Database database) {     
+        PermissionResult result = new PermissionResult(PermissionType.ALTER_TABLE, Status.UNIMPLEMENTED);
+        return result;
+    }
+    
+    @Override
+    public PermissionResult getDropSymTriggerPermission() {     
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, Status.UNIMPLEMENTED);
+        return result;
+    }
 }

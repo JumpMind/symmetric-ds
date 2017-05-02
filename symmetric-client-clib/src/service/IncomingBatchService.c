@@ -75,9 +75,11 @@ unsigned short SymIncomingBatchService_acquireIncomingBatch(SymIncomingBatchServ
         SymIncomingBatch *existingBatch = NULL;
 
         if (this->isRecordOkBatchesEnabled(this)) {
-            if (this->insertIncomingBatch(this, batch) == 0) {
+            existingBatch = this->findIncomingBatch(this, batch->batchId, batch->nodeId);
+            if (existingBatch == NULL) {
+                this->insertIncomingBatch(this, batch);
+            } else {
                 batch->retry = 1;
-                existingBatch = this->findIncomingBatch(this, batch->batchId, batch->nodeId);
             }
         } else {
             existingBatch = this->findIncomingBatch(this, batch->batchId, batch->nodeId);

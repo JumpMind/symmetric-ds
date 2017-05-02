@@ -100,12 +100,6 @@
             <outputDirectory>/bin</outputDirectory>
             <fileMode>755</fileMode>
         </file>
-        <file>
-            <source>../symmetric-core/src/main/resources/symmetric-default.properties</source>
-            <outputDirectory>/conf</outputDirectory>
-            <fileMode>664</fileMode>
-            <destName>symmetric.properties</destName>
-        </file>
     </files>
     <moduleSets>
         <moduleSet>

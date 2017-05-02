@@ -33,6 +33,8 @@
 
 #define SYM_CHANNEL_CONFIG "config"
 
+#define SYM_CHANNEL_DYNAMIC "dynamic"
+
 #define SYM_VIRTUAL_BATCH_FOR_REGISTRATION -9999L
 
 #define SYM_UNROUTED_NODE_ID "-1"
@@ -43,5 +45,10 @@
 #define SYM_SEQUENCE_OUTGOING_BATCH "outgoing_batch"
 #define SYM_SEQUENCE_TRIGGER_HIST "trigger_hist"
 #define SYM_SEQUENCE_EXTRACT_REQ "extract_request"
+
+#define SYM_CHANNEL_FILESYNC "filesync"
+#define SYM_CHANNEL_FILESYNC_RELOAD "filesync_reload"
+
+
 
 #endif

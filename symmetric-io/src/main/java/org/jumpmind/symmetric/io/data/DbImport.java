@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -126,7 +127,8 @@ public class DbImport {
             importTables(in, tableName);
             in.close();
         } catch (IOException e) {
-            throw new IoException(e);
+            throw new IoException("Failed to read '" + importData + 
+                    "' for table '" + tableName + "'", e);
         }
     }
 
@@ -136,7 +138,7 @@ public class DbImport {
             importTables(in);
             in.close();
         } catch (IOException e) {
-            throw new IoException(e);
+            throw new IoException("Failed to read '" + importData + "'", e);
         }
 
     }
@@ -149,7 +151,11 @@ public class DbImport {
         if (format == Format.SQL) {
             importTablesFromSql(in);
         } else if (format == Format.CSV) {
-            importTablesFromCsv(in, tableName);
+            if (StringUtils.isNotBlank(tableName)) {                
+                importTablesFromCsv(in, tableName);
+            } else {
+                throw new RuntimeException("Table name argument is required when importing CSV.");
+            }
         } else if (format == Format.XML) {
             importTablesFromXml(in);
         } else if (format == Format.SYM_XML) {
@@ -191,7 +197,7 @@ public class DbImport {
     protected void importTablesFromCsv(InputStream in, String tableName) {
         Table table = platform.readTableFromDatabase(catalog, schema, tableName);
         if (table == null) {
-            throw new RuntimeException("Unable to find table");
+            throw new RuntimeException("Unable to find table '" + tableName + "' in the database.");
         }
 
         CsvTableDataReader reader = new CsvTableDataReader(BinaryEncoding.HEX, table.getCatalog(),

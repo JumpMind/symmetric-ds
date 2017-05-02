@@ -20,7 +20,6 @@
  */
 #include "SymClientNative.h"
 
-
 SymStringArray * SymNativeClient_getPropertiesNames(int argCount, char **argValues) {
     SymStringArray *propertiesNames = SymStringArray_new(NULL);
 
@@ -50,7 +49,6 @@ int SymNativeClient_runSymmetricEngine(SymProperties *properties) {
 }
 
 int main(int argCount, char **argValues) {
-
     SymStringArray * propertiesFiles = SymNativeClient_getPropertiesNames(argCount, argValues);
     SymProperties *properties = NULL;
 

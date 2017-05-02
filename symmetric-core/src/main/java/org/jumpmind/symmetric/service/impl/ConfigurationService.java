@@ -122,7 +122,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     @Override
-    public boolean isMasterToMasterOnly() {
+    public boolean containsMasterToMaster() {
         boolean masterToMasterOnly = false;
         Node me = nodeService.findIdentity();
         if (me != null) {
@@ -131,6 +131,24 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return masterToMasterOnly;
     }
 
+    @Override
+    public boolean isMasterToMasterOnly() {
+        Node me = nodeService.findIdentity();
+        int masterCount=0;
+        int otherCount=0;
+        if (me != null) {
+            for (NodeGroupLink nodeGroupLink : getNodeGroupLinksFor(me.getNodeGroupId(), false)) {
+                if (nodeGroupLink.getTargetNodeGroupId().equals(me.getNodeGroupId())) {
+                    masterCount++;
+                }
+                else {
+                    otherCount++;
+                }
+            }
+        }
+        return masterCount > 1 && otherCount == 0;
+    }
+    
     public boolean refreshFromDatabase() {
         Date date1 = sqlTemplate.queryForObject(getSql("selectMaxChannelLastUpdateTime"),
                 Date.class);
@@ -164,12 +182,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
         link.setLastUpdateTime(new Date());
         if (sqlTemplate.update(getSql("updateNodeGroupLinkSql"), link.getDataEventAction().name(),
-                link.isSyncConfigEnabled() ? 1 : 0, link.getLastUpdateTime(),
+                link.isSyncConfigEnabled() ? 1 : 0, link.isReversible() ? 1 : 0,
+                        link.getLastUpdateTime(),
                 link.getLastUpdateBy(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId()) == 0) {
             link.setCreateTime(new Date());
             sqlTemplate.update(getSql("insertNodeGroupLinkSql"), link.getDataEventAction().name(),
                     link.getSourceNodeGroupId(), link.getTargetNodeGroupId(),
-                    link.isSyncConfigEnabled() ? 1 : 0, link.getLastUpdateTime(),
+                    link.isSyncConfigEnabled() ? 1 : 0, link.isReversible() ? 1 : 0,
+                            link.getLastUpdateTime(),
                     link.getLastUpdateBy(), link.getCreateTime());
         }
     }
@@ -275,7 +295,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         channel.getExtractPeriodMillis(), channel.getDataLoaderType(),
                         channel.getLastUpdateTime(), channel.getLastUpdateBy(),
                         channel.isReloadFlag() ? 1 : 0, channel.isFileSyncFlag() ? 1 : 0,
-                        channel.getQueue(), channel.getMaxKBytesPerSecond(),
+                        channel.getQueue(), channel.getMaxKBytesPerSecond(), channel.getDataEventAction()== null ? null : channel.getDataEventAction().name(),
                         channel.getChannelId() })) {
             channel.setCreateTime(new Date());
             sqlTemplate.update(
@@ -290,7 +310,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             channel.getDataLoaderType(), channel.getLastUpdateTime(),
                             channel.getLastUpdateBy(), channel.getCreateTime(),
                             channel.isReloadFlag() ? 1 : 0, channel.isFileSyncFlag() ? 1 : 0, 
-                            channel.getQueue(), channel.getMaxKBytesPerSecond() });
+                            channel.getQueue(), channel.getMaxKBytesPerSecond(), channel.getDataEventAction()== null ? null : channel.getDataEventAction().name() });
         }
         if (reloadChannels) {
             clearCache();
@@ -508,7 +528,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return list;
     }
-
+    
     public Map<String, Channel> getChannels(boolean refreshCache) {
         long channelCacheTimeoutInMs = parameterService.getLong(
                 ParameterConstants.CACHE_TIMEOUT_CHANNEL_IN_MS, 60000);
@@ -548,6 +568,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                     channel.setFileSyncFlag(row.getBoolean("file_sync_flag"));
                                     channel.setQueue(row.getString("queue"));
                                     channel.setMaxKBytesPerSecond(row.getBigDecimal("max_network_kbps"));
+                                    channel.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
                                     return channel;
                                 }
                             });
@@ -606,6 +627,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             link.setTargetNodeGroupId(row.getString("target_node_group_id"));
             link.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
             link.setSyncConfigEnabled(row.getBoolean("sync_config_enabled"));
+            link.setReversible(row.getBoolean("is_reversible"));
             link.setCreateTime(row.getDateTime("create_time"));
             link.setLastUpdateBy(row.getString("last_update_by"));
             link.setLastUpdateTime(row.getDateTime("last_update_time"));
@@ -658,6 +680,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             nodeChannel.setReloadFlag(row.getBoolean("reload_flag"));
             nodeChannel.setQueue(row.getString("queue"));
             nodeChannel.setMaxKBytesPerSecond(row.getBigDecimal("max_network_kbps"));
+            nodeChannel.setDataEventAction(NodeGroupLinkAction.fromCode(row.getString("data_event_action")));
             return nodeChannel;
         }
     }

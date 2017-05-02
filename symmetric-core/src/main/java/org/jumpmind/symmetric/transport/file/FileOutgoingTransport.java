@@ -28,10 +28,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.BatchBufferedWriter;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -50,6 +54,10 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
     Node remoteNode;
     
     String outgoingDir;
+    
+    private List<OutgoingBatch> processedBatches;
+    
+    private String extension;
     
     public FileOutgoingTransport(Node remoteNode, Node localNode, String outgoingDir) throws IOException {
         this.outgoingDir = outgoingDir;
@@ -84,8 +92,17 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
 
     @Override
     public BufferedReader readResponse() throws IOException {
+        List<Long> batchIds = new ArrayList<Long>();
+        if (processedBatches != null) {
+            for (OutgoingBatch processedBatch : processedBatches) {
+                batchIds.add(processedBatch.getBatchId());
+            }
+        } else if (writer != null) {
+            batchIds = writer.getBatchIds();
+        }
+        
         StringBuilder resp = new StringBuilder();
-        for (Long batchId : writer.getBatchIds()) {
+        for (Long batchId : batchIds) {
             resp.append(WebConstants.ACK_BATCH_NAME).append(batchId).append("=").append(WebConstants.ACK_BATCH_OK).append("&");
             resp.append(WebConstants.ACK_NODE_ID).append(batchId).append("=").append(remoteNode.getNodeId()).append("&");
         }
@@ -117,5 +134,13 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
         } else {
             new File(fileName + ".tmp").renameTo(new File(fileName + ".zip"));
         }
+    }
+
+    public List<OutgoingBatch> getProcessedBatches() {
+        return processedBatches;
+    }
+
+    public void setProcessedBatches(List<OutgoingBatch> processedBatches) {
+        this.processedBatches = processedBatches;
     }
 }

@@ -33,6 +33,9 @@ SymList * SymTableConstants_getConfigTables() {
     list->add(list, SYM_ROUTER);
     list->add(list, SYM_TRIGGER_ROUTER);
     list->add(list, SYM_NODE_IDENTITY);
+    list->add(list, SYM_FILE_TRIGGER);
+    list->add(list, SYM_FILE_TRIGGER_ROUTER);
+    list->add(list, SYM_FILE_SNAPSHOT);
     return list;
 }
 
