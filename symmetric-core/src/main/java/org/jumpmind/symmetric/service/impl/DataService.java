@@ -1379,11 +1379,6 @@ public class DataService extends AbstractService implements IDataService {
             return String.format("Could not enable initial load for %s", nodeId);
         }
     }
-
-    private void insertNodeSecurityUpdate(ISqlTransaction transaction, String nodeIdRecord,
-            String targetNodeId, boolean isLoad, long loadId, String createBy) {
-        insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNodeId, isLoad, loadId, createBy, null);
-    }
     
     private void insertNodeSecurityUpdate(ISqlTransaction transaction, String nodeIdRecord,
             String targetNodeId, boolean isLoad, long loadId, String createBy, String channelId) {
@@ -2106,7 +2101,7 @@ public class DataService extends AbstractService implements IDataService {
     public Map<String, Date> getLastDataCaptureByChannel() {
         Map<String, Date> captureMap = new HashMap<String, Date>();
         LastCaptureByChannelMapper mapper = new LastCaptureByChannelMapper(captureMap);
-        List<String> temp = sqlTemplate.query(getSql("findLastCaptureTimeByChannelSql"), mapper);
+        sqlTemplate.query(getSql("findLastCaptureTimeByChannelSql"), mapper);
         return mapper.getCaptureMap();
     }
     
@@ -2217,12 +2212,13 @@ public class DataService extends AbstractService implements IDataService {
             TriggerHistory triggerHistory = engine.getTriggerRouterService().getTriggerHistory(
                     triggerHistId);
             if (triggerHistory == null) {
-                Table table = platform.getTableFromCache(null, null, tableName, true);
                 Trigger trigger = null;
+                Table table = null;
                 List<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getAllTriggerRoutersForCurrentNode(engine.getNodeService().findIdentity().getNodeGroupId());
                 for (TriggerRouter triggerRouter : triggerRouters) {
                     if (triggerRouter.getTrigger().getSourceTableName().equalsIgnoreCase(tableName)) {
                         trigger = triggerRouter.getTrigger();
+                        table = platform.getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), tableName, false);
                         break;
                     }
                 }
