@@ -265,13 +265,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 	                            batch.getIgnoreCount(), batch.getIgnoreRowCount(), batch.getMissingDeleteCount(),
 	                            batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
 	                            FormatUtils.abbreviateForLogging(batch.getSqlMessage()),
-	                            batch.getLastUpdatedHostName(), batch.getLastUpdatedTime(), batch.getSummary() },
+	                            batch.getLastUpdatedHostName(), batch.getSummary() },
 	                    new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.CHAR,
 	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
 	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
 	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, 
 	                            Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, 
-	                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR });
+	                            Types.VARCHAR, Types.VARCHAR });
         	}
         }
     }
