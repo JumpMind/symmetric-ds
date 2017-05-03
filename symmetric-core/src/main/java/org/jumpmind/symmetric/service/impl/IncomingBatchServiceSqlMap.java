@@ -61,7 +61,7 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("insertIncomingBatchSql" ,"" + 
 "insert into $(incoming_batch) (batch_id, node_id, channel_id, status, network_millis, filter_millis, database_millis, failed_row_number, failed_line_number, byte_count,   " + 
 "  statement_count, fallback_insert_count, fallback_update_count, ignore_count, ignore_row_count, missing_delete_count, skip_count, sql_state, sql_code, sql_message,                         " + 
-"  last_update_hostname, summary, create_time)                                                                                                       " + 
+"  last_update_hostname, last_update_time, summary, create_time)                                                                                                       " + 
 "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp)                                                                        " );
 
         putSql("updateIncomingBatchSql" ,"" + 
