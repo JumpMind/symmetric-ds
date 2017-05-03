@@ -96,7 +96,6 @@ public class MultiBatchStagingWriter implements IDataWriter {
             startNewBatch();
             end(this.table);
             end(this.batch, false);
-            closeCurrentDataWriter();
         }
         closeCurrentDataWriter();
     }
@@ -149,7 +148,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
         if (this.outgoingBatch.getDataEventCount() >= maxBatchSize && this.batches.size() > 0) {
             this.currentDataWriter.end(table);
             this.currentDataWriter.end(batch, false);
-            closeCurrentDataWriter();
+            this.closeCurrentDataWriter();
             startNewBatch();
         }
         if (System.currentTimeMillis() - ts > 60000) {
@@ -167,15 +166,16 @@ public class MultiBatchStagingWriter implements IDataWriter {
             if (resource != null) {
                 resource.setState(State.DONE);
             }
-            this.outgoingBatch = this.dataExtractorService.outgoingBatchService.findOutgoingBatch(outgoingBatch.getBatchId(), outgoingBatch.getNodeId());
-            if (outgoingBatch.getIgnoreCount() == 0) {
-                this.outgoingBatch.setStatus(Status.NE);
-                this.dataExtractorService.outgoingBatchService.updateOutgoingBatch(this.outgoingBatch);
+            OutgoingBatch batchFromDatabase = this.dataExtractorService.outgoingBatchService.findOutgoingBatch(outgoingBatch.getBatchId(), outgoingBatch.getNodeId());
+            if (batchFromDatabase.getIgnoreCount() == 0) {
+                this.outgoingBatch.setStatus(Status.NE);                
             } else {
                 cancelled = true;
                 throw new CancellationException();
             }
         }
+
+        this.dataExtractorService.outgoingBatchService.updateOutgoingBatch(this.outgoingBatch);
     }
     
     @Override
@@ -193,6 +193,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
         this.inError = inError;
         if (this.currentDataWriter != null) {
             this.currentDataWriter.end(this.batch, inError);
+            closeCurrentDataWriter();
         }
     }
     
