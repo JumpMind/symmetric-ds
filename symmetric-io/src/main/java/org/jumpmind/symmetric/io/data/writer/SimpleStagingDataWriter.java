@@ -174,6 +174,9 @@ public class SimpleStagingDataWriter {
             } else if (line.startsWith(CsvConstants.CHANNEL)) {
                 channelLine = line;
             } else {
+                if (writer == null) {
+                    throw new IllegalStateException("Invalid batch data was received: " + line);
+                }
                 TableLine batchLine = batchTableLines.get(tableLine);
                 if (batchLine == null || (batchLine != null && batchLine.columnsLine == null)) {
                     TableLine syncLine = syncTableLines.get(tableLine);

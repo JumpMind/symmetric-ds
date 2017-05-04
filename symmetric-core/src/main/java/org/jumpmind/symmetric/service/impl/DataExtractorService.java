@@ -906,6 +906,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                     throw ex;
                 } finally {
+                    IStagedResource resource = getStagedResource(currentBatch);
+                    if (resource != null) {
+                        resource.setState(State.DONE);
+                    }
                     lock.release();
                     synchronized (locks) {
                         locks.remove(semaphoreKey);
@@ -1195,8 +1199,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } catch (Throwable t) {
             throw new RuntimeException(t);
         } finally {
-            stagedResource.setState(State.DONE);
             stagedResource.close();
+            if (!stagedResource.isFileResource()) {
+                stagedResource.delete();
+            }
         }
     }
     
