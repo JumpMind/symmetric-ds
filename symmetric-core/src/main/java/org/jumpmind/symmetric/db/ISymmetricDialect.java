@@ -135,6 +135,7 @@ public interface ISymmetricDialect {
      */
     public void cleanDatabase();
 
+    @Deprecated
     public void disableSyncTriggers(ISqlTransaction transaction);
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId);

@@ -639,6 +639,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return orderedColumns;
     }
 
+    @Deprecated
     public void disableSyncTriggers(ISqlTransaction transaction) {
         disableSyncTriggers(transaction, null);
     }

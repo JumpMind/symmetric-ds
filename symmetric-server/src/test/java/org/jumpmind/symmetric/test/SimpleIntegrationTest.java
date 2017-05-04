@@ -1111,7 +1111,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             return;
         }
         ISqlTransaction tran = getServer().getSqlTemplate().startSqlTransaction();
-        getServer().getSymmetricDialect().disableSyncTriggers(tran);
+        getServer().getSymmetricDialect().disableSyncTriggers(tran, null);
         tran.execute("insert into test_a (id) values ('1')");
         tran.commit();
         getServer().getSqlTemplate().update("insert into test_b (id,  aid) values('1', '1')");

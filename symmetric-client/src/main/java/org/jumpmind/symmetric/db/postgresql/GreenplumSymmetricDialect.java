@@ -40,7 +40,6 @@ public class GreenplumSymmetricDialect extends PostgreSqlSymmetricDialect {
     }
     
     @Override
-    public void disableSyncTriggers(ISqlTransaction transaction) {
+    public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
     }
-    
 }
