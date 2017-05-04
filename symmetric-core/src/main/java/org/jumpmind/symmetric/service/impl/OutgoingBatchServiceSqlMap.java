@@ -148,9 +148,9 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
               + "from $(outgoing_batch) b inner join                                                                                                            "
               + "     $(data_event) e on b.batch_id=e.batch_id inner join                                                                                       "
               + "     $(data) d on d.data_id=e.data_id                                                                                                          "
-              + "     join $(channel) c on c.channel_id = b.channel_id 																							"					
+              + "     join $(channel) c on c.channel_id = b.channel_id                                                                                          "                   
               + "where c.reload_flag = 1                                                                                                                    "
-              + " and b.load_id > 0                      				                                                                                    "
+              + " and b.load_id > 0                                                                                                                         "
               + "group by b.load_id, b.node_id, b.status, b.channel_id, b.create_by                                                                              "
               + "order by b.load_id desc                                                                                                                         ");
 
@@ -163,13 +163,13 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         
         putSql("getLoadSummaryUnprocessedSql", 
                 "select r.source_node_id, r.target_node_id, "
-	    		+ "   count(TRIGGER_ID) as table_count, max(TRIGGER_ID) as trigger_id, "
-	            + "   max(create_table) as create_table, max(delete_first) as delete_first, max(processed) as processed, " 
-	            + "   max(reload_select) as reload_select, max(before_custom_sql) as before_custom_sql, " 
-	            + "   max(last_update_by) as last_update_by, min(last_update_time) as last_update_time "
-	            + "from $(table_reload_request) r "
-	            + "where processed = 0 and source_node_id = ? "
-	        	+ "group by r.source_node_id, r.target_node_id");
+                + "   count(TRIGGER_ID) as table_count, max(TRIGGER_ID) as trigger_id, "
+                + "   max(create_table) as create_table, max(delete_first) as delete_first, max(processed) as processed, " 
+                + "   max(reload_select) as reload_select, max(before_custom_sql) as before_custom_sql, " 
+                + "   max(last_update_by) as last_update_by, min(last_update_time) as last_update_time "
+                + "from $(table_reload_request) r "
+                + "where processed = 0 and source_node_id = ? "
+                + "group by r.source_node_id, r.target_node_id");
       
         putSql("getLoadSummarySql",
                 "select " 
