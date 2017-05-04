@@ -113,8 +113,6 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
                 return convertTextToLob ? Types.BLOB : Types.LONGVARCHAR;
             } else if ("TEXT".equals(typeName)) {
                 return convertTextToLob ? Types.BLOB : Types.LONGVARCHAR;
-            } else if ("JSON".equals(typeName)) {
-                return convertTextToLob ? Types.BLOB : Types.LONGVARCHAR;
             } else if ("TINYTEXT".equals(typeName)) {
                 return convertTextToLob ? Types.BLOB : Types.LONGVARCHAR;
             }
