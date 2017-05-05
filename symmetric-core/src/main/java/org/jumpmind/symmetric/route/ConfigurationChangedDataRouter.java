@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.load.ConfigurationChangedDatabaseWriterFilter;
@@ -125,7 +126,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         if (me != null) {
             NetworkedNode rootNetworkedNode = getRootNetworkNodeFromContext(routingContext);
 
-            if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
+            if (tableMatches(dataMetaData, TableConstants.SYM_NODE) 
+                    && dataMetaData.getData().getDataEventType().equals(DataEventType.SQL)
+                    && dataMetaData.getData().getParsedData(CsvData.ROW_DATA).length > 1
+                    && dataMetaData.getData().getParsedData(CsvData.ROW_DATA)[0].toUpperCase().contains("TABLE")) {
+                routingContext.put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
+                routeNodeTables(nodeIds, columnValues, rootNetworkedNode, me, routingContext,
+                        dataMetaData, possibleTargetNodes, initialLoad);
+            } else if (tableMatches(dataMetaData, TableConstants.SYM_NODE)
                     || tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)
                     || tableMatches(dataMetaData, TableConstants.SYM_NODE_HOST)
                     || tableMatches(dataMetaData, TableConstants.SYM_MONITOR_EVENT)) {
