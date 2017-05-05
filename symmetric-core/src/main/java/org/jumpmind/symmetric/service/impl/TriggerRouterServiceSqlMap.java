@@ -178,7 +178,7 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                 ""
                         + "insert into $(trigger_router)                                                                                             "
                         + "  (initial_load_order,initial_load_select,initial_load_delete_stmt,ping_back_enabled,create_time,last_update_by,last_update_time,enabled,trigger_id,router_id)   "
-                        + "  values(?,?,?,?,?,?,?,?,?,?,?)                                                                                                       ");
+                        + "  values(?,?,?,?,?,?,?,?,?,?)                                                                                                       ");
 
         putSql("updateTriggerRouterSql",
                 ""
