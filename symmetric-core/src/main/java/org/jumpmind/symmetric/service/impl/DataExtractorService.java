@@ -146,6 +146,7 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
+import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
 
 /**
@@ -1268,7 +1269,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected Table lookupAndOrderColumnsAccordingToTriggerHistory(String routerId,
-            TriggerHistory triggerHistory, boolean setTargetTableName, boolean useDatabaseDefinition) {
+            TriggerHistory triggerHistory, Node sourceNode, Node targetNode, 
+            boolean setTargetTableName, boolean useDatabaseDefinition) {
         String catalogName = triggerHistory.getSourceCatalogName();
         String schemaName = triggerHistory.getSourceSchemaName();
         String tableName = triggerHistory.getSourceTableName();
@@ -1309,13 +1311,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetCatalogName())) {
                 table.setCatalog(null);
             } else if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
-                table.setCatalog(router.getTargetCatalogName());
+                table.setCatalog(replaceVariables(sourceNode, targetNode, router.getTargetCatalogName()));
             }
 
             if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetSchemaName())) {
                 table.setSchema(null);
             } else if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
-                table.setSchema(router.getTargetSchemaName());
+                table.setSchema(replaceVariables(sourceNode, targetNode, router.getTargetSchemaName()));
             }
 
             if (StringUtils.isNotBlank(router.getTargetTableName())) {
@@ -1325,6 +1327,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return table;
     }
 
+    protected String replaceVariables(Node sourceNode, Node targetNode, String str) {
+        str = FormatUtils.replace("sourceNodeId", sourceNode.getNodeGroupId(), str);
+        str = FormatUtils.replace("sourceExternalId", sourceNode.getExternalId(), str);
+        str = FormatUtils.replace("sourceNodeGroupId", sourceNode.getNodeGroupId(), str);
+        str = FormatUtils.replace("targetNodeId", targetNode.getNodeGroupId(), str);
+        str = FormatUtils.replace("targetExternalId", targetNode.getExternalId(), str);
+        str = FormatUtils.replace("targetNodeGroupId", targetNode.getNodeGroupId(), str);
+        return str;
+    }
+    
     public RemoteNodeStatuses queueWork(boolean force) {
         final RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
         Node identity = nodeService.findIdentity();
@@ -1592,6 +1604,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     class ColumnsAccordingToTriggerHistory {
         Map<Integer, Table> cache = new HashMap<Integer, Table>();
+        Node sourceNode;
+        Node targetNode;
+        
+        public ColumnsAccordingToTriggerHistory(Node sourceNode, Node targetNode) {
+            this.sourceNode = sourceNode;
+            this.targetNode = targetNode;
+        }
 
         public Table lookup(String routerId, TriggerHistory triggerHistory, boolean setTargetTableName, boolean useDatabaseDefinition) {            
             final int prime = 31;
@@ -1601,7 +1620,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             key = prime * key + (useDatabaseDefinition ? 1231 : 1237);
             Table table = cache.get(key);
             if (table == null) {
-                table = lookupAndOrderColumnsAccordingToTriggerHistory(routerId, triggerHistory, setTargetTableName, useDatabaseDefinition);
+                table = lookupAndOrderColumnsAccordingToTriggerHistory(routerId, triggerHistory, sourceNode,
+                        targetNode, setTargetTableName, useDatabaseDefinition);
                 cache.put(key, table);
             }
             return table;
@@ -1642,7 +1662,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     outgoingBatch.getChannelId(), symmetricDialect.getBinaryEncoding(),
                     sourceNode.getNodeId(), outgoingBatch.getNodeId(), outgoingBatch.isCommonFlag());
             this.targetNode = targetNode;
-            this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory();
+            this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory(sourceNode, targetNode);
         }
 
         public Batch getBatch() {
@@ -1866,7 +1886,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 throw new SymmetricException("Could not find a node represented by %s",
                         this.batch.getTargetNodeId());
             }
-            this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory();
+            this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory(nodeService.findIdentity(), node);
         }
 
         public Table getSourceTable() {
