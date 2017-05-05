@@ -210,9 +210,7 @@ public class StagedResource implements IStagedResource {
         closeInternal();
         if (isFileResource()) {
             stagingManager.inUse.remove(path);
-        } else if (state == State.DONE) {
-            deleteInternal();
-        }        
+        }      
     }
     
     private void closeInternal() {
@@ -330,7 +328,6 @@ public class StagedResource implements IStagedResource {
         }
 
         if (memoryBuffer != null) {
-            memoryBuffer.setLength(0);
             memoryBuffer = null;
             deleted = true;
         }

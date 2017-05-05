@@ -222,14 +222,13 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getLoadMillis(), outgoingBatch.getExtractMillis(),
                         outgoingBatch.getSqlState(), outgoingBatch.getSqlCode(),
                         FormatUtils.abbreviateForLogging(outgoingBatch.getSqlMessage()),
-                        outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
-                        outgoingBatch.getLastUpdatedTime(), outgoingBatch.getSummary(), 
+                        outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(), outgoingBatch.getSummary(), 
                         outgoingBatch.getBatchId(), outgoingBatch.getNodeId() }, new int[] { Types.CHAR, Types.BIGINT,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.NUMERIC,
-                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, 
+                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, 
                         symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 

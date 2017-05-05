@@ -41,10 +41,10 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("selectCountBatchesPrefixSql", "select count(*) from $(outgoing_batch)   ");
 
         putSql("cancelLoadBatchesSql",
-                "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0 where load_id=?");
+                "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0, last_update_time=current_timestamp where load_id=?");
 
         putSql("cancelChannelBatchesSql",
-                "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0 where channel_id=? and status != 'OK'");
+                "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0, last_update_time=current_timestamp where channel_id=? and status != 'OK'");
         
         putSql("cancelChannelBatchesTableSql", " and summary=?");
 
@@ -59,7 +59,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  reload_event_count=?, insert_event_count=?, update_event_count=?, delete_event_count=?, other_event_count=?,   "
                         + "  ignore_count=?, router_millis=?, network_millis=?, filter_millis=?,                                                            "
                         + "  load_millis=?, extract_millis=?, sql_state=?, sql_code=?, sql_message=?,                                       "
-                        + "  failed_data_id=?, last_update_hostname=?, last_update_time=?, summary=? where batch_id=? and node_id=?                    ");
+                        + "  failed_data_id=?, last_update_hostname=?, last_update_time=current_timestamp, summary=? where batch_id=? and node_id=?                    ");
 
         putSql("findOutgoingBatchSql", "where batch_id=? and node_id=?  ");
 
@@ -124,7 +124,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  from $(outgoing_batch) where status in (:STATUS_LIST) group by status, node_id order by oldest_batch_time asc   ");
 
         putSql("updateOutgoingBatchesStatusSql",
-                "update $(outgoing_batch) set status=? where status = ?   ");
+                "update $(outgoing_batch) set status=?, last_update_time=current_timestamp where status = ?   ");
 
         putSql("getLoadSummariesSql",
                 "select b.load_id, b.node_id, b.status, b.create_by, max(error_flag) as error_flag, count(*) as cnt, min(b.create_time) as create_time,          "

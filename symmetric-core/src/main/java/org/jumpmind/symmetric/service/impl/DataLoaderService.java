@@ -985,6 +985,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 }
                             }
                             resource.setState(State.DONE);
+                            if (!resource.isFileResource()) {
+                                resource.delete();
+                            }
                         }
                     } else if (resource == null || !resource.exists()) {
                         log.info("The batch {} was missing in staging.  Setting status to resend.", batch.getNodeBatchId());
