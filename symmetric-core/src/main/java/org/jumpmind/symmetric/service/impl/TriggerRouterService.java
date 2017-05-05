@@ -1208,6 +1208,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         updateOrCreateDatabaseTriggers(triggersForCurrentNode, sqlBuffer, force,
                                 true, activeTriggerHistories, true);
                         resetTriggerRouterCacheByNodeGroupId();
+                        
+                        if (createTriggersForTables) {
+                            updateOrCreateDdlTriggers(sqlBuffer);
+                        }
                     } finally {
                         clusterService.unlock(ClusterConstants.SYNC_TRIGGERS);
                         log.info("Done synchronizing triggers");
@@ -1505,6 +1509,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories);
                 log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
             }
+        }
+    }
+
+    protected void updateOrCreateDdlTriggers(StringBuilder sqlBuffer) {
+        String triggerName = tablePrefix + "_on_ddl";
+        boolean isCapture = parameterService.is(ParameterConstants.TRIGGER_CAPTURE_DDL_CHANGES, false);
+        boolean exists = symmetricDialect.doesDdlTriggerExist(platform.getDefaultCatalog(), platform.getDefaultSchema(), triggerName);
+
+        if (isCapture && !exists) {
+            symmetricDialect.createDdlTrigger(tablePrefix, sqlBuffer, triggerName);
+        } else if (!isCapture && exists) {
+            symmetricDialect.removeDdlTrigger(sqlBuffer, platform.getDefaultCatalog(), platform.getDefaultSchema(), triggerName);
         }
     }
 
@@ -1807,7 +1823,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         return hist;
     }
-
+    
     protected static String replaceCharsToShortenName(String triggerName) {
         return triggerName.replaceAll("[^a-zA-Z0-9_]|[a|e|i|o|u|A|E|I|O|U]", "");
     }
