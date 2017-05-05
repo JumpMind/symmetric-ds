@@ -276,7 +276,7 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
         ISqlTemplate jdbcTemplate = getSqlTemplate();
         ISqlTransaction transaction = jdbcTemplate.startSqlTransaction();
         try {
-            dbDialect.disableSyncTriggers(transaction);
+            dbDialect.disableSyncTriggers(transaction, null);
             int count = insert(INSERT1_VALUES, transaction, dbDialect);
             dbDialect.enableSyncTriggers(transaction);
             transaction.commit();
