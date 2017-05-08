@@ -46,6 +46,8 @@ import org.slf4j.LoggerFactory;
 public class StagedResource implements IStagedResource {
 
     static final Logger log = LoggerFactory.getLogger(StagedResource.class);
+    
+    private int references = 0;
 
     private File directory;
     
@@ -95,8 +97,18 @@ public class StagedResource implements IStagedResource {
         return path;
     }
     
+    @Override
+    public void reference() {
+        references++;
+    }
+    
+    @Override
+    public void dereference() {
+        references--;
+    }
+    
     public boolean isInUse() {
-        return (readers != null && readers.size() > 0) || writer != null || 
+        return references > 0 || (readers != null && readers.size() > 0) || writer != null || 
                 (inputStreams != null && inputStreams.size() > 0) ||
                 outputStream != null;
     }
@@ -210,7 +222,7 @@ public class StagedResource implements IStagedResource {
         closeInternal();
         if (isFileResource()) {
             stagingManager.inUse.remove(path);
-        }      
+        }
     }
     
     private void closeInternal() {

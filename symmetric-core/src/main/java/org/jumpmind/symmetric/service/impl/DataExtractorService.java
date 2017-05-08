@@ -732,7 +732,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (extractBatch.isExtractJobFlag() && extractBatch.getStatus() != Status.IG) {
                 if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
                     if (extractBatch.getStatus() != Status.RQ && extractBatch.getStatus() != Status.IG
-                            && !isPreviouslyExtracted(extractBatch)) {
+                            && !isPreviouslyExtracted(extractBatch, false)) {
                         /*
                          * the batch must have been purged. it needs to be
                          * re-extracted
@@ -844,7 +844,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             if (currentBatch.getStatus() == Status.IG) {
                 cleanupIgnoredBatch(sourceNode, targetNode, currentBatch, writer);
-            } else if (!isPreviouslyExtracted(currentBatch)) {
+            } else if (!isPreviouslyExtracted(currentBatch, true)) {
                 String semaphoreKey = useStagingDataWriter ? Long.toString(currentBatch
                         .getBatchId()) : currentBatch.getNodeBatchId();
                 Semaphore lock = null;
@@ -862,7 +862,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
 
-                    if (!isPreviouslyExtracted(currentBatch)) {
+                    if (!isPreviouslyExtracted(currentBatch, true)) {
                         currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
                         if (updateBatchStatistics) {
                             changeBatchStatus(Status.QY, currentBatch, mode);
@@ -971,7 +971,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             transformExtractWriter = createTransformDataWriter(
                     sourceNode,
                     targetNode,
-                    new ProcessInfoDataWriter(new StagingDataWriter(memoryThresholdInBytes, nodeService
+                    new ProcessInfoDataWriter(new StagingDataWriter(memoryThresholdInBytes, true, nodeService
                             .findIdentityNodeId(), Constants.STAGING_CATEGORY_OUTGOING,
                             stagingManager), processInfo));
         } else {
@@ -1008,13 +1008,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 currentBatch.getStagedLocation(), currentBatch.getBatchId());
     }
 
-    protected boolean isPreviouslyExtracted(OutgoingBatch currentBatch) {
+    protected boolean isPreviouslyExtracted(OutgoingBatch currentBatch, boolean acquireReference) {
         IStagedResource previouslyExtracted = getStagedResource(currentBatch);
         if (previouslyExtracted != null && previouslyExtracted.exists()
                 && previouslyExtracted.getState() != State.CREATE) {
             if (log.isDebugEnabled()) {
                 log.debug("We have already extracted batch {}.  Using the existing extraction: {}",
                         currentBatch.getBatchId(), previouslyExtracted);
+            }
+            if (acquireReference) {
+                previouslyExtracted.reference();
             }
             return true;
         } else {
@@ -1188,7 +1191,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             throw new RuntimeException(t);
         } finally {
             stagedResource.close();
-            if (!stagedResource.isFileResource()) {
+            stagedResource.dereference();
+            if (!stagedResource.isFileResource() && !stagedResource.isInUse()) {
                 stagedResource.delete();
             }
         }
