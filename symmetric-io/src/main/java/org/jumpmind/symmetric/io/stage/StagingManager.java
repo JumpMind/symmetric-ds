@@ -149,7 +149,7 @@ public class StagingManager implements IStagingManager {
      */
     public IStagedResource create(Object... path) {
         String filePath = buildFilePath(path);
-        StagedResource resource = new StagedResource(directory, filePath,
+        IStagedResource resource = new StagedResource(directory, filePath,
                 this);
         if (resource.exists()) {
             resource.delete();

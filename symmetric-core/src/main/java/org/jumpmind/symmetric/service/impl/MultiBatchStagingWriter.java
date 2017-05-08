@@ -85,7 +85,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
     }
 
     protected IDataWriter buildWriter(long memoryThresholdInBytes) {
-        return new StagingDataWriter(memoryThresholdInBytes, sourceNodeId,
+        return new StagingDataWriter(memoryThresholdInBytes, false, sourceNodeId,
                 Constants.STAGING_CATEGORY_OUTGOING, stagingManager,
                 (IProtocolDataWriterListener[]) null);
     }

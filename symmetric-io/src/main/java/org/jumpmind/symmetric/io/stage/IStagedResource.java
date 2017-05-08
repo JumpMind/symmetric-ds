@@ -69,4 +69,8 @@ public interface IStagedResource {
     
     public boolean isInUse();
 
+    public void dereference();
+
+    public void reference();
+
 }
