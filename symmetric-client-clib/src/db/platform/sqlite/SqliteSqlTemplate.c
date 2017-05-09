@@ -148,6 +148,9 @@ char * SymSqliteSqlTemplate_queryForString(SymSqliteSqlTemplate *this, char *sql
     if ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
         value = SymStringBuilder_copy((char *) sqlite3_column_text(stmt, 0));
         *error = 0;
+    } else if (rc == SQLITE_DONE) {
+        SymLog_debug("No result for query: %s", sql);
+        // No Results.
     } else {
     	SymLog_error("Failed to execute query: %s", sql);
     	SymLog_error("SQL Exception (rc=%d): %s", rc, sqlite3_errmsg(this->db));

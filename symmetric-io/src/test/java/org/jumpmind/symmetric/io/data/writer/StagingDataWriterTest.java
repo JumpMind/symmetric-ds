@@ -41,7 +41,6 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
-import org.jumpmind.symmetric.io.stage.StagedResource;
 import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -81,14 +80,14 @@ public class StagingDataWriterTest {
 
         StagingManager stagingManager = new StagingManager(DIR.getAbsolutePath());
         ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, "test", origCsv);
-        StagingDataWriter writer = new StagingDataWriter(threshold, "aaa", "test", stagingManager, new BatchListener());
+        StagingDataWriter writer = new StagingDataWriter(threshold, false, "aaa", "test", stagingManager, new BatchListener());
         DataProcessor processor = new DataProcessor(reader, writer, "test");
         processor.process(new DataContext());
 
         assertEquals(1, batchesWritten.size());
         assertEquals(convertEol(origCsv), convertEol(batchesWritten.get(0)));
 
-        StagedResource resource = (StagedResource) stagingManager.find("test", "aaa", 1);
+        IStagedResource resource = (IStagedResource) stagingManager.find("test", "aaa", 1);
         assertNotNull(resource);
         if (threshold > origCsv.length()) {
             assertFalse(resource.getFile().exists());

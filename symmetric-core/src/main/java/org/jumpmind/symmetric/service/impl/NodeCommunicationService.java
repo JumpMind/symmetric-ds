@@ -178,9 +178,11 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 nodesToCommunicateWith = removeOfflineNodes(nodeService.findNodesToPushTo());
                 break;
             case OFFLN_PUSH:
+            case OFF_FSPUSH:
                 nodesToCommunicateWith = getNodesToCommunicateWithOffline(CommunicationType.PUSH);
                 break;
             case OFFLN_PULL:
+            case OFF_FSPULL:
                 nodesToCommunicateWith = getNodesToCommunicateWithOffline(CommunicationType.PULL);
                 break;
             default:
@@ -396,9 +398,11 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 threadCountParameter = ParameterConstants.OFFLINE_PUSH_THREAD_COUNT_PER_SERVER;
                 break;
             case FILE_PULL:
+            case OFF_FSPULL:
                 threadCountParameter = ParameterConstants.FILE_PUSH_THREAD_COUNT_PER_SERVER;
                 break;
             case FILE_PUSH:
+            case OFF_FSPUSH:
                 threadCountParameter = ParameterConstants.FILE_PUSH_THREAD_COUNT_PER_SERVER;
                 break;
             case FILE_XTRCT:
@@ -458,9 +462,11 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 parameter = ParameterConstants.OFFLINE_PUSH_LOCK_TIMEOUT_MS;
                 break;
             case FILE_PULL:
+            case OFF_FSPULL:
                 parameter = ParameterConstants.FILE_PULL_LOCK_TIMEOUT_MS;
                 break;
             case FILE_PUSH:
+            case OFF_FSPUSH:
                 parameter = ParameterConstants.FILE_PUSH_LOCK_TIMEOUT_MS;
                 break;
             case FILE_XTRCT:

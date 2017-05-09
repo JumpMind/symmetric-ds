@@ -29,6 +29,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -50,16 +51,22 @@ public interface ISymmetricDialect {
             Trigger trigger, TriggerHistory hist, Channel channel,
             String tablePrefix, Table table);
 
+    public void createDdlTrigger(String tablePrefix, StringBuilder sqlBuffer, String triggerName);
+
     /*
      * Get the name of this symmetric instance. This can be set in
-     * symmetric.properties using the symmetric.runtime.engine.name property.
+     * symmetric.properties using the engine.name property.
      */
     public String getEngineName();
 
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName);
+    
+    public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName);
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
+
+    public boolean doesDdlTriggerExist(String catalogName, String schema, String triggerName);
 
     public void verifyDatabaseIsCompatible();
 
@@ -134,6 +141,7 @@ public interface ISymmetricDialect {
      */
     public void cleanDatabase();
 
+    @Deprecated
     public void disableSyncTriggers(ISqlTransaction transaction);
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId);
@@ -240,5 +248,7 @@ public interface ISymmetricDialect {
     public IParameterService getParameterService();
     
     public void setExtensionService(IExtensionService extensionService);
+    
+    public PermissionType[] getSymTablePermissions();
     
 }

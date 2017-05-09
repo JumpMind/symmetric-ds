@@ -96,6 +96,7 @@ void SymDataService_heartbeat(SymDataService *this, unsigned short force) {
                     || !SymStringUtils_equals(SYM_VERSION, me->symmetricVersion)
                     || !SymStringUtils_equals(this->platform->name, me->databaseType)
                     || !SymStringUtils_equals(this->platform->version, me->databaseVersion)
+                    || !SymStringUtils_equals(SYM_DEPLOYMENT_TYPE, me->deploymentType)
                     || me->batchInErrorCount != outgoingErrorCount
                     || me->batchToSendCount != outgoingUnsentCount) {
                 SymLog_info("Some attribute(s) of node changed.  Recording changes");

@@ -41,7 +41,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("selectCountBatchesPrefixSql", "select count(*) from $(outgoing_batch)   ");
 
         putSql("cancelLoadBatchesSql",
-                "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0 where load_id=?");
+                "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0, last_update_time=current_timestamp where load_id=?");
 
         putSql("cancelChannelBatchesSql",
                 "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0 where channel_id=? and status != 'OK'");
@@ -61,7 +61,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  ignore_count=?, router_millis=?, network_millis=?, filter_millis=?,                                                            "
                         + "  load_millis=?, extract_millis=?, extract_start_time=?, transfer_start_time=?, load_start_time=?, "
                         + "  sql_state=?, sql_code=?, sql_message=?,                                       "
-                        + "  failed_data_id=?, last_update_hostname=?, last_update_time=?, summary=? where batch_id=? and node_id=?                    ");
+                        + "  failed_data_id=?, last_update_hostname=?, last_update_time=current_timestamp, summary=? where batch_id=? and node_id=?                    ");
 
         putSql("findOutgoingBatchSql", "where batch_id=? and node_id=?  ");
 
@@ -72,6 +72,16 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectOutgoingBatchChannelSql", 
                 " join $(channel) c on c.channel_id = b.channel_id where node_id = ? and c.queue = ? and status in (?, ?, ?, ?, ?, ?, ?, ?) order by batch_id asc   ");
+
+        putSql("selectOutgoingBatchChannelActionSql", 
+                " join $(channel) c on c.channel_id = b.channel_id" + 
+                " where c.data_event_action = ?" +
+                " and b.node_id = ? and c.queue = ? and b.status in (?, ?, ?, ?, ?, ?, ?, ?) order by b.batch_id asc   ");
+
+        putSql("selectOutgoingBatchChannelActionNullSql", 
+                " join $(channel) c on c.channel_id = b.channel_id" + 
+                " where (c.data_event_action is null or c.data_event_action = ?)" +
+                " and b.node_id = ? and c.queue = ? and b.status in (?, ?, ?, ?, ?, ?, ?, ?) order by b.batch_id asc   ");
 
         putSql("selectOutgoingBatchRangeSql",
                 "where batch_id between ? and ? order by batch_id   ");
@@ -119,10 +129,14 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + " from $(outgoing_batch) where status in (:STATUS_LIST) group by status, node_id order by oldest_batch_time asc   ");
 
         putSql("selectOutgoingBatchSummaryByStatusAndChannelSql",
-                "select count(*) as batches, sum(data_event_count) as data, status, node_id, min(create_time) as oldest_batch_time, channel_id,      "
-                        + " max(last_update_time) as last_update_time, max(sql_message) as sql_message, min(batch_id) as batch_id, "
-                        + " sum(byte_count) as total_bytes, sum(router_millis + extract_millis + network_millis + filter_millis + load_millis) as total_millis "
-                        + "  from $(outgoing_batch) where status in (:STATUS_LIST) group by status, node_id, channel_id order by node_id, oldest_batch_time asc   ");
+                "select count(*) as batches, sum(s.data_event_count) as data, s.status, s.node_id, min(s.create_time) as oldest_batch_time, s.channel_id,      "
+                        + " max(s.last_update_time) as last_update_time, b.sql_message as sql_message, min(s.batch_id) as batch_id, "
+                        + " sum(s.byte_count) as total_bytes, sum(s.router_millis + s.extract_millis + s.network_millis + s.filter_millis + s.load_millis) as total_millis, "
+                        + " sum(s.router_millis) as total_router_millis, sum(s.extract_millis) as total_extract_millis, "
+                        + " sum(s.network_millis) as total_network_millis, sum(s.filter_millis) as total_filter_millis, "
+                        + " sum(s.load_millis) as total_load_millis "
+                        + "  from $(outgoing_batch) s join $(outgoing_batch) b on b.batch_id=s.batch_id and b.node_id=s.node_id"
+                        + " where s.status in (:STATUS_LIST) group by s.status, s.node_id, s.channel_id, b.sql_message,  order by s.node_id, oldest_batch_time asc   ");
 
         putSql("updateOutgoingBatchesStatusSql",
                 "update $(outgoing_batch) set status=? where status = ?   ");
@@ -134,9 +148,9 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
               + "from $(outgoing_batch) b inner join                                                                                                            "
               + "     $(data_event) e on b.batch_id=e.batch_id inner join                                                                                       "
               + "     $(data) d on d.data_id=e.data_id                                                                                                          "
-              + "     join $(channel) c on c.channel_id = b.channel_id 																							"					
+              + "     join $(channel) c on c.channel_id = b.channel_id                                                                                          "                   
               + "where c.reload_flag = 1                                                                                                                    "
-              + " and b.load_id > 0                      				                                                                                    "
+              + " and b.load_id > 0                                                                                                                         "
               + "group by b.load_id, b.node_id, b.status, b.channel_id, b.create_by                                                                              "
               + "order by b.load_id desc                                                                                                                         ");
 
@@ -149,13 +163,13 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         
         putSql("getLoadSummaryUnprocessedSql", 
                 "select r.source_node_id, r.target_node_id, "
-	    		+ "   count(TRIGGER_ID) as table_count, max(TRIGGER_ID) as trigger_id, "
-	            + "   max(create_table) as create_table, max(delete_first) as delete_first, max(processed) as processed, " 
-	            + "   max(reload_select) as reload_select, max(before_custom_sql) as before_custom_sql, " 
-	            + "   max(last_update_by) as last_update_by, min(last_update_time) as last_update_time "
-	            + "from $(table_reload_request) r "
-	            + "where processed = 0 and source_node_id = ? "
-	        	+ "group by r.source_node_id, r.target_node_id");
+                + "   count(TRIGGER_ID) as table_count, max(TRIGGER_ID) as trigger_id, "
+                + "   max(create_table) as create_table, max(delete_first) as delete_first, max(processed) as processed, " 
+                + "   max(reload_select) as reload_select, max(before_custom_sql) as before_custom_sql, " 
+                + "   max(last_update_by) as last_update_by, min(last_update_time) as last_update_time "
+                + "from $(table_reload_request) r "
+                + "where processed = 0 and source_node_id = ? "
+                + "group by r.source_node_id, r.target_node_id");
       
         putSql("getLoadSummarySql",
                 "select " 

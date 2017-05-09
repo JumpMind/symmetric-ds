@@ -618,6 +618,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                         parameterService.getSyncUrl())) {
                             heartbeat(false);
                         }
+                        
+                        if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIG_AT_STARTUP, true)) {
+                            pullService.pullConfigData(false);
+                        }
 
                     } else {
                         log.info("Starting unregistered node [group={}, externalId={}]",
@@ -626,6 +630,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     }
 
                     jobManager.init();
+                    nodeService.captureTableMetaInfo(false, parameterService.getTablePrefix());
                     
                     if (startJobs && jobManager != null) {
                         jobManager.startJobs();
@@ -704,8 +709,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 configurationService.deleteAllNodeGroupLinks();
             }
 
-            // this should remove all triggers because we have removed all the trigger configuration
-            triggerRouterService.syncTriggers();            
+            if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_LOCK)) != null) {
+               // this should remove all triggers because we have removed all the trigger configuration
+               triggerRouterService.syncTriggers();            
+            }
         } catch (SqlException ex) {
             log.warn("Error while trying to remove triggers on tables", ex);
         }

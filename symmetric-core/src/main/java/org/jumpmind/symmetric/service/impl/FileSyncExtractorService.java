@@ -35,8 +35,10 @@ import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
@@ -57,6 +59,12 @@ public class FileSyncExtractorService extends DataExtractorService {
         this.stagingManager = engine.getStagingManager();
         this.configurationService = engine.getConfigurationService();
         this.nodeCommunicationService = engine.getNodeCommunicationService();
+    }
+    
+    @Override
+    protected boolean isApplicable(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
+        return parameterService.is(ParameterConstants.FILE_SYNC_ENABLE) 
+                && nodeCommunication.getCommunicationType() == CommunicationType.FILE_XTRCT;
     }
     
     @Override
@@ -93,10 +101,10 @@ public class FileSyncExtractorService extends DataExtractorService {
                 batches, channel.getMaxBatchSize(), processInfo) {
             @Override
             protected IDataWriter buildWriter(long memoryThresholdInBytes) {                
-                IStagedResource stagedResource = stagingManager.create(memoryThresholdInBytes,
+                IStagedResource stagedResource = stagingManager.create(
                             fileSyncService.getStagingPathComponents(outgoingBatch));
                 
-                log.info("Exacting file sync batch {} to {}", outgoingBatch.getNodeBatchId(), stagedResource);
+                log.info("Extracting file sync batch {} to resource '{}'", outgoingBatch.getNodeBatchId(), stagedResource);
                 
                 long maxBytesToSync = parameterService
                         .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);        

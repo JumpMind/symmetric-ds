@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.model.LoadSummary;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
@@ -57,6 +58,9 @@ public interface IOutgoingBatchService {
     public OutgoingBatches getOutgoingBatches(String nodeId, boolean includeDisabledChannels);
 
     public OutgoingBatches getOutgoingBatches(String nodeId, String channelId, boolean includeDisabledChannels);
+
+    public OutgoingBatches getOutgoingBatches(String nodeId, String channelThread, NodeGroupLinkAction eventAction, 
+            NodeGroupLinkAction defaultEventAction, boolean includeDisabledChannels);
 
     public OutgoingBatches getOutgoingBatchRange(long startBatchId, long endBatchId);
     

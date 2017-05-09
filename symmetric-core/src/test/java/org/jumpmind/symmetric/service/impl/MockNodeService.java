@@ -315,4 +315,39 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
+    
+    @Override
+    public void captureTableMetaInfo(boolean force, String tablePrefix) {
+        
+    }
+
+    @Override
+    public List<String> getCatalogsFromTableMetaInfo(String nodeGroupId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<String> getDefaultCatalogFromTableMetaInfo(String nodeGroupId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<String> getSchemasFromTableMetaInfo(String nodeGroupId, String catalog) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<String> getDefaultSchemaFromTableMetaInfo(String nodeGroupId, String catalog) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<String> getTablesFromTableMetaInfo(String nodeGroupId, String catalog, String schema) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

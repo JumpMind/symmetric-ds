@@ -55,10 +55,15 @@ typedef struct SymDataLoaderService {
     void (*loadDataFromPull)(struct SymDataLoaderService *this, SymNode *remote, SymRemoteNodeStatus *status);
     void (*loadDataFromOfflineTransport)(struct SymDataLoaderService *this, SymNode *remote, SymRemoteNodeStatus *status);
     void (*loadDataFromRegistration)(struct SymDataLoaderService *this, SymRemoteNodeStatus *status);
+    void (*sendAck)(struct SymDataLoaderService *this, SymNode *remote, SymNode *local, SymNodeSecurity *localSecurity,
+            SymList *incomingBatches);
     void (*destroy)(struct SymDataLoaderService *this);
 } SymDataLoaderService;
 
 SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymParameterService *parameterService, SymNodeService *nodeService, SymTriggerRouterService *triggerRouterService,
         SymTransportManager *transportManager, SymTransportManager *fileTransportManager, SymDatabasePlatform *platform, SymDialect *dialect, SymIncomingBatchService *incomingBatchService);
+
+//void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *remote, SymNode *local, SymNodeSecurity *localSecurity,
+//        SymList *incomingBatches);
 
 #endif

@@ -58,6 +58,8 @@ public class Node implements Serializable, Comparable<Node> {
      * sync software.
      */
     private String schemaVersion;
+    
+    private String configVersion;
 
     /**
      * Record the type of database the node hosts.
@@ -104,6 +106,7 @@ public class Node implements Serializable, Comparable<Node> {
         setDatabaseVersion(symmetricDialect.getVersion());
         setSyncUrl(parameterService.getSyncUrl());
         setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
+        setConfigVersion(Version.version());
     }
 
     public Node(String nodeId, String syncURL, String version) {
@@ -144,6 +147,14 @@ public class Node implements Serializable, Comparable<Node> {
     public void setSchemaVersion(String version) {
         // abbreviate because we do not control the version
         this.schemaVersion = StringUtils.abbreviate(version, MAX_VERSION_SIZE);
+    }
+
+    public String getConfigVersion() {
+        return configVersion;
+    }
+
+    public void setConfigVersion(String configVersion) {
+        this.configVersion = configVersion;
     }
 
     public boolean isSyncEnabled() {

@@ -79,7 +79,6 @@ public class SimpleStagingDataWriter {
         IStagedResource resource = null;
         String line = null;
         long startTime = System.currentTimeMillis(), ts = startTime, lineCount = 0;
-
         
         while (reader.readRecord()) {
             line = reader.getRawRecord();
@@ -125,9 +124,9 @@ public class SimpleStagingDataWriter {
                  batch.getBatchId());
                 if (resource == null || resource.getState() == State.DONE) {
                     log.debug("Creating staged resource for batch {}", batch.getNodeBatchId());
-                    resource = stagingManager.create(memoryThresholdInBytes, category, location, batch.getBatchId());
+                    resource = stagingManager.create(category, location, batch.getBatchId());
                 }
-                writer = resource.getWriter();
+                writer = resource.getWriter(memoryThresholdInBytes);
                 writeLine(nodeLine);
                 writeLine(binaryLine);
                 writeLine(channelLine);
@@ -142,7 +141,7 @@ public class SimpleStagingDataWriter {
                 if (writer != null) {
                     writeLine(line);
                     resource.close();
-                    resource.setState(State.READY);
+                    resource.setState(State.DONE);
                     writer = null;
                 }
                 batchTableLines.clear();
@@ -175,7 +174,26 @@ public class SimpleStagingDataWriter {
             } else if (line.startsWith(CsvConstants.CHANNEL)) {
                 channelLine = line;
             } else {
-                int size = line.length();                
+                if (writer == null) {
+                    throw new IllegalStateException("Invalid batch data was received: " + line);
+                }
+                TableLine batchLine = batchTableLines.get(tableLine);
+                if (batchLine == null || (batchLine != null && batchLine.columnsLine == null)) {
+                    TableLine syncLine = syncTableLines.get(tableLine);
+                    if (syncLine != null) {
+                        log.debug("Injecting keys and columns to be backwards compatible");
+                        if (batchLine == null) {
+                            batchLine = syncLine;
+                            batchTableLines.put(batchLine, batchLine);
+                            writeLine(batchLine.tableLine);
+                        }
+                        batchLine.keysLine = syncLine.keysLine;
+                        writeLine(syncLine.keysLine);
+                        batchLine.columnsLine = syncLine.columnsLine;
+                        writeLine(syncLine.columnsLine);
+                    }
+                }
+                int size = line.length();
                 if (size > MAX_WRITE_LENGTH) {
                     log.debug("Exceeded max line length with {}", size);
                     for (int i = 0; i < size; i = i + MAX_WRITE_LENGTH) {

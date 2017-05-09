@@ -208,7 +208,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             SymmetricWebServer webServer = new SymmetricWebServer(chooseWebDir(line, webDir),
                     maxIdleTime, propertiesFile != null ? propertiesFile.getCanonicalPath() : null,
                     true, noNio, noDirectBuffer);
-            if (!isNotBlank(host)) {
+            if (isNotBlank(host)) {
             	webServer.setHost(host);
             }
             webServer.setBasicAuthUsername(httpBasicAuthUser);

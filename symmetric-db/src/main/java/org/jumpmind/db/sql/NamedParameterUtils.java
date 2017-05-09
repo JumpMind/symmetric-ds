@@ -236,7 +236,9 @@ public abstract class NamedParameterUtils {
                     actualSql.append("?");
                 }
             } else {
-                throw new InvalidSqlException("The parameter map passed in did not contain a key for the named parameter %s in the SQL:\n %s" , paramName, originalSql);
+                throw new InvalidSqlException("The parameter map passed in did not contain "
+                        + "a key for the named parameter %s. \nKeys: %s \nSQL: %s", 
+                        paramName, paramSource != null ? paramSource.keySet() : "null", originalSql);
             }
             lastIndex = endIndex;
         }

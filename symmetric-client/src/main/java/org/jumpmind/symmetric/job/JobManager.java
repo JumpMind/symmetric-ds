@@ -27,7 +27,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.JobDefinition;
 import org.jumpmind.symmetric.service.impl.AbstractService;
 import org.slf4j.Logger;
@@ -46,12 +45,13 @@ public class JobManager extends AbstractService implements IJobManager {
     private ISymmetricEngine engine;
     private JobCreator jobCreator = new JobCreator();
     
+    private boolean started = false;
+    
     public JobManager(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         
         this.engine = engine;
 
-        ISymmetricDialect dialect = engine.getSymmetricDialect();
         this.taskScheduler = new ThreadPoolTaskScheduler();
         setSqlMap(new JobManagerSqlMap(engine.getSymmetricDialect().getPlatform(), createSqlReplacementTokens()));        
                 
@@ -92,10 +92,12 @@ public class JobManager extends AbstractService implements IJobManager {
     }
 
     protected List<JobDefinition> loadJobs(ISymmetricEngine engine) {
-        // List<IJob>  jobs = new ArrayList<IJob>();
        return sqlTemplate.query(getSql("loadCustomJobs"), new JobMapper());
-      //  return new ArrayList<JobDefinition>();
-//        return null;
+    }
+    
+    @Override
+    public boolean isStarted() {
+        return started;
     }
 
     @Override
@@ -109,8 +111,7 @@ public class JobManager extends AbstractService implements IJobManager {
     }
     
     /*
-     * Start the jobs if they are configured to be started in
-     * symmetric.properties
+     * Start the jobs if they are configured to be started
      */
     @Override
     public synchronized void startJobs() {
@@ -121,6 +122,7 @@ public class JobManager extends AbstractService implements IJobManager {
                 log.info("Job {} not configured for auto start", job.getName());
             }
         }
+        started = true;
     }
     
 
@@ -150,6 +152,7 @@ public class JobManager extends AbstractService implements IJobManager {
             job.stop();
         }      
         Thread.interrupted();
+        started = false;
     }
     
     @Override

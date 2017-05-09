@@ -138,8 +138,6 @@ public class OutgoingBatch extends AbstractBatch {
         }
     }
 
-
-
     public void setLoadFlag(boolean loadFlag) {
         this.loadFlag = loadFlag;
     }

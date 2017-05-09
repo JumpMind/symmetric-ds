@@ -32,6 +32,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -362,6 +363,49 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 });
     }
 
+    @Override
+    public boolean doesDdlTriggerExist(final String catalogName, final String schema, final String triggerName) {
+        return ((JdbcSqlTemplate) platform.getSqlTemplate())
+                .execute(new IConnectionCallback<Boolean>() {
+                    public Boolean execute(Connection con) throws SQLException {
+                        String previousCatalog = con.getCatalog();
+                        PreparedStatement stmt = con
+                                .prepareStatement("select count(*) from sys.triggers where name = ?");
+                        try {
+                            if (catalogName != null) {
+                                con.setCatalog(catalogName);
+                            }
+                            stmt.setString(1, triggerName);
+                            ResultSet rs = stmt.executeQuery();
+                            if (rs.next()) {
+                                int count = rs.getInt(1);
+                                return count > 0;
+                            }
+                        } finally {
+                            if (catalogName != null) {
+                                con.setCatalog(previousCatalog);
+                            }
+                            stmt.close();
+                        }
+                        return Boolean.FALSE;
+                    }
+                });        
+    }
+
+    @Override
+    public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName) {
+        String sql = "drop trigger " + triggerName + " on database";
+        logSql(sql, sqlBuffer);
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            try {
+                log.info("Removing DDL trigger " + triggerName);
+                this.platform.getSqlTemplate().update(sql);
+            } catch (Exception e) {
+                log.warn("Tried to remove DDL trigger using: {} and failed because: {}", sql, e.getMessage());
+            }
+        }
+    }
+    
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         if (supportsDisableTriggers()) {
             if (nodeId == null) {
@@ -417,4 +461,9 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         return "$(anyNonBlobColumnChanged)";
     }
 
+    @Override
+    public PermissionType[] getSymTablePermissions() {
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER, PermissionType.CREATE_FUNCTION};
+        return permissions;
+    }
 }

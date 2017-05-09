@@ -26,12 +26,14 @@ package org.jumpmind.symmetric.model;
  */
 public enum NodeGroupLinkAction {
     
-    P("pushes to"), W("waits for pull from"), R("only routes to");
+    P("pushes to", "push"), W("waits for pull from", "pull"), R("only routes to", "routes");
     
     private String description;
+    private String shortName;
     
-    NodeGroupLinkAction (String desc) {
+    NodeGroupLinkAction (String desc, String shortName) {
         this.description = desc;
+        this.shortName = shortName;
     }
 
     public static NodeGroupLinkAction fromCode(String code) {
@@ -45,6 +47,23 @@ public enum NodeGroupLinkAction {
             }
         }
         return null;
+    }
+    
+    public static NodeGroupLinkAction fromShortName(String shortName) {
+        if (shortName != null && shortName.length() > 0) {
+            if (P.getShortName().equals(shortName)) {
+                return P;
+            } else if (W.getShortName().equals(shortName)) {
+                return W;
+            } else if (R.getShortName().equals(shortName)) {
+                return R;
+            }
+        }
+        return null;
+    }
+    
+    public String getShortName() {
+        return shortName;
     }
     
     @Override

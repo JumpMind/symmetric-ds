@@ -51,12 +51,8 @@ long SymHttpOutgoingTransport_process(SymHttpOutgoingTransport *this, SymDataPro
     CURLcode rc = CURLE_FAILED_INIT;
     CURL *curl = curl_easy_init();
     if (curl) {
-        if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_VERIFIED_SERVERS, 1)) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
-        }
-        if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_ALLOW_SELF_SIGNED_CERTS, 1)) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-        }
+        SymCurlConfig_configure(curl, this->parameterService);
+
         struct curl_slist *headers = NULL;
         headers = curl_slist_append(headers, "Transfer-Encoding: chunked");
         curl_easy_setopt(curl, CURLOPT_URL, this->url);

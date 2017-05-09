@@ -94,6 +94,18 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 }
             }
         }
+        
+        if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.MYSQL)) {
+            String function = tablePrefix + "_transaction_id_post_5_7_6";
+            String select = "select count(*) from information_schema.routines where routine_name='"
+                    + function + "' and routine_schema in (select database())";
+
+            if (engine.getDatabasePlatform().getSqlTemplate().queryForInt(select) > 0) {
+                String drop = "drop function " + function;
+                engine.getDatabasePlatform().getSqlTemplate().update(drop);
+                log.info("Just uninstalled {}", function);
+            }
+        }
         return sb.toString();
     }
 
@@ -106,6 +118,9 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             engine.getSqlTemplate().update("update  " + tablePrefix + "_" + TableConstants.SYM_CHANNEL +
             		" set max_batch_size = 10000 where reload_flag = 1 and max_batch_size = 10000");
         }
+
+        engine.getPullService().pullConfigData(false);
+
         return sb.toString();
     }
 

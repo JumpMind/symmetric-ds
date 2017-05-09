@@ -48,4 +48,6 @@ public interface IJobManager {
     
     public void removeJob(String name);
     
+    public boolean isStarted();
+    
 }

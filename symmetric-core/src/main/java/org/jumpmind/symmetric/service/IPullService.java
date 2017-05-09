@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service;
 
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
+import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 
 /**
@@ -31,5 +32,7 @@ import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 public interface IPullService extends IOfflineDetectorService {
 
     public RemoteNodeStatuses pullData(boolean force);
+
+    public RemoteNodeStatus pullConfigData(boolean force);
 
 }

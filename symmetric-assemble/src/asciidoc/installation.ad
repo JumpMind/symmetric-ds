@@ -263,8 +263,11 @@ bin/sym_service stop
        
 A single SymmetricDS node may be clustered across a series of instances, creating a web farm.  A node might be clustered to provide load balancing and failover, for example.
 
-When clustered, a hardware load balancer is typically used
-to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.
+When clustered, a hardware load balancer is typically used.  
+
+For clustered nodes running SymmetricDS 3.8 and later the recommended approach is to configure the load balancer to use sticky sessions or ensure the staging directory for all nodes in the cluster are using a shared network drive. 
+
+For clustered nodes running SymmetricDS 3.7 and earlier it is recommended to round robin client requests to the cluster and configure the load balancer for stateless connections.
 
 ifndef::pro[]
 Also, the `sync.url` (discussed in <<Node Properties File>>) SymmetricDS property should be set to the URL of the load balancer.

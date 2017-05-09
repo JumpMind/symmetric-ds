@@ -90,6 +90,7 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         String typeName = (String) values.get("TYPE_NAME");
+        Integer type = (Integer) values.get("DATA_TYPE");
         if ("YEAR".equals(typeName)) {
             // it is safe to map a YEAR to INTEGER
             return Types.INTEGER;
@@ -100,16 +101,24 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
             String collation = platform.getSqlTemplate().queryForString("select collation_name from information_schema.columns " +
                     "where table_schema = ? and table_name = ? and column_name = ?",
                     catalog, tableName, columnName);
-            boolean isBinary = collation != null && collation.equalsIgnoreCase("utf8_bin");
+            
+            String convertTextToLobParm = System.getProperty("mysqlddlreader.converttexttolob",
+                    "true");
+            boolean convertTextToLob = collation != null && collation.endsWith("_bin") && 
+                    convertTextToLobParm.equalsIgnoreCase("true");
 
             if ("LONGTEXT".equals(typeName)) {
-                return isBinary ? Types.BLOB : Types.CLOB;
+                return convertTextToLob ? Types.BLOB : Types.CLOB;
             } else if ("MEDIUMTEXT".equals(typeName)) {
-                return isBinary ? Types.BLOB : Types.LONGVARCHAR;
+                return convertTextToLob ? Types.BLOB : Types.LONGVARCHAR;
+            } else if ("TEXT".equals(typeName)) {
+                return convertTextToLob ? Types.BLOB : Types.LONGVARCHAR;
             } else if ("TINYTEXT".equals(typeName)) {
-                return isBinary ? Types.BLOB : Types.LONGVARCHAR;
+                return convertTextToLob ? Types.BLOB : Types.LONGVARCHAR;
             }
             return super.mapUnknownJdbcTypeForColumn(values);
+        } else if (type != null && type == Types.OTHER) {
+            return Types.LONGVARCHAR;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }

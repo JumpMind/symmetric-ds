@@ -43,11 +43,14 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
     private Map<Batch, IStagedResource> stagedResources = new HashMap<Batch, IStagedResource>();
     
     private long memoryThresholdInBytes;
+    
+    private boolean acquireReference = false;
 
-    public StagingDataWriter(long memoryThresholdInBytes, String sourceNodeId, String category, IStagingManager stagingManager,
+    public StagingDataWriter(long memoryThresholdInBytes, boolean acquireReference, String sourceNodeId, String category, IStagingManager stagingManager,
             IProtocolDataWriterListener... listeners) {
         this(sourceNodeId, category, stagingManager, toList(listeners));
         this.memoryThresholdInBytes = memoryThresholdInBytes;
+        this.acquireReference = acquireReference;
     }
 
     public StagingDataWriter(String sourceNodeId, String category, IStagingManager stagingManager,
@@ -83,7 +86,10 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
             resource = stagingManager.find(category, location, batch.getBatchId());
             if (resource == null || resource.getState() == State.DONE) {
                 log.debug("Creating staged resource for batch {}", batch.getNodeBatchId());
-                resource = stagingManager.create(memoryThresholdInBytes, category, location, batch.getBatchId());
+                resource = stagingManager.create(category, location, batch.getBatchId());
+                if (acquireReference) {
+                    resource.reference();
+                }
             }
             stagedResources.put(batch, resource);
         }
@@ -94,7 +100,6 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
     protected void endBatch(Batch batch) {
         IStagedResource resource = getStagedResource(batch);
         resource.close();
-        resource.setState(State.READY);
         flushNodeId = true;
         processedTables.clear();
         table = null;        
@@ -106,7 +111,7 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
             log.debug("Writing staging data: {}", FormatUtils.abbreviateForLogging(data));
         }
         IStagedResource resource = getStagedResource(batch);
-        BufferedWriter writer = resource.getWriter();
+        BufferedWriter writer = resource.getWriter(memoryThresholdInBytes);
         try {
             int size = data.length();
             for (int i = 0; i < size; i = i + 1024) {

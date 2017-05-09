@@ -35,7 +35,7 @@ ifdef::pro[]
 endif::pro[]
 
 Sync Configuration:: Determines if configuration is also sent through this group link.  By default this is checked and configuration will communicate on this path.  There are configurations that might cause configuration to continuously loop through the network as a result this might need to be unchecked for some links.
-
+Reversible:: Allows the communication link to send in the reverse direction if specified on the channel.  A push link can be overridden to pull and a pull link can be overridden to push using a setting on the channel.
 
 .Sample Group Links
 ====

@@ -45,6 +45,7 @@ typedef struct SymPushService {
     SymParameterService *parameterService;
     SymConfigurationService *configurationService;
     SymAcknowledgeService *acknowledgeService;
+    SymList * (*readAcks)(SymList *batches, SymOutgoingTransport *transport, SymTransportManager *transportManager, SymAcknowledgeService *acknowledgeService);
     SymRemoteNodeStatuses * (*pushData)(struct SymPushService *this);
     void (*destroy)(struct SymPushService *);
 } SymPushService;
