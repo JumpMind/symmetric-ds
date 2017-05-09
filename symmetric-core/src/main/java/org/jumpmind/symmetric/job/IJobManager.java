@@ -46,4 +46,6 @@ public interface IJobManager {
 
     public void saveJob(JobDefinition jobDefinition);
     
+    public void removeJob(String name);
+    
 }

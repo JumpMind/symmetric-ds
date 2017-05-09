@@ -26,32 +26,26 @@ import org.apache.commons.lang.math.NumberUtils;
 
 public class JobDefinition {
     
-    public enum JobType {BUILT_IN, BSH, JAVA}
-    public enum ScheduleType {PERIODIC, CRON}
-    public enum StartupType {AUTOMATIC, MANUAL, DISABLED}
+    public enum JobType {BUILT_IN, BSH, JAVA, SQL}
     
     private String jobName;
-    private String externalId;    
-    private String nodeGroupId;
     private JobType jobType;
-    private ScheduleType scheduleType;
-    private String schedule;
     private boolean requiresRegistration;
     private String jobExpression;
     private String description;
-    private StartupType startupType;
     private String createBy;
     private Date createTime;
     private String lastUpdateBy;
     private Date lastUpdateTime;
+    private boolean automaticStartup;
+    private transient String schedule;
     
-    public void commitChanges() {
-        if (NumberUtils.isNumber(getSchedule())) {
-            setScheduleType(ScheduleType.PERIODIC);
-        } else {                
-//            CronTrigger cronTrigger = new CronTrigger(getSchedule()); // for validation
-            setScheduleType(ScheduleType.CRON);
-        }
+    public boolean isCronSchedule() {
+        return !isPeriodicSchedule();
+    }
+    
+    public boolean isPeriodicSchedule() {
+        return NumberUtils.isDigits(schedule);
     }
     
     public String getJobName() {
@@ -60,35 +54,11 @@ public class JobDefinition {
     public void setJobName(String jobName) {
         this.jobName = jobName;
     }
-    public String getExternalId() {
-        return externalId;
-    }
-    public void setExternalId(String externalId) {
-        this.externalId = externalId;
-    }
-    public String getNodeGroupId() {
-        return nodeGroupId;
-    }
-    public void setNodeGroupId(String nodeGroupId) {
-        this.nodeGroupId = nodeGroupId;
-    }
     public JobType getJobType() {
         return jobType;
     }
     public void setJobType(JobType jobType) {
         this.jobType = jobType;
-    }
-    public ScheduleType getScheduleType() {
-        return scheduleType;
-    }
-    public void setScheduleType(ScheduleType scheduleType) {
-        this.scheduleType = scheduleType;
-    }
-    public String getSchedule() {
-        return schedule;
-    }
-    public void setSchedule(String schedule) {
-        this.schedule = schedule;
     }
     public boolean isRequiresRegistration() {
         return requiresRegistration;
@@ -132,11 +102,39 @@ public class JobDefinition {
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-    public StartupType getStartupType() {
-        return startupType;
+
+    public String getSchedule() {
+        return schedule;
     }
-    public void setStartupType(StartupType startupType) {
-        this.startupType = startupType;
+
+    public void setSchedule(String schedule) {
+        this.schedule = schedule;
     }
-        
+
+    public boolean isAutomaticStartup() {
+        return automaticStartup;
+    }
+
+    public void setAutomaticStartup(boolean automaticStartup) {
+        this.automaticStartup = automaticStartup;
+    }
+    
+    public static String getJobNameParameter(String name) {
+        if (name != null) {            
+            return name.toLowerCase().replace(' ', '.');
+        } else {
+            return null;
+        }
+    }
+    public String getStartParameter() {
+        return String.format("start.%s.job", getJobNameParameter(jobName));
+    }
+    
+    public String getPeriodicParameter() {
+        return String.format("job.%s.period.time.ms", getJobNameParameter(jobName));
+    }
+    
+    public String getCronParameter() {
+        return String.format("job.%s.cron", getJobNameParameter(jobName));
+    }          
 }

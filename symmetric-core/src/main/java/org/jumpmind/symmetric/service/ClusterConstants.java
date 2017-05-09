@@ -26,7 +26,7 @@ package org.jumpmind.symmetric.service;
 public class ClusterConstants {
     
     public static final String STAGE_MANAGEMENT = "Stage Management";
-    public static final String ROUTE = "Route";
+    public static final String ROUTE = "Routing";
     public static final String PUSH = "Push";
     public static final String PULL = "Pull";
     public static final String OFFLINE_PUSH = "Offline Push";
@@ -39,12 +39,12 @@ public class ClusterConstants {
     public static final String PURGE_DATA_GAPS = "Purge Data Gaps";
     public static final String HEARTBEAT = "Heartbeat";
     public static final String INITIAL_LOAD_EXTRACT = "Initial Load Extract";
-    public static final String SYNC_TRIGGERS = "Sync Triggers";
+    public static final String SYNC_TRIGGERS = "SyncTriggers";
     public static final String WATCHDOG = "Watchdog";
-    public static final String STATISTICS = "Statistics";
-    public static final String FILE_SYNC_TRACKER = "File Sync Tracker";
-    public static final String FILE_SYNC_PULL = "File Sync Pull";
-    public static final String FILE_SYNC_PUSH = "File Sync";
+    public static final String STATISTICS = "Stat Flush";
+    public static final String FILE_SYNC_TRACKER = "File Sync Tracker";//
+    public static final String FILE_SYNC_PULL = "File Sync Pull";//
+    public static final String FILE_SYNC_PUSH = "File Sync Push";//
     public static final String MONITOR = "Monitor";
     
     public static final String FILE_SYNC_SCAN = "FILE_SYNC_SCAN";

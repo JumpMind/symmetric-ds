@@ -31,7 +31,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.job.IJob;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.JobDefinition;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -178,7 +177,7 @@ public class AndroidJobManager implements IJobManager {
                         }
                     }
 
-                    if (parameterService.is(ParameterConstants.START_PURGE_JOB)
+                    if (parameterService.is(ParameterConstants.START_PURGE_INCOMING_JOB)
                             && parameterService.getInt("job.purge.period.time.ms") < System
                                     .currentTimeMillis() - lastPurgeTime) {
                         try {
@@ -328,6 +327,31 @@ public class AndroidJobManager implements IJobManager {
         public JobDefinition getJobDefinition() {
             return null;
         }
+
+        @Override
+        public Date getNextExecutionTime() {
+            return null;
+        }
+
+        @Override
+        public boolean isCronSchedule() {
+            return false;
+        }
+
+        @Override
+        public boolean isPeriodicSchedule() {
+            return false;
+        }
+
+        @Override
+        public String getSchedule() {
+            return null;
+        }
+
+        @Override
+        public String getDeprecatedStartParameter() {
+            return null;
+        }
     }
 
     @Override
@@ -343,6 +367,10 @@ public class AndroidJobManager implements IJobManager {
     @Override
     public void saveJob(JobDefinition jobDefinition) {
         // No action on Android
+    }
+
+    @Override
+    public void removeJob(String name) {
     }
 
 }

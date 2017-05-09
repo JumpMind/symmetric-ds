@@ -20,9 +20,6 @@
  */
 package org.jumpmind.symmetric.job;
 
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
-
 public class JobDefaults {
     
     public static final String EVERY_5_MINUTES = "0 0/5 * * * *";
@@ -33,27 +30,21 @@ public class JobDefaults {
     public static final String EVERY_HOUR = "3600000";
     public static final String EVERY_NIGHT_AT_MIDNIGHT = "0 0 0 * * *";
     
-    private ScheduleType scheduleType;
     private String schedule;
-    private StartupType startupType;
     private boolean requiresRegisteration = true;
     private String description;
+    private boolean enabled = true;
     
     public JobDefaults() {}
-
-    public JobDefaults scheduleType(ScheduleType scheduleType) {
-        this.scheduleType = scheduleType;
-        return this;
-    }
 
     public JobDefaults schedule(String schedule) {
         this.schedule = schedule;
         return this;        
     }
-
-    public JobDefaults startupType(StartupType startupType) {
-        this.startupType = startupType;
-        return this;
+    
+    public JobDefaults enabled(boolean enabled) {
+        this.enabled = enabled;
+        return this;        
     }
 
     public JobDefaults requiresRegisteration(boolean requiresRegisteration) {
@@ -66,16 +57,8 @@ public class JobDefaults {
         return this;
     }
 
-    public ScheduleType getScheduleType() {
-        return scheduleType;
-    }
-
     public String getSchedule() {
         return schedule;
-    }
-
-    public StartupType getStartupType() {
-        return startupType;
     }
 
     public boolean isRequiresRegisteration() {
@@ -85,5 +68,28 @@ public class JobDefaults {
     public String getDescription() {
         return description;
     }
+    
+    public boolean isEnabled() {
+        return enabled;
+    }
+    
+    public static String getJobNameParameter(String name) {
+        if (name != null) {            
+            return name.toLowerCase().replace(' ', '.');
+        } else {
+            return null;
+        }
+    }
+    public static String getStartParameter(String name) {
+        return String.format("start.%s.job", getJobNameParameter(name));
+    }
+    
+    public static String getPeriodicParameter(String name) {
+        return String.format("job.%s.period.time.ms", getJobNameParameter(name));
+    }
+    
+    public  static String getCronParameter(String name) {
+        return String.format("job.%s.cron", getJobNameParameter(name));
+    }        
 
 }

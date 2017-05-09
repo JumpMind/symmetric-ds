@@ -24,10 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.JobDefinition;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.jumpmind.symmetric.service.impl.AbstractService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,12 +79,15 @@ public class JobManager extends AbstractService implements IJobManager {
         List<JobDefinition> jobDefitions = loadJobs(engine);
         
         BuiltInJobs builtInJobs = new BuiltInJobs();
-        jobDefitions = builtInJobs.syncBuiltInJobs(jobDefitions, engine, taskScheduler); // TODO save built in hobs
+        jobDefitions = builtInJobs.syncBuiltInJobs(jobDefitions, engine, taskScheduler); // TODO save built in jobs
         
         this.jobs = new ArrayList<IJob>();
         
         for (JobDefinition jobDefinition : jobDefitions) {
-            jobs.add(jobCreator.createJob(jobDefinition, engine, taskScheduler));
+            IJob job = jobCreator.createJob(jobDefinition, engine, taskScheduler);
+            if (job != null) {                
+                jobs.add(job);
+            }
         }
     }
 
@@ -111,8 +115,7 @@ public class JobManager extends AbstractService implements IJobManager {
     @Override
     public synchronized void startJobs() {
         for (IJob job : jobs) {
-            if (isAutoStartConfigured(job) 
-                    && StartupType.AUTOMATIC == job.getJobDefinition().getStartupType()) {
+            if (isAutoStartConfigured(job)) {
                 job.start();
             } else {
                 log.info("Job {} not configured for auto start", job.getName());
@@ -125,7 +128,6 @@ public class JobManager extends AbstractService implements IJobManager {
     public synchronized void startJobsAfterConfigChange() {
         for (IJob job : jobs) {
             if (isAutoStartConfigured(job) 
-                    && StartupType.AUTOMATIC == job.getJobDefinition().getStartupType() 
                     && !job.isStarted()) {
                 job.start();
             }
@@ -133,8 +135,13 @@ public class JobManager extends AbstractService implements IJobManager {
     }
     
     protected boolean isAutoStartConfigured(IJob job) {
-        String key = "start." + job.getName();
-        return engine.getParameterService().is(key, true);
+        String startParameter = job.getJobDefinition().getStartParameter();
+        String autoStartValue = engine.getParameterService().getString(startParameter);
+        if (StringUtils.isEmpty(autoStartValue) && job.getDeprecatedStartParameter() != null) {
+            startParameter = job.getDeprecatedStartParameter();
+        }
+        
+        return engine.getParameterService().is(startParameter, true);
     }
 
     @Override
@@ -160,14 +167,24 @@ public class JobManager extends AbstractService implements IJobManager {
 
     @Override
     public void saveJob(JobDefinition job) {
-        Object[] args = { job.getDescription(), job.getJobType().toString(), job.getSchedule(), 
-                job.getStartupType().toString(), job.getScheduleType().toString(), job.getJobExpression(), 
-                job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
+        Object[] args = { job.getDescription(), job.getJobType().toString(),  
+                job.getJobExpression(), job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
 
         if (sqlTemplate.update(getSql("updateJobSql"), args) == 0) {
             sqlTemplate.update(getSql("insertJobSql"), args);
         } 
         init();
         startJobsAfterConfigChange();
+    }
+    
+    @Override
+    public void removeJob(String name) {
+        Object[] args = { name };
+
+        if (sqlTemplate.update(getSql("deleteJobSql"), args) == 0) {
+            throw new SymmetricException("Failed to remove job " + name + ".  Note that BUILT_IN jobs cannot be removed.");
+        } 
+        init();
+        startJobsAfterConfigChange();        
     }
 }

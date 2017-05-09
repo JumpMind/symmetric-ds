@@ -20,11 +20,10 @@
  */
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.EVERY_5_MINUTES;
+
 import org.jumpmind.symmetric.ISymmetricEngine;
-import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -39,9 +38,8 @@ public class FileSyncTrackerJob extends AbstractJob {
         boolean fileSyncEnabeld = engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE); 
 
         return new JobDefaults()
-                .scheduleType(ScheduleType.CRON)
                 .schedule(EVERY_5_MINUTES)
-                .startupType(fileSyncEnabeld ? StartupType.AUTOMATIC : StartupType.DISABLED)
+                .enabled(fileSyncEnabeld)
                 .description("Check for changes in sync'd files");
     }    
 

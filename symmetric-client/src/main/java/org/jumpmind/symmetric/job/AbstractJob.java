@@ -30,8 +30,6 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.JobDefinition;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.RandomTimeSlot;
@@ -42,6 +40,7 @@ import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 
@@ -77,12 +76,22 @@ abstract public class AbstractJob implements Runnable, IJob {
     private ScheduledFuture<?> scheduledJob;
 
     private RandomTimeSlot randomTimeSlot;
+    
+    private CronTrigger cronTrigger;
+    
+    private Date periodicFirstRunTime;
+    
+    private IParameterService parameterService;
 
-    protected AbstractJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+    public AbstractJob() {
+        
+    }
+    
+    public AbstractJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         this.engine = engine;
         this.taskScheduler = taskScheduler;
         this.jobName = jobName;
-        IParameterService parameterService = engine.getParameterService();
+        this.parameterService = engine.getParameterService();
         this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(),
                 parameterService.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));        
     }
@@ -90,14 +99,15 @@ abstract public class AbstractJob implements Runnable, IJob {
     public void start() {
         if (this.scheduledJob == null && engine != null
                 && !engine.getClusterService().isInfiniteLocked(getName())) {
-            if (jobDefinition.getScheduleType() == ScheduleType.CRON) {
-                String cronExpression = jobDefinition.getSchedule();
+            if (isCronSchedule()) {
+                String cronExpression = getSchedule();
                 log.info("Starting job '{}' with cron expression: '{}'", jobName, cronExpression);
+                cronTrigger = new CronTrigger(cronExpression);
                 try {                    
-                    this.scheduledJob = taskScheduler.schedule(this, new CronTrigger(cronExpression));
+                    this.scheduledJob = taskScheduler.schedule(this, cronTrigger);
                 } catch (Exception ex) {
                     throw new SymmetricException("Failed to schedule job '" + jobName + "' with schedule '" + 
-                            getJobDefinition().getSchedule() + "'", ex);
+                            getSchedule() + "'", ex);
                 }
                 started = true;
             } else {
@@ -106,6 +116,10 @@ abstract public class AbstractJob implements Runnable, IJob {
                     return;
                 }
 
+                if (randomTimeSlot == null) {
+                    this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(),
+                            parameterService.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));
+                }
                 int startDelay = randomTimeSlot.getRandomValueSeededByExternalId();
                 long currentTimeMillis = System.currentTimeMillis();
                 long lastRunTime = currentTimeMillis - timeBetweenRunsInMs;
@@ -116,11 +130,11 @@ abstract public class AbstractJob implements Runnable, IJob {
                         lastRunTime = newRunTime;
                     }
                 }
-                Date firstRun = new Date(lastRunTime + timeBetweenRunsInMs + startDelay);
+                periodicFirstRunTime = new Date(lastRunTime + timeBetweenRunsInMs + startDelay);
                 log.info("Starting {} on periodic schedule: every {}ms with the first run at {}", new Object[] {jobName,
-                        timeBetweenRunsInMs, firstRun});
+                        timeBetweenRunsInMs, periodicFirstRunTime});
                 this.scheduledJob = taskScheduler.scheduleWithFixedDelay(this,
-                        firstRun, timeBetweenRunsInMs);
+                        periodicFirstRunTime, timeBetweenRunsInMs);
                 started = true;
             }
         }
@@ -128,16 +142,19 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     protected long getTimeBetweenRunsInMs() {
         long timeBetweenRunsInMs = -1;
+        String schedule = getSchedule();
+        
         try {
-            timeBetweenRunsInMs = Long.parseLong(jobDefinition.getSchedule());
-            if (timeBetweenRunsInMs <= 0) {
-                log.error("Failed to schedule job '" + jobName + "' because of an invalid schedule '" + 
-                        getJobDefinition().getSchedule() + "'");
-                return -1;
+            if (StringUtils.isEmpty(schedule)) {
+                throw new SymmetricException("Schedule value is not defined for " + jobDefinition.getPeriodicParameter());
             }
-        } catch (NumberFormatException ex) {
-            log.error("Failed to schedule job '" + jobName + "' because of an invalid schedule '" + 
-                    getJobDefinition().getSchedule() + "'", ex);
+            timeBetweenRunsInMs = Long.parseLong(getSchedule());
+            if (timeBetweenRunsInMs <= 0) {
+                throw new SymmetricException("Schedule value must be positive, but was '" + schedule + "'");
+            }
+        } catch (Exception ex) {
+            log.error("Failed to schedule job '" + jobName + "' because of an invalid schedule: '" + 
+                    getSchedule() + "' Check the " + jobDefinition.getPeriodicParameter() + " parameter.", ex);
             return -1;
         }
         return timeBetweenRunsInMs;
@@ -319,6 +336,37 @@ abstract public class AbstractJob implements Runnable, IJob {
     public long getTotalExecutionTimeInMs() {
         return totalExecutionTimeInMs;
     }
+    
+    @Override
+    public Date getNextExecutionTime() {
+        if (isCronSchedule() && cronTrigger != null) {
+            return cronTrigger.nextExecutionTime(new TriggerContext() {
+                
+                @Override
+                public Date lastScheduledExecutionTime() {
+                    return null;
+                }
+                
+                @Override
+                public Date lastCompletionTime() {
+                    return getLastFinishTime();
+                }
+                
+                @Override
+                public Date lastActualExecutionTime() {
+                    return null;
+                }
+            });
+        } else if (isPeriodicSchedule() ) {
+            if (getLastFinishTime() != null) {
+                return new Date(getLastFinishTime().getTime() + getTimeBetweenRunsInMs());
+            } else if (periodicFirstRunTime != null) {
+                return new Date(periodicFirstRunTime.getTime() + getTimeBetweenRunsInMs());
+            } 
+        }
+        return null;
+        
+    }
 
     @Override
     @ManagedMetric(description = "The total amount of time this job has spend in execution during the lifetime of the JVM")
@@ -329,13 +377,27 @@ abstract public class AbstractJob implements Runnable, IJob {
             return 0;
         }
     }
-
-    public abstract JobDefaults getDefaults();
-
-    public StartupType getStartupType() {
-        // TODO check override parameters...
-        return jobDefinition.getStartupType();
+    
+    public boolean isCronSchedule() {
+        String cronSchedule = parameterService.getString(jobDefinition.getCronParameter());
+        return !StringUtils.isEmpty(cronSchedule);
     }
+    
+    public boolean isPeriodicSchedule() {
+        return !isCronSchedule();
+    }
+    
+    public String getSchedule() {
+        String cronSchedule = parameterService.getString(jobDefinition.getCronParameter());
+        if (!StringUtils.isEmpty(cronSchedule)) {
+            return cronSchedule;
+        } else {
+            String periodicSchedule = parameterService.getString(jobDefinition.getPeriodicParameter());
+            return periodicSchedule;            
+        }
+    }
+    
+    public abstract JobDefaults getDefaults();
 
     public ISymmetricEngine getEngine() {
         return engine;
@@ -359,5 +421,18 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     public void setTaskScheduler(ThreadPoolTaskScheduler taskScheduler) {
         this.taskScheduler = taskScheduler;
+    }
+    
+    @Override
+    public String getDeprecatedStartParameter() {
+        return null;
+    }
+
+    public IParameterService getParameterService() {
+        return parameterService;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 }

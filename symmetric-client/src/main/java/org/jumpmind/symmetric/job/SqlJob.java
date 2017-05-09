@@ -20,36 +20,37 @@
  */
 package org.jumpmind.symmetric.job;
 
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.JobDefinition.JobType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import bsh.Interpreter;
-
-public class BshJob extends AbstractJob {
-
-    public BshJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+public class SqlJob extends AbstractJob {
+    
+    static final boolean AUTO_COMMIT = true;
+    
+    public SqlJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(jobName, engine, taskScheduler);
     }
     
     public JobType getJobType() {
-        return JobType.BSH;
+        return JobType.SQL;
     }
 
     @Override
-    public void doJob(boolean force) throws Exception {
+    protected void doJob(boolean force) throws Exception {
         try {            
-            Interpreter interpreter = new Interpreter();
-            interpreter.set("engine", engine);
-            interpreter.set("sqlTemplate", engine.getDatabasePlatform().getSqlTemplate());
-            interpreter.set("log", log);
-            if (getJobDefinition().getJobExpression() != null) {                
-                interpreter.eval(getJobDefinition().getJobExpression());
+            if (getJobDefinition().getJobExpression() != null) {        
+                ISqlTemplate sqlTemplate = engine.getDatabasePlatform().getSqlTemplate();
+                SqlScript script = new SqlScript(getJobDefinition().getJobExpression(), sqlTemplate, true, null);
+                script.execute(AUTO_COMMIT);
             }
         } catch (Exception ex) {
-            log.error("Exception during bsh job '" + this.getName() + "'\n" + getJobDefinition().getJobExpression(), ex);
-        }
+            log.error("Exception during sql job '" + this.getName() + "'\n" + getJobDefinition().getJobExpression(), ex);
+        }   
     }
+
 
     @Override
     public JobDefaults getDefaults() {

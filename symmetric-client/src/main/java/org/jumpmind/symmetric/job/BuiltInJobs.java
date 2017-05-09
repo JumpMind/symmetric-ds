@@ -24,36 +24,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.JobDefinition;
 import org.jumpmind.symmetric.model.JobDefinition.JobType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class BuiltInJobs {
-
-//    public List<IJob> loadAndSyncBuiltInJobs(ISqlTemplate sqlTemplate, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-//        List<IJob> jobTemplates = getBuiltInJobs(engine, taskScheduler);
-//        List<IJob> jobRows = getBuiltInJobsFromDb(sqlTemplate);
-//        return null;
-//    }
     
     public List<JobDefinition> syncBuiltInJobs(List<JobDefinition> existingJobs, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         List<IJob> builtInJobs = getBuiltInJobs(engine, taskScheduler);
-        List<JobDefinition> builtInJobDefs = new ArrayList<JobDefinition>(builtInJobs.size());
         
         for (IJob job : builtInJobs) {
-            // TODO, should use from the DB.
             existingJobs.add(job.getJobDefinition());
         }
         
         return existingJobs;
     }
-    
-//    public List<IJob> 
-//    
-//    private List<IJob> getBuiltInJobsFromDb(ISqlTemplate sqlTemplate) {
-//        return null;
-//    }
 
     public List<IJob> getBuiltInJobs(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         List<IJob> builtInJobs = new ArrayList<IJob>(20);
@@ -92,14 +77,9 @@ public class BuiltInJobs {
         jobDefinition.setJobName(builtInJob.getName());
         jobDefinition.setDescription(builtInJob.getDefaults().getDescription());
         jobDefinition.setRequiresRegistration(builtInJob.getDefaults().isRequiresRegisteration());
-        jobDefinition.setExternalId(ParameterConstants.ALL);
-        jobDefinition.setNodeGroupId(ParameterConstants.ALL);
         jobDefinition.setJobType(JobType.BUILT_IN);
-        jobDefinition.setStartupType(builtInJob.getDefaults().getStartupType());
         jobDefinition.setJobExpression(argBuiltInJob.getClass().getName());
         jobDefinition.setCreateBy("SymmetricDS");
-        jobDefinition.setScheduleType(builtInJob.getDefaults().getScheduleType());
-        jobDefinition.setSchedule(builtInJob.getDefaults().getSchedule());
         builtInJob.setJobDefinition(jobDefinition);
     }    
 }

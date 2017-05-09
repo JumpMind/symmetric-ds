@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.service.impl.AbstractSqlMap;
-
 public class JobManagerSqlMap extends AbstractSqlMap {
 
     public JobManagerSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
@@ -33,13 +32,14 @@ public class JobManagerSqlMap extends AbstractSqlMap {
         putSql("loadCustomJobs",
                 "select * from $(job) order by job_name");
         
-        putSql("insertJobSql", "insert into $(job) (external_id, node_group_id, description, job_type, schedule, startup_type, schedule_type, job_expression, create_by, create_time, "
+        putSql("insertJobSql", "insert into $(job) (description, job_type, job_expression, create_by, create_time, "
                 + "last_update_by, last_update_time, job_name) " +
-                "values ('ALL', 'ALL', ?, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?)");
+                "values (?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?)");
         
-        putSql("updateJobSql", "update $(job) set description = ?, job_type = ?, " +
-                "schedule = ?, startup_type = ?, schedule_type = ?, job_expression = ?, create_by = ?, last_update_by = ?, " +
-                "last_update_time = current_timestamp where job_name = ?");        
+        putSql("updateJobSql", "update $(job) set description = ?, job_type = ?, job_expression = ?, "
+                + "create_by = ?, last_update_by = ?, last_update_time = current_timestamp where job_name = ?");
+        
+        putSql("deleteJobSql", "delete from $(job) where job_name = ? and job_type <> 'BUILT_IN'");        
     }
 
 }
