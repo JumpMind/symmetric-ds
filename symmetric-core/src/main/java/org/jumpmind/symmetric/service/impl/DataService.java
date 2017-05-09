@@ -508,7 +508,7 @@ public class DataService extends AbstractService implements IDataService {
                         close(transaction);
                     }
 
-                    if (!reverse) {
+                    if (!reverse && isFullLoad) {
                         /*
                          * Remove all incoming events for the node that we are
                          * starting a reload for
@@ -631,7 +631,13 @@ public class DataService extends AbstractService implements IDataService {
                     List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                             .getTriggerHistoryId());
                     for (TriggerRouter triggerRouter : triggerRouters) {
-                        TableReloadRequest currentRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
+                        String lookupName = triggerRouter.getTriggerId() + triggerRouter.getRouterId();
+                        TableReloadRequest currentRequest = reloadRequests.get(lookupName);
+                        if(currentRequest == null){
+                            log.info("Could not find valid reload request for '" + lookupName + "' trigger/router combination");
+                            continue;
+                        }
+
                         beforeSql = currentRequest.getBeforeCustomSql();
                         
                         if (isNotBlank(beforeSql)) {
