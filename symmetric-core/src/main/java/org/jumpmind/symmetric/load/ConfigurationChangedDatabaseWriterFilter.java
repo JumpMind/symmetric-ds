@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -207,9 +208,14 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     }
 
     private void recordNodeFlushNeeded(DataContext context, Table table, CsvData data) {
-        if (data.getDataEventType() == DataEventType.INSERT 
-                && matchesTable(table, TableConstants.SYM_NODE)) {
-            context.put(CTX_KEY_FLUSH_NODE_NEEDED, true);
+        if (matchesTable(table, TableConstants.SYM_NODE) && 
+                context.getBatch().getBatchId() != Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
+            Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+            String nodeId = newData.get("NODE_ID");
+            Node node = engine.getNodeService().findNodeInCacheOnly(nodeId);
+            if (node == null || data.getDataEventType() == DataEventType.INSERT || !node.isSyncEnabled()) {
+                context.put(CTX_KEY_FLUSH_NODE_NEEDED, true);
+            }
         }
     }
 
@@ -372,6 +378,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         if (context.get(CTX_KEY_FLUSH_NODE_NEEDED) != null) {
             log.info("About to refresh the cache of nodes because new configuration came through the data loader");
             nodeService.flushNodeCache();
+            nodeService.flushNodeGroupCache();
             context.remove(CTX_KEY_FLUSH_NODE_NEEDED);
         }    
 

@@ -140,6 +140,11 @@ public class MockNodeService implements INodeService {
     public Node findNode(String nodeId) {
         return null;
     }
+    
+    @Override
+    public Node findNodeInCacheOnly(String id) {
+        return null;
+    }
 
     public Node findNodeByExternalId(String nodeGroupId, String externalId) {
         return null;
