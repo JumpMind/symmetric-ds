@@ -46,6 +46,8 @@ public interface INodeService {
     
     public Node findNode(String id, boolean useCache);
     
+    public Node findNodeInCacheOnly(String id);
+    
     public String getExternalId(String nodeId);
 
     public List<NodeHost> findNodeHosts(String nodeId);
