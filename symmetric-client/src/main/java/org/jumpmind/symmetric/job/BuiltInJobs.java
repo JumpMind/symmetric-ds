@@ -79,6 +79,7 @@ public class BuiltInJobs {
         jobDefinition.setRequiresRegistration(builtInJob.getDefaults().isRequiresRegisteration());
         jobDefinition.setJobType(JobType.BUILT_IN);
         jobDefinition.setJobExpression(argBuiltInJob.getClass().getName());
+        jobDefinition.setNodeGroupId("ALL");
         jobDefinition.setCreateBy("SymmetricDS");
         builtInJob.setJobDefinition(jobDefinition);
     }    

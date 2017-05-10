@@ -50,4 +50,6 @@ public interface IJobManager {
     
     public boolean isStarted();
     
+    public boolean isJobApplicableToNodeGroup(IJob job);
+    
 }

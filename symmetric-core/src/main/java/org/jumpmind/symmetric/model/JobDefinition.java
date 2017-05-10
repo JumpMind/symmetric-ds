@@ -39,6 +39,7 @@ public class JobDefinition {
     private Date lastUpdateTime;
     private boolean defaultAutomaticStartup;
     private String defaultSchedule;
+    private String nodeGroupId;
     private transient boolean automaticStartup;
     private transient String schedule;
     
@@ -119,6 +120,14 @@ public class JobDefinition {
 
     public void setDefaultSchedule(String defaultSchedule) {
         this.defaultSchedule = defaultSchedule;
+    }
+
+    public String getNodeGroupId() {
+        return nodeGroupId;
+    }
+
+    public void setNodeGroupId(String nodeGroupId) {
+        this.nodeGroupId = nodeGroupId;
     }
 
     public String getSchedule() {

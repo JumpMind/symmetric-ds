@@ -119,7 +119,7 @@ public class JobManager extends AbstractService implements IJobManager {
     @Override
     public synchronized void startJobs() {
         for (IJob job : jobs) {
-            if (isAutoStartConfigured(job)) {
+            if (isAutoStartConfigured(job) && isJobApplicableToNodeGroup(job)) {
                 job.start();
             } else {
                 log.info("Job {} not configured for auto start", job.getName());
@@ -128,6 +128,15 @@ public class JobManager extends AbstractService implements IJobManager {
         started = true;
     }
     
+    @Override
+    public boolean isJobApplicableToNodeGroup(IJob job) {
+        String nodeGroupId = job.getJobDefinition().getNodeGroupId();
+        if (StringUtils.isEmpty(nodeGroupId) || nodeGroupId.equals("ALL")) {
+            return true;
+        }
+
+        return engine.getParameterService().getNodeGroupId().equals(nodeGroupId);
+    }
 
     @Override
     public synchronized void startJobsAfterConfigChange() {
@@ -202,7 +211,7 @@ public class JobManager extends AbstractService implements IJobManager {
     public void saveJob(JobDefinition job) {
         Object[] args = { job.getDescription(), job.getJobType().toString(),  
                 job.getJobExpression(), job.isDefaultAutomaticStartup(), job.getDefaultSchedule(), 
-                job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
+                job.getNodeGroupId(), job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
 
         if (sqlTemplate.update(getSql("updateJobSql"), args) == 0) {
             sqlTemplate.update(getSql("insertJobSql"), args);
