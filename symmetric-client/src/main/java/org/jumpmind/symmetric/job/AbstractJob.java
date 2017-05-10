@@ -391,10 +391,13 @@ abstract public class AbstractJob implements Runnable, IJob {
         String cronSchedule = parameterService.getString(jobDefinition.getCronParameter());
         if (!StringUtils.isEmpty(cronSchedule)) {
             return cronSchedule;
-        } else {
-            String periodicSchedule = parameterService.getString(jobDefinition.getPeriodicParameter());
+        } 
+        String periodicSchedule = parameterService.getString(jobDefinition.getPeriodicParameter());
+        if (!StringUtils.isEmpty(periodicSchedule)) {
             return periodicSchedule;            
         }
+        
+        return jobDefinition.getDefaultSchedule();
     }
     
     public abstract JobDefaults getDefaults();

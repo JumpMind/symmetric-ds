@@ -35,6 +35,9 @@ public class JobMapper implements ISqlRowMapper<JobDefinition> {
         jobDefinition.setRequiresRegistration(row.getBoolean("requires_registration"));
         jobDefinition.setJobExpression(row.getString("job_expression"));
         jobDefinition.setDescription(row.getString("description"));
+        jobDefinition.setDefaultAutomaticStartup(row.getBoolean("default_auto_start"));
+        jobDefinition.setDefaultSchedule(row.getString("default_schedule"));
+        jobDefinition.setDescription(row.getString("description"));
         jobDefinition.setCreateBy(row.getString("create_by"));
         jobDefinition.setCreateTime(row.getDateTime("create_time"));
         jobDefinition.setLastUpdateBy(row.getString("last_update_by"));

@@ -21,6 +21,8 @@
 package org.jumpmind.symmetric.job;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +62,7 @@ public class JobManager extends AbstractService implements IJobManager {
         this.taskScheduler.initialize();    
     }
     
+    @Override
     protected Map<String, String> createSqlReplacementTokens() {
         Map<String, String> replacementTokens = createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
                 .getDatabaseInfo().getDelimiterToken());
@@ -137,14 +140,21 @@ public class JobManager extends AbstractService implements IJobManager {
     }
     
     protected boolean isAutoStartConfigured(IJob job) {
-        String startParameter = job.getJobDefinition().getStartParameter();
-        String autoStartValue = engine.getParameterService().getString(startParameter);
-        if (StringUtils.isEmpty(autoStartValue) && job.getDeprecatedStartParameter() != null) {
-            startParameter = job.getDeprecatedStartParameter();
+        String autoStartValue = null;
+        
+        if (job.getDeprecatedStartParameter() != null) {            
+            autoStartValue = engine.getParameterService().getString(job.getDeprecatedStartParameter());
         }
         
-        return engine.getParameterService().is(startParameter, true);
-    }
+        if (StringUtils.isEmpty(autoStartValue)) {
+            autoStartValue = engine.getParameterService().getString(job.getJobDefinition().getStartParameter());
+            if (StringUtils.isEmpty(autoStartValue)) {
+                autoStartValue = String.valueOf(job.getJobDefinition().isDefaultAutomaticStartup());
+            }
+        }
+        
+        return "1".equals(autoStartValue) || Boolean.parseBoolean(autoStartValue);
+     }
 
     @Override
     public synchronized void stopJobs() {
@@ -165,13 +175,34 @@ public class JobManager extends AbstractService implements IJobManager {
 
     @Override
     public List<IJob> getJobs() {
-        return jobs;
+        List<IJob> sortedJobs = sortJobs(jobs);
+        return sortedJobs;
+    }
+    
+    protected List<IJob> sortJobs(List<IJob> jobs) {
+        List<IJob> jobsSorted = new ArrayList<IJob>(jobs);
+        
+        Collections.sort(jobsSorted, new Comparator<IJob>() {
+            @Override
+            public int compare(IJob job1, IJob job2) {
+                Integer job1Started = job1.isStarted() ? 1 : 0;
+                Integer job2Started = job2.isStarted() ? 1 : 0;
+                if (job1Started == job2Started) {
+                    return -job1.getJobDefinition().getJobType().compareTo(job2.getJobDefinition().getJobType());
+                } else {                    
+                    return -job1Started.compareTo(job2Started);
+                }
+            }
+        });
+        
+        return jobsSorted;
     }
 
     @Override
     public void saveJob(JobDefinition job) {
         Object[] args = { job.getDescription(), job.getJobType().toString(),  
-                job.getJobExpression(), job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
+                job.getJobExpression(), job.isDefaultAutomaticStartup(), job.getDefaultSchedule(), 
+                job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
 
         if (sqlTemplate.update(getSql("updateJobSql"), args) == 0) {
             sqlTemplate.update(getSql("insertJobSql"), args);
@@ -184,9 +215,11 @@ public class JobManager extends AbstractService implements IJobManager {
     public void removeJob(String name) {
         Object[] args = { name };
 
-        if (sqlTemplate.update(getSql("deleteJobSql"), args) == 0) {
+        if (sqlTemplate.update(getSql("deleteJobSql"), args) == 1) {
+            
+        }  else {            
             throw new SymmetricException("Failed to remove job " + name + ".  Note that BUILT_IN jobs cannot be removed.");
-        } 
+        }
         init();
         startJobsAfterConfigChange();        
     }

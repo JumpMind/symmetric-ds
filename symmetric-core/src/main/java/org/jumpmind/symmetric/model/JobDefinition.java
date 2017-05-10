@@ -37,7 +37,9 @@ public class JobDefinition {
     private Date createTime;
     private String lastUpdateBy;
     private Date lastUpdateTime;
-    private boolean automaticStartup;
+    private boolean defaultAutomaticStartup;
+    private String defaultSchedule;
+    private transient boolean automaticStartup;
     private transient String schedule;
     
     public boolean isCronSchedule() {
@@ -101,6 +103,22 @@ public class JobDefinition {
     }
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public boolean isDefaultAutomaticStartup() {
+        return defaultAutomaticStartup;
+    }
+
+    public void setDefaultAutomaticStartup(boolean defaultAutomaticStartup) {
+        this.defaultAutomaticStartup = defaultAutomaticStartup;
+    }
+
+    public String getDefaultSchedule() {
+        return defaultSchedule;
+    }
+
+    public void setDefaultSchedule(String defaultSchedule) {
+        this.defaultSchedule = defaultSchedule;
     }
 
     public String getSchedule() {

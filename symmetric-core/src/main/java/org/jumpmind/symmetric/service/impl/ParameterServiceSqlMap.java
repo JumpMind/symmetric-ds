@@ -56,6 +56,8 @@ public class ParameterServiceSqlMap extends AbstractSqlMap {
 "delete from $(parameter) where external_id=? and   " + 
 "  node_group_id=? and param_key=?                             " );
         
+        putSql("deleteParameterByKeySql", "delete from $(parameter) where param_key=?" );
+        
         putSql("selectMaxLastUpdateTime" ,"" + 
 "select max(last_update_time) from $(parameter) where last_update_time is not null" );        
 
