@@ -63,6 +63,8 @@ public class StatisticManager implements IStatisticManager {
 
     private Map<String, ChannelStats> channelStats = new ConcurrentHashMap<String, ChannelStats>();
 
+    private Map<Date, Map<String, ChannelStats>> channelStatsInMemory = new HashMap<Date, Map<String, ChannelStats>>();
+
     private List<JobStats> jobStats = new ArrayList<JobStats>();
 
     private HostStats hostStats;
@@ -466,8 +468,13 @@ public class StatisticManager implements IStatisticManager {
                             }
                         }
                         stats.setEndTime(endTime);
+                        if (channelStatsInMemory.get(stats.getStartTime()) == null) {
+                            channelStatsInMemory.put(stats.getStartTime(), new HashMap<String, ChannelStats>());
+                        }
+                        //channelStatsInMemory.put(stats.getStartTime(), stats)
                         statisticService.save(stats);
                     }
+                    
                 }
                 resetChannelStats(true);
             } finally {
