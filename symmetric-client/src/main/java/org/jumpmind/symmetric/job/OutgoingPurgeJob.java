@@ -24,8 +24,7 @@ package org.jumpmind.symmetric.job;
 import static org.jumpmind.symmetric.job.JobDefaults.EVERY_NIGHT_AT_MIDNIGHT;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -41,9 +40,7 @@ public class OutgoingPurgeJob extends AbstractJob {
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
-                .scheduleType(ScheduleType.CRON)
                 .schedule(EVERY_NIGHT_AT_MIDNIGHT)
-                .startupType(StartupType.AUTOMATIC)
                 .description("Purge sync'd outgoing data");
     }    
         
@@ -51,5 +48,11 @@ public class OutgoingPurgeJob extends AbstractJob {
     public void doJob(boolean force) throws Exception {
         engine.getPurgeService().purgeOutgoing(force);        
     }
+    
+    @Override
+    public String getDeprecatedStartParameter() {
+        return ParameterConstants.START_PURGE_JOB_38;
+    }
+        
     
 }

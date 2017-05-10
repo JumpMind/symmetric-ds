@@ -35,9 +35,12 @@ public class JobCreator {
         AbstractJob job = null;
         if (jobDefinition.getJobType() == JobType.BSH) {
             job = new BshJob(jobDefinition.getJobName(), engine, taskScheduler);
-        } else if (jobDefinition.getJobType() == JobType.JAVA
-                || jobDefinition.getJobType() == JobType.BUILT_IN) {
+        } else if (jobDefinition.getJobType() == JobType.SQL) {
+            job = new SqlJob(jobDefinition.getJobName(), engine, taskScheduler);
+        } else if (jobDefinition.getJobType() == JobType.BUILT_IN) {
             job = instantiateJavaJob(jobDefinition, engine, taskScheduler);
+        } else if (jobDefinition.getJobType() == JobType.JAVA) {
+            job = new JavaJob(jobDefinition.getJobName(), engine, taskScheduler);
         } else {
             throw new SymmetricException("Unknown job type " + jobDefinition.getJobType());
         }
@@ -45,7 +48,7 @@ public class JobCreator {
         job.setJobDefinition(jobDefinition); 
         return job;
     }
-
+    
     protected AbstractJob instantiateJavaJob(JobDefinition jobDefinition, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         String className = jobDefinition.getJobExpression();
         

@@ -24,8 +24,6 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.model.JobDefinition;
 import org.jumpmind.symmetric.model.JobDefinition.JobType;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 
 public class JobMapper implements ISqlRowMapper<JobDefinition> {
 
@@ -33,15 +31,14 @@ public class JobMapper implements ISqlRowMapper<JobDefinition> {
     public JobDefinition mapRow(Row row) {
         JobDefinition jobDefinition = new JobDefinition();
         jobDefinition.setJobName(row.getString("job_name"));
-        jobDefinition.setExternalId(row.getString("external_id"));
-        jobDefinition.setNodeGroupId(row.getString("node_group_id"));
         jobDefinition.setJobType(JobType.valueOf(row.getString("job_type")));
-        jobDefinition.setStartupType(StartupType.valueOf(row.getString("startup_type")));
-        jobDefinition.setScheduleType(ScheduleType.valueOf(row.getString("schedule_type")));
-        jobDefinition.setSchedule(row.getString("schedule"));
         jobDefinition.setRequiresRegistration(row.getBoolean("requires_registration"));
         jobDefinition.setJobExpression(row.getString("job_expression"));
         jobDefinition.setDescription(row.getString("description"));
+        jobDefinition.setDefaultAutomaticStartup(row.getBoolean("default_auto_start"));
+        jobDefinition.setDefaultSchedule(row.getString("default_schedule"));
+        jobDefinition.setDescription(row.getString("description"));
+        jobDefinition.setNodeGroupId(row.getString("node_group_id"));
         jobDefinition.setCreateBy(row.getString("create_by"));
         jobDefinition.setCreateTime(row.getDateTime("create_time"));
         jobDefinition.setLastUpdateBy(row.getString("last_update_by"));

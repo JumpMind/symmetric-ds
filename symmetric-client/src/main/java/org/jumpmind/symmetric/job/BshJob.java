@@ -47,7 +47,7 @@ public class BshJob extends AbstractJob {
                 interpreter.eval(getJobDefinition().getJobExpression());
             }
         } catch (Exception ex) {
-            log.error("Exception during bsh job '" + this.getName() + "'", ex);
+            log.error("Exception during bsh job '" + this.getName() + "'\n" + getJobDefinition().getJobExpression(), ex);
         }
     }
 

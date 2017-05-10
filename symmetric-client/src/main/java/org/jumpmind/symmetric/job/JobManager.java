@@ -21,12 +21,15 @@
 package org.jumpmind.symmetric.job;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.model.JobDefinition;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.jumpmind.symmetric.service.impl.AbstractService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +62,7 @@ public class JobManager extends AbstractService implements IJobManager {
         this.taskScheduler.initialize();    
     }
     
+    @Override
     protected Map<String, String> createSqlReplacementTokens() {
         Map<String, String> replacementTokens = createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
                 .getDatabaseInfo().getDelimiterToken());
@@ -83,7 +87,10 @@ public class JobManager extends AbstractService implements IJobManager {
         this.jobs = new ArrayList<IJob>();
         
         for (JobDefinition jobDefinition : jobDefitions) {
-            jobs.add(jobCreator.createJob(jobDefinition, engine, taskScheduler));
+            IJob job = jobCreator.createJob(jobDefinition, engine, taskScheduler);
+            if (job != null) {                
+                jobs.add(job);
+            }
         }
     }
 
@@ -112,8 +119,7 @@ public class JobManager extends AbstractService implements IJobManager {
     @Override
     public synchronized void startJobs() {
         for (IJob job : jobs) {
-            if (isAutoStartConfigured(job) 
-                    && StartupType.AUTOMATIC == job.getJobDefinition().getStartupType()) {
+            if (isAutoStartConfigured(job) && isJobApplicableToNodeGroup(job)) {
                 job.start();
             } else {
                 log.info("Job {} not configured for auto start", job.getName());
@@ -122,12 +128,20 @@ public class JobManager extends AbstractService implements IJobManager {
         started = true;
     }
     
+    @Override
+    public boolean isJobApplicableToNodeGroup(IJob job) {
+        String nodeGroupId = job.getJobDefinition().getNodeGroupId();
+        if (StringUtils.isEmpty(nodeGroupId) || nodeGroupId.equals("ALL")) {
+            return true;
+        }
+
+        return engine.getParameterService().getNodeGroupId().equals(nodeGroupId);
+    }
 
     @Override
     public synchronized void startJobsAfterConfigChange() {
         for (IJob job : jobs) {
             if (isAutoStartConfigured(job) 
-                    && StartupType.AUTOMATIC == job.getJobDefinition().getStartupType() 
                     && !job.isStarted()) {
                 job.start();
             }
@@ -135,9 +149,21 @@ public class JobManager extends AbstractService implements IJobManager {
     }
     
     protected boolean isAutoStartConfigured(IJob job) {
-        String key = "start." + job.getName();
-        return engine.getParameterService().is(key, true);
-    }
+        String autoStartValue = null;
+        
+        if (job.getDeprecatedStartParameter() != null) {            
+            autoStartValue = engine.getParameterService().getString(job.getDeprecatedStartParameter());
+        }
+        
+        if (StringUtils.isEmpty(autoStartValue)) {
+            autoStartValue = engine.getParameterService().getString(job.getJobDefinition().getStartParameter());
+            if (StringUtils.isEmpty(autoStartValue)) {
+                autoStartValue = String.valueOf(job.getJobDefinition().isDefaultAutomaticStartup());
+            }
+        }
+        
+        return "1".equals(autoStartValue) || Boolean.parseBoolean(autoStartValue);
+     }
 
     @Override
     public synchronized void stopJobs() {
@@ -158,19 +184,52 @@ public class JobManager extends AbstractService implements IJobManager {
 
     @Override
     public List<IJob> getJobs() {
-        return jobs;
+        List<IJob> sortedJobs = sortJobs(jobs);
+        return sortedJobs;
+    }
+    
+    protected List<IJob> sortJobs(List<IJob> jobs) {
+        List<IJob> jobsSorted = new ArrayList<IJob>(jobs);
+        
+        Collections.sort(jobsSorted, new Comparator<IJob>() {
+            @Override
+            public int compare(IJob job1, IJob job2) {
+                Integer job1Started = job1.isStarted() ? 1 : 0;
+                Integer job2Started = job2.isStarted() ? 1 : 0;
+                if (job1Started == job2Started) {
+                    return -job1.getJobDefinition().getJobType().compareTo(job2.getJobDefinition().getJobType());
+                } else {                    
+                    return -job1Started.compareTo(job2Started);
+                }
+            }
+        });
+        
+        return jobsSorted;
     }
 
     @Override
     public void saveJob(JobDefinition job) {
-        Object[] args = { job.getDescription(), job.getJobType().toString(), job.getSchedule(), 
-                job.getStartupType().toString(), job.getScheduleType().toString(), job.getJobExpression(), 
-                job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
+        Object[] args = { job.getDescription(), job.getJobType().toString(),  
+                job.getJobExpression(), job.isDefaultAutomaticStartup(), job.getDefaultSchedule(), 
+                job.getNodeGroupId(), job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
 
         if (sqlTemplate.update(getSql("updateJobSql"), args) == 0) {
             sqlTemplate.update(getSql("insertJobSql"), args);
         } 
         init();
         startJobsAfterConfigChange();
+    }
+    
+    @Override
+    public void removeJob(String name) {
+        Object[] args = { name };
+
+        if (sqlTemplate.update(getSql("deleteJobSql"), args) == 1) {
+            
+        }  else {            
+            throw new SymmetricException("Failed to remove job " + name + ".  Note that BUILT_IN jobs cannot be removed.");
+        }
+        init();
+        startJobsAfterConfigChange();        
     }
 }

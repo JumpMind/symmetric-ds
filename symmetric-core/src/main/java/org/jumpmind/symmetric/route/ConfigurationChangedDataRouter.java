@@ -95,6 +95,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     
     final String CTX_KEY_FLUSHED_TRIGGER_ROUTERS = "FlushedTriggerRouters."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+    
+    final String CTX_KEY_FLUSH_JOBS_NEEDED = "FlushJobs."
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();    
 
     public final static String KEY = "symconfig";
 
@@ -237,6 +240,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 
                 if (tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)) {
                     routingContext.put(CTX_KEY_FLUSH_NOTIFICATIONS_NEEDED, Boolean.TRUE);
+                }
+                
+                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)) {
+                    routingContext.put(CTX_KEY_FLUSH_JOBS_NEEDED, Boolean.TRUE);
                 }
             }
         }
@@ -611,6 +618,12 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             if (routingContext.get(CTX_KEY_FLUSH_NOTIFICATIONS_NEEDED) != null) {
                 log.info("About to refresh the cache of notifications because new configuration came through the data router");
                 engine.getMonitorService().flushNotificationCache();
+            }
+            
+            if (routingContext.get(CTX_KEY_FLUSH_JOBS_NEEDED) != null) {
+                log.info("About to reset the job manager because new configuration came through the data router");
+                engine.getJobManager().init();
+                engine.getJobManager().startJobs();
             }
             
             if (routingContext.get(CTX_KEY_FLUSH_NODES_NEEDED) != null) {

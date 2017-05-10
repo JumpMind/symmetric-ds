@@ -548,7 +548,7 @@ public class SnapshotUtil {
                 if (lock != null) {
                     lastServerId = lock.getLastLockingServerId();
                 }
-                String schedule = job.getJobDefinition().getSchedule();
+                String schedule = job.getSchedule();
                 String lastFinishTime = getLastFinishTime(job, lock);
     
                 writer.write(StringUtils.rightPad(job.getName().replace("_", " "), 30)+ 

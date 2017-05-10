@@ -109,6 +109,13 @@ public class ParameterService extends AbstractParameterService implements IParam
         rereadParameters();
     }
 
+    @Override
+    public void deleteParameter(String key) {
+        sqlTemplate.update(sql.getSql("deleteParameterByKeySql"), key);
+        rereadParameters();
+    }
+    
+    @Override
     public void deleteParameter(String externalId, String nodeGroupId, String key) {
         sqlTemplate.update(sql.getSql("deleteParameterSql"), externalId, nodeGroupId, key);
         rereadParameters();

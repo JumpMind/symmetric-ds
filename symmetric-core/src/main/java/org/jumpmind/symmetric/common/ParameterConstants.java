@@ -51,9 +51,12 @@ final public class ParameterConstants {
     public final static String JDBC_ISOLATION_LEVEL = "db.jdbc.isolation.level";
 
     public final static String START_PULL_JOB = "start.pull.job";
-    public final static String START_PUSH_JOB = "start.push.job";
-    public final static String START_PURGE_JOB = "start.purge.job";
-    public final static String START_ROUTE_JOB = "start.route.job";
+    public final static String START_PUSH_JOB = "start.push.job"; 
+    public final static String START_PURGE_OUTGOING_JOB = "start.purge.incoming.job"; // In <= 3.8m was start.purge.outgoing.job
+    public final static String START_PURGE_INCOMING_JOB = "start.purge.outgoing.job";  // In <= 3.8, was start.purge.outgoing.job
+    public final static String START_PURGE_JOB_38 = "start.purge.incoming.job";
+    public final static String START_ROUTE_JOB = "start.routing.job"; // In <= 3.8, was start.route.job 
+    public final static String START_ROUTE_JOB_38 = "start.route.job"; 
     public final static String START_HEARTBEAT_JOB = "start.heartbeat.job";
     public final static String START_SYNCTRIGGERS_JOB = "start.synctriggers.job";
     public final static String START_SYNC_CONFIG_JOB = "start.sync.config.job";

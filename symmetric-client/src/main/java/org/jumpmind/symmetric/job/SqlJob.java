@@ -18,33 +18,43 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.job;
 
-import static org.jumpmind.symmetric.job.JobDefaults.EVERY_TEN_MINUTES_AT_THE_ONE_OCLOCK_HOUR;
-
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.model.JobDefinition.JobType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-/*
- * Background job that checks to see if config needs to be synced from registration server
- */
-public class SyncConfigJob extends AbstractJob {
-
-    public SyncConfigJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.sync.config", engine, taskScheduler);
+public class SqlJob extends AbstractJob {
+    
+    static final boolean AUTO_COMMIT = true;
+    
+    public SqlJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super(jobName, engine, taskScheduler);
     }
     
-    @Override
-    public void doJob(boolean force) throws Exception {
-        engine.getPullService().pullConfigData(false);
+    public JobType getJobType() {
+        return JobType.SQL;
     }
+
+    @Override
+    protected void doJob(boolean force) throws Exception {
+        try {            
+            if (getJobDefinition().getJobExpression() != null) {        
+                ISqlTemplate sqlTemplate = engine.getDatabasePlatform().getSqlTemplate();
+                SqlScript script = new SqlScript(getJobDefinition().getJobExpression(), sqlTemplate, true, null);
+                script.execute(AUTO_COMMIT);
+            }
+        } catch (Exception ex) {
+            log.error("Exception during sql job '" + this.getName() + "'\n" + getJobDefinition().getJobExpression(), ex);
+        }   
+    }
+
 
     @Override
     public JobDefaults getDefaults() {
-        return new JobDefaults()
-                .schedule(EVERY_TEN_MINUTES_AT_THE_ONE_OCLOCK_HOUR)
-                .description("Check to see if configuration needs resyncd");
+        return new JobDefaults();
     }
 
 }
