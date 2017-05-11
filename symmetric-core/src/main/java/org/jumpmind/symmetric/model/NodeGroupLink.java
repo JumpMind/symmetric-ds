@@ -35,6 +35,8 @@ public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
     private NodeGroupLinkAction dataEventAction = NodeGroupLinkAction.W;
     
     private boolean syncConfigEnabled = true;
+    
+    private boolean isReversible;
         
     private Date createTime;
     
@@ -85,7 +87,15 @@ public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
 
     public void setTargetNodeGroupId(String targetNodeGroupId) {
         this.targetNodeGroupId = targetNodeGroupId;
-    }        
+    }
+        
+    public boolean isReversible() {
+        return isReversible;
+    }
+
+    public void setReversible(boolean isReversible) {
+        this.isReversible = isReversible;
+    }
 
     public Date getCreateTime() {
         return createTime;
