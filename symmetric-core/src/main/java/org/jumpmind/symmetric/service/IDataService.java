@@ -158,6 +158,8 @@ public interface IDataService {
     
     public long findMaxDataId();
     
+    public Data findData(long dataId);
+    
     public ISqlReadCursor<Data> selectDataFor(Batch batch);
     
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String channelId);
