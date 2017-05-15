@@ -53,8 +53,8 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
+import org.jumpmind.symmetric.io.stage.BatchStagingManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
-import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
 import org.jumpmind.symmetric.service.IExtensionService;
@@ -349,7 +349,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     protected IStagingManager createStagingManager() {
         String directory = parameterService.getTempDirectory();
-        return new StagingManager(directory);
+        return new BatchStagingManager(this, directory);
     }
 
     protected static void waitForAvailableDatabase(DataSource dataSource) {

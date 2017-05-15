@@ -28,15 +28,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.transport.BatchBufferedWriter;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.web.WebConstants;
 
@@ -52,10 +53,21 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
     
     Node remoteNode;
     
+    String outgoingDir;
+    
+    private List<OutgoingBatch> processedBatches;
+    
+    private String extension;
+    
     public FileOutgoingTransport(Node remoteNode, Node localNode, String outgoingDir) throws IOException {
+        this.outgoingDir = outgoingDir;
         this.fileName = outgoingDir + File.separator + localNode.getNodeGroupId() + "-" + localNode.getNodeId() + "_to_" + 
                 remoteNode.getNodeGroupId() + "-" + remoteNode.getNodeId() + "_" + System.currentTimeMillis();
         this.remoteNode = remoteNode;
+    }
+    
+    public String getOutgoingDir() {
+        return outgoingDir;
     }
 
     @Override
@@ -80,8 +92,17 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
 
     @Override
     public BufferedReader readResponse() throws IOException {
+        List<Long> batchIds = new ArrayList<Long>();
+        if (processedBatches != null) {
+            for (OutgoingBatch processedBatch : processedBatches) {
+                batchIds.add(processedBatch.getBatchId());
+            }
+        } else if (writer != null) {
+            batchIds = writer.getBatchIds();
+        }
+        
         StringBuilder resp = new StringBuilder();
-        for (String batchId : writer.getBatchIds()) {
+        for (Long batchId : batchIds) {
             resp.append(WebConstants.ACK_BATCH_NAME).append(batchId).append("=").append(WebConstants.ACK_BATCH_OK).append("&");
             resp.append(WebConstants.ACK_NODE_ID).append(batchId).append("=").append(remoteNode.getNodeId()).append("&");
         }
@@ -101,13 +122,13 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
     }
 
     @Override
-    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, Node targetNode) {
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode) {
         return configurationService.getSuspendIgnoreChannelLists();
     }
 
     public void complete(boolean success) {
         if (!success) {
-            new File(fileName).delete();
+            new File(fileName + ".tmp").delete();
         } else if (writer != null) {
             new File(fileName + ".tmp").renameTo(new File(fileName + ".csv"));
         } else {
@@ -115,28 +136,11 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
         }
     }
 
-    class BatchBufferedWriter extends BufferedWriter {
-        List<String> batchIds = new ArrayList<String>();
-        boolean isCommit = false;
+    public List<OutgoingBatch> getProcessedBatches() {
+        return processedBatches;
+    }
 
-        public BatchBufferedWriter(Writer out) {
-            super(out);
-        }
-
-        public void write(String str) throws IOException {
-            super.write(str);
-            if (str.equals(CsvConstants.COMMIT)) {
-                isCommit = true;
-            } else if (!str.equals(",")) {
-                if (isCommit) {
-                    batchIds.add(str);    
-                }
-                isCommit = false;
-            }
-        }
-        
-        public List<String> getBatchIds() {
-            return batchIds;
-        }
+    public void setProcessedBatches(List<OutgoingBatch> processedBatches) {
+        this.processedBatches = processedBatches;
     }
 }

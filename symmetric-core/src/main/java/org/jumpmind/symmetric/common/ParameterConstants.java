@@ -39,6 +39,9 @@ final public class ParameterConstants {
 
     private static Map<String, ParameterMetaData> parameterMetaData = new DefaultParameterParser("/symmetric-default.properties").parse();
 
+    public final static String MINUTES_BEFORE_NODE_REPORTED_AS_OFFLINE = "console.report.as.offline.minutes";
+    public final static int DEFAULT_MINUTES_BEFORE_NODE_REPORTED_AS_OFFLINE = 24 * 60;
+
     private ParameterConstants() {
     }
     
@@ -49,11 +52,15 @@ final public class ParameterConstants {
     public final static String JDBC_ISOLATION_LEVEL = "db.jdbc.isolation.level";
 
     public final static String START_PULL_JOB = "start.pull.job";
-    public final static String START_PUSH_JOB = "start.push.job";
-    public final static String START_PURGE_JOB = "start.purge.job";
-    public final static String START_ROUTE_JOB = "start.route.job";
+    public final static String START_PUSH_JOB = "start.push.job"; 
+    public final static String START_PURGE_OUTGOING_JOB = "start.purge.incoming.job"; // In <= 3.8m was start.purge.outgoing.job
+    public final static String START_PURGE_INCOMING_JOB = "start.purge.outgoing.job";  // In <= 3.8, was start.purge.outgoing.job
+    public final static String START_PURGE_JOB_38 = "start.purge.incoming.job";
+    public final static String START_ROUTE_JOB = "start.routing.job"; // In <= 3.8, was start.route.job 
+    public final static String START_ROUTE_JOB_38 = "start.route.job"; 
     public final static String START_HEARTBEAT_JOB = "start.heartbeat.job";
     public final static String START_SYNCTRIGGERS_JOB = "start.synctriggers.job";
+    public final static String START_SYNC_CONFIG_JOB = "start.sync.config.job";
     public final static String START_STATISTIC_FLUSH_JOB = "start.stat.flush.job";
     public final static String START_STAGE_MGMT_JOB = "start.stage.management.job";
     public final static String START_WATCHDOG_JOB = "start.watchdog.job";
@@ -64,7 +71,9 @@ final public class ParameterConstants {
     public final static String START_REFRESH_CACHE_JOB = "start.refresh.cache.job";
     public final static String START_FILE_SYNC_TRACKER_JOB = "start.file.sync.tracker.job";
     public final static String START_FILE_SYNC_PUSH_JOB = "start.file.sync.push.job";
-    public final static String START_FILE_SYNC_PULL_JOB = "start.file.sync.pull.job";    
+    public final static String START_FILE_SYNC_PULL_JOB = "start.file.sync.pull.job";   
+    
+    public final static String ROUTE_ON_EXTRACT = "route.on.extract";
 
     public final static String PULL_THREAD_COUNT_PER_SERVER = "pull.thread.per.server.count";
     public final static String PULL_MINIMUM_PERIOD_MS = "pull.period.minimum.ms";
@@ -91,7 +100,9 @@ final public class ParameterConstants {
     public final static String FILE_PUSH_LOCK_TIMEOUT_MS = "file.push.lock.timeout.ms";
 
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
-
+    public final static String JOB_PULL_PERIOD_TIME_MS = "job.pull.period.time.ms";
+    public final static String JOB_PUSH_PERIOD_TIME_MS = "job.push.period.time.ms";
+    
     public final static String REGISTRATION_NUMBER_OF_ATTEMPTS = "registration.number.of.attempts";
     public final static String REGISTRATION_REOPEN_USE_SAME_PASSWORD = "registration.reopen.use.same.password";
     public final static String REGISTRATION_REQUIRE_NODE_GROUP_LINK = "registration.require.node.group.link";
@@ -114,6 +125,7 @@ final public class ParameterConstants {
     public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
     public final static String AUTO_SYNC_TRIGGERS = "auto.sync.triggers";
     public final static String AUTO_SYNC_TRIGGERS_AT_STARTUP = "auto.sync.triggers.at.startup";
+    public final static String AUTO_SYNC_CONFIG_AT_STARTUP = "auto.sync.config.at.startup";
     public final static String AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED = "auto.sync.triggers.after.config.change";
     public final static String AUTO_SYNC_TRIGGERS_AFTER_CONFIG_LOADED = "auto.sync.triggers.after.config.loaded";
     public final static String AUTO_REFRESH_AFTER_CONFIG_CHANGED = "auto.refresh.after.config.changes.detected";
@@ -148,6 +160,7 @@ final public class ParameterConstants {
     public final static String STREAM_TO_FILE_ENABLED = "stream.to.file.enabled";
     public final static String STREAM_TO_FILE_THRESHOLD = "stream.to.file.threshold.bytes";
     public final static String STREAM_TO_FILE_TIME_TO_LIVE_MS = "stream.to.file.ttl.ms";
+    public final static String STREAM_TO_FILE_PURGE_ON_TTL_ENABLED = "stream.to.file.purge.on.ttl.enabled";
 
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
 
@@ -238,6 +251,7 @@ final public class ParameterConstants {
 
     public final static String TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY = "trigger.update.capture.changed.data.only.enabled";
     public final static String TRIGGER_CREATE_BEFORE_INITIAL_LOAD = "trigger.create.before.initial.load.enabled";
+    public final static String TRIGGER_CAPTURE_DDL_CHANGES = "trigger.capture.ddl.changes";
 
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
     public final static String DB_NATIVE_EXTRACTOR = "db.native.extractor";
@@ -374,7 +388,11 @@ final public class ParameterConstants {
     
     public final static String OUTGOING_BATCH_UPDATE_STATUS_MILLIS = "outgoing.batches.update.status.millis";
     
+    public final static String OUTGOING_BATCH_UPDATE_STATUS_DATA_COUNT = "outgoing.batches.update.status.data.count";
+    
     public final static String FIREBIRD_EXTRACT_VARCHAR_ROW_OLD_PK_DATA = "firebird.extract.varchar.row.old.pk.data";
+    
+    public final static String GROUPLET_ENABLE = "grouplet.enable";    
     
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.util.AppUtils;
 
 public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Cloneable {
 
@@ -98,6 +99,8 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     private Map<Status, ProcessInfo> statusHistory;
     
+    private Map<Status, Date> statusStartHistory;
+    
     private Date endTime;
 
     public ProcessInfo() {
@@ -136,6 +139,12 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     public void setStatus(Status status) {
         if (statusHistory == null) {
         	statusHistory = new HashMap<Status, ProcessInfo>();
+        }
+        if (statusStartHistory == null) {
+        	statusStartHistory = new HashMap<Status, Date>();
+        }
+        if (!statusStartHistory.containsKey(this.status)) {
+        	statusStartHistory.put(this.status, this.startTime);
         }
     	statusHistory.put(this.status, this.copy());
         statusHistory.put(status, this);
@@ -281,8 +290,25 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     	return this.statusHistory;
     }
     
+    
+    public void setStatusHistory(Map<Status, ProcessInfo> statusHistory) {
+		this.statusHistory = statusHistory;
+	}
+
+	public void setStatusStartHistory(Map<Status, Date> statusStartHistory) {
+		this.statusStartHistory = statusStartHistory;
+	}
+
+	public Map<Status, Date> getStatusStartHistory() {
+    	return this.statusStartHistory;
+    }
+    
     public ProcessInfo getStatusHistory(Status status) {
     	return this.statusHistory == null ? null : this.statusHistory.get(status);
+    }
+    
+    public Date getStatusStartHistory(Status status) {
+    	return this.statusStartHistory == null ? null : this.statusStartHistory.get(status);
     }
     
     @Override
@@ -345,22 +371,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         ThreadInfo info = threadBean.getThreadInfo(threadId, 100);
         if (info != null) {
             String threadName = info.getThreadName();
-            StringBuilder formattedTrace = new StringBuilder();
-            StackTraceElement[] trace = info.getStackTrace();
-            for (StackTraceElement stackTraceElement : trace) {
-                formattedTrace.append(stackTraceElement.getClassName());
-                formattedTrace.append(".");
-                formattedTrace.append(stackTraceElement.getMethodName());
-                formattedTrace.append("()");
-                int lineNumber = stackTraceElement.getLineNumber();
-                if (lineNumber > 0) {
-                    formattedTrace.append(": ");
-                    formattedTrace.append(stackTraceElement.getLineNumber());
-                }
-                formattedTrace.append("\n");
-            }
-
-            return new ThreadData(threadName, formattedTrace.toString());
+            return new ThreadData(threadName, AppUtils.formatStackTrace(info.getStackTrace()));
         } else {
             return null;
         }

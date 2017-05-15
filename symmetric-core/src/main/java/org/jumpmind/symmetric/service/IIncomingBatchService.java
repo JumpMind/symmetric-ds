@@ -28,6 +28,8 @@ import java.util.Map;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.IncomingBatchSummary;
+import org.jumpmind.symmetric.model.IncomingBatch.Status;
 
 /**
  * This service provides an API to access to the incoming batch table. 
@@ -74,4 +76,11 @@ public interface IIncomingBatchService {
 
     public Map<String,BatchId> findMaxBatchIdsByChannel();
     
+    public List<IncomingBatchSummary> findIncomingBatchSummaryByChannel(Status... statuses);
+    
+    public List<IncomingBatchSummary> findIncomingBatchSummary(Status... statuses);
+    
+    public Map<String, Date> findLastUpdatedByChannel();
+    
+    public List<BatchId> getAllBatches();
 }

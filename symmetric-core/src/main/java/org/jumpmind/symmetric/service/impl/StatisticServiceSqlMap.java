@@ -46,6 +46,21 @@ public class StatisticServiceSqlMap extends AbstractSqlMap {
 "  data_loaded, data_bytes_loaded, data_loaded_errors                               " + 
 "  from $(node_host_channel_stats)                                            " + 
 "  where  start_time >= ? and end_time <= ? and node_id=? order by start_time asc   " );
+        
+        putSql("selectNodeStatsSql", "" + 
+"select node_id, start_time, end_time,                                                    " + 
+"  sum(data_routed) as data_routed, sum(data_unrouted) as data_unrouted,                  " +
+"  sum(data_event_inserted) as data_event_inserted, sum(data_extracted) as data_extracted," +
+"  sum(data_bytes_extracted) as data_bytes_extracted,                                     " + 
+"  sum(data_extracted_errors) as data_extracted_errors, sum(data_sent) as data_sent,      " + 
+"  sum(data_bytes_sent) as data_bytes_sent, sum(data_sent_errors) as data_sent_errors,    " + 
+"  sum(data_loaded) as data_loaded, sum(data_bytes_loaded) as data_bytes_loaded,          " + 
+"  sum(data_loaded_errors) as data_loaded_errors                                          " + 
+"  from sym_node_host_channel_stats                                                       " +
+"  where start_time >= ? and end_time <= ? and node_id=?                                  " +
+"  and channel_id not in ('heartbeat', 'config')                                          " +
+"  group by node_id, start_time, end_time                                                 " +
+"  order by start_time asc                                                                "); 
 
         putSql("insertHostStatsSql" ,"" + 
 "insert into $(node_host_stats)                                              " + 

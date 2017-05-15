@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -34,9 +35,11 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.mapper.LongMapper;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -46,6 +49,7 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.LoadSummary;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -145,8 +149,18 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         } while (updateCount > 0);
     }
 
+    @Override
     public void markAllChannelAsSent(String channelId) {
-        sqlTemplate.update(getSql("cancelChannelBatchesSql"), channelId);
+        markAllChannelAsSent(channelId, null);
+    }
+    
+    @Override
+    public void markAllChannelAsSent(String channelId, String tableName) {
+        String sql = getSql("cancelChannelBatchesSql");
+        if (!StringUtils.isEmpty(tableName)) {
+            sql += getSql("cancelChannelBatchesTableSql");
+        }
+        sqlTemplate.update(sql, channelId, tableName);
     }
 
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId) {
@@ -208,16 +222,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getIgnoreCount(), outgoingBatch.getRouterMillis(),
                         outgoingBatch.getNetworkMillis(), outgoingBatch.getFilterMillis(),
                         outgoingBatch.getLoadMillis(), outgoingBatch.getExtractMillis(),
+                        outgoingBatch.getExtractStartTime(), outgoingBatch.getTransferStartTime(),
+                        outgoingBatch.getLoadStartTime(),
                         outgoingBatch.getSqlState(), outgoingBatch.getSqlCode(),
                         FormatUtils.abbreviateForLogging(outgoingBatch.getSqlMessage()),
                         outgoingBatch.getFailedDataId(), outgoingBatch.getLastUpdatedHostName(),
-                        outgoingBatch.getLastUpdatedTime(), outgoingBatch.getSummary(), 
+                        outgoingBatch.getSummary(), 
                         outgoingBatch.getBatchId(), outgoingBatch.getNodeId() }, new int[] { Types.CHAR, Types.BIGINT,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
-                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.NUMERIC,
-                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, 
+                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.TIMESTAMP, Types.TIMESTAMP,
+                        Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC,
+                        Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, 
                         symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
@@ -253,7 +270,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 .getNodeId(), outgoingBatch.getChannelId(), outgoingBatch.getStatus().name(),
                 outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1: 0, outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch
                         .isCommonFlag() ? 1 : 0, outgoingBatch.getReloadEventCount(), outgoingBatch
-                        .getOtherEventCount(), outgoingBatch.getLastUpdatedHostName(),
+                        .getOtherEventCount(), outgoingBatch.getUpdateEventCount(), outgoingBatch.getInsertEventCount(),
+                        outgoingBatch.getDeleteEventCount(), outgoingBatch.getLastUpdatedHostName(),
                 outgoingBatch.getCreateBy(), outgoingBatch.getSummary());
         outgoingBatch.setBatchId(batchId);
     }
@@ -384,32 +402,63 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     	return getOutgoingBatches(nodeId, null, includeDisabledChannels);
     }
 
-    @Override
     public OutgoingBatches getOutgoingBatches(String nodeId, String channelThread, boolean includeDisabledChannels) {
+        return getOutgoingBatches(nodeId, channelThread, null, null, includeDisabledChannels);
+    }
+    
+    @Override
+    public OutgoingBatches getOutgoingBatches(String nodeId, String channelThread, NodeGroupLinkAction eventAction, NodeGroupLinkAction defaultEventAction,
+            boolean includeDisabledChannels) {
         long ts = System.currentTimeMillis();
         final int maxNumberOfBatchesToSelect = parameterService.getInt(
                 ParameterConstants.OUTGOING_BATCH_MAX_BATCHES_TO_SELECT, 1000);
         
         String sql = null;
         Object[] params = null;
-        
-        if (channelThread != null) {
+        int[] types = null;
+
+        if (eventAction != null) {
+            if (eventAction.equals(defaultEventAction)) {
+                sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchChannelActionNullSql");                
+            } else {
+                sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchChannelActionSql");                                
+            }
+            
+            params = new Object[] { eventAction.name(),
+                nodeId, channelThread, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
+                OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
+                OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
+                OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name()};
+            types = new int[] {
+                    Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR,
+                    Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR
+            };
+        } else if (channelThread != null) {
         	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchChannelSql");
         	params = new Object[] { nodeId, channelThread, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
                     OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                     OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                     OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name()};
-        }
+        	types = new int[] {
+        	        Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR,
+        	        Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR
+        	};
+        } 
         else {
         	sql = getSql("selectOutgoingBatchPrefixSql", "selectOutgoingBatchSql");
         	params = new Object[] { nodeId, OutgoingBatch.Status.RQ.name(), OutgoingBatch.Status.NE.name(),
                     OutgoingBatch.Status.QY.name(), OutgoingBatch.Status.SE.name(),
                     OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.ER.name(),
                     OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name()};
+            types = new int[] {
+                    Types.VARCHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR,
+                    Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR
+            };
+
         }
         
         List<OutgoingBatch> list = (List<OutgoingBatch>) sqlTemplate.query(
-                sql, maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels), params, null);
+                sql, maxNumberOfBatchesToSelect, new OutgoingBatchMapper(includeDisabledChannels), params, types);
         
         OutgoingBatches batches = new OutgoingBatches(list);
 
@@ -589,7 +638,71 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(), args);
     }
+    
+    public List<OutgoingBatchSummary> findOutgoingBatchSummaryByChannel(Status... statuses) {
+        Object[] args = new Object[statuses.length];
+        StringBuilder inList = new StringBuilder();
+        for (int i = 0; i < statuses.length; i++) {
+            args[i] = statuses[i].name();
+            inList.append("?,");
+        }
 
+        String sql = getSql("selectOutgoingBatchSummaryByStatusAndChannelSql").replace(":STATUS_LIST",
+                inList.substring(0, inList.length() - 1));
+
+        return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryChannelMapper(), args);
+    }
+
+    public Map<String, Float> getNodeThroughputByChannel() {
+        
+        String sqlName = "getNodeThroughputByChannelSql";
+        boolean isAverageDateSupported = true;
+        
+        if (platform.getName().equals(DatabaseNamesConstants.H2)) {
+            sqlName = "getNodeThroughputByChannelH2Sql";
+            isAverageDateSupported = false;
+        }
+        String sql = getSql(sqlName);
+        NodeThroughputMapper mapper = new NodeThroughputMapper(isAverageDateSupported);
+        
+        sqlTemplateDirty.query(sql, mapper);
+        return mapper.getThroughputMap();
+    }
+    
+    private class NodeThroughputMapper implements ISqlRowMapper<Object> {
+        Map<String, Float> throughputMap = new HashMap<String, Float>();
+        boolean isAverageDateSupported;
+        
+        public NodeThroughputMapper(boolean isAverageDateSupported) {
+            this.isAverageDateSupported = isAverageDateSupported;
+        }
+        
+        @Override
+        public Object mapRow(Row row) {
+            Long totalRows = row.getLong("total_rows");
+            long avgTime = 0;
+            
+            if (this.isAverageDateSupported) {
+                Date avgCreateTime = row.getDateTime("average_create_time");
+                Date avgLastUpdatedTime = row.getDateTime("average_last_update_time");
+                avgTime = avgLastUpdatedTime.getTime() - avgCreateTime.getTime();
+            }
+            else {
+                avgTime = row.getLong("average_create_time") - row.getLong("average_last_update_time");
+            }
+            
+            throughputMap.put(row.getString("node_id") + "-" + row.getString("channel_id") + "-" + 
+                    row.get("direction"), (float) (avgTime > 0 ? totalRows / avgTime : totalRows));
+            return null;
+        }
+
+        public Map<String, Float> getThroughputMap() {
+            return throughputMap;
+        }
+        
+        
+    }
+    
     public Set<Long> getActiveLoads(String sourceNodeId) {
         Set<Long> loads = new HashSet<Long>();
         
@@ -604,50 +717,49 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return loads;
     }
     
-    public List<String> getQueuedLoads(String sourceNodeId) {
-    	return sqlTemplateDirty.query(getSql("getUnprocessedReloadRequestsSql"), new ISqlRowMapper<String>() {
-            @Override
-            public String mapRow(Row rs) {
-                return rs.getString("source_node_id") + " to " + rs.getString("target_node_id");
-            }
-        }, sourceNodeId);
+    public List<LoadSummary> getQueuedLoads(String sourceNodeId) {
+    	return sqlTemplateDirty.query(getSql("getLoadSummaryUnprocessedSql"), new LoadSummaryMapper(), sourceNodeId);
     }
     
-    public LoadSummary getLoadSummary(long loadId) {
-        return sqlTemplateDirty.queryForObject(getSql("getLoadSummarySql"),  
-                new ISqlRowMapper<LoadSummary>() {
-            
-            public LoadSummary mapRow(Row rs) {
-                LoadSummary summary = new LoadSummary();
-                summary.setLoadId(rs.getLong("load_id"));
-                summary.setNodeId(rs.getString("target_node_id"));
-                summary.setCreateBy(rs.getString("last_update_by"));
-                summary.setTableCount(rs.getInt("table_count"));
-                String triggerId = rs.getString("trigger_id");
-                if (triggerId != null && triggerId.equals(ParameterConstants.ALL)) {
-                    summary.setFullLoad(true);
-                } else {
-                    summary.setFullLoad(false);
-                }
-                summary.setCreateFirst(rs.getBoolean("create_table"));
-                summary.setDeleteFirst(rs.getBoolean("delete_first"));
-                summary.setRequestProcessed(rs.getBoolean("processed"));
-                summary.setConditional(rs.getBoolean("reload_select"));
-                summary.setCustomSql(rs.getBoolean("before_custom_sql"));
-                return summary;
-            }           
-        }, loadId);
+	public LoadSummary getLoadSummary(long loadId) {
+        return sqlTemplateDirty.queryForObject(getSql("getLoadSummarySql"), new LoadSummaryMapper(), loadId);
     }
 
-    public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummarySql(long loadId) {
-        LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper();        
+    private class LoadSummaryMapper implements ISqlRowMapper<LoadSummary> {
+    	public LoadSummary mapRow(Row rs) {
+            LoadSummary summary = new LoadSummary();
+            //summary.setLoadId(rs.getLong("load_id"));
+            summary.setNodeId(rs.getString("target_node_id"));
+            summary.setCreateBy(rs.getString("last_update_by"));
+            summary.setTableCount(rs.getInt("table_count"));
+            String triggerId = rs.getString("trigger_id");
+            if (triggerId != null && triggerId.equals(ParameterConstants.ALL)) {
+                summary.setFullLoad(true);
+            } else {
+                summary.setFullLoad(false);
+            }
+            summary.setCreateFirst(rs.getBoolean("create_table"));
+            summary.setDeleteFirst(rs.getBoolean("delete_first"));
+            summary.setRequestProcessed(rs.getBoolean("processed"));
+            //summary.setConditional(rs.getBoolean("reload_select"));
+            //summary.setCustomSql(rs.getBoolean("before_custom_sql"));
+            return summary;
+        }           
+    }
+    
+    public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummaries(int loadId) {
+        LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper(this.symmetricDialect.getTablePrefix());
         sqlTemplateDirty.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
         return mapper.getResults();
     }
     
     private class LoadStatusByQueueMapper implements ISqlRowMapper<Object> {
-        Map<String, Map<String, LoadStatusSummary>> results = new HashMap<String, Map<String, LoadStatusSummary>>();
+        Map<String, Map<String, LoadStatusSummary>> results = new TreeMap<String, Map<String, LoadStatusSummary>>(Collections.reverseOrder());
+        String tablePrefix;
         
+        public LoadStatusByQueueMapper(String tablePrefix) {
+            this.tablePrefix = tablePrefix;
+        }
         @Override
         public Object mapRow(Row rs) {
             String queue = rs.getString("queue");
@@ -664,9 +776,31 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         	statusSummary.setByteCount(rs.getLong("byte_count"));
         	statusSummary.setDataEventCount(rs.getLong("data_events"));
         	statusSummary.setCount(rs.getInt("count"));
+            statusSummary.setExtractStartTime(rs.getDateTime("min_extract_start_time"));
+            statusSummary.setTransferStartTime(rs.getDateTime("min_transfer_start_time"));
+            statusSummary.setLoadStartTime(rs.getDateTime("min_load_start_time"));
+            if (statusSummary.getExtractStartTime() != null) {
+                statusSummary.setExtractEndTime(new Date(statusSummary.getExtractStartTime().getTime() 
+                        + rs.getLong("full_extract_millis")));
+            }
+            if (statusSummary.getTransferStartTime() != null) {
+                statusSummary.setTransferEndTime(new Date(statusSummary.getTransferStartTime().getTime()
+                        + rs.getLong("full_transfer_millis")));
+            }
+            if (statusSummary.getLoadStartTime() != null) {
+                statusSummary.setLoadEndTime(new Date(statusSummary.getLoadStartTime().getTime()
+                        + rs.getLong("full_load_millis")));
+            }
+            String minSummary = rs.getString("min_summary");
+            String maxSummary = rs.getString("max_summary");
+            if (minSummary != null && minSummary.startsWith(this.tablePrefix)) {
+                minSummary = maxSummary;
+            }
+            statusSummary.setTables(minSummary);
             
-        	statusMap.put(status, statusSummary);
-            results.put(queue, statusMap);
+            statusMap.put(status, statusSummary);
+            
+            results.put(queue,  statusMap);
             
             return null;
         }
@@ -677,13 +811,20 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
     
     public class LoadStatusSummary {
-    	private Date createTime;
-    	private Date lastUpdateTime;
     	private long dataEventCount;
     	private long byteCount;
     	private String status;
     	private int count;
-    	
+    	private Date createTime;
+        private Date lastUpdateTime;
+        private Date extractStartTime;
+    	private Date transferStartTime;
+    	private Date loadStartTime;
+    	private Date extractEndTime;
+    	private Date transferEndTime;
+    	private Date loadEndTime;
+        private String tables;
+        
     	public String getStatus() {
 			return status;
 		}
@@ -720,13 +861,59 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 		public void setByteCount(long byteCount) {
 			this.byteCount = byteCount;
 		}
-    	
-    	
+        public Date getExtractStartTime() {
+            return extractStartTime;
+        }
+        public void setExtractStartTime(Date extractStartTime) {
+            this.extractStartTime = extractStartTime;
+        }
+        public Date getTransferStartTime() {
+            return transferStartTime;
+        }
+        public void setTransferStartTime(Date transferStartTime) {
+            this.transferStartTime = transferStartTime;
+        }
+        public Date getLoadStartTime() {
+            return loadStartTime;
+        }
+        public void setLoadStartTime(Date loadStartTime) {
+            this.loadStartTime = loadStartTime;
+        }
+        public Date getExtractEndTime() {
+            return extractEndTime;
+        }
+        public void setExtractEndTime(Date extractEndTime) {
+            this.extractEndTime = extractEndTime;
+        }
+        public Date getTransferEndTime() {
+            return transferEndTime;
+        }
+        public void setTransferEndTime(Date transferEndTime) {
+            this.transferEndTime = transferEndTime;
+        }
+        public Date getLoadEndTime() {
+            return loadEndTime;
+        }
+        public void setLoadEndTime(Date loadEndTime) {
+            this.loadEndTime = loadEndTime;
+        }
+        public String getTables() {
+            return tables;
+        }
+        public void setTables(String tables) {
+            this.tables = tables;
+        }
+		
+        
+    }
+    
+    public Map<String, Integer> getLoadOverview(long loadId) {
+        return sqlTemplateDirty.queryForMap(getSql("getLoadOverviewSql"), "status", "count", loadId);
     }
     
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly) {
         final Map<String, OutgoingLoadSummary> loadSummaries = new TreeMap<String, OutgoingLoadSummary>();
-        sqlTemplateDirty.query(getSql("getLoadSummariesSql"), new ISqlRowMapper<OutgoingLoadSummary>() {
+        sqlTemplate.query(getSql("getLoadSummariesSql"), new ISqlRowMapper<OutgoingLoadSummary>() {
             public OutgoingLoadSummary mapRow(Row rs) {
                 long loadId = rs.getLong("load_id");
                 String nodeId = rs.getString("node_id");
@@ -787,6 +974,60 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return loads;
     }
     
+    public Collection<LoadSummary> getLoadHistory(String sourceNodeId, final String symTablePrefix, final int rowsReturned) {
+        final Map<Date, LoadSummary> loads = new TreeMap<Date, LoadSummary>(Collections.reverseOrder());
+        
+        sqlTemplateDirty.query(getSql("getLoadHistorySql"), new ISqlRowMapper<LoadSummary>() {
+            
+            @Override
+            public LoadSummary mapRow(Row rs) {
+                Date createTime = rs.getDateTime("create_time");
+                Date lastUpdateTime = rs.getDateTime("last_update_time");
+              
+                LoadSummary loadSummary;
+                
+                if (!loads.containsKey(createTime) && loads.size() < rowsReturned) {
+                    loadSummary = new LoadSummary();
+                    loadSummary.setCreateTime(createTime);
+                    loadSummary.setLastUpdateTime(lastUpdateTime);
+                    loads.put(createTime, loadSummary);
+                }
+                
+                loadSummary = loads.get(createTime);
+                if (loadSummary != null) {
+                    if (lastUpdateTime.after(loadSummary.getLastUpdateTime())) {
+                        loadSummary.setLastUpdateTime(lastUpdateTime);
+                    }
+                    
+                    loadSummary.setTableCount(rs.getInt("table_count"));
+                    loadSummary.setTargetNodeCount(loadSummary.getTargetNodeCount() + 1);
+                    
+                    if (ParameterConstants.ALL.equals(rs.getString("trigger_id"))) {
+                        loadSummary.setCurrentTableName(ParameterConstants.ALL);
+                        loadSummary.setFullLoad(true);
+                    } else if (loadSummary.getTableCount() == 1) {
+                        if (rs.getString("min_table").toUpperCase().startsWith(symTablePrefix.toUpperCase())) {
+                            loadSummary.setCurrentTableName(rs.getString("max_table"));
+                        }
+                        else {
+                            loadSummary.setCurrentTableName(rs.getString("min_table"));
+                        }
+                        
+                    } else {
+                        loadSummary.setCurrentTableName(null);
+                    }
+                }
+                return null;
+            }
+        }, sourceNodeId);
+        return loads.values();
+    }
+    
+        @Override
+    public List<Long> getAllBatches() {
+        return sqlTemplateDirty.query(getSql("getAllBatchesSql"), new LongMapper());
+    }
+    
     class OutgoingBatchSummaryMapper implements ISqlRowMapper<OutgoingBatchSummary> {
         public OutgoingBatchSummary mapRow(Row rs) {
             OutgoingBatchSummary summary = new OutgoingBatchSummary();
@@ -795,6 +1036,21 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             summary.setStatus(Status.valueOf(rs.getString("status")));
             summary.setNodeId(rs.getString("node_id"));
             summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
+            summary.setLastBatchUpdateTime(rs.getDateTime("last_update_time"));
+            summary.setTotalBytes(rs.getLong("total_bytes"));
+            summary.setTotalMillis(rs.getLong("total_millis"));
+            return summary;
+        }
+    }
+    
+    class OutgoingBatchSummaryChannelMapper extends OutgoingBatchSummaryMapper implements ISqlRowMapper<OutgoingBatchSummary> {
+        public OutgoingBatchSummary mapRow(Row rs) {
+            OutgoingBatchSummary summary = super.mapRow(rs);
+            summary.setChannel(rs.getString("channel_id"));
+            summary.setSqlMessage(rs.getString("sql_message"));
+            if (summary.getSqlMessage() != null) {
+                summary.setErrorBatchId(rs.getLong("batch_id"));
+            }
             return summary;
         }
     }
@@ -841,6 +1097,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     batch.setFilterMillis(rs.getLong("filter_millis"));
                     batch.setLoadMillis(rs.getLong("load_millis"));
                     batch.setExtractMillis(rs.getLong("extract_millis"));
+                    batch.setExtractStartTime(rs.getDateTime("extract_start_time"));
+                    batch.setTransferStartTime(rs.getDateTime("transfer_start_time"));
+                    batch.setLoadStartTime(rs.getDateTime("load_start_time"));
                     batch.setSqlState(rs.getString("sql_state"));
                     batch.setSqlCode(rs.getInt("sql_code"));
                     batch.setSqlMessage(rs.getString("sql_message"));
@@ -862,5 +1121,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         }
     }
+        
 
 }

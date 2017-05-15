@@ -229,6 +229,8 @@ public class DatabaseXmlUtil {
                                     column.setJavaName(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("description")) {
                                     column.setDescription(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("unique")) {
+                                    column.setUnique(FormatUtils.toBoolean(attributeValue));
                                 }
                             }
                             if (table != null) {
@@ -459,6 +461,9 @@ public class DatabaseXmlUtil {
                 }
                 if (column.getJavaName() != null) {
                     output.write(" javaName=\"" + column.getJavaName() + "\"");
+                }
+                if (column.isUnique()) {
+                    output.write(" unique=\"" + column.isUnique() + "\"");
                 }
                 
                 if (column.getPlatformColumns() != null && column.getPlatformColumns().size() > 0) {

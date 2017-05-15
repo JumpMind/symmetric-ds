@@ -25,29 +25,31 @@ package org.jumpmind.symmetric.service;
  */
 public class ClusterConstants {
     
-    public static final String STAGE_MANAGEMENT = "STAGE_MANAGEMENT";
-    public static final String ROUTE = "ROUTE";
-    public static final String PUSH = "PUSH";
-    public static final String PULL = "PULL";
-    public static final String OFFLINE_PUSH = "OFFLINE_PUSH";
-    public static final String OFFLINE_PULL = "OFFLINE_PULL";
-    public static final String REFRESH_CACHE = "REFRESH_CACHE";
-    public static final String PURGE_OUTGOING = "PURGE_OUTGOING";
-    public static final String PURGE_INCOMING = "PURGE_INCOMING";
-    public static final String PURGE_STATISTICS = "PURGE_STATISTICS";
-    public static final String REPORT_STATUS = "REPORT_STATUS";
-    public static final String PURGE_DATA_GAPS = "PURGE_DATA_GAPS";
-    public static final String HEARTBEAT = "HEARTBEAT";
-    public static final String INITIAL_LOAD_EXTRACT = "INITIAL_LOAD_EXTRACT";
-    public static final String SYNCTRIGGERS = "SYNCTRIGGERS";
-    public static final String WATCHDOG = "WATCHDOG";
-    public static final String STATISTICS = "STATISTICS";
-    public static final String FILE_SYNC_TRACKER = "FILE_SYNC_TRACKER";
+    public static final String STAGE_MANAGEMENT = "Stage Management";
+    public static final String ROUTE = "Routing";
+    public static final String PUSH = "Push";
+    public static final String PULL = "Pull";
+    public static final String OFFLINE_PUSH = "Offline Push";
+    public static final String OFFLINE_PULL = "Offline Pull";
+    public static final String REFRESH_CACHE = "Refresh Cache";
+    public static final String PURGE_OUTGOING = "Purge Outgoing";
+    public static final String PURGE_INCOMING = "Purge Incoming";
+    public static final String PURGE_STATISTICS = "Purge Statistics";
+    public static final String REPORT_STATUS = "Report Status";
+    public static final String PURGE_DATA_GAPS = "Purge Data Gaps";
+    public static final String HEARTBEAT = "Heartbeat";
+    public static final String INITIAL_LOAD_EXTRACT = "Initial Load Extract";
+    public static final String SYNC_CONFIG = "Sync Config";
+    public static final String SYNC_TRIGGERS = "SyncTriggers";
+    public static final String WATCHDOG = "Watchdog";
+    public static final String STATISTICS = "Stat Flush";
+    public static final String FILE_SYNC_TRACKER = "File Sync Tracker";
+    public static final String FILE_SYNC_PULL = "File Sync Pull";
+    public static final String FILE_SYNC_PUSH = "File Sync Push";
+    public static final String MONITOR = "Monitor";
+    
     public static final String FILE_SYNC_SCAN = "FILE_SYNC_SCAN";
-    public static final String FILE_SYNC_SHARED = "FILE_SYNC_SHARED";
-    public static final String FILE_SYNC_PULL = "FILE_SYNC_PULL";
-    public static final String FILE_SYNC_PUSH = "FILE_SYNC_PUSH";
-    public static final String MONITOR = "MONITOR";
+    public static final String FILE_SYNC_SHARED = "FILE_SYNC_SHARED";    
 
     public static final String TYPE_CLUSTER = "CLUSTER";
     public static final String TYPE_EXCLUSIVE = "EXCLUSIVE";

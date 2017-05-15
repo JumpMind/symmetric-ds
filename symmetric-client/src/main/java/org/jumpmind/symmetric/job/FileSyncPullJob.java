@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.EVERY_MINUTE;
+
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -27,23 +29,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class FileSyncPullJob extends AbstractJob {
 
-    protected FileSyncPullJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.file.sync.pull", engine, taskScheduler);
-    }
-
-    @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE)
-                && engine.getParameterService().is(ParameterConstants.START_FILE_SYNC_PULL_JOB, true);
+    public FileSyncPullJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super(ClusterConstants.FILE_SYNC_PULL, engine, taskScheduler);
     }
     
     @Override
-    public String getClusterLockName() {
-        return ClusterConstants.FILE_SYNC_PULL;
-    }
+    public JobDefaults getDefaults() {
+        boolean fileSyncEnabeld = engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE); 
+        
+        return new JobDefaults()
+                .schedule(EVERY_MINUTE)
+                .enabled(fileSyncEnabeld)
+                .description("Check for files to pull down from other nodes");
+    }    
 
     @Override
-    void doJob(boolean force) throws Exception {
+    public void doJob(boolean force) throws Exception {
         engine.getFileSyncService().pullFilesFromNodes(force);
     }
     

@@ -32,7 +32,9 @@
 #include "transport/OutgoingTransport.h"
 #include "util/List.h"
 
+#define SYM_OFFLINE_TRANSPORT_OK -200
 #define SYM_TRANSPORT_OK 200
+#define SYM_TRANSPORT_NO_CONTENT 204
 #define SYM_TRANSPORT_REGISTRATION_NOT_OPEN 656
 #define SYM_TRANSPORT_REGISTRATION_REQUIRED 657
 #define SYM_TRANSPORT_SYNC_DISABLED 658
@@ -47,6 +49,8 @@ typedef struct SymTransportManager {
     int (*sendAcknowledgement)(struct SymTransportManager *this, SymNode *remote, SymList *batches, SymNode *local, char *securityToken, char *registrationUrl);
     SymIncomingTransport * (*getPullTransport)(struct SymTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, SymProperties *requestProperties, char *registrationUrl);
     SymOutgoingTransport * (*getPushTransport)(struct SymTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl);
+    SymOutgoingTransport * (*getFileSyncPushTransport)(struct SymTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl);
+    SymIncomingTransport * (*getFileSyncPullTransport)(struct SymTransportManager *this, SymNode *remote, SymNode *local, char *securityToken, char *registrationUrl);
     SymIncomingTransport * (*getRegisterTransport)(struct SymTransportManager *this, SymNode *local, char *registrationUrl);
     SymList * (*readAcknowledgement)(struct SymTransportManager *this, char *parameterString1, char *parameterString2);
     void (*destroy)(struct SymTransportManager *this);

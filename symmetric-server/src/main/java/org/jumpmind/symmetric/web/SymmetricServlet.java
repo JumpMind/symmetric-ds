@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +69,6 @@ public class SymmetricServlet extends HttpServlet {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected Map<String, Integer> rejectionStatusByEngine = new HashMap<String, Integer>();
-    
-    private Map<String, Integer> errorCountByNode = new HashMap<String, Integer>();
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse res)
@@ -101,6 +100,7 @@ public class SymmetricServlet extends HttpServlet {
                 List<IInterceptor> beforeInterceptors = handler.getInterceptors();
                 List<IInterceptor> afterInterceptors = null;
                 try {
+                    String nodeId = req.getParameter(WebConstants.NODE_ID);
                     if (beforeInterceptors != null) {
                         afterInterceptors = new ArrayList<IInterceptor>(beforeInterceptors.size());
                         for (IInterceptor interceptor : beforeInterceptors) {
@@ -112,10 +112,9 @@ public class SymmetricServlet extends HttpServlet {
                         }
                     }
                     handler.handle(req, res);
-                    errorCountByNode.remove(req.getParameter(WebConstants.NODE_ID));
+                    engine.resetErrorCountForNode(nodeId);
                 } catch (Exception e) {
-                    logException(req, e,
-                            !(e instanceof IOException && StringUtils.isNotBlank(e.getMessage())));
+                    logException(req, engine, e);
                     if (!res.isCommitted()) {
                         ServletUtils.sendError(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     }
@@ -128,7 +127,7 @@ public class SymmetricServlet extends HttpServlet {
                 }
             } else {
                 log.warn(
-                        "The request path of the url is not supported.  The request was {} from the host {} with an ip address of {}.  The query string was: {}",
+                        "The request path of the url could not be handled. Check the engine.name of the target node vs. the sync URL of the source node. The request was {} from the host {} with an ip address of {}.  The query string was: {}",
                         new Object[] { ServletUtils.normalizeRequestUri(req), req.getRemoteHost(),
                                 req.getRemoteAddr(), req.getQueryString() });
                 ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST);
@@ -244,37 +243,25 @@ public class SymmetricServlet extends HttpServlet {
         return uri;
     }
 
-    protected void logException(HttpServletRequest req, Exception ex, boolean isError) {
+    protected void logException(HttpServletRequest req, ServerSymmetricEngine engine, Exception ex) {
         String nodeId = req.getParameter(WebConstants.NODE_ID);
         String externalId = req.getParameter(WebConstants.EXTERNAL_ID);
         String address = req.getRemoteAddr();
         String hostName = req.getRemoteHost();
         String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod()
                 : "";
+        Throwable root = ExceptionUtils.getRootCause(ex);
         
-        Integer errorCount = errorCountByNode.get(nodeId);
-        if (errorCount == null) {
-            errorCount = 1;
-        }
-        if (errorCount >= MAX_NETWORK_ERROR_FOR_LOGGING) {
-            if (isError) {
-                log.error("Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
-                        new Object[] { method, externalId, nodeId, address, hostName, ServletUtils.normalizeRequestUri(req) });
-                log.error("", ex);
-            } else {
-                log.warn("Error while processing {} request for externalId: {}, node: {} at {} ({}).  The message is: {}",
-                        new Object[] { method, externalId, nodeId, address, hostName, ex.getMessage() });
-            }
+        int errorCount = engine.getErrorCountFor(nodeId);
+        if (!(ex instanceof IOException || root instanceof IOException) || errorCount >= MAX_NETWORK_ERROR_FOR_LOGGING) {
+            log.error("Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
+                    new Object[] { method, externalId, nodeId, address, hostName, ServletUtils.normalizeRequestUri(req) });
+            log.error("", ex);            
         } else {
-            if (isError) {
-                log.info("Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
-                        new Object[] { method, externalId, nodeId, address, hostName, ServletUtils.normalizeRequestUri(req) });
-            } else {
-                log.info("Error while processing {} request for externalId: {}, node: {} at {} ({}).  The message is: {}",
-                        new Object[] { method, externalId, nodeId, address, hostName, ex.getMessage() });
-            }            
+            log.info("Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}.  The message is: {}",
+                    new Object[] { method, externalId, nodeId, address, hostName, ServletUtils.normalizeRequestUri(req), ex.getMessage() });
         }
-        errorCountByNode.put(nodeId, errorCount + 1);
+        engine.incrementErrorCountForNode(nodeId);
     }
 
     protected boolean shouldLog(String engineName, int status) {

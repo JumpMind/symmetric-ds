@@ -21,7 +21,6 @@
 package org.jumpmind.db.platform.sqlite;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +38,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
-import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -59,11 +57,9 @@ public class SqliteDdlReader implements IDdlReader {
     public SqliteDdlReader(IDatabasePlatform platform) {
         this.platform = platform;
     }
-    
+
     public List<String> getTableNames(String catalog, String schema, String[] tableTypes) {
-        return platform.getSqlTemplate()
-                .query("select tbl_name from sqlite_master where type='table'",
-                        SqlConstants.STRING_MAPPER);
+        return platform.getSqlTemplate().query("select tbl_name from sqlite_master where type='table'", SqlConstants.STRING_MAPPER);
     }
 
     public Database readTables(String catalog, String schema, String[] tableTypes) {
@@ -77,7 +73,7 @@ public class SqliteDdlReader implements IDdlReader {
         }
         return database;
     }
-    
+
     protected void checkForAutoIncrementColumn(List<Column> columns, String tableName) {
         String ddl = platform.getSqlTemplate().queryForObject("select sql from sqlite_master where tbl_name=?", String.class, tableName);
         if (StringUtils.isNotBlank(ddl)) {
@@ -91,50 +87,51 @@ public class SqliteDdlReader implements IDdlReader {
                 }
             }
         }
-        
+
     }
-    
+
     public Table readTable(String catalog, String schema, String tableName, String sql) {
         throw new NotImplementedException();
     }
 
     public Table readTable(String catalog, String schema, String tableName) {
         Table table = null;
-        
-        List<Column> columns = platform.getSqlTemplate().query(
-                "pragma table_info(" + tableName + ")", COLUMN_MAPPER);
-        
+
+        List<Column> columns = platform.getSqlTemplate().query("pragma table_info(" + tableName + ")", COLUMN_MAPPER);
+
         checkForAutoIncrementColumn(columns, tableName);
-        
+
         if (columns != null && columns.size() > 0) {
             table = new Table(tableName);
             for (Column column : columns) {
                 table.addColumn(column);
             }
 
-            List<IIndex> indexes = platform.getSqlTemplate().query(
-                    "pragma index_list(" + tableName + ")", INDEX_MAPPER);
+            List<IIndex> indexes = platform.getSqlTemplate().query("pragma index_list(" + tableName + ")", INDEX_MAPPER);
             for (IIndex index : indexes) {
-                List<IndexColumn> indexColumns = platform.getSqlTemplate().query(
-                        "pragma index_info(" + index.getName() + ")", INDEX_COLUMN_MAPPER);
+
+                List<IndexColumn> indexColumns = platform.getSqlTemplate().query("pragma index_info(" + index.getName() + ")",
+                        INDEX_COLUMN_MAPPER);
                 for (IndexColumn indexColumn : indexColumns) {
                     /* Ignore auto index columns */
+
                     if (!indexColumn.getName().startsWith("sqlite_autoindex_")) {
                         index.addColumn(indexColumn);
                         indexColumn.setColumn(table.getColumnWithName(indexColumn.getName()));
                     }
                 }
 
-                if (!(index.hasAllPrimaryKeys() && index.getName().toLowerCase()
-                        .contains("autoindex"))) {
+                if (index.isUnique() && index.getName().toLowerCase().contains("autoindex") && !index.hasAllPrimaryKeys()) {
+                    for (IndexColumn indexColumn : indexColumns) {
+                        table.getColumnWithName(indexColumn.getName()).setUnique(true);
+                    }
+                } else if (!((index.hasAllPrimaryKeys() || index.isUnique()) && index.getName().toLowerCase().contains("autoindex"))) {
                     table.addIndex(index);
                 }
             }
-            
-            
+
             Map<Integer, ForeignKey> keys = new HashMap<Integer, ForeignKey>();
-            List<Row> rows = platform.getSqlTemplate().query(
-                    "pragma foreign_key_list(" + tableName + ")", new RowMapper());
+            List<Row> rows = platform.getSqlTemplate().query("pragma foreign_key_list(" + tableName + ")", new RowMapper());
             for (Row row : rows) {
                 Integer id = row.getInt("id");
                 ForeignKey fk = keys.get(id);
@@ -150,20 +147,19 @@ public class SqliteDdlReader implements IDdlReader {
 
         return table;
     }
-    
+
     public List<String> getCatalogNames() {
         return new ArrayList<String>(0);
     }
-    
-    
+
     public List<String> getSchemaNames(String catalog) {
         return new ArrayList<String>(0);
     }
-    
+
     public List<String> getTableTypes() {
         return new ArrayList<String>(0);
     }
-    
+
     public List<String> getColumnNames(String catalog, String schema, String tableName) {
         return new ArrayList<String>(0);
     }
@@ -191,9 +187,9 @@ public class SqliteDdlReader implements IDdlReader {
             } else if (colType.startsWith("NUM")) {
                 colType = TypeMap.NUMERIC;
             } else if (colType.startsWith("BLOB")) {
-                colType = TypeMap.BLOB;   
+                colType = TypeMap.BLOB;
             } else if (colType.startsWith("CLOB")) {
-                colType = TypeMap.CLOB;   
+                colType = TypeMap.CLOB;
             } else if (colType.startsWith("TEXT") || colType.contains("CHAR")) {
                 colType = TypeMap.VARCHAR;
             } else if (colType.startsWith("FLOAT")) {
@@ -201,15 +197,15 @@ public class SqliteDdlReader implements IDdlReader {
             } else if (colType.startsWith("DOUBLE")) {
                 colType = TypeMap.DOUBLE;
             } else if (colType.startsWith("REAL")) {
-                colType = TypeMap.REAL;                
-           } else if (colType.startsWith("DECIMAL")) {
-                colType = TypeMap.DECIMAL; 
+                colType = TypeMap.REAL;
+            } else if (colType.startsWith("DECIMAL")) {
+                colType = TypeMap.DECIMAL;
             } else if (colType.startsWith("DATE")) {
-                colType = TypeMap.DATE; 
+                colType = TypeMap.DATE;
             } else if (colType.startsWith("TIMESTAMP")) {
-                colType = TypeMap.TIMESTAMP; 
+                colType = TypeMap.TIMESTAMP;
             } else if (colType.startsWith("TIME")) {
-                colType = TypeMap.TIME; 
+                colType = TypeMap.TIME;
             } else {
                 colType = TypeMap.VARCHAR;
             }
@@ -228,7 +224,7 @@ public class SqliteDdlReader implements IDdlReader {
                 return new NonUniqueIndex(name);
             }
         }
-    }  
+    }
 
     static class IndexColumnMapper extends AbstractSqlRowMapper<IndexColumn> {
         public IndexColumn mapRow(Row row) {
@@ -240,43 +236,36 @@ public class SqliteDdlReader implements IDdlReader {
     }
 
     public Trigger getTriggerFor(Table table, String triggerName) {
-    	Trigger trigger = null;
-    	List<Trigger> triggers = getTriggers(table.getCatalog(), table.getSchema(), table.getName());
-    	for (Trigger t : triggers) {
-    		if (t.getName().equals(triggerName)) {
-    			trigger = t;
-    			break;
-    		}
-    	}
-    	return trigger;
+        Trigger trigger = null;
+        List<Trigger> triggers = getTriggers(table.getCatalog(), table.getSchema(), table.getName());
+        for (Trigger t : triggers) {
+            if (t.getName().equals(triggerName)) {
+                trigger = t;
+                break;
+            }
+        }
+        return trigger;
     }
-    
-	public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
-		
-		String sql = "SELECT "
-						+ "name AS trigger_name, "
-						+ "tbl_name AS table_name, "
-						+ "rootpage, "
-						+ "sql, "
-						+ "type AS object_type "
-					+ "FROM sqlite_master "
-					+ "WHERE table_name=? AND object_type='trigger';";
-		triggers = platform.getSqlTemplate().query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("trigger_name"));
-				trigger.setTableName(row.getString("table_name"));
-				trigger.setEnabled(true);
-				trigger.setSource(row.getString("sql"));
-				row.remove("sql");
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName.toLowerCase());
 
-		return triggers;
-	}
+    public List<Trigger> getTriggers(final String catalog, final String schema, final String tableName) throws SqlException {
+
+        List<Trigger> triggers = new ArrayList<Trigger>();
+
+        String sql = "SELECT " + "name AS trigger_name, " + "tbl_name AS table_name, " + "rootpage, " + "sql, " + "type AS object_type "
+                + "FROM sqlite_master " + "WHERE table_name=? AND object_type='trigger';";
+        triggers = platform.getSqlTemplate().query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("trigger_name"));
+                trigger.setTableName(row.getString("table_name"));
+                trigger.setEnabled(true);
+                trigger.setSource(row.getString("sql"));
+                row.remove("sql");
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName.toLowerCase());
+
+        return triggers;
+    }
 }

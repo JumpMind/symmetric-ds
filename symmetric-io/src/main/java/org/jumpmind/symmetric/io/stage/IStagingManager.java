@@ -20,8 +20,7 @@
  */
 package org.jumpmind.symmetric.io.stage;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 public interface IStagingManager {
 
@@ -29,12 +28,10 @@ public interface IStagingManager {
     
     public IStagedResource find(String path);
 
-    public IStagedResource create(long memoryThresholdInBytes, Object... path);
+    public IStagedResource create(Object... path);
     
     public long clean(long timeToLiveInMs);
     
-    public long cleanExcessBatches(List<Long> currentBatchesList, String type);
-    
-    public Collection<String> getResourceReferences();
+    public Set<String> getResourceReferences();
 
 }

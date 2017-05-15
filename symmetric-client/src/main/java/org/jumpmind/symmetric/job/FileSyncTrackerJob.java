@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.EVERY_5_MINUTES;
+
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -27,23 +29,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class FileSyncTrackerJob extends AbstractJob {
 
-    protected FileSyncTrackerJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.file.sync.tracker", engine, taskScheduler);
+    public FileSyncTrackerJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super(ClusterConstants.FILE_SYNC_TRACKER, engine, taskScheduler);
     }
 
     @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE)
-                && engine.getParameterService().is(ParameterConstants.START_FILE_SYNC_TRACKER_JOB, true);
-    }
-    
+    public JobDefaults getDefaults() {
+        boolean fileSyncEnabeld = engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE); 
+
+        return new JobDefaults()
+                .schedule(EVERY_5_MINUTES)
+                .enabled(fileSyncEnabeld)
+                .description("Check for changes in sync'd files");
+    }    
+
     @Override
-    public String getClusterLockName() {
-        return ClusterConstants.FILE_SYNC_TRACKER;
-    }
-    
-    @Override
-    void doJob(boolean force) throws Exception {
+    public void doJob(boolean force) throws Exception {
         if (engine != null) {
             engine.getFileSyncService().trackChanges(force);
         }

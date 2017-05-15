@@ -25,6 +25,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Monitor;
+import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.service.IDataService;
 
 public class MonitorTypeDataGap implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
@@ -37,8 +38,10 @@ public class MonitorTypeDataGap implements IMonitorType, ISymmetricEngineAware, 
     }
 
     @Override
-    public long check(Monitor monitor) {
-        return dataService.countDataGapsByStatus(DataGap.Status.GP);
+    public MonitorEvent check(Monitor monitor) {
+        MonitorEvent event = new MonitorEvent();
+        event.setValue(dataService.countDataGapsByStatus(DataGap.Status.GP));
+        return event;
     }
 
     @Override

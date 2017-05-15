@@ -26,11 +26,11 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.job.IJob;
 import org.jumpmind.symmetric.job.IJobManager;
+import org.jumpmind.symmetric.model.JobDefinition;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,9 +58,16 @@ public class AndroidJobManager implements IJobManager {
     protected long lastFileSyncTrackerTime = System.currentTimeMillis();
     
     protected long lastFileSyncPushTime = System.currentTimeMillis();    
+    
+    protected boolean started = false;
 
     public AndroidJobManager(ISymmetricEngine engine) {
         this.engine = engine;
+    }
+    
+    @Override
+    public boolean isStarted() {
+        return started;
     }
 
     public List<IJob> getJobs() {
@@ -76,12 +83,14 @@ public class AndroidJobManager implements IJobManager {
             job = new Job();
             job.start();
         }
+        started = true;
     }
 
     public void stopJobs() {
         if (job != null) {
             job.stop();
         }
+        started = false;
     }
 
     public IJob getJob(String name) {
@@ -177,7 +186,7 @@ public class AndroidJobManager implements IJobManager {
                         }
                     }
 
-                    if (parameterService.is(ParameterConstants.START_PURGE_JOB)
+                    if (parameterService.is(ParameterConstants.START_PURGE_INCOMING_JOB)
                             && parameterService.getInt("job.purge.period.time.ms") < System
                                     .currentTimeMillis() - lastPurgeTime) {
                         try {
@@ -319,26 +328,63 @@ public class AndroidJobManager implements IJobManager {
             return totalRunTimeInMs;
         }
 
-        public String getCronExpression() {
-            throw new NotImplementedException();
-        }
-
         public long getTimeBetweenRunsInMs() {
             return 1000l;
+         }
+
+        @Override
+        public JobDefinition getJobDefinition() {
+            return null;
         }
 
-        public void setCronExpression(String cronExpression) {
-            throw new NotImplementedException();
+        @Override
+        public Date getNextExecutionTime() {
+            return null;
         }
 
-        public void setTimeBetweenRunsInMs(long timeBetweenRunsInMs) {
-            throw new NotImplementedException();
+        @Override
+        public boolean isCronSchedule() {
+            return false;
+        }
+
+        @Override
+        public boolean isPeriodicSchedule() {
+            return false;
+        }
+
+        @Override
+        public String getSchedule() {
+            return null;
+        }
+
+        @Override
+        public String getDeprecatedStartParameter() {
+            return null;
         }
     }
 
     @Override
     public void startJobsAfterConfigChange() {
-        // No action on Android.
+        // No action on Android
+    }
+
+    @Override
+    public void init() {
+        // No action on Android        
+    }
+
+    @Override
+    public void saveJob(JobDefinition jobDefinition) {
+        // No action on Android
+    }
+
+    @Override
+    public void removeJob(String name) {
+    }
+
+    @Override
+    public boolean isJobApplicableToNodeGroup(IJob job) {
+        return false;
     }
 
 }

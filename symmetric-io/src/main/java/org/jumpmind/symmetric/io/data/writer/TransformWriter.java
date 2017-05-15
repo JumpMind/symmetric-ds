@@ -160,7 +160,6 @@ public class TransformWriter extends NestedDataWriter {
                                 this.sourceTable.getFullyQualifiedTableName(), sourceValues });
             }
 
-            List<TransformedData> dataThatHasBeenTransformed = new ArrayList<TransformedData>();
             TransformTable[] transformTables = activeTransforms.toArray(new TransformTable[activeTransforms.size()]);
             if (eventType == DataEventType.DELETE) {
                 CollectionUtils.reverseArray(transformTables);
@@ -170,36 +169,36 @@ public class TransformWriter extends NestedDataWriter {
                 if (eventType == DataEventType.INSERT && transformation.isUpdateFirst()) {
                     eventType = DataEventType.UPDATE;
                 }
-                dataThatHasBeenTransformed.addAll(transform(eventType, context, transformation,
-                        sourceKeyValues, oldSourceValues, sourceValues));
-            }
-
-            for (TransformedData transformedData : dataThatHasBeenTransformed) {
-                Table transformedTable = transformedData.buildTargetTable();
-                CsvData csvData = transformedData.buildTargetCsvData();
-                long transformTimeInMs = System.currentTimeMillis() - ts;
-                boolean processData = true;
-                if (lastTransformedTable == null || !lastTransformedTable.equals(transformedTable)) {
-                    if (lastTransformedTable != null) {
-                        this.nestedWriter.end(lastTransformedTable);
+                
+                List<TransformedData> dataThatHasBeenTransformed = 
+                        transform(eventType, context, transformation, sourceKeyValues, oldSourceValues, sourceValues);
+                
+                for (TransformedData transformedData : dataThatHasBeenTransformed) {
+                    Table transformedTable = transformedData.buildTargetTable();
+                    CsvData csvData = transformedData.buildTargetCsvData();
+                    long transformTimeInMs = System.currentTimeMillis() - ts;
+                    boolean processData = true;
+                    if (lastTransformedTable == null || !lastTransformedTable.equals(transformedTable)) {
+                        if (lastTransformedTable != null) {
+                            this.nestedWriter.end(lastTransformedTable);
+                        }
+                        processData = this.nestedWriter.start(transformedTable);
+                        if (!processData) {
+                            lastTransformedTable = null;
+                        } else {
+                            lastTransformedTable = transformedTable;
+                        }
                     }
-                    processData = this.nestedWriter.start(transformedTable);
-                    if (!processData) {
-                        lastTransformedTable = null;
-                    } else {
-                        lastTransformedTable = transformedTable;
+                    if (processData || !csvData.requiresTable()) {
+                        this.nestedWriter.write(csvData);
                     }
+                    Statistics stats = this.nestedWriter.getStatistics().get(batch);
+                    if (stats != null) {
+                        stats.increment(DataWriterStatisticConstants.TRANSFORMMILLIS, transformTimeInMs);
+                    }
+                    ts = System.currentTimeMillis();
                 }
-                if (processData || !csvData.requiresTable()) {
-                    this.nestedWriter.write(csvData);
-                }
-                Statistics stats = this.nestedWriter.getStatistics().get(batch);
-                if (stats != null) {
-                    stats.increment(DataWriterStatisticConstants.TRANSFORMMILLIS, transformTimeInMs);
-                }
-                ts = System.currentTimeMillis();
             }
-
         } else {
             if (sourceTable != null) {
                 super.start(sourceTable);

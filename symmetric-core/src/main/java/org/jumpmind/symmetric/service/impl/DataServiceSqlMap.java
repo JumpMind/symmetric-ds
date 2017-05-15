@@ -75,12 +75,6 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("selectMaxDataEventDataIdSql", ""
                 + "select max(data_id) from $(data_event)   ");
 
-        putSql("checkForAndUpdateMissingChannelIdSql", ""
-                + "update $(data) set channel_id=?                           "
-                + "  where                                                         "
-                + "  data_id >= ? and data_id <= ? and                             "
-                + "  channel_id not in (select channel_id from $(channel))   ");
-
         putSql("countDataInRangeSql", ""
                 + "select count(*) from $(data) where data_id > ? and data_id < ?   ");
 
@@ -121,10 +115,14 @@ public class DataServiceSqlMap extends AbstractSqlMap {
 
         putSql("deleteAllDataGapsSql", "delete from $(data_gap)");
 
-        putSql("selectMaxDataIdSql", "" + "select max(data_id) from $(data)   ");
+        putSql("selectMaxDataIdSql", "select max(data_id) from $(data)   ");
+        
+        putSql("selectMinDataIdSql", "select min(data_id) from $(data)   ");
         
         putSql("deleteCapturedConfigChannelDataSql", "delete from $(data) where channel_id='config'");
         
+        putSql("findLastCaptureTimeByChannelSql", 
+                "select max(create_time) as create_time, channel_id from $(data) group by channel_id ");        
 
     }
 

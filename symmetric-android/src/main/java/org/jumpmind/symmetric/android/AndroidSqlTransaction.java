@@ -27,6 +27,7 @@ import java.util.Map;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.ISqlTransactionListener;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.RowMapper;
 
@@ -43,12 +44,19 @@ public class AndroidSqlTransaction implements ISqlTransaction {
     protected String sql;
     
     protected boolean needsRolledback = false;
+    
+    protected List<ISqlTransactionListener> listeners = new ArrayList<ISqlTransactionListener>();
 
     public AndroidSqlTransaction(AndroidSqlTemplate sqlTemplate, boolean autoCommit) {
         this.autoCommit = autoCommit;
         this.sqlTemplate = sqlTemplate;
         this.database = sqlTemplate.getDatabaseHelper().getWritableDatabase();
         this.database.beginTransaction();
+    }
+    
+    @Override
+    public void addSqlTransactionListener(ISqlTransactionListener listener) {
+        listeners.add(listener);
     }
 
     public void setInBatchMode(boolean batchMode) {
@@ -83,6 +91,10 @@ public class AndroidSqlTransaction implements ISqlTransaction {
     public void commit() {
         try {
             this.database.setTransactionSuccessful();
+            
+            for (ISqlTransactionListener listener : listeners) {
+                listener.transactionCommitted();
+            }
         } catch (Exception ex) {
             throw this.sqlTemplate.translate(ex);
         } finally {
@@ -93,6 +105,10 @@ public class AndroidSqlTransaction implements ISqlTransaction {
 
     public void rollback() {
         needsRolledback = true;
+        
+        for (ISqlTransactionListener listener : listeners) {
+            listener.transactionRolledBack();
+        }
     }
 
     public void close() {

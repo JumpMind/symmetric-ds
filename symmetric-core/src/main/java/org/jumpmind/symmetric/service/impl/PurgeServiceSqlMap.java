@@ -114,8 +114,6 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
         putSql("deleteDataByCreateTimeSql", "delete from sym_data where create_time < ?");
         putSql("deleteExtractRequestByCreateTimeSql", "delete from sym_extract_request where create_time < ?");
         
-        putSql("getAllOutgoingBatches", "select batch_id from $(outgoing_batch)");
-        putSql("getAllIncomingBatches", "select batch_id from $(incoming_batch)");
     }
 
 }

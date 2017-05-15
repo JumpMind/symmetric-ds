@@ -72,12 +72,15 @@ public class TableConstants {
     public static final String SYM_FILE_SNAPSHOT = "file_snapshot";
     public static final String SYM_FILE_INCOMING = "file_incoming";
     public static final String SYM_CONSOLE_USER = "console_user";
+    public static final String SYM_CONSOLE_USER_HIST = "console_user_hist";
     public static final String SYM_CONSOLE_EVENT = "console_event";
     public static final String SYM_EXTENSION = "extension";
     public static final String SYM_MONITOR = "monitor";
     public static final String SYM_MONITOR_EVENT = "monitor_event";
     public static final String SYM_NOTIFICATION = "notification";
+    public static final String SYM_NODE_GROUP_TABLE_INFO = "node_group_table_info";
     public static final String SYM_CONTEXT = "context";
+    public static final String SYM_JOB = "job";
 
     private static List<String> tablesWithPrefix;
 
@@ -135,6 +138,8 @@ public class TableConstants {
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_MONITOR));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT));
         configTables.add(getTableName(tablePrefix, TableConstants.SYM_NOTIFICATION));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_JOB));
+        configTables.add(getTableName(tablePrefix, TableConstants.SYM_NODE_GROUP_TABLE_INFO));
         return configTables;
     }
 
@@ -189,6 +194,9 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_MONITOR_EVENT));
         tables.add(getTableName(tablePrefix, SYM_NOTIFICATION));
         tables.add(getTableName(tablePrefix, SYM_CONTEXT));
+        tables.add(getTableName(tablePrefix, SYM_JOB));
+        tables.add(getTableName(tablePrefix, SYM_NODE_GROUP_TABLE_INFO));
+        
         return tables;
     }
 

@@ -25,5 +25,6 @@ import org.jumpmind.util.Statistics;
 public class DataReaderStatistics extends Statistics {
     
     public static final String READ_BYTE_COUNT = "READ_BYTE_COUNT";
+    public static final String READ_RECORD_COUNT = "READ_RECORD_COUNT";
 
 }

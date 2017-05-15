@@ -190,7 +190,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      * @throws {@link ConnectionRejectedException}
      * @throws {@link AuthenticationException}
      */
-    private HttpURLConnection requestReservation() {
+    private HttpURLConnection requestReservation(String queue) {
         try {
             connection = HttpTransportManager.openConnection(url, basicAuthUsername,
                     basicAuthPassword);
@@ -198,6 +198,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setConnectTimeout(httpTimeout);
             connection.setReadTimeout(httpTimeout);
             connection.setRequestMethod("HEAD");
+            connection.setRequestProperty(WebConstants.THREAD_CHANNEL, queue);
 
             analyzeResponseCode(connection.getResponseCode());
         } catch (IOException ex) {
@@ -307,9 +308,9 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         return connection != null;
     }
 
-    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, Node targetNode) {
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode) {
 
-        HttpURLConnection connection = requestReservation();
+        HttpURLConnection connection = requestReservation(queue);
 
         // Connection contains remote suspend/ignore channels list if
         // reservation was successful.

@@ -46,6 +46,8 @@ public interface INodeService {
     
     public Node findNode(String id, boolean useCache);
     
+    public Node findNodeInCacheOnly(String id);
+    
     public String getExternalId(String nodeId);
 
     public List<NodeHost> findNodeHosts(String nodeId);
@@ -194,5 +196,18 @@ public interface INodeService {
     public List<String> findOfflineNodeIds(long minutesOffline);
 
     public NetworkedNode getRootNetworkedNode();
+    
+    public void captureTableMetaInfo(boolean force, String tablePrefix);
+    
+    public List<String> getCatalogsFromTableMetaInfo(String nodeGroupId);
+    
+    public List<String> getDefaultCatalogFromTableMetaInfo(String nodeGroupId);
+    
+    public List<String> getSchemasFromTableMetaInfo(String nodeGroupId, String catalog);
+    
+    public List<String> getDefaultSchemaFromTableMetaInfo(String nodeGroupId, String catalog);
+    
+    public List<String> getTablesFromTableMetaInfo(String nodeGroupId, String catalog, String schema);
+    
     
 }

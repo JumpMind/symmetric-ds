@@ -22,13 +22,15 @@ package org.jumpmind.symmetric.job;
 
 import java.util.List;
 
-
+import org.jumpmind.symmetric.model.JobDefinition;
 
 /*
  * An API that provides access to individual jobs and provides job
  * life cycle control
  */
 public interface IJobManager {
+    
+    public void init();
 
     public void startJobs();
     
@@ -41,5 +43,13 @@ public interface IJobManager {
     public List<IJob> getJobs();
     
     public IJob getJob(String name);
+
+    public void saveJob(JobDefinition jobDefinition);
+    
+    public void removeJob(String name);
+    
+    public boolean isStarted();
+    
+    public boolean isJobApplicableToNodeGroup(IJob job);
     
 }

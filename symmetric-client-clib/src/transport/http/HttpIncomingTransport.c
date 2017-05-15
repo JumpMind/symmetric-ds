@@ -29,12 +29,7 @@ long SymHttpIncomingTransport_process(SymHttpIncomingTransport *this, SymDataPro
     CURLcode rc = CURLE_FAILED_INIT;
     CURL *curl = curl_easy_init();
     if (curl) {
-        if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_VERIFIED_SERVERS, 1)) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
-        }
-        if (this->parameterService->is(this->parameterService, SYM_PARAMETER_HTTPS_ALLOW_SELF_SIGNED_CERTS, 1)) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-        }
+        SymCurlConfig_configure(curl, this->parameterService);
         curl_easy_setopt(curl, CURLOPT_URL, this->url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, SymHttpIncomingTransport_writeCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, processor);

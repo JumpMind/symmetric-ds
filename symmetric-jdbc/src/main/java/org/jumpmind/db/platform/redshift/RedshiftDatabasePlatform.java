@@ -27,9 +27,12 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.model.ColumnTypes;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class RedshiftDatabasePlatform extends AbstractJdbcDatabasePlatform {
@@ -87,5 +90,29 @@ public class RedshiftDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     public boolean isClob(int type) {
         return type == Types.CLOB;
+    }
+    
+    @Override
+    public PermissionResult getCreateSymTablePermission(Database database) {     
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, Status.UNIMPLEMENTED);
+        return result;
+    }
+    
+    @Override
+    public PermissionResult getDropSymTablePermission() {     
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, Status.UNIMPLEMENTED);
+        return result;
+    }
+    
+    @Override
+    public PermissionResult getAlterSymTablePermission(Database database) {     
+        PermissionResult result = new PermissionResult(PermissionType.ALTER_TABLE, Status.UNIMPLEMENTED);
+        return result;
+    }
+
+    @Override
+    public PermissionResult getDropSymTriggerPermission() {     
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, Status.UNIMPLEMENTED);
+        return result;
     }
 }

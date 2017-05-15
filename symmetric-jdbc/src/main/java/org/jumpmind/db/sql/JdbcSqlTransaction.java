@@ -63,7 +63,8 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     protected List<Object> markers = new ArrayList<Object>();
     
     protected LogSqlBuilder logSqlBuilder;
-
+    
+    protected List<ISqlTransactionListener> listeners = new ArrayList<ISqlTransactionListener>();
     
     public JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate) {
         this(jdbcSqlTemplate, false);
@@ -74,6 +75,11 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         this.jdbcSqlTemplate = jdbcSqlTemplate;
         this.logSqlBuilder = jdbcSqlTemplate.logSqlBuilder;
         this.init();
+    }
+    
+    @Override
+    public void addSqlTransactionListener(ISqlTransactionListener listener) {
+        listeners.add(listener);
     }
 
     protected void init() {
@@ -109,6 +115,10 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 }
                 if (!autoCommit) {
                    connection.commit();
+                   
+                   for (ISqlTransactionListener listener : listeners) {
+                       listener.transactionCommitted();
+                   }
                 }
             } catch (SQLException ex) {
                 throw jdbcSqlTemplate.translate(ex);
@@ -129,6 +139,11 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 }
                 if (!autoCommit) {
                     connection.rollback();
+                    
+                    for (ISqlTransactionListener listener : listeners) {
+                        listener.transactionRolledBack();
+                    }
+
                 }
             } catch (SQLException ex) {
                 // do nothing

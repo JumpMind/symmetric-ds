@@ -129,12 +129,13 @@ public class OfflinePushService extends AbstractService implements IOfflinePushS
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
                 identity.getNodeId(), status.getChannelId(), remote.getNodeId(), ProcessType.OFFLINE_PUSH));
         
+        List<OutgoingBatch> extractedBatches = null;
         try {
             transport = (FileOutgoingTransport) transportManager.getPushTransport(remote, identity, null, null);
 
-            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(processInfo, remote, status.getChannelId(), transport);
+            extractedBatches = dataExtractorService.extract(processInfo, remote, status.getChannelId(), transport);
             if (extractedBatches.size() > 0) {
-                log.info("Offline push data written for {}", remote);
+                log.info("Offline push data written for {} at {}", remote, transport.getOutgoingDir());
                 List<BatchAck> batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService);
                 status.updateOutgoingStatus(extractedBatches, batchAcks);
             }
@@ -144,6 +145,7 @@ public class OfflinePushService extends AbstractService implements IOfflinePushS
             }
         } catch (Exception ex) {
             processInfo.setStatus(Status.ERROR);
+            log.error("Failed to write offline file", ex);
         } finally {
             transport.close();
             transport.complete(processInfo.getStatus() == Status.OK);

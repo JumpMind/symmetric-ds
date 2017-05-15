@@ -62,12 +62,12 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
 "insert into $(incoming_batch) (batch_id, node_id, channel_id, status, network_millis, filter_millis, database_millis, failed_row_number, failed_line_number, byte_count,   " + 
 "  statement_count, fallback_insert_count, fallback_update_count, ignore_count, ignore_row_count, missing_delete_count, skip_count, sql_state, sql_code, sql_message,                         " + 
 "  last_update_hostname, last_update_time, summary, create_time)                                                                                                       " + 
-"  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)                                                                        " );
+"  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp)                                                                        " );
 
         putSql("updateIncomingBatchSql" ,"" + 
 "update $(incoming_batch) set status = ?, error_flag=?, network_millis = ?, filter_millis = ?, database_millis = ?, failed_row_number = ?, failed_line_number = ?, byte_count = ?,         " + 
 "  statement_count = ?, fallback_insert_count = ?, fallback_update_count = ?, ignore_count = ?, ignore_row_count = ?, missing_delete_count = ?, skip_count = ?,  sql_state = ?, sql_code = ?, sql_message = ?,   " + 
-"  last_update_hostname = ?, last_update_time = ?, summary = ? where batch_id = ? and node_id = ?                                                                                     " );
+"  last_update_hostname = ?, last_update_time = current_timestamp, summary = ? where batch_id = ? and node_id = ?                                                                                     " );
 
         putSql("deleteIncomingBatchSql" ,"" + 
 "delete from $(incoming_batch) where batch_id = ? and node_id = ?                                                                                     " );
@@ -75,6 +75,21 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("deleteIncomingBatchByNodeSql" ,"delete from $(incoming_batch) where node_id = ?");
         
         putSql("maxBatchIdsSql", "select max(batch_id) as batch_id, node_id, channel_id from $(incoming_batch) where status = ? group by node_id, channel_id");
+        
+        putSql("selectIncomingBatchSummaryByStatusAndChannelSql",
+                "select count(*) as batches, s.status, sum(s.statement_count) as data, s.node_id, min(s.create_time) as oldest_batch_time, s.channel_id,      "
+                        + " max(s.last_update_time) as last_update_time, b.sql_message as sql_message, min(s.batch_id) as batch_id "
+                        + "  from $(incoming_batch) s join $(incoming_batch) b on b.batch_id=s.batch_id and b.node_id=s.node_id where s.status in (:STATUS_LIST) group by s.status, s.node_id, s.channel_id, b.sql_message order by oldest_batch_time asc   ");
+
+        putSql("selectIncomingBatchSummaryByStatusSql",
+                "select count(*) as batches, status, sum(statement_count) as data, node_id, min(create_time) as oldest_batch_time,      "
+                        + " max(last_update_time) as last_update_time"
+                        + "  from $(incoming_batch) where status in (:STATUS_LIST) group by status, node_id order by oldest_batch_time asc   ");
+
+        putSql("lastUpdateByChannelSql", "select max(last_update_time) as last_update_time, channel_id from $(incoming_batch) group by channel_id");
+        
+        putSql("getAllBatchesSql", "select batch_id, node_id from $(incoming_batch)");
+    
     }
 
 }

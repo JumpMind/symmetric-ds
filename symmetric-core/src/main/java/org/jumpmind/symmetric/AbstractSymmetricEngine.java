@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -239,6 +240,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected AbstractSymmetricEngine(boolean registerEngine) {
         this.registerEngine = registerEngine;
     }
+    
+    public static List<ISymmetricEngine> findEngines() {
+        List<ISymmetricEngine> engines = new ArrayList<ISymmetricEngine>();
+        engines.addAll(registeredEnginesByName.values());
+        return engines;
+    }
 
     /**
      * Locate a {@link StandaloneSymmetricEngine} in the same JVM
@@ -331,7 +338,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.concurrentConnectionManager = new ConcurrentConnectionManager(parameterService,
                 statisticManager);
         this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
-                statisticManager, extensionService, stagingManager);
+                statisticManager, extensionService);
         this.transformService = new TransformService(parameterService, symmetricDialect,
                 configurationService, extensionService);
         this.loadFilterService = new LoadFilterService(parameterService, symmetricDialect,
@@ -618,6 +625,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                         parameterService.getSyncUrl())) {
                             heartbeat(false);
                         }
+                        
+                        if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIG_AT_STARTUP, true)) {
+                            pullService.pullConfigData(false);
+                        }
 
                     } else {
                         log.info("Starting unregistered node [group={}, externalId={}]",
@@ -625,6 +636,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         isInitialized = true;
                     }
 
+                    jobManager.init();
+                    nodeService.captureTableMetaInfo(false, parameterService.getTablePrefix());
+                    
                     if (startJobs && jobManager != null) {
                         jobManager.startJobs();
                     }
@@ -702,8 +716,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 configurationService.deleteAllNodeGroupLinks();
             }
 
-            // this should remove all triggers because we have removed all the trigger configuration
-            triggerRouterService.syncTriggers();            
+            if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_LOCK)) != null) {
+               // this should remove all triggers because we have removed all the trigger configuration
+               triggerRouterService.syncTriggers();            
+            }
         } catch (SqlException ex) {
             log.warn("Error while trying to remove triggers on tables", ex);
         }

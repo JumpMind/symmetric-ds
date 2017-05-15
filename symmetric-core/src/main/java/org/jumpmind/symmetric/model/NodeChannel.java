@@ -55,6 +55,22 @@ public class NodeChannel implements Serializable {
     public String getChannelId() {
         return channel.getChannelId();
     }
+    
+    public void setDataEventActionShortName(String dataEventAction) {
+        setDataEventAction(NodeGroupLinkAction.fromShortName(dataEventAction));
+    }
+    
+    public String getDataEventActionShortName() {
+        return channel.getDataEventAction() == null ? "" : channel.getDataEventAction().getShortName();
+    }
+
+    public void setDataEventAction(NodeGroupLinkAction dataEventAction) {
+        channel.setDataEventAction(dataEventAction);
+    }
+    
+    public NodeGroupLinkAction getDataEventAction() {
+        return channel.getDataEventAction();
+    }
 
     public int getMaxBatchSize() {
         return channel.getMaxBatchSize();

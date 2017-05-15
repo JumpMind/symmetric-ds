@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.model.Monitor;
+import org.jumpmind.symmetric.model.MonitorEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,12 +57,14 @@ public class MonitorTypeMemory extends AbstractMonitorType implements IBuiltInEx
     }
 
     @Override
-    public long check(Monitor monitor) {
+    public MonitorEvent check(Monitor monitor) {
+        MonitorEvent event = new MonitorEvent();
         long usage = 0;
         if (tenuredPool != null) {
             usage = (long) (tenuredPool.getUsage().getUsed() / tenuredPool.getUsage().getMax());
         }
-        return usage;
+        event.setValue(usage);
+        return event;
     }
 
     public String getMessage(long value, long threshold, long period) {

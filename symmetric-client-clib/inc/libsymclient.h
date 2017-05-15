@@ -45,5 +45,6 @@
 #include "util/Map.h"
 #include "common/Constants.h"
 #include "common/Log.h"
+#include "file/FileTriggerTracker.h"
 
 #endif

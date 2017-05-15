@@ -33,7 +33,7 @@ SymStringArray * SymStringArray_addn(SymStringArray *this, char *src, int size) 
     }
     char *str = NULL;
     if (size > 0) {
-        str = (char *) memcpy(malloc(size + 1), src, size);
+        str = (char *) memcpy(malloc((size+1)*sizeof(char)), src, size);
         str[size] = '\0';
     }
     this->array[this->size++] = str;
@@ -55,7 +55,7 @@ SymStringArray * SymStringArray_addf(SymStringArray *this, const char *fmt, ...)
     int sizeNeeded = vsnprintf(NULL, 0, fmt, arglist) + 1;
     va_end(arglist);
 
-    char *str = malloc(sizeNeeded + 1);
+    char *str = malloc((sizeNeeded+1)*sizeof(char));
     va_start(arglist, fmt);
     vsprintf(str, fmt, arglist);
     va_end(arglist);

@@ -1,0 +1,54 @@
+==== Setup an Offline Node
+
+Configuring a node as offline will still allow changes to be captured and batched for replication.  However the push and/or pull jobs that are used to interact with this node will not use the standard http or https protocols to communicate with other nodes for changes.  Instead the local file system will be used for replication.   It is up to the user transport batch (*.csv) files to and from the node based on incoming or outgoing changes.   
+
+* Turn on the offline push and pull jobs.
+
+ifdef::pro[]
+.Configure the offline jobs to run
+image::advanced/offline-start-jobs.png[]
+endif::pro[]
+
+ifndef::pro[]
+[source, SQL]
+----
+INSERT INTO sym_parameter
+(external_id, node_group_id, param_key, param_value, create_time, last_update_by, last_update_time) VALUES
+('ALL', 'ALL', 'start.offline.pull.job', 'true', current_timestamp, 'userid', current_timestamp);
+
+INSERT INTO sym_parameter
+(external_id, node_group_id, param_key, param_value, create_time, last_update_by, last_update_time) VALUES
+('ALL', 'ALL', 'start.offline.push.job', 'true', current_timestamp, 'userid', current_timestamp);
+----
+endif::pro[]
+
+* Turn on the offline.node parameter for the node that should be offline.
+
+ifdef::pro[]
+.Configure the offline parameter for the node that will be offline
+image::advanced/offline-node-parameter.png[]
+endif::pro[]
+
+ifndef::pro[]
+[source, SQL]
+----
+INSERT INTO sym_parameter
+(external_id, node_group_id, param_key, param_value, create_time, last_update_by, last_update_time) VALUES
+('001', 'STORE', 'node.offline', 'true', current_timestamp, 'userid', current_timestamp);
+----
+endif::pro[]
+
+* Setting these parameters immediately affects the behavior of the push and pull jobs, so outgoing batches intended for the offline node are now written as files.  Other nodes are unaffected and will continue to synchronize normally.  All outstanding batches for this node are immediately written to files.  As new changes occur going forward, any batches for this will also be written as files.  In this example, two batches of data were waiting to sync, so they are written to files.
+
+* At the offline store node, the parameter immediately affects the behavior of the push and pull jobs, so outgoing batches intended for CORP are now written as files. Other nodes are unaffected. All outstanding batches for CORP are immediately written to files. As new changes occur going forward, any batches for CORP will also be written as files. In this example, two batches of data are written.
+
+image::advanced/offline_sync_node1_before.png[]
+
+* Finally, move the batch files to their respective incoming folder. After moving the files, the folders will contain the files depicted below.
+
+image::advanced/offline_sync.png[]
+
+==== Turn offline node online again
+
+To configure the node online again simply remove the parameter entries from step 2 above.  As an additional step to save resources the offline jobs can be stopped as well from step 1 above if there are not any nodes operating in an offline mode.
+

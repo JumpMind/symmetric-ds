@@ -21,8 +21,9 @@
 #include "service/DataLoaderService.h"
 #include "common/Log.h"
 
-static void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *remote, SymNode *local, SymNodeSecurity *localSecurity,
-        SymList *incomingBatches) {
+
+void SymDataLoaderService_sendAck(SymDataLoaderService *this, SymNode *remote, SymNode *local, SymNodeSecurity *localSecurity,
+            SymList *incomingBatches) {
     int sendAck = -1;
     int numberOfStatusSendRetries = this->parameterService->getInt(this->parameterService,
             SYM_PARAMETER_DATA_LOADER_NUM_OF_ACK_RETRIES, 5);
@@ -50,6 +51,19 @@ static SymList * SymDataLoaderService_loadDataFromTransport(SymDataLoaderService
     SymLog_debug("Transport rc = %ld" , rc);
 
     SymList *batchesProcessed = processor->getBatchesProcessed(processor);
+
+    if (status->failed) {
+        int i;
+        for (i = 0; i < batchesProcessed->size; ++i) {
+            SymIncomingBatch* batch = batchesProcessed->get(batchesProcessed, i);
+            if (SymStringUtils_equals(batch->status, "LD")) {
+                batch->status = "ER";
+                batch->sqlCode = status->status;
+                batch->sqlMessage = status->failureMessage;
+            }
+        }
+    }
+
     if (writer->isSyncTriggersNeeded) {
         this->triggerRouterService->syncTriggers(this->triggerRouterService, 0);
     }
@@ -169,6 +183,7 @@ SymDataLoaderService * SymDataLoaderService_new(SymDataLoaderService *this, SymP
     this->incomingBatchService = incomingBatchService;
     this->dataLoaderFactory = SymDefaultDataLoaderFactory_new(NULL, parameterService, incomingBatchService, platform, dialect);
 
+    this->sendAck = (void *) &SymDataLoaderService_sendAck;
     this->loadDataFromPull = (void *) &SymDataLoaderService_loadDataFromPull;
     this->loadDataFromRegistration = (void *) &SymDataLoaderService_loadDataFromRegistration;
     this->loadDataFromOfflineTransport = (void *) &SymDataLoaderService_loadDataFromOfflineTransport;

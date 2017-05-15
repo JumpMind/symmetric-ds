@@ -53,6 +53,10 @@ int SymSqliteDialect_initTablesAndDatabaseObjects(SymDialect *super) {
     create_if_missing(super, "sym_trigger", CREATE_SYM_TRIGGER);
     create_if_missing(super, "sym_trigger_hist", CREATE_SYM_TRIGGER_HIST);
     create_if_missing(super, "sym_trigger_router", CREATE_SYM_TRIGGER_ROUTER);
+    create_if_missing(super, "sym_file_incoming", CREATE_SYM_FILE_INCOMING);
+    create_if_missing(super, "sym_file_trigger", CREATE_SYM_FILE_TRIGGER);
+    create_if_missing(super, "sym_file_trigger_router", CREATE_SYM_FILE_TRIGGER_ROUTER);
+    create_if_missing(super, "sym_file_snapshot", CREATE_SYM_FILE_SNAPSHOT);
     SymLog_info("Done with auto update of SymmetricDS tables");
     return 0;
 }

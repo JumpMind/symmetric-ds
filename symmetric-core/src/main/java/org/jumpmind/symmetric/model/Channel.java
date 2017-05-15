@@ -1,5 +1,5 @@
 /**
- * Licensed to JumpMind Inc under one or more contributor
+] * Licensed to JumpMind Inc under one or more contributor
  * license agreements.  See the NOTICE file distributed
  * with this work for additional information regarding
  * copyright ownership.  JumpMind Inc licenses this file
@@ -71,7 +71,9 @@ public class Channel implements Serializable {
     
     private boolean fileSyncFlag = false;
 
-    private String queue;
+    private String queue = "default";
+
+    private NodeGroupLinkAction dataEventAction = null;
     
     public Channel() {
     }
@@ -285,6 +287,14 @@ public class Channel implements Serializable {
 
     public void setMaxKBytesPerSecond(BigDecimal maxKBytesPerSecond) {
         this.maxKBytesPerSecond = maxKBytesPerSecond;
+    }
+
+    public NodeGroupLinkAction getDataEventAction() {
+        return dataEventAction;
+    }
+
+    public void setDataEventAction(NodeGroupLinkAction dataEventAction) {
+        this.dataEventAction = dataEventAction;
     }
 
     @Override

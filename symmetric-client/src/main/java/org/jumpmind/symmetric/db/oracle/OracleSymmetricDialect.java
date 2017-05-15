@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -357,5 +358,11 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
     public String getTemplateNumberPrecisionSpec() {
         return parameterService.getString(ParameterConstants.DBDIALECT_ORACLE_TEMPLATE_NUMBER_SPEC,"30,10");
+    }
+    
+    @Override
+    public PermissionType[] getSymTablePermissions() {
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER, PermissionType.EXECUTE};
+        return permissions;
     }
 }

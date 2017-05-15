@@ -29,7 +29,7 @@ import java.io.OutputStream;
 public interface IStagedResource {
 
     public enum State {
-        CREATE, READY, DONE;
+        CREATE, DONE;
 
         public String getExtensionName() {
             return name().toLowerCase();
@@ -39,7 +39,7 @@ public interface IStagedResource {
 
     public BufferedReader getReader();
 
-    public BufferedWriter getWriter();
+    public BufferedWriter getWriter(long threshold);
     
     public OutputStream getOutputStream();
 
@@ -68,5 +68,9 @@ public interface IStagedResource {
     public boolean exists();
     
     public boolean isInUse();
+
+    public void dereference();
+
+    public void reference();
 
 }

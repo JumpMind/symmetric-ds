@@ -81,6 +81,7 @@ import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IDataService;
@@ -191,14 +192,14 @@ public class DataService extends AbstractService implements IDataService {
 
                         } else {
                             log.error(
-                                    "Could not reload table for node {} because the router {} target node group id {} did not match",
-                                    new Object[] { request.getTargetNodeId(),
+                                    "Could not reload table {} for node {} because the router {} target node group id {} did not match",
+                                    new Object[] { trigger.getSourceTableName(), request.getTargetNodeId(),
                                             request.getRouterId(), link.getTargetNodeGroupId() });
                         }
                     } else {
                         log.error(
-                                "Could not reload table for node {} because the router {} source node group id {} did not match",
-                                new Object[] { request.getTargetNodeId(), request.getRouterId(),
+                                "Could not reload table {}  for node {} because the router {} source node group id {} did not match",
+                                new Object[] { trigger.getSourceTableName(), request.getTargetNodeId(), request.getRouterId(),
                                         link.getSourceNodeGroupId() });
                     }
                 } else {
@@ -208,7 +209,7 @@ public class DataService extends AbstractService implements IDataService {
                                     request.getRouterId() });
                 }
             } else {
-                log.error("Could not reload table for node {} because the node could not be found",
+                log.error("Could not reload table for node {} because the target node could not be found",
                         request.getTargetNodeId());
             }
         }
@@ -313,12 +314,12 @@ public class DataService extends AbstractService implements IDataService {
                 overrideInitialLoadSelect != null ? overrideInitialLoadSelect : triggerRouter
                         .getInitialLoadSelect(), null, triggerHistory, channelId,
                 null, null);
+        data.setNodeList(targetNode.getNodeId());
         if (isLoad) {
             return insertDataAndDataEventAndOutgoingBatch(transaction, data,
                     targetNode.getNodeId(), triggerRouter.getRouter().getRouterId(), isLoad,
                     loadId, createBy, status);
         } else {
-            data.setNodeList(targetNode.getNodeId());
             return insertData(transaction, data);
         }
     }
@@ -350,10 +351,10 @@ public class DataService extends AbstractService implements IDataService {
     
     public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo) {
 
-        if (engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS)) {
+        if (engine.getClusterService().lock(ClusterConstants.SYNC_TRIGGERS)) {
             try {
                 synchronized (engine.getTriggerRouterService()) {
-                    engine.getClusterService().lock(ClusterConstants.SYNCTRIGGERS);
+                    engine.getClusterService().lock(ClusterConstants.SYNC_TRIGGERS);
 
                     boolean isFullLoad = reloadRequests == null 
                             || (reloadRequests.size() == 1 && reloadRequests.get(0).isFullLoadRequest());
@@ -391,7 +392,7 @@ public class DataService extends AbstractService implements IDataService {
 
                         transaction = platform.getSqlTemplate().startSqlTransaction();
 
-                        long loadId = engine.getSequenceService().nextVal(transaction,
+                        long loadId = engine.getSequenceService().nextVal(transaction, 
                                 Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
                         processInfo.setCurrentLoadId(loadId);
                         
@@ -424,11 +425,19 @@ public class DataService extends AbstractService implements IDataService {
                         Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests);
                         
                         String symNodeSecurityReloadChannel = null;
+                        int totalTableCount = 0;
                         try {
-                        	symNodeSecurityReloadChannel = triggerRoutersByHistoryId.get(triggerHistories.get(0)
-                        			.getTriggerHistoryId()).get(0).getTrigger().getReloadChannelId();
+                        	for (List<TriggerRouter> triggerRouterList : triggerRoutersByHistoryId.values()) {
+                        		if (triggerRouterList.size() > 0) {
+                        			TriggerRouter tr = triggerRouterList.get(0);
+                        			symNodeSecurityReloadChannel = tr.getTrigger().getReloadChannelId();
+                        		}
+                        		totalTableCount += triggerRouterList.size();
+                        	}
                         }
                         catch (Exception e) { }
+                        
+                        processInfo.setDataCount(totalTableCount);
                         
                         if (isFullLoad || (reloadRequests != null && reloadRequests.size() > 0)) {
                             insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,
@@ -517,7 +526,7 @@ public class DataService extends AbstractService implements IDataService {
                     }
                 }
             } finally {
-                engine.getClusterService().unlock(ClusterConstants.SYNCTRIGGERS);
+                engine.getClusterService().unlock(ClusterConstants.SYNC_TRIGGERS);
             }
         } else {
             log.info("Not attempting to insert reload events because sync trigger is currently running");
@@ -1082,11 +1091,11 @@ public class DataService extends AbstractService implements IDataService {
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
                 CsvUtils.escapeCsvData(sql), null, history, isLoad ? reloadChannelId : channelId,
                 null, null);
+        data.setNodeList(targetNode.getNodeId());
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
                     Constants.UNKNOWN_ROUTER_ID, isLoad, loadId, createBy, Status.NE);
         } else {
-            data.setNodeList(targetNode.getNodeId());
             insertData(transaction, data);
         }
     }
@@ -1102,28 +1111,17 @@ public class DataService extends AbstractService implements IDataService {
         Data data = new Data(history.getSourceTableName(), DataEventType.BSH,
                 CsvUtils.escapeCsvData(script), null, history,
                 isLoad ? reloadChannelId : channelId, null, null);
+        data.setNodeList(targetNode.getNodeId());
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
                     Constants.UNKNOWN_ROUTER_ID, isLoad, loadId, createBy, Status.NE);
         } else {
-            data.setNodeList(targetNode.getNodeId());
             insertData(transaction, data);
         }
     }
 
     public int countDataInRange(long firstDataId, long secondDataId) {
         return sqlTemplate.queryForInt(getSql("countDataInRangeSql"), firstDataId, secondDataId);
-    }
-
-    public void checkForAndUpdateMissingChannelIds(long firstDataId, long lastDataId) {
-        int numberUpdated = sqlTemplate.update(getSql("checkForAndUpdateMissingChannelIdSql"),
-                Constants.CHANNEL_DEFAULT, firstDataId, lastDataId);
-        if (numberUpdated > 0) {
-            log.warn(
-                    "There were {} data records found between {} and {} that an invalid channel_id.  Updating them to be on the '{}' channel.",
-                    new Object[] { numberUpdated, firstDataId, lastDataId,
-                            Constants.CHANNEL_DEFAULT });
-        }
     }
 
     public void insertCreateEvent(final Node targetNode, TriggerHistory triggerHistory, String routerId,
@@ -1160,12 +1158,12 @@ public class DataService extends AbstractService implements IDataService {
         Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.CREATE,
                 null, null, triggerHistory, isLoad ? reloadChannelId
                         : Constants.CHANNEL_CONFIG, null, null);
+        data.setNodeList(targetNode.getNodeId());
         try {
             if (isLoad) {
                 insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
                         routerId, isLoad, loadId, createBy, Status.NE);
             } else {
-                data.setNodeList(targetNode.getNodeId());
                 insertData(transaction, data);
             }
         } catch (UniqueKeyException e) {
@@ -1236,10 +1234,8 @@ public class DataService extends AbstractService implements IDataService {
                                             : routerId }, new int[] { Types.NUMERIC, Types.NUMERIC,
                                     Types.VARCHAR });
         } catch (RuntimeException ex) {
-            log.error("Could not insert a data event: data_id={} batch_id={} router_id={}",
-                    new Object[] { dataId, batchId, routerId });
-            log.error("", ex);
-            throw ex;
+            throw new RuntimeException(String.format("Could not insert a data event: data_id=%s batch_id=%s router_id=%s",
+                    dataId, batchId, routerId ), ex);
         }
     }
 
@@ -1357,6 +1353,7 @@ public class DataService extends AbstractService implements IDataService {
         outgoingBatch.setCreateBy(createBy);
         outgoingBatch.setLoadFlag(isLoad);
         outgoingBatch.incrementEventCount(eventType);
+        outgoingBatch.incrementDataEventCount();
         if (tableName != null) {            
             outgoingBatch.incrementTableCount(tableName.toLowerCase());
         }
@@ -1413,7 +1410,7 @@ public class DataService extends AbstractService implements IDataService {
         Node sourceNode = engine.getNodeService().findIdentity();
         Node targetNode = engine.getNodeService().findNode(nodeId);
         if (targetNode == null) {
-            log.error("Could not send schema to the node {}.  It does not exist", nodeId);
+            log.error("Could not send schema to the node {}.  The target node does not exist", nodeId);
             return false;
         }
 
@@ -1549,81 +1546,139 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void reloadMissingForeignKeyRows(String nodeId, long dataId) {
-        Data data = findData(dataId);
-        Table table = platform.getTableFromCache(data.getTableName(), false);
-        Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
-
-        List<TableRow> tableRows = new ArrayList<TableRow>();
-        Row row = new Row(dataMap.size());
-        row.putAll(dataMap);
-        tableRows.add(new TableRow(table, row, null));
-        List<TableRow> foreignTableRows;
         try {
-            foreignTableRows = getForeignTableRows(tableRows, new HashSet<TableRow>());
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
+            Data data = findData(dataId);
+            log.debug("reloadMissingForeignKeyRows for nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
+            TriggerHistory hist = data.getTriggerHistory();
+            Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+            Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+    
+            List<TableRow> tableRows = new ArrayList<TableRow>();
+            Row row = new Row(dataMap.size());
+            row.putAll(dataMap);
+            tableRows.add(new TableRow(table, row, null, null, null));
+            List<TableRow> foreignTableRows;
+            try {
+                foreignTableRows = getForeignTableRows(tableRows, new HashSet<TableRow>());
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
+            }
+            
+            if (foreignTableRows.isEmpty()) {
+                log.info("Could not determine foreign table rows to fix foreign key violation for "
+                        + "nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
+            }
+            
+            Collections.reverse(foreignTableRows);
+            Set<TableRow> visited = new HashSet<TableRow>();
+            
+            for (TableRow foreignTableRow : foreignTableRows) {
+                if (visited.add(foreignTableRow)) {
+                    Table foreignTable = foreignTableRow.getTable();
+                    String catalog = foreignTable.getCatalog();
+                    String schema = foreignTable.getSchema();
+                    if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
+                        catalog = null;
+                    }
+                    if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
+                        schema = null;
+                    }
+                
+                    log.info("Issuing foreign key correction reload "
+                            + "nodeId {} catalog '{}' schema '{}' foreign table name '{}' fk name '{}' where sql '{}' "
+                            + "to correct dataId '{}' table '{}' for column '{}'",
+                            nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(), 
+                            dataId, data.getTableName(), foreignTableRow.getReferenceColumnName());
+                    reloadTable(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql());
+                }
+            }        
         }
-        
-        Collections.reverse(foreignTableRows);
-        for (TableRow foreignTableRow : foreignTableRows) {
-            Table foreignTable = foreignTableRow.getTable();
-            String catalog = foreignTable.getCatalog();
-            String schema = foreignTable.getSchema();
-            if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
-                catalog = null;
-            }
-            if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
-                schema = null;
-            }
-
-            reloadTable(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql());
-        }        
+        catch (Exception e) {
+            log.error("Unknown exception while processing foreign key for node id: " + nodeId + " data id " + dataId, e);
+        }
     }
 
     protected List<TableRow> getForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited) throws CloneNotSupportedException {
         List<TableRow> fkDepList = new ArrayList<TableRow>();
         for (TableRow tableRow : tableRows) {
-            if (visited.add(tableRow)) {
+            if (!visited.contains(tableRow)) {
+                visited.add(tableRow);
                 for (ForeignKey fk : tableRow.getTable().getForeignKeys()) {
                     Table table = platform.getTableFromCache(fk.getForeignTableName(), false);
+                    if (table == null) {
+                        table = fk.getForeignTable();
+                        if (table == null) {
+                            table = platform.getTableFromCache(tableRow.getTable().getCatalog(), tableRow.getTable().getSchema(),
+                                    fk.getForeignTableName(), false);
+                        }
+                    }
                     if (table != null) {
                         Table foreignTable = (Table) table.clone();
                         for (Column column : foreignTable.getColumns()) {
                             column.setPrimaryKey(false);
                         }
                         Row whereRow = new Row(fk.getReferenceCount());
+                        String referenceColumnName = null;
+                        boolean[] nullValues = new boolean[fk.getReferenceCount()];
+                        int index = 0;
                         for (Reference ref : fk.getReferences()) {
                             Column foreignColumn = foreignTable.findColumn(ref.getForeignColumnName());
                             Object value = tableRow.getRow().get(ref.getLocalColumnName());
+                            nullValues[index++] = value == null;
+                            referenceColumnName = ref.getLocalColumnName();
                             whereRow.put(foreignColumn.getName(), value);
                             foreignColumn.setPrimaryKey(true);
                         }
-                        
-                        DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable, null);
-                        String whereSql = whereSt.buildDynamicSql(symmetricDialect.getBinaryEncoding(), whereRow, false, true, 
-                                foreignTable.getPrimaryKeyColumns()).substring(6);
-                        String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
-                        if (delimiter != null && delimiter.length() > 0) {
-                            whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
+
+                        boolean allNullValues = true;
+                        for (boolean b : nullValues) {
+                            if (!b) {
+                                allNullValues = false;
+                                break;
+                            }
                         }
-                        
-                        Row foreignRow = new Row(foreignTable.getColumnCount());
-                        if (foreignTable.getForeignKeyCount() > 0) {
-                            DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
-                            Map<String, Object> values = sqlTemplate.queryForMap(selectSt.getSql(), 
-                                    whereRow.toArray(foreignTable.getPrimaryKeyColumnNames()));
-                            foreignRow.putAll(values);
+
+                        if (!allNullValues) {
+                            DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable.getCatalog(),
+                                    foreignTable.getSchema(), foreignTable.getName(), foreignTable.getPrimaryKeyColumns(),
+                                    foreignTable.getColumns(), nullValues, null);
+                            String whereSql = whereSt.buildDynamicSql(symmetricDialect.getBinaryEncoding(), whereRow, false, true,
+                                    foreignTable.getPrimaryKeyColumns()).substring(6);
+                            String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
+                            if (delimiter != null && delimiter.length() > 0) {
+                                whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
+                            }
+
+                            Row foreignRow = new Row(foreignTable.getColumnCount());
+                            if (foreignTable.getForeignKeyCount() > 0) {
+                                DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
+                                Object[] keys = whereRow.toArray(foreignTable.getPrimaryKeyColumnNames());
+                                Map<String, Object> values = sqlTemplate.queryForMap(selectSt.getSql(), keys);
+                                if (values == null) {
+                                    log.warn(
+                                            "Unable to reload rows for missing foreign key data for table '{}', parent data not found.  Using sql='{}' with keys '{}'",
+                                            table.getName(), selectSt.getSql(), keys);
+                                } else {
+                                    foreignRow.putAll(values);
+                                }
+                            }
+
+                            TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql, referenceColumnName, fk.getName());
+                            fkDepList.add(foreignTableRow);
+                            log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
+                        } else {
+                            log.debug("The foreign table reference was null for {}", foreignTable.getName());
                         }
-    
-                        TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql);
-                        fkDepList.add(foreignTableRow);
+                    } else {
+                        log.debug("Foreign table '{}' not found for foreign key '{}'", fk.getForeignTableName(), fk.getName());
+                    }
+                    if (fkDepList.size() > 0) {
+                        fkDepList.addAll(getForeignTableRows(fkDepList, visited));
                     }
                 }
             }
         }
-        if (fkDepList.size() > 0) {
-            fkDepList.addAll(getForeignTableRows(fkDepList, visited));
-        }
+
         return fkDepList;
     }
 
@@ -1804,18 +1859,24 @@ public class DataService extends AbstractService implements IDataService {
                 .getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         List<DataGap> gaps = findDataGapsByStatus(DataGap.Status.GP);
         boolean lastGapExists = false;
-        long maxDataEventId = 0;
+        long lastGapStartId = 0;
         for (DataGap dataGap : gaps) {
             lastGapExists |= dataGap.gapSize() >= maxDataToSelect - 1;
-            maxDataEventId = maxDataEventId < dataGap.getEndId() ? dataGap.getEndId() : maxDataEventId;
+            lastGapStartId = Math.max(lastGapStartId, dataGap.getEndId());
         }
 
         if (!lastGapExists) {
-            maxDataEventId = maxDataEventId == 0 ? findMaxDataEventDataId() : maxDataEventId;
-            if (maxDataEventId > 0) {
-                maxDataEventId++;
+            if (lastGapStartId == 0) {
+                long maxRoutedDataId = findMaxDataEventDataId();
+                long minDataId = findMinDataId() - 1; // -1 to make sure the ++ operation doesn't move past a piece of unrouted data.
+                // At this point, determine the startId as the GREATER of the smallest known data id 
+                // or the largest known data id that was already routed.
+                lastGapStartId = Math.max(minDataId, maxRoutedDataId); 
             }
-            DataGap gap = new DataGap(maxDataEventId, maxDataEventId + maxDataToSelect);
+            if (lastGapStartId > 0) {
+                lastGapStartId++;
+            }
+            DataGap gap = new DataGap(lastGapStartId, lastGapStartId + maxDataToSelect);
             log.info("Inserting missing last data gap: {}", gap);
             insertDataGap(gap);
             gaps = findDataGaps();
@@ -2023,6 +2084,10 @@ public class DataService extends AbstractService implements IDataService {
         return sqlTemplateDirty.queryForLong(getSql("selectMaxDataIdSql"));
     }
     
+    public long findMinDataId() {
+        return sqlTemplateDirty.queryForLong(getSql("selectMinDataIdSql"));
+    }
+    
     
     @Override
     public void deleteCapturedConfigChannelData() {
@@ -2032,15 +2097,50 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    @Override
+    public Map<String, Date> getLastDataCaptureByChannel() {
+        Map<String, Date> captureMap = new HashMap<String, Date>();
+        LastCaptureByChannelMapper mapper = new LastCaptureByChannelMapper(captureMap);
+        sqlTemplate.query(getSql("findLastCaptureTimeByChannelSql"), mapper);
+        return mapper.getCaptureMap();
+    }
+    
     class TableRow {
         Table table;
         Row row;
         String whereSql;
+        String referenceColumnName;
+        String fkName;
+        String fkColumnValues = null;
         
-        public TableRow(Table table, Row row, String whereSql) {
+        public TableRow(Table table, Row row, String whereSql, String referenceColumnName, String fkName) {
             this.table = table;
             this.row = row;
             this.whereSql = whereSql;
+            this.referenceColumnName = referenceColumnName;
+            this.fkName = fkName;
+        }
+        
+        protected String getFkColumnValues() {
+            if (fkColumnValues == null) {
+                StringBuilder builder = new StringBuilder();
+                ForeignKey[] keys = table.getForeignKeys();
+                for (ForeignKey foreignKey : keys) {
+                    if (foreignKey.getName().equals(fkName)) {
+                        Reference[] refs = foreignKey.getReferences();
+                        for (Reference ref : refs) {
+                            Object value = row.get(ref.getLocalColumnName());
+                            if (value != null) {
+                                builder.append("\"").append(value).append("\",");
+                            } else {
+                                builder.append("null,");
+                            }
+                        }
+                    }
+                }
+                fkColumnValues = builder.toString();
+            }
+            return fkColumnValues;
         }
 
         @Override
@@ -2049,6 +2149,7 @@ public class DataService extends AbstractService implements IDataService {
             int result = 1;
             result = prime * result + ((table == null) ? 0 : table.hashCode());
             result = prime * result + ((whereSql == null) ? 0 : whereSql.hashCode());
+            result = prime * result + ((getFkColumnValues() == null) ? 0 : getFkColumnValues().hashCode());
             return result;
         }
 
@@ -2056,9 +2157,15 @@ public class DataService extends AbstractService implements IDataService {
         public boolean equals(Object o) {
             if (o instanceof TableRow) {
                 TableRow tr = (TableRow) o;
-                return tr.table.equals(table) && tr.whereSql.equals(whereSql);
+                return tr.table.equals(table) && tr.whereSql.equals(whereSql) 
+                        && tr.getFkColumnValues().equals(getFkColumnValues().toString());
             }
             return false;
+        }
+        
+        @Override
+        public String toString() {
+            return table.getFullyQualifiedTableName() + ":" + whereSql + ":" + getFkColumnValues();
         }
                 
         public Table getTable() {
@@ -2072,6 +2179,15 @@ public class DataService extends AbstractService implements IDataService {
         public String getWhereSql() {
             return whereSql;
         }
+        public String getReferenceColumnName() {
+            return referenceColumnName;
+        }
+        public String getFkName() {
+            return fkName;
+        }
+        
+        
+        
     }
 
     public class DataMapper implements ISqlRowMapper<Data> {
@@ -2082,7 +2198,8 @@ public class DataService extends AbstractService implements IDataService {
             data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA", false));
             data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
             data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID", false));
-            data.putAttribute(CsvData.ATTRIBUTE_TABLE_NAME, row.getString("TABLE_NAME"));
+            String tableName = row.getString("TABLE_NAME");
+            data.putAttribute(CsvData.ATTRIBUTE_TABLE_NAME, tableName);
             data.setDataEventType(DataEventType.getEventType(row.getString("EVENT_TYPE")));
             data.putAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID, row.getString("SOURCE_NODE_ID"));
             data.putAttribute(CsvData.ATTRIBUTE_EXTERNAL_DATA, row.getString("EXTERNAL_DATA"));
@@ -2095,7 +2212,28 @@ public class DataService extends AbstractService implements IDataService {
             TriggerHistory triggerHistory = engine.getTriggerRouterService().getTriggerHistory(
                     triggerHistId);
             if (triggerHistory == null) {
-                triggerHistory = new TriggerHistory(triggerHistId);
+                Trigger trigger = null;
+                Table table = null;
+                List<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getAllTriggerRoutersForCurrentNode(engine.getNodeService().findIdentity().getNodeGroupId());
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    if (triggerRouter.getTrigger().getSourceTableName().equalsIgnoreCase(tableName)) {
+                        trigger = triggerRouter.getTrigger();
+                        table = platform.getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), tableName, false);
+                        break;
+                    }
+                }
+                
+                if (table != null && trigger != null) {
+                    triggerHistory = new TriggerHistory(table, trigger, engine.getSymmetricDialect().getTriggerTemplate());
+                    triggerHistory.setTriggerHistoryId(triggerHistId);
+                    triggerHistory.setLastTriggerBuildReason(TriggerReBuildReason.TRIGGER_HIST_MISSIG);
+                    engine.getTriggerRouterService().insert(triggerHistory);
+                    log.warn("Could not find a trigger history row for the table {} for data_id {}.  \"Attempting\" to generate a new trigger history row", tableName, data.getDataId());
+                } else {
+                    triggerHistory = new TriggerHistory(-1);
+                    log.warn("A captured data row could not be matched with an existing trigger history "
+                            + "row and we could not find a matching trigger.  The data_id of {} (table {}) will be ignored", data.getDataId(), data.getTableName());
+                }
             } else {
                 if (!triggerHistory.getSourceTableName().equals(data.getTableName())) {
                     log.warn("There was a mismatch between the data table name {} and the trigger_hist "
@@ -2111,6 +2249,24 @@ public class DataService extends AbstractService implements IDataService {
             }
             data.setTriggerHistory(triggerHistory);
             return data;
+        }
+    }
+    
+    public class LastCaptureByChannelMapper implements ISqlRowMapper<String> {
+        private Map<String, Date> captureMap;
+        
+        public LastCaptureByChannelMapper(Map<String, Date> map) {
+            captureMap = map;
+        }
+        
+        public Map<String, Date> getCaptureMap() {
+            return captureMap;
+        }
+        
+        @Override
+        public String mapRow(Row row) {
+            captureMap.put(row.getString("CHANNEL_ID"), row.getDateTime("CREATE_TIME"));
+            return null;
         }
     }
 }

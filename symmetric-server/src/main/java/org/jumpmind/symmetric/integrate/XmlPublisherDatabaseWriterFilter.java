@@ -63,8 +63,14 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
  */
 public class XmlPublisherDatabaseWriterFilter extends AbstractXmlPublisherExtensionPoint implements
         IPublisherFilter, INodeGroupExtensionPoint {
+    
+    public static final String PUBLISH_ON_COMPLETE = "COMPLETE";
+    
+    public static final String PUBLISH_ON_COMMIT = "COMMIT";
 
     protected boolean loadDataInTargetDatabase = true;
+    
+    protected String publishOn = PUBLISH_ON_COMPLETE;
 
     public boolean beforeWrite(
             DataContext context, Table table, CsvData data) {
@@ -87,15 +93,12 @@ public class XmlPublisherDatabaseWriterFilter extends AbstractXmlPublisherExtens
         return loadDataInTargetDatabase;
     }
 
-    public void batchComplete(
-            DataContext context) {
-        if (doesXmlExistToPublish(context)) {
-            finalizeXmlAndPublish(context);
-        }
-    }
-
     public void setLoadDataInTargetDatabase(boolean loadDataInTargetDatabase) {
         this.loadDataInTargetDatabase = loadDataInTargetDatabase;
+    }
+    
+    public void setPublishOn(String publishOn) {
+        this.publishOn = publishOn;
     }
 
     public void afterWrite(
@@ -111,8 +114,24 @@ public class XmlPublisherDatabaseWriterFilter extends AbstractXmlPublisherExtens
             DataContext context) {
     }
 
+    public void batchComplete(
+            DataContext context) {
+        if (PUBLISH_ON_COMPLETE.equals(publishOn)) {
+            publish(context);
+        }
+    }
+
     public void batchCommitted(
             DataContext context) {
+        if (PUBLISH_ON_COMMIT.equals(publishOn)) {
+            publish(context);
+        }
+    }
+    
+    private void publish(DataContext context) {
+        if (doesXmlExistToPublish(context)) {
+            finalizeXmlAndPublish(context);
+        }                
     }
 
     public void batchRolledback(

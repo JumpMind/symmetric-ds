@@ -18,29 +18,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.statistic;
 
-import java.io.Writer;
+package org.jumpmind.symmetric.job;
 
-public class DataExtractorStatisticsWriter extends AbstractStatisticsWriter {
+import static org.jumpmind.symmetric.job.JobDefaults.EVERY_TEN_MINUTES_AT_THE_ONE_OCLOCK_HOUR;
 
-    public DataExtractorStatisticsWriter(IStatisticManager statisticManager, Writer out,
-            int notifyAfterByteCount, int notifyAfterLineCount) {
-        super(statisticManager, out, notifyAfterByteCount, notifyAfterLineCount);
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+/*
+ * Background job that checks to see if config needs to be synced from registration server
+ */
+public class SyncConfigJob extends AbstractJob {
+
+    public SyncConfigJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
+        super("job.sync.config", engine, taskScheduler);
+    }
+    
+    @Override
+    public void doJob(boolean force) throws Exception {
+        engine.getPullService().pullConfigData(false);
     }
 
     @Override
-    protected void processNumberOfBytesSoFar(long count) {
-        if (channelId != null) {
-            statisticManager.incrementDataBytesExtracted(channelId, count);
-        }
-    }
-
-    @Override
-    protected void processNumberOfLinesSoFar(long count) {
-        if (channelId != null) {
-            statisticManager.incrementDataExtracted(channelId, count);
-        }
+    public JobDefaults getDefaults() {
+        return new JobDefaults()
+                .schedule(EVERY_TEN_MINUTES_AT_THE_ONE_OCLOCK_HOUR)
+                .description("Check to see if configuration needs resyncd");
     }
 
 }

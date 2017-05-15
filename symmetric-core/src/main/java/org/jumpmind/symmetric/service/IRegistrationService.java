@@ -105,6 +105,13 @@ public interface IRegistrationService {
      */
     public void registerWithServer();
     
+    /**
+     * Client method which attempts to register with the registration.url to
+     * pull configuration if the node has not already been registered. 
+     * Returns true if registered successfully
+     */
+    public boolean attemptToRegisterWithServer(int maxNumberOfAttempts);
+    
     public List<RegistrationRequest> getRegistrationRequests(boolean includeNodesWithOpenRegistrations);
     
     public boolean deleteRegistrationRequest(RegistrationRequest request);

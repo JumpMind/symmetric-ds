@@ -143,13 +143,14 @@ public class BshColumnTransform implements ISingleNewAndOldValueColumnTransform,
                 interpreter.unset(columnName);
             }
             
-            if (result == null) {
-            	return null;
-            }
-            else if (result instanceof String) {
+            if (result instanceof String) {
             	return new NewAndOldValue((String) result, null);
-            } else {
+            } else if (result instanceof NewAndOldValue) {
                 return (NewAndOldValue) result;
+            } else if (result != null) {
+                return new NewAndOldValue(result.toString(), null);
+            } else {
+                return null;
             }
         } catch (TargetError evalEx) {
             Throwable ex = evalEx.getTarget();

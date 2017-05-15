@@ -67,6 +67,8 @@ public class IncomingBatch extends AbstractBatch {
     
     private long failedLineNumber;    
 
+    private long startTime;
+
     private boolean retry;
 
     public IncomingBatch() {
@@ -96,6 +98,7 @@ public class IncomingBatch extends AbstractBatch {
                     .get(DataWriterStatisticConstants.MISSINGDELETECOUNT);
             setIgnoreCount(writerStatistics.get(DataWriterStatisticConstants.IGNORECOUNT));
             ignoreRowCount = writerStatistics.get(DataWriterStatisticConstants.IGNOREROWCOUNT);
+            setStartTime(writerStatistics.get(DataWriterStatisticConstants.STARTTIME));
             setLastUpdatedTime(new Date());
             if (!isSuccess) {
                 failedRowNumber = statementCount;
@@ -192,6 +195,14 @@ public class IncomingBatch extends AbstractBatch {
 
     public void setFailedRowNumber(long failedRowNumber) {
         this.failedRowNumber = failedRowNumber;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
 
     /**

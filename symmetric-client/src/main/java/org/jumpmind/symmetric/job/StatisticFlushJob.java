@@ -21,6 +21,8 @@
 
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.EVERY_5_MINUTES;
+
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -35,19 +37,16 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class StatisticFlushJob extends AbstractJob {
 
     public StatisticFlushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.stat.flush", engine, taskScheduler);
-    }
-
-    @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.START_STATISTIC_FLUSH_JOB);
+        super(ClusterConstants.STATISTICS, engine, taskScheduler);
     }
     
     @Override
-    public String getClusterLockName() {
-        return ClusterConstants.STATISTICS;
-    }
-
+    public JobDefaults getDefaults() {
+        return new JobDefaults()
+                .schedule(EVERY_5_MINUTES)
+                .description("Write statistics out to the database");
+    } 
+    
     @Override
     public void doJob(boolean force) throws Exception {
         engine.getStatisticManager().flush();
@@ -63,5 +62,4 @@ public class StatisticFlushJob extends AbstractJob {
                     * 60000);
         }        
     }
-    
 }

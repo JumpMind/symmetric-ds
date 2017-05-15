@@ -61,7 +61,12 @@ public class GroupletService extends AbstractService implements IGroupletService
                 createSqlReplacementTokens()));
     }
     
+    @Override
     public boolean refreshFromDatabase() {
+        if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
+            return false;
+        }        
+        
         Date date1 = sqlTemplate.queryForObject(getSql("selectMaxGroupletLastUpdateTime"), Date.class);
         Date date2 = sqlTemplate.queryForObject(getSql("selectMaxGroupletLinkLastUpdateTime"), Date.class);
         Date date3 = sqlTemplate.queryForObject(getSql("selectMaxTriggerRouterGroupletLastUpdateTime"), Date.class);
@@ -85,6 +90,10 @@ public class GroupletService extends AbstractService implements IGroupletService
     }
 
     public boolean isSourceEnabled(TriggerRouter triggerRouter) {
+        if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
+            return true;
+        }                
+        
         boolean enabled = true;
         Node node = engine.getNodeService().findIdentity();
         if (node == null) {
@@ -114,6 +123,9 @@ public class GroupletService extends AbstractService implements IGroupletService
     }
     
     public boolean isTargetEnabled(TriggerRouter triggerRouter, Node node) {
+        if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
+            return true;
+        }        
         Set<Node> nodes = new HashSet<Node>(1);
         nodes.add(node);
         return getTargetEnabled(triggerRouter, nodes).size() > 0;
@@ -159,6 +171,10 @@ public class GroupletService extends AbstractService implements IGroupletService
     }
 
     public List<Grouplet> getGrouplets(boolean refreshCache) {
+        if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
+            return new ArrayList<Grouplet>();
+        }        
+        
         long maxCacheTime = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_GROUPLETS_IN_MS);
         List<Grouplet> all = cache;

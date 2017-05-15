@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.postgresql.copy.CopyIn;
 import org.postgresql.copy.CopyManager;
@@ -59,9 +60,9 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
 
     protected boolean needsBinaryConversion;
 
-    public PostgresBulkDatabaseWriter(IDatabasePlatform platform,
+    public PostgresBulkDatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings settings,
             NativeJdbcExtractor jdbcExtractor, int maxRowsBeforeFlush) {
-        super(platform);
+        super(platform, settings);
         this.jdbcExtractor = jdbcExtractor;
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
     }

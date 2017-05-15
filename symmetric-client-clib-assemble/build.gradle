@@ -2,40 +2,48 @@
 //-----INIT-----//
 def csv_loc
 def curl_loc
+def zip_loc
 def sqlite_loc
 def cunit_loc
 def csv_header_loc
 def curl_header_loc
 def sqlite_header_loc
 def cunit_header_loc
+def zip_header_loc
 
 if (target_platform=="windows32" || target_platform=="windows64") {
     csv_loc = csv_loc_windows
     curl_loc = curl_loc_windows
+    zip_loc = zip_loc_windows
     sqlite_loc = sqlite_loc_windows
     cunit_loc = cunit_loc_windows
     csv_header_loc = csv_header_loc_windows
     curl_header_loc = curl_header_loc_windows
     sqlite_header_loc = sqlite_header_loc_windows
     cunit_header_loc = cunit_header_loc_windows
+    zip_header_loc = zip_header_loc_windows
 } else if (target_platform=="osx32" || target_platform=="osx64") {
     csv_loc = csv_loc_mac
     curl_loc = curl_loc_mac
+    zip_loc = zip_loc_mac
     sqlite_loc = sqlite_loc_mac
     cunit_loc = cunit_loc_mac
     csv_header_loc = csv_header_loc_mac
     curl_header_loc = curl_header_loc_mac
     sqlite_header_loc = sqlite_header_loc_mac
     cunit_header_loc = cunit_header_loc_mac
+    zip_header_loc = zip_header_loc_mac
 } else if (target_platform=="linux32" || target_platform=="linux64" || target_platform=="linuxArm") {
     csv_loc = csv_loc_linux
     curl_loc = curl_loc_linux
+    zip_loc = zip_loc_linux
     sqlite_loc = sqlite_loc_linux
     cunit_loc = cunit_loc_linux
     csv_header_loc = csv_header_loc_linux
     curl_header_loc = curl_header_loc_linux
     sqlite_header_loc = sqlite_header_loc_linux
     cunit_header_loc = cunit_header_loc_linux
+    zip_header_loc = zip_header_loc_linux
 } else {
     throw new GradleException('No valid input for \'target_platform\'.')
 }
@@ -135,6 +143,20 @@ subprojects {
                         }
                     }
                 }
+                zip {
+                    if (zip_header_loc!="") {
+                        headers.srcDir "${zip_header_loc}"
+                    }
+                    binaries.withType(SharedLibraryBinary) {
+                        if (targetPlatform.operatingSystem.windows) {
+                            sharedLibraryFile = file("${zip_loc}/libzip.dll")
+                        } else if (targetPlatform.operatingSystem.macOsX) {
+                            sharedLibraryFile = file("${zip_loc}/libzip.dylib")
+                        } else {
+                            sharedLibraryFile = file("${zip_loc}/libzip.so")
+                        }
+                    }
+                }                
 				sqlite {
                     if (sqlite_header_loc!="") {
                         headers.srcDir "${sqlite_header_loc}"
@@ -209,6 +231,7 @@ project(":symmetric-client-clib") {
                             lib library: 'sqlite', linkage: 'shared'
                         }
 						lib library: 'curl', linkage: 'shared'
+                        lib library: 'zip', linkage: 'shared'
                     }
                 }
             }
@@ -243,6 +266,7 @@ project(":symmetric-client-clib-test") {
                             lib library: 'cunit', linkage: 'shared'
                         }
                         lib library: 'curl', linkage: 'shared'
+                        lib library: 'zip', linkage: 'shared'
 		    		}
 				}
 	   		}
@@ -275,6 +299,7 @@ project(":symmetric-client-native") {
                             lib library: 'sqlite', linkage: 'shared'
                         }
                         lib library: 'curl', linkage: 'shared'
+                        lib library: 'zip', linkage: 'shared'
 		    		}
 				}
 	    	}

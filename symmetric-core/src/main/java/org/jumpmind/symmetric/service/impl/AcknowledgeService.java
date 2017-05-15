@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.db.sql.mapper.NumberMapper;
@@ -28,9 +29,6 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.io.stage.IStagedResource;
-import org.jumpmind.symmetric.io.stage.IStagedResource.State;
-import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.BatchAckResult;
 import org.jumpmind.symmetric.model.Channel;
@@ -59,7 +57,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
     public BatchAckResult ack(final BatchAck batch) {
 
         IRegistrationService registrationService = engine.getRegistrationService();
-        IStagingManager stagingManager = engine.getStagingManager();
         IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
         
     	BatchAckResult result = new BatchAckResult(batch);
@@ -98,6 +95,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
                 outgoingBatch.setFilterMillis(batch.getFilterMillis());
                 outgoingBatch.setLoadMillis(batch.getDatabaseMillis());
+                outgoingBatch.setLoadStartTime(new Date(batch.getStartTime()));
                 outgoingBatch.setSqlCode(batch.getSqlCode());
                 outgoingBatch.setSqlState(batch.getSqlState());
                 outgoingBatch.setSqlMessage(batch.getSqlMessage());
@@ -131,15 +129,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     }
                 } else if (status == Status.RS) {
                     log.info("The outgoing batch {} received resend request", outgoingBatch.getNodeBatchId());
-                } else if (!outgoingBatch.isCommonFlag()) {
-                    IStagedResource stagingResource = stagingManager.find(
-                            Constants.STAGING_CATEGORY_OUTGOING, outgoingBatch.getNodeId(),
-                            outgoingBatch.getBatchId());
-                    if (stagingResource != null) {
-                        stagingResource.setState(State.DONE);
-                    }
                 }
-
+                
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
                 if (status == Status.OK) {
                     Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());

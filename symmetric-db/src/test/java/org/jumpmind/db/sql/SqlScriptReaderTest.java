@@ -26,10 +26,21 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+@SuppressWarnings("resource")
 public class SqlScriptReaderTest {
+        
+    @Test
+    public void testReadScript2() throws Exception {
+        SqlScriptReader reader = new SqlScriptReader(new InputStreamReader(getClass().getResourceAsStream("/test-script-2.sql")));
+        int count = 0;
+        while (reader.readSqlStatement() != null) {
+            count++;
+        }
+        assertEquals(36, count);
+    }
 
     @Test
-    public void testReadScript() throws Exception {
+    public void testReadScript1() throws Exception {
         SqlScriptReader reader = new SqlScriptReader(new InputStreamReader(getClass().getResourceAsStream("/test-script-1.sql")));
         
         String nextStatement = reader.readSqlStatement();

@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
@@ -27,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.UnknownHostException;
 import java.sql.Types;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -40,8 +43,10 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
+import org.jumpmind.symmetric.ext.INodeRegistrationListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.RegistrationRequest;
 import org.jumpmind.symmetric.model.RegistrationRequest.RegistrationStatus;
@@ -398,6 +403,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
             }
             throw ex;
         } finally {
+            List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
+            for (INodeRegistrationListener l : registrationListeners) {
+                l.registrationSyncTriggers();
+            }
             symmetricDialect.enableSyncTriggers(transaction);
             close(transaction);
         }
@@ -407,6 +416,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
         long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
                 * randomTimeSlot.getRandomValueSeededByExternalId();
         log.info("Could not register.  Sleeping for {}ms before attempting again.", sleepTimeInMs);
+        List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
+        for (INodeRegistrationListener l : registrationListeners) {
+            l.registrationNextAttemptUpdated((int)(sleepTimeInMs/1000));
+        }
         AppUtils.sleep(sleepTimeInMs);
     }
 
@@ -420,56 +433,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public void registerWithServer() {
         boolean registered = isRegisteredWithServer();
         int maxNumberOfAttempts = parameterService
-                .getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);
+                .getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);        
+        
         while (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0) && engine.isStarted()) {
-            try {
-                log.info("This node is unregistered.  It will attempt to register using the registration.url");
-                String channelId = null;
-                registered = dataLoaderService.loadDataFromPull(null, channelId).getStatus() == Status.DATA_PROCESSED;
-            } catch (ConnectException e) {
-                log.warn("The request to register failed because the client failed to connect to the server.  The connection error message was: {}", e.getMessage());
-            } catch (UnknownHostException e) {
-                log.warn("The request to register failed because the host was unknown.  The unknown host exception was {}", e.getMessage());
-            } catch (ConnectionRejectedException ex) {
-                log.warn("The request to register was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
-            } catch (RegistrationNotOpenException e) {
-                log.warn("Unable to register with server because registration is not open.");
-            } catch (ServiceUnavailableException e) {
-                log.warn("Unable to register with server because the service is not available.  It may be starting up.");
-            } catch (Exception e) {
-                log.error("Unexpected error during registration: " + (StringUtils.isNotBlank(e.getMessage()) ? e.getMessage() : e.getClass().getName()), e);
-            }
 
             maxNumberOfAttempts--;
 
-            if (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
-                registered = isRegisteredWithServer();
-                if (registered) {
-                    log.info("We registered, but were not able to acknowledge our registration.  Sending a sql event to the node where we registered to indicate that we are alive and registered");
-                    Node identity = nodeService.findIdentity();
-                    Node parentNode = nodeService.findNode(identity.getCreatedAtNodeId());
-                    dataService
-                            .insertSqlEvent(
-                                    parentNode,
-                                    "update "
-                                            + tablePrefix
-                                            + "_node_security set registration_enabled=1, registration_time=current_timestamp where node_id='"
-                                            + identity.getNodeId() + "'", false, -1, null);
-                }
-            }
-
-            if (registered) {
-                Node node = nodeService.findIdentity();
-                if (node != null) {
-                    log.info("Successfully registered node [id={}]", node.getNodeId());
-                    extensionService.refresh();
-                    dataService.heartbeat(true);
-                } else {
-                    log.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error");
-                    registered = false;
-                }
-            }
-
+            registered = attemptToRegisterWithServer(maxNumberOfAttempts);
+ 
             if (!registered && maxNumberOfAttempts != 0) {
                 sleepBeforeRegistrationRetry();
             }
@@ -482,10 +453,112 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }
     }
 
+    public synchronized boolean attemptToRegisterWithServer(int maxNumberOfAttempts) {
+        List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
+
+        boolean registered = isRegisteredWithServer();
+        if (!registered) {
+            try {
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationStarting();
+                }
+                log.info("This node is unregistered.  It will attempt to register using the registration.url");
+                String channelId = null;
+                registered = dataLoaderService.loadDataFromPull(null, channelId).getStatus() == Status.DATA_PROCESSED;
+            } catch (ConnectException e) {
+                log.warn(
+                        "The request to register failed because the client failed to connect to the server.  The connection error message was: {}",
+                        e.getMessage());
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationFailed(
+                            "The request to register failed because the client failed to connect to the server.  The connection error message was: "
+                                    + e.getMessage());
+                }
+            } catch (UnknownHostException e) {
+                log.warn("The request to register failed because the host was unknown.  The unknown host exception was: {}", e.getMessage());
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationFailed("The request to register failed because the host was unknown.  The unknown host exception was: "
+                            + e.getMessage());
+                }
+            } catch (ConnectionRejectedException e) {
+                log.warn(
+                        "The request to register was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationFailed(
+                            "The request to register was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
+                }
+            } catch (RegistrationNotOpenException e) {
+                log.warn("Unable to register with server because registration is not open.");
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationFailed("Unable to register with server because registration is not open.");
+                }
+            } catch (ServiceUnavailableException e) {
+                log.warn("Unable to register with server because the service is not available.  It may be starting up.");
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationFailed("Unable to register with server because the service is not available.  It may be starting up.");
+                }
+            } catch (Exception e) {
+                log.error("Unexpected error during registration: "
+                        + (StringUtils.isNotBlank(e.getMessage()) ? e.getMessage() : e.getClass().getName()), e);
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationFailed("Unexpected error during registration: "
+                            + (StringUtils.isNotBlank(e.getMessage()) ? e.getMessage() : e.getClass().getName()));
+                }
+            }
+
+            registered = checkRegistrationSuccessful(registered, maxNumberOfAttempts);
+
+        }
+        return registered;
+    }
+
+    protected boolean checkRegistrationSuccessful(boolean registered, int maxNumberOfAttempts) {
+        if (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
+            registered = isRegisteredWithServer();
+            if (registered) {
+                log.info("We registered, but were not able to acknowledge our registration.  Sending a sql event to the node where we registered to indicate that we are alive and registered");
+                Node identity = nodeService.findIdentity();
+                Node parentNode = nodeService.findNode(identity.getCreatedAtNodeId());
+                dataService
+                        .insertSqlEvent(
+                                parentNode,
+                                "update "
+                                        + tablePrefix
+                                        + "_node_security set registration_enabled=1, registration_time=current_timestamp where node_id='"
+                                        + identity.getNodeId() + "'", false, -1, null);
+            }
+        }
+
+        if (registered) {
+            List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
+
+            Node node = nodeService.findIdentity();
+            if (node != null) {
+                log.info("Successfully registered node [id={}]", node.getNodeId());
+                extensionService.refresh();
+                dataService.heartbeat(true);
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationSuccessful();
+                }
+            } else {
+                log.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error");
+                for (INodeRegistrationListener l : registrationListeners) {
+                    l.registrationFailed("Node identity is missing after registration.  The registration server may be misconfigured or have an error");
+                }
+                registered = false;
+            }
+        }
+        return registered;
+    }
+
     /**
      * @see IRegistrationService#reOpenRegistration(String)
      */
     public synchronized void reOpenRegistration(String nodeId) {
+        reOpenRegistration(nodeId, null, null);
+    }
+    
+    protected synchronized void reOpenRegistration(String nodeId, String remoteHost, String remoteAddress) {
         Node node = nodeService.findNode(nodeId);
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
         String password = null;
@@ -503,13 +576,22 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 // node table, but not in node security.
                 // lets go ahead and try to insert into node security.
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
-                        nodeId, password, nodeService.findNode(nodeId).getNodeId() });
+                        nodeId, password, nodeService.findNode(nodeId).getNodeId() });                
                 log.info("Registration was opened for {}", nodeId);
             } else if (updateCount == 0) {
                 log.warn("Registration was already enabled for {}.  No need to reenable it", nodeId);
             } else {
                 log.info("Registration was reopened for {}", nodeId);
             }
+            
+            if (isNotBlank(remoteHost)) {
+                NodeHost nodeHost = new NodeHost(node.getNodeId());
+                nodeHost.setHeartbeatTime(new Date());
+                nodeHost.setIpAddress(remoteAddress);
+                nodeHost.setHostName(remoteHost);
+                nodeService.updateNodeHost(nodeHost);
+            }
+            
             nodeService.flushNodeAuthorizedCache();
         } else {
             log.warn("There was no row with a node id of {} to 'reopen' registration for", nodeId);
@@ -547,7 +629,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 node.setNodeId(nodeId);
                 node.setSyncEnabled(false);
                 
-                boolean masterToMasterOnly = configurationService.isMasterToMasterOnly();
+                boolean masterToMasterOnly = configurationService.containsMasterToMaster();
                 node.setCreatedAtNodeId(masterToMasterOnly ? null: me.getNodeId());
                 nodeService.save(node);
 
@@ -558,15 +640,24 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 password = filterPasswordOnSaveIfNeeded(password);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                         nodeId, password, masterToMasterOnly ? null : me.getNodeId() });
+                
+                if (isNotBlank(remoteHost)) {
+                    NodeHost nodeHost = new NodeHost(node.getNodeId());
+                    nodeHost.setHeartbeatTime(new Date());
+                    nodeHost.setIpAddress(remoteAddress);
+                    nodeHost.setHostName(remoteHost);
+                    nodeService.updateNodeHost(nodeHost);
+                }
                 nodeService.flushNodeAuthorizedCache();
                 nodeService.flushNodeCache();
                 nodeService.insertNodeGroup(node.getNodeGroupId(), null);
                 nodeService.flushNodeGroupCache();
+                
                 log.info(
                         "Just opened registration for external id of {} and a node group of {} and a node id of {}",
                         new Object[] { node.getExternalId(), node.getNodeGroupId(), nodeId });
             } else {
-                reOpenRegistration(nodeId);
+                reOpenRegistration(nodeId, remoteHost, remoteAddress);
             }
             return nodeId;
         } else {

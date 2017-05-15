@@ -41,5 +41,6 @@ abstract public class DataWriterStatisticConstants {
     public static final String IGNORECOUNT = "IGNORECOUNT";
     public static final String IGNOREROWCOUNT = "IGNOREROWCOUNT";
     public static final String LINENUMBER = "LINENUMBER";
+    public static final String STARTTIME = "STARTTIME";
 
 }

@@ -57,7 +57,6 @@ public class AckUriHandler extends AbstractUriHandler {
         if (log.isDebugEnabled()) {
             log.debug("Reading ack: {}", req.getParameterMap());
         }
-        @SuppressWarnings("unchecked")
         List<BatchAck> batches = AbstractTransportManager.readAcknowledgement(req
                 .getParameterMap());
         Collections.sort(batches, BATCH_ID_COMPARATOR);

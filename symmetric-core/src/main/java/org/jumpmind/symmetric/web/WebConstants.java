@@ -75,6 +75,8 @@ public class WebConstants {
 
     public static final String ACK_DATABASE_MILLIS = "database-";
 
+    public static final String ACK_START_TIME = "startTime-";
+
     public static final String ACK_BYTE_COUNT = "byteCount-";
     
     public static final String ACK_IGNORE_COUNT = "ignoreCount-";
@@ -114,5 +116,7 @@ public class WebConstants {
     public static final String BATCH_TO_SEND_COUNT = "Batch-To-Send-Count";
     
     public static final String THREAD_CHANNEL = "threadChannel";
+    
+    public static final String CONFIG_VERSION = "configVersion";
 
 }

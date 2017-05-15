@@ -48,6 +48,8 @@ public class MonitorEvent {
     
     protected Date lastUpdateTime;
 
+    protected String details;
+    
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -179,6 +181,14 @@ public class MonitorEvent {
 
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
     }
 
 }

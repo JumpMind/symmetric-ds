@@ -1,13 +1,9 @@
 
 === Oracle
-SymmetricDS has bulk loading capability available for Oracle. SymmetricDS specifies data loader types on a channel by channel basis. 
-To utilize Oracle Bulk loading versus straight JDBC insert, specify the Oracle Bulk Loader ("oracle_bulk") in the data_loader_type column of sym_channel.
+This section describes Oracle specific SymmetricDS details.
 
-While BLOBs are supported on Oracle, the LONG data type is not. LONG columns cannot be accessed from triggers.
-
-Note that while Oracle supports multiple triggers of the same type to be defined, the order in which the triggers occur appears to be arbitrary.
-
-The SymmetricDS user generally needs privileges for connecting and creating tables (including indexes), triggers, sequences, 
+==== Database Permissions
+The SymmetricDS database user generally needs privileges for connecting and creating tables (including indexes), triggers, sequences, 
 and procedures (including packages and functions). The following is an example of the needed grant statements:
 
 [source, SQL]
@@ -16,6 +12,22 @@ GRANT RESOURCE TO SYMMETRIC;
 GRANT CREATE ANY TRIGGER TO SYMMETRIC;
 GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;
 
+==== Known Limitations
+* The LONG data type is not supported. LONG columns cannot be accessed from triggers
+* The global precision of numeric columns is controlled by the oracle.template.precision parameter.  It defaults to a precision of 30,10
+* With the default settings a database row cannot exceed 4k.  If the error `'ORA-01489: result of string concatenation is too long'` occurs 
+then set `use_capture_lobs` to 1 in the <<TRIGGER>> table and `contains_big_lobs` to 1 on the assigned <<CHANNEL>>.  Triggers will need to be synchronized. By enabling 
+`use_capture_lobs`, the concatenated varchar string is cast to a clob which allows a length of more than 4k.  By enabling `contains_big_lobs`, the extraction of
+sym_data is cast to a clob which prevents truncation at 4k.  There is overhead for both of these settings
+* When multiple triggers are defined on the same table, then the order in which the triggers occur appears to be arbitrary
+
+==== Bulk Loader
+SymmetricDS has bulk loading capability available for Oracle. SymmetricDS specifies data loader types on a channel by channel basis. 
+To utilize Oracle Bulk loading versus straight JDBC insert, specify the Oracle Bulk Loader ("oracle_bulk") in the data_loader_type column of sym_channel.
+
+The bulk loader only supports simple data types.  The bulk loader does not support tables that contain lobs.
+
+==== Optional - Partitioning
 Partitioning the DATA table by channel can help insert, routing and extraction performance on concurrent, high throughput systems. 
 TRIGGERs should be organized to put data that is expected to be inserted concurrently on separate CHANNELs. 
 The following is an example of partitioning. Note that both the table and the index should be partitioned. The default value 
@@ -54,15 +66,9 @@ CREATE UNIQUE INDEX IDX_D_CHANNEL_ID ON SYM_DATA (DATA_ID, CHANNEL_ID)  LOCAL
  PARTITION I_CHANNEL_N,
  PARTITION I_DEFAULT
 );
+
+==== Supported Data Types
             
-Note also that, for Oracle, you can control the amount of precision used by the Oracle triggers with the 
-parameter oracle.template.precision, which defaults to a precision of 30,10.
-
-If the following Oracle error 'ORA-01489: result of string concatenation is too long' is encountered you 
-might need to set use_capture_lobs to 1 on in the TRIGGER table and resync the triggers. The error can 
-happen when the captured data in a row exceeds 4k and lob columns do not exist in the table. By enabling 
-use_capture_lobs the concatanated varchar string is cast to a clob which allows a length of more than 4k.
-
 .Supported Data Types
 |===
 | Data Type | Supported?

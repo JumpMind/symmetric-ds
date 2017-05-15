@@ -78,6 +78,7 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.JarBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +87,8 @@ import org.slf4j.LoggerFactory;
 public class SnapshotUtil {
 
     protected static final Logger log = LoggerFactory.getLogger(SnapshotUtil.class);
+    
+    protected static final int THREAD_INDENT_SPACE = 50;
 
     public static File getSnapshotDirectory(ISymmetricEngine engine) {
         File snapshotsDir = new File(engine.getParameterService().getTempDirectory(), "snapshots");
@@ -223,10 +226,14 @@ public class SnapshotUtil {
         
         extract(export, new File(tmpDir, "sym_trigger_hist.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST));
-        
-        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
-              engine.getNodeCommunicationService().persistToTableForSnapshot();
-              engine.getClusterService().persistToTableForSnapshot();
+        try {
+            if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+                  engine.getNodeCommunicationService().persistToTableForSnapshot();
+                  engine.getClusterService().persistToTableForSnapshot();
+            }
+        } 
+        catch (Exception e) {
+            log.warn("Unable to add SYM_NODE_COMMUNICATION to the snapshot.", e);
         }
             
         extract(export, new File(tmpDir, "sym_lock.csv"),
@@ -273,7 +280,7 @@ public class SnapshotUtil {
             }
         }
         
-        final int THREAD_INDENT_SPACE = 50;
+        
         fwriter = null;
         try {
             fwriter = new FileWriter(new File(tmpDir, "threads.txt"));
@@ -284,25 +291,7 @@ public class SnapshotUtil {
                 if (info != null) {
                     String threadName = info.getThreadName();
                     fwriter.append(StringUtils.rightPad(threadName, THREAD_INDENT_SPACE));
-                    StackTraceElement[] trace = info.getStackTrace();
-                    boolean first = true;
-                    for (StackTraceElement stackTraceElement : trace) {
-                        if (!first) {
-                            fwriter.append(StringUtils.rightPad("", THREAD_INDENT_SPACE));
-                        } else {
-                            first = false;
-                        }
-                        fwriter.append(stackTraceElement.getClassName());
-                        fwriter.append(".");
-                        fwriter.append(stackTraceElement.getMethodName());
-                        fwriter.append("()");
-                        int lineNumber = stackTraceElement.getLineNumber();
-                        if (lineNumber > 0) {
-                            fwriter.append(": ");
-                            fwriter.append(Integer.toString(stackTraceElement.getLineNumber()));
-                        }
-                        fwriter.append("\n");
-                    }
+                    fwriter.append(AppUtils.formatStackTrace(info.getStackTrace(), THREAD_INDENT_SPACE, false));
                     fwriter.append("\n");
                 }
             }
@@ -513,8 +502,12 @@ public class SnapshotUtil {
                         Long.toString(gaps.get(0).getStartId()));
                 runtimeProperties.setProperty("data.gap.end.id",
                         Long.toString(gaps.get(gaps.size()-1).getEndId()));                
-
             }
+            
+            runtimeProperties.setProperty("data.id.min",
+                    Long.toString(engine.getDataService().findMinDataId()));            
+            runtimeProperties.setProperty("data.id.max",
+                    Long.toString(engine.getDataService().findMaxDataId()));            
 
             runtimeProperties.put("jvm.title", Runtime.class.getPackage().getImplementationTitle());
             runtimeProperties.put("jvm.vendor", Runtime.class.getPackage().getImplementationVendor());
@@ -548,18 +541,17 @@ public class SnapshotUtil {
             List<IJob> jobs = jobManager.getJobs();
             Map<String, Lock> locks = clusterService.findLocks();
             for (IJob job : jobs) {
-                Lock lock = locks.get(job.getClusterLockName());
+                Lock lock = locks.get(job.getName());
                 String status = getJobStatus(job, lock);
                 String runningServerId = lock != null ? lock.getLockingServerId() : "";
                 String lastServerId = clusterService.getServerId();
                 if (lock != null) {
                     lastServerId = lock.getLastLockingServerId();
                 }
-                String schedule = StringUtils.isBlank(job.getCronExpression()) ? Long.toString(job
-                        .getTimeBetweenRunsInMs()) : job.getCronExpression();
+                String schedule = job.getSchedule();
                 String lastFinishTime = getLastFinishTime(job, lock);
     
-                writer.write(StringUtils.rightPad(job.getClusterLockName().replace("_", " "), 30)+ 
+                writer.write(StringUtils.rightPad(job.getName().replace("_", " "), 30)+ 
                         StringUtils.rightPad(schedule, 20) + StringUtils.rightPad(status, 10) + 
                         StringUtils.rightPad(runningServerId == null ? "" : runningServerId, 30) +
                         StringUtils.rightPad(lastServerId == null ? "" : lastServerId, 30) + 

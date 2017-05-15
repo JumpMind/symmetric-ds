@@ -38,6 +38,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlResultsListener;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -201,7 +202,11 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             return false;
         }
     }
-    
+
+    public boolean doesDdlTriggerExist(String catalogName, String schema, String triggerName) {
+        return false;
+    }
+
     public abstract void dropRequiredDatabaseObjects();
     
     public abstract void createRequiredDatabaseObjects();
@@ -313,6 +318,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
     }
 
+    public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
+            String triggerName) {
+    }
+
     final protected void logSql(String sql, StringBuilder sqlBuffer) {
         if (sqlBuffer != null && StringUtils.isNotBlank(sql)) {
             sqlBuffer.append(sql);
@@ -400,6 +409,38 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             Channel channel, String tablePrefix, Table table) {
         return triggerTemplate.createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix,
                 table, platform.getDefaultCatalog(), platform.getDefaultSchema());
+    }
+
+    public void createDdlTrigger(final String tablePrefix, StringBuilder sqlBuffer, String triggerName) {
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            String triggerSql = triggerTemplate.createDdlTrigger(tablePrefix, platform.getDefaultCatalog(), platform.getDefaultSchema(),
+                    triggerName);
+            log.info("Creating DDL trigger " + triggerName);
+
+            if (triggerSql != null) {
+                ISqlTransaction transaction = null;
+                try {
+                    transaction = this.platform.getSqlTemplate().startSqlTransaction(
+                            platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+    
+                    try {
+                        log.debug("Running: {}", triggerSql);
+                        logSql(triggerSql, sqlBuffer);
+                        transaction.execute(triggerSql);
+                    } catch (SqlException ex) {
+                        log.info("Failed to create DDL trigger: {}", triggerSql);
+                        throw ex;
+                    }
+    
+                    transaction.commit();
+                } catch (SqlException ex) {
+                    transaction.rollback();
+                    throw ex;
+                } finally {
+                    transaction.close();
+                }
+            }
+        }
     }
 
     public String getCreateSymmetricDDL() {
@@ -638,6 +679,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return orderedColumns;
     }
 
+    @Deprecated
     public void disableSyncTriggers(ISqlTransaction transaction) {
         disableSyncTriggers(transaction, null);
     }
@@ -814,5 +856,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     
     public void setExtensionService(IExtensionService extensionService) {
         this.extensionService = extensionService;
+    }
+    
+    public PermissionType[] getSymTablePermissions() {
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER };
+        return permissions;
     }
 }

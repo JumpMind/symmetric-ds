@@ -43,6 +43,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
@@ -90,7 +91,10 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
+import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.NoContentException;
+import org.jumpmind.symmetric.transport.file.FileIncomingTransport;
+import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
 import org.jumpmind.util.AppUtils;
 
 import bsh.EvalError;
@@ -435,15 +439,20 @@ INodeCommunicationExecutor {
     }
 
     synchronized public RemoteNodeStatuses pullFilesFromNodes(boolean force) {
+        CommunicationType communicationType = engine.getParameterService().is(ParameterConstants.NODE_OFFLINE) ? 
+                CommunicationType.OFF_FSPULL : CommunicationType.FILE_PULL;
+        
         return queueJob(force,
                 parameterService.getLong(ParameterConstants.FILE_PULL_MINIMUM_PERIOD_MS, -1),
-                ClusterConstants.FILE_SYNC_PULL, CommunicationType.FILE_PULL);
+                ClusterConstants.FILE_SYNC_PULL, communicationType);
     }
 
     synchronized public RemoteNodeStatuses pushFilesToNodes(boolean force) {
+        CommunicationType communicationType = engine.getParameterService().is(ParameterConstants.NODE_OFFLINE) ? 
+                CommunicationType.OFF_FSPUSH : CommunicationType.FILE_PUSH;
         return queueJob(force,
                 parameterService.getLong(ParameterConstants.FILE_PUSH_MINIMUM_PERIOD_MS, -1),
-                ClusterConstants.FILE_SYNC_PUSH, CommunicationType.FILE_PUSH);
+                ClusterConstants.FILE_SYNC_PUSH, communicationType);
     }
 
     @Override
@@ -463,8 +472,6 @@ INodeCommunicationExecutor {
         }
 
         IStagingManager stagingManager = engine.getStagingManager();
-        long memoryThresholdInBytes = parameterService
-                .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
         long maxBytesToSync = parameterService 
                 .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);        
 
@@ -496,7 +503,7 @@ INodeCommunicationExecutor {
                         stagedResource = previouslyStagedResource;
                     } else  {
                         if (dataWriter == null) {                        
-                            stagedResource = stagingManager.create(memoryThresholdInBytes,
+                            stagedResource = stagingManager.create(
                                     Constants.STAGING_CATEGORY_OUTGOING, processInfo.getSourceNodeId(),
                                     targetNode.getNodeId(), "filesync.zip");                            
                             dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
@@ -743,7 +750,7 @@ INodeCommunicationExecutor {
 
     protected IStagedResource getStagedResource(OutgoingBatch currentBatch) {
         IStagedResource stagedResource = engine.getStagingManager().find(getStagingPathComponents(currentBatch));
-        if (stagedResource != null && stagedResource.getState() == State.READY) {
+        if (stagedResource != null && stagedResource.getState() == State.DONE) {
             return stagedResource;
         } else {
             return null;
@@ -755,9 +762,11 @@ INodeCommunicationExecutor {
         if (identity != null) {
             NodeSecurity security = engine.getNodeService().findNodeSecurity(identity.getNodeId(), true);
             if (security != null) {
-                if (nodeCommunication.getCommunicationType() == CommunicationType.FILE_PULL) {
+                if (nodeCommunication.getCommunicationType() == CommunicationType.FILE_PULL
+                        || nodeCommunication.getCommunicationType() == CommunicationType.OFF_FSPULL) {
                     pullFilesFromNode(nodeCommunication, status, identity, security);
-                } else if (nodeCommunication.getCommunicationType() == CommunicationType.FILE_PUSH) {
+                } else if (nodeCommunication.getCommunicationType() == CommunicationType.FILE_PUSH
+                        || nodeCommunication.getCommunicationType() == CommunicationType.OFF_FSPUSH) {
                     pushFilesToNode(nodeCommunication, status, identity, security);
                 }
             }
@@ -770,15 +779,29 @@ INodeCommunicationExecutor {
                 new ProcessInfoKey(nodeCommunication.getNodeId(), identity.getNodeId(),
                         ProcessType.FILE_SYNC_PUSH_JOB));
         IOutgoingWithResponseTransport transport = null;
+        ITransportManager transportManager = null;
         try {
-            transport = engine.getTransportManager().getFilePushTransport(
-                    nodeCommunication.getNode(), identity, security.getNodePassword(),
-                    parameterService.getRegistrationUrl());
+            
+            if (!engine.getParameterService().is(ParameterConstants.NODE_OFFLINE)) {
+                transportManager = engine.getTransportManager();
+                transport = transportManager.getFilePushTransport(
+                        nodeCommunication.getNode(), identity, security.getNodePassword(),
+                        parameterService.getRegistrationUrl());
+            } else {
+                transportManager = ((AbstractSymmetricEngine)engine).getOfflineTransportManager();
+                transport = transportManager.getFilePushTransport(
+                        nodeCommunication.getNode(), identity, security.getNodePassword(),
+                        parameterService.getRegistrationUrl());                
+            }
+            
             List<OutgoingBatch> batches = sendFiles(processInfo, nodeCommunication.getNode(),
                     transport);
             if (batches.size() > 0) {
+                if (transport instanceof FileOutgoingTransport) {
+                    ((FileOutgoingTransport) transport).setProcessedBatches(batches);
+                }
                 List<BatchAck> batchAcks = readAcks(batches, transport,
-                        engine.getTransportManager(), engine.getAcknowledgeService());
+                        transportManager, engine.getAcknowledgeService());
                 status.updateOutgoingStatus(batches, batchAcks);
             }
             if (!status.failed() && batches.size() > 0) {
@@ -793,11 +816,14 @@ INodeCommunicationExecutor {
         } catch (Exception e) {
             fireOffline(e, nodeCommunication.getNode(), status);
         } finally {
-            if (transport != null) {
-                transport.close();
-            }
             if (processInfo.getStatus() != ProcessInfo.Status.ERROR) {
                 processInfo.setStatus(ProcessInfo.Status.OK);
+            }
+            if (transport != null) {
+                transport.close();
+                if (transport instanceof FileOutgoingTransport) {
+                    ((FileOutgoingTransport) transport).complete(processInfo.getStatus() == ProcessInfo.Status.OK);
+                }
             }
         }
     }
@@ -978,10 +1004,19 @@ INodeCommunicationExecutor {
                         ProcessType.FILE_SYNC_PULL_JOB));
         try {
             processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
-
-            transport = engine.getTransportManager().getFilePullTransport(
-                    nodeCommunication.getNode(), identity, security.getNodePassword(), null,
-                    parameterService.getRegistrationUrl());
+            ITransportManager transportManager;
+            
+            if (!engine.getParameterService().is(ParameterConstants.NODE_OFFLINE)) {
+                transportManager = engine.getTransportManager();
+                transport = transportManager.getFilePullTransport(
+                        nodeCommunication.getNode(), identity, security.getNodePassword(), null,
+                        parameterService.getRegistrationUrl());
+            } else {
+                transportManager = ((AbstractSymmetricEngine)engine).getOfflineTransportManager();
+                transport = transportManager.getFilePullTransport(
+                        nodeCommunication.getNode(), identity, security.getNodePassword(), null,
+                        parameterService.getRegistrationUrl());                
+            }
 
             List<IncomingBatch> batchesProcessed = processZip(transport.openStream(),
                     nodeCommunication.getNodeId(), processInfo);
@@ -990,7 +1025,7 @@ INodeCommunicationExecutor {
                 processInfo.setStatus(ProcessInfo.Status.ACKING);
                 status.updateIncomingStatus(batchesProcessed);
                 sendAck(nodeCommunication.getNode(), identity, security, batchesProcessed,
-                        engine.getTransportManager());
+                        transportManager);
             }
             if (!status.failed() && batchesProcessed.size() > 0) {
                 log.info("Pull files received from {}.  {} files and {} batches were processed",
@@ -1008,13 +1043,14 @@ INodeCommunicationExecutor {
         } finally {
             if (transport != null) {
                 transport.close();
-            }
-
-            if (processInfo.getStatus() != ProcessInfo.Status.ERROR) {
-                processInfo.setStatus(ProcessInfo.Status.OK);
+                if (processInfo.getStatus() != ProcessInfo.Status.ERROR) {
+                    processInfo.setStatus(ProcessInfo.Status.OK);
+                }
+                if (transport instanceof FileIncomingTransport) {                    
+                    ((FileIncomingTransport) transport).complete(!status.failed());
+                }
             }
         }
-
     }
 
     protected RemoteNodeStatuses queueJob(boolean force, long minimumPeriodMs, String clusterLock,

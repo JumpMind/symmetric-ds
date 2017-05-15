@@ -9,13 +9,25 @@ buildscript {
         classpath 'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.6'
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
-        classpath "com.smokejumperit.gradle.license:Gradle-License-Report:0.0.2"
+        classpath ("com.smokejumperit.gradle.license:Gradle-License-Report:0.0.2") {
+            // guava 21 requires Java 8, setting up for a clean build with only Java 1.7 tools.
+            exclude group: 'com.google.guava', module: 'guava'
+        }
+        classpath 'com.google.guava:guava:20.0'
     }
+}
+
+task buildScriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
+    configurations = project.buildscript.configurations
 }
 
 project.buildDir='target'
 apply from: symAssembleDir + '/common.gradle'
 
+if (project.properties.containsKey('pro')) {
+    install.enabled = false
+    uploadArchives.enabled = false
+}
 
 task generateJavadoc(type: Javadoc) {
     destinationDir = new File(buildDir, 'doc/javadoc')
@@ -37,13 +49,6 @@ subprojects { subproject ->
         }
     }  
     
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-               from components.java
-            }
-        }
-    }  
 }
 
 project(":symmetric-csv") {
@@ -130,6 +135,8 @@ project(':symmetric-core') {
         compile project(":symmetric-util")
         compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
         compile "javax.mail:mail:1.4.5"
+        compile "com.fasterxml.jackson.core:jackson-databind:2.8.5"
+        
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
     }
@@ -267,10 +274,6 @@ project(':symmetric-server') {
                     include 'bin/sym_service'
                     include 'bin/setenv'
                     fileMode 0755
-                }
-                from('../symmetric-core/src/main/resources/symmetric-default.properties') {
-                    rename 'symmetric-default.properties', 'conf/symmetric.properties'
-                    fileMode 0664
                 }
                 into('doc') { from ("$symAssembleDir/target/doc") }
                 into('lib') {

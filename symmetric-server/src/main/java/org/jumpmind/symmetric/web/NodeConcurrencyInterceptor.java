@@ -31,7 +31,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.transport.ConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
 import org.slf4j.Logger;
@@ -138,7 +137,6 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         String poolId = req.getRequestURI();
         String nodeId = getNodeId(req);
         String threadChannel = req.getHeader(WebConstants.THREAD_CHANNEL);
-        
         concurrentConnectionManager.releaseConnection(nodeId, threadChannel, poolId);
     }
 

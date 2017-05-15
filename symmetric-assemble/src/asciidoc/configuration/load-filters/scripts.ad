@@ -107,7 +107,7 @@ insert into sym_load_filter
 	  bsh.shared.mailMap = new HashMap();
 	}
 	
-	String batchId = context.getBatch().getSourceNodeBatchId();
+	String batchId = context.getBatch().getNodeBatchId();
 	String targetNodeId = context.getBatch().getTargetNodeId();
 	if (!bsh.shared.mailMap.containsKey(batchId)) {
 	  bsh.shared.mailMap.put(batchId, Boolean.TRUE);
@@ -151,7 +151,7 @@ if (bsh.shared.mailMap == void) {
   bsh.shared.mailMap = new HashMap();
 }
 
-String batchId = context.getBatch().getSourceNodeBatchId();
+String batchId = context.getBatch().getNodeBatchId();
 String targetNodeId = context.getBatch().getTargetNodeId();
 if (!bsh.shared.mailMap.containsKey(batchId)) {
   bsh.shared.mailMap.put(batchId, Boolean.TRUE);

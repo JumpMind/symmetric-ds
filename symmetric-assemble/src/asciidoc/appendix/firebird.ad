@@ -27,6 +27,7 @@ exceed 64KB.  For change capture, the row_data and old_data are limited to 10KB 
 for performance reasons.  If you get the error of "arithmetic exception, numeric overflow, or string truncation" during
 extraction of a batch, set the contains_big_lob to true for the channel.
 
+Firebird 3 is supported, however legacy authentication must be enabled in order to connect.  Please refer to the Firebird 3.0 documentation for instructions on enabling this feature.
 
 .Supported Data Types
 |===

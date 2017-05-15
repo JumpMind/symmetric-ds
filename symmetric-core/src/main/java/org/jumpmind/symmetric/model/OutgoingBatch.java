@@ -85,6 +85,12 @@ public class OutgoingBatch extends AbstractBatch {
 
     private long failedDataId;
     
+    private Date extractStartTime;
+    
+    private Date transferStartTime;
+    
+    private Date loadStartTime;
+    
     private long oldDataEventCount = 0;
     private long oldByteCount = 0;
     private long oldFilterMillis = 0;
@@ -131,8 +137,6 @@ public class OutgoingBatch extends AbstractBatch {
             setLoadMillis(this.oldLoadMillis);
         }
     }
-
-
 
     public void setLoadFlag(boolean loadFlag) {
         this.loadFlag = loadFlag;
@@ -319,5 +323,30 @@ public class OutgoingBatch extends AbstractBatch {
     
     public boolean isExtractJobFlag() {
         return extractJobFlag;
+    }
+
+    
+    public Date getExtractStartTime() {
+        return extractStartTime;
+    }
+
+    public void setExtractStartTime(Date extractStartTime) {
+        this.extractStartTime = extractStartTime;
+    }
+
+    public Date getTransferStartTime() {
+        return transferStartTime;
+    }
+
+    public void setTransferStartTime(Date transferStartTime) {
+        this.transferStartTime = transferStartTime;
+    }
+
+    public Date getLoadStartTime() {
+        return loadStartTime;
+    }
+
+    public void setLoadStartTime(Date loadStartTime) {
+        this.loadStartTime = loadStartTime;
     }
 }

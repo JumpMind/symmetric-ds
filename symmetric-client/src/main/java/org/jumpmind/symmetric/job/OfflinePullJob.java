@@ -20,8 +20,9 @@
  */
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.EVERY_MINUTE;
+
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -29,26 +30,20 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * Background job that pulls data from remote nodes and then loads it.
  */
 public class OfflinePullJob extends AbstractJob {
-
+    
     public OfflinePullJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
-        super("job.offline.pull", engine, taskScheduler);
+        super(ClusterConstants.OFFLINE_PULL, engine, taskScheduler);
     }
     
     @Override
-    public boolean isAutoStartConfigured() {
-        return engine.getParameterService().is(ParameterConstants.START_OFFLINE_PULL_JOB);
-    }
-    
-    @Override
-    public boolean isRequiresRegistration() {
-        return false;
-    } 
-    
-    @Override
-    public String getClusterLockName() {
-        return ClusterConstants.OFFLINE_PULL;
-    }    
-    
+    public JobDefaults getDefaults() {
+        return new JobDefaults()
+                .requiresRegisteration(false)
+                .schedule(EVERY_MINUTE)
+                .enabled(false)
+                .description("Loads in offline batch files");
+    }  
+     
     @Override
     public void doJob(boolean force) throws Exception {
         engine.getOfflinePullService().pullData(force);

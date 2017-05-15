@@ -15,6 +15,10 @@ If you're unable to change NOCOUNT for the server, the "db.init.sql" parameter c
 Connections are pooled and expected to be in the database context like a new connection, so avoid using the "USE database" 
 Transact-SQL statement in extension code.
 
+If SQL Server is configured with a default collation that does NOT support unicode then we have experienced bad performance for update and delete statements when 
+a table has character based primary keys.  This is because statements are prepared for a unicode type and as a result the indexes are not used.  You can turn this 
+functionality off in JTDS by appending the following to your db.url:  ;sendStringParametersAsUnicode=false
+
 ==== SQL Server Permissions
 
 SymmetricDS can be configured to work with a variety SQL Server configurations.  It is possible to install SymmetricDS in the same database and schema with the same user account your application runs.   
@@ -70,12 +74,12 @@ WITH PASSWORD = 'APP_USER';
 GO
 use APP_DATABASE;
 GO
-CREATE USER APP_DATABASE FOR LOGIN APP_USER 
+CREATE USER APP_USER FOR LOGIN APP_USER 
 GO
 GRANT SELECT, INSERT, DELETE, UPDATE ON SCHEMA::dbo TO APP_USER; 
 GO
 use SYM_DATABASE;
-CREATE USER APP_DATABASE FOR LOGIN APP_DATABASE 
+CREATE USER APP_USER FOR LOGIN APP_USER 
 GRANT INSERT, EXECUTE ON DATABASE::SYM_DATABASE to APP_USER;
 ----
 ====

@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -116,8 +117,6 @@ public interface IDataService {
      */
     public int countDataInRange(long firstDataId, long secondDataId);
     
-    public void checkForAndUpdateMissingChannelIds(long firstDataId, long lastDataId);
-
     public long countDataGapsByStatus(DataGap.Status status);
 
     public List<DataGap> findDataGapsByStatus(DataGap.Status status);
@@ -159,9 +158,13 @@ public interface IDataService {
     public long findMaxDataId();
     
     public Data findData(long dataId);
+
+    public long findMinDataId();
     
     public ISqlReadCursor<Data> selectDataFor(Batch batch);
     
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String channelId);
 
+    public Map<String, Date> getLastDataCaptureByChannel();
+    
 }
