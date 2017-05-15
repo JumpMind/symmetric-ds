@@ -57,6 +57,8 @@ public class DatabaseWriterSettings {
     
     protected boolean fitToColumn = false;
     
+    protected boolean logConflictResolution = false;
+    
     protected String textColumnExpression;
 
     protected Map<String, Conflict> conflictSettingsByChannel;
@@ -265,6 +267,14 @@ public class DatabaseWriterSettings {
     
     public boolean isFitToColumn() {
         return fitToColumn;
+    }
+    
+    public void setLogConflictResolution(boolean logConflictResolution) {
+        this.logConflictResolution = logConflictResolution;
+    }
+    
+    public boolean isLogConflictResolution() {
+        return logConflictResolution;
     }
 
     public void setTextColumnExpression(String textColumnExpression) {

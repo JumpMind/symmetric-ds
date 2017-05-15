@@ -118,6 +118,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
         settings.setSaveCurrentValueOnError(parameterService.is(
                 ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
         settings.setFitToColumn(parameterService.is(ParameterConstants.DATA_LOADER_FIT_TO_COLUMN, false));
+        settings.setLogConflictResolution(parameterService.is(ParameterConstants.LOG_CONFLICT_RESOLUTION));
         settings.setTextColumnExpression(parameterService.getString(
                 ParameterConstants.DATA_LOADER_TEXT_COLUMN_EXPRESSION));
         settings.setApplyChangesOnly(parameterService.is(ParameterConstants.DATA_LOADER_APPLY_CHANGES_ONLY, true));

@@ -384,6 +384,8 @@ final public class ParameterConstants {
     
     public final static String FIREBIRD_EXTRACT_VARCHAR_ROW_OLD_PK_DATA = "firebird.extract.varchar.row.old.pk.data";
     
+    public final static String LOG_CONFLICT_RESOLUTION = "log.conflict.resolution";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
