@@ -61,7 +61,13 @@ public class StatisticServiceSqlMap extends AbstractSqlMap {
 "  and channel_id not in ('heartbeat', 'config')                                          " +
 "  group by node_id, start_time, end_time                                                 " +
 "  order by start_time asc                                                                "); 
-
+        
+        putSql("minNodeStatsTimeSql", "" + 
+"select min(start_time) " + 
+"  from sym_node_host_channel_stats                                                       " +
+"  where node_id=?                                  " +
+"  and channel_id not in ('heartbeat', 'config')                                          ");
+        
         putSql("insertHostStatsSql" ,"" + 
 "insert into $(node_host_stats)                                              " + 
 "  (node_id, host_name, start_time, end_time,                                      " + 
