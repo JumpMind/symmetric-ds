@@ -233,25 +233,6 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
    		}
    		
    		return result;
-    }
-    
-    @Override
-    protected PermissionResult getDropSymTablePermission() {
-        String delimiter = getDatabaseInfo().getDelimiterToken();
-        delimiter = delimiter != null ? delimiter : "";
-        String dropSql = "drop table " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter;
-
-        PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, Status.FAIL);
-
-        try {
-            getSqlTemplate().update(dropSql);
-            result.setStatus(Status.PASS);
-        } catch (SqlException e) {
-            result.setException(e);
-            result.setSolution("Grant DROP permission");
-        }
-
-        return result;
-    }
+    }    
     
 }
