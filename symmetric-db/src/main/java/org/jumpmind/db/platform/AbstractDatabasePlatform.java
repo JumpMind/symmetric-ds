@@ -967,14 +967,17 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
         return results;
     }
-
-    protected PermissionResult getCreateSymTablePermission(Database database) {
+    
+    protected Table getPermissionTableDefinition() {
         Column idColumn = new Column("TEST_ID");
         idColumn.setMappedType("INTEGER");
         Column valueColumn = new Column("TEST_VALUE");
         valueColumn.setMappedType("INTEGER");
+        return new Table(PERMISSION_TEST_TABLE_NAME, idColumn, valueColumn);        
+    }
 
-        Table table = new Table(PERMISSION_TEST_TABLE_NAME, idColumn, valueColumn);
+    protected PermissionResult getCreateSymTablePermission(Database database) {
+        Table table = getPermissionTableDefinition();
 
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, Status.FAIL);
         getDropSymTablePermission();
@@ -992,15 +995,17 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     protected PermissionResult getDropSymTablePermission() {
-        String delimiter = getDatabaseInfo().getDelimiterToken();
-        delimiter = delimiter != null ? delimiter : "";
-        String dropSql = "DROP TABLE " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter;
+        Table table = getPermissionTableDefinition();        
 
         PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, Status.FAIL);
 
         try {
-            getSqlTemplate().update(dropSql);
-            result.setStatus(Status.PASS);
+            if (getTableFromCache(table.getName(), true) != null) {
+                dropTables(false, table);
+                result.setStatus(Status.PASS);
+            } else {
+                result.setStatus(Status.NOT_APPLICABLE);
+            }            
         } catch (SqlException e) {
             result.setException(e);
             result.setSolution("Grant DROP permission");

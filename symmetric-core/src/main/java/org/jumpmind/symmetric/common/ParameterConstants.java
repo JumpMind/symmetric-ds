@@ -397,7 +397,9 @@ final public class ParameterConstants {
     public final static String CHECK_SOFTWARE_UPDATES = "check.software.updates";
     
     public final static String SEND_USAGE_STATS = "send.usage.stats";
-    
+
+    public final static String LOG_CONFLICT_RESOLUTION = "log.conflict.resolution";
+
     public final static String UPDATE_SERVICE_CLASS = "update.service.class";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
