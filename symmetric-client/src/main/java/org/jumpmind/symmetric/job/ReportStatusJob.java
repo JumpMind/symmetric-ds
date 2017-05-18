@@ -20,15 +20,14 @@
  */
 package org.jumpmind.symmetric.job;
 
+import static org.jumpmind.symmetric.job.JobDefaults.EVERY_5_MINUTES;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.jumpmind.symmetric.job.JobDefaults.*;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -52,9 +51,8 @@ public class ReportStatusJob extends AbstractJob {
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
-                .scheduleType(ScheduleType.CRON)
                 .schedule(EVERY_5_MINUTES)
-                .startupType(StartupType.DISABLED)
+                .enabled(false)
                 .description("Related to hybrid-pull");
     } 
 

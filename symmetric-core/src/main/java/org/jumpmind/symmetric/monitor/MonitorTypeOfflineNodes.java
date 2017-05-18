@@ -28,10 +28,8 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
-import org.jumpmind.symmetric.monitor.MonitorTypeLog.LogSummaryMixIn;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.util.LogSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

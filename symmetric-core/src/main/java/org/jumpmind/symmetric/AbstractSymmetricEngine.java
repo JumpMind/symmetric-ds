@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -238,6 +239,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected AbstractSymmetricEngine(boolean registerEngine) {
         this.registerEngine = registerEngine;
+    }
+    
+    public static List<ISymmetricEngine> findEngines() {
+        List<ISymmetricEngine> engines = new ArrayList<ISymmetricEngine>();
+        engines.addAll(registeredEnginesByName.values());
+        return engines;
     }
 
     /**

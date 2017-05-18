@@ -94,6 +94,10 @@ public class StatisticService extends AbstractService implements IStatisticServi
                 new ChannelStatsMapper(), start, end, nodeId);        
         return new NodeStatsByPeriodMap(start, end, list, periodSizeInMinutes);
     }    
+    
+    public Date getMinNodeStats(String nodeId) {
+        return sqlTemplateDirty.queryForObject(getSql("minNodeStatsTimeSql"), Date.class, nodeId);
+    }
 
     public void save(HostStats stats) {
         sqlTemplate.update(

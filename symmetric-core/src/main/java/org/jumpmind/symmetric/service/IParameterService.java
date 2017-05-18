@@ -60,6 +60,8 @@ public interface IParameterService {
 
     public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters, String lastUpdateBy);
     
+    public void deleteParameter(String key);
+    
     public void deleteParameter(String externalId, String nodeGroupId, String key);
     
     public void deleteParameterWithUpdate(String externalId, String nodeGroupId, String key);

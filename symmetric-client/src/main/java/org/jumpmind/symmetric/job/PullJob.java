@@ -23,8 +23,6 @@ package org.jumpmind.symmetric.job;
 import static org.jumpmind.symmetric.job.JobDefaults.EVERY_30_SECONDS;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -41,9 +39,7 @@ public class PullJob extends AbstractJob {
     public JobDefaults getDefaults() {
         return new JobDefaults()
                 .requiresRegisteration(false)
-                .scheduleType(ScheduleType.PERIODIC)
                 .schedule(EVERY_30_SECONDS)
-                .startupType(StartupType.AUTOMATIC)
                 .description("Pull data from other nodes");
     }
       

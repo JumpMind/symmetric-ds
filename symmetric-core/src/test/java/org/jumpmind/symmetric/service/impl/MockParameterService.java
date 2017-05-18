@@ -104,4 +104,8 @@ public class MockParameterService extends AbstractParameterService implements IP
         return null;
     }
 
+    @Override
+    public void deleteParameter(String key) {
+    }
+
 }

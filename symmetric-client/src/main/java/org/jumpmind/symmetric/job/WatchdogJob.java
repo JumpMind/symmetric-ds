@@ -20,10 +20,9 @@
  */
 package org.jumpmind.symmetric.job;
 
-import static org.jumpmind.symmetric.job.JobDefaults.*;
+import static org.jumpmind.symmetric.job.JobDefaults.EVERY_HOUR;
+
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -41,9 +40,7 @@ public class WatchdogJob extends AbstractJob {
     public JobDefaults getDefaults() {
         return new JobDefaults()
                 .requiresRegisteration(false)
-                .scheduleType(ScheduleType.PERIODIC)
                 .schedule(EVERY_HOUR)
-                .startupType(StartupType.AUTOMATIC)
                 .description("Disable nodes that have been offline for a while");
     } 
 

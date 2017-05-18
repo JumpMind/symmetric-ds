@@ -157,6 +157,8 @@ public interface IDataService {
     
     public long findMaxDataId();
     
+    public Data findData(long dataId);
+
     public long findMinDataId();
     
     public ISqlReadCursor<Data> selectDataFor(Batch batch);

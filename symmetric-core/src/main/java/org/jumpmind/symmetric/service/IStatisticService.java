@@ -41,6 +41,8 @@ public interface IStatisticService {
     
     public void save(JobStats stats);
     
+    public Date getMinNodeStats(String nodeId);
+    
     public TreeMap<Date, Map<String, ChannelStats>> getChannelStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);
     
     public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);

@@ -20,12 +20,10 @@
  */
 package org.jumpmind.symmetric.job;
 
-import org.jumpmind.symmetric.ISymmetricEngine;
+import static org.jumpmind.symmetric.job.JobDefaults.EVERY_MINUTE;
 
-import static org.jumpmind.symmetric.job.JobDefaults.*;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -40,9 +38,8 @@ public class FileSyncPullJob extends AbstractJob {
         boolean fileSyncEnabeld = engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE); 
         
         return new JobDefaults()
-                .scheduleType(ScheduleType.PERIODIC)
                 .schedule(EVERY_MINUTE)
-                .startupType(fileSyncEnabeld ? StartupType.AUTOMATIC : StartupType.DISABLED)
+                .enabled(fileSyncEnabeld)
                 .description("Check for files to pull down from other nodes");
     }    
 

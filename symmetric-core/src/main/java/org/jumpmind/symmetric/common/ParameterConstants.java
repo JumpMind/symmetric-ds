@@ -40,6 +40,7 @@ final public class ParameterConstants {
     private static Map<String, ParameterMetaData> parameterMetaData = new DefaultParameterParser("/symmetric-default.properties").parse();
 
     public final static String MINUTES_BEFORE_NODE_REPORTED_AS_OFFLINE = "console.report.as.offline.minutes";
+    public final static int DEFAULT_MINUTES_BEFORE_NODE_REPORTED_AS_OFFLINE = 24 * 60;
 
     private ParameterConstants() {
     }
@@ -51,9 +52,12 @@ final public class ParameterConstants {
     public final static String JDBC_ISOLATION_LEVEL = "db.jdbc.isolation.level";
 
     public final static String START_PULL_JOB = "start.pull.job";
-    public final static String START_PUSH_JOB = "start.push.job";
-    public final static String START_PURGE_JOB = "start.purge.job";
-    public final static String START_ROUTE_JOB = "start.route.job";
+    public final static String START_PUSH_JOB = "start.push.job"; 
+    public final static String START_PURGE_OUTGOING_JOB = "start.purge.incoming.job"; // In <= 3.8m was start.purge.outgoing.job
+    public final static String START_PURGE_INCOMING_JOB = "start.purge.outgoing.job";  // In <= 3.8, was start.purge.outgoing.job
+    public final static String START_PURGE_JOB_38 = "start.purge.incoming.job";
+    public final static String START_ROUTE_JOB = "start.routing.job"; // In <= 3.8, was start.route.job 
+    public final static String START_ROUTE_JOB_38 = "start.route.job"; 
     public final static String START_HEARTBEAT_JOB = "start.heartbeat.job";
     public final static String START_SYNCTRIGGERS_JOB = "start.synctriggers.job";
     public final static String START_SYNC_CONFIG_JOB = "start.sync.config.job";
@@ -389,6 +393,9 @@ final public class ParameterConstants {
     public final static String FIREBIRD_EXTRACT_VARCHAR_ROW_OLD_PK_DATA = "firebird.extract.varchar.row.old.pk.data";
     
     public final static String GROUPLET_ENABLE = "grouplet.enable";    
+
+    public final static String LOG_CONFLICT_RESOLUTION = "log.conflict.resolution";
+
     
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

@@ -25,8 +25,6 @@ import static org.jumpmind.symmetric.job.JobDefaults.EVERY_FIFTEEN_MINUTES;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
-import org.jumpmind.symmetric.model.JobDefinition.ScheduleType;
-import org.jumpmind.symmetric.model.JobDefinition.StartupType;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -39,9 +37,7 @@ public class StageManagementJob extends AbstractJob {
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
-                .scheduleType(ScheduleType.PERIODIC)
                 .schedule(EVERY_FIFTEEN_MINUTES)
-                .startupType(StartupType.AUTOMATIC)
                 .description("Purges the staging area");
     } 
     

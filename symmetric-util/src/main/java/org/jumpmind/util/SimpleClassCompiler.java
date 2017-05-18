@@ -91,7 +91,7 @@ public class SimpleClassCompiler {
             
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null) {
-                throw new SimpleClassCompilerException("Missing Java compiler: the JDK is required for compiling classes.");
+                throw new SimpleClassCompilerException("Missing Java compiler: the JDK (rather than just JRE) is required for compiling classes.");
             }
             JavaFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null));
             DiagnosticCollector<JavaFileObject> diag = new DiagnosticCollector<JavaFileObject>();
@@ -109,12 +109,14 @@ public class SimpleClassCompiler {
                     throw new SimpleClassCompilerException("The '"+className+"' class could not be located");
                 }
             } else {
-                log.error("Compilation of '" + origClassName + "' failed");
+                StringBuilder msg = new StringBuilder(256);
+                msg.append("Compilation of '").append(origClassName).append("' failed.\n");
+
                 for (Diagnostic diagnostic : diag.getDiagnostics()) {
-                    log.error(origClassName + " at line " + diagnostic.getLineNumber() + ", column " + diagnostic.getColumnNumber() + ": " + 
-                            diagnostic.getMessage(null));
+                    msg.append(origClassName + " at line " + diagnostic.getLineNumber() + ", column " + diagnostic.getColumnNumber() + ": " + 
+                            diagnostic.getMessage(null)).append("\n");
                 }
-                throw new SimpleClassCompilerException(diag.getDiagnostics());
+                throw new SimpleClassCompilerException(msg.toString());
             }
         }
 
