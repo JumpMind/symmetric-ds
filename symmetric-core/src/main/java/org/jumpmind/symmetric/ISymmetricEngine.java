@@ -63,6 +63,7 @@ import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.service.IUpdateService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -307,6 +308,8 @@ public interface ISymmetricEngine {
     public IFileSyncService getFileSyncService();
 
     public IContextService getContextService();
+    
+    public IUpdateService getUpdateService();
     
     public Date getLastRestartTime();
     

@@ -393,7 +393,13 @@ final public class ParameterConstants {
     public final static String FIREBIRD_EXTRACT_VARCHAR_ROW_OLD_PK_DATA = "firebird.extract.varchar.row.old.pk.data";
     
     public final static String GROUPLET_ENABLE = "grouplet.enable";    
+
+    public final static String CHECK_SOFTWARE_UPDATES = "check.software.updates";
     
+    public final static String SEND_USAGE_STATS = "send.usage.stats";
+    
+    public final static String UPDATE_SERVICE_CLASS = "update.service.class";
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
