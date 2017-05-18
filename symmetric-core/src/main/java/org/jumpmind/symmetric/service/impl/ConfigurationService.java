@@ -95,7 +95,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
                 
         updatedDefaultChannels.put(Constants.CHANNEL_MONITOR, 
-                new Channel(Constants.CHANNEL_MONITOR, 2, 100, 100, true, 0, false));
+                new Channel(Constants.CHANNEL_MONITOR, 2, 100, 100, true, 0, true));
         
         updatedDefaultChannels.put(Constants.CHANNEL_HEARTBEAT, 
                 new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0, false));

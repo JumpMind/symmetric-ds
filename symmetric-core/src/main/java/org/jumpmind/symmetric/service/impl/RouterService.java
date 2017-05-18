@@ -511,7 +511,8 @@ public class RouterService extends AbstractService implements IRouterService {
             producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
                     && !channel.isFileSyncFlag()
                     && !channel.isReloadFlag() 
-                    && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
+                    && !Constants.CHANNEL_HEARTBEAT.equals(channelId) 
+                             && !Constants.CHANNEL_MONITOR.equals(channelId);
             if (producesCommonBatches && triggerRouters != null) {
                 List<TriggerRouter> testableTriggerRouters = new ArrayList<TriggerRouter>();
                 for (TriggerRouter triggerRouter : triggerRouters) {
@@ -594,7 +595,8 @@ public class RouterService extends AbstractService implements IRouterService {
             onlyDefaultRoutersAssigned = !Constants.CHANNEL_CONFIG.equals(channelId)
                     && !channel.isFileSyncFlag()
                     && !channel.isReloadFlag() 
-                    && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
+                    && !Constants.CHANNEL_HEARTBEAT.equals(channelId)
+                    && !Constants.CHANNEL_MONITOR.equals(channelId);
             if (onlyDefaultRoutersAssigned && triggerRouters != null) {           
                 for (TriggerRouter triggerRouter : triggerRouters) {
                     if (triggerRouter.getTrigger().getChannelId().equals(channel.getChannelId()) &&
