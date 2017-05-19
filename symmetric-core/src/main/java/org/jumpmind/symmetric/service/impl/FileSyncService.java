@@ -75,7 +75,7 @@ import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
@@ -914,7 +914,7 @@ INodeCommunicationExecutor {
                                 updateFileIncoming(sourceNodeId, filesToEventType);
                             }
                             incomingBatch
-                            .setStatementCount(filesToEventType != null ? filesToEventType
+                            .setLoadRowCount(filesToEventType != null ? filesToEventType
                                     .size() : 0);
                         } else {
                             throw new RuntimeException(

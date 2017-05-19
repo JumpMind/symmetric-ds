@@ -29,7 +29,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatchSummary;
-import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 
 /**
  * This service provides an API to access to the incoming batch table. 

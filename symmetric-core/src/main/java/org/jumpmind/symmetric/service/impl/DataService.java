@@ -74,7 +74,7 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TableReloadRequest;
@@ -1353,7 +1353,7 @@ public class DataService extends AbstractService implements IDataService {
         outgoingBatch.setCreateBy(createBy);
         outgoingBatch.setLoadFlag(isLoad);
         outgoingBatch.incrementEventCount(eventType);
-        outgoingBatch.incrementDataEventCount();
+        outgoingBatch.incrementDataRowCount();
         if (tableName != null) {            
             outgoingBatch.incrementTableCount(tableName.toLowerCase());
         }

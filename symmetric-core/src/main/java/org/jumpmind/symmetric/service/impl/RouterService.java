@@ -57,7 +57,7 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
@@ -1034,7 +1034,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 }
 
                 batch.incrementEventCount(dataMetaData.getData().getDataEventType());
-                batch.incrementDataEventCount();
+                batch.incrementDataRowCount();
                 batch.incrementTableCount(dataMetaData.getTable().getNameLowerCase());
                 
                 if (!context.isProduceCommonBatches()

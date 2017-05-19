@@ -116,7 +116,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
             case INSERT:
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                 try {
                     String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
                     byte[] byteData = null;
@@ -160,7 +160,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                 } catch (Exception ex) {
                     throw getPlatform().getSqlTemplate().translate(ex);
                 } finally {
-                    statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                    statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
                 }
                 break;
             case UPDATE:
@@ -179,7 +179,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected void flush() {
         if (loadedRows > 0) {
                 this.stagedInputFile.close();
-                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
 	        try {
 	            DatabaseInfo dbInfo = platform.getDatabaseInfo();
 	            String quote = dbInfo.getDelimiterToken();
@@ -203,7 +203,7 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        } catch (SQLException ex) {
 	            throw platform.getSqlTemplate().translate(ex);
 	        } finally {
-	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
 	        }
 	        this.stagedInputFile.delete();
 	        createStagingFile();

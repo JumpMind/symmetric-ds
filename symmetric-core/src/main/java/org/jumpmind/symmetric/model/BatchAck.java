@@ -46,7 +46,7 @@ public class BatchAck  implements Serializable {
 
     private long filterMillis;
 
-    private long databaseMillis;
+    private long loadMillis;
 
     private long startTime;
     
@@ -111,12 +111,12 @@ public class BatchAck  implements Serializable {
         this.byteCount = byteCount;
     }
 
-    public long getDatabaseMillis() {
-        return databaseMillis;
+    public long getLoadMillis() {
+        return loadMillis;
     }
 
-    public void setDatabaseMillis(long databaseMillis) {
-        this.databaseMillis = databaseMillis;
+    public void setLoadMillis(long loadMillis) {
+        this.loadMillis = loadMillis;
     }
 
     public long getFilterMillis() {

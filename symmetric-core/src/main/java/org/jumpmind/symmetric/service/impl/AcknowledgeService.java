@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.BatchAckResult;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRegistrationService;
@@ -94,7 +94,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 }
                 outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
                 outgoingBatch.setFilterMillis(batch.getFilterMillis());
-                outgoingBatch.setLoadMillis(batch.getDatabaseMillis());
+                outgoingBatch.setLoadMillis(batch.getLoadMillis());
                 outgoingBatch.setLoadStartTime(new Date(batch.getStartTime()));
                 outgoingBatch.setSqlCode(batch.getSqlCode());
                 outgoingBatch.setSqlState(batch.getSqlState());

@@ -411,7 +411,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
 
     protected boolean script(CsvData data) {
         try {
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             String script = data.getParsedData(CsvData.ROW_DATA)[0];
             Map<String, Object> variables = new HashMap<String, Object>();
             bindVariables(variables);

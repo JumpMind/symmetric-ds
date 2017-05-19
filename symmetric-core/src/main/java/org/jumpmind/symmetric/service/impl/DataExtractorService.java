@@ -111,7 +111,7 @@ import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.ProcessInfo;
@@ -576,7 +576,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     currentBatch = activeBatches.get(i);
                     
                     processInfo.setCurrentLoadId(currentBatch.getLoadId());
-                    processInfo.setDataCount(currentBatch.getDataEventCount());
+                    processInfo.setDataCount(currentBatch.getDataRowCount());
                     processInfo.setCurrentBatchId(currentBatch.getBatchId());
                     
                     channelsProcessed.add(currentBatch.getChannelId());
@@ -806,7 +806,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     currentBatch.getLastUpdatedTime() == null ||
                     System.currentTimeMillis() - batchStatusUpdateMillis >= currentBatch.getLastUpdatedTime().getTime() ||
                     channel.isReloadFlag() || 
-                    currentBatch.getDataEventCount() > batchStatusUpdateDataCount) {
+                    currentBatch.getDataRowCount() > batchStatusUpdateDataCount) {
                 outgoingBatchService.updateOutgoingBatch(currentBatch);
                 return true;
             }
@@ -919,18 +919,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
 
             if (updateBatchStatistics) {
-                long dataEventCount = currentBatch.getDataEventCount();
-                long insertEventCount = currentBatch.getInsertEventCount();
+                long dataEventCount = currentBatch.getDataRowCount();
+                long insertEventCount = currentBatch.getDataInsertRowCount();
                 currentBatch = requeryIfEnoughTimeHasPassed(ts, currentBatch);
 
                 // preserve in the case of a reload event
-                if (dataEventCount > currentBatch.getDataEventCount()) {
-                    currentBatch.setDataEventCount(dataEventCount);
+                if (dataEventCount > currentBatch.getDataRowCount()) {
+                    currentBatch.setDataRowCount(dataEventCount);
                 }
 
                 // preserve in the case of a reload event
-                if (insertEventCount > currentBatch.getInsertEventCount()) {
-                    currentBatch.setInsertEventCount(insertEventCount);
+                if (insertEventCount > currentBatch.getDataInsertRowCount()) {
+                    currentBatch.setDataInsertRowCount(insertEventCount);
                 }
 
                 // only update the current batch after we have possibly
@@ -1186,7 +1186,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 }
                 
-                statisticManager.incrementDataSent(batch.getChannelId(), batch.getDataEventCount());
+                statisticManager.incrementDataSent(batch.getChannelId(), batch.getDataRowCount());
                 statisticManager.incrementDataBytesSent(batch.getChannelId(), totalBytesRead);
 
                 if (log.isDebugEnabled() && totalThrottleTime > 0) {
@@ -1766,7 +1766,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     || symmetricDialect.getName().equals(
                                             DatabaseNamesConstants.MSSQL2008));
                             
-                            outgoingBatch.incrementDataEventCount();
+                            outgoingBatch.incrementDataRowCount();
                         } else {
                             log.error(
                                     "Could not locate a trigger with the id of {} for {}.  It was recorded in the hist table with a hist id of {}",
@@ -1930,7 +1930,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     .isNotBlank(triggerRouter.getInitialLoadSelect()), triggerRouter));
 
             if (data != null && outgoingBatch != null && !outgoingBatch.isExtractJobFlag()) {
-                outgoingBatch.incrementDataEventCount();
+                outgoingBatch.incrementDataRowCount();
                 outgoingBatch.incrementEventCount(data.getDataEventType());
             }
 
