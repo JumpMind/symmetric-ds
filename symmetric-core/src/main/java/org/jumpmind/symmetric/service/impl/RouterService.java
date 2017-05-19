@@ -57,7 +57,7 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
@@ -511,7 +511,8 @@ public class RouterService extends AbstractService implements IRouterService {
             producesCommonBatches = !Constants.CHANNEL_CONFIG.equals(channelId)
                     && !channel.isFileSyncFlag()
                     && !channel.isReloadFlag() 
-                    && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
+                    && !Constants.CHANNEL_HEARTBEAT.equals(channelId) 
+                             && !Constants.CHANNEL_MONITOR.equals(channelId);
             if (producesCommonBatches && triggerRouters != null) {
                 List<TriggerRouter> testableTriggerRouters = new ArrayList<TriggerRouter>();
                 for (TriggerRouter triggerRouter : triggerRouters) {
@@ -594,7 +595,8 @@ public class RouterService extends AbstractService implements IRouterService {
             onlyDefaultRoutersAssigned = !Constants.CHANNEL_CONFIG.equals(channelId)
                     && !channel.isFileSyncFlag()
                     && !channel.isReloadFlag() 
-                    && !Constants.CHANNEL_HEARTBEAT.equals(channelId) ? true : false;
+                    && !Constants.CHANNEL_HEARTBEAT.equals(channelId)
+                    && !Constants.CHANNEL_MONITOR.equals(channelId);
             if (onlyDefaultRoutersAssigned && triggerRouters != null) {           
                 for (TriggerRouter triggerRouter : triggerRouters) {
                     if (triggerRouter.getTrigger().getChannelId().equals(channel.getChannelId()) &&
@@ -1034,7 +1036,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 }
 
                 batch.incrementEventCount(dataMetaData.getData().getDataEventType());
-                batch.incrementDataEventCount();
+                batch.incrementDataRowCount();
                 batch.incrementTableCount(dataMetaData.getTable().getNameLowerCase());
                 
                 if (!context.isProduceCommonBatches()

@@ -96,7 +96,7 @@ public class RemoteNodeStatus implements Serializable {
         if (incomingBatches != null) {
             for (IncomingBatch incomingBatch : incomingBatches) {
                 if (incomingBatch.getIgnoreCount() == 0) {
-                    dataProcessed += incomingBatch.getStatementCount();
+                    dataProcessed += incomingBatch.getLoadRowCount();
                 }
                 batchesProcessed++;
                 if (incomingBatch.getStatus() == org.jumpmind.symmetric.model.IncomingBatch.Status.ER) {
@@ -123,7 +123,7 @@ public class RemoteNodeStatus implements Serializable {
             for (OutgoingBatch batch : outgoingBatches) {
                 batchesProcessed++;
                 if (batch.getIgnoreCount() == 0) {
-                    dataProcessed += batch.totalEventCount();
+                    dataProcessed += batch.totalRowCount();
                 }
                 Channel channel = channels.get(batch.getChannelId());
                 if (channel != null && channel.isReloadFlag()) {

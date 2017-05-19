@@ -39,7 +39,8 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch;
 import org.jumpmind.symmetric.model.IncomingBatchSummary;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
@@ -134,7 +135,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     } 
 
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, List<String> loads, boolean ascending) {
+            List<AbstractBatch.Status> statuses, List<String> loads, boolean ascending) {
 
         String whereClause = buildBatchWhere(nodeIds, channels, statuses, loads);
 
@@ -150,7 +151,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, List<String> loads, Date startAtCreateTime,
+            List<AbstractBatch.Status> statuses, List<String> loads, Date startAtCreateTime,
             final int maxRowsToRetrieve, boolean ascending) {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("NODES", nodeIds);
@@ -228,11 +229,11 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     okayToProcess = false;
                     batch.setStatus(existingBatch.getStatus());
                     batch.setByteCount(existingBatch.getByteCount());
-                    batch.setDatabaseMillis(existingBatch.getDatabaseMillis());
+                    batch.setLoadMillis(existingBatch.getLoadMillis());
                     batch.setNetworkMillis(existingBatch.getNetworkMillis());
                     batch.setFilterMillis(existingBatch.getFilterMillis());
                     batch.setSkipCount(existingBatch.getSkipCount() + 1);
-                    batch.setStatementCount(existingBatch.getStatementCount());
+                    batch.setLoadRowCount(existingBatch.getLoadRowCount());
 
                     existingBatch.setSkipCount(existingBatch.getSkipCount() + 1);
                     log.info("Skipping batch {}", batch.getNodeBatchId());
@@ -258,9 +259,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 	                    getSql("insertIncomingBatchSql"),
 	                    new Object[] { batch.getBatchId(), batch.getNodeId(), batch.getChannelId(),
 	                            batch.getStatus().name(), batch.getNetworkMillis(),
-	                            batch.getFilterMillis(), batch.getDatabaseMillis(),
+	                            batch.getFilterMillis(), batch.getLoadMillis(),
 	                            batch.getFailedRowNumber(), batch.getFailedLineNumber(),
-	                            batch.getByteCount(), batch.getStatementCount(),
+	                            batch.getByteCount(), batch.getLoadRowCount(),
 	                            batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(),
 	                            batch.getIgnoreCount(), batch.getIgnoreRowCount(), batch.getMissingDeleteCount(),
 	                            batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
@@ -338,9 +339,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     getSql("updateIncomingBatchSql"),
                     new Object[] { batch.getStatus().name(), batch.isErrorFlag() ? 1 : 0,
                             batch.getNetworkMillis(), batch.getFilterMillis(),
-                            batch.getDatabaseMillis(), batch.getFailedRowNumber(),
+                            batch.getLoadMillis(), batch.getFailedRowNumber(),
                             batch.getFailedLineNumber(), batch.getByteCount(),
-                            batch.getStatementCount(), batch.getFallbackInsertCount(),
+                            batch.getLoadRowCount(), batch.getFallbackInsertCount(),
                             batch.getFallbackUpdateCount(), batch.getIgnoreCount(), batch.getIgnoreRowCount(),
                             batch.getMissingDeleteCount(), batch.getSkipCount(),
                             batch.getSqlState(), batch.getSqlCode(),
@@ -486,13 +487,34 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setNodeId(rs.getString("node_id"));
             batch.setChannelId(rs.getString("channel_id"));
             batch.setStatus(rs.getString("status"));
+            batch.setRouterMillis(rs.getLong("router_millis"));
             batch.setNetworkMillis(rs.getLong("network_millis"));
             batch.setFilterMillis(rs.getLong("filter_millis"));
-            batch.setDatabaseMillis(rs.getLong("database_millis"));
+            batch.setLoadMillis(rs.getLong("load_millis"));
+            batch.setExtractMillis(rs.getLong("extract_millis"));
+            batch.setTransformExtractMillis(rs.getLong("transform_extract_millis"));
+            batch.setTransformLoadMillis(rs.getLong("transform_load_millis"));
             batch.setFailedRowNumber(rs.getLong("failed_row_number"));
             batch.setFailedLineNumber(rs.getLong("failed_line_number"));
             batch.setByteCount(rs.getLong("byte_count"));
-            batch.setStatementCount(rs.getLong("statement_count"));
+            batch.setLoadFlag(rs.getBoolean("load_flag"));
+            batch.setExtractCount(rs.getLong("extract_count"));
+            batch.setSentCount(rs.getLong("sent_count"));
+            batch.setLoadCount(rs.getLong("load_count"));
+            batch.setDataRowCount(rs.getLong("data_row_count"));
+            batch.setLoadRowCount(rs.getLong("load_row_count"));
+            batch.setExtractRowCount(rs.getLong("extract_row_count"));
+            batch.setReloadRowCount(rs.getLong("reload_row_count"));
+            batch.setDataInsertRowCount(rs.getLong("data_insert_row_count"));
+            batch.setDataUpdateRowCount(rs.getLong("data_update_row_count"));
+            batch.setDataDeleteRowCount(rs.getLong("data_delete_row_count"));
+            batch.setLoadInsertRowCount(rs.getLong("load_insert_row_count"));
+            batch.setLoadUpdateRowCount(rs.getLong("load_update_row_count"));
+            batch.setLoadDeleteRowCount(rs.getLong("load_delete_row_count"));
+            batch.setExtractInsertRowCount(rs.getLong("extract_insert_row_count"));
+            batch.setExtractUpdateRowCount(rs.getLong("extract_update_row_count"));
+            batch.setExtractDeleteRowCount(rs.getLong("extract_delete_row_count"));
+            batch.setOtherRowCount(rs.getLong("other_row_count"));
             batch.setFallbackInsertCount(rs.getLong("fallback_insert_count"));
             batch.setFallbackUpdateCount(rs.getLong("fallback_update_count"));
             batch.setIgnoreCount(rs.getLong("ignore_count"));
@@ -507,6 +529,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setCreateTime(rs.getDateTime("create_time"));
             batch.setErrorFlag(rs.getBoolean("error_flag"));
             batch.setSummary(rs.getString("summary"));
+            batch.setLoadId(rs.getLong("load_id"));
+            batch.setCommonFlag(rs.getBoolean("common_flag"));
+            batch.setFailedDataId(rs.getLong("failed_data_id"));
             return batch;
         }
     }

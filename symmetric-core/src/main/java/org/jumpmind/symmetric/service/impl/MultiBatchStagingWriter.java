@@ -23,7 +23,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.util.Statistics;
 
@@ -142,10 +142,10 @@ public class MultiBatchStagingWriter implements IDataWriter {
 
     @Override
     public void write(CsvData data) {
-        this.outgoingBatch.incrementDataEventCount();
-        this.outgoingBatch.incrementInsertEventCount();
+        this.outgoingBatch.incrementDataRowCount();
+        this.outgoingBatch.incrementDataInsertRowCount();
         this.currentDataWriter.write(data);            
-        if (this.outgoingBatch.getDataEventCount() >= maxBatchSize && this.batches.size() > 0) {
+        if (this.outgoingBatch.getDataRowCount() >= maxBatchSize && this.batches.size() > 0) {
             this.currentDataWriter.end(table);
             this.currentDataWriter.end(batch, false);
             this.closeCurrentDataWriter();
@@ -200,12 +200,12 @@ public class MultiBatchStagingWriter implements IDataWriter {
     protected void nextBatch() {
         if (this.outgoingBatch != null) {
             this.finishedBatches.add(outgoingBatch);
-            rowCount += this.outgoingBatch.getDataEventCount();
+            rowCount += this.outgoingBatch.getDataRowCount();
             byteCount += this.outgoingBatch.getByteCount();
         }
         this.outgoingBatch = this.batches.remove(0);
-        this.outgoingBatch.setDataEventCount(0);
-        this.outgoingBatch.setInsertEventCount(0);
+        this.outgoingBatch.setDataRowCount(0);
+        this.outgoingBatch.setDataInsertRowCount(0);
         if (this.finishedBatches.size() > 0) {
             this.outgoingBatch.setExtractCount(this.outgoingBatch.getExtractCount() + 1);
         }

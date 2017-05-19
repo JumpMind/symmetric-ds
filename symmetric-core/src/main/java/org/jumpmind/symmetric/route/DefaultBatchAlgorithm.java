@@ -33,7 +33,7 @@ public class DefaultBatchAlgorithm implements IBatchAlgorithm, IBuiltInExtension
     public static final String NAME = "default";
 
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData, SimpleRouterContext routingContext) {
-        return batch.getDataEventCount() >= dataMetaData.getNodeChannel().getMaxBatchSize()
+        return batch.getDataRowCount() >= dataMetaData.getNodeChannel().getMaxBatchSize()
                 && routingContext.isEncountedTransactionBoundary();
     }
 

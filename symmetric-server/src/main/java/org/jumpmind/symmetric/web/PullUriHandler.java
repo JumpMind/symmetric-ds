@@ -167,7 +167,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         for (OutgoingBatch outgoingBatch : batchList) {
             if (outgoingBatch.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.OK) {
                 batchesCount++;
-                dataCount += outgoingBatch.getDataEventCount();
+                dataCount += outgoingBatch.getDataRowCount();
             } 
         }
         

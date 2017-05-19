@@ -58,7 +58,7 @@ import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.BatchAckResult;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -1177,7 +1177,7 @@ public class RestService {
             batchAck = new BatchAck(batchResult.getBatchId());
             batchAck.setNodeId(batchResults.getNodeId());
             batchAck.setNetworkMillis(transferTimeInMillis);
-            batchAck.setDatabaseMillis(batchResult.getLoadTimeInMillis());
+            batchAck.setLoadMillis(batchResult.getLoadTimeInMillis());
             if (batchResult.getStatus().equalsIgnoreCase("OK")) {
                 batchAck.setOk(true);
             } else {

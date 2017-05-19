@@ -53,7 +53,7 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.OutgoingLoadSummary;
@@ -216,9 +216,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isErrorFlag() ? 1 : 0,
                         outgoingBatch.getByteCount(), outgoingBatch.getExtractCount(),
                         outgoingBatch.getSentCount(), outgoingBatch.getLoadCount(),
-                        outgoingBatch.getDataEventCount(), outgoingBatch.getReloadEventCount(),
-                        outgoingBatch.getInsertEventCount(), outgoingBatch.getUpdateEventCount(),
-                        outgoingBatch.getDeleteEventCount(), outgoingBatch.getOtherEventCount(),
+                        outgoingBatch.getDataRowCount(), outgoingBatch.getReloadRowCount(),
+                        outgoingBatch.getDataInsertRowCount(), outgoingBatch.getDataUpdateRowCount(),
+                        outgoingBatch.getDataDeleteRowCount(), outgoingBatch.getOtherRowCount(),
                         outgoingBatch.getIgnoreCount(), outgoingBatch.getRouterMillis(),
                         outgoingBatch.getNetworkMillis(), outgoingBatch.getFilterMillis(),
                         outgoingBatch.getLoadMillis(), outgoingBatch.getExtractMillis(),
@@ -269,9 +269,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         transaction.prepareAndExecute(getSql("insertOutgoingBatchSql"), batchId, outgoingBatch
                 .getNodeId(), outgoingBatch.getChannelId(), outgoingBatch.getStatus().name(),
                 outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1: 0, outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch
-                        .isCommonFlag() ? 1 : 0, outgoingBatch.getReloadEventCount(), outgoingBatch
-                        .getOtherEventCount(), outgoingBatch.getUpdateEventCount(), outgoingBatch.getInsertEventCount(),
-                        outgoingBatch.getDeleteEventCount(), outgoingBatch.getLastUpdatedHostName(),
+                        .isCommonFlag() ? 1 : 0, outgoingBatch.getReloadRowCount(), outgoingBatch
+                        .getOtherRowCount(), outgoingBatch.getDataUpdateRowCount(), outgoingBatch.getDataInsertRowCount(),
+                        outgoingBatch.getDataDeleteRowCount(), outgoingBatch.getLastUpdatedHostName(),
                 outgoingBatch.getCreateBy(), outgoingBatch.getSummary());
         outgoingBatch.setBatchId(batchId);
     }
@@ -1085,18 +1085,28 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     batch.setExtractCount(rs.getLong("extract_count"));
                     batch.setSentCount(rs.getLong("sent_count"));
                     batch.setLoadCount(rs.getLong("load_count"));
-                    batch.setDataEventCount(rs.getLong("data_event_count"));
-                    batch.setReloadEventCount(rs.getLong("reload_event_count"));
-                    batch.setInsertEventCount(rs.getLong("insert_event_count"));
-                    batch.setUpdateEventCount(rs.getLong("update_event_count"));
-                    batch.setDeleteEventCount(rs.getLong("delete_event_count"));
-                    batch.setOtherEventCount(rs.getLong("other_event_count"));
+                    batch.setDataRowCount(rs.getLong("data_row_count"));
+                    batch.setLoadRowCount(rs.getLong("load_row_count"));
+                    batch.setExtractRowCount(rs.getLong("extract_row_count"));
+                    batch.setReloadRowCount(rs.getLong("reload_row_count"));
+                    batch.setDataInsertRowCount(rs.getLong("data_insert_row_count"));
+                    batch.setDataUpdateRowCount(rs.getLong("data_update_row_count"));
+                    batch.setDataDeleteRowCount(rs.getLong("data_delete_row_count"));
+                    batch.setLoadInsertRowCount(rs.getLong("load_insert_row_count"));
+                    batch.setLoadUpdateRowCount(rs.getLong("load_update_row_count"));
+                    batch.setLoadDeleteRowCount(rs.getLong("load_delete_row_count"));
+                    batch.setExtractInsertRowCount(rs.getLong("extract_insert_row_count"));
+                    batch.setExtractUpdateRowCount(rs.getLong("extract_update_row_count"));
+                    batch.setExtractDeleteRowCount(rs.getLong("extract_delete_row_count"));
+                    batch.setOtherRowCount(rs.getLong("other_row_count"));
                     batch.setIgnoreCount(rs.getLong("ignore_count"));
                     batch.setRouterMillis(rs.getLong("router_millis"));
                     batch.setNetworkMillis(rs.getLong("network_millis"));
                     batch.setFilterMillis(rs.getLong("filter_millis"));
                     batch.setLoadMillis(rs.getLong("load_millis"));
                     batch.setExtractMillis(rs.getLong("extract_millis"));
+                    batch.setTransformExtractMillis(rs.getLong("transform_extract_millis"));
+                    batch.setTransformLoadMillis(rs.getLong("transform_load_millis"));
                     batch.setExtractStartTime(rs.getDateTime("extract_start_time"));
                     batch.setTransferStartTime(rs.getDateTime("transfer_start_time"));
                     batch.setLoadStartTime(rs.getDateTime("load_start_time"));
@@ -1114,6 +1124,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     batch.setLoadId(rs.getLong("load_id"));
                     batch.setCreateBy(rs.getString("create_by"));
                     batch.setSummary(rs.getString("summary"));
+                    batch.setFallbackInsertCount(rs.getLong("fallback_insert_count"));
+                    batch.setFallbackUpdateCount(rs.getLong("fallback_update_count"));
+                    batch.setIgnoreRowCount(rs.getLong("ignore_row_count"));
+                    batch.setMissingDeleteCount(rs.getLong("missing_delete_count"));
+                    batch.setSkipCount(rs.getLong("skip_count"));
+
                 }
                 return batch;
             } else {

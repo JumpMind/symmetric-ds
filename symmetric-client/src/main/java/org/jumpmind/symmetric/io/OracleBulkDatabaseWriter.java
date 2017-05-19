@@ -256,7 +256,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
     }
 
     protected void flush() {
-        statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
         try {
             if (rowArrays.size() > 0) {
                 JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
@@ -331,7 +331,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
         } finally {
             lastEventType = null;
             rowArrays.clear();
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
 
     }

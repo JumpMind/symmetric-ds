@@ -126,7 +126,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected void commit(boolean earlyCommit) {
         if (transaction != null) {
             try {
-                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                 this.transaction.commit();
                 if (!earlyCommit) {
                    notifyFiltersBatchCommitted();
@@ -134,7 +134,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     notifyFiltersEarlyCommit();
                 }
             } finally {
-                statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
             }
 
         }
@@ -145,11 +145,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected void rollback() {
         if (transaction != null) {
             try {
-                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                 this.transaction.rollback();
                 notifyFiltersBatchRolledback();
             } finally {
-                statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
             }
 
         }
@@ -159,7 +159,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     protected LoadStatus insert(CsvData data) {
         try {
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             if (requireNewStatement(DmlType.INSERT, data, false, true, null)) {
                 this.lastUseConflictDetection = true;
                 this.currentDmlStatement = platform.createDmlStatement(DmlType.INSERT, targetTable, writerSettings.getTextColumnExpression());
@@ -199,14 +199,14 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             logFailureDetails(ex, data, true);
             throw ex;
         } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
     }
 
     @Override
     protected LoadStatus delete(CsvData data, boolean useConflictDetection) {
         try {
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
             Map<String, String> lookupDataMap = null;
             if (requireNewStatement(DmlType.DELETE, data, useConflictDetection, useConflictDetection,
@@ -315,7 +315,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             logFailureDetails(ex, data, true);
             throw ex;
         } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
 
     }
@@ -323,7 +323,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     protected LoadStatus update(CsvData data, boolean applyChangesOnly, boolean useConflictDetection) {
         try {
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             String[] rowData = getRowData(data, CsvData.ROW_DATA);
             String[] oldData = getRowData(data, CsvData.OLD_DATA);
             ArrayList<String> changedColumnNameList = new ArrayList<String>();
@@ -487,7 +487,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             logFailureDetails(ex, data, true);
             throw ex;
         } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
     }
     
@@ -497,7 +497,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         try {
             transaction.commit();
 
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
             log.info("About to create table using the following definition: {}", xml);
             StringReader reader = new StringReader(xml);
@@ -521,14 +521,14 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             log.error("Failed to alter table using the following xml: {}", xml);
             throw ex;
         } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
     }
 
     @Override
     protected boolean sql(CsvData data) {
         try {
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             String script = data.getParsedData(CsvData.ROW_DATA)[0];
             List<String> sqlStatements = getSqlStatements(script);
             long count = 0;
@@ -553,7 +553,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     count);
             return true;
         } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
     }
     

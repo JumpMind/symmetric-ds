@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 
 public class OutgoingBatchWithPayload implements Serializable {
 

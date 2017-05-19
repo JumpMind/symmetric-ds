@@ -234,24 +234,11 @@
     </table>
 
     <table name="incoming_batch" description="The incoming_batch is used for tracking the status of loading an outgoing_batch from another node. Data is loaded and commited at the batch level. The status of the incoming_batch is either successful (OK) or error (ER). ">
-        <column name="batch_id" type="BIGINT" size="50" required="true" primaryKey="true"  description="The id of the outgoing_batch that is being loaded." />
+		<column name="batch_id" type="BIGINT" size="50" required="true" primaryKey="true"  description="The id of the outgoing_batch that is being loaded." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The node_id of the source of the batch being loaded." />
         <column name="channel_id" type="VARCHAR" size="128"  description="The channel_id of the batch being loaded." />
         <column name="status" type="CHAR" size="2"  description="The current status of the batch can be loading (LD), successfully loaded (OK), in error (ER) or skipped (SK)" />
         <column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />
-        <column name="network_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
-        <column name="filter_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
-        <column name="database_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
-        <column name="failed_row_number" type="BIGINT" required="true" default="0" description="This numbered data event that failed as read from the CSV." />
-        <column name="failed_line_number" type="BIGINT" required="true" default="0" description="The current line number in the CSV for this batch that failed." />
-        <column name="byte_count" type="BIGINT" required="true" default="0" description="The number of bytes that were sent as part of this batch." />
-        <column name="statement_count" type="BIGINT" required="true" default="0" description="The number of statements run to load this batch." />
-        <column name="fallback_insert_count" type="BIGINT" required="true" default="0" description="The number of times an update was turned into an insert because the data was not already in the target database." />
-        <column name="fallback_update_count" type="BIGINT" required="true" default="0" description="The number of times an insert was turned into an update because a data row already existed in the target database." />
-        <column name="ignore_count" type="BIGINT" required="true" default="0" description="The number of times a batch was ignored." />
-        <column name="ignore_row_count" type="BIGINT" required="true" default="0" description="The number of times a row was ignored." />
-        <column name="missing_delete_count" type="BIGINT" required="true" default="0" description="The number of times a delete did not affect the database because the row was already deleted." />
-        <column name="skip_count" type="BIGINT" required="true" default="0" description="The number of times a batch was sent and skipped because it had already been loaded according to incoming_batch." />
         <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
         <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
         <column name="sql_message" type="LONGVARCHAR" description="For a status of error (ER), this is the error message that describes the error." />
@@ -259,6 +246,43 @@
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <column name="summary" type="VARCHAR" size="255" description="A high level summary of what is included in a batch, often a list of table names." />
+        <column name="ignore_count" type="BIGINT" required="true" default="0" description="The number of times a batch was ignored." />
+        <column name="byte_count" type="BIGINT" required="true" default="0" description="The number of bytes that were sent as part of this batch." />
+        <column name="load_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is part of an initial load." />
+        <column name="extract_count" type="BIGINT"  required="true" default="0"  description="The number of times this an attempt to extract this batch occurred." />
+        <column name="sent_count" type="BIGINT"  required="true" default="0"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
+        <column name="load_count" type="BIGINT"  required="true" default="0"  description="The number of times an attempt to load this batch occurred." />
+        <column name="reload_row_count" type="BIGINT" required="true" default="0"  description="The number of reload rows that are part of this batch." />
+        <column name="other_row_count" type="BIGINT" required="true" default="0" description="The number of other rows types that are part of this batch.  This includes any events types that are not a reload, insert, update or delete event type." />
+        <column name="data_row_count" type="BIGINT" required="true" default="0"  description="The number of data rows from the databasethat are part of this batch." />
+        <column name="extract_row_count" type="BIGINT" required="true" default="0"  description="The number of data rows after extracting that are part of this batch." />
+		<column name="load_row_count" type="BIGINT" required="true" default="0"  description="The number of data rows loaded that are part of this batch." />		
+		<column name="data_insert_row_count" type="BIGINT" required="true" default="0" description="The number of insert rows from the database that are part of this batch." />
+        <column name="data_update_row_count" type="BIGINT" required="true" default="0" description="The number of update rows from the database that are part of this batch." />
+        <column name="data_delete_row_count" type="BIGINT" required="true" default="0" description="The number of delete rows from the database that are part of this batch." />
+		<column name="extract_insert_row_count" type="BIGINT" required="true" default="0" description="The number of insert rows after extracting that are part of this batch." />
+        <column name="extract_update_row_count" type="BIGINT" required="true" default="0" description="The number of update rows after extracting that are part of this batch." />
+        <column name="extract_delete_row_count" type="BIGINT" required="true" default="0" description="The number of delete rows after extracting that are part of this batch." />
+		<column name="load_insert_row_count" type="BIGINT" required="true" default="0" description="The number of insert rows loaded that are part of this batch." />
+        <column name="load_update_row_count" type="BIGINT" required="true" default="0" description="The number of update rows loaded that are part of this batch." />
+        <column name="load_delete_row_count" type="BIGINT" required="true" default="0" description="The number of delete rows loaded that are part of this batch." />
+		<column name="network_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
+        <column name="filter_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
+		<column name="load_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
+        <column name="router_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent creating this batch." />
+        <column name="extract_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent extracting the data out of the source database." />
+        <column name="transform_extract_millis" type="BIGINT" required="true" default="0" description="Not implemented. The number of milliseconds spent transforming the data on the extract side." />
+        <column name="transform_load_millis" type="BIGINT" required="true" default="0" description="Not implemented. The number of milliseconds spent transforming the data on the load side." />
+		<column name="load_id" type="BIGINT" description="An id that ties multiple batches together to identify them as being part of an initial load." />
+		<column name="common_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that the data in this batch is shared by other nodes (they will have the same batch_id).  Shared batches will be extracted to a common location." />
+		<column name="fallback_insert_count" type="BIGINT" required="true" default="0" description="The number of times an update was turned into an insert because the data was not already in the target database." />
+        <column name="fallback_update_count" type="BIGINT" required="true" default="0" description="The number of times an insert was turned into an update because a data row already existed in the target database." />
+		<column name="ignore_row_count" type="BIGINT" required="true" default="0" description="The number of times a row was ignored." />
+        <column name="missing_delete_count" type="BIGINT" required="true" default="0" description="The number of times a delete did not affect the database because the row was already deleted." />
+		<column name="skip_count" type="BIGINT" required="true" default="0" description="The number of times a batch was sent and skipped because it had already been loaded according to incoming_batch." />
+		<column name="failed_row_number" type="BIGINT" required="true" default="0" description="This numbered data event that failed as read from the CSV." />
+        <column name="failed_line_number" type="BIGINT" required="true" default="0" description="The current line number in the CSV for this batch that failed." />
+        <column name="failed_data_id" type="BIGINT" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
         <index name="idx_ib_time_status">
             <index-column name="create_time" />
             <index-column name="status" />
@@ -583,48 +607,61 @@
     </table>
 
 	<table name="outgoing_batch" description="Used for tracking the sending a collection of data to a node in the system. A new outgoing_batch is created and given a status of 'NE'. After sending the outgoing_batch to its target node, the status becomes 'SE'. The node responds with either a success status of 'OK' or an error status of 'ER'. An error while sending to the node also results in an error status of 'ER' regardless of whether the node sends that acknowledgement. ">
-        <column name="batch_id" type="BIGINT" required="true" primaryKey="true" description="A unique id for the batch." />
+		<column name="batch_id" type="BIGINT" required="true" primaryKey="true" description="A unique id for the batch." />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node that this batch is targeted at." />
         <column name="channel_id" type="VARCHAR" size="128"  description="The channel that this batch is part of." />
         <column name="status" type="CHAR" size="2"  description="The current status of a batch can be routing (RT), requested to be extracted in the background (RQ), newly created and ready for replication (NE), being queried from the database (QY), sent to a Node (SE), ready to be loaded (LD) and acknowledged as successful (OK), ignored (IG) or in error (ER)." />
-        <column name="load_id" type="BIGINT" description="An id that ties multiple batches together to identify them as being part of an initial load." />
-        <column name="extract_job_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is going to be extracted by another job." />
-        <column name="load_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is part of an initial load." />
-        <column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />
-        <column name="common_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that the data in this batch is shared by other nodes (they will have the same batch_id).  Shared batches will be extracted to a common location." />
-        <column name="ignore_count" type="BIGINT" required="true" default="0" description="The number of times a batch was ignored." />
-        <column name="byte_count" type="BIGINT" required="true" default="0"  description="The number of bytes that were sent as part of this batch." />
-        <column name="extract_count" type="BIGINT"  required="true" default="0"  description="The number of times this an attempt to extract this batch occurred." />
-        <column name="sent_count" type="BIGINT"  required="true" default="0"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
-        <column name="load_count" type="BIGINT"  required="true" default="0"  description="The number of times an attempt to load this batch occurred." />
-        <column name="data_event_count" type="BIGINT" required="true" default="0"  description="The number of data_events that are part of this batch." />
-        <column name="reload_event_count" type="BIGINT" required="true" default="0"  description="The number of reload events that are part of this batch." />
-        <column name="insert_event_count" type="BIGINT" required="true" default="0" description="The number of insert events that are part of this batch." />
-        <column name="update_event_count" type="BIGINT" required="true" default="0" description="The number of update events that are part of this batch." />
-        <column name="delete_event_count" type="BIGINT" required="true" default="0" description="The number of delete events that are part of this batch." />
-        <column name="other_event_count" type="BIGINT" required="true" default="0" description="The number of other event types that are part of this batch.  This includes any events types that are not a reload, insert, update or delete event type." />
-        <column name="router_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent creating this batch." />
-        <column name="network_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
-        <column name="filter_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
-        <column name="load_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
-        <column name="extract_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent extracting the data out of the source database." />
-        <column name="transform_extract_millis" type="BIGINT" required="true" default="0" description="Not implemented. The number of milliseconds spent transforming the data on the extract side." />
-        <column name="transform_load_millis" type="BIGINT" required="true" default="0" description="Not implemented. The number of milliseconds spent transforming the data on the load side." />
-        <column name="total_extract_millis" type="BIGINT" required="true" default="0" description="Not implemented. The total number of milliseconds spent processing a batch on the extract side." />
-        <column name="total_load_millis" type="BIGINT" required="true" default="0" description="Not implemented. The total number of milliseconds spent processing a batch on the load side." />
-        <column name="extract_start_time" type="TIMESTAMP" description="The time the batch started extracting from the source." />
-        <column name="transfer_start_time" type="TIMESTAMP" description="The time the batch started transfering across the network." />
-        <column name="load_start_time" type="TIMESTAMP" description="The time the batch started loading into the target." />
-        <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
+		<column name="error_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch was in error during the last synchornization attempt." />
+		<column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
         <column name="sql_code" type="INTEGER" required="true" default="0" description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
         <column name="sql_message" type="LONGVARCHAR" description="For a status of error (ER), this is the error message that describes the error." />
-        <column name="failed_data_id" type="BIGINT" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
-        <column name="failed_line_number" type="BIGINT" required="true" default="0" description="The current line number in the CSV for this batch that failed." />
         <column name="last_update_hostname" type="VARCHAR" size="255"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
-        <column name="create_by" type="VARCHAR" size="255" description="The user that created the batch.  A null value means that the system created the batch." />
         <column name="summary" type="VARCHAR" size="255" description="A high level summary of what is included in a batch, often a list of table names." />
+        <column name="ignore_count" type="BIGINT" required="true" default="0" description="The number of times a batch was ignored." />
+        <column name="byte_count" type="BIGINT" required="true" default="0"  description="The number of bytes that were sent as part of this batch." />
+        <column name="load_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is part of an initial load." />
+        <column name="extract_count" type="BIGINT"  required="true" default="0"  description="The number of times this an attempt to extract this batch occurred." />
+        <column name="sent_count" type="BIGINT"  required="true" default="0"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
+        <column name="load_count" type="BIGINT"  required="true" default="0"  description="The number of times an attempt to load this batch occurred." />
+        <column name="reload_row_count" type="BIGINT" required="true" default="0"  description="The number of reload rows that are part of this batch." />
+        <column name="other_row_count" type="BIGINT" required="true" default="0" description="The number of other rows types that are part of this batch.  This includes any events types that are not a reload, insert, update or delete event type." />
+        <column name="data_row_count" type="BIGINT" required="true" default="0"  description="The number of data rows from the databasethat are part of this batch." />
+        <column name="extract_row_count" type="BIGINT" required="true" default="0"  description="The number of data rows after extracting that are part of this batch." />
+		<column name="load_row_count" type="BIGINT" required="true" default="0"  description="The number of data rows loaded that are part of this batch." />		
+		<column name="data_insert_row_count" type="BIGINT" required="true" default="0" description="The number of insert rows from the database that are part of this batch." />
+        <column name="data_update_row_count" type="BIGINT" required="true" default="0" description="The number of update rows from the database that are part of this batch." />
+        <column name="data_delete_row_count" type="BIGINT" required="true" default="0" description="The number of delete rows from the database that are part of this batch." />
+		<column name="extract_insert_row_count" type="BIGINT" required="true" default="0" description="The number of insert rows after extracting that are part of this batch." />
+        <column name="extract_update_row_count" type="BIGINT" required="true" default="0" description="The number of update rows after extracting that are part of this batch." />
+        <column name="extract_delete_row_count" type="BIGINT" required="true" default="0" description="The number of delete rows after extracting that are part of this batch." />
+		<column name="load_insert_row_count" type="BIGINT" required="true" default="0" description="The number of insert rows loaded that are part of this batch." />
+        <column name="load_update_row_count" type="BIGINT" required="true" default="0" description="The number of update rows loaded that are part of this batch." />
+        <column name="load_delete_row_count" type="BIGINT" required="true" default="0" description="The number of delete rows loaded that are part of this batch." />
+		<column name="network_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
+        <column name="filter_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
+		<column name="load_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
+        <column name="router_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent creating this batch." />
+        <column name="extract_millis" type="BIGINT" required="true" default="0" description="The number of milliseconds spent extracting the data out of the source database." />
+        <column name="transform_extract_millis" type="BIGINT" required="true" default="0" description="Not implemented. The number of milliseconds spent transforming the data on the extract side." />
+        <column name="transform_load_millis" type="BIGINT" required="true" default="0" description="Not implemented. The number of milliseconds spent transforming the data on the load side." />
+		<column name="load_id" type="BIGINT" description="An id that ties multiple batches together to identify them as being part of an initial load." />
+		<column name="common_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that the data in this batch is shared by other nodes (they will have the same batch_id).  Shared batches will be extracted to a common location." />
+		<column name="fallback_insert_count" type="BIGINT" required="true" default="0" description="The number of times an update was turned into an insert because the data was not already in the target database." />
+        <column name="fallback_update_count" type="BIGINT" required="true" default="0" description="The number of times an insert was turned into an update because a data row already existed in the target database." />
+		<column name="ignore_row_count" type="BIGINT" required="true" default="0" description="The number of times a row was ignored." />
+        <column name="missing_delete_count" type="BIGINT" required="true" default="0" description="The number of times a delete did not affect the database because the row was already deleted." />
+		<column name="skip_count" type="BIGINT" required="true" default="0" description="The number of times a batch was sent and skipped because it had already been loaded according to incoming_batch." />
+		<column name="total_extract_millis" type="BIGINT" required="true" default="0" description="Not implemented. The total number of milliseconds spent processing a batch on the extract side." />
+        <column name="total_load_millis" type="BIGINT" required="true" default="0" description="Not implemented. The total number of milliseconds spent processing a batch on the load side." />
+		<column name="extract_job_flag"  type="BOOLEANINT" size="1" default="0" description="A flag that indicates that this batch is going to be extracted by another job." />
+		<column name="extract_start_time" type="TIMESTAMP" description="The time the batch started extracting from the source." />
+        <column name="transfer_start_time" type="TIMESTAMP" description="The time the batch started transfering across the network." />
+        <column name="load_start_time" type="TIMESTAMP" description="The time the batch started loading into the target." />	
+		<column name="failed_data_id" type="BIGINT" required="true" default="0" description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
+		<column name="failed_line_number" type="BIGINT" required="true" default="0" description="The current line number in the CSV for this batch that failed." />
+        <column name="create_by" type="VARCHAR" size="255" description="The user that created the batch.  A null value means that the system created the batch." />
         <index name="idx_ob_node_status">
             <index-column name="node_id" />
             <index-column name="status" />
