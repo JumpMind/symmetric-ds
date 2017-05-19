@@ -24,6 +24,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 
 import java.io.File;
 import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -93,6 +94,7 @@ import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.service.IUpdateService;
 import org.jumpmind.symmetric.service.impl.AcknowledgeService;
 import org.jumpmind.symmetric.service.impl.BandwidthService;
 import org.jumpmind.symmetric.service.impl.ClusterService;
@@ -122,6 +124,7 @@ import org.jumpmind.symmetric.service.impl.SequenceService;
 import org.jumpmind.symmetric.service.impl.StatisticService;
 import org.jumpmind.symmetric.service.impl.TransformService;
 import org.jumpmind.symmetric.service.impl.TriggerRouterService;
+import org.jumpmind.symmetric.service.impl.UpdateService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager;
@@ -228,6 +231,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     protected IMailService mailService;
     
     protected IContextService contextService;
+    
+    protected IUpdateService updateService;
 
     protected Date lastRestartTime = null;
 
@@ -373,6 +378,22 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.fileSyncExtractorService = new FileSyncExtractorService(this);
         this.mailService = new MailService(parameterService, symmetricDialect);
         this.contextService = new ContextService(parameterService, symmetricDialect);
+
+        String updateServiceClassName = properties.get(ParameterConstants.UPDATE_SERVICE_CLASS);
+        if (updateServiceClassName == null) {
+        	this.updateService = new UpdateService(this);
+        } else {
+        	try {
+        		Constructor<?> cons = Class.forName(updateServiceClassName).getConstructor(ISymmetricEngine.class);
+        		this.updateService = (IUpdateService) cons.newInstance(this);
+        	} catch (Exception e) {
+        		throw new RuntimeException(e);
+        	}
+        }
+        
+        if (parameterService.isRegistrationServer()) {
+        	this.updateService.init();
+        }
         
         this.jobManager = createJobManager();
 
@@ -625,7 +646,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                         parameterService.getSyncUrl())) {
                             heartbeat(false);
                         }
-                        
+
                         if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIG_AT_STARTUP, true)) {
                             pullService.pullConfigData(false);
                         }
@@ -1159,6 +1180,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     
     public IFileSyncService getFileSyncService() {
         return fileSyncService;
+    }
+    
+    public IUpdateService getUpdateService() {
+    	return updateService;
     }
 
 }

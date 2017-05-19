@@ -69,7 +69,7 @@ task generateDocs(type: Copy) {
     
     destinationDir = file("$buildDir/doc")
     if (project.properties.containsKey('pro')) {
-        destinationDir = file(rootProject.buildDir.path + "/../../symmetric-pro/src/main/resources/VAADIN/doc")
+        destinationDir = file("$buildDir/../../../symmetric-pro/symmetric-pro/src/main/resources/VAADIN/doc")
     }
 
     into('html') {
