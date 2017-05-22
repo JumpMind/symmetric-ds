@@ -167,11 +167,13 @@ public class JobManager extends AbstractService implements IJobManager {
 
     @Override
     public synchronized void stopJobs() {
-        for (IJob job : jobs) {
-            job.stop();
-        }      
-        Thread.interrupted();
-        started = false;
+        if (jobs != null) {
+            for (IJob job : jobs) {
+                job.stop();
+            }
+            Thread.interrupted();
+            started = false;
+        }
     }
     
     @Override
