@@ -27,6 +27,10 @@ import org.jumpmind.util.AbstractVersion;
  * href="http://apr.apache.org/versioning.html">here</a>.
  */
 final public class Version {
+    
+    public static final int[] VERSION_3_7_0 = new int[] {3,7,0};
+    public static final int[] VERSION_3_8_0 = new int[] {3,8,0};
+    public static final int[] VERSION_3_8_18 = new int[] {3,8,18};
 
     private static AbstractVersion version = new AbstractVersion() {
         @Override
@@ -54,12 +58,20 @@ final public class Version {
     public static boolean isOlderThanVersion(String checkVersion, String targetVersion) {
         return version.isOlderThanVersion(checkVersion, targetVersion);
     }
+    
+    public static boolean isOlderThanVersion(int[] checkVersion, int[] targetVersion) {
+        return version.isOlderThanVersion(checkVersion, targetVersion);
+    }
        
     public static boolean isOlderMinorVersion(String version) {
         return isOlderMinorVersion(version, version());
     }
 
     public static boolean isOlderMinorVersion(String checkVersion, String targetVersion) {
+        return version.isOlderMinorVersion(checkVersion, targetVersion);
+    }
+    
+    public static boolean isOlderMinorVersion(int[] checkVersion, int[] targetVersion) {
         return version.isOlderMinorVersion(checkVersion, targetVersion);
     }
 
