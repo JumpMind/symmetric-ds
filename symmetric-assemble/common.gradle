@@ -20,9 +20,10 @@ allprojects {
 
     group = 'org.jumpmind.symmetric'
     
-    project.buildDir='target'
+//    project.buildDir='target'
     
     repositories {
+        jcenter()
         maven { url "http://maven.jumpmind.com/repo" }
         mavenCentral()
         maven { url "http://maven.vaadin.com/vaadin-addons" }
@@ -45,7 +46,7 @@ allprojects {
     
 }
 
-def ignoreDerivedResources(projectDescription, directories = ["build", "target", "test-output"]) {
+def ignoreDerivedResources(projectDescription, directories = ["build", "test-output"]) {
   def count = directories.count { file(it).exists() }
   if (count > 0) {
     def filter = projectDescription
@@ -88,6 +89,18 @@ subprojects { subproject ->
     javadoc {
         failOnError = false
     }
+    
+    afterEvaluate {
+        if(plugins.hasPlugin(JavaPlugin)) {
+            
+            // configuration here
+            rootProject.tasks.generateJavadoc {
+                source += files(sourceSets.collect { srcSet -> srcSet.allJava })
+                classpath += files(sourceSets*.compileClasspath)
+            }
+    
+        }
+    }    
     
     install.enabled = !project.properties.containsKey('pro')
     uploadArchives.enabled = !project.properties.containsKey('pro')

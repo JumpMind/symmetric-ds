@@ -1,0 +1,19 @@
+apply from: symAssembleDir + '/common.gradle'
+
+    description = 'General purpose cross platform service wrapper'
+
+    dependencies {
+        compile "net.java.dev.jna:jna:$jnaVersion"
+        compile "net.java.dev.jna:jna-platform:$jnaVersion"
+        compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
+        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
+    }
+
+    jar {
+        manifest {
+            attributes(
+                    "Main-Class": "org.jumpmind.symmetric.wrapper.Wrapper",
+                    "Class-Path": configurations.compile.collect { it.getName() }.join(' '))
+        }
+    }

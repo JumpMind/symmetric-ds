@@ -1,0 +1,21 @@
+apply from: symAssembleDir + '/common.gradle'
+
+    description = 'SymmetricDS Client library for JDBC clients'
+
+    dependencies {
+        compile project(":symmetric-core")
+        compile project(":symmetric-jdbc")
+        compile "org.springframework:spring-context:$springVersion"
+        compile "commons-cli:commons-cli:$commonsCliVersion"
+        compile "commons-vfs:commons-vfs:1.0"
+        compile "com.jcraft:jsch:0.1.48"
+
+        provided "org.mongodb:mongo-java-driver:2.12.3"
+        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
+        provided "com.amazonaws:aws-java-sdk:1.9.17"
+
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
+        testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
+        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
+        testCompile project(path: ':symmetric-core', configuration: 'testArtifacts')
+    }

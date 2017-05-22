@@ -21,12 +21,13 @@ task buildScriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
     configurations = project.buildscript.configurations
 }
 
-project.buildDir='target'
-apply from: symAssembleDir + '/common.gradle'
+//project.buildDir='target'
 
 if (project.properties.containsKey('pro')) {
     install.enabled = false
     uploadArchives.enabled = false
+} else {
+    apply from: symAssembleDir + '/common.gradle'
 }
 
 task generateJavadoc(type: Javadoc) {
@@ -36,277 +37,12 @@ task generateJavadoc(type: Javadoc) {
 	description = 'Generate JavaDoc HTML pages for API documentation'
 }
 
-subprojects { subproject ->
-    afterEvaluate {
-        if(plugins.hasPlugin(JavaPlugin)) {
-            
-            // configuration here
-            rootProject.tasks.generateJavadoc {
-                source += files(sourceSets.collect { srcSet -> srcSet.allJava })
-                classpath += files(sourceSets*.compileClasspath)
-            }
-    
-        }
-    }  
-    
-}
-
-project(":symmetric-csv") {
-    description = 'General purpose csv parser'
-    dependencies {
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-    }
-}
-
-project(":symmetric-wrapper") {
-    description = 'General purpose cross platform service wrapper'
-
-    dependencies {
-        compile "net.java.dev.jna:jna:$jnaVersion"
-        compile "net.java.dev.jna:jna-platform:$jnaVersion"
-        compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
-        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-    }
-
-    jar {
-        manifest {
-            attributes(
-                    "Main-Class": "org.jumpmind.symmetric.wrapper.Wrapper",
-                    "Class-Path": configurations.compile.collect { it.getName() }.join(' '))
-        }
-    }
-}
-
-project(':symmetric-util') {
-    description = 'Utility classes that are used by several Symmetric libraries'
-
-    dependencies {
-        compile "commons-lang:commons-lang:$commonsLangVersion"
-        compile "commons-io:commons-io:$commonsIoVersion"
-        compile "commons-codec:commons-codec:$commonsCodecVersion"
-        compile "commons-collections:commons-collections:$commonsCollectionVersion"
-        compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
-        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
-    }
-}
-
-project(':symmetric-db') {
-    description = 'Database classes that are used by several Symmetric libraries'
-
-    dependencies {
-        compile project(":symmetric-util")
-        compile "net.sf.kxml:kxml2:2.3.0"
-        compile "commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion"
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-    }
-}
-
-project(":symmetric-jdbc") {
-    description = 'Library that contains the jdbc implementation for symmetric-db'
-
-    dependencies {
-        compile project(":symmetric-db")
-        compile "commons-dbcp:commons-dbcp:$commonsDbcpVersion"
-        compile "org.springframework:spring-jdbc:$springVersion"
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-    }
-}
-
-project(':symmetric-io') {
-    description = 'Data input/output libraries'
-
-    dependencies {
-        compile project(":symmetric-csv")
-        compile project(":symmetric-db")
-        compile "org.beanshell:bsh:$bshVersion"
-        compile "net.sourceforge.jeval:jeval:0.9.4"
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-        testCompile project(":symmetric-jdbc")
-        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
-    }
-}
-
-project(':symmetric-core') {
-    description = 'Central SymmetricDS library.  Excludes direct dependencies on JDBC.'
-
-    dependencies {
-        compile project(":symmetric-io")
-        compile project(":symmetric-util")
-        compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
-        compile "javax.mail:mail:1.4.5"
-        compile "com.fasterxml.jackson.core:jackson-databind:2.8.5"
-        
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
-    }
-}
-
-project(':symmetric-android') {
-    description = 'SymmetricDS Client library for Android clients'
-
-    dependencies {
-        compile (project(":symmetric-core")) {
-            exclude group:'org.slf4j'
-            exclude group:'log4j'
-            exclude group:'net.sf.kxml'
-        }
-        compile "org.slf4j:slf4j-android:1.6.1-RC1"
-        provided "com.google.android:android:2.1.2"
-    }
-
-    apply plugin: 'distribution'
-
-    distributions {
-        android {
-            baseName = 'symmetric-android'
-            contents {
-                exclude ("**/slf4j-api*.jar")
-                exclude ("**/jul-to-slf4j*.jar")
-                exclude ("**/jcl-over-slf4j*.jar")
-                exclude ("**/slf4j-log4j12*.jar")
-                exclude ("**/log4j*.jar")
-                from { 'COPYING' }
-                from { 'CREDITS' }
-                from { 'NOTICE' }
-                into('libs') {
-                    from configurations.runtime - configurations.provided
-                    from jar
-                }
-            }
-        }
-    }
-}
-
-project(':symmetric-client') {
-    description = 'SymmetricDS Client library for JDBC clients'
-
-    dependencies {
-        compile project(":symmetric-core")
-        compile project(":symmetric-jdbc")
-        compile "org.springframework:spring-context:$springVersion"
-        compile "commons-cli:commons-cli:$commonsCliVersion"
-        compile "commons-vfs:commons-vfs:1.0"
-        compile "com.jcraft:jsch:0.1.48"
-
-        provided "org.mongodb:mongo-java-driver:2.12.3"
-        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
-        provided "com.amazonaws:aws-java-sdk:1.9.17"
-
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-core', configuration: 'testArtifacts')
-    }
-}
-
-project(':symmetric-server') {
-
-    description = 'SymmetricDS Server library for JDBC client'
-
-    apply plugin: 'distribution'
-
-    dependencies {
-        compile project(":symmetric-client")
-        compile "javax.mail:mail:1.4.5"
-        compile "org.springframework:spring-jms:$springVersion"
-        compile "org.springframework:spring-web:$springVersion"
-        compile "javax.xml.bind:jaxb-api:2.2.7"
-        compile "org.codehaus.jackson:jackson-mapper-asl:1.9.9"
-        compile "org.jdom:jdom:1.1"
-        compile ("com.mangofactory:swagger-springmvc:0.6.5") {
-            exclude group: 'asm'
-        }
-        compile project(":symmetric-wrapper")
-
-        provided "javax.jms:jms-api:1.1-rev-1"
-        provided "org.mongodb:mongo-java-driver:2.12.3"
-        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
-        provided ("com.amazonaws:aws-java-sdk:1.8.9.1") {
-            exclude group: 'commons-logging'
-            exclude group: 'com.fasterxml.jackson.core'
-            exclude group: 'commons-codec'
-        }
-        compile "javax.servlet:javax.servlet-api:$servletVersion"
-        provided "org.eclipse.jetty:jetty-annotations:$jettyVersion"
-        provided "org.eclipse.jetty:jetty-servlets:$jettyVersion"
-        provided "org.eclipse.jetty:jetty-webapp:$jettyVersion"
-        provided "org.eclipse.jetty:jetty-jmx:$jettyVersion"
-        provided "javax.websocket:javax.websocket-api:1.0"
-        provided "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"        
-        provided "mx4j:mx4j-tools:3.0.1"
-
-        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-core', configuration: 'testArtifacts')
-        testCompile project(path: ':symmetric-client', configuration: 'testArtifacts')
-    }
-
-    distributions {
-        server {
-            baseName = 'symmetric-server'
-            contents {
-                from { 'COPYING' }
-                from { 'CREDITS' }
-                from { 'NOTICE' }
-                from ('src/main/deploy') {
-                    exclude 'bin/sym'
-                    exclude 'bin/symadmin'
-                    exclude 'bin/dbexport'
-                    exclude 'bin/dbimport'
-                    exclude 'bin/dbfill'
-                    exclude 'bin/jmx'
-                    exclude 'bin/dbsql'
-                    exclude 'bin/dbcompare'
-                    exclude 'bin/sym_service'
-                    exclude 'bin/setenv'
-                }
-                from ('src/main/deploy') {
-                    include 'bin/sym'
-                    include 'bin/symadmin'
-                    include 'bin/dbexport'
-                    include 'bin/dbimport'
-                    include 'bin/dbfill'
-                    include 'bin/jmx'
-                    include 'bin/dbsql'
-                    include 'bin/dbcompare'
-                    include 'bin/sym_service'
-                    include 'bin/setenv'
-                    fileMode 0755
-                }
-                into('doc') { from ("$symAssembleDir/target/doc") }
-                into('lib') {
-                    from project(":symmetric-wrapper").configurations.compile {
-                        include "*jna*"
-                    }
-                }
-                into('lib') {
-                    from configurations.provided { exclude "*animal-sniffer*" }
-                    from project(":symmetric-wrapper").jar
-                    rename 'symmetric-wrapper(.*).jar', 'symmetric-wrapper.jar'
-                }
-                into('web/WEB-INF/lib') {
-                    from project(":symmetric-server").jar
-                    from configurations.compile.filter {  a ->
-                        !a.path.contains("symmetric-wrapper") &&
-                                !configurations.provided.contains(a) &&
-                                !project(':symmetric-server').configurations.provided.contains(a)
-                    }
-                }
-            }
-        }
-    }
-    
-    task('symmetric-server:serverDistZip').dependsOn { ':symmetric-server:jar' }
-}
-
 task buildSymmetric {
 	group = 'SymmetricDS'
 	description = 'Build software, documentation, and distribution ZIP files'
     generateDocs.dependsOn(project(':symmetric-server').jar)    
-    project(':symmetric-server').serverDistZip.dependsOn(project(':symmetric-server').jar)
-    project(':symmetric-server').serverDistZip.dependsOn(generateDocs)
+    //project(':symmetric-server').tasks.serverDistZip.dependsOn(project(':symmetric-server').tasks.jar)
+    //project(':symmetric-server').serverDistZip.dependsOn(generateDocs)
     dependsOn ':symmetric-android:androidDistZip', ':symmetric-server:serverDistZip'
 }
 
@@ -323,7 +59,7 @@ task publishSymmetric {
             todir: "$sourceforgeUser:$sourceforgePassword@frs.sourceforge.net:/home/frs/project/symmetricds/symmetricds/symmetricds-$majorMinorVersion",
             trust: 'true',
             verbose: 'true') {
-            fileset(dir: "../symmetric-android/target/distributions/") {
+            fileset(dir: "../symmetric-android/build/distributions/") {
                 include(name: 'symmetric-android-' + version + '.zip')
             }
         }
@@ -333,7 +69,7 @@ task publishSymmetric {
             todir: "$sourceforgeUser:$sourceforgePassword@frs.sourceforge.net:/home/frs/project/symmetricds/symmetricds/symmetricds-$majorMinorVersion",
             trust: 'true',
             verbose: 'true') {
-            fileset(dir: "../symmetric-server/target/distributions/") { 
+            fileset(dir: "../symmetric-server/build/distributions/") { 
                 include(name: 'symmetric-server-' + version + '.zip')
             }
         }
@@ -347,4 +83,3 @@ task releaseSymmetric {
 	description = 'Publish software to SourceForge website and online documentation to SymmetricDS website'
 }
 
-task wrapper(type: Wrapper) { gradleVersion = '2.7' }

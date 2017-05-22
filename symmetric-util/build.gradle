@@ -1,0 +1,12 @@
+apply from: symAssembleDir + '/common.gradle'
+
+    description = 'Utility classes that are used by several Symmetric libraries'
+
+    dependencies {
+        compile "commons-lang:commons-lang:$commonsLangVersion"
+        compile "commons-io:commons-io:$commonsIoVersion"
+        compile "commons-codec:commons-codec:$commonsCodecVersion"
+        compile "commons-collections:commons-collections:$commonsCollectionVersion"
+        compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
+        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
+    }
