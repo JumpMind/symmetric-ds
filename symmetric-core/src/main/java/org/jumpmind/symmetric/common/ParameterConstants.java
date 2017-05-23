@@ -243,6 +243,7 @@ final public class ParameterConstants {
 
     public final static String TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY = "trigger.update.capture.changed.data.only.enabled";
     public final static String TRIGGER_CREATE_BEFORE_INITIAL_LOAD = "trigger.create.before.initial.load.enabled";
+    public final static String TRIGGER_CAPTURE_DDL_CHANGES = "trigger.capture.ddl.changes";
 
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
     public final static String DB_NATIVE_EXTRACTOR = "db.native.extractor";
@@ -382,6 +383,8 @@ final public class ParameterConstants {
     public final static String OUTGOING_BATCH_UPDATE_STATUS_DATA_COUNT = "outgoing.batches.update.status.data.count";
     
     public final static String FIREBIRD_EXTRACT_VARCHAR_ROW_OLD_PK_DATA = "firebird.extract.varchar.row.old.pk.data";
+    
+    public final static String LOG_CONFLICT_RESOLUTION = "log.conflict.resolution";
     
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

@@ -379,6 +379,19 @@ abstract public class AbstractTriggerTemplate {
                 defaultCatalog, defaultSchema, ddl);
     }
 
+    public String createDdlTrigger(String tablePrefix, String defaultCatalog, String defaultSchema, String triggerName) {
+        String ddl = sqlTemplates.get("ddlTriggerTemplate");
+        if (ddl == null) {
+            return null;
+        }
+        
+        ddl = FormatUtils.replace("triggerName", triggerName, ddl);
+        ddl = FormatUtils.replace("prefixName", tablePrefix, ddl);
+        ddl = replaceDefaultSchemaAndCatalog(ddl);
+
+        return ddl;
+    }
+
     protected String getDefaultTargetTableName(Trigger trigger, TriggerHistory history) {
         String targetTableName = null;
         if (history != null) {

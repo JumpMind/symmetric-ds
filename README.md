@@ -15,7 +15,7 @@ Professional downloads are available at http://www.jumpmind.com/products/symmetr
 
 We also have developed a native SymmetricDS client.  Check out the code in the [symmetric-client-clib](symmetric-client-clib) and [symmetric-client-native](symmetric-client-native).
 
-##Core Product Development
+## Core Product Development
 We use Eclipse for development.
 
 To setup a development environment run the following commands:

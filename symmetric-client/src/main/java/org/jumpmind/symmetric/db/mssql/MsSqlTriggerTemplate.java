@@ -177,6 +177,27 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "   end                                                                                                                                                                    \n" +
 "---- go");
 
+        sqlTemplates.put("ddlTriggerTemplate",
+"create trigger $(triggerName) on database\n" + 
+"for create_table, drop_table, alter_table,\n" +
+"create_view, drop_view, alter_view,\n" +
+"create_function, drop_function, alter_function,\n" +
+"create_procedure, drop_procedure, alter_procedure,\n" +
+"create_trigger, drop_trigger, alter_trigger,\n" +
+"create_index, drop_index, alter_index as\n" +
+"declare @data xml\n" +
+"declare @histId int\n" +
+"set @data = eventdata()\n" +
+"if (@data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'nvarchar(128)') not like '$(prefixName)%') begin\n" +
+"  select @histId = max(trigger_hist_id) from " + defaultCatalog + "$(defaultSchema)$(prefixName)_trigger_hist where source_table_name = '$(prefixName)_node'\n" +
+"  insert into " + defaultCatalog + "$(defaultSchema)$(prefixName)_data\n" +
+"  (table_name, event_type, trigger_hist_id, row_data, channel_id, source_node_id, create_time)\n" +
+"  values ('$(prefixName)_node', '" + DataEventType.SQL.getCode() + "', @histId,\n" +
+"  '\"' + replace(replace(@data.value('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]', 'nvarchar(max)'),'\\','\\\\'),'\"','\\\"') + '\",ddl',\n" +
+"  'config', dbo.$(prefixName)_node_disabled(), current_timestamp)\n" +
+"end\n" +
+"---- go");
+        
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause) " );
 

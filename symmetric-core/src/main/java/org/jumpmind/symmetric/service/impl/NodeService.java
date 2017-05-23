@@ -150,6 +150,10 @@ public class NodeService extends AbstractService implements INodeService {
         new NodeRowMapper(), id);
         return (Node) getFirstEntry(list);
     } 
+    
+    public Node findNodeInCacheOnly(String id) {
+        return nodeCache.get(id);
+    }
 
     public Node findNode(String id, boolean useCache) {
         if (useCache) {
