@@ -1073,6 +1073,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 throw new RuntimeException(e);
                             }
                         }
+                        statisticManager.incrementDataSent(currentBatch.getChannelId(),
+                                currentBatch.getDataEventCount());
+                        statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), 
+                                currentBatch.getByteCount());
                     }
                     
                     Channel channel = configurationService.getChannel(currentBatch.getChannelId());
