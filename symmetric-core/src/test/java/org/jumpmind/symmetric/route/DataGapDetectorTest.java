@@ -271,7 +271,7 @@ public class DataGapDetectorTest {
 
         @SuppressWarnings("unchecked")
         ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) Matchers.anyObject();
-        when(sqlTemplate.query(Matchers.anyString(), mapper, Matchers.anyVararg())).thenAnswer(new Answer<List<Long>>() {
+        when(sqlTemplate.query(Matchers.anyString(), mapper, (Object[])Matchers.anyVararg())).thenAnswer(new Answer<List<Long>>() {
             public List<Long> answer(InvocationOnMock invocation) {
                 List<Long> dataIds = new ArrayList<Long>();
                 long startId = (Long) invocation.getArguments()[2];

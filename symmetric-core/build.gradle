@@ -1,0 +1,14 @@
+apply from: symAssembleDir + '/common.gradle'
+
+    description = 'Central SymmetricDS library.  Excludes direct dependencies on JDBC.'
+
+    dependencies {
+        compile project(":symmetric-io")
+        compile project(":symmetric-util")
+        compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
+        compile "javax.mail:mail:1.4.5"
+        compile "com.fasterxml.jackson.core:jackson-databind:2.8.5"
+        
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
+        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
+    }
