@@ -1,4 +1,5 @@
 apply from: symAssembleDir + '/common.gradle'
+apply from: symAssembleDir + '/asciidoc.gradle'
 
     description = 'SymmetricDS Server library for JDBC client'
 
@@ -98,3 +99,5 @@ apply from: symAssembleDir + '/common.gradle'
     
     
     task('symmetric-server:serverDistZip').dependsOn { ':symmetric-server:jar' }
+    task('symmetric-server:generateAppendixes').dependsOn(project(':symmetric-server').jar)
+    //task('symmetric-server:generateDocs').dependsOn(project(':symmetric-server').jar)    

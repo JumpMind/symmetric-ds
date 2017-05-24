@@ -21,8 +21,6 @@ task buildScriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
     configurations = project.buildscript.configurations
 }
 
-//project.buildDir='target'
-
 if (project.properties.containsKey('pro')) {
     install.enabled = false
     uploadArchives.enabled = false
@@ -40,9 +38,8 @@ task generateJavadoc(type: Javadoc) {
 task buildSymmetric {
 	group = 'SymmetricDS'
 	description = 'Build software, documentation, and distribution ZIP files'
-    generateDocs.dependsOn(project(':symmetric-server').jar)    
-    //project(':symmetric-server').tasks.serverDistZip.dependsOn(project(':symmetric-server').tasks.jar)
-    //project(':symmetric-server').serverDistZip.dependsOn(generateDocs)
+    project(':symmetric-server').tasks.serverDistZip.dependsOn(project(':symmetric-server').tasks.jar)
+    project(':symmetric-server').serverDistZip.dependsOn(generateDocs)
     dependsOn ':symmetric-android:androidDistZip', ':symmetric-server:serverDistZip'
 }
 
