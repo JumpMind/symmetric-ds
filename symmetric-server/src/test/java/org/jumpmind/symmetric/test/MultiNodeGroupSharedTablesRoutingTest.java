@@ -61,10 +61,10 @@ public class MultiNodeGroupSharedTablesRoutingTest extends AbstractTest {
         
         assertEquals(1, batches1.size());
         assertEquals(1, batches2.size());
-        assertEquals(30, batches1.get(0).getDataEventCount());
-        assertEquals(30, batches1.get(0).getInsertEventCount());
-        assertEquals(10, batches2.get(0).getDataEventCount());
-        assertEquals(10, batches2.get(0).getInsertEventCount());
+        assertEquals(30, batches1.get(0).getDataRowCount());
+        assertEquals(30, batches1.get(0).getDataInsertRowCount());
+        assertEquals(10, batches2.get(0).getDataRowCount());
+        assertEquals(10, batches2.get(0).getDataInsertRowCount());
         
         assertEquals(30, template(rootServer).queryForInt("select count(*) from sym_data_event where batch_id=?", batches1.get(0).getBatchId()));
         assertEquals(10, template(rootServer).queryForInt("select count(*) from sym_data_event where batch_id=?", batches2.get(0).getBatchId()));

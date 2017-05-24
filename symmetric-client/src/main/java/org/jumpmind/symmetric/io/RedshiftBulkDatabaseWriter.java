@@ -124,7 +124,7 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
                     case INSERT:
                         statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                         statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-                        statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                        statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                         try {
                             String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
                             String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '"', CsvWriter.ESCAPE_MODE_DOUBLED, "\\N");
@@ -134,7 +134,7 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
                         } catch (Exception ex) {
                             throw getPlatform().getSqlTemplate().translate(ex);
                         } finally {
-                            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
                         }
                         break;
                     case UPDATE:
@@ -160,7 +160,7 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected void flush() {
         if (loadedRows > 0) {
             stagedInputFile.close();
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);  
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);  
             AmazonS3 s3client = new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey));
             if (isNotBlank(s3Endpoint)) {
                 s3client.setEndpoint(s3Endpoint);
@@ -192,7 +192,7 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
             } catch (SQLException ex) {
                 throw platform.getSqlTemplate().translate(ex);
             } finally {
-                statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
             }
 
             stagedInputFile.delete();

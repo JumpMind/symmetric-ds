@@ -93,6 +93,8 @@ final public class Constants {
     public static final String MBEAN_SERVER = "mbeanserver";
     
     public static final String CHANNEL_HEARTBEAT = "heartbeat";
+    
+    public static final String CHANNEL_MONITOR = "monitor";
 
     public static final String CHANNEL_CONFIG = "config";
     

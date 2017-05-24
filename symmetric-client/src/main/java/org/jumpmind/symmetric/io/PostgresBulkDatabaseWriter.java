@@ -70,7 +70,7 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
     public void write(CsvData data) {
         statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
         statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-        statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
 
         DataEventType dataEventType = data.getDataEventType();
 
@@ -123,7 +123,7 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
                 loadedRows = 0;
             }
         } 
-        statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
     }
 
     protected void flush() {

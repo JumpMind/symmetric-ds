@@ -872,7 +872,7 @@ public class NodeService extends AbstractService implements INodeService {
                                     log.info("Node group meta info, table needs added to meta info for " + nodeGroupId + " : " + key);
                                     
                                     sqlTemplate.update(getSql("insertNodeGroupTableInfoSql"), nodeGroupId, catalog, schema, tableName,
-                                            defaultCatalogFlag, defaultSchemaFlag, now, this.cachedNodeIdentity.getNodeId(), now);
+                                            defaultCatalogFlag ? 1 : 0 , defaultSchemaFlag  ? 1 : 0, now, this.cachedNodeIdentity.getNodeId(), now);
                                 }
                             }
                         }

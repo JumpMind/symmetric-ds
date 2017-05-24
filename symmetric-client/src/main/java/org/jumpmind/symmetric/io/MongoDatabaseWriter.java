@@ -94,7 +94,7 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
     }
 
     protected LoadStatus upsert(CsvData data) {
-        statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
         try {
             DB db = clientManager.getDB(objectMapper.mapToDatabase(this.targetTable));
             DBCollection collection = db.getCollection(objectMapper
@@ -117,13 +117,13 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
                 throw new SymmetricException("Failed to write data: " + object.toString());
             }
         } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
     }
 
     @Override
     protected LoadStatus delete(CsvData data, boolean useConflictDetection) {
-        statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
         try {
             DB db = clientManager.getDB(objectMapper.mapToDatabase(this.targetTable));
             DBCollection collection = db.getCollection(objectMapper
@@ -143,7 +143,7 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
             }
             return LoadStatus.SUCCESS;
         } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
 
     }
@@ -155,7 +155,7 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
 
     @Override
     protected boolean sql(CsvData data) {
-        statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+        statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
         try {
             DB db = clientManager.getDB(objectMapper.mapToDatabase(this.targetTable));
             String command = data.getParsedData(CsvData.ROW_DATA)[0];
@@ -163,7 +163,7 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
             CommandResult results = db.command(command);
             log.info("The results of the command were: {}", results);
         } finally {
-            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
         return true;
     }

@@ -129,7 +129,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
             case INSERT:
                 statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-                statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                 try {
                     String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
                     if (needsBinaryConversion) {
@@ -170,7 +170,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                 } catch (Exception ex) {
                     throw getPlatform().getSqlTemplate().translate(ex);
                 } finally {
-                    statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+                    statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
                 }
                 break;
             case UPDATE:
@@ -189,7 +189,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected void flush() {
         if (loadedRows > 0) {
         	this.stagedInputFile.close();
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             String filename;
             if (StringUtils.isEmpty(uncPath)) {
                 filename = stagedInputFile.getFile().getAbsolutePath();
@@ -227,7 +227,7 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        } catch (SQLException ex) {
 	            throw platform.getSqlTemplate().translate(ex);
 	        } finally {
-	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
 	        }
 	        this.stagedInputFile.delete();
 	        createStagingFile();

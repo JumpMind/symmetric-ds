@@ -26,7 +26,7 @@ abstract public class DataWriterStatisticConstants {
     public static final String BYTECOUNT = "BYTECOUNT";
     public static final String TRANSFORMMILLIS = "TRANSFORMMILLIS";
     public static final String FILTERMILLIS = "FILTERMILLIS";
-    public static final String DATABASEMILLIS = "DATABASEMILLIS";
+    public static final String LOADMILLIS = "LOADMILLIS";
     public static final String STATEMENTCOUNT = "STATEMENTCOUNT";
     public static final String INSERTCOUNT = "INSERTCOUNT";
     public static final String DELETECOUNT = "DELETECOUNT";

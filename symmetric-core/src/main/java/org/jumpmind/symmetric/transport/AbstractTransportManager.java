@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.slf4j.Logger;
@@ -99,7 +99,7 @@ abstract public class AbstractTransportManager {
                 append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, batch.getNetworkMillis());
                 append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
                 append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId,
-                        batch.getDatabaseMillis());
+                        batch.getLoadMillis());
                 append(builder, WebConstants.ACK_START_TIME + batchId,
                         batch.getStartTime());
                 append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
@@ -174,7 +174,7 @@ abstract public class AbstractTransportManager {
         batchInfo.setNodeId(nodeId);
         batchInfo.setNetworkMillis(getParamAsNum(parameters, WebConstants.ACK_NETWORK_MILLIS + batchId));
         batchInfo.setFilterMillis(getParamAsNum(parameters, WebConstants.ACK_FILTER_MILLIS + batchId));
-        batchInfo.setDatabaseMillis(getParamAsNum(parameters, WebConstants.ACK_DATABASE_MILLIS + batchId));
+        batchInfo.setLoadMillis(getParamAsNum(parameters, WebConstants.ACK_DATABASE_MILLIS + batchId));
         batchInfo.setByteCount(getParamAsNum(parameters, WebConstants.ACK_BYTE_COUNT + batchId));
         batchInfo.setIgnored(getParamAsBoolean(parameters, WebConstants.ACK_IGNORE_COUNT + batchId));
         String status = getParam(parameters, WebConstants.ACK_BATCH_NAME + batchId, "").trim();

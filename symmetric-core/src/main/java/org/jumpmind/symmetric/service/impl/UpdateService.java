@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.UUID;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -125,11 +124,12 @@ public class UpdateService extends AbstractService implements IUpdateService {
     }
 
     protected byte[] getPostData(Properties prop ) throws UnsupportedEncodingException {
-        StringJoiner sj = new StringJoiner("&");
+        StringBuilder sb = new StringBuilder();
         for (Object key : prop.keySet()) {
-            sj.add(URLEncoder.encode(key.toString(), "UTF-8") + "=" + URLEncoder.encode(prop.get(key).toString(), "UTF-8"));
+            sb.append(URLEncoder.encode(key.toString(), "UTF-8")).append("=");
+            sb.append(URLEncoder.encode(prop.get(key).toString(), "UTF-8")).append("&");
         }
-        return sj.toString().getBytes(StandardCharsets.UTF_8);
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     protected void postDataForVersion(URL url, byte[] postData) throws IOException {

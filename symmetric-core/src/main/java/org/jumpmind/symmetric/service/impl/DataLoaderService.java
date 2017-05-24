@@ -95,7 +95,7 @@ import org.jumpmind.symmetric.load.ILoadSyncLifecycleListener;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.IncomingBatch.Status;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.LoadFilter;
 import org.jumpmind.symmetric.model.LoadFilter.LoadFilterType;
@@ -423,7 +423,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         for (IncomingBatch incomingBatch : batchList) {
             if (incomingBatch.getStatus() == Status.OK) {
                 okBatchesCount++;
-                okDataCount += incomingBatch.getStatementCount();
+                okDataCount += incomingBatch.getLoadRowCount();
             } else if (incomingBatch.getStatus() == Status.ER) {
                 errorBatchesCount++;
             }
@@ -1078,7 +1078,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             this.currentBatch.setValues(context.getReader().getStatistics().get(batch), context
                     .getWriter().getStatistics().get(batch), true);
             statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
-                    this.currentBatch.getStatementCount());
+                    this.currentBatch.getLoadRowCount());
             statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
                     this.currentBatch.getByteCount());
             Status oldStatus = this.currentBatch.getStatus();
@@ -1128,7 +1128,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     this.currentBatch.setValues(context.getReader().getStatistics().get(batch),
                             context.getWriter().getStatistics().get(batch), false);
                     statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
-                            this.currentBatch.getStatementCount());
+                            this.currentBatch.getLoadRowCount());
                     statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
                             this.currentBatch.getByteCount());
                     statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
