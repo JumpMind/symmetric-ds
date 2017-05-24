@@ -206,7 +206,7 @@ public class Node implements Serializable, Comparable<Node> {
     public int[] getSymmetricVersionParts() {
         if (symmetricVersionParts == null) {
             if (StringUtils.isEmpty(symmetricVersion) || symmetricVersion.equals("development")) {
-                symmetricVersionParts = new int[]{};     
+                symmetricVersionParts = null;     
             } else {                
                 symmetricVersionParts = Version.parseVersion(symmetricVersion);
             }
