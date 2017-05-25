@@ -47,29 +47,29 @@ public class StagedResource implements IStagedResource {
 
     static final Logger log = LoggerFactory.getLogger(StagedResource.class);
     
-    private int references = 0;
+    protected int references = 0;
 
-    private File directory;
+    protected File directory;
     
-    private File file;
+    protected File file;
 
-    private String path;
+    protected String path;
 
-    private StringBuilder memoryBuffer;
+    protected StringBuilder memoryBuffer;
 
-    private long lastUpdateTime;
+    protected long lastUpdateTime;
 
-    private State state;
+    protected State state;
     
-    private OutputStream outputStream = null;
+    protected OutputStream outputStream = null;
     
-    private Map<Thread, InputStream> inputStreams = null;
+    protected Map<Thread, InputStream> inputStreams = null;
     
-    private Map<Thread, BufferedReader> readers = null;
+    protected Map<Thread, BufferedReader> readers = null;
 
-    private BufferedWriter writer;
+    protected BufferedWriter writer;
     
-    private StagingManager stagingManager;
+    protected StagingManager stagingManager;
     
     public StagedResource(File directory, String path, StagingManager stagingManager) {
         this.directory = directory;
@@ -168,14 +168,14 @@ public class StagedResource implements IStagedResource {
         this.file = buildFile(state);
     }
 
-    public synchronized BufferedReader getReader() {
+    @SuppressWarnings("resource")
+	public synchronized BufferedReader getReader() {
         Thread thread = Thread.currentThread();
         BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader == null) {
             if (file != null && file.exists()) {
                 try {
-                    reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),
-                            IoConstants.ENCODING));
+                    reader = createReader();
                     createReadersMap();
                     readers.put(thread, reader);
                 } catch (IOException ex) {
@@ -194,6 +194,11 @@ public class StagedResource implements IStagedResource {
         return reader;
     }
     
+    protected BufferedReader createReader() throws IOException {
+        return new BufferedReader(new InputStreamReader(new FileInputStream(file),
+                IoConstants.ENCODING));
+    }
+
     private synchronized final void createReadersMap() {
         if (readers == null) {
             readers = new HashMap<Thread, BufferedReader>(path.contains("common") ? 10 : 1);
@@ -261,7 +266,7 @@ public class StagedResource implements IStagedResource {
                     file.delete();
                 }
                 file.getParentFile().mkdirs();
-                outputStream = new BufferedOutputStream(new FileOutputStream(file));
+                outputStream = createOutputStream();
             }
             return outputStream;
         } catch (FileNotFoundException e) {
@@ -269,13 +274,18 @@ public class StagedResource implements IStagedResource {
         }
     }
 
-    public synchronized InputStream getInputStream() {
+    protected OutputStream createOutputStream() throws FileNotFoundException {
+    	return new BufferedOutputStream(new FileOutputStream(file));
+    }
+
+    @SuppressWarnings("resource")
+	public synchronized InputStream getInputStream() {
         Thread thread = Thread.currentThread();
         InputStream reader = inputStreams != null ? inputStreams.get(thread) : null;
         if (reader == null) {
             if (file != null && file.exists()) {
                 try {
-                    reader = new BufferedInputStream(new FileInputStream(file));
+                    reader = createInputStream();
                     createInputStreamsMap();
                     inputStreams.put(thread, reader);
                 } catch (IOException ex) {
@@ -289,6 +299,10 @@ public class StagedResource implements IStagedResource {
         return reader;
     }
     
+    protected InputStream createInputStream() throws FileNotFoundException {
+    	return new BufferedInputStream(new FileInputStream(file));
+    }
+    
     public BufferedWriter getWriter(long threshold) {
         if (writer == null) {
             if (file != null && file.exists()) {
@@ -299,10 +313,13 @@ public class StagedResource implements IStagedResource {
                 this.memoryBuffer = null;
             }
             this.memoryBuffer = threshold > 0 ? new StringBuilder() : null;
-            writer = new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer,
-                    file));
+            writer = createWriter(threshold);
         }
         return writer;
+    }
+
+    protected BufferedWriter createWriter(long threshold) {
+        return new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer, file));    	
     }
 
     public long getSize() {

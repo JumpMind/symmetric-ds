@@ -401,6 +401,8 @@ final public class ParameterConstants {
     public final static String LOG_CONFLICT_RESOLUTION = "log.conflict.resolution";
 
     public final static String UPDATE_SERVICE_CLASS = "update.service.class";
+    
+    public final static String STAGING_MANAGER_CLASS = "staging.manager.class";
 
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

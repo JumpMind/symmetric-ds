@@ -22,6 +22,8 @@ package org.jumpmind.security;
 
 import java.security.KeyStore;
 
+import javax.crypto.Cipher;
+
 /**
  * Pluggable Service API that is responsible for encrypting and decrypting data.
  */
@@ -44,5 +46,7 @@ public interface ISecurityService {
     public KeyStore getKeyStore();
     
     public KeyStore getTrustStore();
+    
+    public Cipher getCipher(int cipherMode) throws Exception;
 
 }
