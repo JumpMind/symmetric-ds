@@ -8,6 +8,7 @@ apply from: symAssembleDir + '/common.gradle'
         compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
         compile "javax.mail:mail:1.4.5"
         compile "com.fasterxml.jackson.core:jackson-databind:2.8.5"
+        compile "com.google.code.gson:gson:2.8.0"
         
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
