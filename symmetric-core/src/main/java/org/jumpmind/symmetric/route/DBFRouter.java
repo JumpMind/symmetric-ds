@@ -31,15 +31,16 @@ public class DBFRouter extends AbstractFileParsingRouter implements IDataRouter,
 		List<String> rows = new ArrayList<String>();
 		
 		InputStream fileInputStream = null;
+		int currentLine = 1;
 		try {
 			boolean validateHeader = engine.getParameterService()
 					.is(ParameterConstants.DBF_ROUTER_VALIDATE_HEADER, true);
 			
 			fileInputStream = Files.newInputStream(file.toPath(), StandardOpenOption.READ);
 			dbfReader = new DBFReader(fileInputStream, validateHeader);
-			int currentLine = 1;
+			
 			while (dbfReader.hasNextRecord()) {
-				StringBuffer row = new StringBuffer();
+				StringBuilder row = new StringBuilder();
 				Object[] record = dbfReader.nextRecord();
 				if (currentLine > lineNumber) {
 					for (int i = 0; i < record.length; i++) {
@@ -53,7 +54,7 @@ public class DBFRouter extends AbstractFileParsingRouter implements IDataRouter,
 			}
 		}
 		catch (Exception e) {
-			log.error("Unable to parse DBF file " + file.getName(), e);
+			log.error("Unable to parse DBF file " + file.getName() + " line number " + currentLine, e);
 		}
 		finally {
 			if (fileInputStream != null) {

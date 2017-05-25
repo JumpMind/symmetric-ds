@@ -3,13 +3,19 @@ package org.jumpmind.symmetric.route.parse;
 import java.io.*;
 import java.nio.charset.Charset;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DBFReader {
 
+    static final Logger log = LoggerFactory.getLogger(DBFReader.class);
+    
 	private DataInputStream stream;
 	private DBFField fields[];
 	private byte nextRecord[];
 	private int nFieldCount;
 	private boolean validate;
+	private int lineNumber;
 	
 	public DBFReader(String s, boolean validate) throws DBFException {
 		stream = null;
@@ -153,13 +159,19 @@ public class DBFReader {
 	public Object[] nextRecord() throws DBFException {
 		if (!hasNextRecord())
 			throw new DBFException("No more records available.");
+		lineNumber++;
 		Object aobj[] = new Object[nFieldCount];
 		int i = 1;
 		for (int j = 0; j < aobj.length; j++) {
 			int k = fields[j].getLength();
 			StringBuffer stringbuffer = new StringBuffer(k);
 			stringbuffer.append(new String(nextRecord, i, k));
-			aobj[j] = fields[j].parse(stringbuffer.toString());
+			try {
+                aobj[j] = fields[j].parse(stringbuffer.toString());
+            } catch (DBFException e) {
+                log.error("Failed to parse field " + (j+1) + " on line " + lineNumber + " with that had a value of " + stringbuffer);
+                throw e;
+            }
 			i += fields[j].getLength();
 		}
 

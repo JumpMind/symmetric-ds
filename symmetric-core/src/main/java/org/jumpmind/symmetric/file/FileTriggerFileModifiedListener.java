@@ -28,13 +28,11 @@ import java.util.Map;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.FileSnapshot;
-import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.ProcessInfo.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
