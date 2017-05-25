@@ -44,6 +44,7 @@ public class GenericJdbcDdlBuilder extends AbstractDdlBuilder {
                 databaseInfo.setDelimiterToken(quoteString);
             } else {
                 databaseInfo.setDelimitedIdentifiersSupported(false);
+                databaseInfo.setDelimiterToken("");
             }
             
             if (!setNativeMapping(Types.LONGVARCHAR, meta, Types.LONGVARCHAR)) {

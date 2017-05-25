@@ -83,6 +83,8 @@ public class Node implements Serializable, Comparable<Node> {
     
     private String deploymentType;
     
+    private int[] symmetricVersionParts;
+    
     public Node() {
     }
     
@@ -200,9 +202,21 @@ public class Node implements Serializable, Comparable<Node> {
     public String getSymmetricVersion() {
         return symmetricVersion;
     }
+    
+    public int[] getSymmetricVersionParts() {
+        if (symmetricVersionParts == null) {
+            if (StringUtils.isEmpty(symmetricVersion) || symmetricVersion.equals("development")) {
+                symmetricVersionParts = null;     
+            } else {                
+                symmetricVersionParts = Version.parseVersion(symmetricVersion);
+            }
+        }
+        return symmetricVersionParts;
+    }    
 
     public void setSymmetricVersion(String symmetricVersion) {
         this.symmetricVersion = symmetricVersion;
+        this.symmetricVersionParts = null;
     }
 
     public String toString() {
@@ -247,7 +261,7 @@ public class Node implements Serializable, Comparable<Node> {
                 return false;
             }
             try {
-                int[] currentVersion = Version.parseVersion(symmetricVersion);
+                int[] currentVersion = getSymmetricVersionParts();
                 return currentVersion != null && currentVersion.length > 0 && currentVersion[0] <= 1;
             } catch (Exception ex) {
                 log.warn(
@@ -264,7 +278,7 @@ public class Node implements Serializable, Comparable<Node> {
             if (symmetricVersion.equals("development")) {
                 return true;
             }
-            int[] currentVersion = Version.parseVersion(symmetricVersion);
+            int[] currentVersion = getSymmetricVersionParts();
             for (int i = 0; i < currentVersion.length; i++) {
                 int j = currentVersion[i];
                 if (targetVersion.length > i) {

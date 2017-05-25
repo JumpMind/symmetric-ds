@@ -153,18 +153,26 @@ abstract public class AbstractVersion {
         if (noVersion(targetVersion) || noVersion(checkVersion)) {
             return false;
         }
-
+        
         int[] checkVersions = parseVersion(checkVersion);
         int[] targetVersions = parseVersion(targetVersion);
 
-        if (checkVersions[MAJOR_INDEX] < targetVersions[MAJOR_INDEX]) {
+        return isOlderThanVersion(checkVersions, targetVersions);
+    }
+    
+    public boolean isOlderThanVersion(int[] checkVersion, int[] targetVersion) {
+        if (checkVersion == null || targetVersion == null) {
+            return false;
+        }
+        
+        if (checkVersion[MAJOR_INDEX] < targetVersion[MAJOR_INDEX]) {
             return true;
-        } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX]
-                && checkVersions[MINOR_INDEX] < targetVersions[MINOR_INDEX]) {
+        } else if (checkVersion[MAJOR_INDEX] == targetVersion[MAJOR_INDEX]
+                && checkVersion[MINOR_INDEX] < targetVersion[MINOR_INDEX]) {
             return true;
-        } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX]
-                && checkVersions[MINOR_INDEX] == targetVersions[MINOR_INDEX]
-                && checkVersions[PATCH_INDEX] < targetVersions[PATCH_INDEX]) {
+        } else if (checkVersion[MAJOR_INDEX] == targetVersion[MAJOR_INDEX]
+                && checkVersion[MINOR_INDEX] == targetVersion[MINOR_INDEX]
+                && checkVersion[PATCH_INDEX] < targetVersion[PATCH_INDEX]) {
             return true;
         }
         return false;
@@ -187,13 +195,17 @@ abstract public class AbstractVersion {
         int[] checkVersions = parseVersion(checkVersion);
         int[] targetVersions = parseVersion(targetVersion);
 
-        if (checkVersions[MAJOR_INDEX] < targetVersions[MAJOR_INDEX]) {
+        return isOlderMinorVersion(checkVersions, targetVersions);
+    }
+
+    public boolean isOlderMinorVersion(int[] checkVersion, int[] targetVersion) {
+        if (checkVersion[MAJOR_INDEX] < targetVersion[MAJOR_INDEX]) {
             return true;
-        } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX]
-                && checkVersions[MINOR_INDEX] < targetVersions[MINOR_INDEX]) {
+        } else if (checkVersion[MAJOR_INDEX] == targetVersion[MAJOR_INDEX]
+                && checkVersion[MINOR_INDEX] < targetVersion[MINOR_INDEX]) {
             return true;
         }
-        return false;
+        return false;        
     }
 
 }

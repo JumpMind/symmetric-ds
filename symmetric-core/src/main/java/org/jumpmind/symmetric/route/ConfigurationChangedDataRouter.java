@@ -116,6 +116,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             TriggerRouter triggerRouter) {
         
         possibleTargetNodes = filterOutOlderNodes(dataMetaData, possibleTargetNodes);
+        possibleTargetNodes = filterOutNodesByDeploymentType(dataMetaData, possibleTargetNodes);
 
         // the list of nodeIds that we will return
         Set<String> nodeIds = new HashSet<String>();
@@ -251,11 +252,28 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         return nodeIds;
     }
     
+    protected Set<Node> filterOutNodesByDeploymentType(DataMetaData dataMetaData, Set<Node> possibleTargetNodes) {
+        if (tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_USER)
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_USER_HIST)) {
+            Set<Node> targetNodes = new HashSet<Node>(possibleTargetNodes.size());
+            for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
+                boolean isTargetProfessional = StringUtils.equals(nodeThatMayBeRoutedTo.getDeploymentType(), 
+                        Constants.DEPLOYMENT_TYPE_PROFESSIONAL);
+                if (isTargetProfessional) {                    
+                    targetNodes.add(nodeThatMayBeRoutedTo);
+                }                
+            }
+            return targetNodes;
+        } else {
+            return possibleTargetNodes;
+        }        
+    }
+    
     protected Set<Node> filterOutOlderNodes(DataMetaData dataMetaData, Set<Node> possibleTargetNodes) {
         if (tableMatches(dataMetaData, TableConstants.SYM_MONITOR)
                 || tableMatches(dataMetaData, TableConstants.SYM_MONITOR_EVENT) 
                 || tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)) {
-            Set<Node> targetNodes = new HashSet<Node>();
+            Set<Node> targetNodes = new HashSet<Node>(possibleTargetNodes.size());
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                 if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
                     targetNodes.add(nodeThatMayBeRoutedTo);

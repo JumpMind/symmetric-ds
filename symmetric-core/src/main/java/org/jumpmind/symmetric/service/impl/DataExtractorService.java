@@ -213,24 +213,28 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     
     protected boolean filter(Node targetNode, String tableName) {
         
-        boolean pre37 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.7.0");
-        boolean pre38 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.8.0");
-        
-        boolean pre3818 = Version.isOlderThanVersion(targetNode.getSymmetricVersion(), "3.8.18");
+        boolean pre37 = Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_7_0);
+        boolean pre38 = Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_8_0);
+        boolean pre3818 = Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_8_18);
 
         tableName = tableName.toLowerCase();
         boolean include = true;
         if (pre37 && tableName.contains(TableConstants.SYM_EXTENSION)) {
             include = false;
-        }
-        if (pre38 && (tableName.contains(TableConstants.SYM_MONITOR) || 
+        } else if (pre38 && (tableName.contains(TableConstants.SYM_MONITOR) || 
                 tableName.contains(TableConstants.SYM_NOTIFICATION))) {
             include = false;
+        } else if (pre3818 && tableName.contains(TableConstants.SYM_CONSOLE_USER_HIST)) {
+            include = false;
+        } else if (tableName.contains(TableConstants.SYM_CONSOLE_USER) 
+                || tableName.contains(TableConstants.SYM_CONSOLE_USER_HIST)) {
+            boolean isTargetProfessional = StringUtils.equals(targetNode.getDeploymentType(), 
+                    Constants.DEPLOYMENT_TYPE_PROFESSIONAL);
+            if (!isTargetProfessional) {
+                include = false;
+            }
         }
         
-        if (pre3818 && tableName.contains(TableConstants.SYM_CONSOLE_USER_HIST)) {
-            include = false;
-        }
         return include;
     }
 
