@@ -1,0 +1,10 @@
+apply from: symAssembleDir + '/common.gradle'
+
+    description = 'Library that contains the jdbc implementation for symmetric-db'
+
+    dependencies {
+        compile project(":symmetric-db")
+        compile "commons-dbcp:commons-dbcp:$commonsDbcpVersion"
+        compile "org.springframework:spring-jdbc:$springVersion"
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
+    }

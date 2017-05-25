@@ -64,7 +64,7 @@ public class DataServiceTest {
         when(sqlTemplate.queryForLong(Matchers.anyString())).thenReturn(0L);
         @SuppressWarnings("unchecked")
         ISqlRowMapper<DataGap> anyMapper = (ISqlRowMapper<DataGap>) Matchers.anyObject();
-        when(sqlTemplate.query(Matchers.anyString(), anyMapper, Matchers.anyVararg())).thenReturn(gaps1);
+        when(sqlTemplate.query(Matchers.anyString(), anyMapper, (Object[])Matchers.anyVararg())).thenReturn(gaps1);
 
         dataService.findDataGaps();
 

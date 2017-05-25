@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,6 +63,8 @@ public class StatisticManager implements IStatisticManager {
     private static final int NUMBER_OF_PERMITS = 1000;
 
     private Map<String, ChannelStats> channelStats = new ConcurrentHashMap<String, ChannelStats>();
+
+    private Map<Date, Map<String, ChannelStats>> channelStatsInMemory = new LinkedHashMap<Date, Map<String, ChannelStats>>();
 
     private List<JobStats> jobStats = new ArrayList<JobStats>();
 
@@ -466,8 +469,14 @@ public class StatisticManager implements IStatisticManager {
                             }
                         }
                         stats.setEndTime(endTime);
+                        if (channelStatsInMemory.get(endTime) == null) {
+                            channelStatsInMemory.put(endTime, new HashMap<String, ChannelStats>());
+                        }
+                        channelStatsInMemory.get(endTime).put(stats.getChannelId(), stats);
+                        
                         statisticService.save(stats);
                     }
+                    
                 }
                 resetChannelStats(true);
             } finally {
@@ -475,6 +484,26 @@ public class StatisticManager implements IStatisticManager {
             }
         }
 
+        int rowsLoaded = 0;
+        int rowsSent = 0;
+        
+        for (Map.Entry<Date, Map<String, ChannelStats>> entry : channelStatsInMemory.entrySet()) {
+            
+            for (Map.Entry<String, ChannelStats> channelEntry : entry.getValue().entrySet()) {
+                if (!channelEntry.getKey().equals("config") && !channelEntry.getKey().equals("heartbeat")) {
+                    rowsLoaded += channelEntry.getValue().getDataLoaded();
+                    rowsSent += channelEntry.getValue().getDataSent();
+                }
+            }
+            if (rowsLoaded > 0 || rowsSent > 0) {
+                log.info("===================================");
+                log.info("Date: " + entry.getKey());
+                log.info("Rows Out: " + rowsSent);
+                log.info("Rows In: " + rowsLoaded);
+                log.info("===================================");
+            }
+        }
+        
         if (hostStats != null) {
             hostStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {

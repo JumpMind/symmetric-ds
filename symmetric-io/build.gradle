@@ -1,0 +1,13 @@
+apply from: symAssembleDir + '/common.gradle'
+
+    description = 'Data input/output libraries'
+
+    dependencies {
+        compile project(":symmetric-csv")
+        compile project(":symmetric-db")
+        compile "org.beanshell:bsh:$bshVersion"
+        compile "net.sourceforge.jeval:jeval:0.9.4"
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
+        testCompile project(":symmetric-jdbc")
+        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
+    }
