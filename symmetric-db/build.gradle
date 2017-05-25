@@ -1,0 +1,10 @@
+apply from: symAssembleDir + '/common.gradle'
+
+    description = 'Database classes that are used by several Symmetric libraries'
+
+    dependencies {
+        compile project(":symmetric-util")
+        compile "net.sf.kxml:kxml2:2.3.0"
+        compile "commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion"
+        testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
+    }

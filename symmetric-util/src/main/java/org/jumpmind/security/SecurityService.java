@@ -174,7 +174,7 @@ public class SecurityService implements ISecurityService {
         return sb.toString();
     }
 
-    protected Cipher getCipher(int mode) throws Exception {
+    public Cipher getCipher(int mode) throws Exception {
         if (secretKey == null) {
             secretKey = getSecretKey();
         }

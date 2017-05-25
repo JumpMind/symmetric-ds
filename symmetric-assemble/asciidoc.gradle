@@ -15,7 +15,7 @@ reference {
 }
 
 task generateAppendixes {
-    
+    dependsOn project(":symmetric-db").jar
     doLast{
         javaexec {
             main = 'org.jumpmind.properties.DefaultParameterParser'

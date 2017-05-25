@@ -4,8 +4,6 @@ import java.util.Date;
 import org.apache.tools.ant.filters.FixCrLfFilter
 import org.apache.tools.ant.filters.ReplaceTokens
 
-apply from: symAssembleDir + '/asciidoc.gradle'
-
 configurations {
     sshAntTask
 }
@@ -16,36 +14,25 @@ dependencies {
 
 allprojects {
 
-    apply plugin: 'eclipse-wtp'
+    apply plugin: 'eclipse'
 
     group = 'org.jumpmind.symmetric'
     
-    project.buildDir='target'
-    
     repositories {
+        jcenter()
         maven { url "http://maven.jumpmind.com/repo" }
         mavenCentral()
         maven { url "http://maven.vaadin.com/vaadin-addons" }
+        maven { url 'https://plugins.gradle.org/m2' }
     }
-
-    eclipse {
-        classpath {
-            downloadSources = true
-            downloadJavadoc = false
-        }
-    }
-    
-    eclipse.project.file.withXml { provider ->
-      ignoreDerivedResources(provider.asNode())
-    }
-    
+        
     ext {
         majorMinorVersion = version.substring(0, version.indexOf(".", version.indexOf(".")+ 1))
     }
     
 }
 
-def ignoreDerivedResources(projectDescription, directories = ["build", "target", "test-output"]) {
+def ignoreDerivedResources(projectDescription, directories = ["build", "test-output"]) {
   def count = directories.count { file(it).exists() }
   if (count > 0) {
     def filter = projectDescription
@@ -85,9 +72,38 @@ subprojects { subproject ->
     sourceCompatibility=1.6
     targetCompatibility=1.6
     
+    eclipse {   
+        classpath {
+            downloadSources = true
+            downloadJavadoc = false
+        }
+        
+        jdt {
+            sourceCompatibility = 1.8
+            targetCompatibility = 1.8
+        }
+        
+        project.file.whenMerged { project ->
+            project.natures.remove('org.springsource.ide.eclipse.gradle.core.nature')
+            project.natures.remove('org.eclipse.buildship.core.gradleprojectnature')            
+        }
+    }
+    
     javadoc {
         failOnError = false
     }
+    
+    afterEvaluate {
+        if(plugins.hasPlugin(JavaPlugin)) {
+            
+            // configuration here
+            rootProject.tasks.generateJavadoc {
+                source += files(sourceSets.collect { srcSet -> srcSet.allJava })
+                classpath += files(sourceSets*.compileClasspath)
+            }
+    
+        }
+    }    
     
     install.enabled = !project.properties.containsKey('pro')
     uploadArchives.enabled = !project.properties.containsKey('pro')
@@ -222,6 +238,6 @@ subprojects { subproject ->
     }    
 
     task develop {
-        dependsOn tasks.cleanEclipse, tasks.cleanEclipseWtp, tasks.eclipse, tasks.eclipseWtp
+        dependsOn tasks.cleanEclipse, tasks.eclipse
     }
 }

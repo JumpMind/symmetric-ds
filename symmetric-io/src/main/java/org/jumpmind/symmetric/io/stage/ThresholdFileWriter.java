@@ -40,13 +40,13 @@ import org.jumpmind.symmetric.io.IoConstants;
  */
 public class ThresholdFileWriter extends Writer {
 
-    private File file;    
+    protected File file;    
 
-    private BufferedWriter fileWriter;
+    protected BufferedWriter fileWriter;
 
-    private StringBuilder buffer;
+    protected StringBuilder buffer;
 
-    private long threshhold;
+    protected long threshhold;
 
     /**
      * @param threshold The number of bytes at which to start writing to a file
@@ -87,7 +87,7 @@ public class ThresholdFileWriter extends Writer {
             fileWriter.write(cbuf, off, len);
         } else if (buffer == null || len + buffer.length() > threshhold) {
             file.getParentFile().mkdirs();
-            fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), IoConstants.ENCODING));
+            fileWriter = getWriter();
             if (buffer != null) {
                 fileWriter.write(buffer.toString());
                 buffer.setLength(0);
@@ -98,6 +98,10 @@ public class ThresholdFileWriter extends Writer {
         } else {
             buffer.append(new String(cbuf), off, len);
         }
+    }
+    
+    protected BufferedWriter getWriter() throws IOException {
+    	 return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), IoConstants.ENCODING));
     }
 
     public BufferedReader getReader() throws IOException {

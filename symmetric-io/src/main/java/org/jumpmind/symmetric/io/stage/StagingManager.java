@@ -34,13 +34,11 @@ import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 public class StagingManager implements IStagingManager {
 
     protected static final Logger log = LoggerFactory.getLogger(StagingManager.class);
 
-    private File directory;
+    protected File directory;
     
     protected Set<String> resourcePaths;
     
@@ -54,7 +52,7 @@ public class StagingManager implements IStagingManager {
         this.inUse = new ConcurrentHashMap<String, IStagedResource>();
         refreshResourceList();
     }
-    
+
     public Set<String> getResourceReferences() {
         synchronized (resourcePaths) {
             return new TreeSet<String>(resourcePaths);
@@ -149,14 +147,17 @@ public class StagingManager implements IStagingManager {
      */
     public IStagedResource create(Object... path) {
         String filePath = buildFilePath(path);
-        IStagedResource resource = new StagedResource(directory, filePath,
-                this);
+        IStagedResource resource = createStagedResource(filePath);
         if (resource.exists()) {
             resource.delete();
         }
         this.inUse.put(filePath, resource);
         this.resourcePaths.add(filePath);
         return resource;
+    }
+    
+    protected IStagedResource createStagedResource(String filePath) {
+    	return new StagedResource(directory, filePath, this);    	
     }
 
     protected String buildFilePath(Object... path) {
@@ -177,7 +178,7 @@ public class StagingManager implements IStagingManager {
     public IStagedResource find(String path) {
         IStagedResource resource = inUse.get(path);
         if (resource == null && resourcePaths.contains(path)) {
-            resource = new StagedResource(directory, path, this);
+        	resource = createStagedResource(path);
         }
         return resource;
     }

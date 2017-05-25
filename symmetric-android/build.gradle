@@ -1,0 +1,35 @@
+apply from: symAssembleDir + '/common.gradle'
+
+    description = 'SymmetricDS Client library for Android clients'
+
+    dependencies {
+        compile (project(":symmetric-core")) {
+            exclude group:'org.slf4j'
+            exclude group:'log4j'
+            exclude group:'net.sf.kxml'
+        }
+        compile "org.slf4j:slf4j-android:1.6.1-RC1"
+        provided "com.google.android:android:2.1.2"
+    }
+
+    apply plugin: 'distribution'
+
+    distributions {
+        android {
+            baseName = 'symmetric-android'
+            contents {
+                exclude ("**/slf4j-api*.jar")
+                exclude ("**/jul-to-slf4j*.jar")
+                exclude ("**/jcl-over-slf4j*.jar")
+                exclude ("**/slf4j-log4j12*.jar")
+                exclude ("**/log4j*.jar")
+                from { 'COPYING' }
+                from { 'CREDITS' }
+                from { 'NOTICE' }
+                into('libs') {
+                    from configurations.runtime - configurations.provided
+                    from jar
+                }
+            }
+        }
+    }
