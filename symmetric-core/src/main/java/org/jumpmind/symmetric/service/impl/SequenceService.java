@@ -325,7 +325,7 @@ public class SequenceService extends AbstractService implements ISequenceService
             sequence.setMaxValue(rs.getLong("max_value"));
             sequence.setMinValue(rs.getLong("min_value"));
             sequence.setSequenceName(rs.getString("sequence_name"));
-            sequence.setCycle(rs.getBoolean("cycle"));
+            sequence.setCycle(rs.getBoolean("cycle_flag"));
             sequence.setCacheSize(rs.getInt("cache_size"));
             return sequence;
         }
