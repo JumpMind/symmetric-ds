@@ -126,7 +126,6 @@ import org.jumpmind.symmetric.service.impl.TransformService;
 import org.jumpmind.symmetric.service.impl.TriggerRouterService;
 import org.jumpmind.symmetric.service.impl.UpdateService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -338,8 +337,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 nodeService);
         this.clusterService = new ClusterService(parameterService, symmetricDialect);
         this.statisticService = new StatisticService(parameterService, symmetricDialect);
-        this.statisticManager = new StatisticManager(parameterService, nodeService,
-                configurationService, statisticService, clusterService);
+        this.statisticManager = createStatisticManager();
         this.concurrentConnectionManager = new ConcurrentConnectionManager(parameterService,
                 statisticManager);
         this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
@@ -425,6 +423,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     abstract protected IStagingManager createStagingManager();
+
+    abstract protected IStatisticManager createStatisticManager();
 
     abstract protected ISymmetricDialect createSymmetricDialect();
 

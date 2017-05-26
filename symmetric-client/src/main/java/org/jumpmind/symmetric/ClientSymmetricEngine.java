@@ -58,10 +58,17 @@ import org.jumpmind.symmetric.io.stage.BatchStagingManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
+import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IMonitorService;
+import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.impl.ClientExtensionService;
 import org.jumpmind.symmetric.service.impl.MonitorService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.symmetric.util.SnapshotUtil;
 import org.jumpmind.symmetric.util.TypedPropertiesFactory;
@@ -363,6 +370,23 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         return new BatchStagingManager(this, directory);
     }
 
+    @Override
+    protected IStatisticManager createStatisticManager() {
+        String statisticManagerClassName = parameterService.getString(ParameterConstants.STATISTIC_MANAGER_CLASS);
+        if (statisticManagerClassName != null) {
+            try {
+                Constructor<?> cons = Class.forName(statisticManagerClassName).getConstructor(IParameterService.class, 
+                        INodeService.class, IConfigurationService.class, IStatisticService.class, IClusterService.class);
+                return (IStatisticManager) cons.newInstance(parameterService, nodeService,
+                        configurationService, statisticService, clusterService);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return new StatisticManager(parameterService, nodeService,
+                configurationService, statisticService, clusterService);
+    }
     protected static void waitForAvailableDatabase(DataSource dataSource) {
         boolean success = false;
         while (!success) {

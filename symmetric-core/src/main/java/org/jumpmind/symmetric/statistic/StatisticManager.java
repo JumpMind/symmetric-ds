@@ -64,8 +64,6 @@ public class StatisticManager implements IStatisticManager {
 
     private Map<String, ChannelStats> channelStats = new ConcurrentHashMap<String, ChannelStats>();
 
-    private Map<Date, Map<String, ChannelStats>> channelStatsInMemory = new LinkedHashMap<Date, Map<String, ChannelStats>>();
-
     private List<JobStats> jobStats = new ArrayList<JobStats>();
 
     private HostStats hostStats;
@@ -452,6 +450,9 @@ public class StatisticManager implements IStatisticManager {
         }
     }
 
+    protected void saveAdditionalStats(Date endTime, ChannelStats stats) {
+    }
+    
     public void flush() {
 
         boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE,
@@ -469,11 +470,7 @@ public class StatisticManager implements IStatisticManager {
                             }
                         }
                         stats.setEndTime(endTime);
-                        if (channelStatsInMemory.get(endTime) == null) {
-                            channelStatsInMemory.put(endTime, new HashMap<String, ChannelStats>());
-                        }
-                        channelStatsInMemory.get(endTime).put(stats.getChannelId(), stats);
-                        
+                        saveAdditionalStats(endTime, stats);
                         statisticService.save(stats);
                     }
                     
@@ -481,45 +478,6 @@ public class StatisticManager implements IStatisticManager {
                 resetChannelStats(true);
             } finally {
                 channelStatsLock.release(NUMBER_OF_PERMITS);
-            }
-        }
-
-        int rowsLoaded = 0;
-        int rowsSent = 0;
-        
-        for (Map.Entry<Date, Map<String, ChannelStats>> entry : channelStatsInMemory.entrySet()) {
-            
-            for (Map.Entry<String, ChannelStats> channelEntry : entry.getValue().entrySet()) {
-                if (!channelEntry.getKey().equals("config") && !channelEntry.getKey().equals("heartbeat")) {
-                    rowsLoaded += channelEntry.getValue().getDataLoaded();
-                    rowsSent += channelEntry.getValue().getDataSent();
-                }
-            }
-            if (rowsLoaded > 0 || rowsSent > 0) {
-                log.info("===================================");
-                log.info("Date: " + entry.getKey());
-                log.info("Rows Out: " + rowsSent);
-                log.info("Rows In: " + rowsLoaded);
-                log.info("===================================");
-            }
-        }
-        
-        if (hostStats != null) {
-            hostStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
-            try {
-                if (recordStatistics) {
-                    if (hostStats.getNodeId().equals(UNKNOWN)) {
-                        Node node = nodeService.getCachedIdentity();
-                        if (node != null) {
-                            hostStats.setNodeId(node.getNodeId());
-                        }
-                    }
-                    hostStats.setEndTime(new Date());
-                    statisticService.save(hostStats);
-                }
-                hostStats = null;
-            } finally {
-                hostStatsLock.release(NUMBER_OF_PERMITS);
             }
         }
 

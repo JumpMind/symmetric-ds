@@ -404,6 +404,8 @@ final public class ParameterConstants {
     
     public final static String STAGING_MANAGER_CLASS = "staging.manager.class";
 
+    public final static String STATISTIC_MANAGER_CLASS = "statistic.manager.class";
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
