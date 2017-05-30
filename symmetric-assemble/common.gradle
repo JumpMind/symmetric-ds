@@ -239,5 +239,11 @@ subprojects { subproject ->
 
     task develop {
         dependsOn tasks.cleanEclipse, tasks.eclipse
+        
+        doLast {
+            def wstFacetXml = "$projectDir/.settings/org.eclipse.wst.common.project.facet.core.xml"
+            println "Deleting $wstFacetXml"
+            delete wstFacetXml 
+        }
     }
 }
