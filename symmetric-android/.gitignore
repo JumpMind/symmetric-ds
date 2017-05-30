@@ -3,3 +3,4 @@
 *.classpath
 /target
 /bin/
+/build/
