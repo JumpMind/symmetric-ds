@@ -35,6 +35,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -54,6 +55,7 @@ import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -534,11 +536,12 @@ public class DataService extends AbstractService implements IDataService {
 
     }
 
+    @SuppressWarnings("unchecked")
     protected Map<String, TableReloadRequest> convertReloadListToMap(List<TableReloadRequest> reloadRequests) {
         if (reloadRequests == null) {
             return null;
         }
-        Map<String, TableReloadRequest> reloadMap = new HashMap<String, TableReloadRequest>();
+        Map<String, TableReloadRequest> reloadMap = new CaseInsensitiveMap();
         for (TableReloadRequest item : reloadRequests) {
             reloadMap.put(item.getIdentifier(), item);
         }
@@ -639,7 +642,12 @@ public class DataService extends AbstractService implements IDataService {
                     List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                             .getTriggerHistoryId());
                     for (TriggerRouter triggerRouter : triggerRouters) {
-                        TableReloadRequest currentRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
+                        String key = triggerRouter.getTriggerId() + triggerRouter.getRouterId();
+                        TableReloadRequest currentRequest = reloadRequests.get(key);
+                        if (currentRequest == null) {
+                            throw new SymmetricException("Could not locate table reload request for key '" + key + 
+                                    "'. Available requests are: " + reloadRequests.keySet());
+                        }
                         beforeSql = currentRequest.getBeforeCustomSql();
                         
                         if (isNotBlank(beforeSql)) {
