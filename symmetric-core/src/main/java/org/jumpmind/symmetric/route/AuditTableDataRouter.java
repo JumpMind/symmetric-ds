@@ -42,7 +42,6 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.util.FormatUtils;
 
 public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltInExtensionPoint {
 
@@ -75,10 +74,11 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
             Table auditTable = auditTables.get(tableName);
             if (auditTable == null) {
                 auditTable = toAuditTable(table);
-                auditTables.put(tableName, auditTable);
                 if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE)) {
                     platform.alterTables(true, auditTable);
                 }
+                auditTable = platform.getTableFromCache(auditTable.getCatalog(), auditTable.getSchema(), auditTable.getName(), false);
+                auditTables.put(tableName, auditTable);
             }
             DatabaseInfo dbInfo = platform.getDatabaseInfo();
             String auditTableName = auditTable.getQualifiedTableName(dbInfo.getDelimiterToken(), 
@@ -115,12 +115,9 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
     }
 
     protected Table toAuditTable(Table table) {
+        IDatabasePlatform platform = engine.getDatabasePlatform();
         Table auditTable = table.copy();
-        String tableName =  engine.getDatabasePlatform().alterCaseToMatchDatabaseDefaultCase(table.getName());
-        if (!FormatUtils.isMixedCase(tableName)) {
-            tableName = tableName.toUpperCase();
-        }
-        auditTable.setName(String.format("%s_AUDIT", tableName));
+        auditTable.setName(String.format("%s_%s", auditTable.getName(), platform.alterCaseToMatchDatabaseDefaultCase("AUDIT")));
         Column[] columns = auditTable.getColumns();
         auditTable.removeAllColumns();
         auditTable.addColumn(new Column(COLUMN_AUDIT_ID, true, Types.BIGINT, 0, 0));
@@ -131,9 +128,10 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
             column.setPrimaryKey(false);
             column.setAutoIncrement(false);
             auditTable.addColumn(column);
-        }
+        }        
         auditTable.removeAllForeignKeys();
         auditTable.removeAllIndices();
+        platform.alterCaseToMatchDatabaseDefaultCase(auditTable);
         return auditTable;
     }
 
