@@ -68,6 +68,27 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                    $(custom_on_insert_text)                                                                                                                                           \n"+
 "                                END                                                                                                                                                                    " );
 
+        sqlTemplates = new HashMap<String,String>();
+        sqlTemplates.put("insertReloadTriggerTemplate" ,
+"CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n"+
+"                                AFTER INSERT ON $(schemaName)$(tableName)                                                                                                                              \n"+
+"                                REFERENCING NEW AS NEW                                                                                                                                                 \n"+
+"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               \n"+
+"                                BEGIN ATOMIC                                                                                                                                                           \n"+
+"                                    $(custom_before_insert_text) \n" +
+"                                    IF $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                               \n"+
+"                                        INSERT into $(defaultSchema)$(prefixName)_data                                                                                                                 \n"+
+"                                            (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)                                \n"+
+"                                        VALUES('$(targetTableName)', 'R', $(triggerHistoryId),                                                                                                         \n"+
+"                                            $(oracleToClob)$(newKeys),                                                                                                                                 \n"+
+"                                            $(channelExpression), $(txIdExpression), $(sourceNodeExpression),                                                                                              \n"+
+"                                            $(externalSelect),                                                                                                                                         \n"+
+"                                            CURRENT_TIMESTAMP);                                                                                                                                        \n"+
+"                                    END IF;                                                                                                                                                            \n"+
+"                                    $(custom_on_insert_text)                                                                                                                                           \n"+
+"                                END                                                                                                                                                                    " );
+
+        
         sqlTemplates.put("updateTriggerTemplate" ,
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n"+
 "                                AFTER UPDATE ON $(schemaName)$(tableName)                                                                                                                              \n"+
@@ -97,6 +118,34 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                    $(custom_on_update_text)                                                                                                                                           \n"+
 "                                END                                                                                                                                                                    " );
 
+        sqlTemplates.put("updateReloadTriggerTemplate" ,
+"CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n"+
+"                                AFTER UPDATE ON $(schemaName)$(tableName)                                                                                                                              \n"+
+"                                REFERENCING OLD AS OLD NEW AS NEW                                                                                                                                      \n"+
+"                                FOR EACH ROW MODE DB2SQL                                                                                                                                               \n"+
+"                                BEGIN ATOMIC                                                                                                                                                           \n"+
+"                                    DECLARE var_row_data VARCHAR(16336);                                                                                                                               \n"+
+"                                    DECLARE var_old_data VARCHAR(16336);                                                                                                                               \n"+
+"                                    $(custom_before_update_text) \n" +
+"                                    IF $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                               \n"+
+"                                        SET var_row_data = $(oracleToClob)$(columns);                                                                                                                                 \n"+
+"                                        SET var_old_data = $(oracleToClob)$(oldColumns);                                                                                                                              \n"+
+"                                        IF $(dataHasChangedCondition) THEN                                                                                                                             \n"+
+"                                            INSERT into $(defaultSchema)$(prefixName)_data                                                                                                             \n"+
+"                                                (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)         \n"+
+"                                            VALUES('$(targetTableName)', 'R', $(triggerHistoryId),                                                                                                     \n"+
+"                                                $(oracleToClob)$(oldKeys),                                                                                                                             \n"+
+"                                                $(channelExpression),                                                                                                                                      \n"+
+"                                                $(txIdExpression),                                                                                                                                     \n"+
+"                                                $(sourceNodeExpression),                                                                                                                               \n"+
+"                                                $(externalSelect),                                                                                                                                     \n"+
+"                                                CURRENT_TIMESTAMP);                                                                                                                                    \n"+
+"                                        END IF;                                                                                                                                                        \n"+
+"                                    END IF;                                                                                                                                                            \n"+
+"                                    $(custom_on_update_text)                                                                                                                                           \n"+
+"                                END                                                                                                                                                                    " );
+
+        
         sqlTemplates.put("deleteTriggerTemplate" ,
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n"+
 "                                AFTER DELETE ON $(schemaName)$(tableName)                                                                                                                              \n"+

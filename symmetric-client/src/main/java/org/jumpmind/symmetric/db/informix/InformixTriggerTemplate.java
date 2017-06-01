@@ -61,6 +61,25 @@ public class InformixTriggerTemplate extends AbstractTriggerTemplate {
 "                                  CURRENT                                                                                                                                                              " +
 "                                )); $(custom_on_insert_text)                                                                                                                                           " );
 
+        sqlTemplates.put("insertReloadTriggerTemplate" ,
+"create trigger $(triggerName) insert on $(schemaName)$(tableName)                                                                                                                                      " +
+"                                referencing new as new                                                                                                                                                 " +
+"                                $(custom_before_insert_text) \n" +
+"                                for each row when ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) (                                                                                     " +
+"                                insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)" +
+"                                values(                                                                                                                                                                " +
+"                                  '$(targetTableName)',                                                                                                                                                " +
+"                                  'R',                                                                                                                                                                 " +
+"                                  $(triggerHistoryId),                                                                                                                                                 " +
+"                                  $(newKeys),                                                                                                                                                          " +
+"                                  $(channelExpression),                                                                                                                                                    " +
+"                                  $(txIdExpression),                                                                                                                                                   " +
+"                                  $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                       " +
+"                                  $(externalSelect),                                                                                                                                                   " +
+"                                  CURRENT                                                                                                                                                              " +
+"                                )); $(custom_on_insert_text)                                                                                                                                           " );
+
+        
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) update on $(schemaName)$(tableName)                                                                                                                                      " +
 "                                referencing old as old new as new                                                                                                                                      " +
@@ -74,6 +93,24 @@ public class InformixTriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(oldKeys),                                                                                                                                                          " +
 "                                  $(columns),                                                                                                                                                          " +
 "                                  $(oldColumns),                                                                                                                                                       " +
+"                                  $(channelExpression),                                                                                                                                                    " +
+"                                  $(txIdExpression),                                                                                                                                                   " +
+"                                  $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                       " +
+"                                  $(externalSelect),                                                                                                                                                   " +
+"                                  CURRENT                                                                                                                                                              " +
+"                                )); $(custom_on_update_text)                                                                                                                                           " );
+
+        sqlTemplates.put("updateReloadTriggerTemplate" ,
+"create trigger $(triggerName) update on $(schemaName)$(tableName)                                                                                                                                      " +
+"                                referencing old as old new as new                                                                                                                                      " +
+"                                $(custom_before_update_text) \n" +
+"                                for each row when ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) (                                                                                     " +
+"                                insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)" +
+"                                values(                                                                                                                                                                " +
+"                                  '$(targetTableName)',                                                                                                                                                " +
+"                                  'R',                                                                                                                                                                 " +
+"                                  $(triggerHistoryId),                                                                                                                                                 " +
+"                                  $(oldKeys),                                                                                                                                                          " +
 "                                  $(channelExpression),                                                                                                                                                    " +
 "                                  $(txIdExpression),                                                                                                                                                   " +
 "                                  $(defaultSchema)$(prefixName)_node_disabled(),                                                                                                                       " +

@@ -77,6 +77,20 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "end");
 
         sqlTemplates
+            .put("insertReloadTriggerTemplate",
+                "create trigger $(triggerName) after insert on $(schemaName)$(tableName)    \n"
+                        + "for each row     \n"
+                        + "  when ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition))    \n"
+                        + "  begin    \n"
+                        + "    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)    \n"
+                        + "    values(    \n" + "      '$(targetTableName)',    \n" + "      'R',    \n"
+                        + "      $(triggerHistoryId),                                          \n"
+                        + "      $(newKeys),    \n" + "      $(channelExpression), null," + sourceNodeExpression + ",    \n"
+                        + "      $(externalSelect),    \n" + "     strftime('%Y-%m-%d %H:%M:%f','now','localtime')    \n" + "    );    \n"
+                        + "        $(custom_on_insert_text)                                                                            \n"
+                        + "end");
+
+        sqlTemplates
                 .put("updateTriggerTemplate",
                         "create trigger $(triggerName) after update on $(schemaName)$(tableName)   \n"
                                 + "for each row    \n"
@@ -90,6 +104,20 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                                 + "      strftime('%Y-%m-%d %H:%M:%f','now','localtime')  \n" + "    );   \n"
                                 + "      $(custom_on_update_text)                                                                            \n"
                                 + "end  ");
+
+        sqlTemplates
+            .put("updateReloadTriggerTemplate",
+                "create trigger $(triggerName) after update on $(schemaName)$(tableName)   \n"
+                        + "for each row    \n"
+                        + "  when ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) and ($(dataHasChangedCondition))       \n"
+                        + "  begin   \n"
+                        + "    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)   \n"
+                        + "    values(   \n" + "      '$(targetTableName)',   \n" + "      'R',   \n"
+                        + "      $(triggerHistoryId),   \n" + "      $(oldKeys),   \n"
+                        + "      $(channelExpression), null," + sourceNodeExpression + ",   \n" + "      $(externalSelect),   \n"
+                        + "      strftime('%Y-%m-%d %H:%M:%f','now','localtime')  \n" + "    );   \n"
+                        + "      $(custom_on_update_text)                                                                            \n"
+                        + "end  ");
 
         sqlTemplates
                 .put("deleteTriggerTemplate",

@@ -68,6 +68,7 @@ to stream from the source via callback; a value of 0, lob data is captured by th
 Capture Lobs:: Provides a hint as to whether this trigger will capture big lobs data.  If set to 1 every effort will be made during data capture in trigger and during data selection for 
 initial load to use lob facilities to extract and store data in the database.  On Oracle, this may need to be set to 1 to get around 4k concatenation errors during data capture and during initial load.
 Capture Old Data:: Indicates whether this trigger should capture and send the old data (previous state of the row before the change).
+Stream Row:: Captures only the primary key when the trigger fires which can reduce the overhead of the trigger on tables with lots of columns.  The data will then be queried using the PK values captured when the batch is ready for extraction.
 External Select:: Specify a SQL select statement that returns a single row, single column result.  
 It will be used in the generated database trigger to populate the EXTERNAL_DATA field on the data table.  See 
 Excluded Column Names:: Specify a comma-delimited list of columns that should not be synchronized from this table.  

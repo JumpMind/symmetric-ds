@@ -79,7 +79,8 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                         + "  t.name_for_delete_trigger,t.name_for_insert_trigger,t.name_for_update_trigger,                   "
                         + "  t.sync_on_insert_condition,t.sync_on_update_condition,t.sync_on_delete_condition,                "
                         + "  t.custom_on_insert_text,t.custom_on_update_text,t.custom_on_delete_text,                               "
-                        + "  t.tx_id_expression,t.external_select,t.channel_expression,t.create_time as t_create_time,                             "
+                        + "  t.tx_id_expression,t.external_select,t.channel_expression, t.stream_row,              " 
+                        + "  t.create_time as t_create_time,                             "
                         + "  t.last_update_time as t_last_update_time, t.last_update_by as t_last_update_by                   ");
 
         putSql("selectTriggerNameInUseSql",
@@ -150,7 +151,7 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                         + "  channel_id=?,reload_channel_id=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,                                                                               "
                         + "  sync_on_incoming_batch=?,use_stream_lobs=?,use_capture_lobs=?,use_capture_old_data=?,use_handle_key_updates=?,name_for_update_trigger=?,name_for_insert_trigger=?,        "
                         + "  name_for_delete_trigger=?,sync_on_update_condition=?,sync_on_insert_condition=?,sync_on_delete_condition=?,custom_on_update_text=?,custom_on_insert_text=?,custom_on_delete_text=?,                                             "
-                        + "  tx_id_expression=?,excluded_column_names=?,included_column_names=?,sync_key_names=?,last_update_by=?,last_update_time=?,external_select=?,channel_expression=?   "
+                        + "  tx_id_expression=?,excluded_column_names=?,included_column_names=?,sync_key_names=?,last_update_by=?,last_update_time=?,external_select=?,channel_expression=?,stream_row=?   "
                         + "  where trigger_id=?                                                                                                            ");
 
         putSql("insertRouterSql",

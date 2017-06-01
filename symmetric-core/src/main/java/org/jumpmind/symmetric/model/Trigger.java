@@ -74,6 +74,8 @@ public class Trigger implements Serializable {
 
     private boolean useHandleKeyUpdates = true;
 
+    private boolean streamRow = false;
+    
     private String nameForInsertTrigger;
 
     private String nameForUpdateTrigger;
@@ -574,6 +576,14 @@ public class Trigger implements Serializable {
 
     public String getSyncKeyNames() {
         return syncKeyNames;
+    }
+
+    public boolean isStreamRow() {
+        return streamRow;
+    }
+
+    public void setStreamRow(boolean streamRow) {
+        this.streamRow = streamRow;
     }
 
     @SuppressWarnings("unchecked")

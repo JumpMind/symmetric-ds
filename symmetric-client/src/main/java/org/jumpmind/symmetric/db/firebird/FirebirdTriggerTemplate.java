@@ -75,6 +75,32 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "     end                                                                                                                                                                  \n" +
 "     $(custom_on_insert_text)                                                                                                                                             \n" +
 "   end                                                                                                                                                                    \n" );
+
+        sqlTemplates.put("insertReloadTriggerTemplate" ,
+"create trigger $(triggerName) for $(schemaName)$(tableName) after insert position 5 as                                                                                                                            \n" +
+"   begin                                                                                                                                                                  \n" +
+"     $(custom_before_insert_text) \n" +
+"     if ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
+"     begin                                                                                                                                                                \n" +
+"       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
+"       (data_id, table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               \n" +
+"       values(                                                                                                                                                            \n" +
+"         gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1),                                                                                                                                                             \n" +
+"         '$(targetTableName)',                                                                                                                                            \n" +
+"         'R',                                                                                                                                                             \n" +
+"         $(triggerHistoryId),                                                                                                                                             \n" +
+"         $(newKeys),                                                                                                                                                      \n" +
+"         $(channelExpression),                                                                                                                                                \n" +
+"         $(txIdExpression),                                                                                                                                               \n" +
+"         rdb$get_context('USER_SESSION', 'sync_node_disabled'),                                                                                                           \n" +
+"         $(externalSelect),                                                                                                                                               \n" +
+"         CURRENT_TIMESTAMP                                                                                                                                                \n" +
+"       );                                                                                                                                                                 \n" +
+"     end                                                                                                                                                                  \n" +
+"     $(custom_on_insert_text)                                                                                                                                             \n" +
+"   end                                                                                                                                                                    \n" );
+
+        
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) for $(schemaName)$(tableName) after update position 5 as                                                                                                                            \n" +
 "   begin                                                                                                                                                                  \n" +
@@ -100,6 +126,32 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
 "     end                                                                                                                                                                  \n" +
 "     $(custom_on_update_text)                                                                                                                                             \n" +
 "   end                                                                                                                                                                    \n" );
+
+        sqlTemplates.put("updateReloadTriggerTemplate" ,
+"create trigger $(triggerName) for $(schemaName)$(tableName) after update position 5 as                                                                                                                            \n" +
+"   begin                                                                                                                                                                  \n" +
+"     $(custom_before_update_text) \n" +
+"     if ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               \n" +
+"     begin                                                                                                                                                                \n" +
+"       insert into $(defaultSchema)$(prefixName)_data                                                                                                                     \n" +
+"       (data_id, table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)            \n" +
+"       values(                                                                                                                                                            \n" +
+"         gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1),                                                                                                                                                             \n" +
+"         '$(targetTableName)',                                                                                                                                            \n" +
+"         'R',                                                                                                                                                             \n" +
+"         $(triggerHistoryId),                                                                                                                                             \n" +
+"         $(oldKeys),                                                                                                                                                      \n" +
+"         $(channelExpression),                                                                                                                                                \n" +
+"         $(txIdExpression),                                                                                                                                               \n" +
+"         rdb$get_context('USER_SESSION', 'sync_node_disabled'),                                                                                                           \n" +
+"         $(externalSelect),                                                                                                                                               \n" +
+"         CURRENT_TIMESTAMP                                                                                                                                                \n" +
+"       );                                                                                                                                                                 \n" +
+"     end                                                                                                                                                                  \n" +
+"     $(custom_on_update_text)                                                                                                                                             \n" +
+"   end                                                                                                                                                                    \n" );
+
+        
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger  $(triggerName) for $(schemaName)$(tableName) after delete position 5 as                                                                                                                           \n" +
 "   begin                                                                                                                                                                  \n" +
