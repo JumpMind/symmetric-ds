@@ -329,8 +329,8 @@ public class RouterService extends AbstractService implements IRouterService {
                else {
                    NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
                    
-                   boolean registered = targetNodeSecurity.getRegistrationTime() != null 
-                   		|| targetNodeSecurity.getNodeId().equals(targetNodeSecurity.getCreatedAtNodeId());
+                   boolean registered = targetNodeSecurity != null  && (targetNodeSecurity.getRegistrationTime() != null 
+                   		|| targetNodeSecurity.getNodeId().equals(targetNodeSecurity.getCreatedAtNodeId()));
                    if (registered) {  
                        // Make loads unique to the target and create time
                        String key = load.getTargetNodeId() + "::" + load.getCreateTime().toString();
@@ -338,6 +338,8 @@ public class RouterService extends AbstractService implements IRouterService {
                            requestsSplitByLoad.put(key, new ArrayList<TableReloadRequest>());
                        }
                        requestsSplitByLoad.get(key).add(load);
+                   } else {
+                       log.warn("There was a load queued up for '{}', but the node is not registered.  It is being ignored", load.getTargetNodeId());
                    }
                }
             }
