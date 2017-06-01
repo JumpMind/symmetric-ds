@@ -51,6 +51,16 @@ public class HsqlDbTriggerTemplate extends AbstractTriggerTemplate {
 "                                  (select ''$(targetTableName)'',''I'',$(triggerHistoryId),$(columns), $(channelExpression), $(txIdExpression), sym_get_session(''node_value''), $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))' " + 
 "                                );                                                                                                                                                                     " + 
 "                                CREATE TRIGGER $(triggerName) AFTER INSERT ON $(tableName) FOR EACH ROW QUEUE 0 CALL \"org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger\";                               " );
+
+        sqlTemplates.put("insertReloadTriggerTemplate" ,
+"CREATE TABLE $(triggerName)_CONFIG (CONDITION_SQL LONGVARCHAR, INSERT_DATA_SQL LONGVARCHAR);                                                                                                           " + 
+"                                INSERT INTO $(triggerName)_CONFIG values(                                                                                                                              " + 
+"                                'select count(*) from $(virtualOldNewTable) where $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)',                                                       " + 
+"                                'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)" + 
+"                                  (select ''$(targetTableName)'',''R'',$(triggerHistoryId),$(newKeys), $(channelExpression), $(txIdExpression), sym_get_session(''node_value''), $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))' " + 
+"                                );                                                                                                                                                                     " + 
+"                                CREATE TRIGGER $(triggerName) AFTER INSERT ON $(tableName) FOR EACH ROW QUEUE 0 CALL \"org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger\";                               " );
+        
         sqlTemplates.put("updateTriggerTemplate" ,
 "CREATE TABLE $(triggerName)_CONFIG (CONDITION_SQL LONGVARCHAR, INSERT_DATA_SQL LONGVARCHAR);                                                                                                           " + 
 "                                INSERT INTO $(triggerName)_CONFIG values(                                                                                                                              " + 
@@ -59,6 +69,16 @@ public class HsqlDbTriggerTemplate extends AbstractTriggerTemplate {
 "                                    (select ''$(targetTableName)'',''U'',$(triggerHistoryId),$(oldKeys),$(columns),$(oldColumns), $(channelExpression), $(txIdExpression), sym_get_session(''node_value''), $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))'" + 
 "                                );                                                                                                                                                                     " + 
 "                                CREATE TRIGGER $(triggerName) AFTER UPDATE ON $(tableName) FOR EACH ROW QUEUE 0 CALL \"org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger\";                               " );
+
+        sqlTemplates.put("updateReloadTriggerTemplate" ,
+"CREATE TABLE $(triggerName)_CONFIG (CONDITION_SQL LONGVARCHAR, INSERT_DATA_SQL LONGVARCHAR);                                                                                                           " + 
+"                                INSERT INTO $(triggerName)_CONFIG values(                                                                                                                              " + 
+"                                  'select count(*) from $(virtualOldNewTable) where $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)',                                                     " + 
+"                                  'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)" + 
+"                                    (select ''$(targetTableName)'',''R'',$(triggerHistoryId),$(oldKeys), $(channelExpression), $(txIdExpression), sym_get_session(''node_value''), $(externalSelect), CURRENT_TIMESTAMP from $(virtualOldNewTable))'" + 
+"                                );                                                                                                                                                                     " + 
+"                                CREATE TRIGGER $(triggerName) AFTER UPDATE ON $(tableName) FOR EACH ROW QUEUE 0 CALL \"org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger\";                               " );
+
         sqlTemplates.put("deleteTriggerTemplate" ,
 "CREATE TABLE $(triggerName)_CONFIG (CONDITION_SQL LONGVARCHAR, INSERT_DATA_SQL LONGVARCHAR);                                                                                                           " + 
 "                                INSERT INTO $(triggerName)_CONFIG values(                                                                                                                              " + 

@@ -99,6 +99,35 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     if (@NCT = 0) set nocount off                                                                                                                                        \n" +
 "   end                                                                                                                                                                    \n" +
 "---- go");
+        
+        sqlTemplates.put("insertReloadTriggerTemplate" ,
+"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
+"   begin                                                                                                                                                                  \n" +
+"     declare @NCT int \n" +
+"     set @NCT = @@OPTIONS & 512 \n" +
+"     set nocount on                                                                                                                                                       \n" +
+"     declare @TransactionId varchar(1000)                                                                                                                                 \n" +
+"     if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
+"       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                     \n" +
+"     end                                                                                                                                                                  \n" +
+"     $(custom_before_insert_text) \n" +
+"     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
+"         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data \n" +
+"           (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"          select '$(targetTableName)','R', $(triggerHistoryId), $(newKeys), \n" +
+"                  $(channelExpression), $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp \n" +
+"       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
+"          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) \n" +
+"       $(else:containsBlobClobColumns)                                                                                                                                    \n" +
+"          from inserted                                                                                   \n" +
+"       $(end:containsBlobClobColumns)                                                                                                                                     \n" +
+"          where $(syncOnInsertCondition)               \n" +
+"     end                                                                                                                                                                  \n" +
+"     $(custom_on_insert_text)                                                                                                                                             \n" +
+"     if (@NCT = 0) set nocount off                                                                                                                                        \n" +
+"   end                                                                                                                                                                    \n" +
+"---- go");
+
 
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                \n" +
@@ -114,6 +143,33 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
 "             select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns), $(channelExpression), "+
+"               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp\n" +
+"       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
+"          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) \n" +
+"       $(else:containsBlobClobColumns)                                                                                                                                    \n" +
+"          from inserted inner join deleted on $(oldNewPrimaryKeyJoin)                                   \n" +
+"       $(end:containsBlobClobColumns)                                                                                                                                     \n" +
+"          where $(syncOnUpdateCondition) and ($(dataHasChangedCondition))                                                    \n" +
+"       end                                                                                                                                                                \n" +
+"       $(custom_on_update_text)                                                                                                                                             \n" +
+"     if (@NCT = 0) set nocount off                                                                                                                                        \n" +
+"   end                                                                                                                                                                    \n" +
+"---- go");
+        
+        sqlTemplates.put("updateReloadTriggerTemplate" ,
+"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after update as                                                                                                \n" +
+"   begin                                                                                                                                                                  \n" +
+"     declare @NCT int \n" +
+"     set @NCT = @@OPTIONS & 512 \n" +
+"     set nocount on                                                                                                                                                       \n" +
+"     declare @TransactionId varchar(1000)                                                                                                                                 \n" +
+"     if (@@TRANCOUNT > 0) begin                                                                                                                                           \n" +
+"       select @TransactionId = convert(VARCHAR(1000),transaction_id) from sys.dm_exec_requests where session_id=@@SPID and open_transaction_count > 0                     \n" +
+"     end                                                                                                                                                                  \n" +
+"     $(custom_before_update_text) \n" +
+"     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
+"         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"             select '$(targetTableName)','R', $(triggerHistoryId), $(oldKeys), $(channelExpression), "+
 "               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp\n" +
 "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
 "          from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) \n" +

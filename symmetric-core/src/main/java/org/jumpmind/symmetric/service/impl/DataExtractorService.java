@@ -59,7 +59,10 @@ import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DdlBuilderFactory;
+import org.jumpmind.db.platform.DmlStatementFactory;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -1715,8 +1718,26 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 .getTriggerRouterForCurrentNode(triggerId, routerId, false);
                         if (triggerRouter != null) {
                             processInfo.setCurrentTableName(triggerHistory.getSourceTableName());
+                            
+                            String initialLoadSelect = data.getRowData();
+                            if (initialLoadSelect == null && triggerRouter.getTrigger().isStreamRow()) {
+                                if (sourceTable == null) {
+                                    sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
+                                            .getRouter().getRouterId(), triggerHistory, false, true);
+                                }
+                                Column[] columns = sourceTable.getPrimaryKeyColumns();
+                                DmlStatement dmlStmt = DmlStatementFactory.createDmlStatement(symmetricDialect.getName(), DmlType.WHERE, sourceTable, true);
+                                String[] pkData = data.getParsedData(CsvData.PK_DATA);
+                                Row row = new Row(columns.length);
+                                
+                                for (int i = 0; i < columns.length; i++) {
+                                    row.put(columns[i].getName(), pkData[i]);
+                                }
+                                initialLoadSelect = dmlStmt.buildDynamicSql(batch.getBinaryEncoding(), row, false, true, columns);
+                            }
+                            
                             SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
-                                    triggerRouter, triggerHistory, data.getRowData());
+                                    triggerRouter, triggerHistory, initialLoadSelect);
                             this.reloadSource = new SelectFromTableSource(outgoingBatch, batch,
                                     event);
                             data = (Data) this.reloadSource.next();
@@ -1953,6 +1974,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             .getRouter().getRouterId(), history, false, true);
                     this.targetTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
                             .getRouter().getRouterId(), history, true, false);
+         
                     this.startNewCursor(history, triggerRouter,
                             this.currentInitialLoadEvent.getInitialLoadSelect());
 
@@ -1981,6 +2003,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         protected void startNewCursor(final TriggerHistory triggerHistory,
                 final TriggerRouter triggerRouter, String overrideSelectSql) {
+            if (overrideSelectSql != null && overrideSelectSql.trim().toUpperCase().startsWith("WHERE")) {
+                overrideSelectSql = overrideSelectSql.trim().substring(5);
+            }
             final String initialLoadSql = symmetricDialect.createInitialLoadSqlFor(
                     this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable,
                     triggerHistory,

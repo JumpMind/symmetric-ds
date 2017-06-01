@@ -76,6 +76,32 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "           $(custom_on_insert_text)                                                      \n" +
 "        end;                                                                             \n");
 
+        sqlTemplates.put("insertReloadTriggerTemplate" ,
+"create or replace trigger $(triggerName)                                                 \n" +
+"    after insert on $(schemaName)$(tableName)                                            \n" +
+"        for each row begin                                                               \n" +
+"            $(custom_before_insert_text) \n" +
+"            if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then         \n" +
+"                insert into $(defaultSchema)$(prefixName)_data                           \n" +
+"                  (table_name, event_type, trigger_hist_id, row_data, channel_id,        \n" +
+"                  transaction_id, source_node_id, external_data, create_time)            \n" +
+"                  values(                                                                \n" +
+"                  '$(targetTableName)',                                                  \n" +
+"                  'R',                                                                   \n" +
+"                  $(triggerHistoryId),                                                   \n" +
+"                  $(newKeys),                                                            \n" +
+"                  $(oracleToClob)$(columns),                                             \n" +
+"                  $(channelExpression),                                                  \n" +
+"                  $(txIdExpression),                                                     \n" +
+"                  $(prefixName)_pkg.disable_node_id,                                     \n" +
+"                  $(externalSelect),                                                     \n" +
+"                                      " + getCreateTimeExpression(symmetricDialect) + "  \n" +
+"                 );                                                                      \n" +
+"           end if;                                                                       \n" +
+"           $(custom_on_insert_text)                                                      \n" +
+"        end;                                                                             \n");
+        
+        
         sqlTemplates.put("updateTriggerTemplate" ,
 "create or replace trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                       \n" +
 "                                for each row begin                                                                                                                                                       \n" +
@@ -109,6 +135,37 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(custom_on_update_text)                                                                                                                                               \n" +
 "                                end;                                                                                                                                                                     \n" );
 
+        sqlTemplates.put("updateReloadTriggerTemplate" ,
+"create or replace trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                       \n" +
+"                                for each row begin                                                                                                                                                       \n" +
+"                                  declare                                                                                                                                                                \n" +
+"                                    var_row_data $(oracleLobType);                                                                                                                                       \n" +
+"                                    var_old_data $(oracleLobType);                                                                                                                                       \n" +
+"                                  begin                                                                                                                                                                  \n" +
+"                                    $(custom_before_update_text) \n" +
+"                                    if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
+"                                      select $(oracleToClob)$(columns) into var_row_data from dual;                                                                                                      \n" +
+"                                      select $(oracleToClob)$(oldColumns) into var_old_data from dual;                                                                                                   \n" +
+"                                      if $(dataHasChangedCondition) then                                                                                                                                 \n" +
+"                                        insert into $(defaultSchema)$(prefixName)_data                                                                                                                   \n" +
+"                                        (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)                   \n" +
+"                                        values(                                                                                                                                                          \n" +
+"                                          '$(targetTableName)',                                                                                                                                          \n" +
+"                                          'R',                                                                                                                                                           \n" +
+"                                          $(triggerHistoryId),                                                                                                                                           \n" +
+"                                          $(oldKeys),                                                                                                                                                    \n" +
+"                                          $(channelExpression),                                                                                                                                          \n" +
+"                                          $(txIdExpression),                                                                                                                                             \n" +
+"                                          $(prefixName)_pkg.disable_node_id,                                                                                                                             \n" +
+"                                          $(externalSelect),                                                                                                                                             \n" +
+"                                      " + getCreateTimeExpression(symmetricDialect) + "                                                                                                                  \n" +
+"                                        );                                                                                                                                                               \n" +
+"                                      end if;                                                                                                                                                            \n" +
+"                                    end if;                                                                                                                                                              \n" +
+"                                  end;                                                                                                                                                                   \n" +
+"                                  $(custom_on_update_text)                                                                                                                                               \n" +
+"                                end;                                                                                                                                                                     \n" );
+        
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create or replace trigger  $(triggerName) after delete on $(schemaName)$(tableName)                                                                                                                    \n" +
 "                                for each row begin                                                                                                                                                     \n" +

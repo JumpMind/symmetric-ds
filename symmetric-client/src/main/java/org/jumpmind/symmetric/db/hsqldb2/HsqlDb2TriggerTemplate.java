@@ -62,6 +62,25 @@ public class HsqlDb2TriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(custom_on_insert_text)                                                                                                                                             " +
 "                                end                                                                                                                                                                    " );
 
+sqlTemplates.put("insertReloadTriggerTemplate" ,
+        "create trigger $(triggerName) after insert on $(schemaName)$(tableName)                                                                                                                                " +
+        "                                referencing new row as newrow                                                                                                                                          " +
+        "                                for each row begin atomic                                                                                                                                              " +
+        "                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
+        "                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)" +
+        "                                    values(                                                                                                                                                            " +
+        "                                      '$(targetTableName)',                                                                                                                                            " +
+        "                                      'R',                                                                                                                                                             " +
+        "                                      $(triggerHistoryId),                                                                                                                                             " +
+        "                                      $(newKeys),                                                                                                                                                      " +
+        "                                      $(channelExpression), $(txIdExpression), $(prefixName)_get_session('node_value'),                                                                                    " +
+        "                                      $(externalSelect),                                                                                                                                               " +
+        "                                      CURRENT_TIMESTAMP                                                                                                                                                " +
+        "                                    );                                                                                                                                                                 " +
+        "                                  end if;                                                                                                                                                              " +
+        "                                  $(custom_on_insert_text)                                                                                                                                             " +
+        "                                end                                                                                                                                                                    " );
+
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                                " +
 "                                referencing new row as newrow                                                                                                                                          " +
@@ -84,6 +103,27 @@ public class HsqlDb2TriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(custom_on_update_text)                                                                                                                                             " +
 "                                end                                                                                                                                                                    " );
 
+        sqlTemplates.put("updateReloadTriggerTemplate" ,
+"create trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                                " +
+"                                referencing new row as newrow                                                                                                                                          " +
+"                                            old row as oldrow                                                                                                                                          " +
+"                                for each row begin atomic                                                                                                                                              " +
+"                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 " +
+"                                       insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)" +
+"                                       values(                                                                                                                                                           " +
+"                                         '$(targetTableName)',                                                                                                                                           " +
+"                                         'R',                                                                                                                                                            " +
+"                                         $(triggerHistoryId),                                                                                                                                            " +
+"                                         $(oldKeys),                                                                                                                                                     " +
+"                                         $(channelExpression), $(txIdExpression), $(prefixName)_get_session('node_value'),                                                                                   " +
+"                                         $(externalSelect),                                                                                                                                              " +
+"                                         CURRENT_TIMESTAMP                                                                                                                                               " +
+"                                       );                                                                                                                                                                " +
+"                                  end if;                                                                                                                                                              " +
+"                                  $(custom_on_update_text)                                                                                                                                             " +
+"                                end                                                                                                                                                                    " );
+
+        
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create trigger $(triggerName) after delete on $(schemaName)$(tableName)                                                                                                                                " +
 "                                referencing old row as oldrow                                                                                                                                          " +
