@@ -1726,7 +1726,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                             .getRouter().getRouterId(), triggerHistory, false, true);
                                 }
                                 Column[] columns = sourceTable.getPrimaryKeyColumns();
-                                DmlStatement dmlStmt = DmlStatementFactory.createDmlStatement(symmetricDialect.getName(), DmlType.WHERE, sourceTable, true);
+                                DmlStatement dmlStmt = platform.createDmlStatement(DmlType.WHERE, sourceTable, null);
                                 String[] pkData = data.getParsedData(CsvData.PK_DATA);
                                 Row row = new Row(columns.length);
                                 
