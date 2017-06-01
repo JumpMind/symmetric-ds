@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -45,6 +44,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IOutgoingBatchFilter;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.LoadSummary;
 import org.jumpmind.symmetric.model.NodeChannel;
@@ -53,7 +53,6 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.OutgoingLoadSummary;
@@ -651,56 +650,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 inList.substring(0, inList.length() - 1));
 
         return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryChannelMapper(), args);
-    }
-
-    public Map<String, Float> getNodeThroughputByChannel() {
-        
-        String sqlName = "getNodeThroughputByChannelSql";
-        boolean isAverageDateSupported = true;
-        
-        if (platform.getName().equals(DatabaseNamesConstants.H2)) {
-            sqlName = "getNodeThroughputByChannelH2Sql";
-            isAverageDateSupported = false;
-        }
-        String sql = getSql(sqlName);
-        NodeThroughputMapper mapper = new NodeThroughputMapper(isAverageDateSupported);
-        
-        sqlTemplateDirty.query(sql, mapper);
-        return mapper.getThroughputMap();
-    }
-    
-    private class NodeThroughputMapper implements ISqlRowMapper<Object> {
-        Map<String, Float> throughputMap = new HashMap<String, Float>();
-        boolean isAverageDateSupported;
-        
-        public NodeThroughputMapper(boolean isAverageDateSupported) {
-            this.isAverageDateSupported = isAverageDateSupported;
-        }
-        
-        @Override
-        public Object mapRow(Row row) {
-            Long totalRows = row.getLong("total_rows");
-            long avgTime = 0;
-            
-            if (this.isAverageDateSupported) {
-                Date avgCreateTime = row.getDateTime("average_create_time");
-                Date avgLastUpdatedTime = row.getDateTime("average_last_update_time");
-                avgTime = avgLastUpdatedTime.getTime() - avgCreateTime.getTime();
-            }
-            else {
-                avgTime = row.getLong("average_create_time") - row.getLong("average_last_update_time");
-            }
-            
-            throughputMap.put(row.getString("node_id") + "-" + row.getString("channel_id") + "-" + 
-                    row.get("direction"), (float) (avgTime > 0 ? totalRows / avgTime : totalRows));
-            return null;
-        }
-
-        public Map<String, Float> getThroughputMap() {
-            return throughputMap;
-        }
-        
-        
     }
     
     public Set<Long> getActiveLoads(String sourceNodeId) {

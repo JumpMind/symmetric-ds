@@ -102,9 +102,7 @@ public interface IOutgoingBatchService {
     
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(OutgoingBatch.Status ... statuses);
     
-    public List<OutgoingBatchSummary> findOutgoingBatchSummaryByChannel(OutgoingBatch.Status ... statuses);
-    
-    public Map<String, Float> getNodeThroughputByChannel();
+    public List<OutgoingBatchSummary> findOutgoingBatchSummaryByChannel(OutgoingBatch.Status ... statuses);    
     
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses, List<String> loads);

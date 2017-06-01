@@ -39,7 +39,6 @@ public class IncomingBatchSummary implements Serializable {
     private String channel;
     private String sqlMessage;
     private long errorBatchId;
-    private float averageRowsPerMilli;
     
     public String getNodeId() {
         return nodeId;
@@ -113,12 +112,4 @@ public class IncomingBatchSummary implements Serializable {
         this.errorBatchId = errorBatchId;
     }
     
-    public float getAverageRowsPerMilli() {
-        return averageRowsPerMilli;
-    }
-
-    public void setAverageRowsPerMilli(float averageRowsPerMilli) {
-        this.averageRowsPerMilli = averageRowsPerMilli;
-    }
-
 }
