@@ -91,6 +91,12 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     protected boolean detectInvalidGaps;
     
     protected boolean useInMemoryGaps;
+    
+    protected long routingStartTime;
+    
+    protected long earliestTransactionTime = 0;
+    
+    protected boolean supportsTransactionViews;
 
     public DataGapFastDetector(IDataService dataService, IParameterService parameterService, IContextService contextService,
             ISymmetricDialect symmetricDialect, IRouterService routerService, IStatisticManager statisticManager, INodeService nodeService) {
@@ -107,7 +113,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         maxDataToSelect = parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         detectInvalidGaps = parameterService.is(ParameterConstants.ROUTING_DETECT_INVALID_GAPS);
         reset();
-        
+
         if (isFullGapAnalysis()) {
             ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
                     nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
@@ -142,6 +148,18 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         gapsAll = new HashSet<DataGap>();
         gapsAdded = new HashSet<DataGap>();
         gapsDeleted = new HashSet<DataGap>();
+        
+        routingStartTime = System.currentTimeMillis();
+        supportsTransactionViews = symmetricDialect.supportsTransactionViews();
+        earliestTransactionTime = 0;
+        if (supportsTransactionViews) {
+            Date date = symmetricDialect.getEarliestTransactionStartTime();
+            if (date != null) {
+                earliestTransactionTime = date.getTime() - parameterService.getLong(
+                        ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS, 60000);
+            }
+            routingStartTime = symmetricDialect.getDatabaseTime();
+        }
     }
 
     /**
@@ -157,19 +175,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         long gapTimoutInMs = parameterService.getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
         final int dataIdIncrementBy = parameterService.getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
 
-        long currentTime = System.currentTimeMillis();
-        boolean supportsTransactionViews = symmetricDialect.supportsTransactionViews();
-        long earliestTransactionTime = 0;
-        if (supportsTransactionViews) {
-            Date date = symmetricDialect.getEarliestTransactionStartTime();
-            if (date != null) {
-                earliestTransactionTime = date.getTime() - parameterService.getLong(
-                        ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS, 60000);
-            }
-            currentTime = symmetricDialect.getDatabaseTime();
-        }
 
-        Date currentDate = new Date(currentTime);
+
+        Date currentDate = new Date(routingStartTime);
         boolean isBusyExpire = false;
         long lastBusyExpireRunTime = getLastBusyExpireRunTime();
         if (!isAllDataRead) {
@@ -217,7 +225,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     if (supportsTransactionViews) {
                         isExpired = createTime != null && (createTime.getTime() < earliestTransactionTime || earliestTransactionTime == 0);
                     } else {
-                        isExpired = createTime != null && currentTime - createTime.getTime() > gapTimoutInMs;
+                        isExpired = createTime != null && routingStartTime - createTime.getTime() > gapTimoutInMs;
                     }
 
                     if (isExpired) {
