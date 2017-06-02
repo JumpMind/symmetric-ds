@@ -147,12 +147,9 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("getLoadSummariesSql",
                 "select b.load_id, b.node_id, b.status, b.create_by, max(error_flag) as error_flag, count(*) as cnt, min(b.create_time) as create_time,          "
-              + "       max(b.last_update_time) as last_update_time, min(b.batch_id) as current_batch_id,  "
-              + "       min(b.data_row_count) as current_data_event_count, b.channel_id                                                                                      "
-              + "from $(outgoing_batch) b inner join                                                                                                            "
-              + "     $(data_event) e on b.batch_id=e.batch_id inner join                                                                                       "
-              + "     $(data) d on d.data_id=e.data_id                                                                                                          "
-              + "     join $(channel) c on c.channel_id = b.channel_id                                                                                          "                   
+              + "       max(b.last_update_time) as last_update_time, min(b.batch_id) as current_batch_id,  "                                                                                    
+              + "from $(outgoing_batch) b                                                                                                   "
+              + "     join $(channel) c on c.channel_id = b.channel_id 																							"					
               + "where c.reload_flag = 1                                                                                                                    "
               + " and b.load_id > 0                                                                                                                         "
               + "group by b.load_id, b.node_id, b.status, b.channel_id, b.create_by                                                                              "
