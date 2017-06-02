@@ -127,6 +127,8 @@ Select the _Run server after installing_ checkbox to also run SymmetricDS after 
 
 After selecting options, click *Next*.
 
+NOTE: We do not currently support the automatic run on Mac Operating Systems.
+
 --
 
 [.float-group]
