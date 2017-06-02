@@ -65,6 +65,25 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(custom_on_insert_text)                                                                                                                                                \n" +
 "                                end                                                                                                                                                                    " );
 
+        sqlTemplates.put("insertReloadTriggerTemplate" ,
+"create trigger $(triggerName) after insert on $(schemaName)$(tableName)                                                                                                                                \n" +
+"                                for each row begin                                                                                                                                                     \n" +
+"                                  $(custom_before_insert_text) \n" +
+"                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
+"                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)\n" +
+"                                    values(                                                                                                                                                            \n" +
+"                                      '$(targetTableName)',                                                                                                                                            \n" +
+"                                      'R',                                                                                                                                                             \n" +
+"                                      $(triggerHistoryId),                                                                                                                                             \n" +
+"                                      $(newKeys),                                                                                                                                             \n" +
+"                                      $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                        \n" +
+"                                      $(externalSelect),                                                                                                                                               \n" +
+"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
+"                                    );                                                                                                                                                                 \n" +
+"                                  end if;                                                                                                                                                              \n" +
+"                                  $(custom_on_insert_text)                                                                                                                                                \n" +
+"                                end                                                                                                                                                                    " );
+
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                                \n" +
 "                                for each row begin                                                                                                                                                     \n" +
@@ -89,6 +108,31 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "	                                      CURRENT_TIMESTAMP                                                                                                                                               \n" +
 "	                                    );                                                                                                                                                                \n" +
 "	                                end if;                                                                                                                                                               \n" +
+"                                  end if;                                                                                                                                                                \n" +
+"                                  $(custom_on_update_text)                                                                                                                                                  \n" +
+"                                end                                                                                                                                                                      " );
+
+        sqlTemplates.put("updateReloadTriggerTemplate" ,
+"create trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                                \n" +
+"                                for each row begin                                                                                                                                                     \n" +
+"                                  DECLARE var_row_data mediumtext character set utf8;                                                                                                                                      \n" +
+"                                  DECLARE var_old_data mediumtext character set utf8;                                                                                                                                     \n" +
+"                                  $(custom_before_update_text) \n" +
+"                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then                                                                                                 \n" +
+"                                   set var_row_data = concat($(columns));                                                                                                                              \n" +
+"                                   set var_old_data = concat($(oldColumns));                                                                                                                           \n" +
+"                                   if $(dataHasChangedCondition) then                                                                                                                                  \n" +
+"                                       insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)\n" +
+"                                       values(                                                                                                                                                           \n" +
+"                                         '$(targetTableName)',                                                                                                                                           \n" +
+"                                         'U',                                                                                                                                                            \n" +
+"                                         $(triggerHistoryId),                                                                                                                                            \n" +
+"                                         $(oldKeys),                                                                                                                                            \n" +
+"                                         $(channelExpression), $(txIdExpression), @sync_node_disabled,                                                                                                       \n" +
+"                                         $(externalSelect),                                                                                                                                              \n" +
+"                                         CURRENT_TIMESTAMP                                                                                                                                               \n" +
+"                                       );                                                                                                                                                                \n" +
+"                                   end if;                                                                                                                                                               \n" +
 "                                  end if;                                                                                                                                                                \n" +
 "                                  $(custom_on_update_text)                                                                                                                                                  \n" +
 "                                end                                                                                                                                                                      " );

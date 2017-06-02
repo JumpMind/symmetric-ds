@@ -62,6 +62,10 @@ abstract public class AbstractTriggerTemplate {
 
     static final String UPDATE_TRIGGER_TEMPLATE = "updateTriggerTemplate";
 
+    static final String INSERT_WITH_RELOAD_TRIGGER_TEMPLATE = "insertReloadTriggerTemplate";
+
+    static final String UPDATE_WITH_RELOAD_TRIGGER_TEMPLATE = "updateReloadTriggerTemplate";
+
     static final String DELETE_TRIGGER_TEMPLATE = "deleteTriggerTemplate";
 
     static final String INITIAL_LOAD_SQL_TEMPLATE = "initialLoadSqlTemplate";
@@ -353,6 +357,12 @@ abstract public class AbstractTriggerTemplate {
                 history.getParsedPkColumnNames(), true);
 
 		String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
+		if (trigger.isStreamRow()) {
+		    String reloadDdl = sqlTemplates.get(dml.name().toLowerCase() + "ReloadTriggerTemplate");
+		    if (reloadDdl != null && reloadDdl.length() > 0) {
+		        ddl = reloadDdl;
+		    }
+		}
     	if (dml.getDmlType().equals(DmlType.UPDATE) && trigger.isUseHandleKeyUpdates()) {
     		String temp = sqlTemplates.get(dml.name().toLowerCase() + "HandleKeyUpdates" + "TriggerTemplate");
     		if (StringUtils.trimToNull(temp)!=null) {
@@ -493,6 +503,10 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace(
                 "oldKeys",
                 buildColumnsString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix,
+                        table, primaryKeyColumns, dml, true, channel, trigger).toString(), ddl);
+        ddl = FormatUtils.replace(
+                "newKeys",
+                buildColumnsString(ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix,
                         table, primaryKeyColumns, dml, true, channel, trigger).toString(), ddl);
         ddl = FormatUtils.replace(
                 "oldNewPrimaryKeyJoin",

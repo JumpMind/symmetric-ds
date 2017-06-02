@@ -1108,14 +1108,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.getExcludedColumnNames(), trigger.getIncludedColumnNames(),
                         trigger.getSyncKeyNames(), trigger.getLastUpdateBy(), 
                         trigger.getLastUpdateTime(), trigger.getExternalSelect(), 
-                        trigger.getChannelExpression(), trigger.getTriggerId() }, new int[] {
+                        trigger.getChannelExpression(), trigger.isStreamRow(), trigger.getTriggerId() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                         Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, 
-                        Types.VARCHAR })) {
+                        Types.SMALLINT, Types.VARCHAR })) {
             trigger.setCreateTime(trigger.getLastUpdateTime());
             sqlTemplate.update(
                     getSql("insertTriggerSql"),
@@ -1999,6 +1999,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
             trigger.setNameForInsertTrigger(rs.getString("name_for_insert_trigger"));
             trigger.setNameForUpdateTrigger(rs.getString("name_for_update_trigger"));
+            trigger.setStreamRow(rs.getBoolean("stream_row"));
             String schema = rs.getString("source_schema_name");
             trigger.setSourceSchemaName(schema);
             String catalog = rs.getString("source_catalog_name");

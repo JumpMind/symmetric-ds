@@ -169,7 +169,7 @@ public class Db2As400DdlReader extends Db2DdlReader {
 				.getSqlTemplate();
 		
 		String sql = "SELECT "
-						+ "TIGGER_NAME, "
+						+ "TRIGGER_NAME, "
 						+ "TRIGGER_SCHEMA, "
 						+ "EVENT_OBJECT_TABLE as TABLE_NAME, "
 						+ "ACTION_TIMING as TRIGGER_TIME, "
