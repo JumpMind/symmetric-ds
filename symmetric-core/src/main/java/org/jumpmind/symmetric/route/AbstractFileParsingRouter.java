@@ -15,10 +15,10 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
-import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.FileSnapshot;
+import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.Node;
@@ -26,7 +26,6 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IContextService;
-import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 
 public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 
