@@ -25,13 +25,15 @@ endif::pro[]
 === Install 
 ifndef::pro[]
 Download and install SymmetricDS from the http://www.symmetricds.org/download[SymmetricDS.org] website.
+
+TIP: For complete installation instructions click link:user-guide.html#_installation[here,window="_tutorials"]
 endif::pro[]
 
 ifdef::pro[]
 Download and install SymmetricDS from the http://www.jumpmind.com/products/symmetricds/download[JumpMind] website.
-endif::pro[]
 
-TIP: For complete installation instructions click link:user-guide.html#_installation[here,window="_tutorials"]
+TIP: For complete installation instructions click link:../user-guide.html#_installation[here,window="_tutorials"]
+endif::pro[]
 
 
 
@@ -52,18 +54,121 @@ endif::pro[]
 ifndef::pro[]
 Create a property file named `xxxxx.properties` in the engines folder of your SymmetricDS installation.   Replace the `xxxxx` with a name for your node (homeoffice, central, server, etc).
 
+TIP: A sample database is needed for each corresponding node that is created.
+
 .Properties
 . engine.name={an arbitrary name for the node}
-. group.id={this must match the name of a group inserted in step 3, ex: corp}
-. external.id={id for the node, ex: 000 }
-. sync.url=http://{hostname}:{port}/{webcontext}/sync/{engine.name}
+
+	Example: engine.name=centralNode
+
+. group.id={this must match the name of a group inserted in step 3}
+
+	Example: group.id=corp
+
+. external.id={id for the node}
+
+	Example: external.id=000
+	
+. sync.url=http://{hostname}:{port}/sync/{engine.name}
+
+	Example: sync.url=http://localhost:31415/sync/centralNode
+
 . registration.url={leave this blank for the source node}
-. db.driver={JDBC driver class}
+. db.driver={JDBC driver class} 
+
+[cols="2*", options="header"]
+|===
+|Database
+|Example Driver Classes
+  	
+|h2
+|org.h2.Driver
+  	
+|mySQL
+|com.mysql.jdbc.Driver
+
+|Oracle
+|oracle.jdbc.driver.OracleDriver
+
+|PostgreSQL
+|org.postgresql.Driver
+
+|Apache
+|org.apache.derby.jdbc.EmbeddedDriver
+
+|HyperSQL
+|org.hsqldb.jdbcDriver
+
+|SourceForge
+|net.sourceforge.jtds.jdbc.Driver
+
+|IBM
+|com.ibm.db2.jcc.DB2Driver
+
+|SQLite
+|org.sqlite.JDBC
+
+|Firebird
+|org.firebirdsql.jdbc.FBDriver
+
+|Sybase
+|com.sybase.jdbc4.jdbc.SybDriver
+|===	
+
+[start=7]	 
 . db.url={JDBC url for your source database}
+
+[cols="2*", options="header"]
+|===
+|Database
+|Example JDBC Urls
+  	
+|h2
+|jdbc:h2:file:target/h2/client
+  	
+|mySQL
+|jdbc:mysql://localhost/sampleroot?tinyInt1isBit=false&zeroDateTimeBehavior=convertToNull
+
+|Oracle
+|jdbc:oracle:thin:@127.0.0.1:1521:sampleroot
+
+|PostgreSQL
+|jdbc:postgresql://localhost/sampleroot
+
+|Apache
+|jdbc:derby:sampleroot;create=true
+
+|HyperSQL
+|jdbc:hsqldb:file:sampleroot;shutdown=true
+
+|SourceForge
+|jdbc:jtds:sqlserver://localhost:1433;sendStringParametersAsUnicode=false;
+useCursors=true;bufferMaxMemory=10240;lobBuffer=5242880
+
+|IBM
+|jdbc:db2://localhost/samproot
+
+|SQLite
+|jdbc:sqlite:target/sqlite/client
+
+|Firebird
+|jdbc:firebirdsql://host[:port]/client
+
+|Sybase
+|jdbc:sybase:Tds:localhost:5000/client
+|===
+
+[start=8]	
 . db.user={JDBC username}
+
+	Example: db.user=root
+	
 . db.password={JDBC password}
 
-TIP: For complete instructions creating the master node click link:/user-guide.html#_node_properties_file[here,window="_tutorials"]
+	Example: db.password=xxxxxx
+
+TIP: For complete instructions creating the master node click link:user-guide.html#_master_node_setup[here,window="_tutorials"]
+
 endif::pro[]
 
 ifdef::pro[]
@@ -76,7 +181,8 @@ image::wizard-node-setup.png[]
 . Provide a password for the web console, hit next
 . Finish
 
-TIP: For complete instructions creating the master node click link:/user-guide.html#_master_node_setup[here,window="_tutorials"]
+TIP: For complete instructions creating the master node click link:../user-guide.html#_master_node_setup[here,window="_tutorials"]
+
 endif::pro[]
 
 ifndef::pro[]
@@ -162,7 +268,7 @@ image::wizard-config/wizard-config-client-server.png[]
 . Select tables you wish to sync from server to client, hit next
 . Verify the summary, hit finish
 
-TIP: For complete instructions for the quick config wizard click link:/user-guide.html#_quick_config_wizard[here,window="_tutorials"]
+TIP: For complete instructions for the quick config wizard click link:../user-guide.html#_quick_config_wizard[here,window="_tutorials"]
 endif::pro[]
 
 
@@ -182,7 +288,7 @@ Create a property file named `xxxxx.properties` in the engines folder of your Sy
 . db.user={JDBC username}
 . db.password={JDBC password}
 
-TIP: For complete instructions creating the target node click link:/user-guide.html#_node_properties_file[here,window="_tutorials"]
+TIP: For complete instructions creating the target node click link:user-guide.html#_node_properties_file[here,window="_tutorials"]
 endif::pro[]
 
 ifdef::pro[]
@@ -199,7 +305,7 @@ image::wizard-connect/wizard-connect-menu.png[]
 . Choose appropriate options here depending if your target tables already exist and if they should be initially loaded with data from the source.  Hit next
 . Hit finish
 
-TIP: For complete instructions to setup the target database click link:/user-guide.html#_add_node[here,window="_tutorials"] 
+TIP: For complete instructions to setup the target database click link:../user-guide.html#_add_node[here,window="_tutorials"] 
 
 endif::pro[]
 
