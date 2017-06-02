@@ -98,6 +98,6 @@ apply from: symAssembleDir + '/asciidoc.gradle'
     }
     
     
-    task('symmetric-server:serverDistZip').dependsOn { ':symmetric-server:jar' }
-    task('symmetric-server:generateAppendixes').dependsOn(project(':symmetric-server').jar)
-    //task('symmetric-server:generateDocs').dependsOn(project(':symmetric-server').jar)    
+    serverDistZip.dependsOn { ':symmetric-server:jar' }
+    serverDistZip.dependsOn { ':symmetric-server:generateDocs' }
+    generateAppendixes.dependsOn(project(':symmetric-server').jar)

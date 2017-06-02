@@ -38,8 +38,6 @@ task generateJavadoc(type: Javadoc) {
 task buildSymmetric {
 	group = 'SymmetricDS'
 	description = 'Build software, documentation, and distribution ZIP files'
-    project(':symmetric-server').tasks.serverDistZip.dependsOn(project(':symmetric-server').tasks.jar)
-    project(':symmetric-server').serverDistZip.dependsOn(generateDocs)
     dependsOn ':symmetric-android:androidDistZip', ':symmetric-server:serverDistZip'
 }
 
@@ -75,7 +73,7 @@ task publishSymmetric {
 
 task releaseSymmetric {
     dependsOn publishSymmetric
-    dependsOn publishDoc
+    dependsOn task('symmetric-server:publishDoc') 
 	group = 'SymmetricDS'
 	description = 'Publish software to SourceForge website and online documentation to SymmetricDS website'
 }
