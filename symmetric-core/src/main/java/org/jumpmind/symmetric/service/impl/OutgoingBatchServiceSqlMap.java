@@ -147,7 +147,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("getLoadSummariesSql",
                 "select b.load_id, b.node_id, b.status, b.create_by, max(error_flag) as error_flag, count(*) as cnt, min(b.create_time) as create_time,          "
-              + "       max(b.last_update_time) as last_update_time, min(b.batch_id) as current_batch_id,  "                                                                                    
+              + "       max(b.last_update_time) as last_update_time, min(b.batch_id) as current_batch_id,  "
+              + "       min(b.data_row_count) as current_data_event_count, b.channel_id                                                                                      "
               + "from $(outgoing_batch) b                                                                                                   "
               + "     join $(channel) c on c.channel_id = b.channel_id 																							"					
               + "where c.reload_flag = 1                                                                                                                    "
