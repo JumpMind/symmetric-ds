@@ -111,12 +111,18 @@ Please verify the databases by navigating to the Explore tab and using the datab
 endif::pro[]
 
 ifndef::pro[]
-Please verify the databases by logging in and listing the tables.  You can 
+Please verify the databases by logging in and listing the tables. You can verify using the following command:
+
+[source, cli]
+----
+bin/dbsql --engine corp-000
+----
+ 
+From here, you can:
 endif::pro[]
 
 * Find the item tables that sync from root to client (that is, from corp to store): item and item_selling_price.
 * Find the sales tables that sync from store to corp: sale_transaction and sale_return_line_item.
-* Find the SymmetricDS system tables, which have a prefix of "sym_", such as sym_channel, sym_trigger, sym_router, and sym_trigger_router.
 * Validate the corp item tables have sample data.
 
 === Pulling Data
@@ -155,7 +161,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Verify the outgoing batches were created and sent (status of `OK`).
-image::tutorials/demo-pull-verify-batch.png[]
+image::tutorials/demo-pull-verify-outgoing-batch.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -172,7 +178,8 @@ endif::pro[]
 
 ifdef::pro[]
 .Verify the incoming batches were received (status of `OK`).
-image::tutorials/demo-pull-verify-batch.png[]
+image::tutorials/demo-pull-verify-incoming-batch.png[]
+
 endif::pro[]
 
 ifndef::pro[]
@@ -238,7 +245,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Verify the outgoing batches were created and sent (status of `OK`).
-image::tutorials/demo-push-verify-batch.png[]
+image::tutorials/demo-push-verify-outgoing-batch.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -254,7 +261,7 @@ endif::pro[]
 ==== Verify Incoming Batches
 ifdef::pro[]
 .Verify the incoming batches were received (status of `OK`).
-image::tutorials/demo-push-verify-batch.png[]
+image::tutorials/demo-push-verify-incoming-batch.png[]
 endif::pro[]
 
 ifndef::pro[]
