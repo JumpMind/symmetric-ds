@@ -68,7 +68,6 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 "                                    $(custom_on_insert_text)                                                                                                                                           \n"+
 "                                END                                                                                                                                                                    " );
 
-        sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertReloadTriggerTemplate" ,
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n"+
 "                                AFTER INSERT ON $(schemaName)$(tableName)                                                                                                                              \n"+
