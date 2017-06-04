@@ -38,7 +38,7 @@ public class MonitorEvent {
 
     protected long value;
     
-    protected int count;
+    protected int count = 0;
 
     protected int severityLevel;
     

@@ -41,10 +41,15 @@ public class MonitorTypeLog implements IMonitorType, ISymmetricEngineAware, IBui
         }
         
         Collections.sort(all);
+        
+        int count = 0;
+        for (LogSummary logSummary : all) {
+            count += logSummary.getCount();
+        }
 
-        //LogSummaryAppenderUtils.clearAllLogSummaries(engine.getEngineName());
         event.setDetails(serializeDetails(all));
         event.setValue(all.size());
+        event.setCount(count);
         
         return event;
     }

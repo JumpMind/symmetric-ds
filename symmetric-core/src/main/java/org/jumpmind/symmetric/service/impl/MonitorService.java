@@ -218,7 +218,11 @@ public class MonitorService extends AbstractService implements IMonitorService {
                     event.setHostName(hostName);
                     event.setType(monitor.getType());
                     event.setValue(eventValue.getValue());
-                    event.setCount(1);
+                    if (eventValue.getCount() == 0) {
+                        event.setCount(1);
+                    } else {
+                        event.setCount(eventValue.getCount());
+                    }
                     event.setThreshold(monitor.getThreshold());
                     event.setSeverityLevel(monitor.getSeverityLevel());
                     event.setLastUpdateTime(now);
@@ -228,7 +232,11 @@ public class MonitorService extends AbstractService implements IMonitorService {
                     event.setHostName(hostName);
                     event.setType(monitor.getType());
                     event.setValue(eventValue.getValue() );
-                    event.setCount(event.getCount() + 1);
+                    if (eventValue.getCount() == 0) {
+                        event.setCount(event.getCount() + 1);
+                    } else {
+                        event.setCount(eventValue.getCount());
+                    }
                     event.setThreshold(monitor.getThreshold());
                     event.setSeverityLevel(monitor.getSeverityLevel());
                     event.setLastUpdateTime(now);
