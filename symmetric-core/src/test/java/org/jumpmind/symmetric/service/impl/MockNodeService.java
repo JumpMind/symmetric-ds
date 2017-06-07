@@ -355,4 +355,9 @@ public class MockNodeService implements INodeService {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public AuthenticationStatus getAuthenticationStatus(String nodeId, String securityToken) {
+        return null;
+    }
 }

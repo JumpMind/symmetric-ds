@@ -1022,5 +1022,26 @@ public class NodeService extends AbstractService implements INodeService {
             return nodeHost;
         }
     }
+    
+    public AuthenticationStatus getAuthenticationStatus(String nodeId, String securityToken) {
+        AuthenticationStatus retVal = AuthenticationStatus.ACCEPTED;
+        Node node = findNode(nodeId, true);
+        if (node == null) {
+            retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
+        } else if (!syncEnabled(node)) {
+            retVal = AuthenticationStatus.SYNC_DISABLED;
+        } else if (!isNodeAuthorized(nodeId, securityToken)) {
+            retVal = AuthenticationStatus.FORBIDDEN;
+        }
+        return retVal;
+    }
+
+    protected boolean syncEnabled(Node node) {
+        boolean syncEnabled = false;
+        if (node != null) {
+            syncEnabled = node.isSyncEnabled();
+        }
+        return syncEnabled;
+    }    
 
 }

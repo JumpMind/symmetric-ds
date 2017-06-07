@@ -27,8 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.INodeService.AuthenticationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,10 +38,6 @@ import org.slf4j.LoggerFactory;
 public class AuthenticationInterceptor implements IInterceptor {
     
     Logger log = LoggerFactory.getLogger(getClass());
-
-    public enum AuthenticationStatus {
-        SYNC_DISABLED, REGISTRATION_REQUIRED, FORBIDDEN, ACCEPTED;
-    };
 
     private INodeService nodeService;
     
@@ -59,7 +55,7 @@ public class AuthenticationInterceptor implements IInterceptor {
             return false;
         }
 
-        AuthenticationStatus status = getAuthenticationStatus(nodeId, securityToken);
+        AuthenticationStatus status = nodeService.getAuthenticationStatus(nodeId, securityToken);
 
         if (AuthenticationStatus.ACCEPTED.equals(status)) {
             log.debug("Node '{}' successfully authenticated", nodeId);
@@ -81,27 +77,6 @@ public class AuthenticationInterceptor implements IInterceptor {
     
     public void after(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException {
-    }
-
-    protected AuthenticationStatus getAuthenticationStatus(String nodeId, String securityToken) {
-        AuthenticationStatus retVal = AuthenticationStatus.ACCEPTED;
-        Node node = nodeService.findNode(nodeId, true);
-        if (node == null) {
-            retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
-        } else if (!syncEnabled(node)) {
-            retVal = AuthenticationStatus.SYNC_DISABLED;
-        } else if (!nodeService.isNodeAuthorized(nodeId, securityToken)) {
-            retVal = AuthenticationStatus.FORBIDDEN;
-        }
-        return retVal;
-    }
-
-    protected boolean syncEnabled(Node node) {
-        boolean syncEnabled = false;
-        if (node != null) {
-            syncEnabled = node.isSyncEnabled();
-        }
-        return syncEnabled;
     }
 
 }
