@@ -1188,6 +1188,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             batch.getBatchId(), batch.getNodeId(), (System.currentTimeMillis() - startTime), totalBytesRead,
                             totalThrottleTime, maxKBytesPerSec);
                 }
+                statisticManager.incrementDataSent(batch.getChannelId(), batch.getDataEventCount());
+                statisticManager.incrementDataBytesSent(batch.getChannelId(), totalBytesRead);
             }
             
             if (writer instanceof BatchBufferedWriter) {
