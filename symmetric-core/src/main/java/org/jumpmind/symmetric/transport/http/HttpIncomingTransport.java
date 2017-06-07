@@ -197,4 +197,8 @@ public class HttpIncomingTransport implements IIncomingTransport {
     protected String getBasicAuthPassword() {
         return parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_PASSWORD);
     }
+    
+    public HttpURLConnection getConnection() {
+        return connection;
+    }
 }

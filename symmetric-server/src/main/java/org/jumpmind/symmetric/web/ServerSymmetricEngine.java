@@ -21,14 +21,19 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.ClientSymmetricEngine;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.ServerConstants;
 import org.springframework.context.ApplicationContext;
 
 public class ServerSymmetricEngine extends ClientSymmetricEngine {
@@ -68,33 +73,80 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
         AuthenticationInterceptor authInterceptor = new AuthenticationInterceptor(nodeService);
         NodeConcurrencyInterceptor concurrencyInterceptor = new NodeConcurrencyInterceptor(
                 concurrentConnectionManager, configurationService, statisticManager);
-
+        IInterceptor[] customInterceptors = buildCustomInterceptors();
+        
         this.uriHandlers = new ArrayList<IUriHandler>();
         this.uriHandlers.add(new AckUriHandler(parameterService, acknowledgeService,
-                authInterceptor));
-        this.uriHandlers.add(new PingUriHandler(parameterService));
+                add(customInterceptors, authInterceptor)));
+        this.uriHandlers.add(new PingUriHandler(parameterService, customInterceptors));
         this.uriHandlers
-                .add(new InfoUriHandler(parameterService, nodeService, configurationService));
-        this.uriHandlers.add(new BandwidthSamplerUriHandler(parameterService));
+                .add(new InfoUriHandler(parameterService, nodeService, configurationService, customInterceptors));
+        this.uriHandlers.add(new BandwidthSamplerUriHandler(parameterService, customInterceptors));
         this.uriHandlers.add(new PullUriHandler(parameterService, nodeService,
                 configurationService, dataExtractorService, registrationService, statisticManager, outgoingBatchService,
-                concurrencyInterceptor, authInterceptor));
+                add(customInterceptors, concurrencyInterceptor, authInterceptor)));
         this.uriHandlers.add(new PushUriHandler(parameterService, dataLoaderService,
-                statisticManager, nodeService, concurrencyInterceptor, authInterceptor));
+                statisticManager, nodeService, add(customInterceptors, concurrencyInterceptor, authInterceptor)));
         this.uriHandlers.add(new PushStatusUriHandler(parameterService, nodeCommunicationService, 
-                concurrencyInterceptor, authInterceptor));
+                add(customInterceptors, concurrencyInterceptor, authInterceptor)));
         this.uriHandlers.add(new RegistrationUriHandler(parameterService, registrationService,
-                concurrencyInterceptor));
+                add(customInterceptors, concurrencyInterceptor)));
         this.uriHandlers.add(new ConfigurationUriHandler(parameterService, dataExtractorService,
-                concurrencyInterceptor, authInterceptor));
-        this.uriHandlers.add(new FileSyncPullUriHandler(this, concurrencyInterceptor, authInterceptor));
-        this.uriHandlers.add(new FileSyncPushUriHandler(this, concurrencyInterceptor, authInterceptor));
-        this.uriHandlers.add(new CopyNodeUriHandler(this, authInterceptor));
+                add(customInterceptors, concurrencyInterceptor, authInterceptor)));
+        this.uriHandlers.add(new FileSyncPullUriHandler(this, add(customInterceptors, concurrencyInterceptor, authInterceptor)));
+        this.uriHandlers.add(new FileSyncPushUriHandler(this, add(customInterceptors, concurrencyInterceptor, authInterceptor)));
+        this.uriHandlers.add(new CopyNodeUriHandler(this, add(customInterceptors, authInterceptor)));
         if (parameterService.is(ParameterConstants.WEB_BATCH_URI_HANDLER_ENABLE)) {
-            this.uriHandlers.add(new BatchUriHandler(parameterService, dataExtractorService));
+            this.uriHandlers.add(new BatchUriHandler(parameterService, dataExtractorService, customInterceptors));
         }
     }
     
+    protected IInterceptor[] buildCustomInterceptors() {
+        String customInterceptorProperty = parameterService.getString(ServerConstants.SERVER_ENGINE_URI_INTERCEPTORS);
+        List<IInterceptor> customInterceptors = new ArrayList<IInterceptor>();
+        if (!StringUtils.isEmpty(customInterceptorProperty)) {
+            String[] classNames = customInterceptorProperty.split(";");
+            for (String className : classNames) {
+                className = className.trim();                
+                try {
+                    Class<?> clazz = ClassUtils.getClass(className);
+                    IInterceptor interceptor = null;
+                    for (Constructor c : clazz.getConstructors()) {
+                        if (c.getParameterTypes().length == 1 
+                                && c.getParameterTypes()[0].isAssignableFrom(ISymmetricEngine.class)) {
+                            interceptor = (IInterceptor) c.newInstance(this);
+                        }
+                    }
+                    if (interceptor == null) {                        
+                        interceptor = (IInterceptor) clazz.newInstance();
+                    }
+                    
+                    customInterceptors.add(interceptor);
+                } catch (Exception ex) {
+                    log.error("Failed to load custom interceptor class '" + className + "'", ex);
+                }
+            }
+        }
+        if (!customInterceptors.isEmpty()) {
+            return customInterceptors.toArray(new IInterceptor[customInterceptors.size()]);
+        } else {            
+            return null;
+        }
+    }
+    
+    protected IInterceptor[] add(IInterceptor[] array, IInterceptor... elements ) {
+        IInterceptor[] newArray = new IInterceptor[array.length + elements.length];
+        
+        int index = 0;
+        for (IInterceptor interceptor : elements) {
+            newArray[index++] = interceptor;
+        }
+        for (IInterceptor interceptor : array) {
+            newArray[index++] = interceptor;
+        }
+        return newArray;
+    }
+
     public synchronized int getErrorCountFor(String nodeId) {
         Integer errorCount = errorCountByNode.get(nodeId);
         if (errorCount == null) {

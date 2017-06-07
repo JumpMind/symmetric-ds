@@ -50,8 +50,8 @@ public class InfoUriHandler extends AbstractUriHandler {
        
     public InfoUriHandler(IParameterService parameterService,
             INodeService nodeService,
-            IConfigurationService configurationService) {
-        super("/info/*", parameterService);
+            IConfigurationService configurationService, IInterceptor[] interceptors) {
+        super("/info/*", parameterService, interceptors);
         this.nodeService = nodeService;
         this.configurationService = configurationService;
     }

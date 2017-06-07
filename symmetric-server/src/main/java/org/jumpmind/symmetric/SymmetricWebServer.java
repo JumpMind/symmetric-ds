@@ -43,7 +43,10 @@ import javax.management.ObjectName;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpointConfig;
 
+import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.security.ConstraintMapping;
@@ -65,6 +68,7 @@ import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
@@ -261,15 +265,16 @@ public class SymmetricWebServer {
         server = new Server();
 
         server.setConnectors(getConnectors(server, httpPort, securePort, mode));
+        
         setupBasicAuthIfNeeded(server);
-
+        
         webapp = new WebAppContext();
         webapp.setParentLoaderPriority(true);
         webapp.setConfigurationDiscovered(true);
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
         webapp.setResourceBase(webAppDir);
-
+        
         webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", allowDirListing);
 
         SessionManager sm = new SessionManager();
@@ -292,7 +297,15 @@ public class SymmetricWebServer {
             webapp.getServletContext().getContextHandler()
                     .setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE, Boolean.toString(true));
         }
+        
         server.setHandler(webapp);
+
+        Class<?> remoteStatusEndpoint = loadRemoteStatusEndpoint();
+        if (remoteStatusEndpoint != null) {            
+            ServerContainer container = WebSocketServerContainerInitializer.configureContext(webapp);
+            ServerEndpointConfig websocketConfig = ServerEndpointConfig.Builder.create(remoteStatusEndpoint, "/control").build();
+            container.addEndpoint(websocketConfig);        
+        }
 
         server.start();
 
@@ -738,6 +751,16 @@ public class SymmetricWebServer {
             out.writeInt(getMaxInactiveInterval());
         }
 
+    }
+    
+    protected Class<?> loadRemoteStatusEndpoint() {
+        try {            
+            Class clazz = ClassUtils.getClass("com.jumpmind.symmetric.console.remote.ServerEndpoint");
+            return clazz;
+        } catch (Exception ex) {
+            log.debug("Failed to load remote status endpoint.", ex);
+            return null;
+        }
     }
 
 }

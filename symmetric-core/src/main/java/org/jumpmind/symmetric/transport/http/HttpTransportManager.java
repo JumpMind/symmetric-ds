@@ -388,4 +388,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         }
         return sb.toString();
     }
+    
+    protected ISymmetricEngine getEngine() {
+        return engine;
+    }
 }

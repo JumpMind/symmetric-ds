@@ -41,8 +41,8 @@ public class BandwidthSamplerUriHandler extends AbstractUriHandler {
 
     protected long defaultTestSlowBandwidthDelay = 0;
 
-    public BandwidthSamplerUriHandler(IParameterService parameterService) {
-        super("/bandwidth/*", parameterService);
+    public BandwidthSamplerUriHandler(IParameterService parameterService, IInterceptor[] interceptors) {
+        super("/bandwidth/*", parameterService, interceptors);
     }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,

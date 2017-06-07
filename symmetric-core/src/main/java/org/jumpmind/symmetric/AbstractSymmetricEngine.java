@@ -1185,5 +1185,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public IUpdateService getUpdateService() {
     	return updateService;
     }
+    
+    @Override
+    public String getNodeId() {
+        return getNodeService().findIdentityNodeId();
+    }    
 
 }

@@ -46,5 +46,7 @@ public class ServerConstants {
     public final static String STREAM_TO_FILE_ENCRYPT_ENABLED = "stream.to.file.encrypt.enabled";
     public final static String STREAM_TO_FILE_COMPRESSION_ENABLED = "stream.to.file.compression.enabled";
     public final static String STREAM_TO_FILE_COMPRESSION_LEVEL = "stream.to.file.compression.level";
+    
+    public final static String SERVER_ENGINE_URI_INTERCEPTORS = "server.engine.uri.interceptors";
 
 }

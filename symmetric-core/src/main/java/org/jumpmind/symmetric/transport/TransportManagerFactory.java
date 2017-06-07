@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.transport;
 
+import java.lang.reflect.Constructor;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -33,9 +34,11 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
+import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.exception.SecurityException;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
@@ -101,7 +104,7 @@ public class TransportManagerFactory {
             boolean allowSelfSignedCerts = symmetricEngine.getParameterService().is(
                     ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, false);
             initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts);
-            return new HttpTransportManager(symmetricEngine);
+            return createHttpTransportManager(symmetricEngine);
         } else if (Constants.PROTOCOL_FILE.equalsIgnoreCase(transport)) {
             return new FileTransportManager(symmetricEngine);
         } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
@@ -109,6 +112,31 @@ public class TransportManagerFactory {
         } else {
             throw new IllegalStateException("An invalid transport type of " + transport
                     + " was specified.");
+        }
+    }
+    
+    protected HttpTransportManager createHttpTransportManager(ISymmetricEngine symmetricEngine) {
+        String impl = symmetricEngine.getParameterService().getString("http.transport.manager.impl");
+        if (StringUtils.isEmpty(impl)) {
+            return new HttpTransportManager(symmetricEngine);     
+        } else {
+            String className = impl.trim();                
+            try {
+                Class<?> clazz = ClassUtils.getClass(className);
+                HttpTransportManager httpTransportManager = null;
+                for (Constructor c : clazz.getConstructors()) {
+                    if (c.getParameterTypes().length == 1 
+                            && c.getParameterTypes()[0].isAssignableFrom(ISymmetricEngine.class)) {
+                        httpTransportManager = (HttpTransportManager) c.newInstance(symmetricEngine);
+                    }
+                }
+                if (httpTransportManager == null) {                        
+                    httpTransportManager = (HttpTransportManager) clazz.newInstance();
+                }
+                return httpTransportManager;
+            } catch (Exception ex) {
+                throw new SymmetricException("Failed to create custom HttpTransportManager impl '" + impl + "'", ex);
+            }
         }
     }
 

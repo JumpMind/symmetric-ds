@@ -35,8 +35,8 @@ public class BatchUriHandler extends AbstractCompressionUriHandler {
     private IDataExtractorService dataExtractorService;
 
     public BatchUriHandler(IParameterService parameterService,
-            IDataExtractorService dataExtractorService) {
-        super("/batch/*", parameterService);
+            IDataExtractorService dataExtractorService, IInterceptor[] interceptors) {
+        super("/batch/*", parameterService, interceptors);
         this.dataExtractorService = dataExtractorService;
     }
 

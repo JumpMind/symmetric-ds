@@ -332,5 +332,9 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
         return suspendIgnoreChannelsList;
     }
+    
+    public HttpURLConnection getConnection() {
+        return connection;
+    }
 
 }

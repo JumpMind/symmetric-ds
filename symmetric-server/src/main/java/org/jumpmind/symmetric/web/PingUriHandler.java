@@ -34,8 +34,8 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class PingUriHandler extends AbstractUriHandler {
 
-    public PingUriHandler(IParameterService parameterService) {
-        super("/ping/*", parameterService);
+    public PingUriHandler(IParameterService parameterService, IInterceptor[] interceptors) {
+        super("/ping/*", parameterService, interceptors);
     }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException,
