@@ -47,6 +47,7 @@ import org.apache.log4j.MDC;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
@@ -1282,7 +1283,7 @@ public class RestService {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final String getParameter(@PathVariable("name") String name) {
-        return getSymmetricEngine().getParameterService().getString(name.replace('_', '.'));
+        return getParameterImpl(getSymmetricEngine(), name);
     }
 
     @ApiOperation(value = "Read paramater value for the specified engine")
@@ -1290,7 +1291,15 @@ public class RestService {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final String getParameter(@PathVariable("engine") String engineName, @PathVariable("name") String name) {
-        return getSymmetricEngine(engineName).getParameterService().getString(name.replace('_', '.'));
+        return getParameterImpl(getSymmetricEngine(engineName), name);
+    }
+    
+    private String getParameterImpl(ISymmetricEngine service, String name){
+    	String parameterName = name.replace('_', '.');
+    	if(parameterName.equals(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD)){
+    		return "";
+    	}
+    	return service.getParameterService().getString(parameterName);
     }
 
     @ExceptionHandler(Exception.class)
