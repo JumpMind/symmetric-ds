@@ -48,7 +48,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 
-    static final String SQL_SELECT_TRIGGERS = "from ALL_TRIGGERS where owner in (SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual) and trigger_name like upper(?) and table_name like upper(?)";
+    static final String SQL_SELECT_TRIGGERS = "from ALL_TRIGGERS where owner = sys_context('USERENV', 'CURRENT_SCHEMA') and trigger_name = upper(?) and table_name = upper(?) and table_owner = upper(?)";
 
     static final String SQL_SELECT_TRANSACTIONS = "select min(start_time) from gv$transaction where status = 'ACTIVE'";
 
@@ -81,7 +81,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
         return platform.getSqlTemplate().queryForInt("select count(*) " + SQL_SELECT_TRIGGERS,
-                new Object[] { triggerName, tableName }) > 0;                
+                new Object[] { triggerName, tableName, schema }) > 0;                
     }    
     
     @Override
@@ -105,7 +105,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                             platform.getSqlTemplate().queryForMap(
                                     "select * " + SQL_SELECT_TRIGGERS,
                                     new Object[] { history.getTriggerNameForDmlType(dml),
-                                            history.getSourceTableName() }));
+                                            history.getSourceTableName(), history.getSourceSchemaName() }));
                 } catch (SqlException e) {
                 }
             }
