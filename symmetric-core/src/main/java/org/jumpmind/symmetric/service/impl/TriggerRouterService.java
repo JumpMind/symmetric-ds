@@ -316,11 +316,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return retMap;
     }
 
-    protected boolean isTriggerNameInUse(List<TriggerHistory> activeTriggerHistories, String triggerId, String triggerName) {
+    protected boolean isTriggerNameInUse(List<TriggerHistory> activeTriggerHistories, Trigger trigger, String triggerName,
+            TriggerHistory oldhist) {
         synchronized (activeTriggerHistories) {
             for (TriggerHistory triggerHistory : activeTriggerHistories) {
-                if (!triggerHistory.getTriggerId().equals(triggerId) && (
-                        (triggerHistory.getNameForDeleteTrigger() != null && triggerHistory.getNameForDeleteTrigger().equals(triggerName)) ||
+                if ((!triggerHistory.getTriggerId().equals(trigger.getTriggerId()) ||
+                        ((trigger.isSourceCatalogNameWildCarded() || trigger.isSourceSchemaNameWildCarded()) && (oldhist == null || triggerHistory.getTriggerHistoryId() != oldhist.getTriggerHistoryId()))) &&
+                        ((triggerHistory.getNameForDeleteTrigger() != null && triggerHistory.getNameForDeleteTrigger().equals(triggerName)) ||
                         (triggerHistory.getNameForInsertTrigger() != null && triggerHistory.getNameForInsertTrigger().equals(triggerName)) || 
                         (triggerHistory.getNameForUpdateTrigger() != null && triggerHistory.getNameForUpdateTrigger().equals(triggerName)))) {
                     return true;
@@ -1736,17 +1738,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         if (trigger.isSyncOnInsert()) {
             newTriggerHist.setNameForInsertTrigger(getTriggerName(DataEventType.INSERT,
-                    maxTriggerNameLength, trigger, table, activeTriggerHistories).toUpperCase());
+                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
         }
 
         if (trigger.isSyncOnUpdate()) {
             newTriggerHist.setNameForUpdateTrigger(getTriggerName(DataEventType.UPDATE,
-                    maxTriggerNameLength, trigger, table, activeTriggerHistories).toUpperCase());
+                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
         }
 
         if (trigger.isSyncOnDelete()) {
             newTriggerHist.setNameForDeleteTrigger(getTriggerName(DataEventType.DELETE,
-                    maxTriggerNameLength, trigger, table, activeTriggerHistories).toUpperCase());
+                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
         }
 
         String oldTriggerName = null;
@@ -1830,7 +1832,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger,
-            Table table, List<TriggerHistory> activeTriggerHistories) {
+            Table table, List<TriggerHistory> activeTriggerHistories, TriggerHistory oldhist) {
 
         String triggerName = null;
         switch (dml) {
@@ -1886,7 +1888,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
 
         int duplicateCount = 0;
-        while (isTriggerNameInUse(activeTriggerHistories, trigger.getTriggerId(), triggerName)) {
+        while (isTriggerNameInUse(activeTriggerHistories, trigger, triggerName, oldhist)) {
             duplicateCount++;
             String duplicateSuffix = Integer.toString(duplicateCount);
             if (triggerName.length() + duplicateSuffix.length() > maxTriggerNameLength) {

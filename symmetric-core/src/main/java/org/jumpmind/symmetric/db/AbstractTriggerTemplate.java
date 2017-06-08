@@ -266,6 +266,15 @@ abstract public class AbstractTriggerTemplate {
         return prefix;
     }
 
+    protected String getSourceTableSchema(Table table) {
+        String prefix = (isNotBlank(table.getSchema()) ? table.getSchema() : "");
+        if (isBlank(prefix)) {
+            prefix = (isNotBlank(symmetricDialect.getPlatform().getDefaultSchema()) ? 
+                    symmetricDialect.getPlatform().getDefaultSchema() : "");
+        }
+        return prefix;
+    }
+
     protected String getSourceTablePrefix(TriggerHistory triggerHistory) {
         String prefix = (isNotBlank(triggerHistory.getSourceSchemaName()) ? SymmetricUtils.quote(
                 symmetricDialect, triggerHistory.getSourceSchemaName()) + symmetricDialect.getPlatform().getDatabaseInfo().getSchemaSeparator() : "");
@@ -279,6 +288,15 @@ abstract public class AbstractTriggerTemplate {
             prefix = (isNotBlank(symmetricDialect.getPlatform().getDefaultCatalog()) ? SymmetricUtils
                     .quote(symmetricDialect, symmetricDialect.getPlatform().getDefaultCatalog())
                     + "." : "") + prefix;
+        }
+        return prefix;
+    }
+
+    protected String getSourceTableSchema(TriggerHistory triggerHistory) {
+        String prefix = (isNotBlank(triggerHistory.getSourceSchemaName()) ? triggerHistory.getSourceSchemaName() : "");
+        if (isBlank(prefix)) {
+            prefix = (isNotBlank(symmetricDialect.getPlatform().getDefaultSchema()) ?
+                    symmetricDialect.getPlatform().getDefaultSchema() : "");
         }
         return prefix;
     }
@@ -432,8 +450,8 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("txIdExpression",
                 symmetricDialect.preProcessTriggerSqlClause(triggerExpression), ddl);
 
-        ddl = FormatUtils.replace("channelExpression", symmetricDialect.preProcessTriggerSqlClause(getChannelExpression(trigger)),
-                ddl);
+        ddl = FormatUtils.replace("channelExpression", symmetricDialect.preProcessTriggerSqlClause(
+                getChannelExpression(trigger, history, originalTable)), ddl);
         
         ddl = FormatUtils.replace("externalSelect", (trigger.getExternalSelect() == null ? "null"
                 : "(" + symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect())
@@ -583,10 +601,13 @@ abstract public class AbstractTriggerTemplate {
         }
     }
     
-    protected String getChannelExpression(Trigger trigger) {
+    protected String getChannelExpression(Trigger trigger, TriggerHistory history, Table originalTable) {
         if (trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC)) {
             if (StringUtils.isNotBlank(trigger.getChannelExpression())) {
-                return trigger.getChannelExpression();
+                String expr = trigger.getChannelExpression();
+                expr = FormatUtils.replace("schemaName", history == null ? getSourceTableSchema(originalTable)
+                        : getSourceTableSchema(history), expr);
+                return expr;
             } else {
                 throw new IllegalStateException("When the channel is set to '" + Constants.CHANNEL_DYNAMIC + "', a channel expression must be provided.");
             }

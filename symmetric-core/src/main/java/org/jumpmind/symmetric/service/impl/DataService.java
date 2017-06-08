@@ -942,7 +942,7 @@ public class DataService extends AbstractService implements IDataService {
         String catalogSeparator = dbInfo.getCatalogSeparator();
         String schemaSeparator = dbInfo.getSchemaSeparator();
                                           
-        String sql = String.format("select count(*) from %s where %s", table
+        String sql = String.format("select count(*) from %s t where %s", table
                 .getQualifiedTableName(quote, catalogSeparator, schemaSeparator), selectSql);
         sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
         sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);

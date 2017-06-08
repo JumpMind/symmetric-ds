@@ -725,12 +725,21 @@ public class Trigger implements Serializable {
 
     public boolean matches(Table table, String defaultCatalog, String defaultSchema,
             boolean ignoreCase) {
-        boolean schemaAndCatalogMatch = (StringUtils.equals(sourceCatalogName, table.getCatalog()) || (StringUtils
-                .isBlank(sourceCatalogName) && StringUtils.equals(defaultCatalog,
-                table.getCatalog())))
-                && (StringUtils.equals(sourceSchemaName, table.getSchema()) || (StringUtils
-                        .isBlank(sourceSchemaName) && StringUtils.equals(defaultSchema,
-                        table.getSchema())));
+        boolean catalogMatch = false;
+        if (isSourceCatalogNameWildCarded()) {
+            catalogMatch = matches(sourceCatalogName, table.getCatalog(), ignoreCase);
+        } else {
+            catalogMatch = (StringUtils.equals(sourceCatalogName, table.getCatalog()) ||
+                    (StringUtils.isBlank(sourceCatalogName) && StringUtils.equals(defaultCatalog, table.getCatalog())));            
+        }
+
+        boolean schemaMatch = false;
+        if (isSourceSchemaNameWildCarded()) {
+            schemaMatch = matches(sourceSchemaName, table.getSchema(), ignoreCase);
+        } else {
+            schemaMatch = (StringUtils.equals(sourceSchemaName, table.getSchema()) ||
+                    (StringUtils.isBlank(sourceSchemaName) && StringUtils.equals(defaultSchema, table.getSchema())));            
+        }
 
         boolean tableMatches = ignoreCase ? table.getName().equalsIgnoreCase(sourceTableName)
                 : table.getName().equals(sourceTableName);
@@ -738,7 +747,7 @@ public class Trigger implements Serializable {
         if (!tableMatches && isSourceTableNameWildCarded()) {
             tableMatches = matches(sourceTableName, table.getName(), ignoreCase);
         }
-        return schemaAndCatalogMatch && tableMatches;
+        return catalogMatch && schemaMatch && tableMatches;
     }
 
     public boolean matches(Trigger trigger) {
