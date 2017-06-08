@@ -241,7 +241,7 @@ public class DataService extends AbstractService implements IDataService {
                         request.getLastUpdateTime(), request.getSourceNodeId(),
                         request.getTargetNodeId(), request.getTriggerId(),
                         request.getRouterId(), request.isCreateTable() ? 1 : 0, 
-                        request.isDeleteFirst() ? 1 : 0 });
+                        request.isDeleteFirst() ? 1 : 0, request.getChannelId() });
     }
 
     public TableReloadRequest getTableReloadRequest(final TableReloadRequestKey key) {
@@ -405,6 +405,17 @@ public class DataService extends AbstractService implements IDataService {
 
                         if (isFullLoad) {
                             triggerHistories = triggerRouterService.getActiveTriggerHistories();
+                            String channelId = reloadRequests.get(0).getChannelId();
+                            if (channelId != null) {
+                                List<TriggerHistory> channelTriggerHistories = new ArrayList<TriggerHistory>();
+
+                                for (TriggerHistory history : triggerHistories) {
+                                    if (channelId.equals(engine.getTriggerRouterService().getTriggerById(history.getTriggerId()).getChannelId())) {
+                                        channelTriggerHistories.add(history);
+                                    }
+                                }
+                                triggerHistories = channelTriggerHistories;
+                            }
                         }
                         else {
                             for (TableReloadRequest reloadRequest : reloadRequests) {
@@ -412,6 +423,7 @@ public class DataService extends AbstractService implements IDataService {
                                         .getActiveTriggerHistories(new Trigger(reloadRequest.getTriggerId(), null)));
                             }
                         }
+                       
                         processInfo.setDataCount(triggerHistories.size());
                         
                         Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
