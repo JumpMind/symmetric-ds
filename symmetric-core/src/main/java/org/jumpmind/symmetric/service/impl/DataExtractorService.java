@@ -1723,7 +1723,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if (initialLoadSelect == null && triggerRouter.getTrigger().isStreamRow()) {
                                 if (sourceTable == null) {
                                     sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
-                                            .getRouter().getRouterId(), triggerHistory, false, true);
+                                            .getRouter().getRouterId(), triggerHistory, false, false);
                                 }
                                 Column[] columns = sourceTable.getPrimaryKeyColumns();
                                 DmlStatement dmlStmt = platform.createDmlStatement(DmlType.WHERE, sourceTable, null);
