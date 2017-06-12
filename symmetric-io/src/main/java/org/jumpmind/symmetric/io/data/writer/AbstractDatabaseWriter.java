@@ -29,6 +29,7 @@ import java.util.Set;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.exception.ParseException;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -147,9 +148,27 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
             if (targetTable != null || !data.requiresTable()
                     || (targetTable == null && data.getDataEventType() == DataEventType.SQL)) {
                 try {
+                    
                     statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
                     statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                     if (filterBefore(data)) {
+                        
+                        switch (data.getDataEventType()) {
+                            case UPDATE:
+                            case INSERT:
+                                if (targetTable.getColumnCount() != data.getParsedData(CsvData.ROW_DATA).length) {
+                                    throw new ParseException(String.format("The (%s) table's column count (%d) does not match the data's column count (%d)", targetTable.getName(), targetTable.getColumnCount(), data.getParsedData(CsvData.ROW_DATA).length));
+                                }
+                                break;
+                            case DELETE:
+                                if (targetTable.getPrimaryKeyColumnCount() != data.getParsedData(CsvData.PK_DATA).length) {
+                                    throw new ParseException(String.format("The (%s) table's pk column count (%d) does not match the data's pk column count (%d)", targetTable.getName(), targetTable.getPrimaryKeyColumnCount(), data.getParsedData(CsvData.PK_DATA).length));
+                                }                                
+                                break;
+                            default:
+                                break;
+                        }
+
                         LoadStatus loadStatus = LoadStatus.SUCCESS;
                         switch (data.getDataEventType()) {
                             case UPDATE:
