@@ -405,16 +405,18 @@ public class DataService extends AbstractService implements IDataService {
 
                         if (isFullLoad) {
                             triggerHistories = triggerRouterService.getActiveTriggerHistories();
-                            String channelId = reloadRequests.get(0).getChannelId();
-                            if (channelId != null) {
-                                List<TriggerHistory> channelTriggerHistories = new ArrayList<TriggerHistory>();
-
-                                for (TriggerHistory history : triggerHistories) {
-                                    if (channelId.equals(engine.getTriggerRouterService().getTriggerById(history.getTriggerId()).getChannelId())) {
-                                        channelTriggerHistories.add(history);
+                            if (reloadRequests != null && reloadRequests.size() == 1) {
+                                String channelId = reloadRequests.get(0).getChannelId();
+                                if (channelId != null) {
+                                    List<TriggerHistory> channelTriggerHistories = new ArrayList<TriggerHistory>();
+    
+                                    for (TriggerHistory history : triggerHistories) {
+                                        if (channelId.equals(engine.getTriggerRouterService().getTriggerById(history.getTriggerId()).getChannelId())) {
+                                            channelTriggerHistories.add(history);
+                                        }
                                     }
+                                    triggerHistories = channelTriggerHistories;
                                 }
-                                triggerHistories = channelTriggerHistories;
                             }
                         }
                         else {
