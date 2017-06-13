@@ -156,13 +156,13 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                         switch (data.getDataEventType()) {
                             case UPDATE:
                             case INSERT:
-                                if (targetTable.getColumnCount() != data.getParsedData(CsvData.ROW_DATA).length) {
-                                    throw new ParseException(String.format("The (%s) table's column count (%d) does not match the data's column count (%d)", targetTable.getName(), targetTable.getColumnCount(), data.getParsedData(CsvData.ROW_DATA).length));
+                                if (sourceTable.getColumnCount() != data.getParsedData(CsvData.ROW_DATA).length) {
+                                    throw new ParseException(String.format("The (%s) table's column count (%d) does not match the data's column count (%d)", sourceTable.getName(), sourceTable.getColumnCount(), data.getParsedData(CsvData.ROW_DATA).length));
                                 }
                                 break;
                             case DELETE:
-                                if (targetTable.getPrimaryKeyColumnCount() != data.getParsedData(CsvData.PK_DATA).length) {
-                                    throw new ParseException(String.format("The (%s) table's pk column count (%d) does not match the data's pk column count (%d)", targetTable.getName(), targetTable.getPrimaryKeyColumnCount(), data.getParsedData(CsvData.PK_DATA).length));
+                                if (sourceTable.getPrimaryKeyColumnCount() != data.getParsedData(CsvData.PK_DATA).length) {
+                                    throw new ParseException(String.format("The (%s) table's pk column count (%d) does not match the data's pk column count (%d)", sourceTable.getName(), sourceTable.getPrimaryKeyColumnCount(), data.getParsedData(CsvData.PK_DATA).length));
                                 }                                
                                 break;
                             default:
