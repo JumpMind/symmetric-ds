@@ -95,6 +95,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     
     final String CTX_KEY_FLUSHED_TRIGGER_ROUTERS = "FlushedTriggerRouters."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+    
+    final String CTX_KEY_FLUSH_NODE_GROUP_LINK_NEEDED = "FlushNodeGroupLink."
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     public final static String KEY = "symconfig";
 
@@ -238,6 +241,10 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 
                 if (tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)) {
                     routingContext.put(CTX_KEY_FLUSH_NOTIFICATIONS_NEEDED, Boolean.TRUE);
+                }
+                
+                if (tableMatches(dataMetaData, TableConstants.SYM_NODE_GROUP_LINK)) {
+                    routingContext.put(CTX_KEY_FLUSH_NODE_GROUP_LINK_NEEDED, Boolean.TRUE);
                 }
             }
         }
@@ -632,6 +639,12 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             if (routingContext.get(CTX_KEY_FLUSH_NODE_SECURITYS_NEEDED) != null) {
                 log.info("About to refresh the cache of node security because new configuration came through the data router");
                 engine.getNodeService().flushNodeAuthorizedCache();
+            }
+            
+            if (routingContext.get(CTX_KEY_FLUSH_NODE_GROUP_LINK_NEEDED) != null) {
+                log.info("About to refresh the cache of node group link because new configuration came through the data router");
+                engine.getConfigurationService().clearCache();
+                engine.getNodeService().flushNodeGroupCache();
             }
 
         }
