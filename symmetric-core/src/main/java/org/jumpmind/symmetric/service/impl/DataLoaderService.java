@@ -964,7 +964,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                     return table;
                                 }                                
                             };
-                            
                             DataProcessor processor = new DataProcessor(reader, null, listener, "data load from stage") {
                                 @Override
                                 protected IDataWriter chooseDataWriter(Batch batch) {
@@ -1043,6 +1042,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public boolean beforeBatchStarted(DataContext context) {
             this.currentBatch = null;
             Batch batch = context.getBatch();
+            context.remove("currentBatch");
+            
             if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED)
                     || (batch.getChannelId() != null && batch.getChannelId().equals(
                             Constants.CHANNEL_CONFIG))) {
@@ -1059,6 +1060,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 this.batchesProcessed.add(incomingBatch);
                 if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
                     this.currentBatch = incomingBatch;
+                    context.put("currentBatch", this.currentBatch);
+                    
                     return true;
                 }
             }
