@@ -193,6 +193,7 @@
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp of when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp of when a user last updated this entry." />
+        <column name="description" type="LONGVARCHAR" description="Optional notes and comments for file_trigger" />
     </table>
 
     <table name="file_trigger_router" description="Maps a file trigger to a router.">
@@ -205,6 +206,7 @@
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <column name="description" type="LONGVARCHAR" description="Optional notes and comments for file_trigger_router" />
         <foreign-key foreignTable="file_trigger" name="fk_ftr_2_ftrg">
             <reference local="trigger_id" foreign="trigger_id" />
         </foreign-key>
@@ -729,6 +731,7 @@
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <column name="description" type="LONGVARCHAR" description="Optional notes and comments for router" />
         <foreign-key foreignTable="node_group_link" name="fk_rt_2_grp_lnk">
             <reference local="source_node_group_id" foreign="source_node_group_id" />
             <reference local="target_node_group_id" foreign="target_node_group_id" />
@@ -785,6 +788,7 @@
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
+        <column name="description" type="LONGVARCHAR" description="Optional notes and comments for transform_table" />
         <foreign-key foreignTable="node_group_link" name="fk_tt_2_grp_lnk">
             <reference local="source_node_group_id" foreign="source_node_group_id" />
             <reference local="target_node_group_id" foreign="target_node_group_id" />
@@ -803,6 +807,7 @@
         <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />
+        <column name="description" type="LONGVARCHAR" description="Optional notes and comments for transform_column" />
     </table>
 
     <table name="trigger" description="Configures database triggers that capture changes in the database. Configuration of which triggers are generated for which tables is stored here.  Triggers are created in a node's database if the source_node_group_id of a router is mapped to a row in this table.">
@@ -842,6 +847,7 @@
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <column name="description" type="LONGVARCHAR" description="Optional notes and comments for trigger" />
         <foreign-key foreignTable="channel" name="fk_trg_2_chnl">
             <reference local="channel_id" foreign="channel_id" />
         </foreign-key>
@@ -885,6 +891,7 @@
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
+        <column name="description" type="LONGVARCHAR" description="Optional notes and comments for trigger_router" />
         <foreign-key foreignTable="trigger" name="fk_tr_2_trg">
             <reference local="trigger_id" foreign="trigger_id" />
         </foreign-key>
