@@ -576,7 +576,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 // node table, but not in node security.
                 // lets go ahead and try to insert into node security.
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
-                        nodeId, password, nodeService.findNode(nodeId).getNodeId() });                
+                        nodeId, password, nodeService.findIdentityNodeId() });                
                 log.info("Registration was opened for {}", nodeId);
             } else if (updateCount == 0) {
                 log.warn("Registration was already enabled for {}.  No need to reenable it", nodeId);

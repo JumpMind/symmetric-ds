@@ -105,6 +105,8 @@ final public class Constants {
     public static final String CHANNEL_FILESYNC_RELOAD = "filesync_reload";
     
     public static final String CHANNEL_DYNAMIC = "dynamic";
+    
+    public static final String CHANNEL_MONITOR = "monitor";
 
     public static final String PUSH_JOB_TIMER = "job.push";
 
