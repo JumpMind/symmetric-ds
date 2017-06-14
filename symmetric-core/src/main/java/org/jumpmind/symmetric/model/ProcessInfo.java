@@ -100,6 +100,8 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     private Map<Status, ProcessInfo> statusHistory;
     
     private Date endTime;
+    
+    private long totalDataCount = 0;
 
     public ProcessInfo() {
         this(new ProcessInfoKey("", "", null));
@@ -167,6 +169,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     public void incrementCurrentDataCount() {
         this.currentDataCount++;
+        this.totalDataCount++;
     }
 
     public void incrementBatchCount() {
@@ -350,6 +353,14 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         } else {
             return null;
         }
+    }
+
+    public long getTotalDataCount() {
+        return totalDataCount;
+    }
+
+    public void setTotalDataCount(long totalDataCount) {
+        this.totalDataCount = totalDataCount;
     }
 
     static public class ThreadData {
