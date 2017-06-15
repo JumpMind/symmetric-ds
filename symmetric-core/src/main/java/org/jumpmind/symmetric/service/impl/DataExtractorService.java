@@ -1738,10 +1738,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             
                             String initialLoadSelect = data.getRowData();
                             if (initialLoadSelect == null && triggerRouter.getTrigger().isStreamRow()) {
-                                if (sourceTable == null) {
+                                //if (sourceTable == null) {
                                     sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
                                             .getRouter().getRouterId(), triggerHistory, false, true);
-                                }
+                               // }
                                 Column[] columns = sourceTable.getPrimaryKeyColumns();
                                 DmlStatement dmlStmt = platform.createDmlStatement(DmlType.WHERE, sourceTable, null);
                                 String[] pkData = data.getParsedData(CsvData.PK_DATA);
@@ -1751,6 +1751,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     row.put(columns[i].getName(), pkData[i]);
                                 }
                                 initialLoadSelect = dmlStmt.buildDynamicSql(batch.getBinaryEncoding(), row, false, true, columns);
+                                if (initialLoadSelect.endsWith(platform.getDatabaseInfo().getSqlCommandDelimiter())) {
+                                    initialLoadSelect = initialLoadSelect.substring(0, 
+                                            initialLoadSelect.length() - platform.getDatabaseInfo().getSqlCommandDelimiter().length());
+                                }
                             }
                             
                             SelectFromTableEvent event = new SelectFromTableEvent(targetNode,

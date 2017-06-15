@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.db.oracle;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 import java.text.ParseException;
 import java.util.Date;
 
@@ -80,6 +82,9 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
+        if (isBlank(schema)) {
+            schema = platform.getDefaultSchema();
+        }
         return platform.getSqlTemplate().queryForInt("select count(*) " + SQL_SELECT_TRIGGERS,
                 new Object[] { triggerName, tableName, schema }) > 0;                
     }    
