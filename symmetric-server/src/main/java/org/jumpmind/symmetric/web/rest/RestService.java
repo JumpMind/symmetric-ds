@@ -988,7 +988,7 @@ public class RestService {
                 }
                 results.setBatches(batches);
                 results.setNbrBatches(batches.size());
-                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.OK);
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.OK);
 
                 if (engine.getParameterService().is(ParameterConstants.REST_HEARTBEAT_ON_PULL)
                         && hostName != null) {
@@ -1000,8 +1000,8 @@ public class RestService {
                 }
                 return results;
             } finally {
-                if (processInfo.getStatus() != org.jumpmind.symmetric.model.ProcessInfo.Status.OK) {
-                    processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.ERROR);
+                if (processInfo.getStatus() != org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.OK) {
+                    processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.ERROR);
                 }
             }
         } else {

@@ -154,6 +154,8 @@ public class AbstractBatch implements Serializable {
     private long failedDataId;
 
     private transient Map<String, Integer> tableCounts = new LinkedHashMap<String, Integer>();
+    
+    private transient long processedRowCount;
 
     public void resetStats() {
         // save off old stats in case there
@@ -655,5 +657,13 @@ public class AbstractBatch implements Serializable {
 
     public void setFailedDataId(long failedDataId) {
         this.failedDataId = failedDataId;
+    }
+
+    public long getProcessedRowCount() {
+        return processedRowCount;
+    }
+
+    public void setProcessedRowCount(long processedRowCount) {
+        this.processedRowCount = processedRowCount;
     }
 }

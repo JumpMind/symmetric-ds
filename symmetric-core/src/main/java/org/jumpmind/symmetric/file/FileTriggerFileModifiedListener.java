@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +67,7 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
         this.isSyncOnCtlFile = fileTriggerRouter.getFileTrigger().isSyncOnCtlFile();
         this.useCrc = useCrc;
         this.engine = engine;
-        this.processInfo.setStatus(ProcessInfo.Status.PROCESSING);
+        this.processInfo.setStatus(ProcessInfo.ProcessStatus.PROCESSING);
     }
     
     public void onStart(final FileAlterationObserver observer) {
@@ -108,7 +108,7 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
         int modifiedDirFileCount = 0;
         int modifiedDirChangeCount = 0;
         
-        processInfo.setStatus(Status.QUERYING);
+        processInfo.setStatus(ProcessStatus.QUERYING);
         for (String relativeDir : modifiedDirs.keySet()) {
             DirectorySnapshot lastSnapshot = fileModifiedCallback.getLastDirectorySnapshot(relativeDir);
             DirectorySnapshot currentSnapshot = modifiedDirs.get(relativeDir);

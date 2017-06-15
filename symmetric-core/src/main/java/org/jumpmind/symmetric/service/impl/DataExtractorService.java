@@ -589,7 +589,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     channelsProcessed.add(currentBatch.getChannelId());
                     
                     currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
-                    processInfo.setStatus(ProcessInfo.Status.EXTRACTING);
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.EXTRACTING);
                     final OutgoingBatch extractBatch = currentBatch;
                     Callable<FutureOutgoingBatch> callable = new Callable<FutureOutgoingBatch>() {
                         public FutureOutgoingBatch call() throws Exception {
@@ -632,7 +632,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             }
 
                             if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT) {
-                                processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+                                processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
                                 processInfo.setCurrentLoadId(currentBatch.getLoadId());
                                 boolean isRetry = extractBatch.isRetry() && extractBatch.getOutgoingBatch().getStatus() != OutgoingBatch.Status.IG;
                                 
@@ -646,7 +646,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if (currentBatch.getStatus() != Status.OK) {
                                 currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
                                 changeBatchStatus(Status.LD, currentBatch, mode);
-                                processInfo.setStatus(ProcessInfo.Status.LOADING);
+                                processInfo.setStatus(ProcessInfo.ProcessStatus.LOADING);
                                 processInfo.setCurrentTableName(currentBatch.getSummary());
                             }
                         } catch (ExecutionException e) {
@@ -701,7 +701,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 log.error("Failed to extract batch {}", currentBatch, e);
                             }
                         }
-                        processInfo.setStatus(ProcessInfo.Status.ERROR);                        
+                        processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);                        
                     }
                 } else {
                     log.error("Could not log the outgoing batch status because the batch was null",
@@ -1580,19 +1580,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 } finally {
                     close(transaction);
                 }
-                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.OK);
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.OK);
 
             } catch (CancellationException ex) {
                 log.info("Cancelled extract request {}. Starting at batch {}.  Ending at batch {}",
                         new Object[] { request.getRequestId(), request.getStartBatchId(),
                         request.getEndBatchId() });
-                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.OK);
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.OK);
             } catch (RuntimeException ex) {
                 log.debug(
                         "Failed to extract batches for request {}. Starting at batch {}.  Ending at batch {}",
                         new Object[] { request.getRequestId(), request.getStartBatchId(),
                                 request.getEndBatchId() });
-                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.ERROR);
+                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.ERROR);
                 throw ex;
             }
         }

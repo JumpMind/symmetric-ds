@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -131,13 +131,13 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                         		map.getThreadChannel(), outgoingTransport);
                         logDataReceivedFromPush(targetNode, batchList);
                         
-                        if (processInfo.getStatus() != Status.ERROR) {
+                        if (processInfo.getStatus() != ProcessStatus.ERROR) {
                             addPendingBatchCounts(targetNode.getNodeId(), res);
-                            processInfo.setStatus(Status.OK);
+                            processInfo.setStatus(ProcessStatus.OK);
                         }
                     } finally {
-                        if (processInfo.getStatus() != Status.OK) {
-                            processInfo.setStatus(Status.ERROR);
+                        if (processInfo.getStatus() != ProcessStatus.OK) {
+                            processInfo.setStatus(ProcessStatus.ERROR);
                         }
                     }
                     outgoingTransport.close();

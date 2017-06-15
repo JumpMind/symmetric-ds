@@ -41,7 +41,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -80,9 +80,9 @@ public class InternalTransportManager extends AbstractTransportManager implement
                                 .getNodeId(), ProcessType.FILE_SYNC_PULL_HANDLER));
                 try {
                     engine.getFileSyncService().sendFiles(processInfo, local, transport);
-                    processInfo.setStatus(Status.OK);
+                    processInfo.setStatus(ProcessStatus.OK);
                 } catch (RuntimeException ex) {
-                    processInfo.setStatus(Status.ERROR);
+                    processInfo.setStatus(ProcessStatus.ERROR);
                     throw ex;
                 }
                 transport.close();
@@ -109,9 +109,9 @@ public class InternalTransportManager extends AbstractTransportManager implement
                                 .getNodeId(), ProcessType.PULL_HANDLER));
                 try {
                     engine.getDataExtractorService().extract(processInfo, local, transport);
-                    processInfo.setStatus(Status.OK);
+                    processInfo.setStatus(ProcessStatus.OK);
                 } catch (RuntimeException ex) {
-                    processInfo.setStatus(Status.ERROR);
+                    processInfo.setStatus(ProcessStatus.ERROR);
                     throw ex;
                 }
                 transport.close();

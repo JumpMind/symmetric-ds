@@ -40,7 +40,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.service.IContextService;
@@ -117,7 +117,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         if (isFullGapAnalysis()) {
             ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
                     nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
-            processInfo.setStatus(Status.QUERYING);
+            processInfo.setStatus(ProcessStatus.QUERYING);
             log.info("Full gap analysis is running");
             long ts = System.currentTimeMillis();
             gaps = dataService.findDataGaps();
@@ -125,7 +125,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 fixOverlappingGaps(gaps, processInfo);
             }
             queryDataIdMap();
-            processInfo.setStatus(Status.OK);
+            processInfo.setStatus(ProcessStatus.OK);
             log.info("Querying data in gaps from database took {} ms", System.currentTimeMillis() - ts);
             afterRouting();
             reset();
@@ -133,12 +133,12 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         } else if (gaps == null || parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
             ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
                     nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
-            processInfo.setStatus(Status.QUERYING);
+            processInfo.setStatus(ProcessStatus.QUERYING);
             gaps = dataService.findDataGaps();
             if (detectInvalidGaps) {
                 fixOverlappingGaps(gaps, processInfo);
             }
-            processInfo.setStatus(Status.OK);
+            processInfo.setStatus(ProcessStatus.OK);
         }
     }
 
@@ -169,7 +169,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     public void afterRouting() {
         ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
                 nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
-        processInfo.setStatus(Status.PROCESSING);
+        processInfo.setStatus(ProcessStatus.PROCESSING);
 
         long printStats = System.currentTimeMillis();
         long gapTimoutInMs = parameterService.getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
@@ -295,9 +295,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             if (updateTimeInMs > 10000) {
                 log.info("Detecting gaps took {} ms", updateTimeInMs);
             }
-            processInfo.setStatus(Status.OK);
+            processInfo.setStatus(ProcessStatus.OK);
         } catch (RuntimeException ex) {
-            processInfo.setStatus(Status.ERROR);
+            processInfo.setStatus(ProcessStatus.ERROR);
             throw ex;
         }
     }
@@ -509,7 +509,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 }
             }
         } catch (RuntimeException ex) {
-            processInfo.setStatus(Status.ERROR);
+            processInfo.setStatus(ProcessStatus.ERROR);
             throw ex;
         }
     }

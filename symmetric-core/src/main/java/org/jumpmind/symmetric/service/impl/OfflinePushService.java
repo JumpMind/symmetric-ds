@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
@@ -140,15 +140,15 @@ public class OfflinePushService extends AbstractService implements IOfflinePushS
                 status.updateOutgoingStatus(extractedBatches, batchAcks);
             }
             
-            if (processInfo.getStatus() != Status.ERROR) {
-                processInfo.setStatus(Status.OK);
+            if (processInfo.getStatus() != ProcessStatus.ERROR) {
+                processInfo.setStatus(ProcessStatus.OK);
             }
         } catch (Exception ex) {
-            processInfo.setStatus(Status.ERROR);
+            processInfo.setStatus(ProcessStatus.ERROR);
             log.error("Failed to write offline file", ex);
         } finally {
             transport.close();
-            transport.complete(processInfo.getStatus() == Status.OK);
+            transport.complete(processInfo.getStatus() == ProcessStatus.OK);
         }
     }
 
