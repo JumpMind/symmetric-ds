@@ -39,13 +39,13 @@ import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
+import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IgnoreBatchException;
-import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 import org.junit.Assert;
 
@@ -125,11 +125,56 @@ abstract public class AbstractWriterTest {
 
     protected long writeData(IDataWriter writer, TableCsvData... datas) {
         this.lastDataWriterUsed = writer;
-        DataContext context = new DataContext();
-        writer.open(context);
+        
         try {
             for (TableCsvData tableCsvData : datas) {
                 Batch batch = new Batch(BatchType.LOAD, getNextBatchId(), "default", BinaryEncoding.BASE64, "00000", "00001", false);
+                
+                DataContext context = new DataContext(batch);
+                writer.open(context);
+                try {
+                    writer.start(batch);
+                    if (writer.start(tableCsvData.table)) {
+                        for (CsvData d : tableCsvData.data) {
+                            writer.write(d);
+                        }
+                        writer.end(tableCsvData.table);
+                    }
+                    writer.end(batch, false);
+                } catch (IgnoreBatchException ex) {
+                    writer.end(batch, false);
+                } catch (Exception ex) {
+                    writer.end(batch, true);
+                    if (!isErrorExpected()) {
+                        if (ex instanceof RuntimeException) {
+                            throw (RuntimeException) ex;
+                        } else {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+
+                }
+
+            }
+        } finally {
+            writer.close();
+        }
+
+        long statementCount = 0;
+        Collection<Statistics> stats = writer.getStatistics().values();
+        for (Statistics statistics : stats) {
+            statementCount += statistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
+        }
+        return statementCount;
+    }
+    
+    protected long writeData(IDataWriter writer, DataContext context, TableCsvData... datas) {
+        this.lastDataWriterUsed = writer;
+        
+        try {
+            for (TableCsvData tableCsvData : datas) {
+                Batch batch = new Batch(BatchType.LOAD, getNextBatchId(), "default", BinaryEncoding.BASE64, "00000", "00001", false);
+                writer.open(context);
                 try {
                     writer.start(batch);
                     if (writer.start(tableCsvData.table)) {
