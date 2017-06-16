@@ -58,6 +58,10 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
         return platform != null && platform instanceof MySqlDatabasePlatform;
     }
 
+    protected AbstractDatabaseWriter create(){
+        return new MySqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 10, 1000,true, true);
+    }
+    
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
         return writeData(new MySqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 10, 1000,

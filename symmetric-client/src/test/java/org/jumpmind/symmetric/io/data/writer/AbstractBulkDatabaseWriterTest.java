@@ -29,10 +29,12 @@ import java.util.Random;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.ArrayUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.AbstractWriterTest;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -69,6 +71,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     }
 
     protected abstract long writeData(List<CsvData> data);
+    //protected abstract long writeBulkData(IDataWriter writer, List<CsvData> data);
 
     @Test
     public void testInsert() {
@@ -204,6 +207,47 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
             values[11] = encode(bytes);
             insertAndVerify(values);
         }
+    }
+    
+    @Test
+    public void testDuplicateRow(){ 
+        if (shouldTestRun(platform)) {
+            platform.getSqlTemplate().update("truncate table " + getTestTable());
+            List<CsvData> data = new ArrayList<CsvData>();
+            
+            String id=getNextId();
+            String[] values1 = { id, "stri'ng2", "string not null2", "char2", "char not null2",
+                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
+            data.add(new CsvData(DataEventType.INSERT, values1));
+            
+            String[] values2 = { id, "stri'ng2", "string not null2", "char2", "char not null2",
+                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
+            data.add(new CsvData(DataEventType.INSERT, values2));
+
+            long statementCount = writeBulkData(data);
+            Assert.assertEquals(2, statementCount);
+            Assert.assertEquals(1, countRows(getTestTable()));
+        }
+    }
+    
+    protected abstract AbstractDatabaseWriter create();
+    
+    protected long writeBulkData(List<CsvData> data) {
+        Table table = platform.getTableFromCache(getTestTable(), false);
+        
+        AbstractDatabaseWriter bulkWriter = create();
+
+        try{
+            writeData(bulkWriter, new TableCsvData(table, data));
+            Assert.fail("Bulk Writer throws duplicate key exception");
+        }catch(Exception e){
+            //do nothing, error expected here
+        }
+        IncomingBatch expectedBatch = new IncomingBatch();
+        expectedBatch.setErrorFlag(true);
+        bulkWriter.getContext().put("currentBatch", expectedBatch);
+        
+        return writeData(bulkWriter, bulkWriter.getContext(), new TableCsvData(table, data));
     }
 
     @Override

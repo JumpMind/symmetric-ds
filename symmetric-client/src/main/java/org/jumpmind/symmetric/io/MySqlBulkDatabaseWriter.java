@@ -43,12 +43,11 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
 
     protected NativeJdbcExtractor jdbcExtractor;
@@ -109,7 +108,8 @@ public class MySqlBulkDatabaseWriter extends DefaultDatabaseWriter {
         }
     }
 
-    public void write(CsvData data) {
+    public void bulkWrite(CsvData data) {
+        super.write(data);
         DataEventType dataEventType = data.getDataEventType();
 
         switch (dataEventType) {

@@ -39,12 +39,11 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected NativeJdbcExtractor jdbcExtractor;
     protected int maxRowsBeforeFlush;
@@ -122,7 +121,8 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
         }
     }
 
-    public void write(CsvData data) {
+    public void bulkWrite(CsvData data) {
+        
         DataEventType dataEventType = data.getDataEventType();
 
         switch (dataEventType) {
