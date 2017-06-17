@@ -35,6 +35,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.AbstractWriterTest;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.junit.Assert;
@@ -224,23 +225,25 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
             
             Table table = platform.getTableFromCache(getTestTable(), false);        
             AbstractDatabaseWriter bulkWriter = create();
+            
+            DataContext context = new DataContext();
 
             /* first try should be success */
-            writeData(bulkWriter, bulkWriter.getContext(), new TableCsvData(table, data));
+            writeData(bulkWriter, context, new TableCsvData(table, data));
             
             try {
                 /* second try should have failed */
-                writeData(bulkWriter, bulkWriter.getContext(), new TableCsvData(table, data));
+                writeData(bulkWriter, context, new TableCsvData(table, data));
                 fail("The bulk writer should have failed");
             } catch (Exception ex) {                
             }
             
             IncomingBatch expectedBatch = new IncomingBatch();
             expectedBatch.setErrorFlag(true);
-            bulkWriter.getContext().put("currentBatch", expectedBatch);
+            context.put("currentBatch", expectedBatch);
 
             /* third try should be success because the bulk writer should fail back to using the default writer */
-            long statementCount = writeData(bulkWriter, bulkWriter.getContext(), new TableCsvData(table, data));
+            long statementCount = writeData(bulkWriter, context, new TableCsvData(table, data));
 
             Assert.assertEquals(1, statementCount);
             Assert.assertEquals(1, countRows(getTestTable()));
