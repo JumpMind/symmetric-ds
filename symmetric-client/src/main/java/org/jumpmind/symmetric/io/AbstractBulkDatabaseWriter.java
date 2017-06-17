@@ -21,10 +21,14 @@ public abstract class AbstractBulkDatabaseWriter extends DefaultDatabaseWriter{
     
     public final void write(CsvData data) {
         if (useDefaultDataWriter) {
-            super.write(data);
+            writeDefault(data);
         }else{
             bulkWrite(data);
         }
+    }
+    
+    protected final void writeDefault(CsvData data) {
+        super.write(data);
     }
     
     protected abstract void bulkWrite(CsvData data);
@@ -34,6 +38,5 @@ public abstract class AbstractBulkDatabaseWriter extends DefaultDatabaseWriter{
         super.start(batch);
         IncomingBatch currentBatch = (IncomingBatch) context.get("currentBatch");
         useDefaultDataWriter = currentBatch == null ? false : currentBatch.isErrorFlag();
-        //super.start(batch);
     }
 }

@@ -86,8 +86,6 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     public void bulkWrite(CsvData data) {
-        super.write(data);
-        
         DataEventType dataEventType = data.getDataEventType();
 
         if (lastEventType != null && !lastEventType.equals(dataEventType)) {
@@ -126,16 +124,10 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 }
                 break;
             case UPDATE:
-                flush();
-                super.write(data);
-                break;
             case DELETE:
-                flush();
-                super.write(data);
-                break;
             default:
                 flush();
-                super.write(data);
+                writeDefault(data);
                 break;
         }
 

@@ -177,7 +177,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             case DELETE:
             default:
                 flush();
-                super.write(data);
+                writeDefault(data);
                 break;
         }
 

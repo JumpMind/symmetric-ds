@@ -109,7 +109,6 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     public void bulkWrite(CsvData data) {
-        super.write(data);
         DataEventType dataEventType = data.getDataEventType();
 
         switch (dataEventType) {
@@ -167,7 +166,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             case DELETE:
             default:
                 flush();
-                super.write(data);
+                writeDefault(data);
                 break;
         }
 
