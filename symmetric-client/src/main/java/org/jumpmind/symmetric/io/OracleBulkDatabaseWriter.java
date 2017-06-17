@@ -85,7 +85,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         }
     }
 
-    public void bulkWrite(CsvData data) {
+    protected void bulkWrite(CsvData data) {
         DataEventType dataEventType = data.getDataEventType();
 
         if (lastEventType != null && !lastEventType.equals(dataEventType)) {
