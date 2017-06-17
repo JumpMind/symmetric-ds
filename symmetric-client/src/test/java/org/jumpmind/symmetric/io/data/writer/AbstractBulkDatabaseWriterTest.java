@@ -223,14 +223,15 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
                     "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
             data.add(new CsvData(DataEventType.INSERT, values1));
             
+            String[] values2 = { id, "stri'ng2", "string not null2", "char2", "char not null2",
+                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
+            data.add(new CsvData(DataEventType.INSERT, values2));
+            
             Table table = platform.getTableFromCache(getTestTable(), false);        
             AbstractDatabaseWriter bulkWriter = create();
             
             DataContext context = new DataContext();
 
-            /* first try should be success */
-            writeData(bulkWriter, context, new TableCsvData(table, data));
-            
             try {
                 /* second try should have failed */
                 writeData(bulkWriter, context, new TableCsvData(table, data));
@@ -245,7 +246,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
             /* third try should be success because the bulk writer should fail back to using the default writer */
             long statementCount = writeData(bulkWriter, context, new TableCsvData(table, data));
 
-            Assert.assertEquals(1, statementCount);
+            Assert.assertEquals(2, statementCount);
             Assert.assertEquals(1, countRows(getTestTable()));
         }
     }
