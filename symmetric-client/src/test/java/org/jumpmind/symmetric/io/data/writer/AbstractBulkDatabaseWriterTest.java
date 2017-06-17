@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.io.data.writer;
 
+import static org.junit.Assert.fail;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -220,35 +222,33 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
                     "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
             data.add(new CsvData(DataEventType.INSERT, values1));
             
-            String[] values2 = { id, "stri'ng2", "string not null2", "char2", "char not null2",
-                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
-            data.add(new CsvData(DataEventType.INSERT, values2));
+            Table table = platform.getTableFromCache(getTestTable(), false);        
+            AbstractDatabaseWriter bulkWriter = create();
 
-            long statementCount = writeBulkData(data);
-            Assert.assertEquals(2, statementCount);
+            /* first try should be success */
+            writeData(bulkWriter, bulkWriter.getContext(), new TableCsvData(table, data));
+            
+            try {
+                /* second try should have failed */
+                writeData(bulkWriter, bulkWriter.getContext(), new TableCsvData(table, data));
+                fail("The bulk writer should have failed");
+            } catch (Exception ex) {                
+            }
+            
+            IncomingBatch expectedBatch = new IncomingBatch();
+            expectedBatch.setErrorFlag(true);
+            bulkWriter.getContext().put("currentBatch", expectedBatch);
+
+            /* third try should be success because the bulk writer should fail back to using the default writer */
+            long statementCount = writeData(bulkWriter, bulkWriter.getContext(), new TableCsvData(table, data));
+
+            Assert.assertEquals(1, statementCount);
             Assert.assertEquals(1, countRows(getTestTable()));
         }
     }
     
     protected abstract AbstractDatabaseWriter create();
     
-    protected long writeBulkData(List<CsvData> data) {
-        Table table = platform.getTableFromCache(getTestTable(), false);
-        
-        AbstractDatabaseWriter bulkWriter = create();
-
-        try{
-            writeData(bulkWriter, new TableCsvData(table, data));
-            Assert.fail("Bulk Writer throws duplicate key exception");
-        }catch(Exception e){
-            //do nothing, error expected here
-        }
-        IncomingBatch expectedBatch = new IncomingBatch();
-        expectedBatch.setErrorFlag(true);
-        bulkWriter.getContext().put("currentBatch", expectedBatch);
-        
-        return writeData(bulkWriter, bulkWriter.getContext(), new TableCsvData(table, data));
-    }
 
     @Override
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
