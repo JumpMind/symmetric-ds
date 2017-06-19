@@ -59,6 +59,24 @@ public class BatchAck  implements Serializable {
     private boolean ignored = false;
 
     private String sqlMessage;
+    
+    private long loadRowCount;
+    
+    private long loadInsertRowCount;
+    
+    private long loadUpdateRowCount;
+    
+    private long loadDeleteRowCount;
+    
+    private long fallbackInsertCount;
+    
+    private long fallbackUpdateCount;
+    
+    private long ignoreRowCount;
+    
+    private long missingDeleteCount;
+    
+    private long skipCount;
 
     public BatchAck(long batchId) {
         this.batchId = batchId;
@@ -181,6 +199,78 @@ public class BatchAck  implements Serializable {
 
     public void setStartTime(long startTime) {
         this.startTime = startTime;
+    }
+
+    public long getLoadRowCount() {
+        return loadRowCount;
+    }
+
+    public void setLoadRowCount(long loadRowCount) {
+        this.loadRowCount = loadRowCount;
+    }
+
+    public long getLoadInsertRowCount() {
+        return loadInsertRowCount;
+    }
+
+    public void setLoadInsertRowCount(long loadInsertRowCount) {
+        this.loadInsertRowCount = loadInsertRowCount;
+    }
+
+    public long getLoadUpdateRowCount() {
+        return loadUpdateRowCount;
+    }
+
+    public void setLoadUpdateRowCount(long loadUpdateRowCount) {
+        this.loadUpdateRowCount = loadUpdateRowCount;
+    }
+
+    public long getLoadDeleteRowCount() {
+        return loadDeleteRowCount;
+    }
+
+    public void setLoadDeleteRowCount(long loadDeleteRowCount) {
+        this.loadDeleteRowCount = loadDeleteRowCount;
+    }
+
+    public long getFallbackInsertCount() {
+        return fallbackInsertCount;
+    }
+
+    public void setFallbackInsertCount(long fallbackInsertCount) {
+        this.fallbackInsertCount = fallbackInsertCount;
+    }
+
+    public long getFallbackUpdateCount() {
+        return fallbackUpdateCount;
+    }
+
+    public void setFallbackUpdateCount(long fallbackUpdateCount) {
+        this.fallbackUpdateCount = fallbackUpdateCount;
+    }
+
+    public long getIgnoreRowCount() {
+        return ignoreRowCount;
+    }
+
+    public void setIgnoreRowCount(long ignoreRowCount) {
+        this.ignoreRowCount = ignoreRowCount;
+    }
+
+    public long getMissingDeleteCount() {
+        return missingDeleteCount;
+    }
+
+    public void setMissingDeleteCount(long missingDeleteCount) {
+        this.missingDeleteCount = missingDeleteCount;
+    }
+
+    public long getSkipCount() {
+        return skipCount;
+    }
+
+    public void setSkipCount(long skipCount) {
+        this.skipCount = skipCount;
     }
     
     

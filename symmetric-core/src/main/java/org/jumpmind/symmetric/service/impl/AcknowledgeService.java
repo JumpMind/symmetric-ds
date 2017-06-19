@@ -99,6 +99,15 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setSqlCode(batch.getSqlCode());
                 outgoingBatch.setSqlState(batch.getSqlState());
                 outgoingBatch.setSqlMessage(batch.getSqlMessage());
+                outgoingBatch.setLoadRowCount(batch.getLoadRowCount());
+                outgoingBatch.setLoadInsertRowCount(batch.getLoadInsertRowCount());
+                outgoingBatch.setLoadUpdateRowCount(batch.getLoadUpdateRowCount());
+                outgoingBatch.setLoadDeleteRowCount(batch.getLoadDeleteRowCount());
+                outgoingBatch.setFallbackInsertCount(batch.getFallbackInsertCount());
+                outgoingBatch.setFallbackUpdateCount(batch.getFallbackUpdateCount());
+                outgoingBatch.setIgnoreRowCount(batch.getIgnoreRowCount());
+                outgoingBatch.setMissingDeleteCount(batch.getMissingDeleteCount());
+                outgoingBatch.setSkipCount(batch.getSkipCount());
 
                 boolean isNewError = false;
                 if (!batch.isOk() && batch.getErrorLine() != 0) {
