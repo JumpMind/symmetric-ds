@@ -57,6 +57,11 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
     protected boolean shouldTestRun(IDatabasePlatform platform) {
         return platform != null && platform instanceof MySqlDatabasePlatform;
     }
+    
+    @Override
+    public void testDuplicateRow() {
+        /* mysql already handles duplidates.  no need to test the special functionality we added to handle dupes */
+    }
 
     protected AbstractDatabaseWriter create(){
         return new MySqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 10, 1000,true, true);
