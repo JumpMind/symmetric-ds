@@ -1539,13 +1539,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (!areBatchesOk) {
                         for (OutgoingBatch outgoingBatch : batches) {
                             if (!parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)) {
-                            	outgoingBatch.setStatus(Status.NE);
-                            	outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
+                                outgoingBatch.setStatus(Status.NE);
+                                outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
+                            } else if (outgoingBatch.getStatus() == Status.RQ) {
+                                log.info("Batch {} was empty after extract in background and will be ignored.",
+                                        new Object[] { outgoingBatch.getNodeBatchId() });
+                                outgoingBatch.setStatus(Status.IG);
+                                outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
+
                             }
                         }
                     } else {
-                        log.info("Batches already had an OK status for request {}, batches {} to {}.  Not updating the status to NE", new Object[] { request.getRequestId(), request.getStartBatchId(),
-                                request.getEndBatchId() });
+                        log.info("Batches already had an OK status for request {}, batches {} to {}.  Not updating the status to NE",
+                                new Object[] { request.getRequestId(), request.getStartBatchId(), request.getEndBatchId() });
                     }
                     transaction.commit();
                     log.info("Done extracting {} batches for request {}", (request.getEndBatchId() - request.getStartBatchId()) + 1, request.getRequestId());

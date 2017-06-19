@@ -26,19 +26,23 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.util.Statistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MultiBatchStagingWriter implements IDataWriter {
+
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final DataExtractorService dataExtractorService;
 
     protected ExtractRequest request;
-    
+
     protected long maxBatchSize;
 
     protected IDataWriter currentDataWriter;
 
     protected List<OutgoingBatch> batches;
-    
+
     protected List<OutgoingBatch> finishedBatches;
 
     protected IStagingManager stagingManager;
@@ -54,15 +58,15 @@ public class MultiBatchStagingWriter implements IDataWriter {
     protected Batch batch;
 
     protected boolean inError = false;
-    
+
     protected ProcessInfo processInfo;
 
     protected long startTime, ts, rowCount, byteCount;
-    
+
     protected boolean cancelled = false;
-    
-    public MultiBatchStagingWriter(DataExtractorService dataExtractorService, ExtractRequest request, String sourceNodeId, IStagingManager stagingManager,
-            List<OutgoingBatch> batches, long maxBatchSize, ProcessInfo processInfo) {
+
+    public MultiBatchStagingWriter(DataExtractorService dataExtractorService, ExtractRequest request, String sourceNodeId,
+            IStagingManager stagingManager, List<OutgoingBatch> batches, long maxBatchSize, ProcessInfo processInfo) {
         this.dataExtractorService = dataExtractorService;
         this.request = request;
         this.sourceNodeId = sourceNodeId;
@@ -78,28 +82,29 @@ public class MultiBatchStagingWriter implements IDataWriter {
     public void open(DataContext context) {
         this.context = context;
         this.nextBatch();
-        long memoryThresholdInBytes = this.dataExtractorService.parameterService
-                .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+        long memoryThresholdInBytes = this.dataExtractorService.parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
         this.currentDataWriter = buildWriter(memoryThresholdInBytes);
         this.currentDataWriter.open(context);
     }
 
     protected IDataWriter buildWriter(long memoryThresholdInBytes) {
-        return new StagingDataWriter(memoryThresholdInBytes, false, sourceNodeId,
-                Constants.STAGING_CATEGORY_OUTGOING, stagingManager,
+        return new StagingDataWriter(memoryThresholdInBytes, false, sourceNodeId, Constants.STAGING_CATEGORY_OUTGOING, stagingManager,
                 (IProtocolDataWriterListener[]) null);
     }
 
     @Override
     public void close() {
-        while (!cancelled && batches.size() > 0) {
+        while (!cancelled && batches.size() > 0 && table != null) {
             startNewBatch();
             end(this.table);
             end(this.batch, false);
         }
+        if (table == null) {
+            log.debug("Batch {} is empty, it will be ignored.", new Object[] { batch.getNodeBatchId() });
+        }
         closeCurrentDataWriter();
     }
-    
+
     private void closeCurrentDataWriter() {
         if (this.currentDataWriter != null) {
             Statistics stats = this.currentDataWriter.getStatistics().get(batch);
@@ -144,7 +149,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
     public void write(CsvData data) {
         this.outgoingBatch.incrementDataEventCount();
         this.outgoingBatch.incrementInsertEventCount();
-        this.currentDataWriter.write(data);            
+        this.currentDataWriter.write(data);
         if (this.outgoingBatch.getDataEventCount() >= maxBatchSize && this.batches.size() > 0) {
             this.currentDataWriter.end(table);
             this.currentDataWriter.end(batch, false);
@@ -152,8 +157,9 @@ public class MultiBatchStagingWriter implements IDataWriter {
             startNewBatch();
         }
         if (System.currentTimeMillis() - ts > 60000) {
-            this.dataExtractorService.log.info("Request {} has been processing for {} seconds.  BATCHES={}, ROWS={}, BYTES={}, RANGE={}-{}, CURRENT={}",
-                    request.getRequestId(), (System.currentTimeMillis() - startTime) / 1000, finishedBatches.size(), rowCount, byteCount, 
+            this.dataExtractorService.log.info(
+                    "Request {} has been processing for {} seconds.  BATCHES={}, ROWS={}, BYTES={}, RANGE={}-{}, CURRENT={}",
+                    request.getRequestId(), (System.currentTimeMillis() - startTime) / 1000, finishedBatches.size(), rowCount, byteCount,
                     request.getStartBatchId(), request.getEndBatchId(), batch.getBatchId());
             ts = System.currentTimeMillis();
         }
@@ -166,9 +172,10 @@ public class MultiBatchStagingWriter implements IDataWriter {
             if (resource != null) {
                 resource.setState(State.DONE);
             }
-            OutgoingBatch batchFromDatabase = this.dataExtractorService.outgoingBatchService.findOutgoingBatch(outgoingBatch.getBatchId(), outgoingBatch.getNodeId());
+            OutgoingBatch batchFromDatabase = this.dataExtractorService.outgoingBatchService.findOutgoingBatch(outgoingBatch.getBatchId(),
+                    outgoingBatch.getNodeId());
             if (batchFromDatabase.getIgnoreCount() == 0) {
-                this.outgoingBatch.setStatus(Status.NE);                
+                this.outgoingBatch.setStatus(Status.NE);
             } else {
                 cancelled = true;
                 throw new CancellationException();
@@ -177,7 +184,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
 
         this.dataExtractorService.outgoingBatchService.updateOutgoingBatch(this.outgoingBatch);
     }
-    
+
     @Override
     public void end(Table table) {
         if (this.currentDataWriter != null) {
@@ -196,7 +203,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
             closeCurrentDataWriter();
         }
     }
-    
+
     protected void nextBatch() {
         if (this.outgoingBatch != null) {
             this.finishedBatches.add(outgoingBatch);
@@ -209,10 +216,9 @@ public class MultiBatchStagingWriter implements IDataWriter {
         if (this.finishedBatches.size() > 0) {
             this.outgoingBatch.setExtractCount(this.outgoingBatch.getExtractCount() + 1);
         }
-        
+
         /*
-         * Update the last update time so the batch 
-         * isn't purged prematurely
+         * Update the last update time so the batch isn't purged prematurely
          */
         for (OutgoingBatch batch : finishedBatches) {
             IStagedResource resource = this.dataExtractorService.getStagedResource(batch);
@@ -224,19 +230,17 @@ public class MultiBatchStagingWriter implements IDataWriter {
 
     protected void startNewBatch() {
         this.nextBatch();
-        long memoryThresholdInBytes = this.dataExtractorService.parameterService
-                .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);            
+        long memoryThresholdInBytes = this.dataExtractorService.parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
         this.currentDataWriter = buildWriter(memoryThresholdInBytes);
-        this.batch = new Batch(BatchType.EXTRACT, outgoingBatch.getBatchId(),
-                outgoingBatch.getChannelId(), this.dataExtractorService.symmetricDialect.getBinaryEncoding(),
-                sourceNodeId, outgoingBatch.getNodeId(), false);
+        this.batch = new Batch(BatchType.EXTRACT, outgoingBatch.getBatchId(), outgoingBatch.getChannelId(),
+                this.dataExtractorService.symmetricDialect.getBinaryEncoding(), sourceNodeId, outgoingBatch.getNodeId(), false);
         this.currentDataWriter.open(context);
         this.currentDataWriter.start(batch);
         processInfo.incrementBatchCount();
-        
+
         if (table == null) {
-            throw new SymmetricException("'table' cannot null while starting new batch.  Batch: " + 
-                    outgoingBatch + ". Check trigger/router configs.");
+            throw new SymmetricException(
+                    "'table' cannot null while starting new batch.  Batch: " + outgoingBatch + ". Check trigger/router configs.");
         }
         this.currentDataWriter.start(table);
     }
