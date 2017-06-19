@@ -113,8 +113,6 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
         switch (dataEventType) {
             case INSERT:
-                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-                statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.DATABASEMILLIS);
                 try {
                     String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
@@ -159,6 +157,8 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 } catch (Exception ex) {
                     throw getPlatform().getSqlTemplate().translate(ex);
                 } finally {
+                    statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                    statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                     statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
                 }
                 break;
