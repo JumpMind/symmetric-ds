@@ -97,11 +97,11 @@ To show only batches in error, select the status of _Error_:
 
 image::manage/manage-outgoing-batches-error.png[]
 
-In order to view the error message, click the *Error* status link on the outgoing batch row of interest.
+In order to view the error message, click the *magnifying glass* link in the details column of the outgoing batch row of interest.
 
 image::manage/manage-outgoing-batches-error-show.png[]
 
-In order to view the data row in error, click the *Rows* link on the outgoing batch row of interest.  There is a button you can click to *Scroll to error*.  The row 
+In order to view the data row in error, click the *Sent Data* tab on the captured batch data screen.  There is a button you can click to *Scroll to error*.  The row 
 that is in error will be italicized.  You can view the data that changed at the bottom of the dialog.
 
 image::manage/manage-outgoing-batches-error-data.png[]

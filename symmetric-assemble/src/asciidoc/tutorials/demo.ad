@@ -150,7 +150,7 @@ insert into item_selling_price (item_id, store_id, price)
 ----
 
 ifdef::pro[]
-image::tutorials/demo-pull-sql.png[]
+image::tutorials/new-demo-pull-sql.png[]
 endif::pro[]
 
 ifndef::pro[]
@@ -161,7 +161,7 @@ endif::pro[]
 
 ifdef::pro[]
 .Verify the outgoing batches were created and sent (status of `OK`).
-image::tutorials/demo-pull-verify-outgoing-batch.png[]
+image::tutorials/new-demo-pull-verify-outgoing-batch.png[]
 endif::pro[]
 
 ifndef::pro[]

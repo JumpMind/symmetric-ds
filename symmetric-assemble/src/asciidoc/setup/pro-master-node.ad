@@ -19,6 +19,17 @@ database name if necessary (varies by database type)
 . Specify the id to be used to login to the database
 . Specify the password to be used to login to the database
 
+==== Table permissions
+
+[.float-group]
+--
+[.left.text-left]
+image::wizard-connect/wizard-connect-permissions.png[]
+
+This screen shows the permissions required to install the Symmetric System tables for the provided user and database.
+
+--
+
 ==== Select a profile
 
 SymmetricDS has several predefined profiles that can assist in creating configuration for a synchronization scenario.  These profiles
