@@ -23,7 +23,7 @@ image::configure-overview.png[]
 include::configuration/import.ad[]
 include::configuration/export.ad[]
 
-endif::pro[]  
+endif::pro[]
 
 include::configuration/groups.ad[]
 include::configuration/group-links.ad[]

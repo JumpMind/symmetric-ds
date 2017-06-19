@@ -97,7 +97,7 @@ Batches in Error can be viewed when the *Status* is set to _<Not Ok>_ or _Error_
 
 image::manage/manage-incoming-batches-error.png[]
 
-The error message can be viewed by clicking the *Status* link.
+The error message can be viewed by clicking the *Magnifying Glass* link in the details column.
 
 image::manage/manage-incoming-batches-error-show.png[]
 
