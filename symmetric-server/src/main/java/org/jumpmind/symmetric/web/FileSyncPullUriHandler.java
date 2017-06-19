@@ -30,7 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -75,9 +75,9 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
                 res.addHeader("Content-Disposition", "attachment; filename=\"file-sync.zip\"");
             }
             
-            processInfo.setStatus(Status.OK);
+            processInfo.setStatus(ProcessStatus.OK);
         } catch (RuntimeException ex) {
-            processInfo.setStatus(Status.ERROR);
+            processInfo.setStatus(ProcessStatus.ERROR);
             throw ex;
         } finally {
             if (outgoingTransport != null) {

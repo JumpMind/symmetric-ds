@@ -228,7 +228,7 @@ public class RouterService extends AbstractService implements IRouterService {
         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                 new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), null,
                         ProcessType.INSERT_LOAD_EVENTS));
-        processInfo.setStatus(ProcessInfo.Status.PROCESSING);
+        processInfo.setStatus(ProcessInfo.ProcessStatus.PROCESSING);
 
         try {
 
@@ -301,9 +301,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 }
             }
 
-            processInfo.setStatus(ProcessInfo.Status.OK);
+            processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
         } catch (Exception ex) {
-            processInfo.setStatus(ProcessInfo.Status.ERROR);
+            processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
             log.error("", ex);
         }
 
@@ -312,7 +312,7 @@ public class RouterService extends AbstractService implements IRouterService {
     public void processTableRequestLoads(Node source, ProcessInfo processInfo) {
         List<TableReloadRequest> loadsToProcess = engine.getDataService().getTableReloadRequestToProcess(source.getNodeId());
         if (loadsToProcess.size() > 0) {
-            processInfo.setStatus(ProcessInfo.Status.CREATING);
+            processInfo.setStatus(ProcessInfo.ProcessStatus.CREATING);
             log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
             gapDetector.setFullGapAnalysis(true);
             
@@ -418,7 +418,7 @@ public class RouterService extends AbstractService implements IRouterService {
         Node sourceNode = engine.getNodeService().findIdentity();
         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                 new ProcessInfoKey(sourceNode.getNodeId(), null, ProcessType.ROUTER_JOB));
-        processInfo.setStatus(ProcessInfo.Status.PROCESSING);
+        processInfo.setStatus(ProcessInfo.ProcessStatus.PROCESSING);
         try {
             final List<NodeChannel> channels = engine.getConfigurationService().getNodeChannels(false);
             Set<String> readyChannels = null;
@@ -438,9 +438,9 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
             }
-            processInfo.setStatus(ProcessInfo.Status.OK);
+            processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
         } catch (RuntimeException ex) {
-            processInfo.setStatus(ProcessInfo.Status.ERROR);
+            processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
             firstTimeCheckForAbandonedBatches = true;
             throw ex;
         }

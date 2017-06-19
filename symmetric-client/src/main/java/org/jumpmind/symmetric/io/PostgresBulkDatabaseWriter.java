@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.postgresql.copy.CopyIn;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -60,6 +61,8 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
 
     protected boolean needsBinaryConversion;
 
+    protected boolean useDefaultDataWriter;
+    
     public PostgresBulkDatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings settings,
             NativeJdbcExtractor jdbcExtractor, int maxRowsBeforeFlush) {
         super(platform, settings);
@@ -68,6 +71,11 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
     }
 
     public void write(CsvData data) {
+        if (useDefaultDataWriter) {
+            super.write(data);
+            return;
+        }
+        
         statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
         statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
         statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
@@ -182,6 +190,13 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
         }
     }
 
+    @Override
+    public void start(Batch batch) {
+        super.start(batch);
+        IncomingBatch currentBatch = (IncomingBatch) context.get("currentBatch");
+        useDefaultDataWriter = currentBatch == null ? false : currentBatch.isErrorFlag();
+    }
+    
     @Override
     public boolean start(Table table) {
         return super.start(table);

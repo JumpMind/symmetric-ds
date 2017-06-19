@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
@@ -205,12 +205,12 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 status.updateOutgoingStatus(extractedBatches, batchAcks);
             }
             
-            if (processInfo.getStatus() != Status.ERROR) {
-                processInfo.setStatus(Status.OK);            
+            if (processInfo.getStatus() != ProcessStatus.ERROR) {
+                processInfo.setStatus(ProcessStatus.OK);            
             }
             fireOnline(remote, status);
         } catch (Exception ex) {
-            processInfo.setStatus(Status.ERROR);
+            processInfo.setStatus(ProcessStatus.ERROR);
             fireOffline(ex, remote, status);
         } finally {
             try {

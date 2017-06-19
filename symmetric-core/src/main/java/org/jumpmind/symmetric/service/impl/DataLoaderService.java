@@ -223,13 +223,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         new BufferedReader(new StringReader(batchData)));
                 List<IncomingBatch> list = loadDataFromTransport(processInfo,
                         nodeService.findIdentity(), transport, null);
-                processInfo.setStatus(ProcessInfo.Status.OK);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 return list;
             } catch (IOException ex) {
-                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 throw new IoException();
             } catch (RuntimeException ex) {
-                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 throw ex;
             }
         } else {
@@ -290,7 +290,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             try {
                 List<IncomingBatch> list = loadDataFromTransport(processInfo, remote, transport, null);
                 if (list.size() > 0) {
-                    processInfo.setStatus(ProcessInfo.Status.ACKING);
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
                     status.updateIncomingStatus(list);
                     local = nodeService.findIdentity();
                     if (local != null) {
@@ -313,18 +313,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
 
                 if (containsError(list)) {
-                    processInfo.setStatus(ProcessInfo.Status.ERROR);
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 } else {
-                    processInfo.setStatus(ProcessInfo.Status.OK);
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 }
                 
                 updateBatchToSendCount(remote, transport);
                 
             } catch (RuntimeException e) {
-                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 throw e;
             } catch (IOException e) {
-                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 throw e;
             }
 
@@ -394,16 +394,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         new InternalIncomingTransport(in), out);
                 logDataReceivedFromPush(sourceNode, batchList);
                 NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
-                processInfo.setStatus(ProcessInfo.Status.ACKING);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
                 transportManager.writeAcknowledgement(out, sourceNode, batchList, local,
                         security != null ? security.getNodePassword() : null);
                 if (containsError(batchList)) {
-                    processInfo.setStatus(ProcessInfo.Status.ERROR);
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 } else {
-                    processInfo.setStatus(ProcessInfo.Status.OK);
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 }
             } catch (Exception e) {
-                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 if (e instanceof RuntimeException) {
                     throw (RuntimeException) e;
                 } else if (e instanceof IOException) {
@@ -448,20 +448,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         try {
             list = loadDataFromTransport(processInfo, remote, transport, null);
             if (list.size() > 0) {
-                processInfo.setStatus(ProcessInfo.Status.ACKING);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
                 status.updateIncomingStatus(list);
             }
 
             if (containsError(list)) {
-                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
             } else {
-                processInfo.setStatus(ProcessInfo.Status.OK);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
             }
         } catch (RuntimeException e) {
-            processInfo.setStatus(ProcessInfo.Status.ERROR);
+            processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
             throw e;
         } catch (IOException e) {
-            processInfo.setStatus(ProcessInfo.Status.ERROR);
+            processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
             throw e;
         }
         return list;
@@ -486,20 +486,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         Version.version(), local.getConfigVersion());
                 List<IncomingBatch> list = loadDataFromTransport(processInfo, remote, transport, null);
                 if (containsError(list)) {
-                    processInfo.setStatus(ProcessInfo.Status.ERROR);
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 } else {
                     if (list.size() > 0) {
                         status.updateIncomingStatus(list);
                         local.setConfigVersion(Version.version());
                         nodeService.save(local);
                     }
-                    processInfo.setStatus(ProcessInfo.Status.OK);
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 }
             } catch (RuntimeException e) {
-                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 throw e;
             } catch (IOException e) {
-                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 throw e;
             }
         } catch (RegistrationRequiredException e) {
@@ -547,7 +547,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             long memoryThresholdInBytes = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
             String targetNodeId = nodeService.findIdentityNodeId();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
                 ExecutorService executor = Executors.newFixedThreadPool(1, new CustomizableThreadFactory(String.format("dataloader-%s-%s", sourceNode.getNodeGroupId(), sourceNode.getNodeId())));
                 LoadIntoDatabaseOnArrivalListener loadListener = new LoadIntoDatabaseOnArrivalListener(processInfo,
                         sourceNode.getNodeId(), listener, executor);
@@ -941,7 +941,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void start(DataContext ctx, Batch batch) {
             batchStartsToArriveTimeInMs = System.currentTimeMillis();
-            processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+            processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
         }
 
         public void end(final DataContext ctx, final Batch batch, final IStagedResource resource) {
@@ -952,7 +952,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     IncomingBatch incomingBatch = null;
                     if (!isError && resource != null && resource.exists()) {
                         try {
-                            processInfo.setStatus(ProcessInfo.Status.LOADING);
+                            processInfo.setStatus(ProcessInfo.ProcessStatus.LOADING);
                             
                             ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, batch.getTargetNodeId(), resource) {
                                 @Override
@@ -964,7 +964,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                     return table;
                                 }                                
                             };
-                            
                             DataProcessor processor = new DataProcessor(reader, null, listener, "data load from stage") {
                                 @Override
                                 protected IDataWriter chooseDataWriter(Batch batch) {
@@ -1043,6 +1042,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public boolean beforeBatchStarted(DataContext context) {
             this.currentBatch = null;
             Batch batch = context.getBatch();
+            context.remove("currentBatch");
+            
             if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED)
                     || (batch.getChannelId() != null && batch.getChannelId().equals(
                             Constants.CHANNEL_CONFIG))) {
@@ -1059,6 +1060,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 this.batchesProcessed.add(incomingBatch);
                 if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
                     this.currentBatch = incomingBatch;
+                    context.put("currentBatch", this.currentBatch);
+                    
                     return true;
                 }
             }

@@ -41,7 +41,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -114,7 +114,7 @@ public class StatisticManager implements IStatisticManager {
         	process.setStatusHistory(old.getStatusHistory());
         	process.setStatusStartHistory(old.getStatusStartHistory());
         	
-            if (old.getStatus() != Status.OK && old.getStatus() != Status.ERROR) {
+            if (old.getStatus() != ProcessStatus.OK && old.getStatus() != ProcessStatus.ERROR) {
                 log.warn(
                         "Starting a new process even though the previous '{}' process had not finished",
                         old.getProcessType().toString());
@@ -156,7 +156,7 @@ public class StatisticManager implements IStatisticManager {
         Iterator<ProcessInfo> i = infosList.iterator();
         while (i.hasNext()) {
             ProcessInfo info = i.next();
-            if (info.getStatus() == ProcessInfo.Status.OK && info.getCurrentDataCount() == 0) {
+            if (info.getStatus() == ProcessInfo.ProcessStatus.OK && info.getCurrentDataCount() == 0) {
                 ProcessInfo lastThatDidWork = processInfosThatHaveDoneWork.get(info.getKey());
                 if (lastThatDidWork != null) {
                     toReturn.add(lastThatDidWork.copy());

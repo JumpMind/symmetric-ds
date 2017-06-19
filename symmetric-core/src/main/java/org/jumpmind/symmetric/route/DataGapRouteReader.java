@@ -46,7 +46,7 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -139,9 +139,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     .equals(NonTransactionalBatchAlgorithm.NAME)
                     || !symmetricDialect.supportsTransactionId();
 
-            processInfo.setStatus(Status.QUERYING);
+            processInfo.setStatus(ProcessStatus.QUERYING);
             cursor = prepareCursor();
-            processInfo.setStatus(Status.EXTRACTING);
+            processInfo.setStatus(ProcessStatus.EXTRACTING);
             boolean moreData = true;
             while (dataCount < maxDataToRoute || (lastTransactionId != null && transactional)) {
                 if (moreData && (lastTransactionId != null || peekAheadQueue.size() == 0)) {
@@ -198,9 +198,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     peekAheadQueue.clear();                    
                 }
             }
-            processInfo.setStatus(Status.OK);
+            processInfo.setStatus(ProcessStatus.OK);
         } catch (Throwable ex) {
-            processInfo.setStatus(Status.ERROR);
+            processInfo.setStatus(ProcessStatus.ERROR);
             String msg = "";
             if (engine.getDatabasePlatform().getName().startsWith(DatabaseNamesConstants.FIREBIRD)
                     && isNotBlank(ex.getMessage())
@@ -431,8 +431,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     public void setReading(boolean reading) {
         this.reading = reading;
-        if (processInfo.getStatus() != Status.ERROR) {
-            processInfo.setStatus(Status.OK);
+        if (processInfo.getStatus() != ProcessStatus.ERROR) {
+            processInfo.setStatus(ProcessStatus.OK);
         }
     }
 

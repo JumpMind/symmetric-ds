@@ -35,41 +35,34 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     private static final long serialVersionUID = 1L;
 
-    public static enum Status {
-        NEW, QUERYING, EXTRACTING, LOADING, TRANSFERRING, ACKING, PROCESSING, OK, ERROR, CREATING;
+    public static enum ProcessStatus {
+        NEW("New"), QUERYING("Querying"), EXTRACTING("Extracting"), LOADING("Loading"), TRANSFERRING("Transferring"), 
+        ACKING("Acking"), PROCESSING("Processing"), OK("Ok"), ERROR("Error"), CREATING("Creating");
+        
+        private String description;
 
-        public String toString() {
-            switch (this) {
-                case NEW:
-                    return "New";
-                case QUERYING:
-                    return "Querying";
-                case EXTRACTING:
-                    return "Extracting";
-                case LOADING:
-                    return "Loading";
-                case TRANSFERRING:
-                    return "Transferring";
-                case ACKING:
-                    return "Acking";
-                case PROCESSING:
-                    return "Processing";
-                case OK:
-                    return "Ok";
-                case ERROR:
-                    return "Error";
-                case CREATING:
-                    return "Creating";
-
-                default:
-                    return name();
-            }
+        ProcessStatus(String description) {
+            this.description = description;
         }
+        
+        public ProcessStatus fromDesciption(String description) {
+            for (ProcessStatus status : ProcessStatus.values()) {
+                if (status.description.equals(description)) {
+                    return status;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return description;
+        }        
     };
 
     private ProcessInfoKey key;
 
-    private Status status = Status.NEW;
+    private ProcessStatus status = ProcessStatus.NEW;
 
     private long currentDataCount;
     
@@ -97,11 +90,13 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     private Date lastStatusChangeTime = new Date();
 
-    private Map<Status, ProcessInfo> statusHistory;
+    private Map<ProcessStatus, ProcessInfo> statusHistory;
     
-    private Map<Status, Date> statusStartHistory;
+    private Map<ProcessStatus, Date> statusStartHistory;
     
     private Date endTime;
+    
+    private long totalDataCount = 0;
 
     public ProcessInfo() {
         this(new ProcessInfoKey("", "", null));
@@ -132,16 +127,16 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         this.key = key;
     }
 
-    public Status getStatus() {
+    public ProcessStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(ProcessStatus status) {
         if (statusHistory == null) {
-        	statusHistory = new HashMap<Status, ProcessInfo>();
+        	statusHistory = new HashMap<ProcessStatus, ProcessInfo>();
         }
         if (statusStartHistory == null) {
-        	statusStartHistory = new HashMap<Status, Date>();
+        	statusStartHistory = new HashMap<ProcessStatus, Date>();
         }
         if (!statusStartHistory.containsKey(this.status)) {
         	statusStartHistory.put(this.status, this.startTime);
@@ -152,7 +147,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     	this.status = status;
         
         this.lastStatusChangeTime = new Date();
-        if (status == Status.OK || status == Status.ERROR) {
+        if (status == ProcessStatus.OK || status == ProcessStatus.ERROR) {
             this.endTime = new Date();
         }
     }
@@ -175,6 +170,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     public void incrementCurrentDataCount() {
         this.currentDataCount++;
+        this.totalDataCount++;
     }
 
     public void incrementBatchCount() {
@@ -286,28 +282,28 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         this.currentBatchStartTime = currentBatchStartTime;
     }
 
-    public Map<Status, ProcessInfo> getStatusHistory() {
+    public Map<ProcessStatus, ProcessInfo> getStatusHistory() {
     	return this.statusHistory;
     }
     
     
-    public void setStatusHistory(Map<Status, ProcessInfo> statusHistory) {
+    public void setStatusHistory(Map<ProcessStatus, ProcessInfo> statusHistory) {
 		this.statusHistory = statusHistory;
 	}
 
-	public void setStatusStartHistory(Map<Status, Date> statusStartHistory) {
+	public void setStatusStartHistory(Map<ProcessStatus, Date> statusStartHistory) {
 		this.statusStartHistory = statusStartHistory;
 	}
 
-	public Map<Status, Date> getStatusStartHistory() {
+	public Map<ProcessStatus, Date> getStatusStartHistory() {
     	return this.statusStartHistory;
     }
     
-    public ProcessInfo getStatusHistory(Status status) {
+    public ProcessInfo getStatusHistory(ProcessStatus status) {
     	return this.statusHistory == null ? null : this.statusHistory.get(status);
     }
     
-    public Date getStatusStartHistory(Status status) {
+    public Date getStatusStartHistory(ProcessStatus status) {
     	return this.statusStartHistory == null ? null : this.statusStartHistory.get(status);
     }
     
@@ -318,7 +314,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     }
     
     public String showInError(String identityNodeId) {
-        if (status == Status.ERROR) {
+        if (status == ProcessStatus.ERROR) {
         switch (key.getProcessType()) {
             case MANUAL_LOAD:
                 return null;
@@ -345,13 +341,13 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     }
 
     public int compareTo(ProcessInfo o) {
-        if (status == Status.ERROR && o.status != Status.ERROR) {
+        if (status == ProcessStatus.ERROR && o.status != ProcessStatus.ERROR) {
             return -1;
-        } else if (o.status == Status.ERROR && status != Status.ERROR) {
+        } else if (o.status == ProcessStatus.ERROR && status != ProcessStatus.ERROR) {
             return 1;
-        } else if (status != Status.OK && o.status == Status.OK) {
+        } else if (status != ProcessStatus.OK && o.status == ProcessStatus.OK) {
             return -1;
-        } else if (o.status != Status.OK && status == Status.OK) {
+        } else if (o.status != ProcessStatus.OK && status == ProcessStatus.OK) {
             return 1;
         } else {
             return o.startTime.compareTo(startTime);
@@ -375,6 +371,14 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         } else {
             return null;
         }
+    }
+
+    public long getTotalDataCount() {
+        return totalDataCount;
+    }
+
+    public void setTotalDataCount(long totalDataCount) {
+        this.totalDataCount = totalDataCount;
     }
 
     static public class ThreadData {

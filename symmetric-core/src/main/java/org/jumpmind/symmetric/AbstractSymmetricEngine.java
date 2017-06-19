@@ -63,7 +63,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBandwidthService;
@@ -779,7 +779,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             List<ProcessInfo> infos = statisticManager.getProcessInfos();
             for (ProcessInfo processInfo : infos) {
                 Thread thread = processInfo.getThread();
-                if (processInfo.getStatus() != Status.OK && thread.isAlive()) {
+                if (processInfo.getStatus() != ProcessStatus.OK && thread.isAlive()) {
                     log.info("Trying to interrupt thread '{}' ", thread.getName());
                     try {
                         thread.interrupt();

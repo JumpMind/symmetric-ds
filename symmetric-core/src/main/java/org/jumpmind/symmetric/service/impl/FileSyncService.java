@@ -140,7 +140,7 @@ INodeCommunicationExecutor {
                         if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_PREVENT_PING_BACK)) {
                             deleteFromFileIncoming();
                         }
-                        processInfo.setStatus(ProcessInfo.Status.OK);
+                        processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                     } finally {
                         log.debug("Done tracking changes for file sync");
                         engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_SHARED,
@@ -538,7 +538,7 @@ INodeCommunicationExecutor {
                 }
             }
 
-            processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+            processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
 
             for (OutgoingBatch outgoingBatch : processedBatches) {
                 outgoingBatch.setStatus(Status.SE);
@@ -729,12 +729,12 @@ INodeCommunicationExecutor {
             try {
                 List<IncomingBatch> list = processZip(in, nodeId, processInfo);
                 NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId(), true);
-                processInfo.setStatus(ProcessInfo.Status.ACKING);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
                 engine.getTransportManager().writeAcknowledgement(out, sourceNode, list, local,
                         security != null ? security.getNodePassword() : null);
-                processInfo.setStatus(ProcessInfo.Status.OK);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
             } catch (Throwable e) {
-                processInfo.setStatus(ProcessInfo.Status.ERROR);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 if (e instanceof IOException) {
                     throw new IoException((IOException) e);
                 } else if (e instanceof RuntimeException) {
@@ -816,13 +816,13 @@ INodeCommunicationExecutor {
         } catch (Exception e) {
             fireOffline(e, nodeCommunication.getNode(), status);
         } finally {
-            if (processInfo.getStatus() != ProcessInfo.Status.ERROR) {
-                processInfo.setStatus(ProcessInfo.Status.OK);
+            if (processInfo.getStatus() != ProcessInfo.ProcessStatus.ERROR) {
+                processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
             }
             if (transport != null) {
                 transport.close();
                 if (transport instanceof FileOutgoingTransport) {
-                    ((FileOutgoingTransport) transport).complete(processInfo.getStatus() == ProcessInfo.Status.OK);
+                    ((FileOutgoingTransport) transport).complete(processInfo.getStatus() == ProcessInfo.ProcessStatus.OK);
                 }
             }
         }
@@ -865,7 +865,7 @@ INodeCommunicationExecutor {
 
         IIncomingBatchService incomingBatchService = engine.getIncomingBatchService();
 
-        processInfo.setStatus(ProcessInfo.Status.LOADING);
+        processInfo.setStatus(ProcessInfo.ProcessStatus.LOADING);
         for (Long batchId : batchIds) {
             processInfo.setCurrentBatchId(batchId);
             processInfo.incrementBatchCount();
@@ -953,7 +953,7 @@ INodeCommunicationExecutor {
                         } else {
                             incomingBatchService.insertIncomingBatch(incomingBatch);
                         }
-                        processInfo.setStatus(ProcessInfo.Status.ERROR);
+                        processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                         break;
                     } finally {
                         log.debug("The {} node is done processing file sync files", sourceNodeId);
@@ -1003,7 +1003,7 @@ INodeCommunicationExecutor {
                 new ProcessInfoKey(nodeCommunication.getNodeId(), identity.getNodeId(),
                         ProcessType.FILE_SYNC_PULL_JOB));
         try {
-            processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
+            processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
             ITransportManager transportManager;
             
             if (!engine.getParameterService().is(ParameterConstants.NODE_OFFLINE)) {
@@ -1022,7 +1022,7 @@ INodeCommunicationExecutor {
                     nodeCommunication.getNodeId(), processInfo);
 
             if (batchesProcessed.size() > 0) {
-                processInfo.setStatus(ProcessInfo.Status.ACKING);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
                 status.updateIncomingStatus(batchesProcessed);
                 sendAck(nodeCommunication.getNode(), identity, security, batchesProcessed,
                         transportManager);
@@ -1043,8 +1043,8 @@ INodeCommunicationExecutor {
         } finally {
             if (transport != null) {
                 transport.close();
-                if (processInfo.getStatus() != ProcessInfo.Status.ERROR) {
-                    processInfo.setStatus(ProcessInfo.Status.OK);
+                if (processInfo.getStatus() != ProcessInfo.ProcessStatus.ERROR) {
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 }
                 if (transport instanceof FileIncomingTransport) {                    
                     ((FileIncomingTransport) transport).complete(!status.failed());

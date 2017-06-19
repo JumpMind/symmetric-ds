@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfo.Status;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.service.IDataService;
@@ -87,7 +87,7 @@ public class DataGapDetector {
                 nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
         try {
             long ts = System.currentTimeMillis();
-            processInfo.setStatus(Status.QUERYING);
+            processInfo.setStatus(ProcessStatus.QUERYING);
             final List<DataGap> gaps = dataService.findDataGaps();
             long lastDataId = -1;
             final int dataIdIncrementBy = parameterService
@@ -119,14 +119,14 @@ public class DataGapDetector {
                 ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
                 Object[] params = new Object[] { dataGap.getStartId(), dataGap.getEndId() };
                 lastDataId = -1;
-                processInfo.setStatus(Status.QUERYING);
+                processInfo.setStatus(ProcessStatus.QUERYING);
                 long queryForIdsTs = System.currentTimeMillis();
                 List<Number> ids = sqlTemplate.query(sql, new NumberMapper(), params);
                 if (System.currentTimeMillis()-queryForIdsTs > Constants.LONG_OPERATION_THRESHOLD) {
                     log.info("It took longer than {}ms to run the following sql for gap from {} to {}.  {}", 
                             new Object[] {Constants.LONG_OPERATION_THRESHOLD, dataGap.getStartId(), dataGap.getEndId(), sql});
                 }
-                processInfo.setStatus(Status.PROCESSING);
+                processInfo.setStatus(ProcessStatus.PROCESSING);
                 
                 idsFilled += ids.size();
                 rangeChecked += dataGap.getEndId() - dataGap.getStartId();
@@ -245,9 +245,9 @@ public class DataGapDetector {
             if (updateTimeInMs > 10000) {
                 log.info("Detecting gaps took {} ms", updateTimeInMs);
             }
-            processInfo.setStatus(Status.OK);
+            processInfo.setStatus(ProcessStatus.OK);
         } catch (RuntimeException ex) {
-            processInfo.setStatus(Status.ERROR);
+            processInfo.setStatus(ProcessStatus.ERROR);
             throw ex;
         }
 
