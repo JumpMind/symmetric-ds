@@ -233,17 +233,21 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
             DataContext context = new DataContext();
 
             try {
-                /* second try should have failed */
+                /* first try should have failed */
                 writeData(bulkWriter, context, new TableCsvData(table, data));
                 fail("The bulk writer should have failed");
             } catch (Exception ex) {                
             }
             
+            /* Recreate the writer because in the real world that is what would happen */ 
+            bulkWriter = create();            
+            context = new DataContext();
+            
             IncomingBatch expectedBatch = new IncomingBatch();
             expectedBatch.setErrorFlag(true);
             context.put("currentBatch", expectedBatch);
 
-            /* third try should be success because the bulk writer should fail back to using the default writer */
+            /* second try should be success because the bulk writer should fail back to using the default writer */
             long statementCount = writeData(bulkWriter, context, new TableCsvData(table, data));
 
             Assert.assertEquals(2, statementCount);

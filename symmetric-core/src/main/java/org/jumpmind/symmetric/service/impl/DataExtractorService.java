@@ -59,7 +59,6 @@ import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DdlBuilderFactory;
-import org.jumpmind.db.platform.DmlStatementFactory;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
