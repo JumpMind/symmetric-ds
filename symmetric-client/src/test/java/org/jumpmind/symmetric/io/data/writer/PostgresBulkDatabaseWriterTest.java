@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.io.data.writer;
 
 import java.util.List;
-
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -60,10 +59,16 @@ public class PostgresBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTe
         return platform != null && platform instanceof PostgreSqlDatabasePlatform;
     }
 
+    protected AbstractDatabaseWriter create(){
+        return new PostgresBulkDatabaseWriter(platform, new DatabaseWriterSettings(), new CommonsDbcpNativeJdbcExtractor(), 1000);
+    }
+
+    @Override
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
         return writeData(new PostgresBulkDatabaseWriter(platform, new DatabaseWriterSettings(), 
                 new CommonsDbcpNativeJdbcExtractor(), 1000), new TableCsvData(table, data));
     }
+   
 
 }

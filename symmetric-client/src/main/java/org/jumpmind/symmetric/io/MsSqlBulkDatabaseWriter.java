@@ -39,12 +39,11 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected NativeJdbcExtractor jdbcExtractor;
     protected int maxRowsBeforeFlush;
@@ -122,13 +121,12 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
         }
     }
 
-    public void write(CsvData data) {
+    protected void bulkWrite(CsvData data) {
+        
         DataEventType dataEventType = data.getDataEventType();
 
         switch (dataEventType) {
             case INSERT:
-                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-                statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                 try {
                     String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
@@ -171,13 +169,15 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
                     throw getPlatform().getSqlTemplate().translate(ex);
                 } finally {
                     statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
+                    statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                    statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                 }
                 break;
             case UPDATE:
             case DELETE:
             default:
                 flush();
-                super.write(data);
+                writeDefault(data);
                 break;
         }
 
@@ -229,9 +229,6 @@ public class MsSqlBulkDatabaseWriter extends DefaultDatabaseWriter {
 	        } finally {
 	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
 	        }
-	        this.stagedInputFile.delete();
-	        createStagingFile();
-	        loadedRows = 0;
         }
     }
     
