@@ -659,7 +659,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 log.error("Failed to extract batch {}", currentBatch, e);
                             }
                         }
-                        processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);                        
+                        processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                     }
                 } else {
                     log.error("Could not log the outgoing batch status because the batch was null", e);
@@ -1187,7 +1187,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return index;
     }
 
-    protected boolean writeBatchStats(BufferedWriter writer, char[] buffer, int bufferSize, String prevBuffer, OutgoingBatch batch) throws IOException {
+    protected boolean writeBatchStats(BufferedWriter writer, char[] buffer, int bufferSize, String prevBuffer, OutgoingBatch batch)
+            throws IOException {
         String bufferString = new String(buffer);
         int index = findStatsIndex(bufferString, prevBuffer);
 
@@ -1196,7 +1197,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             System.out.println("PREFIX: ");
             System.out.println(prefix);
             System.out.println();
-            //writer.write(buffer, 0, index);
+            // writer.write(buffer, 0, index);
         }
         if (index > -1) {
             String stats = getBatchStatsColumns() + System.lineSeparator() + getBatchStats(batch) + System.lineSeparator();
@@ -1204,17 +1205,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             System.out.println("STATS BUFFER: ");
             System.out.println(statsBuffer);
             System.out.println();
-            //writer.write(statsBuffer, 0, stats.length());
+            // writer.write(statsBuffer, 0, stats.length());
 
             char suffix[] = Arrays.copyOfRange(buffer, index, buffer.length);
             System.out.println("SUFFIX: ");
             System.out.println(suffix);
             System.out.println();
-            //writer.write(buffer, 0, bufferSize - index);
+            // writer.write(buffer, 0, bufferSize - index);
         } else {
             System.out.println("STATS INDEX NOT FOUND");
             System.out.println();
-            //writer.write(buffer, 0, bufferSize);
+            // writer.write(buffer, 0, bufferSize);
         }
 
         return index > -1;
@@ -1734,10 +1735,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                             String initialLoadSelect = data.getRowData();
                             if (initialLoadSelect == null && triggerRouter.getTrigger().isStreamRow()) {
-                                //if (sourceTable == null) {
-                                    sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter.getRouter().getRouterId(),
-                                            triggerHistory, false, true);
-                               // }
+                                // if (sourceTable == null) {
+                                sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter.getRouter().getRouterId(), triggerHistory,
+                                        false, true);
+                                // }
                                 Column[] columns = sourceTable.getPrimaryKeyColumns();
                                 DmlStatement dmlStmt = platform.createDmlStatement(DmlType.WHERE, sourceTable, null);
                                 String[] pkData = data.getParsedData(CsvData.PK_DATA);
@@ -1748,7 +1749,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 }
                                 initialLoadSelect = dmlStmt.buildDynamicSql(batch.getBinaryEncoding(), row, false, true, columns);
                                 if (initialLoadSelect.endsWith(platform.getDatabaseInfo().getSqlCommandDelimiter())) {
-                                    initialLoadSelect = initialLoadSelect.substring(0, 
+                                    initialLoadSelect = initialLoadSelect.substring(0,
                                             initialLoadSelect.length() - platform.getDatabaseInfo().getSqlCommandDelimiter().length());
                                 }
                             }
@@ -2124,5 +2125,4 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             return isRetry;
         }
     }
-
 }
