@@ -70,6 +70,10 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
                 platform instanceof MsSql2008DatabasePlatform);
     }
 
+    protected AbstractDatabaseWriter create(){
+        return new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, uncPath, null, null);
+    }
+    
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
         return writeData(new MsSqlBulkDatabaseWriter(platform, stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, uncPath, null, null), new TableCsvData(table, data));

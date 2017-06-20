@@ -40,14 +40,12 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
-import org.jumpmind.symmetric.model.IncomingBatch;
 import org.postgresql.copy.CopyIn;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected NativeJdbcExtractor jdbcExtractor;
 
@@ -60,8 +58,6 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
     protected int loadedRows = 0;
 
     protected boolean needsBinaryConversion;
-
-    protected boolean useDefaultDataWriter;
     
     public PostgresBulkDatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings settings,
             NativeJdbcExtractor jdbcExtractor, int maxRowsBeforeFlush) {
@@ -69,15 +65,10 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
         this.jdbcExtractor = jdbcExtractor;
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
     }
+    
+    @Override
+    protected void bulkWrite(CsvData data) {
 
-    public void write(CsvData data) {
-        if (useDefaultDataWriter) {
-            super.write(data);
-            return;
-        }
-        
-        statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
-        statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
         statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
 
         DataEventType dataEventType = data.getDataEventType();
@@ -117,6 +108,7 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
                     } catch (Exception ex) {
                         throw getPlatform().getSqlTemplate().translate(ex);
                     }
+                    //endCopy();
                     break;
                 case UPDATE:
                 case DELETE:
@@ -132,6 +124,8 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
             }
         } 
         statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
+        statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+        statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
     }
 
     protected void flush() {
@@ -182,19 +176,15 @@ public class PostgresBulkDatabaseWriter extends DefaultDatabaseWriter {
                         copyIn.endCopy();
                     }
                 } catch (Exception ex) {
+                    statistics.get(batch).set(DataWriterStatisticConstants.STATEMENTCOUNT, 0);
+                    statistics.get(batch).set(DataWriterStatisticConstants.LINENUMBER, 0);
+                   
                     throw getPlatform().getSqlTemplate().translate(ex);
                 } finally {
                     copyIn = null;
                 }
             }
         }
-    }
-
-    @Override
-    public void start(Batch batch) {
-        super.start(batch);
-        IncomingBatch currentBatch = (IncomingBatch) context.get("currentBatch");
-        useDefaultDataWriter = currentBatch == null ? false : currentBatch.isErrorFlag();
     }
     
     @Override

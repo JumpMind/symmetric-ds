@@ -1560,6 +1560,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if (!parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)) {
                                 outgoingBatch.setStatus(Status.NE);
                                 outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
+                            } else if (outgoingBatch.getStatus() == Status.RQ) {
+                                log.info("Batch {} was empty after extract in background and will be ignored.",
+                                        new Object[] { outgoingBatch.getNodeBatchId() });
+                                outgoingBatch.setStatus(Status.IG);
+                                outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
+
                             }
                         }
                     } else {

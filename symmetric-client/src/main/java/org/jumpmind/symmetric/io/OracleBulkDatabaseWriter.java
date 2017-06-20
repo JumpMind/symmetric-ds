@@ -45,7 +45,6 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 import oracle.jdbc.OracleTypes;
@@ -56,7 +55,7 @@ import oracle.sql.Datum;
 import oracle.sql.TIMESTAMPLTZ;
 import oracle.sql.TIMESTAMPTZ;
 
-public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected String procedurePrefix;
 
@@ -86,7 +85,7 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
         }
     }
 
-    public void write(CsvData data) {
+    protected void bulkWrite(CsvData data) {
         DataEventType dataEventType = data.getDataEventType();
 
         if (lastEventType != null && !lastEventType.equals(dataEventType)) {
@@ -125,16 +124,10 @@ public class OracleBulkDatabaseWriter extends DefaultDatabaseWriter {
                 }
                 break;
             case UPDATE:
-                flush();
-                super.write(data);
-                break;
             case DELETE:
-                flush();
-                super.write(data);
-                break;
             default:
                 flush();
-                super.write(data);
+                writeDefault(data);
                 break;
         }
 

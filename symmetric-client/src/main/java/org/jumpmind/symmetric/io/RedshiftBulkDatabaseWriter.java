@@ -36,7 +36,6 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
@@ -48,7 +47,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 
-public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
+public class RedshiftBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
@@ -115,7 +114,9 @@ public class RedshiftBulkDatabaseWriter extends DefaultDatabaseWriter {
         }
     }
 
-    public void write(CsvData data) {
+    public void bulkWrite(CsvData data) {
+        super.write(data);
+        
         if (filterBefore(data)) {
             try {
                 DataEventType dataEventType = data.getDataEventType();
