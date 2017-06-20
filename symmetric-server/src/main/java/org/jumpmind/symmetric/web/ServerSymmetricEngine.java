@@ -111,7 +111,7 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
                 try {
                     Class<?> clazz = ClassUtils.getClass(className);
                     IInterceptor interceptor = null;
-                    for (Constructor c : clazz.getConstructors()) {
+                    for (Constructor<?> c : clazz.getConstructors()) {
                         if (c.getParameterTypes().length == 1 
                                 && c.getParameterTypes()[0].isAssignableFrom(ISymmetricEngine.class)) {
                             interceptor = (IInterceptor) c.newInstance(this);
@@ -127,11 +127,7 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
                 }
             }
         }
-        if (!customInterceptors.isEmpty()) {
-            return customInterceptors.toArray(new IInterceptor[customInterceptors.size()]);
-        } else {            
-            return null;
-        }
+        return customInterceptors.toArray(new IInterceptor[customInterceptors.size()]);
     }
     
     protected IInterceptor[] add(IInterceptor[] array, IInterceptor... elements ) {
