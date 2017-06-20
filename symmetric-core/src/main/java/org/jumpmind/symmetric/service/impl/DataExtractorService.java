@@ -1177,11 +1177,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             int start = fullBuffer.indexOf(group);
 
             if (start + group.length() > prevBuffer.length()) {
-                index = group.length() - (prevBuffer.length() - start);
+                index = start + group.length() - prevBuffer.length();
             } else {
                 index = start + group.length();
             }
-
         }
 
         return index;
