@@ -148,30 +148,35 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 !parameterService.isRegistrationServer()) {
             try {
                 startTimesOfNodesBeingPushedTo.put(nodeCommunication.getIdentifier(), new Date());
+                long batchesProcessed = 0;
+                long dataProcessed = 0;
+                long reloadBatchesProcessed = 0;
                 do {
-                	if (status.getBatchesProcessed() > 0) {
+                	if (batchesProcessed > 0) {
 	                    if (status.getReloadBatchesProcessed() > 0) {
 	                        log.info("Pushing to {} again because the last push contained reload batches", node);
 	                    } else {
 	                    	log.debug("Pushing to {} again because the last push contained batches", node);
 	                    }
-	                    status.resetCounts();
                 	}
                     log.debug("Push requested for node {} channel {}", node, nodeCommunication.getQueue());
                     pushToNode(node, status);
-                    if (!status.failed() && status.getBatchesProcessed() > 0) {
+                    batchesProcessed = status.getBatchesProcessed() - batchesProcessed;
+                    dataProcessed = status.getDataProcessed() - dataProcessed;
+                    reloadBatchesProcessed = status.getReloadBatchesProcessed() - reloadBatchesProcessed;
+                    if (!status.failed() && batchesProcessed > 0) {
                         log.info(
                                 "Pushed data to node {}. {} data and {} batches were processed",
-                                new Object[] { node, status.getDataProcessed(),
-                                        status.getBatchesProcessed()});
+                                new Object[] { node, dataProcessed,
+                                        batchesProcessed});
                     } else if (status.failed()) {
                         log.debug(
                                 "There was a failure while pushing data to {}. {} data and {} batches were processed",
-                                new Object[] { node, status.getDataProcessed(),
-                                        status.getBatchesProcessed()});                        
+                                new Object[] { node, dataProcessed,
+                                        batchesProcessed});                        
                     }
                     log.debug("Push completed for {} channel {}", node, nodeCommunication.getQueue());
-                } while (((immediatePushIfDataFound && status.getBatchesProcessed() > 0) || status.getReloadBatchesProcessed() > 0)
+                } while (((immediatePushIfDataFound && batchesProcessed > 0) || reloadBatchesProcessed > 0)
                 		&& !status.failed());
             } finally {
                 startTimesOfNodesBeingPushedTo.remove(node.getNodeId());

@@ -152,7 +152,7 @@ public class DbExportImportTest extends AbstractServiceTest {
             return;
         }
         
-        final int EXPECTED_VARCHAR_MAX_COUNT = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 295 : 50;
+        final int EXPECTED_VARCHAR_MAX_COUNT = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.SQLITE) ? 316 : 59;
         final String EXPECTED_VARCHAR_MAX_STRING = "varchar(" + Integer.MAX_VALUE + ")";
         final int actualVarcharMaxCount = StringUtils.countMatches(output, EXPECTED_VARCHAR_MAX_STRING);
         String msg = String.format("Expected %s, but got %s in the following output %s", 
