@@ -990,6 +990,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 && remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0) && !cclient;
     }
 
+    //TODO: Implement stream copy and inject stats
     protected OutgoingBatch sendOutgoingBatch(ProcessInfo processInfo, Node targetNode, OutgoingBatch currentBatch, boolean isRetry,
             IDataWriter dataWriter, BufferedWriter writer, ExtractMode mode) {
         if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode) {
@@ -1068,6 +1069,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith(CsvConstants.BATCH)) {
+                        reader.mark(0);
+                        String nextLine = reader.readLine();
+                        reader.reset();
+                        if (nextLine != null && !nextLine.startsWith(CsvConstants.STATS_COLUMNS)) {
+                            writer.write(getBatchStatsColumns());
+                            writer.newLine();
+                            writer.write(getBatchStats(batch));
+                            writer.newLine();    
+                        }
+                        
                         writer.write(CsvConstants.RETRY + "," + batch.getBatchId());
                         writer.newLine();
                         writer.write(CsvConstants.COMMIT + "," + batch.getBatchId());
@@ -1098,7 +1109,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (!batchStatsWritten) {
                         batchStatsWritten = writeBatchStats(writer, buffer, numCharsRead, prevBuffer, batch);
                         prevBuffer = new String(buffer);
-                        writer.write(buffer, 0, numCharsRead);
                     } else {
                         writer.write(buffer, 0, numCharsRead);
                     }
@@ -1193,45 +1203,38 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         if (index > 0) {
             char prefix[] = Arrays.copyOf(buffer, index);
-            System.out.println("PREFIX: ");
-            System.out.println(prefix);
-            System.out.println();
-            // writer.write(buffer, 0, index);
+            writer.write(prefix, 0, index);
         }
         if (index > -1) {
             String stats = getBatchStatsColumns() + System.lineSeparator() + getBatchStats(batch) + System.lineSeparator();
             char statsBuffer[] = stats.toCharArray();
-            System.out.println("STATS BUFFER: ");
-            System.out.println(statsBuffer);
-            System.out.println();
-            // writer.write(statsBuffer, 0, stats.length());
+            writer.write(statsBuffer, 0, stats.length());
 
             char suffix[] = Arrays.copyOfRange(buffer, index, buffer.length);
-            System.out.println("SUFFIX: ");
-            System.out.println(suffix);
-            System.out.println();
-            // writer.write(buffer, 0, bufferSize - index);
+            writer.write(suffix, 0, bufferSize - index);
         } else {
-            System.out.println("STATS INDEX NOT FOUND");
-            System.out.println();
-            // writer.write(buffer, 0, bufferSize);
+            writer.write(buffer, 0, bufferSize);
         }
 
         return index > -1;
     }
 
     protected String getBatchStatsColumns() {
-        return CsvConstants.STATS_COLUMNS + ",load_flag,extract_count,sent_count,load_count,load_id,common_flag,"
-                + "router_millis,extract_millis,transform_extract_millis,transform_load_millis,"
-                + "reload_row_count,other_row_count,data_row_count,data_insert_row_count,data_update_row_count,"
-                + "data_delete_row_count,extract_row_count,extract_insert_row_count,extract_update_row_count,"
-                + "extract_delete_row_count,_data_id";
+        return StringUtils.join(new String[] { CsvConstants.STATS_COLUMNS, DataReaderStatistics.LOAD_FLAG, DataReaderStatistics.EXTRACT_COUNT,
+                DataReaderStatistics.SENT_COUNT, DataReaderStatistics.LOAD_COUNT, DataReaderStatistics.LOAD_ID,
+                DataReaderStatistics.COMMON_FLAG, DataReaderStatistics.ROUTER_MILLIS, DataReaderStatistics.EXTRACT_MILLIS,
+                DataReaderStatistics.TRANSFORM_EXTRACT_MILLIS, DataReaderStatistics.TRANSFORM_LOAD_MILLIS,
+                DataReaderStatistics.RELOAD_ROW_COUNT, DataReaderStatistics.OTHER_ROW_COUNT, DataReaderStatistics.DATA_ROW_COUNT,
+                DataReaderStatistics.DATA_INSERT_ROW_COUNT, DataReaderStatistics.DATA_UPDATE_ROW_COUNT,
+                DataReaderStatistics.DATA_DELETE_ROW_COUNT, DataReaderStatistics.EXTRACT_ROW_COUNT,
+                DataReaderStatistics.EXTRACT_INSERT_ROW_COUNT, DataReaderStatistics.EXTRACT_UPDATE_ROW_COUNT,
+                DataReaderStatistics.EXTRACT_DELETE_ROW_COUNT, DataReaderStatistics.FAILED_DATA_ID }, ',');
     }
 
     protected String getBatchStats(OutgoingBatch batch) {
-        return StringUtils.join(new String[] { CsvConstants.STATS, String.valueOf(batch.isLoadFlag()),
+        return StringUtils.join(new String[] { CsvConstants.STATS, String.valueOf(batch.isLoadFlag() ? 1 : 0),
                 String.valueOf(batch.getExtractCount()), String.valueOf(batch.getSentCount()), String.valueOf(batch.getLoadCount()),
-                String.valueOf(batch.getLoadId()), String.valueOf(batch.isCommonFlag()), String.valueOf(batch.getRouterMillis()),
+                String.valueOf(batch.getLoadId()), String.valueOf(batch.isCommonFlag() ? 1 : 0), String.valueOf(batch.getRouterMillis()),
                 String.valueOf(batch.getExtractMillis()), String.valueOf(batch.getTransformExtractMillis()),
                 String.valueOf(batch.getTransformLoadMillis()), String.valueOf(batch.getReloadRowCount()),
                 String.valueOf(batch.getOtherRowCount()), String.valueOf(batch.getDataRowCount()),

@@ -53,49 +53,43 @@ import org.jumpmind.util.FormatUtils;
 public class IncomingBatchService extends AbstractService implements IIncomingBatchService {
 
     protected IClusterService clusterService;
-    
+
     @Override
     public List<String> getNodesInError() {
         return sqlTemplate.query(getSql("selectNodesInErrorSql"), new StringMapper());
     }
-    
-    public IncomingBatchService(IParameterService parameterService,
-            ISymmetricDialect symmetricDialect, IClusterService clusterService) {
+
+    public IncomingBatchService(IParameterService parameterService, ISymmetricDialect symmetricDialect, IClusterService clusterService) {
         super(parameterService, symmetricDialect);
         this.clusterService = clusterService;
-        setSqlMap(new IncomingBatchServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens()));
+        setSqlMap(new IncomingBatchServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
-    
+
     public void refreshIncomingBatch(IncomingBatch batch) {
-        sqlTemplate.queryForObject(
-                getSql("selectIncomingBatchPrefixSql", "findIncomingBatchSql"),
-                new IncomingBatchMapper(batch), batch.getBatchId(), batch.getNodeId());        
+        sqlTemplate.queryForObject(getSql("selectIncomingBatchPrefixSql", "findIncomingBatchSql"), new IncomingBatchMapper(batch),
+                batch.getBatchId(), batch.getNodeId());
     }
 
     public IncomingBatch findIncomingBatch(long batchId, String nodeId) {
         if (nodeId != null) {
-            return sqlTemplate.queryForObject(
-                    getSql("selectIncomingBatchPrefixSql", "findIncomingBatchSql"),
-                    new IncomingBatchMapper(), batchId, nodeId);
+            return sqlTemplate.queryForObject(getSql("selectIncomingBatchPrefixSql", "findIncomingBatchSql"), new IncomingBatchMapper(),
+                    batchId, nodeId);
         } else {
-            return sqlTemplate.queryForObject(
-                    getSql("selectIncomingBatchPrefixSql", "findIncomingBatchByBatchIdSql"),
-                    new IncomingBatchMapper(), batchId);            
+            return sqlTemplate.queryForObject(getSql("selectIncomingBatchPrefixSql", "findIncomingBatchByBatchIdSql"),
+                    new IncomingBatchMapper(), batchId);
         }
     }
 
     public int countIncomingBatchesInError() {
         return sqlTemplateDirty.queryForInt(getSql("countIncomingBatchesErrorsSql"));
     }
-    
+
     public int countIncomingBatchesInError(String channelId) {
         return sqlTemplateDirty.queryForInt(getSql("countIncomingBatchesErrorsOnChannelSql"), channelId);
     }
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows) {
-        return sqlTemplateDirty.query(
-                getSql("selectIncomingBatchPrefixSql", "findIncomingBatchErrorsSql"), maxRows,
+        return sqlTemplateDirty.query(getSql("selectIncomingBatchPrefixSql", "findIncomingBatchErrorsSql"), maxRows,
                 new IncomingBatchMapper());
     }
 
@@ -117,14 +111,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public List<IncomingBatch> listIncomingBatchesInErrorFor(String nodeId) {
-        return sqlTemplate.query(
-                getSql("selectIncomingBatchPrefixSql", "listIncomingBatchesInErrorForNodeSql"),
-                new IncomingBatchMapper(), nodeId);
+        return sqlTemplate.query(getSql("selectIncomingBatchPrefixSql", "listIncomingBatchesInErrorForNodeSql"), new IncomingBatchMapper(),
+                nodeId);
     }
-    
+
     @SuppressWarnings("deprecation")
     public boolean isRecordOkBatchesEnabled() {
-        boolean enabled = true;        
+        boolean enabled = true;
         if (!parameterService.is(ParameterConstants.INCOMING_BATCH_RECORD_OK_ENABLED, true)) {
             enabled = false;
         }
@@ -132,10 +125,10 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             enabled = false;
         }
         return enabled;
-    } 
+    }
 
-    public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
-            List<AbstractBatch.Status> statuses, List<String> loads, boolean ascending) {
+    public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels, List<AbstractBatch.Status> statuses,
+            List<String> loads, boolean ascending) {
 
         String whereClause = buildBatchWhere(nodeIds, channels, statuses, loads);
 
@@ -144,37 +137,34 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         params.put("CHANNELS", channels);
         params.put("STATUSES", toStringList(statuses));
         params.put("LOADS", loads);
-        
-        String sql = getSql("selectCreateTimePrefixSql", whereClause,
-                ascending ? " order by create_time" : " order by create_time desc");
+
+        String sql = getSql("selectCreateTimePrefixSql", whereClause, ascending ? " order by create_time" : " order by create_time desc");
         return sqlTemplate.query(sql, new DateMapper(), params);
     }
 
-    public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
-            List<AbstractBatch.Status> statuses, List<String> loads, Date startAtCreateTime,
-            final int maxRowsToRetrieve, boolean ascending) {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("NODES", nodeIds);
-            params.put("CHANNELS", channels);
-            params.put("STATUSES", toStringList(statuses));
-            params.put("CREATE_TIME", startAtCreateTime);
-            params.put("LOADS", loads);
-            
-            String where = buildBatchWhere(nodeIds, channels, statuses, loads);
+    public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels, List<AbstractBatch.Status> statuses,
+            List<String> loads, Date startAtCreateTime, final int maxRowsToRetrieve, boolean ascending) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("NODES", nodeIds);
+        params.put("CHANNELS", channels);
+        params.put("STATUSES", toStringList(statuses));
+        params.put("CREATE_TIME", startAtCreateTime);
+        params.put("LOADS", loads);
 
-            String createTimeLimiter = "";
-            if (startAtCreateTime != null) {
-                if (StringUtils.isBlank(where)) {
-                    where = " where 1=1 ";
-                }
-                createTimeLimiter = " and create_time " + (ascending ? ">=" : "<=")
-                        + " :CREATE_TIME";
+        String where = buildBatchWhere(nodeIds, channels, statuses, loads);
+
+        String createTimeLimiter = "";
+        if (startAtCreateTime != null) {
+            if (StringUtils.isBlank(where)) {
+                where = " where 1=1 ";
             }
+            createTimeLimiter = " and create_time " + (ascending ? ">=" : "<=") + " :CREATE_TIME";
+        }
 
-            String sql = getSql("selectIncomingBatchPrefixSql", where, createTimeLimiter,
-                    ascending ? " order by create_time" : " order by create_time desc");
+        String sql = getSql("selectIncomingBatchPrefixSql", where, createTimeLimiter,
+                ascending ? " order by create_time" : " order by create_time desc");
 
-            return sqlTemplateDirty.query(sql, maxRowsToRetrieve, new IncomingBatchMapper(), params);
+        return sqlTemplateDirty.query(sql, maxRowsToRetrieve, new IncomingBatchMapper(), params);
 
     }
 
@@ -203,7 +193,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     batch.setRetry(true);
                     existingBatch = findIncomingBatch(batch.getBatchId(), batch.getNodeId());
                 }
-            } else {                
+            } else {
                 existingBatch = findIncomingBatch(batch.getBatchId(), batch.getNodeId());
                 if (existingBatch != null) {
                     batch.setRetry(true);
@@ -211,10 +201,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             }
 
             if (batch.isRetry()) {
-                if (existingBatch.getStatus() == Status.ER || existingBatch.getStatus() == Status.LD
-                        || existingBatch.getStatus() == Status.RS
-                        || !parameterService
-                                .is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED)) {
+                if (existingBatch.getStatus() == Status.ER || existingBatch.getStatus() == Status.LD || existingBatch.getStatus() == Status.RS
+                        || !parameterService.is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED)) {
                     okayToProcess = true;
                     batch.setErrorFlag(existingBatch.isErrorFlag());
                     existingBatch.setStatus(Status.LD);
@@ -244,40 +232,42 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         }
         return okayToProcess;
     }
-    
+
     public void insertIncomingBatch(ISqlTransaction transaction, IncomingBatch batch) {
         if (batch.isPersistable()) {
-        	boolean alreadyExists = false;
-        	if (symmetricDialect.getName().equals(DatabaseNamesConstants.REDSHIFT)) {
-        		if (findIncomingBatch(batch.getBatchId(), batch.getNodeId()) != null) {
-        			alreadyExists = true;
-        		}
-        	}
-        	if (!alreadyExists) {
-	        	batch.setLastUpdatedHostName(clusterService.getServerId());
-	            batch.setLastUpdatedTime(new Date());
-	            transaction.prepareAndExecute(
-	                    getSql("insertIncomingBatchSql"),
-	                    new Object[] { batch.getBatchId(), batch.getNodeId(), batch.getChannelId(),
-	                            batch.getStatus().name(), batch.getNetworkMillis(),
-	                            batch.getFilterMillis(), batch.getLoadMillis(),
-	                            batch.getFailedRowNumber(), batch.getFailedLineNumber(),
-	                            batch.getByteCount(), batch.getLoadRowCount(),
-	                            batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(),
-	                            batch.getIgnoreCount(), batch.getIgnoreRowCount(), batch.getMissingDeleteCount(),
-	                            batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
-	                            FormatUtils.abbreviateForLogging(batch.getSqlMessage()),
-	                            batch.getLastUpdatedHostName(), batch.getSummary() },
-	                    new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.CHAR,
-	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-	                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, 
-	                            Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, 
-	                            Types.VARCHAR, Types.VARCHAR });
-        	}
+            boolean alreadyExists = false;
+            if (symmetricDialect.getName().equals(DatabaseNamesConstants.REDSHIFT)) {
+                if (findIncomingBatch(batch.getBatchId(), batch.getNodeId()) != null) {
+                    alreadyExists = true;
+                }
+            }
+            if (!alreadyExists) {
+                batch.setLastUpdatedHostName(clusterService.getServerId());
+                batch.setLastUpdatedTime(new Date());
+                transaction.prepareAndExecute(getSql("insertIncomingBatchSql"),
+                        new Object[] { batch.getBatchId(), batch.getNodeId(), batch.getChannelId(), batch.getStatus().name(),
+                                batch.getNetworkMillis(), batch.getFilterMillis(), batch.getLoadMillis(), batch.getFailedRowNumber(),
+                                batch.getFailedLineNumber(), batch.getByteCount(), batch.getLoadRowCount(), batch.getFallbackInsertCount(),
+                                batch.getFallbackUpdateCount(), batch.getIgnoreCount(), batch.getIgnoreRowCount(),
+                                batch.getMissingDeleteCount(), batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
+                                FormatUtils.abbreviateForLogging(batch.getSqlMessage()), batch.getLastUpdatedHostName(), batch.getSummary(),
+                                batch.isLoadFlag(), batch.getExtractCount(), batch.getSentCount(), batch.getLoadCount(), batch.getLoadId(),
+                                batch.isCommonFlag(), batch.getRouterMillis(), batch.getExtractMillis(), batch.getTransformExtractMillis(),
+                                batch.getTransformLoadMillis(), batch.getReloadRowCount(), batch.getOtherRowCount(), batch.getDataRowCount(),
+                                batch.getDataInsertRowCount(), batch.getDataUpdateRowCount(), batch.getDataDeleteRowCount(),
+                                batch.getExtractRowCount(), batch.getExtractInsertRowCount(), batch.getExtractUpdateRowCount(),
+                                batch.getExtractDeleteRowCount(), batch.getFailedDataId() },
+                        new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR,
+                                Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                                Types.NUMERIC });
+            }
         }
     }
-    
+
     public void insertIncomingBatch(IncomingBatch batch) {
         ISqlTransaction transaction = null;
         try {
@@ -293,25 +283,24 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw ex;              
+            throw ex;
         } finally {
             close(transaction);
-        }    
+        }
     }
 
     public int deleteIncomingBatch(IncomingBatch batch) {
-        return sqlTemplate.update(getSql("deleteIncomingBatchSql"),
-                new Object[] { batch.getBatchId(), batch.getNodeId() }, new int[] { symmetricDialect.getSqlTypeForIds(),
-                        Types.VARCHAR });
+        return sqlTemplate.update(getSql("deleteIncomingBatchSql"), new Object[] { batch.getBatchId(), batch.getNodeId() },
+                new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
-    
+
     public int updateIncomingBatch(IncomingBatch batch) {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
             int count = updateIncomingBatch(transaction, batch);
             transaction.commit();
-            return count;   
+            return count;
         } catch (Error ex) {
             if (transaction != null) {
                 transaction.rollback();
@@ -321,13 +310,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw ex;              
+            throw ex;
         } finally {
             close(transaction);
-        }        
+        }
     }
 
-    public int updateIncomingBatch(ISqlTransaction transaction , IncomingBatch batch) {
+    public int updateIncomingBatch(ISqlTransaction transaction, IncomingBatch batch) {
         int count = 0;
         if (batch.isPersistable()) {
             if (batch.getStatus() == IncomingBatch.Status.ER) {
@@ -336,35 +325,36 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 batch.setErrorFlag(false);
             }
             batch.setLastUpdatedHostName(clusterService.getServerId());
-            count =  transaction.prepareAndExecute(
-                    getSql("updateIncomingBatchSql"),
-                    new Object[] { batch.getStatus().name(), batch.isErrorFlag() ? 1 : 0,
-                            batch.getNetworkMillis(), batch.getFilterMillis(),
-                            batch.getLoadMillis(), batch.getFailedRowNumber(),
-                            batch.getFailedLineNumber(), batch.getByteCount(),
-                            batch.getLoadRowCount(), batch.getFallbackInsertCount(),
-                            batch.getFallbackUpdateCount(), batch.getIgnoreCount(), batch.getIgnoreRowCount(),
-                            batch.getMissingDeleteCount(), batch.getSkipCount(),
-                            batch.getSqlState(), batch.getSqlCode(),
-                            FormatUtils.abbreviateForLogging(batch.getSqlMessage()),
-                            batch.getLastUpdatedHostName(), batch.getSummary(),
-                            batch.getBatchId(), batch.getNodeId() }, new int[] { Types.CHAR,
-                            Types.SMALLINT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.NUMERIC, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
+            count = transaction.prepareAndExecute(getSql("updateIncomingBatchSql"),
+                    new Object[] { batch.getStatus().name(), batch.isErrorFlag() ? 1 : 0, batch.getNetworkMillis(), batch.getFilterMillis(),
+                            batch.getLoadMillis(), batch.getFailedRowNumber(), batch.getFailedLineNumber(), batch.getByteCount(),
+                            batch.getLoadRowCount(), batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(), batch.getIgnoreCount(),
+                            batch.getIgnoreRowCount(), batch.getMissingDeleteCount(), batch.getSkipCount(), batch.getSqlState(),
+                            batch.getSqlCode(), FormatUtils.abbreviateForLogging(batch.getSqlMessage()), batch.getLastUpdatedHostName(),
+                            batch.getSummary(), batch.isLoadFlag(), batch.getExtractCount(), batch.getSentCount(), batch.getLoadCount(),
+                            batch.getLoadId(), batch.isCommonFlag(), batch.getRouterMillis(), batch.getExtractMillis(),
+                            batch.getTransformExtractMillis(), batch.getTransformLoadMillis(), batch.getReloadRowCount(),
+                            batch.getOtherRowCount(), batch.getDataRowCount(), batch.getDataInsertRowCount(), batch.getDataUpdateRowCount(),
+                            batch.getDataDeleteRowCount(), batch.getExtractRowCount(), batch.getExtractInsertRowCount(),
+                            batch.getExtractUpdateRowCount(), batch.getExtractDeleteRowCount(), batch.getFailedDataId(), batch.getBatchId(),
+                            batch.getNodeId() },
+                    new int[] { Types.CHAR, Types.SMALLINT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
         }
         return count;
     }
-    
+
     public Map<String, BatchId> findMaxBatchIdsByChannel() {
         Map<String, BatchId> ids = new HashMap<String, BatchId>();
-        sqlTemplate.query(getSql("maxBatchIdsSql"), new BatchIdMapper(ids),
-                IncomingBatch.Status.OK.name());
+        sqlTemplate.query(getSql("maxBatchIdsSql"), new BatchIdMapper(ids), IncomingBatch.Status.OK.name());
         return ids;
     }
-    
+
     public List<IncomingBatchSummary> findIncomingBatchSummaryByChannel(Status... statuses) {
         Object[] args = new Object[statuses.length];
         StringBuilder inList = new StringBuilder();
@@ -378,7 +368,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
         return sqlTemplate.query(sql, new IncomingBatchSummaryChannelMapper(), args);
     }
-    
+
     public List<IncomingBatchSummary> findIncomingBatchSummary(Status... statuses) {
         Object[] args = new Object[statuses.length];
         StringBuilder inList = new StringBuilder();
@@ -387,12 +377,11 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             inList.append("?,");
         }
 
-        String sql = getSql("selectIncomingBatchSummaryByStatusSql").replace(":STATUS_LIST",
-                inList.substring(0, inList.length() - 1));
+        String sql = getSql("selectIncomingBatchSummaryByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
 
         return sqlTemplate.query(sql, new IncomingBatchSummaryMapper(), args);
     }
-    
+
     @Override
     public Map<String, Date> findLastUpdatedByChannel() {
         Map<String, Date> captureMap = new HashMap<String, Date>();
@@ -400,12 +389,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         sqlTemplate.query(getSql("lastUpdateByChannelSql"), mapper);
         return mapper.getCaptureMap();
     }
-    
+
     @Override
     public List<BatchId> getAllBatches() {
         return sqlTemplateDirty.query(getSql("getAllBatchesSql"), new BatchIdMapper());
     }
-    
+
     class IncomingBatchSummaryMapper implements ISqlRowMapper<IncomingBatchSummary> {
         public IncomingBatchSummary mapRow(Row rs) {
             IncomingBatchSummary summary = new IncomingBatchSummary();
@@ -418,7 +407,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             return summary;
         }
     }
-    
+
     class IncomingBatchSummaryChannelMapper extends IncomingBatchSummaryMapper {
         public IncomingBatchSummary mapRow(Row rs) {
             IncomingBatchSummary summary = super.mapRow(rs);
@@ -430,10 +419,10 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             return summary;
         }
     }
-    
+
     class BatchIdMapper implements ISqlRowMapper<BatchId> {
         Map<String, BatchId> ids;
-        
+
         public BatchIdMapper() {
         }
 
@@ -446,7 +435,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setBatchId(rs.getLong("batch_id"));
             batch.setNodeId(rs.getString("node_id"));
             if (ids != null) {
-               ids.put(rs.getString("channel_id"), batch);
+                ids.put(rs.getString("channel_id"), batch);
             }
             return batch;
         }
@@ -454,34 +443,33 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     class LastCaptureByChannelMapper implements ISqlRowMapper<String> {
         private Map<String, Date> captureMap;
-        
+
         public LastCaptureByChannelMapper(Map<String, Date> map) {
             captureMap = map;
         }
-        
+
         public Map<String, Date> getCaptureMap() {
             return captureMap;
         }
-        
+
         @Override
         public String mapRow(Row row) {
             captureMap.put(row.getString("CHANNEL_ID"), row.getDateTime("LAST_UPDATE_TIME"));
             return null;
         }
     }
-    
+
     class IncomingBatchMapper implements ISqlRowMapper<IncomingBatch> {
-        
+
         IncomingBatch batchToRefresh = null;
-        
+
         public IncomingBatchMapper(IncomingBatch batchToRefresh) {
-            this.batchToRefresh = batchToRefresh;    
+            this.batchToRefresh = batchToRefresh;
         }
-        
+
         public IncomingBatchMapper() {
         }
-        
-        
+
         public IncomingBatch mapRow(Row rs) {
             IncomingBatch batch = batchToRefresh != null ? batchToRefresh : new IncomingBatch();
             batch.setBatchId(rs.getLong("batch_id"));
@@ -536,6 +524,5 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             return batch;
         }
     }
-
 
 }

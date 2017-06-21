@@ -53,6 +53,27 @@ public class IncomingBatch extends AbstractBatch {
     public void setValues(Statistics readerStatistics, Statistics writerStatistics, boolean isSuccess) {
         if (readerStatistics != null) {
             setByteCount(readerStatistics.get(DataReaderStatistics.READ_BYTE_COUNT));
+            setLoadFlag(readerStatistics.get(DataReaderStatistics.LOAD_FLAG) == 1);
+            setExtractCount(readerStatistics.get(DataReaderStatistics.EXTRACT_COUNT));
+            setSentCount(readerStatistics.get(DataReaderStatistics.SENT_COUNT));
+            setLoadCount(readerStatistics.get(DataReaderStatistics.LOAD_COUNT));
+            setLoadId(readerStatistics.get(DataReaderStatistics.LOAD_ID));
+            setCommonFlag(readerStatistics.get(DataReaderStatistics.COMMON_FLAG) == 1);
+            setRouterMillis(readerStatistics.get(DataReaderStatistics.ROUTER_MILLIS));
+            setExtractCount(readerStatistics.get(DataReaderStatistics.EXTRACT_MILLIS));
+            setTransformExtractMillis(readerStatistics.get(DataReaderStatistics.TRANSFORM_EXTRACT_MILLIS));
+            setTransformLoadMillis(readerStatistics.get(DataReaderStatistics.TRANSFORM_LOAD_MILLIS));
+            setReloadRowCount(readerStatistics.get(DataReaderStatistics.RELOAD_ROW_COUNT));
+            setOtherRowCount(readerStatistics.get(DataReaderStatistics.OTHER_ROW_COUNT));
+            setDataRowCount(readerStatistics.get(DataReaderStatistics.DATA_ROW_COUNT));
+            setDataInsertRowCount(readerStatistics.get(DataReaderStatistics.DATA_INSERT_ROW_COUNT));
+            setDataUpdateRowCount(readerStatistics.get(DataReaderStatistics.DATA_UPDATE_ROW_COUNT));
+            setDataDeleteRowCount(readerStatistics.get(DataReaderStatistics.DATA_DELETE_ROW_COUNT));
+            setExtractRowCount(readerStatistics.get(DataReaderStatistics.EXTRACT_ROW_COUNT));
+            setExtractInsertRowCount(readerStatistics.get(DataReaderStatistics.EXTRACT_INSERT_ROW_COUNT));
+            setExtractUpdateRowCount(readerStatistics.get(DataReaderStatistics.EXTRACT_UPDATE_ROW_COUNT));
+            setExtractDeleteRowCount(readerStatistics.get(DataReaderStatistics.EXTRACT_DELETE_ROW_COUNT));
+            setFailedDataId(readerStatistics.get(DataReaderStatistics.FAILED_DATA_ID));
         }
         if (writerStatistics != null) {
             setFilterMillis(writerStatistics.get(DataWriterStatisticConstants.FILTERMILLIS));

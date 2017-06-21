@@ -79,9 +79,11 @@ public class SimpleStagingDataWriter {
         IStagedResource resource = null;
         String line = null;
         long startTime = System.currentTimeMillis(), ts = startTime, lineCount = 0;
+        String batchStatsColumnsLine = null; String batchStatsLine = null;
         
         while (reader.readRecord()) {
             line = reader.getRawRecord();
+            //System.out.println("line = " + line);
             if (line.startsWith(CsvConstants.CATALOG)) {
                 catalogLine = line;
                 writeLine(line);
@@ -131,7 +133,7 @@ public class SimpleStagingDataWriter {
                 writeLine(binaryLine);
                 writeLine(channelLine);
                 writeLine(line);
-
+                
                 if (listeners != null) {
                     for (IProtocolDataWriterListener listener : listeners) {
                         listener.start(context, batch);
@@ -173,6 +175,10 @@ public class SimpleStagingDataWriter {
                 binaryLine = line;
             } else if (line.startsWith(CsvConstants.CHANNEL)) {
                 channelLine = line;
+            } else if (line.startsWith(CsvConstants.STATS_COLUMNS)) {
+                batchStatsColumnsLine = line;
+            } else if (line.startsWith(CsvConstants.STATS)) {
+                batchStatsLine = line;
             } else {
                 if (writer == null) {
                     throw new IllegalStateException("Invalid batch data was received: " + line);
