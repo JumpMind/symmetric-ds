@@ -83,7 +83,7 @@ public class SimpleStagingDataWriter {
         
         while (reader.readRecord()) {
             line = reader.getRawRecord();
-            //System.out.println("line = " + line);
+            System.out.println("line = " + line);
             if (line.startsWith(CsvConstants.CATALOG)) {
                 catalogLine = line;
                 writeLine(line);

@@ -190,7 +190,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private IClusterService clusterService;
 
     private Map<String, Semaphore> locks = new HashMap<String, Semaphore>();
-
+    
     public DataExtractorService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.outgoingBatchService = engine.getOutgoingBatchService();
@@ -990,7 +990,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 && remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0) && !cclient;
     }
 
-    //TODO: Implement stream copy and inject stats
     protected OutgoingBatch sendOutgoingBatch(ProcessInfo processInfo, Node targetNode, OutgoingBatch currentBatch, boolean isRetry,
             IDataWriter dataWriter, BufferedWriter writer, ExtractMode mode) {
         if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode) {
@@ -1014,6 +1013,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         Batch.getStagedLocation(false, sourceNode.getNodeId()), currentBatch.getBatchId());
 
                                 SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
+                                
+                                //TODO: Call Copy
+                                //copyFromStaging(extractedBatch, targetResource, currentBatch);
+                                
                                 targetResource.setState(State.DONE);
 
                                 isRetry = true;
@@ -1057,10 +1060,41 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return currentBatch;
 
     }
+    
+    // TODO: Implement Copy and Inject Stats
+    protected void copyFromStaging(IStagedResource sourceResource, IStagedResource targetResource, OutgoingBatch batch) {
+        BufferedReader source = sourceResource.getReader();
+        BufferedWriter target = targetResource.getWriter(0);
+        String line = null;
+        try {
+            while ((line = source.readLine()) != null) {
+                if (line.startsWith(CsvConstants.BATCH)) {
+                    source.mark(0);
+                    String nextLine = source.readLine();
+                    source.reset();
+                    if (nextLine != null && !nextLine.startsWith(CsvConstants.STATS_COLUMNS)) {
+                        target.write(getBatchStatsColumns());
+                        target.newLine();
+                        target.write(getBatchStats(batch));
+                        target.newLine();    
+                    }
+                } else {
+                    target.write(line);
+                    target.newLine();
+                }
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        } finally {
+            sourceResource.close();
+            sourceResource.dereference();
+            targetResource.close();
+            targetResource.dereference();
+        }
+    }
 
     protected void transferFromStaging(ExtractMode mode, BatchType batchType, OutgoingBatch batch, boolean isRetry,
             IStagedResource stagedResource, BufferedWriter writer, DataContext context, BigDecimal maxKBytesPerSec) {
-        final int MAX_WRITE_LENGTH = 32768;
         BufferedReader reader = stagedResource.getReader();
         try {
             // Retry means we've sent this batch before, so let's ask to
@@ -1068,7 +1102,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (isRetry) {
                 String line = null;
                 while ((line = reader.readLine()) != null) {
-                    if (line.startsWith(CsvConstants.BATCH)) {
+                    if (line.startsWith(CsvConstants.BATCH)) { 
                         reader.mark(0);
                         String nextLine = reader.readLine();
                         reader.reset();
@@ -1078,7 +1112,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             writer.write(getBatchStats(batch));
                             writer.newLine();    
                         }
-                        
                         writer.write(CsvConstants.RETRY + "," + batch.getBatchId());
                         writer.newLine();
                         writer.write(CsvConstants.COMMIT + "," + batch.getBatchId());
@@ -1095,6 +1128,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 long startTime = System.currentTimeMillis(), ts = startTime, bts = startTime;
                 boolean isThrottled = maxKBytesPerSec != null && maxKBytesPerSec.compareTo(BigDecimal.ZERO) > 0;
                 long totalThrottleTime = 0;
+                final int MAX_WRITE_LENGTH = 32768;
                 int bufferSize = MAX_WRITE_LENGTH;
 
                 if (isThrottled) {
