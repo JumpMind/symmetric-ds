@@ -574,7 +574,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
                 Node sourceNode = nodeService.findIdentity();
                 final FutureExtractStatus status = new FutureExtractStatus();
-                executor = Executors.newFixedThreadPool(1, new CustomizableThreadFactory(String.format("dataextractor-%s-%s", targetNode.getNodeGroupId(), targetNode.getNodeGroupId())));
+                executor = Executors.newFixedThreadPool(1, new CustomizableThreadFactory(String.format("dataextractor-%s-%s", targetNode.getNodeGroupId(), targetNode.getNodeId())));
                 List<Future<FutureOutgoingBatch>> futures = new ArrayList<Future<FutureOutgoingBatch>>();
 
                 processInfo.setBatchCount(activeBatches.size());
@@ -1016,19 +1016,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected boolean isPreviouslyExtracted(OutgoingBatch currentBatch, boolean acquireReference) {
         IStagedResource previouslyExtracted = getStagedResource(currentBatch);
-        if (previouslyExtracted != null && previouslyExtracted.exists()
-                && previouslyExtracted.getState() != State.CREATE) {
-            if (log.isDebugEnabled()) {
-                log.debug("We have already extracted batch {}.  Using the existing extraction: {}",
-                        currentBatch.getBatchId(), previouslyExtracted);
+        if (previouslyExtracted != null && previouslyExtracted.exists() && previouslyExtracted.getState() != State.CREATE) {
+            synchronized (DataExtractorService.this) {
+                if (previouslyExtracted.exists()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("We have already extracted batch {}.  Using the existing extraction: {}", currentBatch.getBatchId(),
+                            previouslyExtracted);
+                    }
+                    if (acquireReference) {
+                        previouslyExtracted.reference();
+                    }
+                    return true;
+                }
             }
-            if (acquireReference) {
-                previouslyExtracted.reference();
-            }
-            return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     protected boolean isRetry(OutgoingBatch currentBatch, Node remoteNode) {
@@ -1199,7 +1201,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             stagedResource.close();
             stagedResource.dereference();
             if (!stagedResource.isFileResource() && !stagedResource.isInUse()) {
-                stagedResource.delete();
+                synchronized(DataExtractorService.this) {
+                    if (!stagedResource.isFileResource() && !stagedResource.isInUse()) {
+                        stagedResource.delete();
+                    }
+                }
             }
         }
     }
