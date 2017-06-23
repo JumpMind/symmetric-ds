@@ -133,5 +133,13 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
             setValues(ps, args, argTypes, getLobHandler().getDefaultHandler());
         }
     }
+    
+    public boolean supportsGetGeneratedKeys() {
+        return false;
+    }
+
+    protected String getSelectLastInsertIdSql(String sequenceName) {
+        return "select @@identity";
+    }
 
 }
