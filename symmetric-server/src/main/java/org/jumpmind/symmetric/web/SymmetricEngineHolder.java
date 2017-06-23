@@ -21,12 +21,15 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -44,6 +47,7 @@ import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.AbstractCommandLauncher;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricAdmin;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroup;
@@ -180,6 +184,8 @@ public class SymmetricEngineHolder {
                             files = enginesDir.listFiles();
                         }
                     }
+                    
+                    validateEngineFiles(files);
 
                     if (files != null) {
                         for (int i = 0; i < files.length; i++) {
@@ -388,6 +394,46 @@ public class SymmetricEngineHolder {
             }
         }
         return false;
+    }
+    
+    protected void validateEngineFiles(File[] files) {
+        
+        Map<String, String> dbToPropertyFiles = new LinkedHashMap<String, String>();
+         
+        for (File file : files) {
+            if (file.getName().endsWith(".properties")) {
+                // external.id
+                Properties properties = new Properties();
+                InputStream fileInputStream = null;
+                try {
+                    fileInputStream = new FileInputStream(file.getAbsolutePath());
+                    properties.load(fileInputStream);                    
+                    String dbUrl = properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_URL, "");                    
+                    checkDuplicate(dbUrl, BasicDataSourcePropertyConstants.DB_POOL_URL, dbToPropertyFiles, file);
+                } catch (Exception ex) {
+                    if (ex instanceof SymmetricException) {
+                        log.error("**** FATAL **** error " + ex.toString()); // Jetty logs the stack at WARN level.
+                        throw (SymmetricException)ex;
+                    } else {                        
+                        log.warn("Failed to validate engine properties file " + file, ex);
+                    }
+                } finally {
+                    if (fileInputStream != null) {
+                        IOUtils.closeQuietly(fileInputStream);
+                    }
+                }
+            }
+        }
+    }
+    
+    protected void checkDuplicate(String value, String key, Map<String, String> values, File propertiesFile) {
+        if (values.containsKey(value)) {
+            throw new SymmetricException(String.format("Invalid configuration detected. 2 properties files reference "
+                    + "the same %s: '%s'. Maybe an engines file was copied and needs to be moved. See: %s and %s.", 
+                    key, value, values.get(value), propertiesFile.getAbsolutePath()));
+        } else {
+            values.put(value, propertiesFile.getAbsolutePath());
+        }
     }
 
     public String getEngineName(Properties properties) {

@@ -100,11 +100,13 @@ public class StagedResource implements IStagedResource {
     @Override
     public void reference() {
         references++;
+        log.debug("Increased reference to {} for {} by {}", references, path, Thread.currentThread().getName());
     }
     
     @Override
     public void dereference() {
         references--;
+        log.debug("Decreased reference to {} for {} by {}", references, path, Thread.currentThread().getName());
     }
     
     public boolean isInUse() {
@@ -346,10 +348,6 @@ public class StagedResource implements IStagedResource {
 
     public boolean delete() {        
         close();
-        return deleteInternal();
-    }
-    
-    private boolean deleteInternal() {
         boolean deleted = false;
         if (file != null && file.exists()) {
             FileUtils.deleteQuietly(file);
@@ -364,7 +362,10 @@ public class StagedResource implements IStagedResource {
         if (deleted) {
             stagingManager.resourcePaths.remove(path);
             stagingManager.inUse.remove(path);
-        }        
+            if (log.isDebugEnabled() && path.contains("outgoing")) {
+                log.debug("Deleted staging resource {}", path);
+            }
+        }              
         return deleted;
     }
 
