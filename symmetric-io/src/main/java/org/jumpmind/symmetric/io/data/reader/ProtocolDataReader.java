@@ -131,7 +131,8 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
             String catalogName = null;
             String[] parsedOldData = null;
             long bytesRead = 0;
-            IncomingBatchStatistics incomingBatchStats = null;
+            String[] statsColumns = null;
+            String[] statsValues = null;
             Table table = null;
             while (tokens != null || csvReader.readRecord()) {
                 lineNumber++;
@@ -278,14 +279,12 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                         batch.setIgnored(true);
                     }
                 } else if (tokens[0].equals(CsvConstants.STATS_COLUMNS)) {
-                    incomingBatchStats = new IncomingBatchStatistics();
-                    incomingBatchStats.setColumns(CollectionUtils.copyOfRange(tokens, 1, tokens.length));
+                    statsColumns = CollectionUtils.copyOfRange(tokens, 1, tokens.length);
                 } else if (tokens[0].equals(CsvConstants.STATS)) {
-                    incomingBatchStats.setStats(CollectionUtils.copyOfRange(tokens, 1, tokens.length));
-                    incomingBatchStats.putStats(stats);
+                    statsValues = CollectionUtils.copyOfRange(tokens, 1, tokens.length);
+                    putStats(stats, statsColumns, statsValues);
                 } else {
                     log.info("Unable to handle unknown csv values: " + Arrays.toString(tokens));
-
                 }
 
                 tokens = null;
@@ -368,38 +367,16 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
     public Map<Batch, Statistics> getStatistics() {
         return statistics;
     }
-
-    class IncomingBatchStatistics {
-        private String[] columns;
-        private String[] stats;
-
-        public String[] getColumns() {
-            return columns;
-        }
-
-        public void setColumns(String[] columns) {
-            this.columns = columns;
-        }
-
-        public String[] getStats() {
-            return stats;
-        }
-
-        public void setStats(String[] stats) {
-            this.stats = stats;
-        }
-
-        public void putStats(Statistics statistics) {
-            if (stats != null && columns != null) {
-                for (int i = 0; i < columns.length; i++) {
-                    String column = columns[i];
-                    if (i < stats.length) {
-                        long stat = Long.parseLong(stats[i]);
-                        statistics.set(column, stat);
-                    }
+    
+    protected void putStats(Statistics stats, String[] statsColumns, String[] statsValues) {
+        if (statsValues != null && statsColumns != null) {
+            for (int i = 0; i < statsColumns.length; i++) {
+                String column = statsColumns[i];
+                if (i < statsValues.length) {
+                    long stat = Long.parseLong(statsValues[i]);
+                    stats.set(column, stat);
                 }
             }
         }
     }
-
 }

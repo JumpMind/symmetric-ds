@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
+import org.jumpmind.util.Statistics;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +81,7 @@ public class SimpleStagingDataWriter {
         String line = null;
         long startTime = System.currentTimeMillis(), ts = startTime, lineCount = 0;
         String batchStatsColumnsLine = null; String batchStatsLine = null;
+        Statistics batchStats = new Statistics();
         
         while (reader.readRecord()) {
             line = reader.getRawRecord();
@@ -179,6 +181,7 @@ public class SimpleStagingDataWriter {
                 batchStatsColumnsLine = line;
             } else if (line.startsWith(CsvConstants.STATS)) {
                 batchStatsLine = line;
+                putStats(batchStats, batchStatsColumnsLine, batchStatsLine);
             } else {
                 if (writer == null) {
                     throw new IllegalStateException("Invalid batch data was received: " + line);
@@ -250,6 +253,21 @@ public class SimpleStagingDataWriter {
             }
             writer.write(line);
             writer.write("\n");            
+        }
+    }
+    
+    protected void putStats(Statistics stats, String columnsString, String statsString) {
+        String statsColumns[] = StringUtils.split(columnsString, ',');
+        String statsValues[] = StringUtils.split(statsString, ',');
+        
+        if (statsValues != null && statsColumns != null) {
+            for (int i = 0; i < statsColumns.length; i++) {
+                String column = statsColumns[i];
+                if (i < statsValues.length) {
+                    long stat = Long.parseLong(statsValues[i]);
+                    stats.set(column, stat);
+                }
+            }
         }
     }
 
