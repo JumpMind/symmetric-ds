@@ -15,7 +15,7 @@ Group Link:: The group link used for the source and target node groups of this r
 Router Type:: The type of router.  Standard router types are listed below.  Custom routers can be configured as extension points.
 
 .Router Types
-[cols="<2,^1,<7", options="header"]
+[cols="<2,^1,<9", options="header"]
 |===
 |Type
 |Provided
@@ -34,6 +34,10 @@ Router Type:: The type of router.  Standard router types are listed below.  Cust
 |subselect|x|A router that executes a SQL expression against the database to select nodes to route to. This SQL expression can be passed values of old and new column values.  See <<Subselect Router>>
 
 |bsh|x|A router that executes a Bean Shell script expression in order to select nodes to route to. The script can use the old and new column values.  See <<Beanshell Router>>
+
+|csv|x|A router that sends data from a CSV file to a target table of the target node group defined in the router. See <<CSV Router>>
+
+|dbf|x|A router that sends data from a dBase generated DBF file to a target table of the target node group defined in the router. See <<DBF Router>>
 
 |===
 

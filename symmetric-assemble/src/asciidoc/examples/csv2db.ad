@@ -1,0 +1,94 @@
+=== Replicating CSV File Into a Database
+
+==== SymmetricDS Setup
+* Create or choose a target table for your target node group. For this example, we will create a table, person, for the "corp" node group. 
+
+ifdef::pro[]
+image::examples/createTable.png[]
+endif::pro[]
+
+ifndef::pro[]
+.The following SQL statement defines a person table.
+[source, SQL]
+----
+create table person(
+    id integer not null,
+    first_name varchar(50) not null,
+    last_name varchar(50) not null,
+    primary key(id)
+);
+----
+
+endif::pro[]
+
+* Next, a file trigger should be created to watch for csv files at the specified base directory. You can also specify files that should be included to set off the trigger.
+
+IMPORTANT: FileSync needs to be enabled for each node group to create file triggers.
+
+ifdef::pro[]
+image::examples/createFileTrigger.png[]
+endif::pro[]
+
+ifndef::pro[]
+.The following SQL statement defines a file trigger that will identify CSV files.
+[source, SQL]
+----
+insert into SYM_FILE_TRIGGER (trigger_id, channel_id,
+	reload_channel_id, base_dir, recurse, includes_files,
+	create_time, last_update_time) values
+	('person_csv_trigger','filesync','filesync_reload', 
+	<<BASE_DIR>>, 0, 'person*.csv',
+	current_timestamp, current_timestamp); 
+----
+
+NOTE: 'BASE_DIR' should be changed to the directory you are looking in.
+endif::pro[]
+
+
+
+* After the file trigger is created, a router should be created so that the changes can be routed to the correct location. The communication link needs to be specified as well as the router type and target table. In this example, "store" is the source node group which communicates to the target node group,"corp". The router type is csv and person is the target table.
+
+ifdef::pro[]
+image::examples/createRouter.png[]
+endif::pro[]
+
+ifndef::pro[]
+.The following SQL statement defines a router that will send data from a CSV file to table person in the 'corp' node group.
+[source, SQL]
+----
+insert into SYM_ROUTER (router_id, target_table_name,
+	source_node_group_id, target_node_group_id, router_type,
+	create_time, last_update_time) values
+	('person_csv_router','person','store', 'corp', 'csv', 
+	current_timestamp, current_timestamp); 
+----
+endif::pro[]
+
+
+* Finally, a file routing link should be created between the file trigger and router.
+
+ifdef::pro[]
+image::examples/createFileRouting.png[]
+endif::pro[]
+
+ifndef::pro[]
+.The following SQL statement defines a file routing link.
+[source, SQL]
+----
+insert into SYM_FILE_TRIGGER_ROUTER (trigger_id, router_id,
+    target_base_dir, create_time, last_update_time) values (
+    'person_csv_trigger', 'person_csv_router',
+    <<TARGET_BASE_DIR>>, current_timestamp, current_timestamp);
+----
+
+NOTE: 'TARGET_BASE_DIR' should be changed to your target base directory.
+
+endif::pro[]
+
+* Testing.  You are now ready to test your csv to database routing. Add a csv file that matches your table specifications to your base directory or make a change to a pre-existing csv file in the directory. File sync tracker checks for changes in already sync'd files and runs every 5 minutes. File sync pull checks for new files to pull down and runs every 1 minute. Depending on the change you choose (changing a file or adding a file), wait the appropriate amount of time and then verify that the changes are shown in the target table.
+
+.The following SQL statement will verify changes to the person table.
+[source, SQL]
+----
+select * from person;
+---- 

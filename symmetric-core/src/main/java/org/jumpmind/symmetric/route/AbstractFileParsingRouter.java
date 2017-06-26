@@ -182,7 +182,7 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 		newTriggerHist.setTriggerTemplateHash(0);
 		newTriggerHist.setLastTriggerBuildReason(TriggerReBuildReason.NEW_TRIGGERS);
 		newTriggerHist.setColumnNames(columnNames);
-		
+		newTriggerHist.setPkColumnNames(columnNames);
 		getEngine().getTriggerRouterService().insert(newTriggerHist);
 		
 		return newTriggerHist;
