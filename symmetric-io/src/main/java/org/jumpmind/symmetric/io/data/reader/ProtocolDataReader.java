@@ -141,8 +141,8 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     tokens = csvReader.getValues();
                 }
                 bytesRead += logDebugAndCountBytes(tokens);
-                Statistics stats = null;
-
+                Statistics stats = null;             
+                
                 if (batch != null) {
                     stats = statistics.get(batch);
                     stats.increment(DataReaderStatistics.READ_BYTE_COUNT, bytesRead);

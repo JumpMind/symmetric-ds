@@ -1180,7 +1180,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             writer.write(getBatchStats(batch));
                             writer.newLine();    
                         }
-                        
+
                         writer.write(CsvConstants.RETRY + "," + batch.getBatchId());
                         writer.newLine();
                         writer.write(CsvConstants.COMMIT + "," + batch.getBatchId());
@@ -1306,15 +1306,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             throws IOException {
         String bufferString = new String(buffer);
         int index = findStatsIndex(bufferString, prevBuffer);
-
+        
         if (index > 0) {
             char prefix[] = Arrays.copyOf(buffer, index);
             writer.write(prefix, 0, index);
         }
         if (index > -1) {
             String stats = getBatchStatsColumns() + System.lineSeparator() + getBatchStats(batch) + System.lineSeparator();
+            
             char statsBuffer[] = stats.toCharArray();
-            writer.write(statsBuffer, 0, stats.length());
+            writer.write(statsBuffer, 0, statsBuffer.length);
 
             char suffix[] = Arrays.copyOfRange(buffer, index, buffer.length);
             writer.write(suffix, 0, bufferSize - index);

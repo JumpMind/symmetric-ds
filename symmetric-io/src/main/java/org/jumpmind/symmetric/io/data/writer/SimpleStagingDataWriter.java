@@ -85,7 +85,6 @@ public class SimpleStagingDataWriter {
         
         while (reader.readRecord()) {
             line = reader.getRawRecord();
-            System.out.println("line = " + line);
             if (line.startsWith(CsvConstants.CATALOG)) {
                 catalogLine = line;
                 writeLine(line);
@@ -158,6 +157,7 @@ public class SimpleStagingDataWriter {
             } else if (line.startsWith(CsvConstants.RETRY)) {
                 batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine), getBinaryEncoding(binaryLine),
                         getArgLine(nodeLine), targetNodeId, false);
+                batch.setStatistics(batchStats);
                 String location = batch.getStagedLocation();
                 resource = stagingManager.find(category, location,
                 batch.getBatchId());
@@ -179,9 +179,16 @@ public class SimpleStagingDataWriter {
                 channelLine = line;
             } else if (line.startsWith(CsvConstants.STATS_COLUMNS)) {
                 batchStatsColumnsLine = line;
+                if (writer != null) {
+                    writeLine(line);
+                }
             } else if (line.startsWith(CsvConstants.STATS)) {
                 batchStatsLine = line;
-                putStats(batchStats, batchStatsColumnsLine, batchStatsLine);
+                if (writer != null) {
+                    writeLine(line);
+                } else {
+                    putStats(batchStats, batchStatsColumnsLine, batchStatsLine);
+                }
             } else {
                 if (writer == null) {
                     throw new IllegalStateException("Invalid batch data was received: " + line);
@@ -261,7 +268,7 @@ public class SimpleStagingDataWriter {
         String statsValues[] = StringUtils.split(statsString, ',');
         
         if (statsValues != null && statsColumns != null) {
-            for (int i = 0; i < statsColumns.length; i++) {
+            for (int i = 1; i < statsColumns.length; i++) {
                 String column = statsColumns[i];
                 if (i < statsValues.length) {
                     long stat = Long.parseLong(statsValues[i]);
