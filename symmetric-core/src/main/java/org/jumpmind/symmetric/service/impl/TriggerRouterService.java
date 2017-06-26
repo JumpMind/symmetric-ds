@@ -1263,7 +1263,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     
     private int getNumberOfThreadsToUseForSyncTriggers() {
         int numThreads = parameterService.getInt(ParameterConstants.SYNC_TRIGGERS_THREAD_COUNT_PER_SERVER);
-        if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS, false)) {
+        if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS, false) || !platform.isUseMultiThreadSyncTriggers()) {
             numThreads = 1;
         }
         return numThreads;        
