@@ -318,8 +318,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public int updateIncomingBatch(ISqlTransaction transaction, IncomingBatch batch) {
         int count = 0;
-        //TODO: PRINT
-        System.out.println("updateIncomingBatch: " + batch.getNodeBatchId());
         if (batch.isPersistable()) {
             if (batch.getStatus() == IncomingBatch.Status.ER) {
                 batch.setErrorFlag(true);

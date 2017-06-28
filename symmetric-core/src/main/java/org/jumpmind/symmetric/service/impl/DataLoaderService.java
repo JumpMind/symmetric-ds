@@ -952,8 +952,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     IncomingBatch incomingBatch = null;
                     if (!isError && resource != null && resource.exists()) {
                         try {
-                            //TODO: PRINT
-                            System.out.println("loadBatchFromStage: " + batch.getNodeBatchId());
                             processInfo.setStatus(ProcessInfo.ProcessStatus.LOADING);
                             
                             ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, batch.getTargetNodeId(), resource) {
@@ -1088,11 +1086,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
                     this.currentBatch.getByteCount());
             Status oldStatus = this.currentBatch.getStatus();
-            // TODO: PRINT
-            if (batch.getStatistics() != null) {
-                System.out.println("setParsedStatistics: " + batch.getNodeBatchId());
-                currentBatch.setParsedStatistics(batch.getStatistics());
+
+            if (context.getStatistics() != null) {
+                currentBatch.setParsedStatistics(context.getStatistics());
             }
+            
             try {
                 this.currentBatch.setStatus(Status.OK);
                 if (incomingBatchService.isRecordOkBatchesEnabled()) {

@@ -1127,39 +1127,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return currentBatch;
 
     }
-    
-    // TODO: Implement Copy and Inject Stats
-    protected void copyFromStaging(IStagedResource sourceResource, IStagedResource targetResource, OutgoingBatch batch) {
-        BufferedReader source = sourceResource.getReader();
-        BufferedWriter target = targetResource.getWriter(0);
-        String line = null;
-        try {
-            while ((line = source.readLine()) != null) {
-                if (line.startsWith(CsvConstants.BATCH)) {
-                    source.mark(0);
-                    String nextLine = source.readLine();
-                    source.reset();
-                    if (nextLine != null && !nextLine.startsWith(CsvConstants.STATS_COLUMNS)) {
-                        target.write(getBatchStatsColumns());
-                        target.newLine();
-                        target.write(getBatchStats(batch));
-                        target.newLine();    
-                    }
-                } else {
-                    target.write(line);
-                    target.newLine();
-                }
-            }
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        } finally {
-            sourceResource.close();
-            sourceResource.dereference();
-            targetResource.close();
-            targetResource.dereference();
-        }
-    }
-    
+
     protected void transferFromStaging(ExtractMode mode, BatchType batchType, OutgoingBatch batch, boolean isRetry, IStagedResource stagedResource,
             BufferedWriter writer, DataContext context, BigDecimal maxKBytesPerSec) {
         final int MAX_WRITE_LENGTH = 32768;
@@ -1171,16 +1139,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith(CsvConstants.BATCH)) {
-                        reader.mark(0);
-                        String nextLine = reader.readLine();
-                        reader.reset();
-                        if (nextLine != null && !nextLine.startsWith(CsvConstants.STATS_COLUMNS)) {
-                            writer.write(getBatchStatsColumns());
-                            writer.newLine();
-                            writer.write(getBatchStats(batch));
-                            writer.newLine();    
+                        if (nodeService.findNode(batch.getNodeId()).isVersionGreaterThanOrEqualTo(3, 9, 0)) {
+                            reader.mark(0);
+                            String nextLine = reader.readLine();
+                            reader.reset();
+                            if (nextLine != null && !nextLine.startsWith(CsvConstants.STATS_COLUMNS)) {
+                                writer.write(getBatchStatsColumns());
+                                writer.newLine();
+                                writer.write(getBatchStats(batch));
+                                writer.newLine();
+                            }
                         }
-
                         writer.write(CsvConstants.RETRY + "," + batch.getBatchId());
                         writer.newLine();
                         writer.write(CsvConstants.COMMIT + "," + batch.getBatchId());
@@ -1204,11 +1173,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 char[] buffer = new char[bufferSize];
 
-                //TODO: Write Batch Stats, Check if 3.9 or later
+                //TODO: Write Batch Stats
                 boolean batchStatsWritten = false;
                 String prevBuffer = "";
                 while ((numCharsRead = reader.read(buffer)) != -1) {
-                    if (!batchStatsWritten) {
+                    if (!batchStatsWritten && nodeService.findNode(batch.getNodeId()).isVersionGreaterThanOrEqualTo(3, 9, 0)) {
                         batchStatsWritten = writeBatchStats(writer, buffer, numCharsRead, prevBuffer, batch);
                         prevBuffer = new String(buffer);
                     } else {
@@ -1280,7 +1249,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
-    //TODO: Implement Batch Stats
     protected int findStatsIndex(String bufferString, String prevBuffer) {
         int index = -1;
         String fullBuffer = prevBuffer + bufferString;

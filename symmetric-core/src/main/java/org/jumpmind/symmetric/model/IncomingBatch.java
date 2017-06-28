@@ -81,7 +81,7 @@ public class IncomingBatch extends AbstractBatch {
         setLoadId(statistics.get(DataReaderStatistics.LOAD_ID));
         setCommonFlag(statistics.get(DataReaderStatistics.COMMON_FLAG) == 1);
         setRouterMillis(statistics.get(DataReaderStatistics.ROUTER_MILLIS));
-        setExtractCount(statistics.get(DataReaderStatistics.EXTRACT_MILLIS));
+        setExtractMillis(statistics.get(DataReaderStatistics.EXTRACT_MILLIS));
         setTransformExtractMillis(statistics.get(DataReaderStatistics.TRANSFORM_EXTRACT_MILLIS));
         setTransformLoadMillis(statistics.get(DataReaderStatistics.TRANSFORM_LOAD_MILLIS));
         setReloadRowCount(statistics.get(DataReaderStatistics.RELOAD_ROW_COUNT));
