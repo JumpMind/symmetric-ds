@@ -36,7 +36,7 @@ public class AbstractBatch implements Serializable {
 
     public enum Status {
         OK("Ok"), ER("Error"), RQ("Request"), NE("New"), QY("Querying"), SE("Sending"), LD("Loading"), RT("Routing"), IG("Ignored"), RS(
-                "Resend"), XX("Unknown"), PN("Pending"), BL("Blocked");
+                "Resend"), XX("Unknown");
 
         private String description;
 
