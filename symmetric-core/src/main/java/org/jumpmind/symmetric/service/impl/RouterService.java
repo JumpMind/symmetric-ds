@@ -69,6 +69,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.AbstractFileParsingRouter;
 import org.jumpmind.symmetric.route.AuditTableDataRouter;
 import org.jumpmind.symmetric.route.BshDataRouter;
+import org.jumpmind.symmetric.route.CSVRouter;
 import org.jumpmind.symmetric.route.ChannelRouterContext;
 import org.jumpmind.symmetric.route.ColumnMatchDataRouter;
 import org.jumpmind.symmetric.route.ConfigurationChangedDataRouter;
@@ -141,6 +142,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 engine.getSymmetricDialect()));
         extensionService.addExtensionPoint(FileSyncDataRouter.ROUTER_TYPE, new FileSyncDataRouter(engine));
         extensionService.addExtensionPoint("dbf", new DBFRouter(engine));
+        extensionService.addExtensionPoint("csv", new CSVRouter(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));   

@@ -1795,8 +1795,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if (lastTriggerHistory == null || lastTriggerHistory
                                     .getTriggerHistoryId() != triggerHistory.getTriggerHistoryId() || 
                                     lastRouterId == null || !lastRouterId.equals(routerId)) {
+                                
                                 this.sourceTable = columnsAccordingToTriggerHistory.lookup(
-                                        routerId, triggerHistory, false, true);
+                                            routerId, triggerHistory, false, false);
+                                
                                 this.targetTable = columnsAccordingToTriggerHistory.lookup(
                                         routerId, triggerHistory, true, false);
                                 this.requiresLobSelectedFromSource = trigger == null ? false : trigger.isUseStreamLobs();

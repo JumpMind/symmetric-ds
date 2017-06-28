@@ -1,0 +1,19 @@
+===== DBF Router
+
+This router is used to route dbf files that are generated from a dBase system to a specified target database table.
+
+ifndef::pro[]
+.The following SQL statement defines a router that will send data from a DBF file to table1 in the 'corp' node group.
+[source, SQL]
+----
+insert into SYM_ROUTER (router_id, target_table_name,
+	source_node_group_id, target_node_group_id, router_type,
+	create_time, last_update_time) values
+	('store-2-corp-dbf','table1','store', 'corp', 'dbf', 
+	current_timestamp, current_timestamp); 
+----
+
+endif::pro[]
+
+IMPORTANT: The DBF Router routes from file to database so a file trigger must be created to specify the directory or path that the file trigger should watch. (see <<File Triggers>>)
+

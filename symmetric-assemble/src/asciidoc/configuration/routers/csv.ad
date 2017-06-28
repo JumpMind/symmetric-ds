@@ -1,0 +1,29 @@
+===== CSV Router
+
+This router is used to route csv files to a specified target database table.
+
+ifdef::pro[]
+
+Consider a csv file that needs to be routed to a target table. To specify the target table, click on "Show Advanced Options" and enter your table name.
+
+image::csv-router.png[]
+
+endif::pro[]
+
+ifndef::pro[]
+
+.The following SQL statement defines a router that will send data from a CSV file to table1 in the 'corp' node group.
+[source, SQL]
+----
+insert into SYM_ROUTER (router_id, target_table_name,
+	source_node_group_id, target_node_group_id, router_type,
+	create_time, last_update_time) values
+	('store-2-corp-csv','table1','store', 'corp', 'csv', 
+	current_timestamp, current_timestamp); 
+----
+
+endif::pro[]
+
+IMPORTANT: The CSV Router routes from file to database so a file trigger must be created to specify the directory or path that the file trigger should watch. (see <<File Triggers>>)
+
+
