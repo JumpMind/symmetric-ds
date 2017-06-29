@@ -983,6 +983,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                     incomingBatch.incrementIgnoreCount();
                                 }
                             }
+                            
                             resource.setState(State.DONE);
                             if (!resource.isFileResource()) {
                                 resource.delete();
@@ -1085,6 +1086,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
                     this.currentBatch.getByteCount());
             Status oldStatus = this.currentBatch.getStatus();
+
+            if (context.getStatistics() != null) {
+                currentBatch.setParsedStatistics(context.getStatistics());
+            }
+            
             try {
                 this.currentBatch.setStatus(Status.OK);
                 if (incomingBatchService.isRecordOkBatchesEnabled()) {

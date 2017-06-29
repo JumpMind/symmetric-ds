@@ -53,7 +53,7 @@ public class Batch {
     protected BatchType batchType;
     
     protected Map<String, Long> timers = new HashMap<String, Long>();
-    
+        
     public Batch(BatchType batchType, long batchId, String channelId, BinaryEncoding binaryEncoding, String sourceNodeId, String targetNodeId, boolean common) {
         this.batchType = batchType;
         this.batchId = batchId;
@@ -227,6 +227,6 @@ public class Batch {
             }
         }
         return null;
-    }
-
+    }  
+    
 }

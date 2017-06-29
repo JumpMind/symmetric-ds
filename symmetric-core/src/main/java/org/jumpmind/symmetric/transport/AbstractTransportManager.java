@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 abstract public class AbstractTransportManager {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    
+
     protected IExtensionService extensionService;
 
     public AbstractTransportManager() {
@@ -66,22 +66,21 @@ abstract public class AbstractTransportManager {
             log.debug("Using the registration URL to contact the remote node because the syncURL for the node is blank");
             return registrationUrl;
         }
-        
+
         try {
             URI uri = new URI(syncUrl);
-            
+
             for (ISyncUrlExtension handler : extensionService.getExtensionPointList(ISyncUrlExtension.class)) {
                 syncUrl = handler.resolveUrl(uri);
                 uri = new URI(syncUrl);
             }
         } catch (URISyntaxException e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
         }
         return syncUrl;
     }
 
-    protected String getAcknowledgementData(boolean requires13Format, String nodeId,
-            List<IncomingBatch> list) throws IOException {
+    protected String getAcknowledgementData(boolean requires13Format, String nodeId, List<IncomingBatch> list) throws IOException {
         StringBuilder builder = new StringBuilder();
         if (!requires13Format) {
             for (IncomingBatch batch : list) {
@@ -98,11 +97,18 @@ abstract public class AbstractTransportManager {
                 append(builder, WebConstants.ACK_NODE_ID + batchId, nodeId);
                 append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, batch.getNetworkMillis());
                 append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
-                append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId,
-                        batch.getLoadMillis());
-                append(builder, WebConstants.ACK_START_TIME + batchId,
-                        batch.getStartTime());
+                append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId, batch.getLoadMillis());
+                append(builder, WebConstants.ACK_START_TIME + batchId, batch.getStartTime());
                 append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
+                append(builder, WebConstants.ACK_LOAD_ROW_COUNT + batchId, batch.getLoadRowCount());
+                append(builder, WebConstants.ACK_LOAD_INSERT_ROW_COUNT + batchId, batch.getLoadInsertRowCount());
+                append(builder, WebConstants.ACK_LOAD_UPDATE_ROW_COUNT + batchId, batch.getLoadUpdateRowCount());
+                append(builder, WebConstants.ACK_LOAD_DELETE_ROW_COUNT + batchId, batch.getLoadDeleteRowCount());
+                append(builder, WebConstants.ACK_FALLBACK_INSERT_COUNT + batchId, batch.getFallbackInsertCount());
+                append(builder, WebConstants.ACK_FALLBACK_UPDATE_COUNT + batchId, batch.getFallbackUpdateCount());
+                append(builder, WebConstants.ACK_IGNORE_ROW_COUNT + batchId, batch.getIgnoreRowCount());
+                append(builder, WebConstants.ACK_MISSING_DELETE_COUNT + batchId, batch.getMissingDeleteCount());
+                append(builder, WebConstants.ACK_SKIP_COUNT + batchId, batch.getSkipCount());
 
                 if (batch.getIgnoreCount() > 0) {
                     append(builder, WebConstants.ACK_IGNORE_COUNT + batchId, batch.getIgnoreCount());
@@ -137,8 +143,7 @@ abstract public class AbstractTransportManager {
             if (value == null) {
                 value = "";
             }
-            builder.append(name).append("=")
-                    .append(URLEncoder.encode(value.toString(), IoConstants.ENCODING));
+            builder.append(name).append("=").append(URLEncoder.encode(value.toString(), IoConstants.ENCODING));
         } catch (IOException ex) {
             throw new IoException(ex);
         }
@@ -176,6 +181,16 @@ abstract public class AbstractTransportManager {
         batchInfo.setFilterMillis(getParamAsNum(parameters, WebConstants.ACK_FILTER_MILLIS + batchId));
         batchInfo.setLoadMillis(getParamAsNum(parameters, WebConstants.ACK_DATABASE_MILLIS + batchId));
         batchInfo.setByteCount(getParamAsNum(parameters, WebConstants.ACK_BYTE_COUNT + batchId));
+        batchInfo.setLoadRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_ROW_COUNT + batchId));
+        batchInfo.setLoadInsertRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_INSERT_ROW_COUNT + batchId));
+        batchInfo.setLoadUpdateRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_UPDATE_ROW_COUNT + batchId));
+        batchInfo.setLoadDeleteRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_DELETE_ROW_COUNT + batchId));
+        batchInfo.setFallbackInsertCount(getParamAsNum(parameters, WebConstants.ACK_FALLBACK_INSERT_COUNT + batchId));
+        batchInfo.setFallbackUpdateCount(getParamAsNum(parameters, WebConstants.ACK_FALLBACK_UPDATE_COUNT + batchId));
+        batchInfo.setIgnoreRowCount(getParamAsNum(parameters, WebConstants.ACK_IGNORE_ROW_COUNT + batchId));
+        batchInfo.setMissingDeleteCount(getParamAsNum(parameters, WebConstants.ACK_MISSING_DELETE_COUNT + batchId));
+        batchInfo.setSkipCount(getParamAsNum(parameters, WebConstants.ACK_SKIP_COUNT + batchId));
+        
         batchInfo.setIgnored(getParamAsBoolean(parameters, WebConstants.ACK_IGNORE_COUNT + batchId));
         String status = getParam(parameters, WebConstants.ACK_BATCH_NAME + batchId, "").trim();
         batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK));
@@ -202,25 +217,25 @@ abstract public class AbstractTransportManager {
         return parameters;
     }
 
-    private static long getParamAsNum(Map<String, ? extends  Object> parameters, String parameterName) {
+    private static long getParamAsNum(Map<String, ? extends Object> parameters, String parameterName) {
         return NumberUtils.toLong(getParam(parameters, parameterName));
     }
-    
-    private static boolean getParamAsBoolean(Map<String, ? extends  Object> parameters, String parameterName) {
-        return getParamAsNum(parameters, parameterName) > 0;
-    }    
 
-    private static String getParam(Map<String, ? extends  Object> parameters, String parameterName, String defaultValue) {
+    private static boolean getParamAsBoolean(Map<String, ? extends Object> parameters, String parameterName) {
+        return getParamAsNum(parameters, parameterName) > 0;
+    }
+
+    private static String getParam(Map<String, ? extends Object> parameters, String parameterName, String defaultValue) {
         String value = getParam(parameters, parameterName);
         return value == null ? defaultValue : value;
     }
 
-    private static String getParam(Map<String,  ? extends Object> parameters, String parameterName) {
+    private static String getParam(Map<String, ? extends Object> parameters, String parameterName) {
         Object value = parameters.get(parameterName);
         if (value instanceof String[]) {
             String[] arrayValue = (String[]) value;
             if (arrayValue.length > 0) {
-                value = StringUtils.trim(arrayValue[0]);                
+                value = StringUtils.trim(arrayValue[0]);
             }
         }
         return (String) value;

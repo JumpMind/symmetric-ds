@@ -64,4 +64,9 @@ final public class CsvConstants {
     public static final String IGNORE = "ignore";
     
     public static final String RETRY = "retry";
+    
+    public static final String STATS = "stats";
+    
+    public static final String STATS_COLUMNS = "stats_columns";
+    
 }

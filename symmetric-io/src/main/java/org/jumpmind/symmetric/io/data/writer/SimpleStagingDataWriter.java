@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
+import org.jumpmind.util.Statistics;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +80,8 @@ public class SimpleStagingDataWriter {
         IStagedResource resource = null;
         String line = null;
         long startTime = System.currentTimeMillis(), ts = startTime, lineCount = 0;
+        String batchStatsColumnsLine = null; String batchStatsLine = null;
+        Statistics batchStats = new Statistics();
         
         while (reader.readRecord()) {
             line = reader.getRawRecord();
@@ -120,8 +123,7 @@ public class SimpleStagingDataWriter {
                 batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine), getBinaryEncoding(binaryLine),
                         getArgLine(nodeLine), targetNodeId, false);
                 String location = batch.getStagedLocation();
-                 resource = stagingManager.find(category, location,
-                 batch.getBatchId());
+                resource = stagingManager.find(category, location, batch.getBatchId());
                 if (resource == null || resource.getState() == State.DONE) {
                     log.debug("Creating staged resource for batch {}", batch.getNodeBatchId());
                     resource = stagingManager.create(category, location, batch.getBatchId());
@@ -154,6 +156,7 @@ public class SimpleStagingDataWriter {
             } else if (line.startsWith(CsvConstants.RETRY)) {
                 batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine), getBinaryEncoding(binaryLine),
                         getArgLine(nodeLine), targetNodeId, false);
+                context.setStatistics(batchStats);
                 String location = batch.getStagedLocation();
                 resource = stagingManager.find(category, location,
                 batch.getBatchId());
@@ -173,6 +176,18 @@ public class SimpleStagingDataWriter {
                 binaryLine = line;
             } else if (line.startsWith(CsvConstants.CHANNEL)) {
                 channelLine = line;
+            } else if (line.startsWith(CsvConstants.STATS_COLUMNS)) {
+                batchStatsColumnsLine = line;
+                if (writer != null) {
+                    writeLine(line);
+                }
+            } else if (line.startsWith(CsvConstants.STATS)) {
+                batchStatsLine = line;
+                if (writer != null) {
+                    writeLine(line);
+                } else {
+                    putStats(batchStats, batchStatsColumnsLine, batchStatsLine);
+                }
             } else {
                 if (writer == null) {
                     throw new IllegalStateException("Invalid batch data was received: " + line);
@@ -244,6 +259,21 @@ public class SimpleStagingDataWriter {
             }
             writer.write(line);
             writer.write("\n");            
+        }
+    }
+    
+    protected void putStats(Statistics stats, String columnsString, String statsString) {
+        String statsColumns[] = StringUtils.split(columnsString, ',');
+        String statsValues[] = StringUtils.split(statsString, ',');
+        
+        if (statsValues != null && statsColumns != null) {
+            for (int i = 1; i < statsColumns.length; i++) {
+                String column = statsColumns[i];
+                if (i < statsValues.length) {
+                    long stat = Long.parseLong(statsValues[i]);
+                    stats.set(column, stat);
+                }
+            }
         }
     }
 

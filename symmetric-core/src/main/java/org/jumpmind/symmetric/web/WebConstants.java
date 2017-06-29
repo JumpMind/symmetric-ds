@@ -86,6 +86,24 @@ public class WebConstants {
     public static final String ACK_SQL_CODE = "sqlCode-";
 
     public static final String ACK_SQL_MESSAGE = "sqlMessage-";
+    
+    public static final String ACK_LOAD_ROW_COUNT = "loadRowCount-";
+    
+    public static final String ACK_LOAD_INSERT_ROW_COUNT = "loadInsertRowCount-";
+    
+    public static final String ACK_LOAD_UPDATE_ROW_COUNT = "loadUpdateRowCount-";
+    
+    public static final String ACK_LOAD_DELETE_ROW_COUNT = "loadDeleteRowCount-";
+    
+    public static final String ACK_FALLBACK_INSERT_COUNT = "fallbackInsertCount-";
+    
+    public static final String ACK_FALLBACK_UPDATE_COUNT = "fallbackUpdateCount-";
+    
+    public static final String ACK_IGNORE_ROW_COUNT = "ignoreRowCount-";
+    
+    public static final String ACK_MISSING_DELETE_COUNT = "missingDeleteCount-";
+    
+    public static final String ACK_SKIP_COUNT = "skipCount-";
 
     public static final String NODE_ID = "nodeId";
 

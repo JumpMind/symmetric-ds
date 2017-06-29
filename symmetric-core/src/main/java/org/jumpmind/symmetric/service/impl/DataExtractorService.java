@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +51,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
@@ -1124,7 +1127,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return currentBatch;
 
     }
-    
+
     protected void transferFromStaging(ExtractMode mode, BatchType batchType, OutgoingBatch batch, boolean isRetry, IStagedResource stagedResource,
             BufferedWriter writer, DataContext context, BigDecimal maxKBytesPerSec) {
         final int MAX_WRITE_LENGTH = 32768;
@@ -1136,6 +1139,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith(CsvConstants.BATCH)) {
+                        if (nodeService.findNode(batch.getNodeId()).isVersionGreaterThanOrEqualTo(3, 9, 0)) {
+                            reader.mark(0);
+                            String nextLine = reader.readLine();
+                            reader.reset();
+                            if (nextLine != null && !nextLine.startsWith(CsvConstants.STATS_COLUMNS)) {
+                                writer.write(getBatchStatsColumns());
+                                writer.newLine();
+                                writer.write(getBatchStats(batch));
+                                writer.newLine();
+                            }
+                        }
                         writer.write(CsvConstants.RETRY + "," + batch.getBatchId());
                         writer.newLine();
                         writer.write(CsvConstants.COMMIT + "," + batch.getBatchId());
@@ -1159,8 +1173,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 char[] buffer = new char[bufferSize];
 
+                //TODO: Write Batch Stats
+                boolean batchStatsWritten = false;
+                String prevBuffer = "";
                 while ((numCharsRead = reader.read(buffer)) != -1) {
-                    writer.write(buffer, 0, numCharsRead);
+                    if (!batchStatsWritten && nodeService.findNode(batch.getNodeId()).isVersionGreaterThanOrEqualTo(3, 9, 0)) {
+                        batchStatsWritten = writeBatchStats(writer, buffer, numCharsRead, prevBuffer, batch);
+                        prevBuffer = new String(buffer);
+                    } else {
+                        writer.write(buffer, 0, numCharsRead);
+                    }
                     totalCharsRead += numCharsRead;
 
                     if (Thread.currentThread().isInterrupted()) {
@@ -1227,6 +1249,75 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
+    protected int findStatsIndex(String bufferString, String prevBuffer) {
+        int index = -1;
+        String fullBuffer = prevBuffer + bufferString;
+
+        String pattern = "\n" + CsvConstants.BATCH + ",\\d*\r*\n";
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(fullBuffer);
+        if (m.find()) {
+            String group = m.group(0);
+            int start = fullBuffer.indexOf(group);
+
+            if (start + group.length() > prevBuffer.length()) {
+                index = start + group.length() - prevBuffer.length();
+            } else {
+                index = start + group.length();
+            }
+        }
+
+        return index;
+    }
+
+    protected boolean writeBatchStats(BufferedWriter writer, char[] buffer, int bufferSize, String prevBuffer, OutgoingBatch batch)
+            throws IOException {
+        String bufferString = new String(buffer);
+        int index = findStatsIndex(bufferString, prevBuffer);
+        
+        if (index > 0) {
+            char prefix[] = Arrays.copyOf(buffer, index);
+            writer.write(prefix, 0, index);
+        }
+        if (index > -1) {
+            String stats = getBatchStatsColumns() + System.lineSeparator() + getBatchStats(batch) + System.lineSeparator();
+            
+            char statsBuffer[] = stats.toCharArray();
+            writer.write(statsBuffer, 0, statsBuffer.length);
+
+            char suffix[] = Arrays.copyOfRange(buffer, index, buffer.length);
+            writer.write(suffix, 0, bufferSize - index);
+        } else {
+            writer.write(buffer, 0, bufferSize);
+        }
+
+        return index > -1;
+    }
+    
+    protected String getBatchStatsColumns() {
+        return StringUtils.join(new String[] { CsvConstants.STATS_COLUMNS, DataReaderStatistics.LOAD_FLAG, DataReaderStatistics.EXTRACT_COUNT,
+                DataReaderStatistics.SENT_COUNT, DataReaderStatistics.LOAD_COUNT, DataReaderStatistics.LOAD_ID,
+                DataReaderStatistics.COMMON_FLAG, DataReaderStatistics.ROUTER_MILLIS, DataReaderStatistics.EXTRACT_MILLIS,
+                DataReaderStatistics.TRANSFORM_EXTRACT_MILLIS, DataReaderStatistics.TRANSFORM_LOAD_MILLIS,
+                DataReaderStatistics.RELOAD_ROW_COUNT, DataReaderStatistics.OTHER_ROW_COUNT, DataReaderStatistics.DATA_ROW_COUNT,
+                DataReaderStatistics.DATA_INSERT_ROW_COUNT, DataReaderStatistics.DATA_UPDATE_ROW_COUNT,
+                DataReaderStatistics.DATA_DELETE_ROW_COUNT, DataReaderStatistics.EXTRACT_ROW_COUNT,
+                DataReaderStatistics.EXTRACT_INSERT_ROW_COUNT, DataReaderStatistics.EXTRACT_UPDATE_ROW_COUNT,
+                DataReaderStatistics.EXTRACT_DELETE_ROW_COUNT, DataReaderStatistics.FAILED_DATA_ID }, ',');
+    }
+
+    protected String getBatchStats(OutgoingBatch batch) {
+        return StringUtils.join(new String[] { CsvConstants.STATS, String.valueOf(batch.isLoadFlag() ? 1 : 0),
+                String.valueOf(batch.getExtractCount()), String.valueOf(batch.getSentCount()), String.valueOf(batch.getLoadCount()),
+                String.valueOf(batch.getLoadId()), String.valueOf(batch.isCommonFlag() ? 1 : 0), String.valueOf(batch.getRouterMillis()),
+                String.valueOf(batch.getExtractMillis()), String.valueOf(batch.getTransformExtractMillis()),
+                String.valueOf(batch.getTransformLoadMillis()), String.valueOf(batch.getReloadRowCount()),
+                String.valueOf(batch.getOtherRowCount()), String.valueOf(batch.getDataRowCount()),
+                String.valueOf(batch.getDataInsertRowCount()), String.valueOf(batch.getDataUpdateRowCount()),
+                String.valueOf(batch.getDataDeleteRowCount()), String.valueOf(batch.getExtractRowCount()),
+                String.valueOf(batch.getExtractInsertRowCount()), String.valueOf(batch.getExtractUpdateRowCount()),
+                String.valueOf(batch.getExtractDeleteRowCount()), String.valueOf(batch.getFailedDataId()) }, ',');
+    }
 
     public boolean extractBatchRange(Writer writer, String nodeId, long startBatchId,
             long endBatchId) {
