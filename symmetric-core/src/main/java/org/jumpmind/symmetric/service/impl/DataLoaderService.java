@@ -69,6 +69,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
@@ -942,6 +943,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public void start(DataContext ctx, Batch batch) {
             batchStartsToArriveTimeInMs = System.currentTimeMillis();
             processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
+            processInfo.setDataCount(ctx.getStatistics().get(DataReaderStatistics.DATA_ROW_COUNT));
         }
 
         public void end(final DataContext ctx, final Batch batch, final IStagedResource resource) {

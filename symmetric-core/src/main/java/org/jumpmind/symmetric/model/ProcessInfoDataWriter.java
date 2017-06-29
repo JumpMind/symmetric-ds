@@ -25,7 +25,9 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
+import org.jumpmind.util.Statistics;
 
 public class ProcessInfoDataWriter extends NestedDataWriter {
 
@@ -47,6 +49,10 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
             processInfo.setCurrentChannelId(batch.getChannelId());
             processInfo.incrementBatchCount();
             processInfo.setCurrentDataCount(0);
+            Statistics outgoingStats = this.context.getReader().getStatistics().get(batch.getBatchId());
+            if (outgoingStats != null) {
+                processInfo.setDataCount(outgoingStats.get(DataReaderStatistics.DATA_ROW_COUNT));
+            }
         }
         super.start(batch);
     }
