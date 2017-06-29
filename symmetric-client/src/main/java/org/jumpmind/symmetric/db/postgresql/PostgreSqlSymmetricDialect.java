@@ -152,10 +152,6 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
-        System.out.println("select count(*) from information_schema.triggers where trigger_name = ? "
-                + "and event_object_table = ? and trigger_schema = ? : " + triggerName.toLowerCase() + "," + tableName + ","
-                + (schema == null ? platform.getDefaultSchema() : schema));
-
         if (platform.isMetadataIgnoreCase()) {
             return platform.getSqlTemplate().queryForInt(
                     "select count(*) from information_schema.triggers where trigger_name = ? "
