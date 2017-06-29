@@ -100,7 +100,6 @@ abstract public class AbstractTransportManager {
                 append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId, batch.getLoadMillis());
                 append(builder, WebConstants.ACK_START_TIME + batchId, batch.getStartTime());
                 append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
-                // TODO: Implement new ACKs
                 append(builder, WebConstants.ACK_LOAD_ROW_COUNT + batchId, batch.getLoadRowCount());
                 append(builder, WebConstants.ACK_LOAD_INSERT_ROW_COUNT + batchId, batch.getLoadInsertRowCount());
                 append(builder, WebConstants.ACK_LOAD_UPDATE_ROW_COUNT + batchId, batch.getLoadUpdateRowCount());
@@ -182,7 +181,6 @@ abstract public class AbstractTransportManager {
         batchInfo.setFilterMillis(getParamAsNum(parameters, WebConstants.ACK_FILTER_MILLIS + batchId));
         batchInfo.setLoadMillis(getParamAsNum(parameters, WebConstants.ACK_DATABASE_MILLIS + batchId));
         batchInfo.setByteCount(getParamAsNum(parameters, WebConstants.ACK_BYTE_COUNT + batchId));
-        // TODO: Implement new ACKs
         batchInfo.setLoadRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_ROW_COUNT + batchId));
         batchInfo.setLoadInsertRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_INSERT_ROW_COUNT + batchId));
         batchInfo.setLoadUpdateRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_UPDATE_ROW_COUNT + batchId));
