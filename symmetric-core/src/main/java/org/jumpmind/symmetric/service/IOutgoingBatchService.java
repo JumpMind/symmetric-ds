@@ -100,6 +100,10 @@ public interface IOutgoingBatchService {
         
     public Map<String, Integer> countOutgoingBatchesPendingByChannel(String nodeId);
     
+    public long countUnsentRowsByTargetNode(String nodeId);
+    
+    public int countUnsentBatchesByTargetNode(String nodeId);
+    
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(OutgoingBatch.Status ... statuses);
     
     public List<OutgoingBatchSummary> findOutgoingBatchSummaryByChannel(OutgoingBatch.Status ... statuses);    
