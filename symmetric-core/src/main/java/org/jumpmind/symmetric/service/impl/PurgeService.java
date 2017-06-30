@@ -211,6 +211,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private long[] queryForMinMax(String sql, Object... params) {
         long[] minMax = sqlTemplate.queryForObject(sql, new ISqlRowMapper<long[]>() {
             public long[] mapRow(Row rs) {
+                // Max - 1 so we always leave 1 row behind, which keeps MySQL autoinc from resetting
                 return new long[] { rs.getLong("min_id"), rs.getLong("max_id")-1 };
             }
         }, params);
