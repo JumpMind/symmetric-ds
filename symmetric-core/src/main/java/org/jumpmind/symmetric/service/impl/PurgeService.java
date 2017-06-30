@@ -53,7 +53,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 public class PurgeService extends AbstractService implements IPurgeService {
 
     enum MinMaxDeleteSql {
-        DATA, DATA_EVENT, OUTGOING_BATCH, STRANDED_DATA
+        DATA, DATA_EVENT, OUTGOING_BATCH, STRANDED_DATA, STRANDED_DATA_EVENT
     };
 
     private IClusterService clusterService;
@@ -194,6 +194,13 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int dataDeletedCount = purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.DATA, time.getTime(),
                 maxNumOfDataIdsToPurgeInTx);
         statisticManager.incrementPurgedDataRows(dataDeletedCount);
+        
+        log.info("Getting range for stranded data events");
+        long[] minMaxEvent = queryForMinMax(getSql("selectStrandedDataEventRangeSql"), new Object[0]);
+        int strandedEventDeletedCount = purgeByMinMax(minMaxEvent, minGapStartId, MinMaxDeleteSql.STRANDED_DATA_EVENT,
+                time.getTime(), maxNumOfDataIdsToPurgeInTx);
+        statisticManager.incrementPurgedDataEventRows(strandedEventDeletedCount);
+        
         int strandedDeletedCount = purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.STRANDED_DATA,
                 time.getTime(), maxNumOfDataIdsToPurgeInTx);
         statisticManager.incrementPurgedDataRows(strandedDeletedCount);
@@ -298,6 +305,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     deleteSql = getSql("deleteStrandedData");
                     args = new Object[] { minId, maxId, minGapStartId, cutoffTime, minId, maxId };
                     argTypes = new int[] { idSqlType, idSqlType, idSqlType, Types.TIMESTAMP, idSqlType, idSqlType};
+                    break;
+                case STRANDED_DATA_EVENT:
+                    deleteSql = getSql("deleteStrandedDataEvent");
+                    args = new Object[] { minId, maxId, cutoffTime };
+                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP };
                     break;
             }
 
