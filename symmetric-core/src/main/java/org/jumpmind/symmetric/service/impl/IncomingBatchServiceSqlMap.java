@@ -71,17 +71,19 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
 "  load_row_count, fallback_insert_count, fallback_update_count, ignore_count, ignore_row_count, missing_delete_count, skip_count, sql_state, sql_code, sql_message, " + 
 "  last_update_hostname, last_update_time, summary, create_time, load_flag, extract_count, sent_count, load_count, load_id, common_flag, router_millis, extract_millis, " +
 "  transform_extract_millis, transform_load_millis, reload_row_count, other_row_count, data_row_count, data_insert_row_count, data_update_row_count, " +
-"  data_delete_row_count, extract_row_count, extract_insert_row_count, extract_update_row_count, extract_delete_row_count, failed_data_id) " + 
+"  data_delete_row_count, extract_row_count, extract_insert_row_count, extract_update_row_count, extract_delete_row_count, load_insert_row_count, " +
+"  load_update_row_count, load_delete_row_count, failed_data_id) " + 
 "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
-"  ?, ?, ?)");
+"  ?, ?, ?, ?, ?, ?)");
 
         putSql("updateIncomingBatchSql" ,"" + 
-"update $(incoming_batch) set status = ?, error_flag=?, network_millis = ?, filter_millis = ?, load_millis = ?, failed_row_number = ?, failed_line_number = ?, byte_count = ?,         " + 
-"  load_row_count = ?, fallback_insert_count = ?, fallback_update_count = ?, ignore_count = ?, ignore_row_count = ?, missing_delete_count = ?, skip_count = ?,  sql_state = ?, sql_code = ?, sql_message = ?,   " + 
-"  last_update_hostname = ?, last_update_time = current_timestamp, summary = ?, load_flag = ?, extract_count = ?, sent_count = ?, load_count = ?, load_id = ?, common_flag = ?, " +
-"  router_millis = ?, extract_millis = ?, transform_extract_millis = ?, transform_load_millis = ?, reload_row_count = ?, other_row_count = ?, data_row_count = ?, data_insert_row_count = ?, " +
-"  data_update_row_count = ?, data_delete_row_count = ?, extract_row_count = ?, extract_insert_row_count = ?, extract_update_row_count = ?, extract_delete_row_count = ?, failed_data_id = ? " +
-"  where batch_id = ? and node_id = ? " );
+"update $(incoming_batch) set status = ?, error_flag=?, network_millis = ?, filter_millis = ?, load_millis = ?, failed_row_number = ?, failed_line_number = ?, byte_count = ?, " + 
+"  load_row_count = ?, fallback_insert_count = ?, fallback_update_count = ?, ignore_count = ?, ignore_row_count = ?, missing_delete_count = ?, skip_count = ?,  sql_state = ?, " +
+"  sql_code = ?, sql_message = ?, last_update_hostname = ?, last_update_time = current_timestamp, summary = ?, load_flag = ?, extract_count = ?, sent_count = ?, " +
+"  load_count = ?, load_id = ?, common_flag = ?, router_millis = ?, extract_millis = ?, transform_extract_millis = ?, transform_load_millis = ?, reload_row_count = ?, " + 
+"  other_row_count = ?, data_row_count = ?, data_insert_row_count = ?, data_update_row_count = ?, data_delete_row_count = ?, extract_row_count = ?, " +
+"  extract_insert_row_count = ?, extract_update_row_count = ?, extract_delete_row_count = ?, load_insert_row_count = ?, load_update_row_count = ?, load_delete_row_count = ?, " +
+"  failed_data_id = ? where batch_id = ? and node_id = ? " );
 
         putSql("deleteIncomingBatchSql" ,"" + 
 "delete from $(incoming_batch) where batch_id = ? and node_id = ? " );

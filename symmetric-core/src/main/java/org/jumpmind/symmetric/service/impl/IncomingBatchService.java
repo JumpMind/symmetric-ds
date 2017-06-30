@@ -256,6 +256,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                                 batch.getTransformLoadMillis(), batch.getReloadRowCount(), batch.getOtherRowCount(), batch.getDataRowCount(),
                                 batch.getDataInsertRowCount(), batch.getDataUpdateRowCount(), batch.getDataDeleteRowCount(),
                                 batch.getExtractRowCount(), batch.getExtractInsertRowCount(), batch.getExtractUpdateRowCount(),
+                                batch.getLoadInsertRowCount(), batch.getLoadUpdateRowCount(), batch.getLoadDeleteRowCount(),
                                 batch.getExtractDeleteRowCount(), batch.getFailedDataId() },
                         new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                                 Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
@@ -263,7 +264,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                                 Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                                 Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                                 Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                                Types.NUMERIC });
+                                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC });
             }
         }
     }
@@ -336,15 +337,16 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                             batch.getTransformExtractMillis(), batch.getTransformLoadMillis(), batch.getReloadRowCount(),
                             batch.getOtherRowCount(), batch.getDataRowCount(), batch.getDataInsertRowCount(), batch.getDataUpdateRowCount(),
                             batch.getDataDeleteRowCount(), batch.getExtractRowCount(), batch.getExtractInsertRowCount(),
-                            batch.getExtractUpdateRowCount(), batch.getExtractDeleteRowCount(), batch.getFailedDataId(), batch.getBatchId(),
+                            batch.getExtractUpdateRowCount(), batch.getExtractDeleteRowCount(), batch.getLoadInsertRowCount(),
+                            batch.getLoadUpdateRowCount(), batch.getLoadDeleteRowCount(), batch.getFailedDataId(), batch.getBatchId(),
                             batch.getNodeId() },
                     new int[] { Types.CHAR, Types.SMALLINT, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                            symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                            Types.NUMERIC, Types.NUMERIC, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
         }
         return count;
     }
