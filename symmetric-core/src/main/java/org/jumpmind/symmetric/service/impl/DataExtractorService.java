@@ -51,6 +51,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
@@ -1064,15 +1065,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             !parameterService.is(ParameterConstants.NODE_OFFLINE, false)) {
                         ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
                         if (targetEngine != null && extractedBatch.isFileResource()) {
+                            Node sourceNode = nodeService.findIdentity();
+                            IStagedResource targetResource = targetEngine.getStagingManager().create( 
+                                    Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
+                                    currentBatch.getBatchId());
                             try {
-                                Node sourceNode = nodeService.findIdentity();
-                                IStagedResource targetResource = targetEngine.getStagingManager().create( 
-                                        Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
-                                        currentBatch.getBatchId());
                                 SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
                                 targetResource.setState(State.DONE);
                                 isRetry = true;
-                            } catch (Exception e) {
+                            } catch (Exception e) {   
+                                FileUtils.deleteQuietly(targetResource.getFile());
                                 throw new RuntimeException(e);
                             }
                         }
