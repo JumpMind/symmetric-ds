@@ -148,7 +148,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + " sum(s.router_millis) as total_router_millis, sum(s.extract_millis) as total_extract_millis, "
                         + " sum(s.network_millis) as total_network_millis, sum(s.filter_millis) as total_filter_millis, "
                         + " sum(s.load_millis) as total_load_millis "
-                        + "  from $(outgoing_batch) s join $(outgoing_batch) b on b.batch_id=s.batch_id and b.node_id=s.node_id"
+                        + "  from $(outgoing_batch) s join $(outgoing_batch) b on b.batch_id=s.batch_id and b.node_id=s.node_id join"
+                        + "  $(node) n on n.node_id=s.node_id and n.sync_enabled=1"
                         + " where s.status in (:STATUS_LIST) group by s.status, s.node_id, s.channel_id, b.sql_message order by s.node_id, oldest_batch_time asc   ");
 
         putSql("updateOutgoingBatchesStatusSql",
