@@ -118,6 +118,7 @@ final public class ParameterConstants {
     public final static String AUTO_SYNC_TRIGGERS = "auto.sync.triggers";
     public final static String AUTO_SYNC_TRIGGERS_AT_STARTUP = "auto.sync.triggers.at.startup";
     public final static String AUTO_SYNC_CONFIG_AT_STARTUP = "auto.sync.config.at.startup";
+    public final static String AUTO_SYNC_CONFIG_AFTER_UPGRADE = "auto.sync.config.after.upgrade";
     public final static String AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED = "auto.sync.triggers.after.config.change";
     public final static String AUTO_SYNC_TRIGGERS_AFTER_CONFIG_LOADED = "auto.sync.triggers.after.config.loaded";
     public final static String AUTO_REFRESH_AFTER_CONFIG_CHANGED = "auto.refresh.after.config.changes.detected";

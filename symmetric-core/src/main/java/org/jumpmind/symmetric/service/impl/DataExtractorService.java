@@ -213,6 +213,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
     }
     
+    public void extractConfigurationOnly(Node node, OutputStream out) {
+        this.extractConfigurationStandalone(node, TransportUtils.toWriter(out),                
+                TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY,
+                TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST, TableConstants.SYM_FILE_SNAPSHOT,
+                TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_USER,
+                TableConstants.SYM_TABLE_RELOAD_REQUEST, TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
+    }
+    
     protected boolean filter(Node targetNode, String tableName) {
         
         boolean pre37 = Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_7_0);
