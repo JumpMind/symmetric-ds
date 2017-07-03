@@ -1506,10 +1506,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         resource.delete();
                     }
                     
-                    MultiBatchStagingWriter multiBatchStatingWriter = 
+                    MultiBatchStagingWriter multiBatchStagingWriter = 
                             buildMultiBatchStagingWriter(request, identity, targetNode, batches, processInfo, channel);
                     
-                    extractOutgoingBatch(processInfo, targetNode, multiBatchStatingWriter, 
+                    extractOutgoingBatch(processInfo, targetNode, multiBatchStagingWriter, 
                             firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT);
                     
                     for (OutgoingBatch outgoingBatch : batches) {
@@ -1590,10 +1590,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         request.getEndBatchId() });
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.OK);
             } catch (RuntimeException ex) {
-                log.debug(
+                log.warn(
                         "Failed to extract batches for request {}. Starting at batch {}.  Ending at batch {}",
                         new Object[] { request.getRequestId(), request.getStartBatchId(),
                                 request.getEndBatchId() });
+                List<OutgoingBatch> checkBatches = outgoingBatchService.getOutgoingBatchRange(
+                        request.getStartBatchId(), request.getEndBatchId()).getBatches();
+                for (OutgoingBatch outgoingBatch : checkBatches) {
+                    outgoingBatch.setStatus(Status.RQ);
+                    IStagedResource resource = getStagedResource(outgoingBatch);
+                    if (resource != null) {
+                        resource.close();
+                        resource.delete();
+                    }
+                    outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+                }                
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.ERROR);
                 throw ex;
             }
