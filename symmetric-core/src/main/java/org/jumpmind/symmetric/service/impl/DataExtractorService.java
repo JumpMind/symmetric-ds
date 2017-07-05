@@ -51,6 +51,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
@@ -1064,15 +1065,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             !parameterService.is(ParameterConstants.NODE_OFFLINE, false)) {
                         ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
                         if (targetEngine != null && extractedBatch.isFileResource()) {
+                            Node sourceNode = nodeService.findIdentity();
+                            IStagedResource targetResource = targetEngine.getStagingManager().create( 
+                                    Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
+                                    currentBatch.getBatchId());
                             try {
-                                Node sourceNode = nodeService.findIdentity();
-                                IStagedResource targetResource = targetEngine.getStagingManager().create( 
-                                        Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
-                                        currentBatch.getBatchId());
                                 SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
                                 targetResource.setState(State.DONE);
                                 isRetry = true;
-                            } catch (Exception e) {
+                            } catch (Exception e) {   
+                                FileUtils.deleteQuietly(targetResource.getFile());
                                 throw new RuntimeException(e);
                             }
                         }
@@ -1506,10 +1508,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         resource.delete();
                     }
                     
-                    MultiBatchStagingWriter multiBatchStatingWriter = 
+                    MultiBatchStagingWriter multiBatchStagingWriter = 
                             buildMultiBatchStagingWriter(request, identity, targetNode, batches, processInfo, channel);
                     
-                    extractOutgoingBatch(processInfo, targetNode, multiBatchStatingWriter, 
+                    extractOutgoingBatch(processInfo, targetNode, multiBatchStagingWriter, 
                             firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT);
                     
                     for (OutgoingBatch outgoingBatch : batches) {
@@ -1590,10 +1592,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         request.getEndBatchId() });
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.OK);
             } catch (RuntimeException ex) {
-                log.debug(
+                log.warn(
                         "Failed to extract batches for request {}. Starting at batch {}.  Ending at batch {}",
                         new Object[] { request.getRequestId(), request.getStartBatchId(),
                                 request.getEndBatchId() });
+                List<OutgoingBatch> checkBatches = outgoingBatchService.getOutgoingBatchRange(
+                        request.getStartBatchId(), request.getEndBatchId()).getBatches();
+                for (OutgoingBatch outgoingBatch : checkBatches) {
+                    outgoingBatch.setStatus(Status.RQ);
+                    IStagedResource resource = getStagedResource(outgoingBatch);
+                    if (resource != null) {
+                        resource.close();
+                        resource.delete();
+                    }
+                    outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+                }                
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.Status.ERROR);
                 throw ex;
             }
