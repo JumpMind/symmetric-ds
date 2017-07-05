@@ -943,7 +943,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public void start(DataContext ctx, Batch batch) {
             batchStartsToArriveTimeInMs = System.currentTimeMillis();
             processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
-            if (ctx.getStatistics() != null) {
+            if (processInfo != null && ctx != null && ctx.getStatistics() != null) {
                 processInfo.setDataCount(ctx.getStatistics().get(DataReaderStatistics.DATA_ROW_COUNT));
             }
         }

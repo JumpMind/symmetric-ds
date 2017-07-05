@@ -54,6 +54,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
@@ -214,6 +215,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public void extractConfigurationStandalone(Node node, OutputStream out) {
         this.extractConfigurationStandalone(node, TransportUtils.toWriter(out),
                 TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
+    }
+    
+    public void extractConfigurationOnly(Node node, OutputStream out) {
+        this.extractConfigurationStandalone(node, TransportUtils.toWriter(out),                
+                TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY,
+                TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST, TableConstants.SYM_FILE_SNAPSHOT,
+                TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_USER,
+                TableConstants.SYM_TABLE_RELOAD_REQUEST, TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
     }
     
     protected boolean filter(Node targetNode, String tableName) {
@@ -1070,17 +1079,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             !parameterService.is(ParameterConstants.NODE_OFFLINE, false)) {
                         ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
                         if (targetEngine != null && extractedBatch.isFileResource()) {
+                            Node sourceNode = nodeService.findIdentity();
+                            IStagedResource targetResource = targetEngine.getStagingManager().create( 
+                                    Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
+                                    currentBatch.getBatchId());
                             try {
-                                Node sourceNode = nodeService.findIdentity();
-                                IStagedResource targetResource = targetEngine.getStagingManager().create( 
-                                        Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
-                                        currentBatch.getBatchId());
-
                                 SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
                                 targetResource.setState(State.DONE);
 
                                 isRetry = true;
-                            } catch (Exception e) {
+                            } catch (Exception e) {   
+                                FileUtils.deleteQuietly(targetResource.getFile());
                                 throw new RuntimeException(e);
                             }
                         }
@@ -1606,10 +1615,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         resource.delete();
                     }
                     
-                    MultiBatchStagingWriter multiBatchStatingWriter = 
+                    MultiBatchStagingWriter multiBatchStagingWriter = 
                             buildMultiBatchStagingWriter(request, identity, targetNode, batches, processInfo, channel);
                     
-                    extractOutgoingBatch(processInfo, targetNode, multiBatchStatingWriter, 
+                    extractOutgoingBatch(processInfo, targetNode, multiBatchStagingWriter, 
                             firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT);
                     
                     for (OutgoingBatch outgoingBatch : batches) {
@@ -1690,11 +1699,22 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         request.getEndBatchId() });
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.OK);
             } catch (RuntimeException ex) {
-                log.debug(
+                log.warn(
                         "Failed to extract batches for request {}. Starting at batch {}.  Ending at batch {}",
                         new Object[] { request.getRequestId(), request.getStartBatchId(),
                                 request.getEndBatchId() });
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.ERROR);
+                List<OutgoingBatch> checkBatches = outgoingBatchService.getOutgoingBatchRange(
+                        request.getStartBatchId(), request.getEndBatchId()).getBatches();
+                for (OutgoingBatch outgoingBatch : checkBatches) {
+                    outgoingBatch.setStatus(Status.RQ);
+                    IStagedResource resource = getStagedResource(outgoingBatch);
+                    if (resource != null) {
+                        resource.close();
+                        resource.delete();
+                    }
+                    outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+                }                
                 throw ex;
             }
         }
@@ -1882,13 +1902,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         TriggerHistory triggerHistory = data.getTriggerHistory();
                         Trigger trigger = triggerRouterService.getTriggerById(
                                 triggerHistory.getTriggerId(), false);
-                        if (trigger != null || triggerHistory.getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
+                        boolean isFileParserRouter = triggerHistory.getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER);
+                        if (trigger != null || isFileParserRouter) {
                             if (lastTriggerHistory == null || lastTriggerHistory
                                     .getTriggerHistoryId() != triggerHistory.getTriggerHistoryId() || 
                                     lastRouterId == null || !lastRouterId.equals(routerId)) {
                                 
                                 this.sourceTable = columnsAccordingToTriggerHistory.lookup(
-                                            routerId, triggerHistory, false, false);
+                                            routerId, triggerHistory, false, !isFileParserRouter);
                                 
                                 this.targetTable = columnsAccordingToTriggerHistory.lookup(
                                         routerId, triggerHistory, true, false);

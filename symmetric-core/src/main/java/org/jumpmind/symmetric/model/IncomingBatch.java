@@ -70,6 +70,10 @@ public class IncomingBatch extends AbstractBatch {
                 failedRowNumber = getLoadRowCount();
                 failedLineNumber = writerStatistics.get(DataWriterStatisticConstants.LINENUMBER);
             }
+
+            setLoadInsertRowCount(writerStatistics.get(DataWriterStatisticConstants.INSERTCOUNT));
+            setLoadUpdateRowCount(writerStatistics.get(DataWriterStatisticConstants.UPDATECOUNT));
+            setLoadDeleteRowCount(writerStatistics.get(DataWriterStatisticConstants.DELETECOUNT));
         }
     }
 

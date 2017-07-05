@@ -58,9 +58,10 @@ public class ConfigurationUriHandler extends AbstractUriHandler {
         log.info("Configuration request from node ID " + remoteNode.getNodeId() + " {symmetricVersion={}, configVersion={}}", 
                 symVersion, configVersion);
 
-        if (StringUtils.isBlank(configVersion) || Version.isOlderThanVersion(configVersion, Version.version())) {
+        if (StringUtils.isBlank(configVersion) || Version.isOlderMinorVersion(configVersion, Version.version())) {
+            log.info("Sending configuration to node ID " + remoteNode.getNodeId());
             OutputStream outputStream = res.getOutputStream();
-            dataExtractorService.extractConfigurationStandalone(remoteNode, outputStream);   
+            dataExtractorService.extractConfigurationOnly(remoteNode, outputStream);   
         }
     }
     
