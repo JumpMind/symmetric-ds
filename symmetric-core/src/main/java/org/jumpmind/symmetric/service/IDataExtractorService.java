@@ -44,6 +44,8 @@ public interface IDataExtractorService {
 
     public void extractConfigurationStandalone(Node node, Writer out, String... tablesToIgnore);
 
+    public void extractConfigurationOnly(Node node, OutputStream out);
+    
     public List<OutgoingBatchWithPayload> extractToPayload(ProcessInfo processInfo, Node targetNode, PayloadType payloadType, boolean useJdbcTimestampFormat, boolean useUpsertStatements, boolean useDelimiterIdentifiers);
     
     /**

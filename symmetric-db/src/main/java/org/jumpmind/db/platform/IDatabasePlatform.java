@@ -187,4 +187,6 @@ public interface IDatabasePlatform {
     
     public List<PermissionResult> checkSymTablePermissions(PermissionType... permissionTypes); 
     
+    public boolean isUseMultiThreadSyncTriggers();
+    
 }

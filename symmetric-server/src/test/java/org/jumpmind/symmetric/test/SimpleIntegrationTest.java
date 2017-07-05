@@ -985,6 +985,34 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 120000)
+    public void test25TestPurge2() throws Exception {
+        logTestRunning();
+
+        int totalCount = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event");
+        int batchId = getServer().getSqlTemplate().queryForInt("select min(batch_id) from sym_outgoing_batch");
+        int purgeCount = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event where batch_id = ?", batchId);
+
+        // Purge always leaves the last item in a table, so we have to abandon at least two
+        getServer().getSqlTemplate().update("delete from sym_outgoing_batch where batch_id in (?, ?)", batchId, batchId + 1);
+
+        IParameterService parameterService = getServer().getParameterService();
+        int purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
+        // Put retention into future to force it to purge
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24, "test");
+
+        getServer().purge();
+
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, purgeRetentionMinues, "test");
+
+        int count = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event where batch_id = ?", batchId);
+        assertTrue(count == 0);
+        
+        int newTotalCount = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event");
+        assertTrue(newTotalCount == totalCount - purgeCount);
+        
+    }
+
+    @Test(timeout = 120000)
     public void test26Heartbeat() throws Exception {
         logTestRunning();
         Level previous = setLoggingLevelForTest(Level.DEBUG);
