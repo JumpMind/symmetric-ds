@@ -479,7 +479,7 @@ public class AbstractBatch implements Serializable {
         return dataDeleteRowCount;
     }
 
-    public void incrementEventCount(DataEventType type) {
+    public void incrementRowCount(DataEventType type) {
         switch (type) {
             case RELOAD:
                 reloadRowCount++;
@@ -497,6 +497,26 @@ public class AbstractBatch implements Serializable {
                 otherRowCount++;
                 break;
         }
+    }
+    
+    public void incrementExtractRowCount(DataEventType type) {
+        switch (type) {
+            case INSERT:
+                extractInsertRowCount++;
+                break;
+            case UPDATE:
+                extractUpdateRowCount++;
+                break;
+            case DELETE:
+                extractDeleteRowCount++;
+                break;
+            default:
+                break;
+        }
+    }
+    
+    public void incrementExtractRowCount() {
+        this.extractRowCount++;
     }
 
     public void setDataInsertRowCount(long dataInsertRowCount) {

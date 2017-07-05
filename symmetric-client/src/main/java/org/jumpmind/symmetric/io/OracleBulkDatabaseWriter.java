@@ -97,7 +97,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         boolean requiresFlush = false;
         switch (dataEventType) {
             case INSERT:
-                statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                 if (filterBefore(data)) {
                     Object[] rowData = platform.getObjectValues(batch.getBinaryEncoding(), getRowData(data, CsvData.ROW_DATA),
@@ -300,7 +300,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 
                 if (errors.length > 0) {
                     // set the statement count so the failed row number get reported correctly
-                    statistics.get(batch).set(DataWriterStatisticConstants.STATEMENTCOUNT,
+                    statistics.get(batch).set(DataWriterStatisticConstants.ROWCOUNT,
                             errors[0]);
 
                     throw new BulkSqlException(errors, lastEventType.toString(), sql);

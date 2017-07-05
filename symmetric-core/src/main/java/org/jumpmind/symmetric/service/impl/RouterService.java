@@ -1039,7 +1039,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     context.setLastLoadId(-1);
                 }
 
-                batch.incrementEventCount(dataMetaData.getData().getDataEventType());
+                batch.incrementRowCount(dataMetaData.getData().getDataEventType());
                 batch.incrementDataRowCount();
                 batch.incrementTableCount(dataMetaData.getTable().getNameLowerCase());
                 

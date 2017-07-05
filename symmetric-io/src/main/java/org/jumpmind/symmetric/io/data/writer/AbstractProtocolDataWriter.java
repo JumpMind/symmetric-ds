@@ -154,11 +154,12 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                 println(CsvConstants.NO_BINARY_OLD_DATA, Boolean.toString(noBinaryOldData));
             }
             
-            statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+            statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
             statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
             switch (data.getDataEventType()) {
                 case INSERT:
                     println(CsvConstants.INSERT, data.getCsvData(CsvData.ROW_DATA));
+                    statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT);
                     break;
 
                 case UPDATE:
@@ -170,6 +171,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                     }
                     println(CsvConstants.UPDATE, data.getCsvData(CsvData.ROW_DATA),
                             data.getCsvData(CsvData.PK_DATA));
+                    statistics.get(batch).increment(DataWriterStatisticConstants.UPDATECOUNT);
                     break;
 
                 case DELETE:
@@ -180,6 +182,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                         }
                     }
                     println(CsvConstants.DELETE, data.getCsvData(CsvData.PK_DATA));
+                    statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT);
                     break;
 
                 case CREATE:

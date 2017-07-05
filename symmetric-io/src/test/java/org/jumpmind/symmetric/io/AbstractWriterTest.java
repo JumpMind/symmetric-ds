@@ -163,7 +163,7 @@ abstract public class AbstractWriterTest {
         long statementCount = 0;
         Collection<Statistics> stats = writer.getStatistics().values();
         for (Statistics statistics : stats) {
-            statementCount += statistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
+            statementCount += statistics.get(DataWriterStatisticConstants.ROWCOUNT);
         }
         return statementCount;
     }
@@ -206,7 +206,7 @@ abstract public class AbstractWriterTest {
         long statementCount = 0;
         Collection<Statistics> stats = writer.getStatistics().values();
         for (Statistics statistics : stats) {
-            statementCount += statistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
+            statementCount += statistics.get(DataWriterStatisticConstants.ROWCOUNT);
         }
         return statementCount;
     }

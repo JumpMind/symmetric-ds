@@ -124,7 +124,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             }
         } 
         statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-        statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+        statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
         statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
     }
 
@@ -176,7 +176,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         copyIn.endCopy();
                     }
                 } catch (Exception ex) {
-                    statistics.get(batch).set(DataWriterStatisticConstants.STATEMENTCOUNT, 0);
+                    statistics.get(batch).set(DataWriterStatisticConstants.ROWCOUNT, 0);
                     statistics.get(batch).set(DataWriterStatisticConstants.LINENUMBER, 0);
                    
                     throw getPlatform().getSqlTemplate().translate(ex);

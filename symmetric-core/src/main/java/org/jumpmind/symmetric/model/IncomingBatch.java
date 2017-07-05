@@ -58,7 +58,7 @@ public class IncomingBatch extends AbstractBatch {
         if (writerStatistics != null) {
             setFilterMillis(writerStatistics.get(DataWriterStatisticConstants.FILTERMILLIS));
             setLoadMillis(writerStatistics.get(DataWriterStatisticConstants.LOADMILLIS));
-            setLoadRowCount(writerStatistics.get(DataWriterStatisticConstants.STATEMENTCOUNT));
+            setLoadRowCount(writerStatistics.get(DataWriterStatisticConstants.ROWCOUNT));
             setFallbackInsertCount(writerStatistics.get(DataWriterStatisticConstants.FALLBACKINSERTCOUNT));
             setFallbackUpdateCount(writerStatistics.get(DataWriterStatisticConstants.FALLBACKUPDATECOUNT));
             setMissingDeleteCount(writerStatistics.get(DataWriterStatisticConstants.MISSINGDELETECOUNT));

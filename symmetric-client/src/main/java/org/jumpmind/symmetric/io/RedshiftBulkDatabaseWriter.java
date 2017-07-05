@@ -123,7 +123,7 @@ public class RedshiftBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         
                 switch (dataEventType) {
                     case INSERT:
-                        statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                        statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
                         statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                         statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                         try {

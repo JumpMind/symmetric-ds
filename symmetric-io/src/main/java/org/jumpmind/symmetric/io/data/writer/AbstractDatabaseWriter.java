@@ -151,7 +151,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                     || (targetTable == null && data.getDataEventType() == DataEventType.SQL)) {
                 try {
                     
-                    statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                    statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
                     statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                     if (filterBefore(data)) {
                         

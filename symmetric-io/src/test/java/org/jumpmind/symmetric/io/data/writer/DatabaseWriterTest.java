@@ -262,7 +262,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             Assert.fail("Should have received a conflict exception");
         } catch (ConflictException ex) {
             Statistics stats = lastDataWriterUsed.getStatistics().values().iterator().next();
-            long statementNumber = stats.get(DataWriterStatisticConstants.STATEMENTCOUNT);
+            long statementNumber = stats.get(DataWriterStatisticConstants.ROWCOUNT);
             ResolvedData resolvedData = new ResolvedData(statementNumber,
                     update.getCsvData(CsvData.ROW_DATA), false);
             writerSettings.setResolvedData(resolvedData);
@@ -309,7 +309,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
             Assert.fail("Should have received a conflict exception");
         } catch (ConflictException ex) {
             Statistics stats = lastDataWriterUsed.getStatistics().values().iterator().next();
-            long statementNumber = stats.get(DataWriterStatisticConstants.STATEMENTCOUNT);
+            long statementNumber = stats.get(DataWriterStatisticConstants.ROWCOUNT);
             ResolvedData resolvedData = new ResolvedData(statementNumber,
                     update.getCsvData(CsvData.ROW_DATA), false);
             writerSettings.setResolvedData(resolvedData);

@@ -899,12 +899,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         Statistics stats = getExtractStats(writer);
                         if (stats != null) {
                             transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);
-                            currentBatch.setExtractCount(stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
+                            currentBatch.setExtractCount(stats.get(DataWriterStatisticConstants.ROWCOUNT));
+                            currentBatch.setDataRowCount(stats.get(DataWriterStatisticConstants.ROWCOUNT));
+                            currentBatch.setDataInsertRowCount(stats.get(DataWriterStatisticConstants.INSERTCOUNT));
+                            currentBatch.setDataUpdateRowCount(stats.get(DataWriterStatisticConstants.UPDATECOUNT));
+                            currentBatch.setDataDeleteRowCount(stats.get(DataWriterStatisticConstants.DELETECOUNT));
                             extractTimeInMs = extractTimeInMs - transformTimeInMs;
                             byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                             statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(), byteCount);
                             statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
-                                    stats.get(DataWriterStatisticConstants.STATEMENTCOUNT));
+                                    stats.get(DataWriterStatisticConstants.ROWCOUNT));
                         }
 
                     }
@@ -1173,7 +1177,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 char[] buffer = new char[bufferSize];
 
-                //TODO: Write Batch Stats
                 boolean batchStatsWritten = false;
                 String prevBuffer = "";
                 while ((numCharsRead = reader.read(buffer)) != -1) {
@@ -1253,7 +1256,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         int index = -1;
         String fullBuffer = prevBuffer + bufferString;
 
-        String pattern = "\n" + CsvConstants.BATCH + ",\\d*\r*\n";
+        String pattern = "\n" + CsvConstants.BATCH + "\\s*,\\s*\\d*\r*\n";
         Pattern r = Pattern.compile(pattern);
         Matcher m = r.matcher(fullBuffer);
         if (m.find()) {
@@ -1904,7 +1907,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     || symmetricDialect.getName().equals(
                                             DatabaseNamesConstants.MSSQL2008));
                             
-                            outgoingBatch.incrementDataRowCount();
+                            outgoingBatch.incrementExtractRowCount();
+                            outgoingBatch.incrementExtractRowCount(data.getDataEventType());
                         } else {
                             log.error(
                                     "Could not locate a trigger with the id of {} for {}.  It was recorded in the hist table with a hist id of {}",
@@ -2068,8 +2072,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     .isNotBlank(triggerRouter.getInitialLoadSelect()), triggerRouter));
 
             if (data != null && outgoingBatch != null && !outgoingBatch.isExtractJobFlag()) {
-                outgoingBatch.incrementDataRowCount();
-                outgoingBatch.incrementEventCount(data.getDataEventType());
+                outgoingBatch.incrementExtractRowCount();
+                outgoingBatch.incrementExtractRowCount(data.getDataEventType());
             }
 
             return data;

@@ -169,7 +169,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     throw getPlatform().getSqlTemplate().translate(ex);
                 } finally {
                     statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-                    statistics.get(batch).increment(DataWriterStatisticConstants.STATEMENTCOUNT);
+                    statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
                     statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                 }
                 break;

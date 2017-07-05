@@ -38,7 +38,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
         DatabaseWriterSettings writerSettings = writer.getWriterSettings();
         Conflict conflict = writerSettings.pickConflict(writer.getTargetTable(), writer.getBatch());
         Statistics statistics = writer.getStatistics().get(writer.getBatch());
-        long statementCount = statistics.get(DataWriterStatisticConstants.STATEMENTCOUNT);
+        long statementCount = statistics.get(DataWriterStatisticConstants.ROWCOUNT);
         long lineNumber = statistics.get(DataWriterStatisticConstants.LINENUMBER);
         ResolvedData resolvedData = writerSettings.getResolvedData(statementCount);
 
