@@ -113,6 +113,16 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
         putSql("deleteDataEventByCreateTimeSql", "delete from sym_data_event where create_time < ?");
         putSql("deleteDataByCreateTimeSql", "delete from sym_data where create_time < ?");
         putSql("deleteExtractRequestByCreateTimeSql", "delete from sym_extract_request where create_time < ?");
+
+        putSql("selectStrandedDataEventRangeSql" ,
+"select min(data_id) as min_id, max(data_id) as max_id from $(data_event) " +
+"where batch_id not in (select batch_id from $(outgoing_batch))");
+
+        putSql("deleteStrandedDataEvent",
+"delete from $(data_event) " + 
+"where data_id between ? and ? " +
+"and create_time < ? " +
+"and batch_id not in (select batch_id from $(outgoing_batch))");
         
     }
 

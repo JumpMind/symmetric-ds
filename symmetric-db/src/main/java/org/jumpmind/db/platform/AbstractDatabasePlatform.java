@@ -107,6 +107,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected Boolean storesMixedCaseIdentifiers;
 
     protected boolean metadataIgnoreCase = true;
+    
+    protected boolean useMultiThreadSyncTriggers = true;
 
     public AbstractDatabasePlatform() {
     }
@@ -1080,4 +1082,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return result;
     }
 
+    public boolean isUseMultiThreadSyncTriggers() {
+        return useMultiThreadSyncTriggers;
+    }
 }

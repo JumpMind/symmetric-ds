@@ -331,4 +331,11 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
 		
 		return triggers;
 	}
+
+    @Override
+    protected String getTableNamePattern(String tableName) {
+        tableName = tableName.replace("_", "\\_");
+        tableName = tableName.replace("%", "\\%");
+        return tableName;
+    }
 }

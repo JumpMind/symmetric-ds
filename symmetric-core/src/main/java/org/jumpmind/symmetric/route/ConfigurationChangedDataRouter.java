@@ -311,6 +311,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         .getDeploymentType())
                         && !nodeIdForRecordBeingRouted.equals(nodeThatMayBeRoutedTo.getNodeId())
                         && !nodeThatMayBeRoutedTo.getNodeId().equals(createAtNodeId)
+                        && !nodeIdForRecordBeingRouted.equals(me.getNodeId())                                
                         && (nodeThatMayBeRoutedTo.getCreatedAtNodeId() == null || !nodeThatMayBeRoutedTo
                                 .getCreatedAtNodeId().equals(nodeIdForRecordBeingRouted))) {
                     nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
