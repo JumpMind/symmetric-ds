@@ -1042,8 +1042,32 @@ public class DataService extends AbstractService implements IDataService {
                 this.engine.getTransformService().findTransformsFor(
                         sourceNode.getNodeGroupId(), targetNode.getNodeGroupId(), triggerRouter.getTargetTable(triggerHistory));
         
-        String sql = StringUtils.isNotBlank(overrideDeleteStatement) ? overrideDeleteStatement
-                : symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory, transforms);
+        if (StringUtils.isNotBlank(overrideDeleteStatement)) {
+            createPurgeEvent(transaction, overrideDeleteStatement, targetNode, sourceNode,
+                    triggerRouter, triggerHistory, isLoad, loadId, createBy);
+            
+        } else if (transforms != null && transforms.size() > 0) {
+            List<String> sqlStatements = symmetricDialect.createPurgeSqlForMultipleTables(targetNode, triggerRouter, 
+                    triggerHistory, transforms, null);
+            for (String sql : sqlStatements) {
+                createPurgeEvent(transaction, 
+                        sql,
+                        targetNode, sourceNode,
+                        triggerRouter, triggerHistory, isLoad, loadId, createBy);
+            }
+        } else {
+            createPurgeEvent(transaction, 
+                symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory, transforms),
+                targetNode, sourceNode,
+                triggerRouter, triggerHistory, isLoad, loadId, createBy);
+        }
+        
+    }
+
+    protected void createPurgeEvent(ISqlTransaction transaction, String sql, Node targetNode, Node sourceNode,
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad, 
+            long loadId, String createBy) {
+        
         sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
         sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
         sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
@@ -1065,7 +1089,7 @@ public class DataService extends AbstractService implements IDataService {
             insertData(transaction, data);
         }
     }
-
+    
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId,
             String createBy) {
         TriggerHistory history = engine.getTriggerRouterService()
