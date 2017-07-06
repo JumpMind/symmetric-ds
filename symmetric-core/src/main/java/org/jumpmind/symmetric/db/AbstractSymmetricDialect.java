@@ -27,6 +27,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -240,9 +241,16 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     @Override
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory, 
             List<TransformTableNodeGroupLink> transforms, String deleteSql) {
-        String sql = null;                  
+        List<String> sqlStatements = createPurgeSqlForMultipleTables(node, triggerRouter, triggerHistory, transforms, deleteSql);
+        return sqlStatements.size() == 1 ? sqlStatements.get(0) : "";
+    }
+    
+    @Override
+    public List<String> createPurgeSqlForMultipleTables(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory,
+            List<TransformTableNodeGroupLink> transforms, String deleteSql) {
+        List<String> sqlStatements = new ArrayList<String>();                  
         if (StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt())) {
-            List<String> tableNames = new ArrayList<String>();
+            Set<String> tableNames = new HashSet<String>();
             if (transforms != null) {
                 for (TransformTableNodeGroupLink transform : transforms) {
                     tableNames.add(transform.getFullyQualifiedTargetTableName());
@@ -251,7 +259,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 tableNames.add(triggerRouter.qualifiedTargetTableName(triggerHistory));
             }
             
-            StringBuilder statements = new StringBuilder(128);
             
             for (String tableName : tableNames) {
                 if (deleteSql == null) {
@@ -261,15 +268,12 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                         deleteSql = parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL);
                     } 
                 }
-                statements.append(String.format(deleteSql, tableName)).append(";");
+                sqlStatements.add(String.format(deleteSql, tableName));
             }
-            
-            statements.setLength(statements.length()-1); // Lose the last ;
-            sql = statements.toString();
         } else {
-            sql = triggerRouter.getInitialLoadDeleteStmt();
+            sqlStatements.add(triggerRouter.getInitialLoadDeleteStmt());
         }
-        return sql;
+        return sqlStatements;
     }
     
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel,
