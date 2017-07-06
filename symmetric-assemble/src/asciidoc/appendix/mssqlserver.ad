@@ -97,6 +97,6 @@ GRANT INSERT, EXECUTE ON DATABASE::SYM_DATABASE to APP_USER;
 |Datetimeoffset|No
 |Char, Varchar, Text, Nchar, Nvarchar, Ntext|Yes
 |Binary, Varbinary|Yes
-|Image|No
+|Image|Yes
 |Spatial Data Types|No
 |===
