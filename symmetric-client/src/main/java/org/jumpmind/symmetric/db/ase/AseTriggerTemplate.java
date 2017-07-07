@@ -142,8 +142,6 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("updateHandleKeyUpdatesTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for update as                                                                                                                             \n" +
 "   begin                                                                                                                                                                  \n" +
-"     declare @NCT int \n" +
-"     set @NCT = @@OPTIONS & 512 \n" +
 "     set nocount on                                                                                                                                                       \n" +
 "     declare @TransactionId varchar(1000)                                                                                                                                 \n" +
 "     declare @DataRow varchar(16384)                                                                                                                                      \n" +

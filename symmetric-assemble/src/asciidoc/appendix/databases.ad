@@ -38,6 +38,15 @@ by database.
 |Y
 |Y                    
 
+|DB2 for IBM z/OS
+|10
+|N
+|Y
+|Y
+|N
+|Y
+|Y                    
+
 |Derby
 |10.3.2.1
 |Y

@@ -23,6 +23,7 @@ package org.jumpmind.db.platform.sybase;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -44,6 +45,8 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
     static final Logger log = LoggerFactory.getLogger(SybaseJdbcSqlTemplate.class);
 
     private NativeJdbcExtractor nativeJdbcExtractor;
+    
+    int jdbcMajorVersion;
 
     public SybaseJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo, NativeJdbcExtractor nativeJdbcExtractor) {
@@ -51,6 +54,15 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
         this.nativeJdbcExtractor = nativeJdbcExtractor;
         primaryKeyViolationCodes = new int[] {423,511,515,530,547,2601,2615,2714};
         foreignKeyViolationCodes = new int[] {546};
+        Connection c = null;
+        try {
+            c = dataSource.getConnection();
+            jdbcMajorVersion = c.getMetaData().getJDBCMajorVersion();
+        } catch (SQLException ex) {
+            jdbcMajorVersion = -1;
+        } finally {
+            close(c);
+        }
     }
 
     @Override
@@ -135,7 +147,7 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
     }
     
     public boolean supportsGetGeneratedKeys() {
-        return false;
+        return jdbcMajorVersion >= 4;
     }
 
     protected String getSelectLastInsertIdSql(String sequenceName) {
