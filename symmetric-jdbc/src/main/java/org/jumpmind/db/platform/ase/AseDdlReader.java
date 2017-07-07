@@ -338,4 +338,12 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
         tableName = tableName.replace("%", "\\%");
         return tableName;
     }
+    
+    @Override
+    protected StringBuilder appendColumn(StringBuilder query, String identifier) {
+        query.append("\"");
+        query.append(identifier);
+        query.append("\"");
+        return query;
+    }
 }
