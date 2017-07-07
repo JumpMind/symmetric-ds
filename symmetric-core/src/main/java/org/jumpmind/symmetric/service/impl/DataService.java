@@ -2222,9 +2222,12 @@ public class DataService extends AbstractService implements IDataService {
     public class DataMapper implements ISqlRowMapper<Data> {
         public Data mapRow(Row row) {
             Data data = new Data();
-            data.putCsvData(CsvData.ROW_DATA, row.getString("ROW_DATA", false));
-            data.putCsvData(CsvData.PK_DATA, row.getString("PK_DATA", false));
-            data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA", false));
+            String rowData = row.getString("ROW_DATA", false);
+            data.putCsvData(CsvData.ROW_DATA, isNotBlank(rowData) ? rowData : null);
+            String pkData = row.getString("PK_DATA", false);
+            data.putCsvData(CsvData.PK_DATA, isNotBlank(pkData) ? pkData : null);
+            String oldData = row.getString("OLD_DATA", false);
+            data.putCsvData(CsvData.OLD_DATA, isNotBlank(oldData) ? oldData : null);
             data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
             data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID", false));
             String tableName = row.getString("TABLE_NAME");
