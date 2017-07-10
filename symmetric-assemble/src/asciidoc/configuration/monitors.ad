@@ -38,6 +38,8 @@ be compared to a threshold value.
 
 |nodesOffline|The number of nodes that are offline based on the last heartbeat time.  The console.report.as.offline.minutes parameter controls how many minutes before a node is considered offline.
 
+|log|Number of entries found in the log for the specified severity level.
+
 |===
 
 Threshold:: When this threshold value is reached or exceeded, an event is recorded.

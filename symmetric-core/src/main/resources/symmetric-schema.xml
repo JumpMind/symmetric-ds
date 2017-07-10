@@ -567,7 +567,7 @@
         <column name="monitor_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a monitor." />
         <column name="node_group_id" type="VARCHAR" size="50" required="true" default="ALL" description="Target a specific node group to run this monitor.  Target all groups, use a value of 'ALL'." />
         <column name="external_id" type="VARCHAR" size="255" required="true" default="ALL" description="Target a specific node by its external ID to run this monitor.  Target all nodes, use a value of 'ALL'. "/>
-        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type to execute.  Built-in types are cpu, disk, memory, batchError, batchUnsent, dataGap, and dataUnrouted." />
+        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type to execute.  Built-in types are cpu, disk, memory, batchError, batchUnsent, dataGap, dataUnrouted, and log." />
         <column name="expression" type="LONGVARCHAR" description="An expression used by the monitor to set options specific to the monitor type." />
         <column name="threshold" type="BIGINT" required="true" default="0" description="The minimum value returned when the monitor runs that will cause a monitor event to be recorded." />
         <column name="run_period" type="INTEGER" required="true" default="0" description="Run this monitor periodically every number of seconds." />        
