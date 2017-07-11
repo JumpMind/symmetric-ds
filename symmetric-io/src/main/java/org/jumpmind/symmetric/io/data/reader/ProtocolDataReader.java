@@ -154,7 +154,6 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     return table;
                 }
 
-                // TODO: Increment load stats?
                 if (stats != null && (tokens[0].equals(CsvConstants.INSERT) || tokens[0].equals(CsvConstants.UPDATE)
                         || tokens[0].equals(CsvConstants.DELETE))) {
                     stats.increment(DataReaderStatistics.READ_RECORD_COUNT, 1);

@@ -907,8 +907,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         extractTimeInMs = System.currentTimeMillis() - ts;
                         Statistics stats = getExtractStats(writer);
                         if (stats != null) {
-                            transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);
-                            currentBatch.setExtractCount(stats.get(DataWriterStatisticConstants.ROWCOUNT));
+                            transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);                            
                             currentBatch.setDataRowCount(stats.get(DataWriterStatisticConstants.ROWCOUNT));
                             currentBatch.setDataInsertRowCount(stats.get(DataWriterStatisticConstants.INSERTCOUNT));
                             currentBatch.setDataUpdateRowCount(stats.get(DataWriterStatisticConstants.UPDATECOUNT));
@@ -1153,15 +1152,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith(CsvConstants.BATCH)) {
                         if (nodeService.findNode(batch.getNodeId()).isVersionGreaterThanOrEqualTo(3, 9, 0)) {
-                            reader.mark(0);
-                            String nextLine = reader.readLine();
-                            reader.reset();
-                            if (nextLine != null && !nextLine.startsWith(CsvConstants.STATS_COLUMNS)) {
-                                writer.write(getBatchStatsColumns());
-                                writer.newLine();
-                                writer.write(getBatchStats(batch));
-                                writer.newLine();
-                            }
+                            writer.write(getBatchStatsColumns());
+                            writer.newLine();
+                            writer.write(getBatchStats(batch));
+                            writer.newLine();
+
                         }
                         writer.write(CsvConstants.RETRY + "," + batch.getBatchId());
                         writer.newLine();
