@@ -46,7 +46,7 @@ public class RouterJob extends AbstractJob {
     
     @Override
     public void doJob(boolean force) throws Exception {
-        engine.getRouterService().routeData(force);
+        setProcessedCount(engine.getRouterService().routeData(force));
     }
     
     @Override

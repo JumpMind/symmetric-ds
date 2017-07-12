@@ -178,6 +178,16 @@ public class StatisticManager implements IStatisticManager {
         }
     }
 
+    public void addJobStats(String targetNodeId, int targetNodeCount, String jobName, long startTime, long endTime, long processedCount) {
+        jobStatsLock.acquireUninterruptibly();
+        try {
+            JobStats stats = new JobStats(targetNodeId, targetNodeCount, startTime, endTime, jobName, processedCount);
+            jobStats.add(stats);
+        } finally {
+            jobStatsLock.release();
+        }
+    }
+
     public RouterStats getRouterStatsByBatch(Long batchId) {
         return routerStatsByBatch.get(batchId);
     }
@@ -457,6 +467,8 @@ public class StatisticManager implements IStatisticManager {
 
         boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE,
                 false);
+        long recordStatisticsCountThreshold = parameterService.getLong(ParameterConstants.STATISTIC_RECORD_COUNT_THRESHOLD,-1);
+        
         if (channelStats != null) {
             channelStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {
@@ -497,9 +509,11 @@ public class StatisticManager implements IStatisticManager {
                     String nodeId = node.getNodeId();
                     String serverId = clusterService.getServerId();
                     for (JobStats stats : toFlush) {
-                        stats.setNodeId(nodeId);
-                        stats.setHostName(serverId);
-                        statisticService.save(stats);
+                        if (recordStatisticsCountThreshold > 0 && stats.getProcessedCount() > recordStatisticsCountThreshold) {
+                            stats.setNodeId(nodeId);
+                            stats.setHostName(serverId);
+                            statisticService.save(stats);
+                        }
                     }
                 }
             }

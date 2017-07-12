@@ -92,8 +92,8 @@ public class StatisticServiceSqlMap extends AbstractSqlMap {
         putSql("insertJobStatsSql" ,"" + 
 "insert into $(node_host_job_stats)                 " + 
 "  (node_id, host_name, job_name, start_time, end_time,   " + 
-"  processed_count)                                       " + 
-"  values(?,?,?,?,?,?)                                    " );
+"  processed_count, target_node_id, target_node_count)                              " + 
+"  values(?,?,?,?,?,?,?,?)                                    " );
 
         putSql("selectJobStatsSql" ,"" + 
 "select node_id, host_name, job_name, start_time, end_time,                         " + 

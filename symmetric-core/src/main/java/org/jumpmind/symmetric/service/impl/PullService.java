@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPullService;
@@ -61,11 +62,13 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
     
     private IConfigurationService configurationService;
 
+    private IStatisticManager statisticManager;
+    
     public PullService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             INodeService nodeService, IDataLoaderService dataLoaderService,
             IRegistrationService registrationService, IClusterService clusterService,
             INodeCommunicationService nodeCommunicationService, IConfigurationService configurationService,
-            IExtensionService extensionService) {
+            IExtensionService extensionService, IStatisticManager statisticManager) {
         super(parameterService, symmetricDialect, extensionService);
         this.nodeService = nodeService;
         this.registrationService = registrationService;
@@ -73,6 +76,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         this.nodeCommunicationService = nodeCommunicationService;
         this.dataLoaderService = dataLoaderService;
         this.configurationService = configurationService;
+        this.statisticManager = statisticManager;
     }
 
     synchronized public RemoteNodeStatuses pullData(boolean force) {
@@ -120,6 +124,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
             long lastDataProcessed = 0;
             long cumulativeBatchesProcessed = 0;
             long cumulativeDataProcessed = 0;
+            long begin = System.currentTimeMillis();
+            long end = 0;
+            
             do {
                 log.debug("Pull requested for {}", node.toString());                
                 if (lastBatchesProcessed > 0) {
@@ -133,10 +140,12 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                 try {
                     dataLoaderService.loadDataFromPull(node, status);
                     fireOnline(node, status);
+                    
                 } catch (Exception ex) {
                     fireOffline(ex, node, status);
                 }
-
+                end = System.currentTimeMillis();
+                
                 lastBatchesProcessed = status.getBatchesProcessed() - cumulativeBatchesProcessed;
                 lastDataProcessed = status.getDataProcessed() - cumulativeDataProcessed;
                 if (!status.failed() && (lastDataProcessed > 0 || lastDataProcessed > 0)) {
@@ -144,6 +153,8 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                             "Pull data received from {} {}.  {} rows and {} batches were processed",
                             new Object[] { node.toString(), "on channel thread " + nodeCommunication.getQueue(),
                                     lastDataProcessed, lastDataProcessed });
+                    statisticManager.addJobStats(node.getNodeId(), 1, "Pull",
+                            begin, end, status.getDataProcessed());
 
                 } else if (status.failed()) {
                     log.debug(

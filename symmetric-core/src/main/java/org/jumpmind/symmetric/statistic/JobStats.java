@@ -26,7 +26,9 @@ public class JobStats extends AbstractNodeHostStats {
 
     private String jobName;
     private long processedCount;
-
+    private String targetNodeId;
+    private int targetNodeCount;
+    
     public JobStats() {
     }
 
@@ -35,10 +37,11 @@ public class JobStats extends AbstractNodeHostStats {
         this.jobName = jobName;
     }
 
-    public JobStats(String nodeId, String hostName, Date startTime, Date endTime, String jobName,
+    public JobStats(String targetNodeId, int targetNodeCount, long startTime, long endTime, String jobName,
             long processedCount) {
-        this(nodeId, hostName, startTime, endTime, jobName);
-        this.processedCount = processedCount;
+        this(jobName, startTime, endTime, processedCount);
+        this.targetNodeId = targetNodeId;
+        this.targetNodeCount = targetNodeCount;
     }
     
     public JobStats(String jobName, long startTime, long endTime, long processedCount) {
@@ -62,4 +65,21 @@ public class JobStats extends AbstractNodeHostStats {
         this.processedCount = processedCount;
     }
 
+    public String getTargetNodeId() {
+        return targetNodeId;
+    }
+
+    public void setTargetNodeId(String targetNodeId) {
+        this.targetNodeId = targetNodeId;
+    }
+
+    public int getTargetNodeCount() {
+        return targetNodeCount;
+    }
+
+    public void setTargetNodeCount(int targetNodeCount) {
+        this.targetNodeCount = targetNodeCount;
+    }
+
+    
 }

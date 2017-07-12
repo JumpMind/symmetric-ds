@@ -83,6 +83,12 @@ abstract public class AbstractJob implements Runnable, IJob {
     
     private IParameterService parameterService;
 
+    private long processedCount;
+    
+    private String targetNodeId;
+    
+    private int targetNodeCount;
+    
     public AbstractJob() {
         
     }
@@ -195,6 +201,8 @@ abstract public class AbstractJob implements Runnable, IJob {
     @Override
     public boolean invoke(boolean force) {
         IParameterService parameterService = engine.getParameterService();
+        long recordStatisticsCountThreshold = parameterService.getLong(ParameterConstants.STATISTIC_RECORD_COUNT_THRESHOLD,-1);
+        
         boolean ok = checkPrerequsites(force);
         if (!ok) {
             return false;
@@ -221,9 +229,10 @@ abstract public class AbstractJob implements Runnable, IJob {
                 long endTime = System.currentTimeMillis();
                 lastExecutionTimeInMs = endTime - startTime;
                 totalExecutionTimeInMs += lastExecutionTimeInMs;
-                if (lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD) {
-                    engine.getStatisticManager().addJobStats(jobName,
-                            startTime, endTime, 0);
+                if (lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD || 
+                        (recordStatisticsCountThreshold > 0 && getProcessedCount() > recordStatisticsCountThreshold)) {
+                    engine.getStatisticManager().addJobStats(targetNodeId, targetNodeCount, jobName,
+                            startTime, endTime, getProcessedCount());
                 }
                 numberOfRuns++;
                 running.set(false);
@@ -426,6 +435,31 @@ abstract public class AbstractJob implements Runnable, IJob {
         this.taskScheduler = taskScheduler;
     }
     
+    
+    public long getProcessedCount() {
+        return processedCount;
+    }
+
+    public void setProcessedCount(long processedCount) {
+        this.processedCount = processedCount;
+    }
+    
+    public String getTargetNodeId() {
+        return targetNodeId;
+    }
+
+    public void setTargetNodeId(String targetNodeId) {
+        this.targetNodeId = targetNodeId;
+    }
+
+    public int getTargetNodeCount() {
+        return targetNodeCount;
+    }
+
+    public void setTargetNodeCount(int targetNodeCount) {
+        this.targetNodeCount = targetNodeCount;
+    }
+
     @Override
     public String getDeprecatedStartParameter() {
         return null;

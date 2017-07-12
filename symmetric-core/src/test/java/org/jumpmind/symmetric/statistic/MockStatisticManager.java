@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.statistic;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,7 +58,7 @@ public class MockStatisticManager implements IStatisticManager {
 
     public void addJobStats(String jobName, long startTime, long endTime, long processedCount) {
     }
-    
+
     public void incrementRestart() {
     }
 
@@ -169,6 +170,12 @@ public class MockStatisticManager implements IStatisticManager {
     }
 
     public void removeRouterStatsByBatch(Long batchId) {
+    }
+
+    @Override
+    public void addJobStats(String targetNodeId, int targetNodeCount, String jobName, long startTime, long endTime, long processedCount) {
+        // TODO Auto-generated method stub
+        
     }
     
 }

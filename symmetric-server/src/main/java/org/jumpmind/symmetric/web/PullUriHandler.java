@@ -129,7 +129,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                         Node targetNode = nodeService.findNode(nodeId, true);
                         List<OutgoingBatch> batchList = dataExtractorService.extract(processInfo, targetNode,
                         		map.getThreadChannel(), outgoingTransport);
-                        logDataReceivedFromPush(targetNode, batchList);
+                        logDataReceivedFromPush(targetNode, batchList, processInfo, remoteHost);
                         
                         if (processInfo.getStatus() != ProcessStatus.ERROR) {
                             addPendingBatchCounts(targetNode.getNodeId(), res);
@@ -161,17 +161,22 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         }
     }
 
-    private void logDataReceivedFromPush(Node targetNode, List<OutgoingBatch> batchList) {
+    private void logDataReceivedFromPush(Node targetNode, List<OutgoingBatch> batchList, ProcessInfo processInfo, String remoteHost) {
         int batchesCount = 0;
         int dataCount = 0;
         for (OutgoingBatch outgoingBatch : batchList) {
-            if (outgoingBatch.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.OK) {
+            if (outgoingBatch.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.LD) {
                 batchesCount++;
                 dataCount += outgoingBatch.getDataRowCount();
             } 
         }
         
         if (batchesCount > 0) {
+            statisticManager.addJobStats(targetNode.getNodeId(), 1, "Pull Handler",
+                    processInfo.getStartTime().getTime(), 
+                    processInfo.getLastStatusChangeTime().getTime(), 
+                    dataCount);
+            
             log.info(
                 "{} data and {} batches sent during pull request from {}",
                 new Object[] { dataCount, batchesCount, targetNode.toString() });

@@ -365,7 +365,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 clusterService, nodeCommunicationService, statisticManager, configurationService, extensionService);
         this.pullService = new PullService(parameterService, symmetricDialect, 
                 nodeService, dataLoaderService, registrationService, clusterService, nodeCommunicationService, 
-                configurationService, extensionService);
+                configurationService, extensionService, statisticManager);
         this.offlinePushService = new OfflinePushService(parameterService, symmetricDialect,
                 dataExtractorService, acknowledgeService, offlineTransportManager, nodeService,
                 clusterService, nodeCommunicationService, statisticManager, configurationService, extensionService);

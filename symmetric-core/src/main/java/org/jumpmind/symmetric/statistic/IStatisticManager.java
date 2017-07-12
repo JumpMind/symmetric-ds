@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.statistic;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,8 @@ public interface IStatisticManager {
     public void flush();
     
     public void addJobStats(String jobName, long startTime, long endTime, long processedCount);
+    
+    public void addJobStats(String targetNodeId, int targetNodeCount, String jobName, long startTime, long endTime, long processedCount);
     
     public void addRouterStats(long startDataId, long endDataId, long dataReadCount, long peekAheadFillCount, 
             List<DataGap> dataGaps, Set<String> transactions, Collection<OutgoingBatch> batches);

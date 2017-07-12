@@ -393,7 +393,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             try {
                 List<IncomingBatch> batchList = loadDataFromTransport(processInfo, sourceNode,
                         new InternalIncomingTransport(in), out);
-                logDataReceivedFromPush(sourceNode, batchList);
+                logDataReceivedFromPush(sourceNode, batchList, processInfo);
                 NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
                 processInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
                 transportManager.writeAcknowledgement(out, sourceNode, batchList, local,
@@ -417,7 +417,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
     
-    private void logDataReceivedFromPush(Node sourceNode, List<IncomingBatch> batchList) {
+    private void logDataReceivedFromPush(Node sourceNode, List<IncomingBatch> batchList, ProcessInfo processInfo) {
         int okBatchesCount = 0;
         int errorBatchesCount = 0;
         int okDataCount = 0;
@@ -438,6 +438,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 log.info("{} data and {} batches loaded during push request from {}.",
                         new Object[] { okDataCount, okBatchesCount, sourceNode.toString() });                
             }
+            statisticManager.addJobStats(sourceNode.getNodeId(), 1, "Push Handler",
+                    processInfo.getStartTime().getTime(), 
+                    processInfo.getLastStatusChangeTime().getTime(), 
+                    okDataCount);
         } 
     }
 

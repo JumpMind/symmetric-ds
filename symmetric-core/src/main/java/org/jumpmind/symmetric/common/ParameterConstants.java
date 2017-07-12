@@ -309,6 +309,8 @@ final public class ParameterConstants {
 
     public final static String STATISTIC_RECORD_ENABLE = "statistic.record.enable";
 
+    public final static String STATISTIC_RECORD_COUNT_THRESHOLD = "statistic.record.count.threshold";
+
     public final static String CURRENT_ACTIVITY_HISTORY_KEEP_COUNT = "statistic.activity.history.keep.count";
 
     public final static String STORES_UPPERCASE_NAMES_IN_CATALOG = "stores.uppercase.names.in.catalog";

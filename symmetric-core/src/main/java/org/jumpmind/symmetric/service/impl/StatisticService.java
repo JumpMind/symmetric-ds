@@ -70,9 +70,10 @@ public class StatisticService extends AbstractService implements IStatisticServi
         sqlTemplate.update(
                 getSql("insertJobStatsSql"),
                 new Object[] { stats.getNodeId(), stats.getHostName(), stats.getJobName(),
-                        stats.getStartTime(), stats.getEndTime(), stats.getProcessedCount() }, new int[] {
+                        stats.getStartTime(), stats.getEndTime(), stats.getProcessedCount(), 
+                        stats.getTargetNodeId(), stats.getTargetNodeCount() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                        Types.TIMESTAMP, Types.BIGINT }); 
+                        Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.INTEGER }); 
     }
     
     public List<JobStats> getJobStatsForPeriod(Date start, Date end,
