@@ -216,7 +216,7 @@ We will now simulate a sale at the store and observe how SymmetricDS pushes the 
 
 Create data in a store to be pushed to corp.  
 ifdef::pro[]
-Navigate to the SQL Explorer for the corp node 
+Navigate to the SQL Explorer for the store node 
 and execute (image:explore-execute-all.png[title="Run As Script"]) the following scripts.
 endif::pro[]
 

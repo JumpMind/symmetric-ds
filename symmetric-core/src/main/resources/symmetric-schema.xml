@@ -569,7 +569,7 @@
         <column name="monitor_id" type="VARCHAR" size="128" required="true" primaryKey="true"  description="Unique identifier for a monitor." />
         <column name="node_group_id" type="VARCHAR" size="50" required="true" default="ALL" description="Target a specific node group to run this monitor.  Target all groups, use a value of 'ALL'." />
         <column name="external_id" type="VARCHAR" size="255" required="true" default="ALL" description="Target a specific node by its external ID to run this monitor.  Target all nodes, use a value of 'ALL'. "/>
-        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type to execute.  Built-in types are cpu, disk, memory, batchError, batchUnsent, dataGap, and dataUnrouted." />
+        <column name="type" type="VARCHAR" size="50" required="true" description="Monitor type to execute.  Built-in types are cpu, disk, memory, batchError, batchUnsent, dataGap, dataUnrouted, and log." />
         <column name="expression" type="LONGVARCHAR" description="An expression used by the monitor to set options specific to the monitor type." />
         <column name="threshold" type="BIGINT" required="true" default="0" description="The minimum value returned when the monitor runs that will cause a monitor event to be recorded." />
         <column name="run_period" type="INTEGER" required="true" default="0" description="Run this monitor periodically every number of seconds." />        
@@ -921,9 +921,9 @@
     
     <table name="job" description="Defines custom jobs that can be executed in the SymmetricDS instance.">
         <column name="job_name" type="VARCHAR" size="50" required="true" primaryKey="true" description="The unique name of the job" />
-        <column name="job_type" type="VARCHAR" size="10" required="true" description="The type of the job. Valid values are 'snapshot_replication', 'java' and 'bsh'. The system exclusively uses the 'built_in' job type." />
+        <column name="job_type" type="VARCHAR" size="10" required="true" description="The type of the job. Valid values are 'sql', 'java' and 'bsh'. The system exclusively uses the 'built_in' job type." />
         <column name="requires_registration" type="BOOLEANINT" size="1" required="true" default="1"  description="Does the engine need to be registered for this job to run?" />
-        <column name="job_expression" type="LONGVARCHAR" description="The payload of the job.  For bsh (beanshell) jobs, this should be bsh script.  For Java jobs, this should be Java code of a class which implements the IJob interface." />
+        <column name="job_expression" type="LONGVARCHAR" description="The payload of the job.  For bsh (beanshell) jobs, this should be bsh script.  For Java jobs, this should be Java code of a class which implements the IJob interface. For SQL jobs, this should be a sql script." />
         <column name="description" type="VARCHAR" size="255"   description="An optional description of the job for users of the system." />
         <column name="default_schedule" type="VARCHAR" size="50" description="The schedule to use if no schedule parameter is found. Overridden by job.jobname.period.time.ms or job.jobname.cron." />
         <column name="default_auto_start" type="BOOLEANINT" size="1" required="true" default="1"  description="Determine if this job should auto start. Overridden by start.jobname.job." />

@@ -1096,7 +1096,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             Status oldStatus = this.currentBatch.getStatus();
 
             if (context.getStatistics() != null) {
-                currentBatch.setParsedStatistics(context.getStatistics());
+                currentBatch.mergeInjectedBatchStatistics(context.getStatistics());
             }
             
             try {

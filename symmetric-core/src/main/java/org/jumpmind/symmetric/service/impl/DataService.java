@@ -1050,8 +1050,32 @@ public class DataService extends AbstractService implements IDataService {
                 this.engine.getTransformService().findTransformsFor(
                         sourceNode.getNodeGroupId(), targetNode.getNodeGroupId(), triggerRouter.getTargetTable(triggerHistory));
         
-        String sql = StringUtils.isNotBlank(overrideDeleteStatement) ? overrideDeleteStatement
-                : symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory, transforms);
+        if (StringUtils.isNotBlank(overrideDeleteStatement)) {
+            createPurgeEvent(transaction, overrideDeleteStatement, targetNode, sourceNode,
+                    triggerRouter, triggerHistory, isLoad, loadId, createBy);
+            
+        } else if (transforms != null && transforms.size() > 0) {
+            List<String> sqlStatements = symmetricDialect.createPurgeSqlForMultipleTables(targetNode, triggerRouter, 
+                    triggerHistory, transforms, null);
+            for (String sql : sqlStatements) {
+                createPurgeEvent(transaction, 
+                        sql,
+                        targetNode, sourceNode,
+                        triggerRouter, triggerHistory, isLoad, loadId, createBy);
+            }
+        } else {
+            createPurgeEvent(transaction, 
+                symmetricDialect.createPurgeSqlFor(targetNode, triggerRouter, triggerHistory, transforms),
+                targetNode, sourceNode,
+                triggerRouter, triggerHistory, isLoad, loadId, createBy);
+        }
+        
+    }
+
+    protected void createPurgeEvent(ISqlTransaction transaction, String sql, Node targetNode, Node sourceNode,
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory, boolean isLoad, 
+            long loadId, String createBy) {
+        
         sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
         sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
         sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
@@ -1073,7 +1097,7 @@ public class DataService extends AbstractService implements IDataService {
             insertData(transaction, data);
         }
     }
-
+    
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId,
             String createBy) {
         TriggerHistory history = engine.getTriggerRouterService()
@@ -2215,9 +2239,12 @@ public class DataService extends AbstractService implements IDataService {
     public class DataMapper implements ISqlRowMapper<Data> {
         public Data mapRow(Row row) {
             Data data = new Data();
-            data.putCsvData(CsvData.ROW_DATA, row.getString("ROW_DATA", false));
-            data.putCsvData(CsvData.PK_DATA, row.getString("PK_DATA", false));
-            data.putCsvData(CsvData.OLD_DATA, row.getString("OLD_DATA", false));
+            String rowData = row.getString("ROW_DATA", false);
+            data.putCsvData(CsvData.ROW_DATA, isNotBlank(rowData) ? rowData : null);
+            String pkData = row.getString("PK_DATA", false);
+            data.putCsvData(CsvData.PK_DATA, isNotBlank(pkData) ? pkData : null);
+            String oldData = row.getString("OLD_DATA", false);
+            data.putCsvData(CsvData.OLD_DATA, isNotBlank(oldData) ? oldData : null);
             data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, row.getString("CHANNEL_ID"));
             data.putAttribute(CsvData.ATTRIBUTE_TX_ID, row.getString("TRANSACTION_ID", false));
             String tableName = row.getString("TABLE_NAME");

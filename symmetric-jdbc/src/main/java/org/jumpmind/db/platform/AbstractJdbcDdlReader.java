@@ -1238,7 +1238,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     query.append(",");
                 }
                 query.append("t.");
-                appendIdentifier(query, columnsToCheck[idx].getName());
+                appendColumn(query, columnsToCheck[idx].getName());
             }
             query.append(" FROM ");
 
@@ -1295,7 +1295,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
     }
 
-    public StringBuilder appendIdentifier(StringBuilder query, String identifier) {
+    private StringBuilder appendIdentifier(StringBuilder query, String identifier) {
         if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
             query.append(getPlatformInfo().getDelimiterToken());
         }
@@ -1304,6 +1304,13 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             query.append(getPlatformInfo().getDelimiterToken());
         }
         return query;
+    }
+    
+    /*
+     * Allow subclasses to override column delimiters
+     */
+    protected StringBuilder appendColumn(StringBuilder query, String identifier) {
+        return appendIdentifier(query, identifier);
     }
 
     /*

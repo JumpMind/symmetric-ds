@@ -145,7 +145,8 @@ public class SimpleStagingDataWriter {
                         writer = null;
                     }
                     batchTableLines.clear();
-
+                    
+                    context.setStatistics(batchStats);
                     if (listeners != null) {
                         for (IProtocolDataWriterListener listener : listeners) {
                             listener.end(context, batch, resource);
@@ -154,7 +155,6 @@ public class SimpleStagingDataWriter {
                 } else if (line.startsWith(CsvConstants.RETRY)) {
                     batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine), getBinaryEncoding(binaryLine),
                             getArgLine(nodeLine), targetNodeId, false);
-                    context.setStatistics(batchStats);
                     String location = batch.getStagedLocation();
                     resource = stagingManager.find(category, location, batch.getBatchId());
                     if (resource == null || resource.getState() == State.CREATE) {
@@ -175,16 +175,9 @@ public class SimpleStagingDataWriter {
                     channelLine = line;
                 } else if (line.startsWith(CsvConstants.STATS_COLUMNS)) {
                     batchStatsColumnsLine = line;
-                    if (writer != null) {
-                        writeLine(line);
-                    }
                 } else if (line.startsWith(CsvConstants.STATS)) {
                     batchStatsLine = line;
-                    if (writer != null) {
-                        writeLine(line);
-                    } else {
-                        putStats(batchStats, batchStatsColumnsLine, batchStatsLine);
-                    }
+                    putStats(batchStats, batchStatsColumnsLine, batchStatsLine);
                 } else {
                     if (writer == null) {
                         throw new IllegalStateException("Invalid batch data was received: " + line);

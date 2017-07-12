@@ -37,6 +37,7 @@ include::configuration/conflicts.ad[]
 include::configuration/transforms.ad[]
 include::configuration/load-filters.ad[]
 include::configuration/extensions.ad[]
+include::configuration/jobs.ad[]
 include::configuration/parameters.ad[]
 
 ifdef::pro[]

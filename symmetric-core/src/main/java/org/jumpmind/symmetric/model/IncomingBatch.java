@@ -53,7 +53,7 @@ public class IncomingBatch extends AbstractBatch {
     public void setValues(Statistics readerStatistics, Statistics writerStatistics, boolean isSuccess) {
         if (readerStatistics != null) {
             setByteCount(readerStatistics.get(DataReaderStatistics.READ_BYTE_COUNT));
-            setParsedStatistics(readerStatistics);
+            mergeInjectedBatchStatistics(readerStatistics);
         }
         if (writerStatistics != null) {
             setFilterMillis(writerStatistics.get(DataWriterStatisticConstants.FILTERMILLIS));
@@ -77,7 +77,7 @@ public class IncomingBatch extends AbstractBatch {
         }
     }
 
-    public void setParsedStatistics(Statistics statistics) {
+    public void mergeInjectedBatchStatistics(Statistics statistics) {
         setLoadFlag(statistics.get(DataReaderStatistics.LOAD_FLAG) == 1);
         setExtractCount(statistics.get(DataReaderStatistics.EXTRACT_COUNT));
         setSentCount(statistics.get(DataReaderStatistics.SENT_COUNT));
