@@ -547,7 +547,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public String buildSymmetricTableRouterId(String triggerId, String sourceNodeGroupId, String targetNodeGroupId) {
-        return StringUtils.left(replaceCharsToShortenName(String.format("%s_%s_2_%s", triggerId, sourceNodeGroupId, targetNodeGroupId)), 50);
+        return StringUtils.left(FormatUtils.replaceCharsToShortenName(String.format("%s_%s_2_%s", triggerId, sourceNodeGroupId, targetNodeGroupId)), 50);
     }
 
     protected TriggerRouter buildTriggerRoutersForSymmetricTables(String version, Trigger trigger,
@@ -1828,10 +1828,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return hist;
     }
     
-    protected static String replaceCharsToShortenName(String triggerName) {
-        return triggerName.replaceAll("[^a-zA-Z0-9_]|[a|e|i|o|u|A|E|I|O|U]", "");
-    }
-
     protected String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger,
             Table table, List<TriggerHistory> activeTriggerHistories, TriggerHistory oldhist) {
 
@@ -1859,11 +1855,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (StringUtils.isBlank(triggerName)) {
             String triggerPrefix1 = tablePrefix + "_";
             String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_";
-            String triggerSuffix2 = replaceCharsToShortenName(trigger.getTriggerId());
+            String triggerSuffix2 = FormatUtils.replaceCharsToShortenName(trigger.getTriggerId());
             if (trigger.isSourceTableNameWildCarded()) {
-                triggerSuffix2 = replaceCharsToShortenName(table.getName());
+                triggerSuffix2 = FormatUtils.replaceCharsToShortenName(table.getName());
             }
-            String triggerSuffix3 = replaceCharsToShortenName("_"
+            String triggerSuffix3 = FormatUtils.replaceCharsToShortenName("_"
                     + parameterService.getNodeGroupId());
             triggerName = triggerPrefix1 + triggerSuffix1 + triggerSuffix2 + triggerSuffix3;
             // use the node group id as part of the trigger if we can because it

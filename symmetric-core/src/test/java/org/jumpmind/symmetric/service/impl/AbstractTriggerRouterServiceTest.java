@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.util.FormatUtils;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -90,9 +91,9 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
     @Test
     public void test01ReplaceCharactersForTriggerName() {
         Assert.assertEquals("123456_54321",
-                TriggerRouterService.replaceCharsToShortenName("123456_54321"));
+                FormatUtils.replaceCharsToShortenName("123456_54321"));
         Assert.assertEquals("tst_1234_rght_n",
-                TriggerRouterService.replaceCharsToShortenName("test_1234_right::_on"));
+                FormatUtils.replaceCharsToShortenName("test_1234_right::_on"));
     }
 
     @Test

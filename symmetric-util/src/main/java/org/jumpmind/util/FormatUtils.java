@@ -309,4 +309,8 @@ public final class FormatUtils {
         return matchList.toArray(new String[matchList.size()]);
     }
 
+    public static String replaceCharsToShortenName(String name) {
+        return name.replaceAll("[^a-zA-Z0-9_]|[a|e|i|o|u|A|E|I|O|U]", "");
+    }
+
 }

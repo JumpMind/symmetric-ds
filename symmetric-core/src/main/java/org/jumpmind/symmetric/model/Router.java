@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -209,14 +210,23 @@ public class Router implements Serializable {
     
     public boolean isSyncOnUpdate() {
         return syncOnUpdate;
-    }    
-    
+    }
+
     public String createDefaultName() {
         if (nodeGroupLink != null) {
-            return nodeGroupLink.getSourceNodeGroupId()
-            .toLowerCase()
-            + " to "
-            + nodeGroupLink.getTargetNodeGroupId().toLowerCase();
+            String defaultName = null;
+            String name = nodeGroupLink.getSourceNodeGroupId().toLowerCase() + " to " + nodeGroupLink.getTargetNodeGroupId().toLowerCase();
+            if (name.length() > 50) {
+                String abbrevName = FormatUtils.replaceCharsToShortenName(name);
+                if (abbrevName.length() > 50) {
+                    defaultName = StringUtils.abbreviate(abbrevName, 50);
+                } else {
+                    defaultName = abbrevName;
+                }
+            } else {
+                defaultName = name;
+            }
+            return defaultName;
         } else {
             throw new IllegalStateException("Need the nodeGroupLink to be set");
         }
