@@ -40,7 +40,7 @@ import org.springframework.jdbc.UncategorizedSQLException;
  */
 public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
-    public static final String CONTEXT_TABLE_NAME = "context";
+    public static final String CONTEXT_TABLE_NAME = "temp_context";
 
     static final String CONTEXT_TABLE_CREATE = "create global temporary table %s (name varchar(30), context_value varchar(30)) on commit preserve rows";
 
