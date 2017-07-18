@@ -99,9 +99,9 @@ public class MultiBatchStagingWriter implements IDataWriter {
             end(this.table);
             end(this.batch, false);
         }
-        if (table == null) {
+        if (table == null && batch != null) {
             log.debug("Batch {} is empty, it will be ignored.", new Object[] { batch.getNodeBatchId() });
-        }
+        } 
         closeCurrentDataWriter();
     }
 
