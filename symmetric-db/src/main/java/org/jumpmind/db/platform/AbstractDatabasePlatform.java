@@ -658,11 +658,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Table makeAllColumnsPrimaryKeys(Table table) {
-    	Table result = table.copy();
+        Table result = table.copy();
         for (Column column : result.getColumns()) {
-        	if (!isLob(column.getMappedTypeCode())) {
-        		column.setPrimaryKey(true);
-        	}
+            if (!isLob(column.getMappedTypeCode())) {
+                column.setPrimaryKey(true);
+            }
         }
         return result;
     }
