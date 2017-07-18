@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Arrays;
 
 import javax.sql.DataSource;
@@ -70,56 +71,55 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
         return false;
     }
 
-    protected void setDecimalValue(PreparedStatement ps, int i, Object arg, int argType)
-            throws SQLException {
-        PreparedStatement nativeStatement = getNativeStmt(ps);
-        if (nativeStatement != null
-                && "com.sybase.jdbc4.jdbc.SybPreparedStatement".equals(nativeStatement.getClass()
-                        .getName())) {
-            Class<?> clazz = nativeStatement.getClass();
-            Class<?>[] parameterTypes = new Class[] { int.class, BigDecimal.class, int.class,
-                    int.class };
-            BigDecimal value = null;            
-            if (arg instanceof BigDecimal) {
-                value = (BigDecimal)arg;
-            } else if (arg != null) {
-                value = new BigDecimal(arg.toString());
-            }
-            
-            int precision = 1;
-            int scale = 0;
-            if (value != null) {
-                scale = value.scale();
-                precision = value.precision();
-                if (precision < scale) {
-                    precision = scale + 1;
+    protected void setDecimalValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
+        if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null && arg.equals("NaN")) {
+            setNanOrNull(ps, i, arg, argType);
+        } else {
+            PreparedStatement nativeStatement = getNativeStmt(ps);
+            if (nativeStatement != null && "com.sybase.jdbc4.jdbc.SybPreparedStatement".equals(nativeStatement.getClass().getName())) {
+                Class<?> clazz = nativeStatement.getClass();
+                Class<?>[] parameterTypes = new Class[] { int.class, BigDecimal.class, int.class, int.class };
+                BigDecimal value = null;
+                if (arg instanceof BigDecimal) {
+                    value = (BigDecimal) arg;
+                } else if (arg != null) {
+                    value = new BigDecimal(arg.toString());
                 }
-                
-                if (precision > 127) {
-                    precision = 127;
-                    
-                    if (scale > 127) {
-                        scale = 126;
-                    }
-                }                
-            }
 
-            Object[] params = new Object[] { new Integer(i), value,
-                    new Integer(precision), new Integer(scale) };
-            try {
-                Method method = clazz.getMethod("setBigDecimal", parameterTypes);
-                method.invoke(nativeStatement, params);
-            } catch (Throwable e) {
-                if (e instanceof InvocationTargetException) {
-                    e = ((InvocationTargetException)e).getTargetException();
+                int precision = 1;
+                int scale = 0;
+                if (value != null) {
+                    scale = value.scale();
+                    precision = value.precision();
+                    if (precision < scale) {
+                        precision = scale + 1;
+                    }
+
+                    if (precision > 127) {
+                        precision = 127;
+
+                        if (scale > 127) {
+                            scale = 126;
+                        }
+                    }
                 }
-                log.warn(String.format("Error calling the Sybase stmt.setBigDecimal(%s) method", Arrays.toString(params)), e);
+
+                Object[] params = new Object[] { new Integer(i), value, new Integer(precision), new Integer(scale) };
+                try {
+                    Method method = clazz.getMethod("setBigDecimal", parameterTypes);
+                    method.invoke(nativeStatement, params);
+                } catch (Throwable e) {
+                    if (e instanceof InvocationTargetException) {
+                        e = ((InvocationTargetException) e).getTargetException();
+                    }
+                    log.warn(String.format("Error calling the Sybase stmt.setBigDecimal(%s) method", Arrays.toString(params)), e);
+                    super.setDecimalValue(ps, i, arg, argType);
+                }
+            } else {
                 super.setDecimalValue(ps, i, arg, argType);
             }
-        } else {
-            super.setDecimalValue(ps, i, arg, argType);
         }
-    }   
+    }
  
 
     private PreparedStatement getNativeStmt(PreparedStatement ps) {
