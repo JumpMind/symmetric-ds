@@ -151,7 +151,6 @@ import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
-import org.springframework.jdbc.core.RowMapper;
 
 /**
  * @see IDataExtractorService
