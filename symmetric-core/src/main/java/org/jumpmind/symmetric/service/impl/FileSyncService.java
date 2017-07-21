@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.file.DirectorySnapshot;
@@ -69,7 +70,6 @@ import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
@@ -178,9 +178,15 @@ INodeCommunicationExecutor {
     }
 
     protected void trackChangesFastScan(ProcessInfo processInfo, boolean useCrc) {
+        long ctxTime = engine.getContextService().getLong(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME);
+        Date ctxDate = new Date(ctxTime);
+        if (ctxTime == 0) {
+            ctxDate = null;
+        }
+        Date currentDate = new Date();
+
         boolean isLocked = engine.getClusterService().lock(ClusterConstants.FILE_SYNC_SCAN);
-        Lock lock = engine.getClusterService().findLocks().get(ClusterConstants.FILE_SYNC_SCAN);
-        log.debug("File tracker range of " + lock.getLastLockTime() + " to " + lock.getLockTime() + ", isLocked=" + isLocked);
+        log.debug("File tracker range of " + ctxDate + " to " + currentDate + ", isLocked=" + isLocked);
         int maxRowsBeforeCommit = engine.getParameterService().getInt(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
 
         try {
@@ -189,8 +195,8 @@ INodeCommunicationExecutor {
                 if (fileTriggerRouter.isEnabled()) {        
                     FileAlterationObserver observer = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(),
                             fileTriggerRouter.getFileTrigger().createIOFileFilter());
-                    FileTriggerFileModifiedListener listener = new FileTriggerFileModifiedListener(fileTriggerRouter, lock.getLastLockTime(),
-                            lock.getLockTime(), processInfo, useCrc, new FileModifiedCallback(maxRowsBeforeCommit) {
+                    FileTriggerFileModifiedListener listener = new FileTriggerFileModifiedListener(fileTriggerRouter, ctxDate,
+                            currentDate, processInfo, useCrc, new FileModifiedCallback(maxRowsBeforeCommit) {
                         public void commit(DirectorySnapshot dirSnapshot) {
                             saveDirectorySnapshot(fileTriggerRouter, dirSnapshot);
                         }
@@ -201,6 +207,7 @@ INodeCommunicationExecutor {
                     }, engine);
                     observer.addListener(listener);
                     observer.checkAndNotify();
+                    engine.getContextService().save(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME, String.valueOf(currentDate.getTime()));
                 }
             }
             engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_SCAN);
