@@ -151,6 +151,7 @@ import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
+import org.springframework.jdbc.core.RowMapper;
 
 /**
  * @see IDataExtractorService
@@ -1369,10 +1370,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (identity != null) {
             if (force || clusterService.lock(ClusterConstants.INITIAL_LOAD_EXTRACT)) {
                 try {
-                    Map<String, String> nodes = getExtractRequestNodes();
-                    for (Map.Entry<String, String> entry : nodes.entrySet()) {
-                        queue(entry.getKey(), entry.getValue(), statuses);
-                    }
+                    List<NodeQueuePair> nodes = getExtractRequestNodes();
+                    for (NodeQueuePair pair : nodes) {
+                        queue(pair.getNodeId(), pair.getQueue(), statuses);
+                    } 
                 } finally {
                     if (!force) {
                         clusterService.unlock(ClusterConstants.INITIAL_LOAD_EXTRACT);
@@ -1394,9 +1395,36 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    public Map<String, String> getExtractRequestNodes() {
-    	return sqlTemplate.queryForMap(getSql("selectNodeIdsForExtractSql"), "node_id", "queue",
+    public List<NodeQueuePair> getExtractRequestNodes() {
+        return sqlTemplate.query(getSql("selectNodeIdsForExtractSql"), new NodeQueuePairMapper(),
                 ExtractStatus.NE.name());
+    }
+
+    private class NodeQueuePair {
+        private String nodeId;
+        private String queue;
+        public String getNodeId() {
+            return nodeId;
+        }
+        public void setNodeId(String nodeId) {
+            this.nodeId = nodeId;
+        }
+        public String getQueue() {
+            return queue;
+        }
+        public void setQueue(String queue) {
+            this.queue = queue;
+        }
+    }
+    
+    class NodeQueuePairMapper implements ISqlRowMapper<NodeQueuePair> {
+        @Override
+        public NodeQueuePair mapRow(Row row) {
+            NodeQueuePair pair = new NodeQueuePair();
+            pair.setNodeId(row.getString("node_id"));
+            pair.setQueue(row.getString("queue"));
+            return pair;
+        }
     }
 
     public List<ExtractRequest> getExtractRequestsForNode(NodeCommunication nodeCommunication) {
@@ -1404,7 +1432,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 new ExtractRequestMapper(), nodeCommunication.getNodeId(), nodeCommunication.getQueue()
                 , ExtractRequest.ExtractStatus.NE.name());
     }
-
+    
     @Override
     public void resetExtractRequest(OutgoingBatch batch) {
         ISqlTransaction transaction = null;
