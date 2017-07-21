@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
@@ -97,6 +98,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
     
     final String CTX_KEY_FLUSH_NODE_GROUP_LINK_NEEDED = "FlushNodeGroupLink."
+            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
+    
+    final String CTX_KEY_FILE_SYNC_TRIGGERS_NEEDED = "FileSyncTriggers."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     public final static String KEY = "symconfig";
@@ -456,6 +460,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         } else if (tableMatches(dataMetaData, TableConstants.SYM_ROUTER)
                 || tableMatches(dataMetaData, TableConstants.SYM_NODE_GROUP_LINK)) {
             routingContext.put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
+        } else if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER)) {
+            if (dataMetaData.getData().getCsvData(CsvData.ROW_DATA) != null
+                    && dataMetaData.getData().getCsvData(CsvData.ROW_DATA).contains("file.sync.enable")) {
+                routingContext.put(CTX_KEY_FILE_SYNC_TRIGGERS_NEEDED, Boolean.TRUE);
+            }
         }
 
     }
@@ -646,6 +655,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 log.info("About to refresh the cache of node group link because new configuration came through the data router");
                 engine.getConfigurationService().clearCache();
                 engine.getNodeService().flushNodeGroupCache();
+            }
+            
+            if (routingContext.get(CTX_KEY_FILE_SYNC_TRIGGERS_NEEDED) != null
+                    && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                log.info("About to syncTriggers for file snapshot because the file sync parameter has changed");
+                Table fileSnapshotTable = engine.getDatabasePlatform()
+                        .getTableFromCache(TableConstants.getTableName(engine.getTablePrefix(), TableConstants.SYM_FILE_SNAPSHOT), false);
+                engine.getTriggerRouterService().syncTriggers(fileSnapshotTable, false);
             }
 
         }
