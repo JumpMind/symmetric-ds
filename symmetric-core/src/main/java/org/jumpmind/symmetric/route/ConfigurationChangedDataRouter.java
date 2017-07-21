@@ -454,7 +454,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
             }
         } else if (tableMatches(dataMetaData, TableConstants.SYM_ROUTER)
-                || tableMatches(dataMetaData, TableConstants.SYM_NODE_GROUP_LINK)) {
+                || tableMatches(dataMetaData, TableConstants.SYM_NODE_GROUP_LINK)
+                || tableMatches(dataMetaData, TableConstants.SYM_FILE_TRIGGER)
+                || tableMatches(dataMetaData, TableConstants.SYM_FILE_TRIGGER_ROUTER)) {
             routingContext.put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
         }
 

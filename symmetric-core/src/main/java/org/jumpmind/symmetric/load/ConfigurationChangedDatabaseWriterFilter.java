@@ -227,7 +227,9 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
                 || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER)
                 || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET)
                 || matchesTable(table, TableConstants.SYM_GROUPLET_LINK)
-                || matchesTable(table, TableConstants.SYM_NODE_GROUP_LINK));
+                || matchesTable(table, TableConstants.SYM_NODE_GROUP_LINK)
+                || matchesTable(table, TableConstants.SYM_FILE_TRIGGER)
+                || matchesTable(table, TableConstants.SYM_FILE_TRIGGER_ROUTER));
     }
     
     private boolean isGroupletFlushNeeded(Table table) {
