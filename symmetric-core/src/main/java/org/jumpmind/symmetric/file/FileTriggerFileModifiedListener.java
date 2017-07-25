@@ -72,7 +72,7 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
     
     public void onStart(final FileAlterationObserver observer) {
         long lastModified = observer.getDirectory().lastModified();
-        if ((fromDate != null && lastModified > fromDate.getTime()) && lastModified <= toDate.getTime()) {
+        if (fromDate ==  null || ((fromDate != null && lastModified > fromDate.getTime()) && lastModified <= toDate.getTime())) {
             modifiedDirs.put(".", new DirectorySnapshot(fileTriggerRouter));
         }
     }

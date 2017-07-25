@@ -20,12 +20,17 @@
  */
 package org.jumpmind.db.platform.postgresql;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
+
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
+import org.springframework.jdbc.core.StatementCreatorUtils;
 
 public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
 
@@ -53,5 +58,10 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
+    }
+    
+    @Override
+    protected void setNanOrNull(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
+        StatementCreatorUtils.setParameterValue(ps, i, Types.FLOAT, Float.NaN);
     }
 }
