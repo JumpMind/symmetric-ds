@@ -43,8 +43,6 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
     
     protected ISymmetricEngine engine;
     
-    protected static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
     public void notify(Notification notification, List<MonitorEvent> monitorEvents) {
         String subject = null;
         if (monitorEvents.size() == 1) {
@@ -72,8 +70,9 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
         StringBuilder text = new StringBuilder();
         for (MonitorEvent event : monitorEvents) {
             Node node = nodes.get(event.getNodeId());
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String nodeString = node != null ? node.toString() : event.getNodeId();
-            text.append(DATE_FORMATTER.format(event.getEventTime())).append(" [");
+            text.append(dateFormatter.format(event.getEventTime())).append(" [");
             text.append(Monitor.getSeverityLevelNames().get(event.getSeverityLevel())).append("] [");
             text.append(nodeString).append("] [");
             text.append(event.getHostName()).append("] ");

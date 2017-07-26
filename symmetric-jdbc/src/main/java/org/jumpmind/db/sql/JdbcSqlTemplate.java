@@ -1024,7 +1024,15 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     }
 
     protected void setDecimalValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
-        StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
+        if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null && arg.equals("NaN")) {
+            setNanOrNull(ps, i, arg, argType);
+        } else {
+            StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
+        }
+    }
+    
+    protected void setNanOrNull(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
+        StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), null);
     }
 
     protected int verifyArgType(Object arg, int argType) {

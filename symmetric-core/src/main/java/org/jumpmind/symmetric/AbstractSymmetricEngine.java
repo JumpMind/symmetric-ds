@@ -332,7 +332,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.bandwidthService = new BandwidthService(parameterService);
         this.sequenceService = new SequenceService(parameterService, symmetricDialect);
         this.stagingManager = createStagingManager();
-        this.nodeService = new NodeService(parameterService, symmetricDialect, securityService, extensionService);
+        this.nodeService = new NodeService(this);
         this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
                 nodeService);
         this.clusterService = new ClusterService(parameterService, symmetricDialect);
@@ -657,7 +657,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         isInitialized = true;
                     }
 
-                    jobManager.init();
+                    if (jobManager != null) {
+                    	jobManager.init();
+                    }
                     nodeService.captureTableMetaInfo(false, parameterService.getTablePrefix());
                     
                     if (startJobs && jobManager != null) {

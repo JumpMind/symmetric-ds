@@ -87,7 +87,7 @@ public class FileIncomingTransport implements IIncomingTransport {
     protected File getIncomingFile(String fileExtension) {
         File file = null;
         String[] files = new File(incomingDir).list(new FileIncomingFilter(remoteNode, fileExtension));
-        if (files.length > 0) {
+        if (files != null && files.length > 0) {
             Arrays.sort(files);
             File firstFile = new File(incomingDir + File.separator + files[0]);
             long lastModified = firstFile.lastModified();
