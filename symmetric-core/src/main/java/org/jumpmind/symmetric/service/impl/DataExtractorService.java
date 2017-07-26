@@ -932,7 +932,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (resource != null) {
                         resource.setState(State.DONE);
                     }
-                    lock.release();
+                    if (lock != null) {
+                    	lock.release();
+                    }
                     synchronized (locks) {
                         locks.remove(semaphoreKey);
                     }

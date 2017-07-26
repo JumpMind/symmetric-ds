@@ -706,9 +706,11 @@ public class RouterService extends AbstractService implements IRouterService {
                 log.error("", e);
             } finally {
                 long totalTime = System.currentTimeMillis() - ts;
-                context.incrementStat(totalTime, ChannelRouterContext.STAT_ROUTE_TOTAL_TIME);
-                context.logStats(log, totalTime);
-                context.cleanup();
+                if (context != null) {
+	                context.incrementStat(totalTime, ChannelRouterContext.STAT_ROUTE_TOTAL_TIME);
+	                context.logStats(log, totalTime);
+	                context.cleanup();
+                }
             }
         }
     }

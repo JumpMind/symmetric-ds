@@ -229,6 +229,9 @@ public class DbCompare {
         if (sourceCompareRow == null && targetCompareRow != null) {
             return 1;
         }
+        if (sourceCompareRow == null) {
+        	return 0;
+        }
 
         return sourceCompareRow.comparePks(tables, targetCompareRow);
     }

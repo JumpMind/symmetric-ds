@@ -59,16 +59,8 @@ import org.slf4j.LoggerFactory;
 public class DataGapFastDetector extends DataGapDetector implements ISqlRowMapper<Long> {
 
     private static final Logger log = LoggerFactory.getLogger(DataGapFastDetector.class);
-
-    protected IDataService dataService;
-
-    protected IParameterService parameterService;
     
     protected IContextService contextService;
-
-    protected ISymmetricDialect symmetricDialect;
-
-    protected IStatisticManager statisticManager;
     
     protected List<DataGap> gaps;
     

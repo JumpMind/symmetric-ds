@@ -371,7 +371,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 postCreateTrigger(transaction, sqlBuffer, dml, trigger, hist, channel, tablePrefix, table);
                 transaction.commit();
             } catch (SqlException ex) {
-                transaction.rollback();
+            	if (transaction != null) {
+            		transaction.rollback();
+            	}
                 throw ex;
             } finally {
                 try {
@@ -380,9 +382,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                         switchCatalogForTriggerInstall(previousCatalog, transaction);
                     }
                 } finally {
-                    transaction.close();
+                	if (transaction != null) {
+                		transaction.close();
+                	}
                 }
-
             }
         }
     }
@@ -438,10 +441,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     
                     transaction.commit();
                 } catch (SqlException ex) {
-                    transaction.rollback();
+                	if (transaction != null) {
+                		transaction.rollback();
+                	}
                     throw ex;
                 } finally {
-                    transaction.close();
+                	if (transaction != null) {
+                		transaction.close();
+                	}
                 }
             }
         }

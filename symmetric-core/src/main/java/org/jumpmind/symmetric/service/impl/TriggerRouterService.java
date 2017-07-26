@@ -1772,10 +1772,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
 
-        if (!triggerExists && forceRebuild) {
-            reason = TriggerReBuildReason.TRIGGERS_MISSING;
-        }
-
         if ((forceRebuild || !triggerIsActive) && triggerExists) {
             symmetricDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema,
                     oldTriggerName, trigger.isSourceTableNameWildCarded() ? table.getName()
