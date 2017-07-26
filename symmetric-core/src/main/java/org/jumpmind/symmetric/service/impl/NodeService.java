@@ -39,11 +39,10 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.StringMapper;
-import org.jumpmind.security.ISecurityService;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
@@ -54,7 +53,6 @@ import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.DefaultNodeIdCreator;
 import org.jumpmind.util.AppUtils;
 
@@ -62,6 +60,8 @@ import org.jumpmind.util.AppUtils;
  * @see INodeService
  */
 public class NodeService extends AbstractService implements INodeService {
+
+	private ISymmetricEngine engine;
 
     private IExtensionService extensionService;
 
@@ -85,11 +85,11 @@ public class NodeService extends AbstractService implements INodeService {
 
     private NodeHost nodeHostForCurrentNode = null;
 
-    public NodeService(IParameterService parameterService, ISymmetricDialect dialect, ISecurityService securityService,
-            IExtensionService extensionService) {
-        super(parameterService, dialect);
-        this.extensionService = extensionService;
-        extensionService.addExtensionPoint(new DefaultNodeIdCreator(parameterService, this, securityService));
+    public NodeService(ISymmetricEngine engine) {
+        super(engine.getParameterService(), engine.getSymmetricDialect());
+        this.engine = engine;
+        extensionService = engine.getExtensionService();
+        extensionService.addExtensionPoint(new DefaultNodeIdCreator(parameterService, this, engine.getSecurityService()));
         setSqlMap(new NodeServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
 
@@ -749,8 +749,9 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findOfflineNodes(long minutesOffline) {
         List<Node> offlineNodeList = new ArrayList<Node>();
         Node myNode = findIdentity();
+        long restartDelayMinutes = parameterService.getLong(ParameterConstants.OFFLINE_NODE_DETECTION_RESTART_MINUTES);
 
-        if (myNode != null) {
+        if (myNode != null && System.currentTimeMillis() - engine.getLastRestartTime().getTime() > restartDelayMinutes * 60000) {
             long offlineNodeDetectionMillis = minutesOffline * 60 * 1000;
 
             List<Row> list = sqlTemplate.query(getSql("findNodeHeartbeatsSql"));

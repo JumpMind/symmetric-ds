@@ -300,6 +300,7 @@ final public class ParameterConstants {
     public final static String NODE_OFFLINE_ARCHIVE_DIR = "node.offline.archive.dir";
     
     public final static String OFFLINE_NODE_DETECTION_PERIOD_MINUTES = "offline.node.detection.period.minutes";
+    public final static String OFFLINE_NODE_DETECTION_RESTART_MINUTES = "offline.node.detection.restart.minutes";
     public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC = "heartbeat.sync.on.push.period.sec";
     public final static String HEARTBEAT_JOB_PERIOD_MS = "job.heartbeat.period.time.ms";
     public final static String HEARTBEAT_SYNC_ON_STARTUP = "heartbeat.sync.on.startup";
