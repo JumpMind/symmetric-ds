@@ -106,8 +106,22 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
 
                 Object[] params = new Object[] { new Integer(i), value, new Integer(precision), new Integer(scale) };
                 try {
-                    Method method = clazz.getMethod("setBigDecimal", parameterTypes);
-                    method.invoke(nativeStatement, params);
+                    if (arg instanceof Long) {
+                        params = new Object[] { new Integer(i), new Long(arg.toString()) };
+                        parameterTypes = new Class[] { int.class, long.class };
+                        Method method = clazz.getMethod("setLong", parameterTypes);
+                        method.invoke(nativeStatement, params);
+                    }
+                    else if (arg instanceof Integer) {
+                        params = new Object[] { new Integer(i), new Integer(arg.toString()) };
+                        parameterTypes = new Class[] { int.class, int.class };
+                        Method method = clazz.getMethod("setInt", parameterTypes);
+                        method.invoke(nativeStatement, params);
+                    }
+                    else {
+                        Method method = clazz.getMethod("setBigDecimal", parameterTypes);
+                        method.invoke(nativeStatement, params);
+                    }
                 } catch (Throwable e) {
                     if (e instanceof InvocationTargetException) {
                         e = ((InvocationTargetException) e).getTargetException();
