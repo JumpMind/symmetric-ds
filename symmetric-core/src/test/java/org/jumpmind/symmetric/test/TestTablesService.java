@@ -27,13 +27,11 @@ import java.util.Map;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.service.impl.AbstractService;
-import org.jumpmind.symmetric.service.impl.TriggerRouterServiceSqlMap;
 import org.junit.Assert;
 import org.junit.Ignore;
 
