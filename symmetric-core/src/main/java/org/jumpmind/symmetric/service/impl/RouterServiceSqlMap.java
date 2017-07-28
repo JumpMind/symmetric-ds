@@ -29,13 +29,13 @@ public class RouterServiceSqlMap extends AbstractSqlMap {
     public RouterServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
 
-        putSql("selectChannelsUsingGapsSql", "select distinct channel_id from $(schemaName)$(data) where $(schemaName)$(dataRange)");
+        putSql("selectChannelsUsingGapsSql", "select distinct channel_id from $(schemaName)$(data) where $(dataRange)");
 
         putSql("selectChannelsUsingStartDataId", "select distinct channel_id from $(schemaName)$(data) where data_id >= ?");
 
         putSql("selectDataUsingGapsSql",
                 ""
-                        + "select $(schemaName)$(selectDataUsingGapsSqlHint) d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data,                        "
+                        + "select $(selectDataUsingGapsSqlHint) d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data,                        "
                         + "  d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list   "
                         + "  from $(schemaName)$(data) d where d.channel_id=? $(dataRange)                                                ");
         
