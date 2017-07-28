@@ -33,18 +33,18 @@ public class TestTablesServiceSqlMap extends AbstractSqlMap {
         super(platform, replacementTokens);
 
         putSql("insertCustomerSql",
-                "insert into $(schemaName)test_customer "
+                "insert into test_customer "
                         + "(customer_id, name, is_active, address, city, state, zip, entry_timestamp, entry_time, notes, icon) "
                         + "values(?,?,?,?,?,?,?,?,?,?,?)");
 
         putSql("insertIntoTestTriggersTableSql",
-                "insert into $(schemaName)test_triggers_table (id, string_one_value, string_two_value) values(?,?,?)");
+                "insert into test_triggers_table (id, string_one_value, string_two_value) values(?,?,?)");
         
-        putSql("insertOrderSql", "insert into $(schemaName)test_order_header (order_id, customer_id, status, deliver_date) values(?,?,?,?)");
+        putSql("insertOrderSql", "insert into test_order_header (order_id, customer_id, status, deliver_date) values(?,?,?,?)");
         
-        putSql("insertOrderDetailSql", "insert into $(schemaName)test_order_detail (order_id, line_number, item_type, item_id, quantity, price) values(?,?,?,?,?,?)");
+        putSql("insertOrderDetailSql", "insert into test_order_detail (order_id, line_number, item_type, item_id, quantity, price) values(?,?,?,?,?,?)");
         
-        putSql("selectOrderSql", "select order_id, customer_id, status, deliver_date from $(schemaName)test_order_header where order_id = ?");
+        putSql("selectOrderSql", "select order_id, customer_id, status, deliver_date from test_order_header where order_id = ?");
     }
 
 }

@@ -17,9 +17,6 @@
  * under the License.
  */
 package org.jumpmind.db.platform.nuodb;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
@@ -43,17 +40,11 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     /* The subprotocol used by the standard MySQL driver. */
     public static final String JDBC_SUBPROTOCOL = "nuodb";
     
-    private Map<String, String> sqlScriptReplacementTokens;
-
     /*
      * Creates a new platform instance.
      */
     public NuoDbDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-        
-        String delimiter = getDatabaseInfo().getDelimiterToken();
-        sqlScriptReplacementTokens = new HashMap<String,String>();
-        sqlScriptReplacementTokens.put("\\$\\(schemaName\\)", delimiter + getDefaultSchema() + delimiter + "." );
     }
 
     @Override
@@ -91,11 +82,6 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return null;
     }
     
-    @Override
-    public Map<String, String> getSqlScriptReplacementTokens() {
-        return sqlScriptReplacementTokens;
-    }
-
     @Override
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();

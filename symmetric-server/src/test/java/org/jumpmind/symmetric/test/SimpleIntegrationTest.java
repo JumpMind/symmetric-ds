@@ -39,7 +39,6 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Level;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.TestConstants;
@@ -142,8 +141,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void test03InitialLoad() {
         logTestRunning();
-        serverTestService.insertIntoTestUseStreamLob(100, "$(schemaName)test_use_stream_lob", THIS_IS_A_TEST);
-        serverTestService.insertIntoTestUseStreamLob(100, "$(schemaName)test_use_capture_lob", THIS_IS_A_TEST);
+        serverTestService.insertIntoTestUseStreamLob(100, "test_use_stream_lob", THIS_IS_A_TEST);
+        serverTestService.insertIntoTestUseStreamLob(100, "test_use_capture_lob", THIS_IS_A_TEST);
 
         Customer customer = new Customer(301, "Linus", true, "42 Blanket Street", "Santa Claus",
                 "IN", 90009, new Date(), new Date(), THIS_IS_A_TEST, BINARY_DATA);
@@ -211,7 +210,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void test04LobSyncUsingStreaming() throws Exception {
         String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
-        if (serverTestService.insertIntoTestUseStreamLob(200, "$(schemaName)test_use_stream_lob", text)) {
+        if (serverTestService.insertIntoTestUseStreamLob(200, "test_use_stream_lob", text)) {
             //IDatabasePlatform platform = getServer().getDatabasePlatform();
             String rowData = getServer()
                     .getSqlTemplate()
@@ -221,14 +220,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             assertTrue("Did not find the id in the row data", rowData.contains("200"));
             assertEquals("\"200\",,,,,,", rowData);
             clientPull();
-            clientTestService.assertTestBlobIsInDatabase(200, "$(schemaName)test_use_stream_lob", text);
+            clientTestService.assertTestBlobIsInDatabase(200, "test_use_stream_lob", text);
         }
     }
 
     @Test(timeout = 120000)
     public void test05LobSyncUsingCapture() throws Exception {
         String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
-        if (serverTestService.insertIntoTestUseStreamLob(200, "$(schemaName)test_use_capture_lob", text)) {
+        if (serverTestService.insertIntoTestUseStreamLob(200, "test_use_capture_lob", text)) {
             String rowData = getServer()
                     .getSqlTemplate()
                     .queryForObject(
@@ -236,12 +235,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                             String.class);
             assertTrue("Did not find the id in the row data", rowData.contains("200"));
             clientPull();
-            clientTestService.assertTestBlobIsInDatabase(200, "$(schemaName)test_use_capture_lob", text);
+            clientTestService.assertTestBlobIsInDatabase(200, "test_use_capture_lob", text);
 
             String updateText = "The text was updated";
-            serverTestService.updateTestUseStreamLob(200, "$(schemaName)test_use_capture_lob", updateText);
+            serverTestService.updateTestUseStreamLob(200, "test_use_capture_lob", updateText);
             clientPull();
-            serverTestService.assertTestBlobIsInDatabase(200, "$(schemaName)test_use_capture_lob", updateText);
+            serverTestService.assertTestBlobIsInDatabase(200, "test_use_capture_lob", updateText);
         }
     }    
 

@@ -32,30 +32,30 @@ public class SequenceServiceSqlMap extends AbstractSqlMap {
         // @formatter:off
         putSql("getSequenceSql",
           "select sequence_name,current_value,increment_by,min_value,max_value,                    " + 
-          "cycle_flag,cache_size,create_time,last_update_by,last_update_time from $(schemaName)$(sequence) where sequence_name=?");
+          "cycle_flag,cache_size,create_time,last_update_by,last_update_time from $(sequence) where sequence_name=?");
 
         putSql("getAllSequenceSql",
                 "select sequence_name,current_value,increment_by,min_value,max_value," + 
-                "cycle_flag,cache_size,create_time,last_update_by,last_update_time from $(schemaName)$(sequence)");
+                "cycle_flag,cache_size,create_time,last_update_by,last_update_time from $(sequence)");
 
         putSql("getCurrentValueSql",
-                "select current_value from $(schemaName)$(sequence) where sequence_name=?");     
+                "select current_value from $(sequence) where sequence_name=?");     
         
         putSql("updateCurrentValueSql",
-                "update $(schemaName)$(sequence) set current_value=?, last_update_time=current_timestamp " +
+                "update $(sequence) set current_value=?, last_update_time=current_timestamp " +
                 "  where sequence_name=? and current_value=?                                ");          
         
         putSql("insertSequenceSql",
-                "insert into $(schemaName)$(sequence)                                               " +
+                "insert into $(sequence)                                               " +
                 "  (sequence_name, current_value, increment_by, min_value, max_value,  " + 
                 "   cycle_flag, cache_size, create_time, last_update_by, last_update_time)              " +
                 "   values(?,?,?,?,?,?,?,current_timestamp,?,current_timestamp)         ");     
         
-        putSql("maxOutgoingBatchSql", "select max(batch_id)+1 from $(schemaName)$(outgoing_batch)");
+        putSql("maxOutgoingBatchSql", "select max(batch_id)+1 from $(outgoing_batch)");
         
-        putSql("maxTriggerHistSql", "select max(trigger_hist_id)+1 from $(schemaName)$(trigger_hist)");
+        putSql("maxTriggerHistSql", "select max(trigger_hist_id)+1 from $(trigger_hist)");
         
-        putSql("maxExtractRequestSql", "select max(request_id)+1 from $(schemaName)$(extract_request)");
+        putSql("maxExtractRequestSql", "select max(request_id)+1 from $(extract_request)");
 
                 
        // @formatter:on

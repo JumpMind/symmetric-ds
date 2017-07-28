@@ -30,7 +30,7 @@ public class AcknowledgeServiceSqlMap extends AbstractSqlMap {
             Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
         putSql("selectDataIdSql",
-                "select data_id from $(schemaName)$(data_event) b where batch_id = ? order by data_id   ");
+                "select data_id from $(data_event) b where batch_id = ? order by data_id   ");
     }
 
 }

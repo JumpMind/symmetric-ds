@@ -32,43 +32,43 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
 
         putSql("findNodeToRegisterSql",
                 ""
-                        + "select min(c.node_id) from $(schemaName)$(node) c inner join                                "
-                        + "  $(schemaName)$(node_security) s on c.node_id = s.node_id where s.registration_enabled =   "
+                        + "select min(c.node_id) from $(node) c inner join                                "
+                        + "  $(node_security) s on c.node_id = s.node_id where s.registration_enabled =   "
                         + "  1 and c.node_group_id = ? and c.external_id = ?                                    ");
 
         putSql("registerNodeSecuritySql",
                 ""
-                        + "update $(schemaName)$(node_security) set registration_enabled = 0, registration_time =   "
+                        + "update $(node_security) set registration_enabled = 0, registration_time =   "
                         + "  current_timestamp where node_id = ?                                             ");
 
         putSql("reopenRegistrationSql", ""
-                + "update $(schemaName)$(node_security) set node_password = ?, registration_enabled = 1,    "
+                + "update $(node_security) set node_password = ?, registration_enabled = 1,    "
                 + "  registration_time = null where node_id = ? and registration_enabled = 0  ");
 
         putSql("openRegistrationNodeSecuritySql", ""
-                + "insert into $(schemaName)$(node_security) (node_id, node_password,       "
+                + "insert into $(node_security) (node_id, node_password,       "
                 + "  registration_enabled, created_at_node_id) values (?, ?, 1, ?)   ");
 
         putSql("getRegistrationRedirectUrlSql", ""
-                + "select sync_url from $(schemaName)$(node) n inner join $(schemaName)$(registration_redirect) r "
+                + "select sync_url from $(node) n inner join $(registration_redirect) r "
                 + "on n.node_id=r.registration_node_id where r.registrant_external_id=?   ");
 
-        putSql("insertRegistrationRedirectUrlSql", "" + "insert into $(schemaName)$(registration_redirect) "
+        putSql("insertRegistrationRedirectUrlSql", "" + "insert into $(registration_redirect) "
                 + "(registration_node_id, registrant_external_id) values (?, ?)   ");
 
-        putSql("updateRegistrationRedirectUrlSql", "" + "update $(schemaName)$(registration_redirect) "
+        putSql("updateRegistrationRedirectUrlSql", "" + "update $(registration_redirect) "
                 + "set registration_node_id=? where registrant_external_id=?   ");
 
         putSql("insertRegistrationRequestSql",
                 ""
-                        + "insert into $(schemaName)$(registration_request)                                                 "
+                        + "insert into $(registration_request)                                                 "
                         + "  (last_update_by, last_update_time, attempt_count, registered_node_id, status,     "
                         + "  node_group_id, external_id, ip_address, host_name, error_message, create_time)    "
                         + "  values (?,?,1,?,?,?,?,?,?,?,current_timestamp)                                    ");
 
         putSql("updateRegistrationRequestSql",
                 ""
-                        + "update $(schemaName)$(registration_request)                                                                    "
+                        + "update $(registration_request)                                                                    "
                         + "  set attempt_count=?,                                                                                      "
                         + "  last_update_by=?, last_update_time=?, registered_node_id=?, status=?, error_message=?   "
                         + "  where                                                                                                 "
@@ -78,11 +78,11 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
                 ""
                         + "select node_group_id, external_id, status, host_name, ip_address, error_message,     "
                         + "  attempt_count, registered_node_id, create_time, last_update_by, last_update_time   "
-                        + "  from $(schemaName)$(registration_request)                                                       "
+                        + "  from $(registration_request)                                                       "
                         + "  where status in ('RQ','ER')                                                        ");
 
         putSql("deleteRegistrationRequestSql",
-                "delete from $(schemaName)$(registration_request) where node_group_id=? and external_id=? and ip_address=? and host_name=? and status=?");
+                "delete from $(registration_request) where node_group_id=? and external_id=? and ip_address=? and host_name=? and status=?");
 
     }
     
