@@ -456,11 +456,17 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
     
     protected Object parseBigDecimal(String value) {
+        value = cleanNumber(value);
+        /*
+         * In the case of a 'NaN' value, return a String
+         */
+        if (value != null && value.equals("NaN")) {
+            return value;
+        }
         /*
          * The number will have either one period or one comma for the decimal
          * point, but we need a period
          */
-        value = cleanNumber(value);
         return new BigDecimal(value.replace(',', '.'));
     }    
     
@@ -654,11 +660,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Table makeAllColumnsPrimaryKeys(Table table) {
-    	Table result = table.copy();
+        Table result = table.copy();
         for (Column column : result.getColumns()) {
-        	if (!isLob(column.getMappedTypeCode())) {
-        		column.setPrimaryKey(true);
-        	}
+            if (!isLob(column.getMappedTypeCode())) {
+                column.setPrimaryKey(true);
+            }
         }
         return result;
     }

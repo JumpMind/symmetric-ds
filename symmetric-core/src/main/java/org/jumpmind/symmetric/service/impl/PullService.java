@@ -39,11 +39,11 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
-import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 
 /**
  * @see IPullService
@@ -148,7 +148,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                 
                 lastBatchesProcessed = status.getBatchesProcessed() - cumulativeBatchesProcessed;
                 lastDataProcessed = status.getDataProcessed() - cumulativeDataProcessed;
-                if (!status.failed() && (lastDataProcessed > 0 || lastDataProcessed > 0)) {
+                if (!status.failed() && (lastDataProcessed > 0 || lastBatchesProcessed > 0)) {
                     log.info(
                             "Pull data received from {} {}.  {} rows and {} batches were processed",
                             new Object[] { node.toString(), "on channel thread " + nodeCommunication.getQueue(),

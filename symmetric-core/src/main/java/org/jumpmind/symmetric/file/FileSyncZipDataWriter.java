@@ -156,7 +156,8 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 FileSyncZipScript script = createFileSyncZipScript(batch.getTargetNodeId());
                 script.buildScriptStart(batch);
 
-                Map<String, LastEventType> entries = new HashMap<String, LastEventType>();
+                Map<String, LastEventType> entriesByLastEventType = new HashMap<String, LastEventType>();
+                Map<String, String> entriesByLastRouterId = new HashMap<String, String>();
                 for (FileSnapshot snapshot : snapshotEvents) {
                     FileTriggerRouter triggerRouter = fileSyncService.getFileTriggerRouter(
                             snapshot.getTriggerId(), snapshot.getRouterId());
@@ -185,17 +186,22 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         }
 
                         String targetFile = "targetBaseDir + \"/\" + targetRelativeDir + \"/\" + targetFileName"; 
+                                               
 
-                        LastEventType previousEventForEntry = entries.get(entryName.toString());
-                        boolean process = true;
+                        LastEventType previousEventForEntry = entriesByLastEventType.get(entryName.toString());
+                        boolean addFileToZip = true;
                         if (previousEventForEntry != null) {
                             if ((previousEventForEntry == eventType)
                                     || (previousEventForEntry == LastEventType.CREATE && eventType == LastEventType.MODIFY)) {
-                                process = false;
+                                addFileToZip = false;
                             }
                         }
                         
-                        if (process) {
+                        
+                        String lastRouterId = entriesByLastRouterId.get(entryName.toString());
+                        boolean addFileToScript = !snapshot.getRouterId().equals(lastRouterId);
+
+                        if (addFileToZip) {
                             if (eventType != LastEventType.DELETE) {
                                 if (file.exists()) {
                                     byteCount += file.length();
@@ -212,14 +218,17 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                         }
                                     }
                                     zos.closeEntry();
-                                    entries.put(entryName.toString(), eventType);
+                                    entriesByLastEventType.put(entryName.toString(), eventType);
+                                    entriesByLastRouterId.put(entryName.toString(), snapshot.getRouterId());
                                 } else {
                                     log.warn(
                                             "Could not find the {} file to package for synchronization.  Skipping it.",
                                             file.getAbsolutePath());
                                 }
                             }
-
+                        }
+                        
+                        if (addFileToScript) {
                             script.buildScriptFileSnapshot(batch, snapshot, triggerRouter, fileTrigger, 
                                     file, targetBaseDir, targetFile);
                         }

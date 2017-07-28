@@ -147,8 +147,10 @@ public class OfflinePushService extends AbstractService implements IOfflinePushS
             processInfo.setStatus(ProcessStatus.ERROR);
             log.error("Failed to write offline file", ex);
         } finally {
-            transport.close();
-            transport.complete(processInfo.getStatus() == ProcessStatus.OK);
+        	if (transport != null) {
+	            transport.close();
+	            transport.complete(processInfo.getStatus() == ProcessStatus.OK);
+        	}
         }
     }
 

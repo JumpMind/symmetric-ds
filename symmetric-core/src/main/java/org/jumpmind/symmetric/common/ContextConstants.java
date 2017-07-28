@@ -11,4 +11,6 @@ final public class ContextConstants {
     
     public static final String GUID = "guid";
 
+    public static final String FILE_SYNC_FAST_SCAN_TRACK_TIME = "file.sync.fast.scan.track.time";
+
 }

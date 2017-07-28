@@ -48,11 +48,11 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                declare variable sync_triggers_disabled varchar(30);                                                                                                                   " +
 "                                declare variable sync_node_disabled varchar(30);                                                                                                                       " +
 "                                begin                                                                                                                                                                  " +
-"                                  select context_value from $(prefixName)_context where name = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
+"                                  select context_value from $(prefixName)_" + InterbaseSymmetricDialect.CONTEXT_TABLE_NAME + " where name = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
 "                                  $(custom_before_insert_text) \n" +
 "                                  if ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               " +
 "                                  begin                                                                                                                                                                " +
-"                                    select context_value from $(prefixName)_context where name = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
+"                                    select context_value from $(prefixName)_" + InterbaseSymmetricDialect.CONTEXT_TABLE_NAME + " where name = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
 "                                    select gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1) from rdb$database into :name;                                                                       " +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
 "                                    (data_id, table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               " +
@@ -77,11 +77,11 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                declare variable sync_triggers_disabled varchar(30);                                                                                                                   " +
 "                                declare variable sync_node_disabled varchar(30);                                                                                                                       " +
 "                                begin                                                                                                                                                                  " +
-"                                  select context_value from $(prefixName)_context where name = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
+"                                  select context_value from $(prefixName)_" + InterbaseSymmetricDialect.CONTEXT_TABLE_NAME + " where name = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
 "                                  $(custom_before_insert_text) \n" +
 "                                  if ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               " +
 "                                  begin                                                                                                                                                                " +
-"                                    select context_value from $(prefixName)_context where name = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
+"                                    select context_value from $(prefixName)_" + InterbaseSymmetricDialect.CONTEXT_TABLE_NAME + " where name = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
 "                                    select gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1) from rdb$database into :name;                                                                       " +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
 "                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)                               " +
@@ -108,11 +108,11 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                declare variable sync_triggers_disabled varchar(30);                                                                                                                   " +
 "                                declare variable sync_node_disabled varchar(30);                                                                                                                       " +
 "                                begin                                                                                                                                                                  " +
-"                                  select context_value from $(prefixName)_context where name = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
+"                                  select context_value from $(prefixName)_" + InterbaseSymmetricDialect.CONTEXT_TABLE_NAME + " where name = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
 "                                  $(custom_before_update_text) \n" +
 "                                  if ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               " +
 "                                  begin                                                                                                                                                                " +
-"                                    select context_value from $(prefixName)_context where name = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
+"                                    select context_value from $(prefixName)_" + InterbaseSymmetricDialect.CONTEXT_TABLE_NAME + " where name = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
 "                                    select gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1) from rdb$database into :name;                                                                       " +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
 "                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)            " +
@@ -140,11 +140,11 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                declare variable sync_triggers_disabled varchar(30);                                                                                                                   " +
 "                                declare variable sync_node_disabled varchar(30);                                                                                                                       " +
 "                                begin                                                                                                                                                                  " +
-"                                  select context_value from $(prefixName)_context where name = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
+"                                  select context_value from $(prefixName)_" + InterbaseSymmetricDialect.CONTEXT_TABLE_NAME + " where name = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
 "                                  $(custom_before_update_text) \n" +
 "                                  if ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               " +
 "                                  begin                                                                                                                                                                " +
-"                                    select context_value from $(prefixName)_context where name = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
+"                                    select context_value from $(prefixName)_" + InterbaseSymmetricDialect.CONTEXT_TABLE_NAME + " where name = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
 "                                    select gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1) from rdb$database into :name;                                                                       " +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
 "                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)            " +
@@ -170,11 +170,11 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
 "                                declare variable sync_triggers_disabled varchar(30);                                                                                                                   " +
 "                                declare variable sync_node_disabled varchar(30);                                                                                                                       " +
 "                                begin                                                                                                                                                                  " +
-"                                  select context_value from $(prefixName)_context where name = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
+"                                  select context_value from $(prefixName)_" + InterbaseSymmetricDialect.CONTEXT_TABLE_NAME + " where name = 'sync_triggers_disabled' into :sync_triggers_disabled;                                                    " +
 "                                  $(custom_before_delete_text) \n" +
 "                                  if ($(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)) then                                                                                               " +
 "                                  begin                                                                                                                                                                " +
-"                                    select context_value from $(prefixName)_context where name = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
+"                                    select context_value from $(prefixName)_" + InterbaseSymmetricDialect.CONTEXT_TABLE_NAME + " where name = 'sync_node_disabled' into :sync_node_disabled;                                                          " +
 "                                    select gen_id($(defaultSchema)GEN_$(prefixName)_data_data_id, 1) from rdb$database into :name;                                                                       " +
 "                                    insert into $(defaultSchema)$(prefixName)_data                                                                                                                     " +
 "                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)                      " +
